@@ -116,10 +116,10 @@ function meta::protocols::pure::vX_X_X::invocation::execution::execute::executeP
 
 function meta::protocols::pure::vX_X_X::invocation::execution::execute::buildExecutionInput<T|m>(f:FunctionDefinition<{->T[m]}>[1], m:Mapping[1], runtime:Runtime[1],  exeCtx:ExecutionContext[0..1], version:String[1], serializationKind:String[1], executionMode:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
-  meta::protocols::pure::vX_X_X::invocation::execution::execute::buildExecutionInput($f, $m, $runtime, $exeCtx, $version, $serializationKind, $executionMode, $extensions, [])
+  meta::protocols::pure::vX_X_X::invocation::execution::execute::buildExecutionInput($f, $m, $runtime, $exeCtx, $version, $serializationKind, $executionMode, [], $extensions)
 }
 
-function meta::protocols::pure::vX_X_X::invocation::execution::execute::buildExecutionInput<T|m>(f:FunctionDefinition<{->T[m]}>[1], m:Mapping[1], runtime:Runtime[1],  exeCtx:ExecutionContext[0..1], version:String[1], serializationKind:String[1], executionMode:String[1], extensions:meta::pure::extension::Extension[*], pureMetadataServer:String[0..1]):String[1]
+function meta::protocols::pure::vX_X_X::invocation::execution::execute::buildExecutionInput<T|m>(f:FunctionDefinition<{->T[m]}>[1], m:Mapping[1], runtime:Runtime[1],  exeCtx:ExecutionContext[0..1], version:String[1], serializationKind:String[1], executionMode:String[1], pureMetadataServer:String[0..1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
          let transformedContext = if($exeCtx->isNotEmpty(), | $exeCtx->toOne()->transformContext($extensions),| []);
          let execMode = ExecutionMode->extractEnumValue($executionMode);

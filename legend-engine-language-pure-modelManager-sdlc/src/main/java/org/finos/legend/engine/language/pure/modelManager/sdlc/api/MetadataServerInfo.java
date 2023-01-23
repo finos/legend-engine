@@ -40,7 +40,7 @@ public class MetadataServerInfo
         String allowedOverrideUrls = "";
         if (metaDataServerConfiguration.pure instanceof PureServerConnectionConfiguration)
         {
-            typeOfServerConnectionConfiguration = "      \"_type\":\"pureServerConnectionConfiguration\"";
+            typeOfServerConnectionConfiguration = "      \"_type\":\"pureServerConnectionConfiguration\",";
             allowedOverrideUrls = "," + "      \"allowedOverrideUrls\":" + (((PureServerConnectionConfiguration) metaDataServerConfiguration.pure).allowedOverrideUrls == null ? "[]" : "[\"" + String.join("\",\"", ((PureServerConnectionConfiguration) metaDataServerConfiguration.pure).allowedOverrideUrls) + "\"]");
         }
         this.message = "{" +

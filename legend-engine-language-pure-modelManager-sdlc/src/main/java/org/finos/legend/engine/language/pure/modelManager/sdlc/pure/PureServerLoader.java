@@ -48,7 +48,7 @@ public class PureServerLoader
 
     public String getBaseUrl(String overrideUrl)
     {
-        if (overrideUrl == null || overrideUrl.equals(metaDataServerConfiguration.getPure().getBaseUrl()))
+        if (overrideUrl == null || overrideUrl.equals(metaDataServerConfiguration.getPure().getBaseUrl()) || !(metaDataServerConfiguration.pure instanceof PureServerConnectionConfiguration))
         {
             return metaDataServerConfiguration.getPure().getBaseUrl();
         }
