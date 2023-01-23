@@ -15,12 +15,25 @@
 package org.finos.legend.authentication.credentialprovider.impl;
 
 import org.finos.legend.authentication.credentialprovider.CredentialProvider;
+import org.finos.legend.authentication.intermediationrule.IntermediationRule;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.UserPasswordAuthenticationSpecification;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;
 
+import java.util.List;
+
 public class UserPasswordCredentialProvider extends CredentialProvider<UserPasswordAuthenticationSpecification, PlaintextUserPasswordCredential>
 {
+    public UserPasswordCredentialProvider()
+    {
+
+    }
+
+    public UserPasswordCredentialProvider(List<IntermediationRule> intermediationRules)
+    {
+        super(intermediationRules);
+    }
+
     @Override
     public PlaintextUserPasswordCredential makeCredential(UserPasswordAuthenticationSpecification AuthenticationSpecification, Identity identity) throws Exception
     {

@@ -60,6 +60,18 @@ public class CredentialProviderProvider
 
     private void configureProvider(CredentialProvider credentialProvider)
     {
+        if (this.intermediationRuleProvider != null)
+        {
+            this.configureProviderWithExternalRules(credentialProvider);
+        }
+        else
+        {
+            this.credentialProviders.add(credentialProvider);
+        }
+    }
+
+    private void configureProviderWithExternalRules(CredentialProvider credentialProvider)
+    {
         FastList<IntermediationRule> rules = this.intermediationRuleProvider.getRules();
         Class<? extends AuthenticationSpecification> authenticationSpecificationType = credentialProvider.getAuthenticationSpecificationType();
         Class<? extends Credential> outputCredentialType = credentialProvider.getOutputCredentialType();
