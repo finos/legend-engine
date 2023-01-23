@@ -105,7 +105,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
@@ -118,6 +117,11 @@ import java.util.stream.Collectors;
 
 public class PersistenceParseTreeWalker
 {
+    private enum DatasetTypeEnum
+    {
+        GRAPH_FETCH, TDS
+    }
+
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final Consumer<PackageableElement> elementConsumer;
     private final ImportAwareCodeSection section;
@@ -298,7 +302,7 @@ public class PersistenceParseTreeWalker
 
         // dataset type
         PersistenceParserGrammar.DatasetTypeContext datasetTypeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.datasetType(), "datasetType", sourceInformation);
-        serviceOutput.datasetType = visitDatasetType(datasetTypeContext);
+        serviceOutput.datasetType = visitDatasetType(DatasetTypeEnum.GRAPH_FETCH, datasetTypeContext);
 
         return serviceOutput;
     }
@@ -318,7 +322,7 @@ public class PersistenceParseTreeWalker
 
         // dataset type
         PersistenceParserGrammar.DatasetTypeContext datasetTypeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.datasetType(), "datasetType", sourceInformation);
-        serviceOutput.datasetType = visitDatasetType(datasetTypeContext);
+        serviceOutput.datasetType = visitDatasetType(DatasetTypeEnum.TDS, datasetTypeContext);
 
         return serviceOutput;
     }
@@ -401,7 +405,8 @@ public class PersistenceParseTreeWalker
         List<PersistenceParserGrammar.ServiceOutputValueContext> serviceOutputValueContexts = ctx.serviceOutputValue();
         return Lists.immutable.ofAll(serviceOutputValueContexts)
                 .collect(PersistenceParserGrammar.ServiceOutputValueContext::dslNavigationPath)
-                .collect(this::visitPath).castToList();
+                .collect(this::visitPath)
+                .castToList();
     }
 
     private List<String> visitTdsDatasetKeys(PersistenceParserGrammar.DatasetKeysContext ctx)
@@ -410,7 +415,8 @@ public class PersistenceParseTreeWalker
         List<PersistenceParserGrammar.ServiceOutputValueContext> serviceOutputValueContexts = ctx.serviceOutputValue();
         return Lists.immutable.ofAll(serviceOutputValueContexts)
                 .collect(PersistenceParserGrammar.ServiceOutputValueContext::identifier)
-                .collect(PureGrammarParserUtility::fromIdentifier).castToList();
+                .collect(PureGrammarParserUtility::fromIdentifier)
+                .castToList();
     }
 
     private Deduplication visitDeduplication(PersistenceParserGrammar.DeduplicationContext ctx)
@@ -458,34 +464,34 @@ public class PersistenceParseTreeWalker
         return deduplication;
     }
 
-    private DatasetType visitDatasetType(PersistenceParserGrammar.DatasetTypeContext ctx)
+    private DatasetType visitDatasetType(DatasetTypeEnum datasetType, PersistenceParserGrammar.DatasetTypeContext ctx)
     {
         SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         if (ctx.datasetSnapshot() != null)
         {
-            return visitSnapshot(ctx.datasetSnapshot());
+            return visitSnapshot(datasetType, ctx.datasetSnapshot());
         }
         else if (ctx.datasetDelta() != null)
         {
-            return visitDelta(ctx.datasetDelta());
+            return visitDelta(datasetType, ctx.datasetDelta());
         }
         throw new EngineException("Unrecognized dataset type", sourceInformation, EngineErrorType.PARSER);
     }
 
-    private Snapshot visitSnapshot(PersistenceParserGrammar.DatasetSnapshotContext ctx)
+    private Snapshot visitSnapshot(DatasetTypeEnum datasetType, PersistenceParserGrammar.DatasetSnapshotContext ctx)
     {
-        Snapshot datasetType = new Snapshot();
-        datasetType.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        Snapshot snapshot = new Snapshot();
+        snapshot.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         // partitioning
-        PersistenceParserGrammar.PartitioningContext partitioningContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.partitioning(), "partitioning", datasetType.sourceInformation);
-        datasetType.partitioning = partitioningContext == null ? null : visitPartitioning(partitioningContext);
+        PersistenceParserGrammar.PartitioningContext partitioningContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.partitioning(), "partitioning", snapshot.sourceInformation);
+        snapshot.partitioning = partitioningContext == null ? null : visitPartitioning(datasetType, partitioningContext);
 
-        return datasetType;
+        return snapshot;
     }
 
-    private Partitioning visitPartitioning(PersistenceParserGrammar.PartitioningContext ctx)
+    private Partitioning visitPartitioning(DatasetTypeEnum datasetType, PersistenceParserGrammar.PartitioningContext ctx)
     {
         SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
@@ -495,7 +501,7 @@ public class PersistenceParseTreeWalker
         }
         else if (ctx.partitioningFieldBased() != null)
         {
-            return visitFieldBasedPartitioning(ctx.partitioningFieldBased());
+            return visitFieldBasedPartitioning(datasetType, ctx.partitioningFieldBased());
         }
         throw new EngineException("Unrecognized partitioning", sourceInformation, EngineErrorType.PARSER);
     }
@@ -540,34 +546,54 @@ public class PersistenceParseTreeWalker
         return emptyDatasetHandling;
     }
 
-    private FieldBased visitFieldBasedPartitioning(PersistenceParserGrammar.PartitioningFieldBasedContext ctx)
+    private FieldBased visitFieldBasedPartitioning(DatasetTypeEnum datasetType, PersistenceParserGrammar.PartitioningFieldBasedContext ctx)
     {
         FieldBased partitioning = new FieldBased();
         partitioning.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         // keys
-        PersistenceParserGrammar.PartitionFieldsContext partitionFieldsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.partitionFields(), "partitionFields", partitioning.sourceInformation);
-        partitioning.partitionFields = visitPartitionFields(partitionFieldsContext);
+        if (datasetType == DatasetTypeEnum.GRAPH_FETCH)
+        {
+            PersistenceParserGrammar.PartitionFieldsContext partitionFieldsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.partitionFields(), "partitionFields", partitioning.sourceInformation);
+            partitioning.partitionFieldPaths = visitPartitionPathFields(partitionFieldsContext);
+        }
+        else if (datasetType == DatasetTypeEnum.TDS)
+        {
+            PersistenceParserGrammar.PartitionFieldsContext partitionFieldsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.partitionFields(), "partitionFields", partitioning.sourceInformation);
+            partitioning.partitionFields = visitPartitionFields(partitionFieldsContext);
+        }
 
         return partitioning;
     }
 
-    private List<String> visitPartitionFields(PersistenceParserGrammar.PartitionFieldsContext ctx)
+    private List<Path> visitPartitionPathFields(PersistenceParserGrammar.PartitionFieldsContext ctx)
     {
-        List<PersistenceParserGrammar.IdentifierContext> identifierContexts = ctx.identifier();
-        return Lists.immutable.ofAll(identifierContexts).collect(PureGrammarParserUtility::fromIdentifier).castToList();
+        List<PersistenceParserGrammar.ServiceOutputValueContext> serviceOutputValueContexts = ctx.serviceOutputValue();
+        return Lists.immutable.ofAll(serviceOutputValueContexts)
+                .collect(PersistenceParserGrammar.ServiceOutputValueContext::dslNavigationPath)
+                .collect(this::visitPath)
+                .castToList();
     }
 
-    private Delta visitDelta(PersistenceParserGrammar.DatasetDeltaContext ctx)
+    private List<String> visitPartitionFields(PersistenceParserGrammar.PartitionFieldsContext ctx)
     {
-        Delta datasetType = new Delta();
-        datasetType.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        List<PersistenceParserGrammar.ServiceOutputValueContext> serviceOutputValueContexts = ctx.serviceOutputValue();
+        return Lists.immutable.ofAll(serviceOutputValueContexts)
+                .collect(PersistenceParserGrammar.ServiceOutputValueContext::identifier)
+                .collect(PureGrammarParserUtility::fromIdentifier)
+                .castToList();
+    }
+
+    private Delta visitDelta(DatasetTypeEnum datasetType, PersistenceParserGrammar.DatasetDeltaContext ctx)
+    {
+        Delta delta = new Delta();
+        delta.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         // action indicator (optional)
-        PersistenceParserGrammar.ActionIndicatorContext actionIndicatorContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.actionIndicator(), "actionIndicator", datasetType.sourceInformation);
-        datasetType.actionIndicator = actionIndicatorContext == null ? null : visitActionIndicator(actionIndicatorContext);
+        PersistenceParserGrammar.ActionIndicatorContext actionIndicatorContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.actionIndicator(), "actionIndicator", delta.sourceInformation);
+        delta.actionIndicator = actionIndicatorContext == null ? null : visitActionIndicator(actionIndicatorContext);
 
-        return datasetType;
+        return delta;
     }
 
     private ActionIndicatorFields visitActionIndicator(PersistenceParserGrammar.ActionIndicatorContext ctx)

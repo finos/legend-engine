@@ -299,7 +299,7 @@ partitioningFieldBased:                     PARTITIONING_FIELD_BASED
 ;
 partitionFields:                            PARTITIONING_FIELD_BASED_FIELDS COLON
                                                 BRACKET_OPEN
-                                                    (identifier (COMMA identifier)*)?
+                                                    (serviceOutputValue (COMMA serviceOutputValue)*)?
                                                 BRACKET_CLOSE
                                             SEMI_COLON
 ;

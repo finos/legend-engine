@@ -14,10 +14,13 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning;
 
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path;
+
 import java.util.List;
 
 public class FieldBased extends Partitioning
 {
+    public List<Path> partitionFieldPaths;
     public List<String> partitionFields;
 
     @Override
