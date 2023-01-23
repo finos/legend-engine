@@ -159,10 +159,14 @@ abstract class ServicePostValidationRunner
 
     private Pair<RichIterable<?>, LambdaFunction<?>> findParamsWithAssertion(String assertionId)
     {
+        List<String> locatedAssertionIds = FastList.newList();
+
         for (Root_meta_legend_service_metamodel_PostValidation<?> postValidation : pureService._postValidations())
         {
             for (Root_meta_legend_service_metamodel_PostValidationAssertion<?> assertion : postValidation._assertions())
             {
+                locatedAssertionIds.add(assertion._id());
+
                 if (assertion._id().equals(assertionId))
                 {
                     return Tuples.pair(postValidation._parameters(), (LambdaFunction<?>) assertion._assertion());
@@ -170,7 +174,7 @@ abstract class ServicePostValidationRunner
             }
         }
 
-        throw new NoSuchElementException("Assertion " + assertionId + " not found");
+        throw new NoSuchElementException("Assertion " + assertionId + " not found, expected one of " + locatedAssertionIds);
     }
 
     protected Result executePlan(SingleExecutionPlan plan, Map<String, Result> params) throws PrivilegedActionException
