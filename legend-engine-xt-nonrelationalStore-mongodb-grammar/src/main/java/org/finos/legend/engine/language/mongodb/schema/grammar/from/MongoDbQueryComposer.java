@@ -23,8 +23,8 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Nul
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.StringTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.AndExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArgumentExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArrayArgumentExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ExpressionObject;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArrayExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ObjectExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.FieldPathExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LiteralValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.MatchStage;
@@ -87,15 +87,15 @@ public class MongoDbQueryComposer
             String currentExpression = visitExpression(((OperatorExpression) expression).expression);
             return "{ \"" + operator + "\" : " + currentExpression + " }";
         }
-        else if (expression instanceof ExpressionObject)
+        else if (expression instanceof ObjectExpression)
         {
-            String field = visitExpression(((ExpressionObject) expression).field);
-            String argument = visitExpression(((ExpressionObject) expression).argument);
+            String field = visitExpression(((ObjectExpression) expression).field);
+            String argument = visitExpression(((ObjectExpression) expression).argument);
             return field + " : " + argument;
         }
-        else if (expression instanceof ArrayArgumentExpression)
+        else if (expression instanceof ArrayExpression)
         {
-            List<String> strings = ((ArrayArgumentExpression) expression).items.stream().map(x -> visitExpression(x)).collect(Collectors.toList());
+            List<String> strings = ((ArrayExpression) expression).items.stream().map(x -> visitExpression(x)).collect(Collectors.toList());
             return "[" + String.join(",", strings) + "]";
         }
         else if (expression instanceof Item)

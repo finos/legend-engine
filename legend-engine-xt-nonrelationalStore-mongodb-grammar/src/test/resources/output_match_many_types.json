@@ -10,7 +10,7 @@
           "_type": "item",
           "objects": [
             {
-              "_type": "expressionObject",
+              "_type": "objectExpression",
               "field": {
                 "_type": "fieldPathExpression",
                 "path": "\"test\""
@@ -22,7 +22,7 @@
                   "_type": "item",
                   "objects": [
                     {
-                      "_type": "expressionObject",
+                      "_type": "objectExpression",
                       "field": {
                         "_type": "fieldPathExpression",
                         "path": "\"test1\""
@@ -36,7 +36,7 @@
                       }
                     },
                     {
-                      "_type": "expressionObject",
+                      "_type": "objectExpression",
                       "field": {
                         "_type": "fieldPathExpression",
                         "path": "\"test2\""
@@ -50,7 +50,7 @@
                       }
                     },
                     {
-                      "_type": "expressionObject",
+                      "_type": "objectExpression",
                       "field": {
                         "_type": "fieldPathExpression",
                         "path": "\"test3\""
@@ -64,7 +64,7 @@
                       }
                     },
                     {
-                      "_type": "expressionObject",
+                      "_type": "objectExpression",
                       "field": {
                         "_type": "fieldPathExpression",
                         "path": "\"test4\""
@@ -78,7 +78,7 @@
                       }
                     },
                     {
-                      "_type": "expressionObject",
+                      "_type": "objectExpression",
                       "field": {
                         "_type": "fieldPathExpression",
                         "path": "\"test5\""
@@ -91,7 +91,7 @@
                       }
                     },
                     {
-                      "_type": "expressionObject",
+                      "_type": "objectExpression",
                       "field": {
                         "_type": "fieldPathExpression",
                         "path": "\"test6\""
@@ -105,7 +105,7 @@
                       }
                     },
                     {
-                      "_type": "expressionObject",
+                      "_type": "objectExpression",
                       "field": {
                         "_type": "fieldPathExpression",
                         "path": "\"test7\""
@@ -119,7 +119,7 @@
                       }
                     },
                     {
-                      "_type": "expressionObject",
+                      "_type": "objectExpression",
                       "field": {
                         "_type": "fieldPathExpression",
                         "path": "\"test8\""

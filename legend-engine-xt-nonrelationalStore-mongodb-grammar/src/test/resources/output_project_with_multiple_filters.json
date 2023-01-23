@@ -7,10 +7,10 @@
       {
         "_type": "projectStage",
         "filters": {
-          "_type": "arrayArgumentExpression",
+          "_type": "arrayExpression",
           "items": [
             {
-              "_type": "expressionObject",
+              "_type": "objectExpression",
               "field": {
                 "_type": "fieldPathExpression",
                 "path": "\"fName\""
@@ -24,7 +24,7 @@
               }
             },
             {
-              "_type": "expressionObject",
+              "_type": "objectExpression",
               "field": {
                 "_type": "fieldPathExpression",
                 "path": "\"address1\""
@@ -38,7 +38,7 @@
               }
             },
             {
-              "_type": "expressionObject",
+              "_type": "objectExpression",
               "field": {
                 "_type": "fieldPathExpression",
                 "path": "\"address2\""
@@ -52,7 +52,7 @@
               }
             },
             {
-              "_type": "expressionObject",
+              "_type": "objectExpression",
               "field": {
                 "_type": "fieldPathExpression",
                 "path": "\"lName\""

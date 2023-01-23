@@ -10,7 +10,7 @@
           "_type": "item",
           "objects": [
             {
-              "_type": "expressionObject",
+              "_type": "objectExpression",
               "field": {
                 "_type": "fieldPathExpression",
                 "path": "\"test\""

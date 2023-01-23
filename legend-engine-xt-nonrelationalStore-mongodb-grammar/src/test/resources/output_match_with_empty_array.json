@@ -10,7 +10,7 @@
           "_type": "item",
           "objects": [
             {
-              "_type": "expressionObject",
+              "_type": "objectExpression",
               "field": {
                 "_type": "fieldPathExpression",
                 "path": "\"test\""
@@ -28,13 +28,13 @@
               }
             },
             {
-              "_type": "expressionObject",
+              "_type": "objectExpression",
               "field": {
                 "_type": "fieldPathExpression",
                 "path": "\"test2\""
               },
               "argument": {
-                "_type": "arrayArgumentExpression",
+                "_type": "arrayExpression",
                 "items": []
               }
             }

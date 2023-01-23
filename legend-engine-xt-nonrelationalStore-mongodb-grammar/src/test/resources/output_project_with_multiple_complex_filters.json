@@ -7,10 +7,10 @@
       {
         "_type": "projectStage",
         "filters": {
-          "_type": "arrayArgumentExpression",
+          "_type": "arrayExpression",
           "items": [
             {
-              "_type": "expressionObject",
+              "_type": "objectExpression",
               "field": {
                 "_type": "fieldPathExpression",
                 "path": "\"fName\""
@@ -24,7 +24,7 @@
               }
             },
             {
-              "_type": "expressionObject",
+              "_type": "objectExpression",
               "field": {
                 "_type": "fieldPathExpression",
                 "path": "\"names.firstName\""
@@ -38,7 +38,7 @@
               }
             },
             {
-              "_type": "expressionObject",
+              "_type": "objectExpression",
               "field": {
                 "_type": "fieldPathExpression",
                 "path": "\"addresses.homeAddress.city\""
@@ -52,7 +52,7 @@
               }
             },
             {
-              "_type": "expressionObject",
+              "_type": "objectExpression",
               "field": {
                 "_type": "fieldPathExpression",
                 "path": "\"homeCountry\""
@@ -66,7 +66,7 @@
               }
             },
             {
-              "_type": "expressionObject",
+              "_type": "objectExpression",
               "field": {
                 "_type": "fieldPathExpression",
                 "path": "\"lastName\""
@@ -80,7 +80,7 @@
               }
             },
             {
-              "_type": "expressionObject",
+              "_type": "objectExpression",
               "field": {
                 "_type": "fieldPathExpression",
                 "path": "\"address2\""
@@ -94,7 +94,7 @@
               }
             },
             {
-              "_type": "expressionObject",
+              "_type": "objectExpression",
               "field": {
                 "_type": "fieldPathExpression",
                 "path": "\"lName\""

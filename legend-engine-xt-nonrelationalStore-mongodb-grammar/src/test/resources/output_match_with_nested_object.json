@@ -10,7 +10,7 @@
           "_type": "item",
           "objects": [
             {
-              "_type": "expressionObject",
+              "_type": "objectExpression",
               "field": {
                 "_type": "fieldPathExpression",
                 "path": "\"test\""
@@ -22,7 +22,7 @@
                   "_type": "item",
                   "objects": [
                     {
-                      "_type": "expressionObject",
+                      "_type": "objectExpression",
                       "field": {
                         "_type": "fieldPathExpression",
                         "path": "\"test1\""
@@ -31,7 +31,7 @@
                         "_type": "item",
                         "objects": [
                           {
-                            "_type": "expressionObject",
+                            "_type": "objectExpression",
                             "field": {
                               "_type": "fieldPathExpression",
                               "path": "\"test2\""
@@ -40,7 +40,7 @@
                               "_type": "item",
                               "objects": [
                                 {
-                                  "_type": "expressionObject",
+                                  "_type": "objectExpression",
                                   "field": {
                                     "_type": "fieldPathExpression",
                                     "path": "\"test3_2\""
@@ -54,13 +54,13 @@
                                   }
                                 },
                                 {
-                                  "_type": "expressionObject",
+                                  "_type": "objectExpression",
                                   "field": {
                                     "_type": "fieldPathExpression",
                                     "path": "\"test3_3\""
                                   },
                                   "argument": {
-                                    "_type": "arrayArgumentExpression",
+                                    "_type": "arrayExpression",
                                     "items": [
                                       {
                                         "_type": "literalValue",
@@ -80,7 +80,7 @@
                                   }
                                 },
                                 {
-                                  "_type": "expressionObject",
+                                  "_type": "objectExpression",
                                   "field": {
                                     "_type": "fieldPathExpression",
                                     "path": "\"test3_4\""
@@ -89,7 +89,7 @@
                                     "_type": "item",
                                     "objects": [
                                       {
-                                        "_type": "expressionObject",
+                                        "_type": "objectExpression",
                                         "field": {
                                           "_type": "fieldPathExpression",
                                           "path": "\"test3_4_1\""
@@ -106,7 +106,7 @@
                                   }
                                 },
                                 {
-                                  "_type": "expressionObject",
+                                  "_type": "objectExpression",
                                   "field": {
                                     "_type": "fieldPathExpression",
                                     "path": "\"test3_5\""
@@ -115,19 +115,19 @@
                                     "_type": "item",
                                     "objects": [
                                       {
-                                        "_type": "expressionObject",
+                                        "_type": "objectExpression",
                                         "field": {
                                           "_type": "fieldPathExpression",
                                           "path": "\"test3_5_1\""
                                         },
                                         "argument": {
-                                          "_type": "arrayArgumentExpression",
+                                          "_type": "arrayExpression",
                                           "items": [
                                             {
                                               "_type": "item",
                                               "objects": [
                                                 {
-                                                  "_type": "expressionObject",
+                                                  "_type": "objectExpression",
                                                   "field": {
                                                     "_type": "fieldPathExpression",
                                                     "path": "\"test3_5_1_1\""
@@ -146,13 +146,13 @@
                                               "_type": "item",
                                               "objects": [
                                                 {
-                                                  "_type": "expressionObject",
+                                                  "_type": "objectExpression",
                                                   "field": {
                                                     "_type": "fieldPathExpression",
                                                     "path": "\"test3_5_1_2\""
                                                   },
                                                   "argument": {
-                                                    "_type": "arrayArgumentExpression",
+                                                    "_type": "arrayExpression",
                                                     "items": [
                                                       {
                                                         "_type": "literalValue",
@@ -190,7 +190,7 @@
               }
             },
             {
-              "_type": "expressionObject",
+              "_type": "objectExpression",
               "field": {
                 "_type": "fieldPathExpression",
                 "path": "\"test6\""
@@ -199,7 +199,7 @@
                 "_type": "operatorExpression",
                 "operator": "EQ",
                 "expression": {
-                  "_type": "arrayArgumentExpression",
+                  "_type": "arrayExpression",
                   "items": [
                     {
                       "_type": "literalValue",
@@ -220,7 +220,7 @@
               }
             },
             {
-              "_type": "expressionObject",
+              "_type": "objectExpression",
               "field": {
                 "_type": "fieldPathExpression",
                 "path": "\"test7\""
@@ -238,7 +238,7 @@
               }
             },
             {
-              "_type": "expressionObject",
+              "_type": "objectExpression",
               "field": {
                 "_type": "fieldPathExpression",
                 "path": "\"test8\""
@@ -250,7 +250,7 @@
                   "_type": "item",
                   "objects": [
                     {
-                      "_type": "expressionObject",
+                      "_type": "objectExpression",
                       "field": {
                         "_type": "fieldPathExpression",
                         "path": "\"test8_1\""
@@ -268,7 +268,7 @@
               }
             },
             {
-              "_type": "expressionObject",
+              "_type": "objectExpression",
               "field": {
                 "_type": "fieldPathExpression",
                 "path": "\"test9\""
@@ -280,7 +280,7 @@
                   "_type": "item",
                   "objects": [
                     {
-                      "_type": "expressionObject",
+                      "_type": "objectExpression",
                       "field": {
                         "_type": "fieldPathExpression",
                         "path": "\"test9_1\""
@@ -294,7 +294,7 @@
                       }
                     },
                     {
-                      "_type": "expressionObject",
+                      "_type": "objectExpression",
                       "field": {
                         "_type": "fieldPathExpression",
                         "path": "\"test9_2\""
@@ -312,7 +312,7 @@
               }
             },
             {
-              "_type": "expressionObject",
+              "_type": "objectExpression",
               "field": {
                 "_type": "fieldPathExpression",
                 "path": "\"test10\""
@@ -321,13 +321,13 @@
                 "_type": "operatorExpression",
                 "operator": "EQ",
                 "expression": {
-                  "_type": "arrayArgumentExpression",
+                  "_type": "arrayExpression",
                   "items": [
                     {
                       "_type": "item",
                       "objects": [
                         {
-                          "_type": "expressionObject",
+                          "_type": "objectExpression",
                           "field": {
                             "_type": "fieldPathExpression",
                             "path": "\"test10_1\""
@@ -346,7 +346,7 @@
                       "_type": "item",
                       "objects": [
                         {
-                          "_type": "expressionObject",
+                          "_type": "objectExpression",
                           "field": {
                             "_type": "fieldPathExpression",
                             "path": "\"test10_2\""

@@ -10,19 +10,19 @@
           "_type": "item",
           "objects": [
             {
-              "_type": "expressionObject",
+              "_type": "objectExpression",
               "field": {
                 "_type": "fieldPathExpression",
                 "path": "\"test4\""
               },
               "argument": {
-                "_type": "arrayArgumentExpression",
+                "_type": "arrayExpression",
                 "items": [
                   {
                     "_type": "item",
                     "objects": [
                       {
-                        "_type": "expressionObject",
+                        "_type": "objectExpression",
                         "field": {
                           "_type": "fieldPathExpression",
                           "path": "\"test4_1\""
@@ -36,7 +36,7 @@
                         }
                       },
                       {
-                        "_type": "expressionObject",
+                        "_type": "objectExpression",
                         "field": {
                           "_type": "fieldPathExpression",
                           "path": "\"test4_2\""
@@ -55,7 +55,7 @@
                     "_type": "item",
                     "objects": [
                       {
-                        "_type": "expressionObject",
+                        "_type": "objectExpression",
                         "field": {
                           "_type": "fieldPathExpression",
                           "path": "\"test4_3\""
