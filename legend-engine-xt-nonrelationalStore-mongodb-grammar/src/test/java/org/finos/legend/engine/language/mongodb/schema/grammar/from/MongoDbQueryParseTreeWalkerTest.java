@@ -35,6 +35,7 @@ import java.nio.file.Paths;
 import java.util.Objects;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 public class MongoDbQueryParseTreeWalkerTest
 {
@@ -295,6 +296,15 @@ public class MongoDbQueryParseTreeWalkerTest
         assertEquals(mapper.readTree(input), mapper.readTree(queryString));
         assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
 
+    }
+
+    @Test
+    public void testProjectShouldThrowException() throws Exception
+    {
+        String input = resourceAsString("input_project_with_wrong_number_should_throw.json");
+
+        Exception exception = assertThrows(RuntimeException.class, () -> parseAndWalkDatabaseCommand(input));
+        assertEquals(exception.getMessage(), "visitProjectFilterValue error");
     }
 
     @Test

@@ -94,7 +94,7 @@ public class MongoDbQueryParseTreeWalker
         }
         else
         {
-            throw new RuntimeException("No stage was found");
+            throw new RuntimeException("No stage was found in visitAggregationPipelineStage");
         }
 
         return stage;
@@ -174,7 +174,7 @@ public class MongoDbQueryParseTreeWalker
             literalValue.value = boolTypeValue;
             val = literalValue;
         }
-        else if (ctx.NUMBER() != null)
+        else if (ctx.NUMBER() != null && ctx.NUMBER().getText().equals("1") || ctx.NUMBER().getText().equals("0"))
         {
             IntTypeValue intType = new IntTypeValue();
             intType.value = Integer.parseInt(ctx.getText());
