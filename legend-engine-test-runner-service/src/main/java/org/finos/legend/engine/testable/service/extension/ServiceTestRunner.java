@@ -301,7 +301,7 @@ public class ServiceTestRunner implements TestRunner
 
         SerializationFormat testSerializationFormat = getSerializationFormatForTest(serviceTest);
 
-        try (Scope scope = GlobalTracer.get().buildSpan("Test Status for: " + serviceTest.id).startActive(true))
+        try (Scope scope = GlobalTracer.get().buildSpan("Test status for: " + serviceTest.id).startActive(true))
         {
             Span span = scope.span();
             Map<String, Object> parameters = Maps.mutable.empty();
@@ -358,11 +358,14 @@ public class ServiceTestRunner implements TestRunner
                 {
                     if (assertion instanceof EqualToJsonAssertFail)
                     {
-                       span.log("ASSERTION: " + assertion.id + " FAILED : {\"expected\": " + ((EqualToJsonAssertFail)assertion).expected + ", \"actual\": " + ((EqualToJsonAssertFail)assertion).actual + "}");
+                       span.log("ASSERTION: " + assertion.id + " FAILED");
+                       span.log("EXPECTED: " + ((EqualToJsonAssertFail)assertion).expected);
+                       span.log("ACTUAL: " + ((EqualToJsonAssertFail)assertion).actual);
                     }
                     else if (assertion instanceof AssertFail)
                     {
-                        span.log("ASSERTION: " + assertion.id + " FAILED : " + ((AssertFail)assertion).message);
+                        span.log("ASSERTION: " + assertion.id + " FAILED");
+                        span.log("MESSAGE: " + ((AssertFail)assertion).message);
                     }
                     else
                     {
