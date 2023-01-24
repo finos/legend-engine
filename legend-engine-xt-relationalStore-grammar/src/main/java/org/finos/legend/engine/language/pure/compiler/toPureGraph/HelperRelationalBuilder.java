@@ -482,7 +482,7 @@ public class HelperRelationalBuilder
 
         if (!duplicateColumns.isEmpty())
         {
-            context.pureModel.addWarnings(org.eclipse.collections.impl.factory.Lists.mutable.with(new Warning(null, "Duplicate column definitions " + duplicateColumns + " in table: " + table._name())));
+            context.pureModel.addWarnings(org.eclipse.collections.impl.factory.Lists.mutable.with(new Warning(databaseTable.sourceInformation, "Duplicate column definitions " + duplicateColumns + " in table: " + table._name())));
         }
         RichIterable<Column> pk = ListIterate.collect(databaseTable.primaryKey, s -> columns.select(column -> s.equals(column._name())).getFirst());
         RichIterable<org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Milestoning> milestoning = ListIterate.collect(databaseTable.milestoning, m -> processMilestoning(m, context, columns.groupBy(ColumnAccessor::_name)));
