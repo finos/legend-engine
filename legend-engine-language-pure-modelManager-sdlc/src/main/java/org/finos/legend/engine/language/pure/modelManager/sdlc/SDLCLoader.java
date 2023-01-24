@@ -155,19 +155,10 @@ public class SDLCLoader implements ModelLoader
                 parentSpan.setTag("sdlc", "pure");
                 try (Scope scope = GlobalTracer.get().buildSpan("Request Pure Metadata").startActive(true))
                 {
-                    String overrideUrl = ((PureSDLC) context.sdlcInfo).overrideUrl;
-                    if (overrideUrl == null)
-                    {
-                        return ListIterate.injectInto(
-                                new PureModelContextData.Builder(),
-                                context.sdlcInfo.packageableElementPointers,
-                                (builder, pointers) -> builder.withPureModelContextData(this.pureLoader.loadPurePackageableElementPointer(pm, pointers, clientVersion, subject == null ? "" : "?auth=kerberos"))
-                        ).distinct().sorted().build();
-                    }
                     return ListIterate.injectInto(
                             new PureModelContextData.Builder(),
                             context.sdlcInfo.packageableElementPointers,
-                            (builder, pointers) -> builder.withPureModelContextData(this.pureLoader.loadPurePackageableElementPointer(pm, pointers, clientVersion, subject == null ? "" : "?auth=kerberos", overrideUrl))
+                            (builder, pointers) -> builder.withPureModelContextData(this.pureLoader.loadPurePackageableElementPointer(pm, pointers, clientVersion, subject == null ? "" : "?auth=kerberos", ((PureSDLC) context.sdlcInfo).overrideUrl))
                     ).distinct().sorted().build();
                 }
             };

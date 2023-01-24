@@ -65,6 +65,7 @@ public class PureServerLoader
         return getBaseUrl(overrideUrl) + "/alloy/pureServerBaseVersion" + urlSuffix;
     }
 
+    @Deprecated
     protected String buildPureMetadataURL(PackageableElementPointer pointer, String urlSegment, String clientVersion, String urlSuffix)
     {
         return buildPureMetadataURL(pointer, urlSegment, clientVersion, urlSuffix, null);
@@ -113,6 +114,7 @@ public class PureServerLoader
         return deepCopy;
     }
 
+    @Deprecated
     public PureModelContextData loadPurePackageableElementPointer(MutableList<CommonProfile> pm, PackageableElementPointer pointer, String clientVersion, String urlSuffix)
     {
         return loadPurePackageableElementPointer(pm, pointer, clientVersion, urlSuffix, null);
