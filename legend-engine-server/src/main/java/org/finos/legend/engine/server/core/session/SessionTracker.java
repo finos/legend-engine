@@ -44,17 +44,17 @@ public class SessionTracker implements HttpSessionListener
         sessions.removeAll(sessions.select(s -> s.getId().equals(httpSessionEvent.getSession().getId())));
     }
 
-    public SetIterable<SessionInfo> getSessionsInfo(boolean includeProfile)
+    public SetIterable<SessionInfo> getSessionsInfo(boolean includeProfile, String userID)
     {
-        return sessions.collectIf(s -> s.getAttribute(ATTR_USER_ID) != null,
-                s -> new SessionInfo(s.getCreationTime(), s.getLastAccessedTime(), (String) s.getAttribute(ATTR_USER_ID), (Integer) s.getAttribute(ATTR_CALLS), includeProfile ? (CommonProfile) s.getAttribute(ATTR_USER_PROFILE) : null));
+        return sessions.collectIf(s -> s.getAttribute(ATTR_USER_ID) != null && userID != null && s.getAttribute(ATTR_USER_ID).equals(userID) || (s.getAttribute(ATTR_USER_ID) != null && userID == null),
+                s -> new SessionInfo(s.getCreationTime(), s.getLastAccessedTime(), (String) s.getAttribute(ATTR_USER_ID), (Integer) s.getAttribute(ATTR_CALLS), includeProfile ? (CommonProfile) s.getAttribute(ATTR_USER_PROFILE) : null, s.getId()));
     }
 
-    public String toJSON(boolean includeProfile)
+    public String toJSON(boolean includeProfile, String userID)
     {
         try
         {
-            return new ObjectMapper().writeValueAsString(getSessionsInfo(includeProfile).toList());
+            return new ObjectMapper().writeValueAsString(getSessionsInfo(includeProfile, userID).toList());
         }
         catch (JsonProcessingException e)
         {

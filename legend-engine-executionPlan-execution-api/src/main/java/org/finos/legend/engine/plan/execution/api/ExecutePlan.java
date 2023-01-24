@@ -99,7 +99,7 @@ public class ExecutePlan
             {
                 LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_PLAN_EXEC_START, "").toString());
                 // Assume that the input exec plan has no variables
-                Result result = planExecutor.execute((SingleExecutionPlan) execPlan, Maps.mutable.empty(), null, profiles);
+                Result result = planExecutor.execute((SingleExecutionPlan) execPlan, Maps.mutable.empty(), null, profiles, null, request.getSession().getId());
                 try (Scope scope = GlobalTracer.get().buildSpan("Manage Results").startActive(true))
                 {
                     LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_PLAN_EXEC_STOP, "").toString());
@@ -154,7 +154,7 @@ public class ExecutePlan
         }
 
         // Plan makes use of middle tier connections. So we check for authorization.
-        PlanExecutionAuthorizerOutput authorizationResult = this.authorizePlan(profiles, (SingleExecutionPlan)execPlan);
+        PlanExecutionAuthorizerOutput authorizationResult = this.authorizePlan(profiles, (SingleExecutionPlan) execPlan);
 
         // Plan failed authorization.
         if (!authorizationResult.isAuthorized())
@@ -165,12 +165,12 @@ public class ExecutePlan
         }
 
         // Plan passed authorization. Now we can execute it
-        return this.executeAsMiddleTierPlan(planExecutor, (SingleExecutionPlan)execPlan, profiles, format, start);
+        return this.executeAsMiddleTierPlan(planExecutor, (SingleExecutionPlan) execPlan, profiles, format, start);
     }
 
     private Response executeAsPushDownPlan(PlanExecutor planExecutor, ExecutionPlan execPlan, MutableList<CommonProfile> profiles, SerializationFormat format, long start)
     {
-        Result result = planExecutor.execute((SingleExecutionPlan)execPlan, Maps.mutable.empty(), null, profiles);
+        Result result = planExecutor.execute((SingleExecutionPlan) execPlan, Maps.mutable.empty(), null, profiles);
         return this.wrapInResponse(profiles, format, start, result);
     }
 

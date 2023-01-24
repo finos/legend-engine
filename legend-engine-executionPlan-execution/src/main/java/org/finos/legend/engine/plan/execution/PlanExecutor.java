@@ -217,6 +217,17 @@ public class PlanExecutor
         return execute(executionPlan, buildDefaultExecutionState(executionPlan, vars, planExecutionContext), user, profiles);
     }
 
+    public Result execute(SingleExecutionPlan executionPlan, Map<String, Result> vars, String user, MutableList<CommonProfile> profiles, PlanExecutionContext planExecutionContext, String sessionID)
+    {
+        ExecutionState state = buildDefaultExecutionState(executionPlan, vars, planExecutionContext);
+        if (sessionID != null)
+        {
+            state.setSessionID(sessionID);
+        }
+
+        return execute(executionPlan, state, user, profiles);
+    }
+
     public Result execute(SingleExecutionPlan singleExecutionPlan, ExecutionState state, String user, MutableList<CommonProfile> profiles)
     {
         EngineJavaCompiler engineJavaCompiler = possiblyCompilePlan(singleExecutionPlan, state, profiles);
@@ -278,6 +289,11 @@ public class PlanExecutor
                 {
                     state.addResult(USER_ID, new ConstantResult(state.authId));
                 }
+                if (executeArgs.sessionID != null)
+                {
+                    state.setSessionID(executeArgs.sessionID);
+                }
+
                 singleExecutionPlan.getExecutionStateParams(org.eclipse.collections.api.factory.Maps.mutable.empty()).forEach(state::addParameterValue);
                 // execute
                 ExecutionNodeExecutor executionNodeExecutor = this.buildExecutionNodeExecutor(executeArgs.profiles, state);
@@ -327,7 +343,7 @@ public class PlanExecutor
 
     private ExecutionState buildDefaultExecutionState(SingleExecutionPlan executionPlan, Map<String, Result> vars, PlanExecutionContext planExecutionContext)
     {
-        ExecutionState executionState = new ExecutionState(vars, executionPlan.templateFunctions, this.extraExecutors.collect(StoreExecutor::buildStoreExecutionState), this.isJavaCompilationAllowed, this.graphFetchBatchMemoryLimit);
+        ExecutionState executionState = new ExecutionState(vars, executionPlan.templateFunctions, this.extraExecutors.collect(StoreExecutor::buildStoreExecutionState), this.isJavaCompilationAllowed, this.graphFetchBatchMemoryLimit, null);
 
         if (planExecutionContext != null)
         {
@@ -490,6 +506,8 @@ public class PlanExecutor
         private Map<String, Object> params = Maps.mutable.empty();
         private MutableList<CommonProfile> profiles = Lists.mutable.empty();
         private String user;
+        private String sessionID;
+
 
         private ExecuteArgs(ExecuteArgsBuilder builder)
         {
@@ -503,6 +521,7 @@ public class PlanExecutor
             this.params.putAll(builder.params);
             this.profiles.addAll(builder.profiles);
             this.user = builder.user;
+            this.sessionID = sessionID;
         }
 
         public static ExecuteArgsBuilder newArgs()
@@ -522,6 +541,8 @@ public class PlanExecutor
         private Map<String, Object> params = Maps.mutable.empty();
         private MutableList<CommonProfile> profiles = Lists.mutable.empty();
         private String user;
+        private String sessionID;
+
 
         private ExecuteArgsBuilder()
         {
@@ -623,6 +644,12 @@ public class PlanExecutor
         public ExecuteArgsBuilder withStoreRuntimeContext(StoreType storeType, StoreExecutionState.RuntimeContext storeRuntimeContext)
         {
             this.storeRuntimeContexts.put(storeType, storeRuntimeContext);
+            return this;
+        }
+
+        public ExecuteArgsBuilder withSessionID(String sessionID)
+        {
+            this.sessionID = sessionID;
             return this;
         }
 
