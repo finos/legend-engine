@@ -237,7 +237,7 @@ public class HelperRelationalGrammarComposer
         StringBuilder builder = new StringBuilder();
         if (!elementWithJoins.joins.isEmpty())
         {
-            JoinPointer firstJoinPointer = (JoinPointer) elementWithJoins.joins.get(0);
+            JoinPointer firstJoinPointer = elementWithJoins.joins.get(0);
             builder.append(renderFirstJoinPointer(firstJoinPointer));
             if (elementWithJoins.joins.size() > 1)
             {
