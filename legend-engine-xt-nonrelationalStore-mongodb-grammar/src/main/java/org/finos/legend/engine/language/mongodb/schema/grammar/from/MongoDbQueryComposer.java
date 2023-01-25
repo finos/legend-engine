@@ -125,7 +125,7 @@ public class MongoDbQueryComposer
             {
                 op = NOR;
             }
-            else 
+            else
             {
                 throw new RuntimeException("Unknown OperatorExpression expression");
             }
@@ -191,7 +191,7 @@ public class MongoDbQueryComposer
         }
         else if (expression instanceof ComputedFieldValue)
         {
-            return ((ComputedFieldValue) expression).computedValue.value;
+            return ((ComputedFieldValue) expression).value;
         }
         else if (expression instanceof LiteralValue)
         {

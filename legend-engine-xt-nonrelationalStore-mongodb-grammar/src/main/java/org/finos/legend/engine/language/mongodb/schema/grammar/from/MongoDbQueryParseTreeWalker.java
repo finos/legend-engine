@@ -159,14 +159,11 @@ public class MongoDbQueryParseTreeWalker
     public ArgumentExpression visitProjectFilterValue(MongoDbQueryParser.ProjectFilterValueContext ctx)
     {
 
-        ArgumentExpression val = null;
+        ArgumentExpression val;
         if (ctx.projectComputedFieldValue() != null)
         {
             ComputedFieldValue computedFieldValue = new ComputedFieldValue();
-            StringTypeValue stringType = new StringTypeValue();
-            stringType.value = ctx.projectComputedFieldValue().getText();
-
-            computedFieldValue.computedValue = stringType;
+            computedFieldValue.value = ctx.projectComputedFieldValue().getText();
             val = computedFieldValue;
         }
         else if (ctx.projectFilterExpression() != null)

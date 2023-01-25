@@ -733,20 +733,6 @@ Diagram meta::external::store::mongodb::metamodel::Mongo_QueryModel_Diagram(widt
         nameVisible=true,
         lineStyle=SIMPLE)
 
-    PropertyView pview_6(
-        property=meta::external::store::mongodb::metamodel::aggregation::ComputedFieldValue.computedValue,
-        source=cview_30,
-        target=cview_15,
-        points=[(1223.99858,683.34670),(1089.46846,681.85074),(1087.87810,894.95813),(1025.20870,892.97958)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
-
     PropertyView pview_7(
         property=meta::external::store::mongodb::metamodel::aggregation::Item.objects,
         source=cview_25,

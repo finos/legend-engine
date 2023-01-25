@@ -319,7 +319,7 @@ Class meta::external::store::mongodb::metamodel::aggregation::ObjectExpression e
 Class {doc.doc = 'Computed field for Project expressions with format $fieldName'}
 meta::external::store::mongodb::metamodel::aggregation::ComputedFieldValue extends ArgumentExpression
 {
-  computedValue: StringTypeValue[1];
+  value: String[1];
 }
 
 Class meta::external::store::mongodb::metamodel::aggregation::Item extends ArgumentExpression

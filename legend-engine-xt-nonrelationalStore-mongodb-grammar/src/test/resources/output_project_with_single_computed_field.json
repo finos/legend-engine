@@ -14,10 +14,7 @@
               "field": "\"fName\"",
               "argument": {
                 "_type": "computedFieldValue",
-                "computedValue": {
-                  "_type": "stringTypeValue",
-                  "value": "\"$firstName\""
-                }
+                "value": "\"$firstName\""
               }
             }
           ]
