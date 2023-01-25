@@ -310,7 +310,7 @@ Class meta::external::store::mongodb::metamodel::aggregation::LiteralExpression 
   value: BaseTypeValue[1];
 }
 
-Class meta::external::store::mongodb::metamodel::aggregation::ObjectExpression extends ArgumentExpression
+Class meta::external::store::mongodb::metamodel::aggregation::KeyValueExpressionPair
 {
   field: String[1];
   argument: ArgumentExpression[1];
@@ -322,9 +322,9 @@ meta::external::store::mongodb::metamodel::aggregation::ComputedFieldValue exten
   value: String[1];
 }
 
-Class meta::external::store::mongodb::metamodel::aggregation::Item extends ArgumentExpression
+Class meta::external::store::mongodb::metamodel::aggregation::ObjectExpression extends ArgumentExpression
 {
-  objects: ObjectExpression[*];
+  objects: KeyValueExpressionPair[*];
 }
 
 Class meta::external::store::mongodb::metamodel::aggregation::BaseTypeValue 

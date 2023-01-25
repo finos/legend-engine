@@ -10,10 +10,9 @@
           "_type": "orOperatorExpression",
           "expressions": [
             {
-              "_type": "item",
+              "_type": "objectExpression",
               "objects": [
                 {
-                  "_type": "objectExpression",
                   "field": "\"fName\"",
                   "argument": {
                     "_type": "eqOperatorExpression",
@@ -29,10 +28,9 @@
               ]
             },
             {
-              "_type": "item",
+              "_type": "objectExpression",
               "objects": [
                 {
-                  "_type": "objectExpression",
                   "field": "\"lName\"",
                   "argument": {
                     "_type": "literalValue",

@@ -7,10 +7,9 @@
       {
         "_type": "matchStage",
         "expression": {
-          "_type": "item",
+          "_type": "objectExpression",
           "objects": [
             {
-              "_type": "objectExpression",
               "field": "\"test\"",
               "argument": {
                 "_type": "eqOperatorExpression",
@@ -24,7 +23,6 @@
               }
             },
             {
-              "_type": "objectExpression",
               "field": "\"test2\"",
               "argument": {
                 "_type": "nEOperatorExpression",

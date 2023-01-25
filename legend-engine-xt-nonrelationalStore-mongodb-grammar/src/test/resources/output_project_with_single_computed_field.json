@@ -7,10 +7,9 @@
       {
         "_type": "projectStage",
         "filters": {
-          "_type": "item",
+          "_type": "objectExpression",
           "objects": [
             {
-              "_type": "objectExpression",
               "field": "\"fName\"",
               "argument": {
                 "_type": "computedFieldValue",
