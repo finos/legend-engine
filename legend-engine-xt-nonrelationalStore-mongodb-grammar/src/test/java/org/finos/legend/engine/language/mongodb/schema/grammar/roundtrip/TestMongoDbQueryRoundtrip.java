@@ -40,7 +40,7 @@ import java.util.Objects;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
-public class MongoDbQueryRoundtrip
+public class TestMongoDbQueryRoundtrip
 {
     private final ObjectMapper mapper = new ObjectMapper().setDefaultPrettyPrinter(new CustomJSONPrettyPrinter())
             .enable(SerializationFeature.INDENT_OUTPUT)
