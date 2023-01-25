@@ -59,10 +59,7 @@ projectComputedFieldValue: STRING_WITH_DOLLAR;
 
 //https://www.mongodb.com/docs/manual/reference/operator/query-logical/
 
-logicalOperatorExpression: andAggregationExpression | orAggregationExpression;
-
-andAggregationExpression: BRACE_OPEN AND ':' (BRACKET_OPEN queryExpression? ( ',' queryExpression )* BRACKET_CLOSE ) BRACE_CLOSE;
-orAggregationExpression: BRACE_OPEN OR ':' (BRACKET_OPEN queryExpression? ( ',' queryExpression )* BRACKET_CLOSE ) BRACE_CLOSE;
+logicalOperatorExpression: BRACE_OPEN LOGICAL_QUERY_OPERATOR ':' (BRACKET_OPEN queryExpression? ( ',' queryExpression )* BRACKET_CLOSE ) BRACE_CLOSE;
 
 // TODO: add others..
 
@@ -120,12 +117,16 @@ value
 
 // Comparison Query Operators
 // https://www.mongodb.com/docs/manual/reference/operator/query-comparison/
-COMPARISON_QUERY_OPERATOR: EQ | NE | GT | GTE;
+COMPARISON_QUERY_OPERATOR: EQ | NE | GT | GTE | LT | LTE | IN | NIN;
 
 EQ : '"' '$eq' '"' |  '$eq';
 GT: '"' '$gt' '"'  |  '$gt';
 GTE: '"' '$gte' '"' |  '$gte';
+LT: '"' '$lt' '"'  |  '$lt';
+LTE: '"' '$lte' '"' |  '$lte';
 NE : '"' '$ne' '"' |  '$ne';
+IN : '"' '$in' '"' |  '$in';
+NIN : '"' '$nin' '"' |  '$nin';
 
 
 
@@ -135,8 +136,12 @@ NE : '"' '$ne' '"' |  '$ne';
 // Logical Query Operators
 // https://www.mongodb.com/docs/manual/reference/operator/query-logical/
 
+LOGICAL_QUERY_OPERATOR: AND | OR | NOR | NOT;
+
 AND : '"' '$and' '"' | '$and';
 OR : '"' '$or' '"' |  '$or';
+NOR : '"' '$nor' '"' |  '$nor';
+NOT : '"' '$not' '"' |  '$not';
 
 //... add others
 

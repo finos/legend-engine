@@ -73,13 +73,13 @@ public class MongoDbQueryComposer
                 ", \"cursor\": {} }";
     }
 
-    public String visitDatabaseCommand(DatabaseCommand databaseCommand)
+    private String visitDatabaseCommand(DatabaseCommand databaseCommand)
     {
         String pipelineStages = visitPipelineStages(databaseCommand.aggregationPipeline.stages);
         return "\"pipeline\" : [" + pipelineStages + "]";
     }
 
-    public String visitPipelineStages(List<Stage> stages)
+    private String visitPipelineStages(List<Stage> stages)
     {
         List<String> strings = stages.stream().map(stage ->
         {
@@ -98,7 +98,7 @@ public class MongoDbQueryComposer
         return String.join(",", strings);
     }
 
-    public String visitExpression(ArgumentExpression expression)
+    private String visitExpression(ArgumentExpression expression)
     {
 
         if (expression instanceof LogicalOperatorExpression)
@@ -203,8 +203,7 @@ public class MongoDbQueryComposer
         }
     }
 
-
-    public String visitBaseType(BaseTypeValue value)
+    private String visitBaseType(BaseTypeValue value)
     {
 
         if (value instanceof StringTypeValue)
@@ -242,7 +241,7 @@ public class MongoDbQueryComposer
         throw new RuntimeException("Unknown expression at visitLiteralValue");
     }
 
-    public String visitKeyValuePair(KeyValuePair pair)
+    private String visitKeyValuePair(KeyValuePair pair)
     {
         String field = pair.key;
         String value = visitBaseType(pair.value);
