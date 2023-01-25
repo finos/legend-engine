@@ -100,7 +100,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                     {
                         pureService._test(HelperServiceBuilder.processServiceTest(service.test, context, service.execution));
                     }
-                    //
+                    // Strategic flow
                     if (service.testSuites != null)
                     {
                         RichIterable<? extends VariableExpression> parameters = ((FunctionType) ((Root_meta_legend_service_metamodel_PureExecution) pureService._execution())._func()._classifierGenericType()._typeArguments().getOnly()._rawType())._parameters();
@@ -115,7 +115,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                         pureService._tests(ListIterate.collect(service.testSuites, suite ->
                         {
                             Root_meta_legend_service_metamodel_ServiceTestSuite pureServiceTestSuite = (Root_meta_legend_service_metamodel_ServiceTestSuite) suite.accept(new TestFirstPassBuilder(context, new ProcessingContext("Service '" + context.pureModel.buildPackageString(service._package, service.name) + "' Second Pass")));
-
+                            pureServiceTestSuite._testable(pureService);
                             for (Root_meta_pure_test_AtomicTest pureTest : pureServiceTestSuite._tests())
                             {
                                 Root_meta_legend_service_metamodel_ServiceTest pureServiceTest = (Root_meta_legend_service_metamodel_ServiceTest) pureTest;
@@ -126,7 +126,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                                 }
 
                                 HelperServiceBuilder.validateServiceTestParameterValues((List<Root_meta_legend_service_metamodel_ParameterValue>) pureServiceTest._parameters().toList(), parameters, ListIterate.detect(suite.tests, t -> t.id.equals(pureServiceTest._id())).sourceInformation);
-
+                                pureServiceTest._testable(pureService);
                             }
                             return pureServiceTestSuite;
                         }));
