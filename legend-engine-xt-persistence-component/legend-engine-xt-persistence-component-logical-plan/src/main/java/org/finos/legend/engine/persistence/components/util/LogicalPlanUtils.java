@@ -38,14 +38,27 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.ObjectV
 import org.finos.legend.engine.persistence.components.logicalplan.values.SelectValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
+import org.finos.legend.engine.persistence.components.common.OptimizationFilter;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.Optional;
+
+import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.INT;
+import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.INTEGER;
+import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.INT64;
+import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.BIGINT;
+import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.FLOAT;
+import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.DOUBLE;
+import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.DECIMAL;
+import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.DATE;
+
 
 public class LogicalPlanUtils
 {
@@ -270,6 +283,25 @@ public class LogicalPlanUtils
             batchTime);
     }
 
+    public static List<Condition> getOptimizationFilterConditions(Dataset dataset, List<OptimizationFilter> optimizationFilters)
+    {
+        List<Condition> optimizationConditions = new ArrayList<>();
+        for (OptimizationFilter filter: optimizationFilters)
+        {
+            Condition lowerBoundCondition =
+                    GreaterThanEqualTo.of(
+                            FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(filter.fieldName()).build(),
+                            StringValue.of(filter.lowerBoundPattern()));
+            Condition upperBoundCondition =
+                    LessThanEqualTo.of(
+                            FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(filter.fieldName()).build(),
+                            StringValue.of(filter.upperBoundPattern()));
+            optimizationConditions.add(lowerBoundCondition);
+            optimizationConditions.add(upperBoundCondition);
+        }
+        return optimizationConditions;
+    }
+
     // Used in Incremental
     public static Selection getRowsBasedOnLatestTimestamp(Dataset dataset, String field, String alias)
     {
@@ -282,4 +314,22 @@ public class LogicalPlanUtils
 
         return Selection.builder().source(dataset.datasetReference()).condition(condition).addFields(countFunction).build();
     }
+
+    public static void validateOptimizationFilters(List<OptimizationFilter> optimizationFilters, Dataset dataset)
+    {
+        for (OptimizationFilter filter: optimizationFilters)
+        {
+            Field filterField = dataset.schema().fields().stream()
+                    .filter(field -> field.name().equalsIgnoreCase(filter.fieldName()))
+                    .findFirst().orElseThrow(() -> new IllegalStateException(String.format("Optimization filter [%s] not found in Staging Schema", filter.fieldName())));
+            if (!SUPPORTED_DATA_TYPES_FOR_OPTIMIZATION_COLUMNS.contains(filterField.type().dataType()))
+            {
+                throw new IllegalStateException(String.format("Optimization filter's data type [%s] is not supported", filterField.type().dataType()));
+            }
+        }
+    }
+
+    private static Set<DataType> SUPPORTED_DATA_TYPES_FOR_OPTIMIZATION_COLUMNS =
+            new HashSet<>(Arrays.asList(INT, INTEGER, INT64, BIGINT, FLOAT, DOUBLE, DECIMAL, DATE));
+
 }

@@ -136,6 +136,22 @@ public abstract class UnitmemporalDeltaBatchIdBasedTestCases extends BaseTest
     public abstract void verifyUnitemporalDeltaWithCleanStagingData(GeneratorResult operations);
 
     @Test
+    void testUnitemporalDeltaNoDeleteIndNoDataSplitsWithOptimizationFilters()
+    {
+        TestScenario scenario = scenarios.BATCH_ID_BASED__NO_DEL_IND__NO_DATA_SPLITS__WITH_OPTIMIZATION_FILTERS();
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(scenario.getIngestMode())
+                .relationalSink(getRelationalSink())
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .collectStatistics(true)
+                .build();
+        GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
+        verifyUnitemporalDeltaNoDeleteIndNoAuditingWithOptimizationFilters(operations);
+    }
+
+    public abstract void verifyUnitemporalDeltaNoDeleteIndNoAuditingWithOptimizationFilters(GeneratorResult operations);
+
+    @Test
     void testUnitemporalDeltaValidationBatchIdOutMissing()
     {
         try
@@ -183,6 +199,49 @@ public abstract class UnitmemporalDeltaBatchIdBasedTestCases extends BaseTest
             Assertions.assertEquals("Field \"batch_id_in\" must be a primary key", e.getMessage());
         }
     }
+
+    @Test
+    void testUnitemporalDeltaValidationOptimizationColumnsNotPresent()
+    {
+        TestScenario scenario = scenarios.BATCH_ID_BASED__NO_DEL_IND__NO_DATA_SPLITS__WITH_MISSING_OPTIMIZATION_FILTER();
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(scenario.getIngestMode())
+                .relationalSink(getRelationalSink())
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .collectStatistics(true)
+                .build();
+        try
+        {
+            GeneratorResult queries = generator.generateOperations(scenario.getDatasets());
+            Assertions.fail("Exception was not thrown");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Optimization filter [unknown_column] not found in Staging Schema", e.getMessage());
+        }
+    }
+
+    @Test
+    void testUnitemporalDeltaValidationOptimizationColumnUnsupportedDataType()
+    {
+        TestScenario scenario = scenarios.BATCH_ID_BASED__NO_DEL_IND__NO_DATA_SPLITS__WITH_OPTIMIZATION_FILTER_UNSUPPORTED_DATATYPE();
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(scenario.getIngestMode())
+                .relationalSink(getRelationalSink())
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .collectStatistics(true)
+                .build();
+        try
+        {
+            GeneratorResult queries = generator.generateOperations(scenario.getDatasets());
+            Assertions.fail("Exception was not thrown");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Optimization filter's data type [VARCHAR] is not supported", e.getMessage());
+        }
+    }
+
 
     public abstract RelationalSink getRelationalSink();
 }
