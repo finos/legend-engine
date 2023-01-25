@@ -14,32 +14,28 @@
 
 package org.finos.legend.engine.language.pure.modelManager.sdlc.configuration;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, defaultImpl = ServerConnectionConfiguration.class, property = "_type")
-@JsonSubTypes({
-        @JsonSubTypes.Type(value = PureServerConnectionConfiguration.class, name = "pureServerConnectionConfiguration")
-})
-public class ServerConnectionConfiguration
+import java.util.List;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class PureServerConnectionConfiguration extends ServerConnectionConfiguration
 {
-    public String host;
-    public Integer port;
-    public String prefix = "";
+    public List<String> allowedOverrideUrls;
 
-    public ServerConnectionConfiguration()
+    public PureServerConnectionConfiguration()
     {
         // DO NOT DELETE: this resets the default constructor for Jackson
     }
 
-    public ServerConnectionConfiguration(String host, Integer port)
+    public PureServerConnectionConfiguration(String host, Integer port)
     {
-        this.host = host;
-        this.port = port;
+        this(host, port, null);
     }
 
-    public String getBaseUrl()
+    public PureServerConnectionConfiguration(String host, Integer port, List<String> allowedOverrideUrls)
     {
-        return "http://" + host + ":" + port + prefix;
+        super(host, port);
+        this.allowedOverrideUrls = allowedOverrideUrls;
     }
 }
