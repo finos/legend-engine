@@ -226,6 +226,37 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
     }
 
     @Override
+    public void verifyUnitemporalDeltaNoDeleteIndNoAuditingWithOptimizationFilters(GeneratorResult operations)
+    {
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> milestoningSql = operations.ingestSql();
+        List<String> metadataIngestSql = operations.metadataIngestSql();
+
+        String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink " +
+                "SET sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata " +
+                "WHERE batch_metadata.`table_name` = 'main')-1 WHERE " +
+                "(sink.`batch_id_out` = 999999999) AND (sink.`id` >= '{ID_LOWER_BOUND}') AND (sink.`id` <= '{ID_UPPER_BOUND}') " +
+                "AND (EXISTS (SELECT * FROM `mydb`.`staging` as stage WHERE ((sink.`id` = stage.`id`) " +
+                "AND (sink.`name` = stage.`name`)) AND (sink.`digest` <> stage.`digest`)))";
+
+        String expectedUpsertQuery = "INSERT INTO `mydb`.`main` " +
+                "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_id_in`, `batch_id_out`) " +
+                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`," +
+                "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata " +
+                "WHERE batch_metadata.`table_name` = 'main'),999999999 FROM `mydb`.`staging` as stage " +
+                "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink WHERE (sink.`batch_id_out` = 999999999) AND " +
+                "(sink.`digest` = stage.`digest`) AND ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND " +
+                "(sink.`id` >= '{ID_LOWER_BOUND}') AND (sink.`id` <= '{ID_UPPER_BOUND}'))))";
+
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedMainTableBatchIdBasedCreateQuery, preActionsSql.get(0));
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));
+
+        Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
+        Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
+    }
+
+    @Override
     public RelationalSink getRelationalSink()
     {
         return MemSqlSink.get();
