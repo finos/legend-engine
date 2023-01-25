@@ -253,7 +253,7 @@ function <<test.Test>> meta::relational::tests::query::filter::in::testInWithinQ
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where "firmtable_0".LEGALNAME in (\'Firm X\', \'Firm X & Co.\', \'Firm X and Group\')', $result->sqlRemoveFormatting());
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'vX_X_X'} meta::relational::tests::query::filter::in::tempTable::testInExecutionWithTempTableForStrings():Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'v1_29_0'} meta::relational::tests::query::filter::in::tempTable::testInExecutionWithTempTableForStrings():Boolean[1]
 {
    let result = execute(|Person.all()->filter(p|$p.firstName->in(['John', 'Peter', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46', '47', '48', '49', '50']))
                                      ->project([x | $x.lastName], ['lastName']),
@@ -263,7 +263,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'vX_X_X'} meta::re
    assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME in (select "temptableforin_4_testid_0".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_4_testId as "temptableforin_4_testid_0")', $result->sqlRemoveFormatting(2));
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'vX_X_X'} meta::relational::tests::query::filter::in::tempTable::testInExecutionWithTempTableForNumbers():Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'v1_29_0'} meta::relational::tests::query::filter::in::tempTable::testInExecutionWithTempTableForNumbers():Boolean[1]
 {
    let result = execute(|Person.all()->filter(p|$p.age->in([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51]))
                                      ->project([x | $x.name], ['fullName']),
@@ -273,7 +273,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'vX_X_X'} meta::re
    assertEquals('select concat("root".FIRSTNAME, \' \', "root".LASTNAME) as "fullName" from personTable as "root" where "root".AGE in (select "temptableforin_8_testid_0".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_8_testId as "temptableforin_8_testid_0")', $result->sqlRemoveFormatting(2));
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'vX_X_X'} meta::relational::tests::query::filter::in::tempTable::testMultipleInsExecutionWithTempTableForNumbers():Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'v1_29_0'} meta::relational::tests::query::filter::in::tempTable::testMultipleInsExecutionWithTempTableForNumbers():Boolean[1]
 {
    let result = execute(|Person.all()->filter(p|$p.age->in([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51]) && $p.firstName->in(['John', 'Peter', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46', '47', '48', '49', '50']))
                                      ->project([x | $x.name], ['fullName']),
@@ -284,7 +284,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'vX_X_X'} meta::re
 }
 
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'vX_X_X'} meta::relational::tests::query::filter::in::tempTable::testInExecutionWithTempTableForDates():Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'v1_29_0'} meta::relational::tests::query::filter::in::tempTable::testInExecutionWithTempTableForDates():Boolean[1]
 {
    let result = execute(|Trade.all()->filter(t|$t.date->in([%2014-12-01, %2014-12-02, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10, %2014-12-10]))
                                      ->project([x | $x.id], ['TradeId']),
@@ -294,7 +294,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'vX_X_X'} meta::re
    assertEquals('select "root".ID as "TradeId" from tradeTable as "root" where "root".tradeDate in (select "temptableforin_4_testid_0".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_4_testId as "temptableforin_4_testid_0")', $result->sqlRemoveFormatting(2));
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'vX_X_X'} meta::relational::tests::query::filter::in::tempTable::testInExecutionWithTempTableForDateTimes():Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'v1_29_0'} meta::relational::tests::query::filter::in::tempTable::testInExecutionWithTempTableForDateTimes():Boolean[1]
 {
    let result = execute(|Trade.all()->filter(t|$t.settlementDateTime->in([%2014-12-02T21:00:00, %2014-12-03T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00]))
                                      ->project([x | $x.id], ['TradeId']),
@@ -304,7 +304,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'vX_X_X'} meta::re
    assertEquals('select "root".ID as "TradeId" from tradeTable as "root" where "root".settlementDateTime in (select "temptableforin_4_testid_0".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_4_testId as "temptableforin_4_testid_0")', $result->sqlRemoveFormatting(2));
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'vX_X_X'} meta::relational::tests::query::filter::in::tempTable::testInExecutionWithTempTableForDateTimesWithTz():Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'v1_29_0'} meta::relational::tests::query::filter::in::tempTable::testInExecutionWithTempTableForDateTimesWithTz():Boolean[1]
 {
    let result = execute(|Trade.all()->filter(t|$t.settlementDateTime->in([%2014-12-03T4:00:00, %2014-12-04T04:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00, %2014-12-8T21:00:00]))
                                      ->project([x | $x.id], ['TradeId']),
