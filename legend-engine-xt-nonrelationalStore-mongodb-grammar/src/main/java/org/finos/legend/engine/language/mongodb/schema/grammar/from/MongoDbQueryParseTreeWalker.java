@@ -198,7 +198,6 @@ public class MongoDbQueryParseTreeWalker
         return val;
     }
 
-
     private ObjectExpression visitExpression(MongoDbQueryParser.ExpressionContext ctx)
     {
         ObjectExpression ObjectExpression = new ObjectExpression();
@@ -221,13 +220,17 @@ public class MongoDbQueryParseTreeWalker
 
     private ArgumentExpression visitExpressionValue(MongoDbQueryParser.ExpressionValueContext ctx)
     {
-        if (ctx.operatorExpression() != null)
+        if (ctx.comparisonOperatorExpression() != null)
         {
-            return visitOperatorExpression(ctx.operatorExpression());
+            return visitComparisonOperatorExpression(ctx.comparisonOperatorExpression());
         }
         else if (ctx.value() != null)
         {
             return visitValue(ctx.value());
+        }
+        else if (ctx.logicalOperatorExpression() != null)
+        {
+            return visitLogicalOperatorExpression(ctx.logicalOperatorExpression());
         }
         throw new RuntimeException("visitExpressionValue error");
 
@@ -256,7 +259,6 @@ public class MongoDbQueryParseTreeWalker
         }
 
         throw new RuntimeException("visitExpressionValue error");
-
     }
 
     private ArrayTypeValue visitArray(MongoDbQueryParser.ArrContext ctx)
@@ -266,7 +268,7 @@ public class MongoDbQueryParseTreeWalker
         return array;
     }
 
-    private ArgumentExpression visitOperatorExpression(MongoDbQueryParser.OperatorExpressionContext ctx)
+    private ArgumentExpression visitComparisonOperatorExpression(MongoDbQueryParser.ComparisonOperatorExpressionContext ctx)
     {
         String operator = ctx.COMPARISON_QUERY_OPERATOR().getText().substring(1,
                 ctx.COMPARISON_QUERY_OPERATOR().getText().length() - 1);
@@ -326,15 +328,12 @@ public class MongoDbQueryParseTreeWalker
         return comparisonOpEx;
     }
 
-
     private LogicalOperatorExpression visitLogicalOperatorExpression(MongoDbQueryParser.LogicalOperatorExpressionContext ctx)
     {
+        String operator = ctx.LOGICAL_QUERY_OPERATOR().getText().substring(1, ctx.LOGICAL_QUERY_OPERATOR().getText().length() - 1);
         LogicalOperatorExpression logicalOpEx = null;
-        List<ArgumentExpression> expressions = ctx.queryExpression().stream()
-                    .map(this::visitQueryExpression).collect(Collectors.toList());
 
-        String operator = ctx.LOGICAL_QUERY_OPERATOR().getText().substring(1,
-                ctx.LOGICAL_QUERY_OPERATOR().getText().length() - 1);
+        List<ArgumentExpression> expressions = visitLogicalOperatorExpressionValueArray(ctx.logicalOperatorExpressionValueArray());
 
         if (operator.equals(LogicalOperator.AND.label))
         {
@@ -355,6 +354,28 @@ public class MongoDbQueryParseTreeWalker
 
         logicalOpEx.expressions = expressions;
         return logicalOpEx;
+    }
+
+    private List<ArgumentExpression> visitLogicalOperatorExpressionValueArray(MongoDbQueryParser.LogicalOperatorExpressionValueArrayContext ctx)
+    {
+        return ctx.logicalOperatorExpressionValue().stream().map(this::visitLogicalOperatorExpressionValue).collect(Collectors.toList());
+    }
+
+    private ArgumentExpression visitLogicalOperatorExpressionValue(MongoDbQueryParser.LogicalOperatorExpressionValueContext ctx)
+    {
+        if (ctx.queryExpression() != null)
+        {
+            return visitQueryExpression(ctx.queryExpression());
+        }
+        else if (ctx.comparisonOperatorExpression() != null)
+        {
+            return visitComparisonOperatorExpression(ctx.comparisonOperatorExpression());
+        }
+        else if (ctx.value() != null)
+        {
+            return visitValue(ctx.value());
+        }
+        throw new RuntimeException("visitLogicalOperatorExpressionValue error");
     }
 
     private ObjectTypeValue visitObj(MongoDbQueryParser.ObjContext ctx)

@@ -59,7 +59,9 @@ projectComputedFieldValue: STRING_WITH_DOLLAR;
 
 //https://www.mongodb.com/docs/manual/reference/operator/query-logical/
 
-logicalOperatorExpression: BRACE_OPEN LOGICAL_QUERY_OPERATOR ':' (BRACKET_OPEN queryExpression? ( ',' queryExpression )* BRACKET_CLOSE ) BRACE_CLOSE;
+logicalOperatorExpression: BRACE_OPEN LOGICAL_QUERY_OPERATOR ':' logicalOperatorExpressionValueArray BRACE_CLOSE;
+logicalOperatorExpressionValueArray: BRACKET_OPEN logicalOperatorExpressionValue ( ',' logicalOperatorExpressionValue )* BRACKET_CLOSE;
+logicalOperatorExpressionValue: queryExpression | comparisonOperatorExpression | value;
 
 // TODO: add others..
 
@@ -77,17 +79,9 @@ logicalOperatorExpression: BRACE_OPEN LOGICAL_QUERY_OPERATOR ':' (BRACKET_OPEN q
 queryExpression: BRACE_OPEN expression ( ',' expression )* BRACE_CLOSE;
 
 expression: STRING ':' expressionValue;
-expressionValue: value | operatorExpression;
+expressionValue: value | comparisonOperatorExpression | logicalOperatorExpression;
 
-operatorExpression: BRACE_OPEN COMPARISON_QUERY_OPERATOR ':' value BRACE_CLOSE;
-
-
-
-
-//complexObjectExpressionValue: BRACE_OPEN COMPARISON_QUERY_OPERATOR ':' expressionValue BRACE_CLOSE;
-//complexArrayExpressionValue: BRACKET_OPEN complexExpressionValue ( ',' complexExpressionValue )* BRACKET_CLOSE;
-
-
+comparisonOperatorExpression: BRACE_OPEN COMPARISON_QUERY_OPERATOR ':' value BRACE_CLOSE;
 
 
 obj

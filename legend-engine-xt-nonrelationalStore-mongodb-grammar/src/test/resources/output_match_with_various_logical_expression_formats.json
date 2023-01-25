@@ -1,0 +1,85 @@
+{
+  "type": "aggregate",
+  "collectionName": "\"firms\"",
+  "aggregationPipeline": {
+    "_type": "viewPipeline",
+    "stages": [
+      {
+        "_type": "matchStage",
+        "expression": {
+          "_type": "item",
+          "objects": [
+            {
+              "_type": "objectExpression",
+              "field": "\"test1\"",
+              "argument": {
+                "_type": "notOperatorExpression",
+                "expressions": [
+                  {
+                    "_type": "literalValue",
+                    "value": {
+                      "_type": "boolTypeValue",
+                      "value": true
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "_type": "objectExpression",
+              "field": "\"test2\"",
+              "argument": {
+                "_type": "notOperatorExpression",
+                "expressions": [
+                  {
+                    "_type": "literalValue",
+                    "value": {
+                      "_type": "arrayTypeValue",
+                      "items": [
+                        {
+                          "_type": "boolTypeValue",
+                          "value": false
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "_type": "objectExpression",
+              "field": "\"test3\"",
+              "argument": {
+                "_type": "notOperatorExpression",
+                "expressions": [
+                  {
+                    "_type": "literalValue",
+                    "value": {
+                      "_type": "nullTypeValue"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "_type": "objectExpression",
+              "field": "\"test4\"",
+              "argument": {
+                "_type": "notOperatorExpression",
+                "expressions": [
+                  {
+                    "_type": "literalValue",
+                    "value": {
+                      "_type": "intTypeValue",
+                      "value": 0
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

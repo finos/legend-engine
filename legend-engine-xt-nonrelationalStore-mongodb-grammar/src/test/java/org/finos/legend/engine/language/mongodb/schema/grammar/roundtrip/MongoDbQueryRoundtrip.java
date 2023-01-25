@@ -110,12 +110,11 @@ public class MongoDbQueryRoundtrip
 
     }
 
-    // TODO: fix this test, as it is a valid query
-    //  https://www.mongodb.com/docs/manual/reference/operator/query/not/#mongodb-query-op.-not
-    public void testAggregateWithMatchWithLogicalQueryExpressionContainingComparisonQueryExpression() throws Exception
+    @Test
+    public void testAggregateWithMatchWithVariousLogicalOperatorFormats() throws Exception
     {
-        String input = resourceAsString("input_match_with_logical_expression_with_comparison_expression.json");
-        String expectedOutput = resourceAsString("output_match_with_logical_expression_with_comparison_expression.json");
+        String input = resourceAsString("input_match_with_various_logical_expression_formats.json");
+        String expectedOutput = resourceAsString("output_match_with_various_logical_expression_formats.json");
 
         DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
 
@@ -164,22 +163,6 @@ public class MongoDbQueryRoundtrip
     {
         String input = resourceAsString("input_two_and_match_with_and_without_operator.json");
         String expectedOutput = resourceAsString("output_two_and_match_with_and_without_operator.json");
-
-        DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
-
-        MongoDbQueryComposer composer = new MongoDbQueryComposer();
-        String queryString = composer.parseDatabaseCommand(databaseCommand);
-
-        assertEquals(mapper.readTree(input), mapper.readTree(queryString));
-        assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
-
-    }
-
-    @Test
-    public void testAggregateMatchWithEmptyAndOperator() throws Exception
-    {
-        String input = resourceAsString("input_match_empty_and.json");
-        String expectedOutput = resourceAsString("output_match_empty_and.json");
 
         DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
 

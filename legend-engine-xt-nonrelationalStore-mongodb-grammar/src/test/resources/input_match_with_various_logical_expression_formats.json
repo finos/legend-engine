@@ -1,0 +1,32 @@
+{
+  "aggregate": "firms",
+  "pipeline": [
+    {
+      "$match": {
+        "test1": {
+          "$not": [
+            true
+          ]
+        },
+        "test2": {
+          "$not": [
+            [
+              false
+            ]
+          ]
+        },
+        "test3": {
+          "$not": [
+            null
+          ]
+        },
+        "test4": {
+          "$not": [
+            0
+          ]
+        }
+      }
+    }
+  ],
+  "cursor": {}
+}
