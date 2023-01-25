@@ -7,20 +7,16 @@
       {
         "_type": "matchStage",
         "expression": {
-          "_type": "andExpression",
+          "_type": "andOperatorExpression",
           "expressions": [
             {
               "_type": "item",
               "objects": [
                 {
                   "_type": "objectExpression",
-                  "field": {
-                    "_type": "fieldPathExpression",
-                    "path": "\"fName\""
-                  },
+                  "field": "\"fName\"",
                   "argument": {
-                    "_type": "operatorExpression",
-                    "operator": "EQ",
+                    "_type": "eqOperatorExpression",
                     "expression": {
                       "_type": "literalValue",
                       "value": {
@@ -37,10 +33,7 @@
               "objects": [
                 {
                   "_type": "objectExpression",
-                  "field": {
-                    "_type": "fieldPathExpression",
-                    "path": "\"lName\""
-                  },
+                  "field": "\"lName\"",
                   "argument": {
                     "_type": "literalValue",
                     "value": {
@@ -51,8 +44,7 @@
                 }
               ]
             }
-          ],
-          "operator": "AND"
+          ]
         }
       }
     ]

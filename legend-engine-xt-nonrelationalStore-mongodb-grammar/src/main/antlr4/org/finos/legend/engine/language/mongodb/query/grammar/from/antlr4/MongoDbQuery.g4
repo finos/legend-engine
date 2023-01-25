@@ -82,9 +82,8 @@ queryExpression: BRACE_OPEN expression ( ',' expression )* BRACE_CLOSE;
 expression: STRING ':' expressionValue;
 expressionValue: value | operatorExpression;
 
-operatorExpression: BRACE_OPEN COMPARISON_QUERY_OPERATOR ':' operatorExpressionValue BRACE_CLOSE;
+operatorExpression: BRACE_OPEN COMPARISON_QUERY_OPERATOR ':' value BRACE_CLOSE;
 
-operatorExpressionValue: expressionValue | operatorExpression;
 
 
 

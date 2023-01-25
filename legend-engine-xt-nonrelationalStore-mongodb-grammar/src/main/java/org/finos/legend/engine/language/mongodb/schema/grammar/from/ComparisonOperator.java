@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.language.mongodb.schema.grammar.from;
 
-public enum MongoOperator
+public enum ComparisonOperator
 {
     EQ("$eq"),
     GT("$gt"),
@@ -23,15 +23,11 @@ public enum MongoOperator
     LT("$lt"),
     LTE("$lte"),
     NE("$ne"),
-    NIN("$nin"),
-    AND("$and"),
-    NOT("$not"),
-    NOR("$nor"),
-    OR("$or");
+    NIN("$nin");
 
     public final String label;
 
-    MongoOperator(String label)
+    ComparisonOperator(String label)
     {
         this.label = label;
     }

@@ -217,6 +217,66 @@ meta::external::store::mongodb::metamodel::aggregation::OperatorExpression exten
   expression: ArgumentExpression[1];
 }
 
+Class {doc.doc = 'Comparison Operator Expressions https://www.mongodb.com/docs/manual/reference/operator/query-comparison/'}
+meta::external::store::mongodb::metamodel::aggregation::ComparisonOperatorExpression extends ArgumentExpression
+{
+  expression: LiteralValue[1];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::EqOperatorExpression extends ComparisonOperatorExpression
+{
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::GTOperatorExpression extends ComparisonOperatorExpression
+{
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::GreaterThanEqualsOperatorExpression extends ComparisonOperatorExpression
+{
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::InOperatorExpression extends ComparisonOperatorExpression
+{
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::LTOperatorExpression extends ComparisonOperatorExpression
+{
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::LTEOperatorExpression extends ComparisonOperatorExpression
+{
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::NEOperatorExpression extends ComparisonOperatorExpression
+{
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::NinOperatorExpression extends ComparisonOperatorExpression
+{
+}
+
+Class {doc.doc = 'Logical Operator Expressions https://www.mongodb.com/docs/manual/reference/operator/query-logical/'}
+meta::external::store::mongodb::metamodel::aggregation::LogicalOperatorExpression extends ArgumentExpression
+{
+  expressions: ArgumentExpression[*];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::AndOperatorExpression extends LogicalOperatorExpression
+{
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::OrOperatorExpression extends LogicalOperatorExpression
+{
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::NotOperatorExpression extends LogicalOperatorExpression
+{
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::NorOperatorExpression extends LogicalOperatorExpression
+{
+}
+
 Class meta::external::store::mongodb::metamodel::aggregation::OrExpression extends ArgumentExpression
 {
   expressions: ArgumentExpression[*];
@@ -252,7 +312,7 @@ Class meta::external::store::mongodb::metamodel::aggregation::LiteralExpression 
 
 Class meta::external::store::mongodb::metamodel::aggregation::ObjectExpression extends ArgumentExpression
 {
-  field: FieldPathExpression[1];
+  field: String[1];
   argument: ArgumentExpression[1];
 }
 
@@ -299,9 +359,14 @@ Class meta::external::store::mongodb::metamodel::aggregation::DecimalTypeValue e
   value: Float[1];
 }
 
-Class meta::external::store::mongodb::metamodel::aggregation::ObjectTypeTypeValue extends BaseTypeValue
+Class meta::external::store::mongodb::metamodel::aggregation::ObjectTypeValue extends BaseTypeValue
 {
   keyValues: KeyValuePair[*];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::ArrayTypeValue extends BaseTypeValue
+{
+  items: BaseTypeValue[*];
 }
 
 Class meta::external::store::mongodb::metamodel::aggregation::KeyValuePair

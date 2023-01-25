@@ -11,223 +11,150 @@
           "objects": [
             {
               "_type": "objectExpression",
-              "field": {
-                "_type": "fieldPathExpression",
-                "path": "\"test\""
-              },
+              "field": "\"test\"",
               "argument": {
-                "_type": "operatorExpression",
-                "operator": "EQ",
+                "_type": "eqOperatorExpression",
                 "expression": {
-                  "_type": "item",
-                  "objects": [
-                    {
-                      "_type": "objectExpression",
-                      "field": {
-                        "_type": "fieldPathExpression",
-                        "path": "\"test1\""
-                      },
-                      "argument": {
-                        "_type": "item",
-                        "objects": [
-                          {
-                            "_type": "objectExpression",
-                            "field": {
-                              "_type": "fieldPathExpression",
-                              "path": "\"test2\""
-                            },
-                            "argument": {
-                              "_type": "item",
-                              "objects": [
-                                {
-                                  "_type": "objectExpression",
-                                  "field": {
-                                    "_type": "fieldPathExpression",
-                                    "path": "\"test3_2\""
-                                  },
-                                  "argument": {
-                                    "_type": "literalValue",
+                  "_type": "literalValue",
+                  "value": {
+                    "_type": "objectTypeValue",
+                    "keyValues": [
+                      {
+                        "key": "\"test1\"",
+                        "value": {
+                          "_type": "objectTypeValue",
+                          "keyValues": [
+                            {
+                              "key": "\"test2\"",
+                              "value": {
+                                "_type": "objectTypeValue",
+                                "keyValues": [
+                                  {
+                                    "key": "\"test3_2\"",
                                     "value": {
                                       "_type": "stringTypeValue",
                                       "value": "\"value2\""
                                     }
-                                  }
-                                },
-                                {
-                                  "_type": "objectExpression",
-                                  "field": {
-                                    "_type": "fieldPathExpression",
-                                    "path": "\"test3_3\""
                                   },
-                                  "argument": {
-                                    "_type": "arrayExpression",
-                                    "items": [
-                                      {
-                                        "_type": "literalValue",
-                                        "value": {
+                                  {
+                                    "key": "\"test3_3\"",
+                                    "value": {
+                                      "_type": "arrayTypeValue",
+                                      "items": [
+                                        {
                                           "_type": "stringTypeValue",
                                           "value": "\"value3\""
-                                        }
-                                      },
-                                      {
-                                        "_type": "literalValue",
-                                        "value": {
+                                        },
+                                        {
                                           "_type": "stringTypeValue",
                                           "value": "\"value4\""
                                         }
-                                      }
-                                    ]
-                                  }
-                                },
-                                {
-                                  "_type": "objectExpression",
-                                  "field": {
-                                    "_type": "fieldPathExpression",
-                                    "path": "\"test3_4\""
+                                      ]
+                                    }
                                   },
-                                  "argument": {
-                                    "_type": "item",
-                                    "objects": [
-                                      {
-                                        "_type": "objectExpression",
-                                        "field": {
-                                          "_type": "fieldPathExpression",
-                                          "path": "\"test3_4_1\""
-                                        },
-                                        "argument": {
-                                          "_type": "literalValue",
+                                  {
+                                    "key": "\"test3_4\"",
+                                    "value": {
+                                      "_type": "objectTypeValue",
+                                      "keyValues": [
+                                        {
+                                          "key": "\"test3_4_1\"",
                                           "value": {
                                             "_type": "stringTypeValue",
                                             "value": "\"4\""
                                           }
                                         }
-                                      }
-                                    ]
-                                  }
-                                },
-                                {
-                                  "_type": "objectExpression",
-                                  "field": {
-                                    "_type": "fieldPathExpression",
-                                    "path": "\"test3_5\""
+                                      ]
+                                    }
                                   },
-                                  "argument": {
-                                    "_type": "item",
-                                    "objects": [
-                                      {
-                                        "_type": "objectExpression",
-                                        "field": {
-                                          "_type": "fieldPathExpression",
-                                          "path": "\"test3_5_1\""
-                                        },
-                                        "argument": {
-                                          "_type": "arrayExpression",
-                                          "items": [
-                                            {
-                                              "_type": "item",
-                                              "objects": [
-                                                {
-                                                  "_type": "objectExpression",
-                                                  "field": {
-                                                    "_type": "fieldPathExpression",
-                                                    "path": "\"test3_5_1_1\""
-                                                  },
-                                                  "argument": {
-                                                    "_type": "literalValue",
+                                  {
+                                    "key": "\"test3_5\"",
+                                    "value": {
+                                      "_type": "objectTypeValue",
+                                      "keyValues": [
+                                        {
+                                          "key": "\"test3_5_1\"",
+                                          "value": {
+                                            "_type": "arrayTypeValue",
+                                            "items": [
+                                              {
+                                                "_type": "objectTypeValue",
+                                                "keyValues": [
+                                                  {
+                                                    "key": "\"test3_5_1_1\"",
                                                     "value": {
                                                       "_type": "stringTypeValue",
                                                       "value": "\"value5\""
                                                     }
                                                   }
-                                                }
-                                              ]
-                                            },
-                                            {
-                                              "_type": "item",
-                                              "objects": [
-                                                {
-                                                  "_type": "objectExpression",
-                                                  "field": {
-                                                    "_type": "fieldPathExpression",
-                                                    "path": "\"test3_5_1_2\""
-                                                  },
-                                                  "argument": {
-                                                    "_type": "arrayExpression",
-                                                    "items": [
-                                                      {
-                                                        "_type": "literalValue",
-                                                        "value": {
+                                                ]
+                                              },
+                                              {
+                                                "_type": "objectTypeValue",
+                                                "keyValues": [
+                                                  {
+                                                    "key": "\"test3_5_1_2\"",
+                                                    "value": {
+                                                      "_type": "arrayTypeValue",
+                                                      "items": [
+                                                        {
                                                           "_type": "stringTypeValue",
                                                           "value": "\"value6\""
-                                                        }
-                                                      },
-                                                      {
-                                                        "_type": "literalValue",
-                                                        "value": {
+                                                        },
+                                                        {
                                                           "_type": "stringTypeValue",
                                                           "value": "\"value7\""
                                                         }
-                                                      }
-                                                    ]
+                                                      ]
+                                                    }
                                                   }
-                                                }
-                                              ]
-                                            }
-                                          ]
+                                                ]
+                                              }
+                                            ]
+                                          }
                                         }
-                                      }
-                                    ]
+                                      ]
+                                    }
                                   }
-                                }
-                              ]
+                                ]
+                              }
                             }
-                          }
-                        ]
+                          ]
+                        }
                       }
-                    }
-                  ]
+                    ]
+                  }
                 }
               }
             },
             {
               "_type": "objectExpression",
-              "field": {
-                "_type": "fieldPathExpression",
-                "path": "\"test6\""
-              },
+              "field": "\"test6\"",
               "argument": {
-                "_type": "operatorExpression",
-                "operator": "EQ",
+                "_type": "eqOperatorExpression",
                 "expression": {
-                  "_type": "arrayExpression",
-                  "items": [
-                    {
-                      "_type": "literalValue",
-                      "value": {
+                  "_type": "literalValue",
+                  "value": {
+                    "_type": "arrayTypeValue",
+                    "items": [
+                      {
                         "_type": "stringTypeValue",
                         "value": "\"value8\""
-                      }
-                    },
-                    {
-                      "_type": "literalValue",
-                      "value": {
+                      },
+                      {
                         "_type": "stringTypeValue",
                         "value": "\"value9\""
                       }
-                    }
-                  ]
+                    ]
+                  }
                 }
               }
             },
             {
               "_type": "objectExpression",
-              "field": {
-                "_type": "fieldPathExpression",
-                "path": "\"test7\""
-              },
+              "field": "\"test7\"",
               "argument": {
-                "_type": "operatorExpression",
-                "operator": "EQ",
+                "_type": "eqOperatorExpression",
                 "expression": {
                   "_type": "literalValue",
                   "value": {
@@ -239,166 +166,118 @@
             },
             {
               "_type": "objectExpression",
-              "field": {
-                "_type": "fieldPathExpression",
-                "path": "\"test8\""
-              },
+              "field": "\"test8\"",
               "argument": {
-                "_type": "operatorExpression",
-                "operator": "EQ",
+                "_type": "eqOperatorExpression",
                 "expression": {
-                  "_type": "item",
-                  "objects": [
-                    {
-                      "_type": "objectExpression",
-                      "field": {
-                        "_type": "fieldPathExpression",
-                        "path": "\"test8_1\""
-                      },
-                      "argument": {
-                        "_type": "literalValue",
+                  "_type": "literalValue",
+                  "value": {
+                    "_type": "objectTypeValue",
+                    "keyValues": [
+                      {
+                        "key": "\"test8_1\"",
                         "value": {
                           "_type": "stringTypeValue",
                           "value": "\"8\""
                         }
                       }
-                    }
-                  ]
+                    ]
+                  }
                 }
               }
             },
             {
               "_type": "objectExpression",
-              "field": {
-                "_type": "fieldPathExpression",
-                "path": "\"test9\""
-              },
+              "field": "\"test9\"",
               "argument": {
-                "_type": "operatorExpression",
-                "operator": "EQ",
+                "_type": "eqOperatorExpression",
                 "expression": {
-                  "_type": "item",
-                  "objects": [
-                    {
-                      "_type": "objectExpression",
-                      "field": {
-                        "_type": "fieldPathExpression",
-                        "path": "\"test9_1\""
-                      },
-                      "argument": {
-                        "_type": "literalValue",
+                  "_type": "literalValue",
+                  "value": {
+                    "_type": "objectTypeValue",
+                    "keyValues": [
+                      {
+                        "key": "\"test9_1\"",
                         "value": {
                           "_type": "stringTypeValue",
                           "value": "\"9_1\""
                         }
-                      }
-                    },
-                    {
-                      "_type": "objectExpression",
-                      "field": {
-                        "_type": "fieldPathExpression",
-                        "path": "\"test9_2\""
                       },
-                      "argument": {
-                        "_type": "literalValue",
+                      {
+                        "key": "\"test9_2\"",
                         "value": {
                           "_type": "stringTypeValue",
                           "value": "\"9_2\""
                         }
                       }
-                    }
-                  ]
+                    ]
+                  }
                 }
               }
             },
             {
               "_type": "objectExpression",
-              "field": {
-                "_type": "fieldPathExpression",
-                "path": "\"test10\""
-              },
+              "field": "\"test10\"",
               "argument": {
-                "_type": "operatorExpression",
-                "operator": "EQ",
+                "_type": "eqOperatorExpression",
                 "expression": {
-                  "_type": "arrayExpression",
-                  "items": [
-                    {
-                      "_type": "item",
-                      "objects": [
-                        {
-                          "_type": "objectExpression",
-                          "field": {
-                            "_type": "fieldPathExpression",
-                            "path": "\"test10_1\""
-                          },
-                          "argument": {
-                            "_type": "literalValue",
+                  "_type": "literalValue",
+                  "value": {
+                    "_type": "arrayTypeValue",
+                    "items": [
+                      {
+                        "_type": "objectTypeValue",
+                        "keyValues": [
+                          {
+                            "key": "\"test10_1\"",
                             "value": {
                               "_type": "stringTypeValue",
                               "value": "\"10_1\""
                             }
                           }
-                        }
-                      ]
-                    },
-                    {
-                      "_type": "item",
-                      "objects": [
-                        {
-                          "_type": "objectExpression",
-                          "field": {
-                            "_type": "fieldPathExpression",
-                            "path": "\"test10_2\""
-                          },
-                          "argument": {
-                            "_type": "literalValue",
+                        ]
+                      },
+                      {
+                        "_type": "objectTypeValue",
+                        "keyValues": [
+                          {
+                            "key": "\"test10_2\"",
                             "value": {
                               "_type": "stringTypeValue",
                               "value": "\"10_2\""
                             }
                           }
-                        }
-                      ]
-                    }
-                  ]
+                        ]
+                      }
+                    ]
+                  }
                 }
               }
             },
             {
               "_type": "objectExpression",
-              "field": {
-                "_type": "fieldPathExpression",
-                "path": "\"test11\""
-              },
+              "field": "\"test11\"",
               "argument": {
-                "_type": "operatorExpression",
-                "operator": "EQ",
+                "_type": "eqOperatorExpression",
                 "expression": {
-                  "_type": "arrayExpression",
-                  "items": [
-                    {
-                      "_type": "literalValue",
-                      "value": {
+                  "_type": "literalValue",
+                  "value": {
+                    "_type": "arrayTypeValue",
+                    "items": [
+                      {
                         "_type": "intTypeValue",
                         "value": 0
-                      }
-                    },
-                    {
-                      "_type": "literalValue",
-                      "value": {
+                      },
+                      {
                         "_type": "intTypeValue",
                         "value": 1
-                      }
-                    },
-                    {
-                      "_type": "literalValue",
-                      "value": {
+                      },
+                      {
                         "_type": "intTypeValue",
                         "value": 2
                       }
-                    }
-                  ]
+                    ]
+                  }
                 }
               }
             }

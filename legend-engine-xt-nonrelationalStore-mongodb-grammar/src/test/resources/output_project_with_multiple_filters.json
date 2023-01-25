@@ -11,10 +11,7 @@
           "objects": [
             {
               "_type": "objectExpression",
-              "field": {
-                "_type": "fieldPathExpression",
-                "path": "\"fName\""
-              },
+              "field": "\"fName\"",
               "argument": {
                 "_type": "literalValue",
                 "value": {
@@ -25,10 +22,7 @@
             },
             {
               "_type": "objectExpression",
-              "field": {
-                "_type": "fieldPathExpression",
-                "path": "\"address1\""
-              },
+              "field": "\"address1\"",
               "argument": {
                 "_type": "literalValue",
                 "value": {
@@ -39,10 +33,7 @@
             },
             {
               "_type": "objectExpression",
-              "field": {
-                "_type": "fieldPathExpression",
-                "path": "\"address2\""
-              },
+              "field": "\"address2\"",
               "argument": {
                 "_type": "literalValue",
                 "value": {
@@ -53,10 +44,7 @@
             },
             {
               "_type": "objectExpression",
-              "field": {
-                "_type": "fieldPathExpression",
-                "path": "\"lName\""
-              },
+              "field": "\"lName\"",
               "argument": {
                 "_type": "literalValue",
                 "value": {

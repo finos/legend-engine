@@ -11,10 +11,7 @@
           "objects": [
             {
               "_type": "objectExpression",
-              "field": {
-                "_type": "fieldPathExpression",
-                "path": "\"fName\""
-              },
+              "field": "\"fName\"",
               "argument": {
                 "_type": "literalValue",
                 "value": {
@@ -25,10 +22,7 @@
             },
             {
               "_type": "objectExpression",
-              "field": {
-                "_type": "fieldPathExpression",
-                "path": "\"names.firstName\""
-              },
+              "field": "\"names.firstName\"",
               "argument": {
                 "_type": "literalValue",
                 "value": {
@@ -39,10 +33,7 @@
             },
             {
               "_type": "objectExpression",
-              "field": {
-                "_type": "fieldPathExpression",
-                "path": "\"addresses.homeAddress.city\""
-              },
+              "field": "\"addresses.homeAddress.city\"",
               "argument": {
                 "_type": "literalValue",
                 "value": {
@@ -53,10 +44,7 @@
             },
             {
               "_type": "objectExpression",
-              "field": {
-                "_type": "fieldPathExpression",
-                "path": "\"homeCountry\""
-              },
+              "field": "\"homeCountry\"",
               "argument": {
                 "_type": "computedFieldValue",
                 "computedValue": {
@@ -67,10 +55,7 @@
             },
             {
               "_type": "objectExpression",
-              "field": {
-                "_type": "fieldPathExpression",
-                "path": "\"lastName\""
-              },
+              "field": "\"lastName\"",
               "argument": {
                 "_type": "computedFieldValue",
                 "computedValue": {
@@ -81,10 +66,7 @@
             },
             {
               "_type": "objectExpression",
-              "field": {
-                "_type": "fieldPathExpression",
-                "path": "\"address2\""
-              },
+              "field": "\"address2\"",
               "argument": {
                 "_type": "literalValue",
                 "value": {
@@ -95,10 +77,7 @@
             },
             {
               "_type": "objectExpression",
-              "field": {
-                "_type": "fieldPathExpression",
-                "path": "\"lName\""
-              },
+              "field": "\"lName\"",
               "argument": {
                 "_type": "literalValue",
                 "value": {

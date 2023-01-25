@@ -11,13 +11,9 @@
           "objects": [
             {
               "_type": "objectExpression",
-              "field": {
-                "_type": "fieldPathExpression",
-                "path": "\"test\""
-              },
+              "field": "\"test\"",
               "argument": {
-                "_type": "operatorExpression",
-                "operator": "GT",
+                "_type": "gTOperatorExpression",
                 "expression": {
                   "_type": "literalValue",
                   "value": {
@@ -29,13 +25,9 @@
             },
             {
               "_type": "objectExpression",
-              "field": {
-                "_type": "fieldPathExpression",
-                "path": "\"test2\""
-              },
+              "field": "\"test2\"",
               "argument": {
-                "_type": "operatorExpression",
-                "operator": "GT",
+                "_type": "gTOperatorExpression",
                 "expression": {
                   "_type": "literalValue",
                   "value": {
@@ -47,10 +39,7 @@
             },
             {
               "_type": "objectExpression",
-              "field": {
-                "_type": "fieldPathExpression",
-                "path": "\"test3\""
-              },
+              "field": "\"test3\"",
               "argument": {
                 "_type": "literalValue",
                 "value": {
@@ -61,45 +50,30 @@
             },
             {
               "_type": "objectExpression",
-              "field": {
-                "_type": "fieldPathExpression",
-                "path": "\"test4\""
-              },
+              "field": "\"test4\"",
               "argument": {
-                "_type": "operatorExpression",
-                "operator": "GT",
+                "_type": "gTOperatorExpression",
                 "expression": {
-                  "_type": "item",
-                  "objects": [
-                    {
-                      "_type": "objectExpression",
-                      "field": {
-                        "_type": "fieldPathExpression",
-                        "path": "\"abd\""
-                      },
-                      "argument": {
-                        "_type": "literalValue",
+                  "_type": "literalValue",
+                  "value": {
+                    "_type": "objectTypeValue",
+                    "keyValues": [
+                      {
+                        "key": "\"abd\"",
                         "value": {
                           "_type": "intTypeValue",
                           "value": 3
                         }
-                      }
-                    },
-                    {
-                      "_type": "objectExpression",
-                      "field": {
-                        "_type": "fieldPathExpression",
-                        "path": "\"ade\""
                       },
-                      "argument": {
-                        "_type": "literalValue",
+                      {
+                        "key": "\"ade\"",
                         "value": {
                           "_type": "intTypeValue",
                           "value": 4
                         }
                       }
-                    }
-                  ]
+                    ]
+                  }
                 }
               }
             }

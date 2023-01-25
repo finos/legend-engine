@@ -107,6 +107,23 @@ public class MongoDbQueryParseTreeWalkerTest
 
     }
 
+    // TODO: fix this test, as it is a valid query
+    //  https://www.mongodb.com/docs/manual/reference/operator/query/not/#mongodb-query-op.-not
+    public void testAggregateWithMatchWithLogicalQueryExpressionContainingComparisonQueryExpression() throws Exception
+    {
+        String input = resourceAsString("input_match_with_logical_expression_with_comparison_expression.json");
+        String expectedOutput = resourceAsString("output_match_with_logical_expression_with_comparison_expression.json");
+
+        DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
+
+        MongoDbQueryComposer composer = new MongoDbQueryComposer();
+        String queryString = composer.parseDatabaseCommand(databaseCommand);
+
+        assertEquals(mapper.readTree(input), mapper.readTree(queryString));
+        assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
+
+    }
+
     @Test
     public void testAggregateWithMultiMatchExpressionWithoutAndOperator() throws Exception
     {

@@ -11,10 +11,7 @@
           "objects": [
             {
               "_type": "objectExpression",
-              "field": {
-                "_type": "fieldPathExpression",
-                "path": "\"fName\""
-              },
+              "field": "\"fName\"",
               "argument": {
                 "_type": "computedFieldValue",
                 "computedValue": {

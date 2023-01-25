@@ -11,10 +11,7 @@
           "objects": [
             {
               "_type": "objectExpression",
-              "field": {
-                "_type": "fieldPathExpression",
-                "path": "\"test\""
-              },
+              "field": "\"test\"",
               "argument": {
                 "_type": "literalValue",
                 "value": {

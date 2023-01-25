@@ -11,128 +11,71 @@
           "objects": [
             {
               "_type": "objectExpression",
-              "field": {
-                "_type": "fieldPathExpression",
-                "path": "\"test\""
-              },
+              "field": "\"test\"",
               "argument": {
-                "_type": "operatorExpression",
-                "operator": "EQ",
+                "_type": "eqOperatorExpression",
                 "expression": {
-                  "_type": "item",
-                  "objects": [
-                    {
-                      "_type": "objectExpression",
-                      "field": {
-                        "_type": "fieldPathExpression",
-                        "path": "\"test1\""
-                      },
-                      "argument": {
-                        "_type": "literalValue",
+                  "_type": "literalValue",
+                  "value": {
+                    "_type": "objectTypeValue",
+                    "keyValues": [
+                      {
+                        "key": "\"test1\"",
                         "value": {
                           "_type": "intTypeValue",
                           "value": 2
                         }
-                      }
-                    },
-                    {
-                      "_type": "objectExpression",
-                      "field": {
-                        "_type": "fieldPathExpression",
-                        "path": "\"test2\""
                       },
-                      "argument": {
-                        "_type": "literalValue",
+                      {
+                        "key": "\"test2\"",
                         "value": {
                           "_type": "stringTypeValue",
                           "value": "\"a string\""
                         }
-                      }
-                    },
-                    {
-                      "_type": "objectExpression",
-                      "field": {
-                        "_type": "fieldPathExpression",
-                        "path": "\"test3\""
                       },
-                      "argument": {
-                        "_type": "literalValue",
+                      {
+                        "key": "\"test3\"",
                         "value": {
                           "_type": "boolTypeValue",
                           "value": true
                         }
-                      }
-                    },
-                    {
-                      "_type": "objectExpression",
-                      "field": {
-                        "_type": "fieldPathExpression",
-                        "path": "\"test4\""
                       },
-                      "argument": {
-                        "_type": "literalValue",
+                      {
+                        "key": "\"test4\"",
                         "value": {
                           "_type": "stringTypeValue",
                           "value": "\"true\""
                         }
-                      }
-                    },
-                    {
-                      "_type": "objectExpression",
-                      "field": {
-                        "_type": "fieldPathExpression",
-                        "path": "\"test5\""
                       },
-                      "argument": {
-                        "_type": "literalValue",
+                      {
+                        "key": "\"test5\"",
                         "value": {
                           "_type": "nullTypeValue"
                         }
-                      }
-                    },
-                    {
-                      "_type": "objectExpression",
-                      "field": {
-                        "_type": "fieldPathExpression",
-                        "path": "\"test6\""
                       },
-                      "argument": {
-                        "_type": "literalValue",
+                      {
+                        "key": "\"test6\"",
                         "value": {
                           "_type": "decimalTypeValue",
                           "value": 2.44546
                         }
-                      }
-                    },
-                    {
-                      "_type": "objectExpression",
-                      "field": {
-                        "_type": "fieldPathExpression",
-                        "path": "\"test7\""
                       },
-                      "argument": {
-                        "_type": "literalValue",
+                      {
+                        "key": "\"test7\"",
                         "value": {
                           "_type": "decimalTypeValue",
                           "value": 1.09747567475868
                         }
-                      }
-                    },
-                    {
-                      "_type": "objectExpression",
-                      "field": {
-                        "_type": "fieldPathExpression",
-                        "path": "\"test8\""
                       },
-                      "argument": {
-                        "_type": "literalValue",
+                      {
+                        "key": "\"test8\"",
                         "value": {
                           "_type": "decimalTypeValue",
                           "value": 3.0
                         }
                       }
-                    }
-                  ]
+                    ]
+                  }
                 }
               }
             }

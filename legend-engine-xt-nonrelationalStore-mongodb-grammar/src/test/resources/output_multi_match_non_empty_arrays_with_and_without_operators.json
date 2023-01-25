@@ -11,66 +11,45 @@
           "objects": [
             {
               "_type": "objectExpression",
-              "field": {
-                "_type": "fieldPathExpression",
-                "path": "\"test4\""
-              },
+              "field": "\"test4\"",
               "argument": {
-                "_type": "arrayExpression",
-                "items": [
-                  {
-                    "_type": "item",
-                    "objects": [
-                      {
-                        "_type": "objectExpression",
-                        "field": {
-                          "_type": "fieldPathExpression",
-                          "path": "\"test4_1\""
-                        },
-                        "argument": {
-                          "_type": "literalValue",
+                "_type": "literalValue",
+                "value": {
+                  "_type": "arrayTypeValue",
+                  "items": [
+                    {
+                      "_type": "objectTypeValue",
+                      "keyValues": [
+                        {
+                          "key": "\"test4_1\"",
                           "value": {
                             "_type": "intTypeValue",
                             "value": 4
                           }
-                        }
-                      },
-                      {
-                        "_type": "objectExpression",
-                        "field": {
-                          "_type": "fieldPathExpression",
-                          "path": "\"test4_2\""
                         },
-                        "argument": {
-                          "_type": "literalValue",
+                        {
+                          "key": "\"test4_2\"",
                           "value": {
                             "_type": "stringTypeValue",
                             "value": "\"value\""
                           }
                         }
-                      }
-                    ]
-                  },
-                  {
-                    "_type": "item",
-                    "objects": [
-                      {
-                        "_type": "objectExpression",
-                        "field": {
-                          "_type": "fieldPathExpression",
-                          "path": "\"test4_3\""
-                        },
-                        "argument": {
-                          "_type": "literalValue",
+                      ]
+                    },
+                    {
+                      "_type": "objectTypeValue",
+                      "keyValues": [
+                        {
+                          "key": "\"test4_3\"",
                           "value": {
                             "_type": "intTypeValue",
                             "value": 5
                           }
                         }
-                      }
-                    ]
-                  }
-                ]
+                      ]
+                    }
+                  ]
+                }
               }
             }
           ]

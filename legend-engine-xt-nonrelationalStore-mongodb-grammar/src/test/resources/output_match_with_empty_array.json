@@ -11,13 +11,9 @@
           "objects": [
             {
               "_type": "objectExpression",
-              "field": {
-                "_type": "fieldPathExpression",
-                "path": "\"test\""
-              },
+              "field": "\"test\"",
               "argument": {
-                "_type": "operatorExpression",
-                "operator": "EQ",
+                "_type": "eqOperatorExpression",
                 "expression": {
                   "_type": "literalValue",
                   "value": {
@@ -29,13 +25,13 @@
             },
             {
               "_type": "objectExpression",
-              "field": {
-                "_type": "fieldPathExpression",
-                "path": "\"test2\""
-              },
+              "field": "\"test2\"",
               "argument": {
-                "_type": "arrayExpression",
-                "items": []
+                "_type": "literalValue",
+                "value": {
+                  "_type": "arrayTypeValue",
+                  "items": []
+                }
               }
             }
           ]
