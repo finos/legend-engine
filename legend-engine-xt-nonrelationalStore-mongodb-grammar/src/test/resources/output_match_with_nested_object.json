@@ -7,10 +7,9 @@
       {
         "_type": "matchStage",
         "expression": {
-          "_type": "item",
+          "_type": "objectExpression",
           "objects": [
             {
-              "_type": "objectExpression",
               "field": "\"test\"",
               "argument": {
                 "_type": "eqOperatorExpression",
@@ -128,7 +127,6 @@
               }
             },
             {
-              "_type": "objectExpression",
               "field": "\"test6\"",
               "argument": {
                 "_type": "eqOperatorExpression",
@@ -151,7 +149,6 @@
               }
             },
             {
-              "_type": "objectExpression",
               "field": "\"test7\"",
               "argument": {
                 "_type": "eqOperatorExpression",
@@ -165,7 +162,6 @@
               }
             },
             {
-              "_type": "objectExpression",
               "field": "\"test8\"",
               "argument": {
                 "_type": "eqOperatorExpression",
@@ -187,7 +183,6 @@
               }
             },
             {
-              "_type": "objectExpression",
               "field": "\"test9\"",
               "argument": {
                 "_type": "eqOperatorExpression",
@@ -216,7 +211,6 @@
               }
             },
             {
-              "_type": "objectExpression",
               "field": "\"test10\"",
               "argument": {
                 "_type": "eqOperatorExpression",
@@ -255,7 +249,6 @@
               }
             },
             {
-              "_type": "objectExpression",
               "field": "\"test11\"",
               "argument": {
                 "_type": "eqOperatorExpression",

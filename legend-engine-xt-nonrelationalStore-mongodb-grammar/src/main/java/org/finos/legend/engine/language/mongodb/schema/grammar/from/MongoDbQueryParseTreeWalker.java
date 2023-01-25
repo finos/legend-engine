@@ -15,39 +15,39 @@
 package org.finos.legend.engine.language.mongodb.schema.grammar.from;
 
 import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoDbQueryParser;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DatabaseCommand;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ViewPipeline;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Stage;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.MatchStage;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ProjectStage;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.AndOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArgumentExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ObjectExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Item;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ComputedFieldValue;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ObjectTypeValue;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.StringTypeValue;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.BoolTypeValue;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LiteralValue;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.IntTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArrayTypeValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.BaseTypeValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.BoolTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ComparisonOperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ComputedFieldValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DatabaseCommand;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DecimalTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.EqOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.GTOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.GreaterThanEqualsOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.InOperatorExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LTOperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.IntTypeValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.KeyValueExpressionPair;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.KeyValuePair;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LTEOperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LTOperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LiteralValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LogicalOperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.MatchStage;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NEOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NinOperatorExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LogicalOperatorExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.AndOperatorExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.OrOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NorOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NotOperatorExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.KeyValuePair;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.BaseTypeValue;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DecimalTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NullTypeValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ObjectExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ObjectTypeValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.OrOperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ProjectStage;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Stage;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.StringTypeValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ViewPipeline;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -137,24 +137,27 @@ public class MongoDbQueryParseTreeWalker
 
     private ArgumentExpression visitProjectFilterExpression(MongoDbQueryParser.ProjectFilterExpressionContext ctx)
     {
-        List<ObjectExpression> expressions = new ArrayList<>();
+        List<KeyValueExpressionPair> expressions = new ArrayList<>();
         if (ctx.projectFilter().size() > 0)
         {
             expressions = ctx.projectFilter().stream().map(this::visitProjectFilter).collect(Collectors.toList());
         }
-        Item expression = new Item();
+        ObjectExpression expression = new ObjectExpression();
         expression.objects = expressions;
         return expression;
     }
 
-    private ObjectExpression visitProjectFilter(MongoDbQueryParser.ProjectFilterContext ctx)
+    private KeyValueExpressionPair visitProjectFilter(MongoDbQueryParser.ProjectFilterContext ctx)
     {
         ArgumentExpression argument = visitProjectFilterValue(ctx.projectFilterValue());
-        ObjectExpression ObjectExpression = new ObjectExpression();
-        ObjectExpression.field = ctx.STRING().getText();
-        ObjectExpression.argument = argument;
+        KeyValueExpressionPair keyValueExpressionPair = new KeyValueExpressionPair();
+        keyValueExpressionPair.field = ctx.STRING().getText();
+        keyValueExpressionPair.argument = argument;
 
-        return ObjectExpression;
+        ObjectExpression objectExpression = new ObjectExpression();
+        objectExpression.objects = Arrays.asList(keyValueExpressionPair);
+
+        return keyValueExpressionPair;
     }
 
 
@@ -198,23 +201,24 @@ public class MongoDbQueryParseTreeWalker
         return val;
     }
 
-    private ObjectExpression visitExpression(MongoDbQueryParser.ExpressionContext ctx)
+
+    private KeyValueExpressionPair visitExpression(MongoDbQueryParser.ExpressionContext ctx)
     {
-        ObjectExpression ObjectExpression = new ObjectExpression();
-        ObjectExpression.field = ctx.STRING().getText();
-        ObjectExpression.argument = visitExpressionValue(ctx.expressionValue());
-        return ObjectExpression;
+        KeyValueExpressionPair keyValueExpressionPair = new KeyValueExpressionPair();
+        keyValueExpressionPair.field = ctx.STRING().getText();
+        keyValueExpressionPair.argument = visitExpressionValue(ctx.expressionValue());
+        return keyValueExpressionPair;
     }
 
     private ArgumentExpression visitQueryExpression(MongoDbQueryParser.QueryExpressionContext ctx)
     {
-        List<ObjectExpression> expressions = new ArrayList<>();
+        List<KeyValueExpressionPair> pairs = new ArrayList<>();
         if (ctx.expression().size() > 0)
         {
-            expressions = ctx.expression().stream().map(this::visitExpression).collect(Collectors.toList());
+            pairs = ctx.expression().stream().map(this::visitExpression).collect(Collectors.toList());
         }
-        Item expression = new Item();
-        expression.objects = expressions;
+        ObjectExpression expression = new ObjectExpression();
+        expression.objects = pairs;
         return expression;
     }
 

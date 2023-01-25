@@ -30,7 +30,7 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.GTO
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.GreaterThanEqualsOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.InOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.IntTypeValue;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Item;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.KeyValueExpressionPair;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.KeyValuePair;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LTEOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LTOperatorExpression;
@@ -181,15 +181,11 @@ public class MongoDbQueryComposer
         }
         else if (expression instanceof ObjectExpression)
         {
-            String field = ((ObjectExpression) expression).field;
-            String argument = visitExpression(((ObjectExpression) expression).argument);
-            return field + " : " + argument;
-        }
-        else if (expression instanceof Item)
-        {
-            List<String> strings = ((Item) expression).objects.stream()
-                            .map(this::visitExpression).collect(Collectors.toList());
-            return "{" + String.join(",", strings) + "}";
+
+            List<String> objPairString = ((ObjectExpression) expression).objects.stream()
+                    .map(this::visitKeyValueExpressionPair).collect(Collectors.toList());
+
+            return "{" + String.join(",", objPairString) + "}";
         }
         else if (expression instanceof ComputedFieldValue)
         {
@@ -247,6 +243,13 @@ public class MongoDbQueryComposer
     {
         String field = pair.key;
         String value = visitBaseType(pair.value);
+        return field + " : " + value;
+    }
+
+    public String visitKeyValueExpressionPair(KeyValueExpressionPair pair)
+    {
+        String field = pair.field;
+        String value = visitExpression(pair.argument);
         return field + " : " + value;
     }
 

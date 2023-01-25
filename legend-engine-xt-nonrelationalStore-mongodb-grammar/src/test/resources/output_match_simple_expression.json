@@ -7,10 +7,9 @@
       {
         "_type": "matchStage",
         "expression": {
-          "_type": "item",
+          "_type": "objectExpression",
           "objects": [
             {
-              "_type": "objectExpression",
               "field": "\"test\"",
               "argument": {
                 "_type": "literalValue",
