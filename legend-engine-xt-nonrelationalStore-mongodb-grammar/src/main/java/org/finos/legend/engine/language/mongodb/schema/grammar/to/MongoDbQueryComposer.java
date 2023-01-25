@@ -12,8 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.mongodb.schema.grammar.from;
+package org.finos.legend.engine.language.mongodb.schema.grammar.to;
 
+import org.finos.legend.engine.language.mongodb.schema.grammar.from.ComparisonOperator;
+import org.finos.legend.engine.language.mongodb.schema.grammar.from.LogicalOperator;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.AndOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArgumentExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArrayTypeValue;

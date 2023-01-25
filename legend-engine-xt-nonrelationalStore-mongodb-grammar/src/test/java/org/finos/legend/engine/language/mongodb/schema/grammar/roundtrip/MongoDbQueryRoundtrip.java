@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.mongodb.schema.grammar.from;
+package org.finos.legend.engine.language.mongodb.schema.grammar.roundtrip;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,6 +23,9 @@ import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoD
 import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoDbQueryLexer;
 import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoDbQueryListener;
 import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoDbQueryParser;
+import org.finos.legend.engine.language.mongodb.schema.grammar.from.AntlrThrowingErrorListener;
+import org.finos.legend.engine.language.mongodb.schema.grammar.from.MongoDbQueryParseTreeWalker;
+import org.finos.legend.engine.language.mongodb.schema.grammar.to.MongoDbQueryComposer;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DatabaseCommand;
 import org.junit.Test;
 import utils.CustomJSONPrettyPrinter;
@@ -37,7 +40,7 @@ import java.util.Objects;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
-public class MongoDbQueryParseTreeWalkerTest
+public class MongoDbQueryRoundtrip
 {
     private final ObjectMapper mapper = new ObjectMapper().setDefaultPrettyPrinter(new CustomJSONPrettyPrinter())
             .enable(SerializationFeature.INDENT_OUTPUT)
