@@ -182,7 +182,7 @@ public class MongoDbQueryComposer
         else if (expression instanceof ObjectExpression)
         {
 
-            List<String> objPairString = ((ObjectExpression) expression).objects.stream()
+            List<String> objPairString = ((ObjectExpression) expression).keyValues.stream()
                     .map(this::visitKeyValueExpressionPair).collect(Collectors.toList());
 
             return "{" + String.join(",", objPairString) + "}";

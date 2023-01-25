@@ -11,7 +11,7 @@
           "expressions": [
             {
               "_type": "objectExpression",
-              "objects": [
+              "keyValues": [
                 {
                   "field": "\"fName\"",
                   "argument": {
@@ -29,7 +29,7 @@
             },
             {
               "_type": "objectExpression",
-              "objects": [
+              "keyValues": [
                 {
                   "field": "\"lName\"",
                   "argument": {

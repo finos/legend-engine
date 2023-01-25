@@ -143,7 +143,7 @@ public class MongoDbQueryParseTreeWalker
             expressions = ctx.projectFilter().stream().map(this::visitProjectFilter).collect(Collectors.toList());
         }
         ObjectExpression expression = new ObjectExpression();
-        expression.objects = expressions;
+        expression.keyValues = expressions;
         return expression;
     }
 
@@ -155,7 +155,7 @@ public class MongoDbQueryParseTreeWalker
         keyValueExpressionPair.argument = argument;
 
         ObjectExpression objectExpression = new ObjectExpression();
-        objectExpression.objects = Arrays.asList(keyValueExpressionPair);
+        objectExpression.keyValues = Arrays.asList(keyValueExpressionPair);
 
         return keyValueExpressionPair;
     }
@@ -218,7 +218,7 @@ public class MongoDbQueryParseTreeWalker
             pairs = ctx.expression().stream().map(this::visitExpression).collect(Collectors.toList());
         }
         ObjectExpression expression = new ObjectExpression();
-        expression.objects = pairs;
+        expression.keyValues = pairs;
         return expression;
     }
 

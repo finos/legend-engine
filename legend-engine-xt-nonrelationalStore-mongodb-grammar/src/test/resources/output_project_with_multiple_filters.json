@@ -8,7 +8,7 @@
         "_type": "projectStage",
         "filters": {
           "_type": "objectExpression",
-          "objects": [
+          "keyValues": [
             {
               "field": "\"fName\"",
               "argument": {
