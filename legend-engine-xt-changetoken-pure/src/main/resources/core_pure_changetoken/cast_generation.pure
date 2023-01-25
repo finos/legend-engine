@@ -1,0 +1,739 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::factory::project::*;
+import meta::external::language::java::factory::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::changetoken::*;
+import meta::pure::functions::meta::*;
+import meta::external::language::java::metamodel::*;
+import meta::pure::changetoken::cast_generation::*;
+import meta::pure::functions::collection::*;
+
+// entry point into cast generation
+function meta::pure::changetoken::cast_generation::generateCast(versionsFuncName:String[1], outputClassName:String[1]):Project[1]
+{
+  // load Versions()
+  let versions = functionDescriptorToId($versionsFuncName + '():Versions[1]')
+    ->pathToElement()->cast(@ConcreteFunctionDefinition<{->Versions[1]}>)
+    ->eval();
+
+  // generated class  
+  let class = javaClass(['public'], javaPackage('org.finos.legend.engine.generated.meta.pure.changetoken.cast_generation'), $outputClassName);
+  
+  newProject()->addClass(
+    $class
+      ->_generateUpcastFunction($versions)
+      ->_generateDowncastFunction($versions)
+      ->addMethods(_generateUtilMethods())
+  );
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::_generateDowncastFunction(
+  class:meta::external::language::java::metamodel::Class[1],
+  versions:Versions[1]
+)
+:meta::external::language::java::metamodel::Class[1]
+{
+  let paramNode = j_parameter(objectNode(), 'objectNode');
+  let paramVersion = j_parameter(javaString(), 'targetVersion');
+
+  // code for the main downcast() method (lots of IFs) and the class with added methods
+  let codeAndClass = $versions.versions->reverse()->fold(
+    { 
+      ver, resP |
+      if($ver.prevVersion->size() != 0,
+      {|
+        let p = $class->_generateSingleDowncastFunction($ver, $paramVersion);
+        let resPF = $resP.first;
+        pair(^$resPF(values+=$p.first), $p.second);
+      },
+      |$resP
+      );
+    }, 
+    pair(^List<Code>(), $class)
+  );
+
+
+  let verVar = j_variable(javaString(), 'version');
+  // public static Map<String,Object> upcast(Map<String,Object> objectNode)
+  let downcastMethod = javaMethod(['public', 'static'], objectNode(), 'downcast', [$paramNode, $paramVersion],
+    j_block(
+      [
+        // if (objectNode.get("version") == null) throw new RuntimeException("Missing version")
+        j_if(
+          $paramNode->j_invoke('get', [j_string('version')], javaObject())->j_eq(j_null()),
+          javaRuntimeException()->j_new([j_string('Missing version')])->j_throw()),
+        // String version = (String) objectNode.get("version")
+        $verVar->j_declare($paramNode->j_invoke('get', [j_string('version')], javaVoid())->j_cast(javaString()))        
+      ]
+      // [if (version.equals(<version>)) {...}]+
+      ->concatenate($codeAndClass.first.values)
+      // if (!version.equals(<first_version>) || !targetVersion.equals(version)) throw new RuntimeException('Unexpected version')
+      ->concatenate([
+        j_if(
+          j_or(
+            j_not($verVar->j_invoke('equals', j_string($versions.versions->at(0).version))),
+            j_not($paramVersion->j_invoke('equals', $verVar))
+          ),
+          javaRuntimeException()->j_new(j_plus(j_string('Unexpected version: '), $verVar))->j_throw()
+        )
+      ])
+      // return objectNode
+      ->concatenate([j_return($paramNode)])));
+      
+  $codeAndClass.second->addMethod($downcastMethod);
+}
+
+
+function <<access.private>> meta::pure::changetoken::cast_generation::_generateUpcastFunction(
+  class:meta::external::language::java::metamodel::Class[1],
+  versions:Versions[1]
+):meta::external::language::java::metamodel::Class[1]
+{
+  let paramNode = j_parameter(objectNode(), 'objectNode');
+
+  // code for the main upcast() method (lots of IFs) and the class with added methods
+  let codeAndClass = $versions.versions->fold(
+    { 
+      ver, resP |
+      if($ver.prevVersion->size() != 0,
+      {|
+        let p = $class->_generateSingleUpcastFunction($ver);
+        let resPF = $resP.first;
+        pair(^$resPF(values+=$p.first), $p.second);
+      },
+      |$resP
+      );
+    }, 
+    pair(^List<Code>(), $class)
+  );
+
+
+  let verVar = j_variable(javaString(), 'version');
+  // public static Map<String,Object> upcast(Map<String,Object> node)
+  let upcastMethod = javaMethod(['public', 'static'], objectNode(), 'upcast', [$paramNode],
+    j_block(
+      [
+        // if (node.get("version") == null) throw new RuntimeException("Missing version")
+        j_if(
+          $paramNode->j_invoke('get', [j_string('version')], javaObject())->j_eq(j_null()),
+          javaRuntimeException()->j_new([j_string('Missing version')])->j_throw()),
+        // String version = (String) objectNode.get("version")
+        $verVar->j_declare($paramNode->j_invoke('get', [j_string('version')], javaVoid())->j_cast(javaString()))
+      ]
+      // [if (version.equals(<version>)) {...}]+
+      ->concatenate($codeAndClass.first.values)
+      // if (!version.equals(<current_version>)) throw new RuntimeException('Unexpected version')
+      ->concatenate([
+        j_if(
+          j_not($verVar->j_invoke('equals', j_string($versions.versions->at($versions.versions->size()-1).version))),
+          javaRuntimeException()->j_new(j_plus(j_string('Unexpected version: '), $verVar))->j_throw()
+        )
+      ])
+      // return res
+      ->concatenate([j_return($paramNode)])));
+      
+  $codeAndClass.second->addMethod($upcastMethod);
+}
+
+
+// upcast a single version
+function <<access.private>> meta::pure::changetoken::cast_generation::_generateSingleUpcastFunction(
+  class:meta::external::language::java::metamodel::Class[1], 
+  version:Version[1]
+):Pair<Code,meta::external::language::java::metamodel::Class>[1]
+{
+  let mainFuncName = '_upcast_to_' + ($version.version->replace(':', '_'));
+  let objRecurseFuncName = $mainFuncName + '_object';
+  let arrRecurseFuncName = $mainFuncName + '_array';
+  let objVar = j_parameter(objectNode(), 'objectNode');
+  let resVar = j_variable(objectNode(), 'res');
+
+  // private static Map<String,Object> _upcast_to_version(Map<String,Object> objectNode)
+  let class2 = $class->addMethod(javaMethod(['private', 'static'], objectNode(), $mainFuncName, [$objVar], j_block([
+    // Map<String,Object> res = _upcast_to_version_object(objectNode, Collections.emptyList(), objectNode)
+    $resVar->j_declare($class->j_invoke($objRecurseFuncName, [$objVar, j_emptyList(javaList(javaObject())), $objVar], objectNode())),
+
+    // res.put('version', <current_version>)
+    $resVar->j_invoke('put', [j_string('version'), j_string($version.version)], javaVoid()),
+
+    // return res
+    j_return($resVar)
+  ])));
+
+  let typeVar = j_variable(javaString(), 'type');
+  let rootObjVar = j_parameter(objectNode(), 'rootObjectNode');
+  let pathVar = j_parameter(javaList(javaObject()), 'path');
+  let changeTokenHandlers = $version.changeTokens
+    ->map(t|$t->match([
+      t:AddField[1]|_handleAddFieldUpcast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar),
+      t:ChangeFieldType[1]|_handleChangeFieldTypeUpcast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar)
+    ]))
+    ->fold({t,res|$res->concatenate($t)}, []);
+
+  // private static Map<String,Object> _upcast_to_version_object(Map<String,Object> rootObjectNode, List<Object> path, Map<String,Object> objectNode)
+  let class3 = $class2->addMethod(javaMethod(['private', 'static'], objectNode(), $objRecurseFuncName, [$rootObjVar, $pathVar, $objVar], j_block(
+    [
+      // if(objectNode.get("@type") == null) throw new RuntimeException("Missing @type")
+      j_if(
+        j_eq($objVar->j_invoke('get', [j_string('@type')], javaObject()), j_null()),
+        javaRuntimeException()->j_new(j_string('Missing @type'))->j_throw()
+      ),
+      // Map<String,Object> res = new HashMap<>()
+      $resVar->j_declare(javaHashMap()->j_new([])),
+
+      // String type = (String) objectNode.get("@type")
+      $typeVar->j_declare($objVar->j_invoke('get', [j_string('@type')], javaObject())->j_cast(javaString()))
+    ]
+    ->concatenate($changeTokenHandlers)
+    ->concatenate($class2->_generateSingleCastObjectRecurseBlock($objRecurseFuncName, $arrRecurseFuncName, $objVar, $pathVar, $rootObjVar, $resVar))
+    ->concatenate([
+      j_return($resVar)
+    ]))));
+
+  let verVar = j_variable(javaString(), 'version');
+  // if (version.equals(version))
+  let ifCond = j_if($verVar->j_invoke('equals', [j_string($version.prevVersion->toOne())]),
+    j_block([
+      // objectNode = Class._upcast_to_version(objectNode)
+      $objVar->j_assign($class3->j_invoke($mainFuncName, $objVar)),
+      // version = (String) objectNode.get("version")
+      $verVar->j_assign($objVar->j_invoke('get', [j_string('version')], javaObject())->j_cast(javaString()))
+    ]));
+
+  let class4 = $class3->addMethod($class3->_generateSingleCastArrayRecurseFunction($objRecurseFuncName, $arrRecurseFuncName));
+
+  pair($ifCond, $class4);
+}
+
+
+// downcast a single version
+function <<access.private>> meta::pure::changetoken::cast_generation::_generateSingleDowncastFunction(
+  class:meta::external::language::java::metamodel::Class[1], 
+  version:Version[1],
+  paramVersion:Code[1]
+):Pair<Code,meta::external::language::java::metamodel::Class>[1]
+{
+  let mainFuncName = '_downcast_to_' + ($version.prevVersion->toOne()->replace(':', '_'));
+  let objRecurseFuncName = $mainFuncName + '_object';
+  let arrRecurseFuncName = $mainFuncName + '_array';
+  let objVar = j_parameter(objectNode(), 'objectNode');
+  let pathVar = j_parameter(javaList(javaObject()), 'path');
+  let rootObjVar = j_parameter(objectNode(), 'rootObjectNode');
+  let resVar = j_variable(objectNode(), 'res');
+
+  // private static _downcast_to_version(ObjectNode objectNode)
+  let class2 = $class->addMethod(javaMethod(['private', 'static'], objectNode(), $mainFuncName, [$objVar], j_block([
+    // Map<String,Object> res = _downcast_to_version_object(objectNode, Collections.emptyList(), objectNode)
+    $resVar->j_declare($class->j_invoke($objRecurseFuncName, [$objVar, j_emptyList(javaList(javaObject())), $objVar], objectNode())),
+
+    // res.put('version', <previous_version>)
+    $resVar->j_invoke('put', [j_string('version'), j_string($version.prevVersion->toOne())], javaVoid()),
+
+    // return res
+    j_return($resVar)
+  ])));
+
+  let typeVar = j_variable(javaString(), 'type');
+  let changeTokenHandlers = $version.changeTokens
+    ->map(t|$t->match([
+      t:AddField[1]|_handleAddFieldDowncast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar),
+      t:ChangeFieldType[1]|_handleChangeFieldTypeDowncast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar)
+    ]))
+    ->fold({t,res|$res->concatenate($t)}, []);
+
+  // private static _downcast_to_version_object(ObjectNode rootObjectNode, List<Object> path, ObjectNode objectNode)
+  let class3 = $class2->addMethod(javaMethod(['private', 'static'], objectNode(), $objRecurseFuncName, [$rootObjVar, $pathVar, $objVar], j_block(
+    [
+      // if(objectNode.get("@type") == null) throw new RuntimeException("Missing @type")
+      j_if(
+        j_eq($objVar->j_invoke('get', [j_string('@type')], javaObject()), j_null()),
+        javaRuntimeException()->j_new(j_string('Missing @type'))->j_throw()
+      ),
+      // Map<String,Object> res = new HashMap<>()
+      $resVar->j_declare(javaHashMap()->j_new([])),
+      // String type = (String) objectNode.get("@type")
+      $typeVar->j_declare($objVar->j_invoke('get', [j_string('@type')], javaObject())->j_cast(javaString()))
+    ]
+    ->concatenate($changeTokenHandlers)
+    ->concatenate($class2->_generateSingleCastObjectRecurseBlock($objRecurseFuncName, $arrRecurseFuncName, $objVar, $pathVar, $rootObjVar, $resVar))
+    ->concatenate([
+      j_return($resVar)
+    ]))));
+
+  let verVar = j_variable(javaString(), 'version');
+  // if (version.equals(cur_version))
+  let ifCond = j_if($verVar->j_invoke('equals', [j_string($version.version)]),
+    [
+      // if (targetVersion.equals(version)) return objectNode
+      j_if($paramVersion->j_invoke('equals', [$verVar]), j_return($objVar)),
+      // objectNode = Class._downcast_to_version(objectNode)
+      $objVar->j_assign($class3->j_invoke($mainFuncName, $objVar)),
+      // version = (String) objectNode.get("version")
+      $verVar->j_assign($objVar->j_invoke('get', [j_string('version')], javaObject())->j_cast(javaString()))
+    ]);
+
+  let class4 = $class3->addMethod($class3->_generateSingleCastArrayRecurseFunction($objRecurseFuncName, $arrRecurseFuncName));
+
+  pair($ifCond, $class4);
+}
+
+
+function <<access.private>> meta::pure::changetoken::cast_generation::_generateSingleCastArrayRecurseFunction(
+  class:meta::external::language::java::metamodel::Class[1], 
+  objRecurseFuncName:String[1],
+  arrRecurseFuncName:String[1]
+):Method[1]
+{
+  let rootObjVar = j_parameter(objectNode(), 'rootObjectNode');
+  let pathVar = j_parameter(javaList(javaObject()), 'path');
+  let arrVar = j_parameter(arrayNode(), 'arrayNode');
+  let i = j_variable(javaInt(), 'i');
+  let arrI = $arrVar->j_invoke('get', [$i], javaObject());
+  let newPathVar = j_variable(javaList(javaObject()), 'newPath');
+  let resVar = j_variable(arrayNode(), 'res');
+
+  // List<Object> newPath = Stream.concat(path.stream(), Stream.of(i)).collect(Collectors.toList());
+  let newPathDeclare = $newPathVar->j_declare(
+    javaStream()->j_invoke('concat', 
+    [
+      $pathVar->j_invoke('stream', [], javaVoid()), 
+      javaStream()->j_invoke('of', [$i], javaVoid())
+    ], javaVoid())
+    ->j_invoke('collect', [javaCollectors()->j_invoke('toList', [], javaVoid())], javaVoid()));
+
+  // private static ArrayNode _upcast_to_version_array(ObjectNode rootObjectNode, List<Object> path, ArrayNode arrayNode)
+  javaMethod(['private', 'static'], arrayNode(), $arrRecurseFuncName, [$rootObjVar, $pathVar, $arrVar], j_block([
+    // List<Object> res = new ArrayList<>(arrayNode.size());
+    $resVar->j_declare(javaArrayList()->j_new([$arrVar->j_invoke('size', [], javaInt())])),
+    // for(int i = 0; i < arrayNode.size(); i++)
+    j_for($i->j_declare(j_int(0)), $i->j_lt($arrVar->j_invoke('size', [], javaInt())), $i->j_inc(), [
+      // if (arrayNode.get(i) instanceof List)
+      j_if($arrI->j_instanceof(javaList()),
+        [
+          $newPathDeclare,
+          // res.add(Class._up/downcast_to_version_array(rootObjectNode, newPath, (ArrayNode)arrayNode.get(i)))
+          $resVar->j_invoke('add', [$class->j_invoke($arrRecurseFuncName, [$rootObjVar, $newPathVar, $arrI->j_cast(arrayNode())], arrayNode())], javaVoid())
+        ],
+        // else if (arrayNode.get(i) instanceof Map)
+        j_if($arrI->j_instanceof(javaRawMap()),
+        [
+          $newPathDeclare,
+          // res.add(Class._up/downcast_to_version_object(rootObjectNode, newPath, (ObjectNode) arrayNode.get(i)))
+          $resVar->j_invoke('add', [$class->j_invoke($objRecurseFuncName, [$rootObjVar, $newPathVar, $arrI->j_cast(objectNode())], objectNode())], javaVoid())
+        ],
+        // else res.add(arrayNode.get(i))
+        [
+          $resVar->j_invoke('add', [$arrI], javaVoid())
+        ]
+        )
+      )
+    ]),
+    // return res
+    j_return($resVar)
+  ]));
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::_generateSingleCastObjectRecurseBlock(
+  class:meta::external::language::java::metamodel::Class[1], 
+  objRecurseFuncName:String[1],
+  arrRecurseFuncName:String[1],
+  objVar:Code[1],
+  pathVar:Code[1],
+  rootObjVar:Code[1],
+  resVar:Code[1]
+):Code[1..*]
+{
+  let entryType = ^ParameterizedType(
+      rawType=javaClass('java.util.Map.Entry'), 
+      typeArguments=[javaString(), javaObject()]);
+  let itType = ^ParameterizedType(
+    rawType=javaClass('java.util.Iterator'), 
+    typeArguments=[$entryType]);
+  let itVar = j_variable($itType, 'it');
+
+  let enVar = j_variable($entryType, 'en');
+  let innerObjectNodeVar = j_variable(objectNode(), 'innerObjectNode');
+  let newInnerObjectNodeVar = j_variable(objectNode(), 'newInnerObjectNode');  
+  let arrayNodeVar = j_variable(arrayNode(), 'arrayNode');
+  let newArrayNodeVar = j_variable(arrayNode(), 'newArrayNode');
+  let newPathVar = j_variable(javaList(javaObject()), 'newPath');
+
+  // List<Object> newPath = Stream.concat(path.stream(), Stream.of(en.getKey())).collect(Collectors.toList());
+  let newPathDeclare = $newPathVar->j_declare(
+    javaStream()->j_invoke('concat', 
+    [
+      $pathVar->j_invoke('stream', [], javaVoid()), 
+      javaStream()->j_invoke('of', 
+      [
+        $enVar->j_invoke('getKey', [], javaVoid())
+      ], javaVoid())
+    ], javaVoid())
+    ->j_invoke('collect', [javaCollectors()->j_invoke('toList', [], javaVoid())], javaVoid()));
+
+  [
+    // Iterator<Map.Entry<String, Object>> it = objectNode.entrySet().iterator();
+    $itVar->j_declare($objVar->j_invoke('entrySet', [], javaVoid())->j_invoke('iterator', [], javaVoid())),
+
+    // while (it.hasNext())
+    j_while($itVar->j_invoke('hasNext', [], javaBoolean()), [
+      //     Map.Entry<String, Object> en = it.next();
+      $enVar->j_declare($itVar->j_invoke('next', [], $entryType)),
+      //     if (en.getValue() instanceof Map)
+      j_if($enVar->j_invoke('getValue', [], javaObject())->j_instanceof(javaRawMap()),
+        [
+          $newPathDeclare,
+          // res.put(en.getKey(), Class._upcast_to_ftdm_abcdefg456_object(rootObjectNode, newPath, (Map<String,Object>) en.getValue()));
+          $resVar->j_invoke('put', 
+          [
+            $enVar->j_invoke('getKey', [], javaVoid()),
+            $class->j_invoke($objRecurseFuncName, [$rootObjVar, $newPathVar, $enVar->j_invoke('getValue', [], javaVoid())->j_cast(objectNode())], javaVoid())
+          ], javaVoid())
+        ],
+        //     } else if( en.getValue() instanceof List) {
+        j_if($enVar->j_invoke('getValue', [], javaObject())->j_instanceof(javaList()), 
+        [
+          $newPathDeclare,
+          // res.put(en.getKey(), Class._upcast_to_ftdm_abcdefg456_array(rootObjectNode, newPath, (List<Object>) en.getValue()));
+          $resVar->j_invoke('put', 
+          [
+            $enVar->j_invoke('getKey', [], javaVoid()),
+            $class->j_invoke($arrRecurseFuncName, [$rootObjVar, $newPathVar, $enVar->j_invoke('getValue', [], javaVoid())->j_cast(arrayNode())], javaVoid())
+          ], javaVoid())
+        ],
+        // else res.putIfAbsent(en.getKey(), en.getValue()) // ifAbsent, in case, the field was already converted by ChangeFieldType
+        [
+          $resVar->j_invoke('putIfAbsent', [$enVar->j_invoke('getKey', [], javaVoid()), $enVar->j_invoke('getValue', [], javaVoid())], javaVoid())
+        ]
+        )
+      )
+    ])
+  ];
+}
+
+
+function <<access.private>> meta::pure::changetoken::cast_generation::_handleAddFieldUpcast
+(
+  class:meta::external::language::java::metamodel::Class[1],
+  token:AddField[1], objVar:Code[1], typeVar:Code[1], version:String[1], pathVar:Code[1], rootObjVar:Code[1], resVar:Code[1]
+):Code[1]  
+{
+  let valVar = j_variable(javaObject(), 'value');
+
+  // if (type.equals(token.class))
+  j_if(
+    $typeVar->j_invoke('equals', [j_string($token.class)]),
+    $token.defaultValue->match([
+      // objectNode.put(fieldName, defaultValue)
+      df:ConstValue[1] | $objVar->j_invoke('put', [j_string($token.fieldName), j_int($df.value->cast(@Integer))], javaVoid()),
+      df:CopyValue[1] | 
+      [
+        // Object value = resolveRelativeReference(rootObjectNode, path, "../existingValue");
+        $valVar->j_declare($class->j_invoke('resolveRelativeReference', [
+          $rootObjVar, 
+          $pathVar, 
+          j_string($df.source->cast(@RelativeFieldReference).path) // TODO: handle other types of references
+        ], javaObject())),
+        // res.put("abc", value);
+        $resVar->j_invoke('put', [j_string($token.fieldName), $valVar], javaVoid())
+      ]
+    ])
+  );
+}
+
+
+function <<access.private>> meta::pure::changetoken::cast_generation::_getChangeFieldTypeConverter(
+  fromType : String[1],
+  toType : String[1]
+) : String[1]
+{
+  if($fromType == 'Integer[1]' && $toType == 'String[1]',
+    |'convertField_IntegerToString',
+  |if($fromType == 'String[1]' && $toType == 'Integer[1]',
+    |'convertField_StringToInteger',
+  {|fail('No conversion from ' + $fromType + ' to ' + $toType); '';}
+  ));
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::_handleChangeFieldTypeUpcast
+(
+  class:meta::external::language::java::metamodel::Class[1],
+  token:ChangeFieldType[1], objVar:Code[1], typeVar:Code[1], version:String[1], pathVar:Code[1], rootObjVar:Code[1], resVar:Code[1]
+):Code[1]
+{
+  // if (type.equals(token.class))
+  j_if(
+    $typeVar->j_invoke('equals', [j_string($token.class)]),
+    [
+      // res.put("abc", convertField_IntegerToString(path, objectNode.get("abc")))
+      $resVar->j_invoke('put', [
+        j_string($token.fieldName),
+        $class->j_invoke(_getChangeFieldTypeConverter($token.oldFieldType, $token.newFieldType), 
+        [
+          $pathVar, 
+          $objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())
+        ], javaObject())
+      ], javaVoid())
+    ]
+  );
+}
+
+
+function <<access.private>> meta::pure::changetoken::cast_generation::_handleAddFieldDowncast(
+  class:meta::external::language::java::metamodel::Class[1],
+  token:AddField[1], objVar:Code[1], typeVar:Code[1], version:String[1], pathVar:Code[1], rootObjVar:Code[1], resVar:Code[1]):Code[1]
+{
+  // if (type.equals(token.class))
+  j_if(
+    $typeVar->j_invoke('equals', [j_string($token.class)]),
+    $token.defaultValue->match([
+      df:ConstValue[1] |
+      [
+        // if ((Integer)objectNode.get(fieldName) != defaultValue) throw new RuntimeException("Cannot remove non-default value" + objectNode.get("fieldName")) // TODO: handle non-int
+        j_if($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_cast(toBoxed(javaInt()))->j_ne(j_int($df->cast(@ConstValue).value->cast(@Integer))),
+            javaRuntimeException()->j_new([j_string('Cannot remove non-default value:')->j_plus($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject()))])->j_throw()),
+
+        // objectNode.remove(fieldName)
+        $objVar->j_invoke('remove', [j_string($token.fieldName)], javaVoid()) 
+      ],
+      df:CopyValue[1] | 
+      [
+        // setRelativeReference(rootObjectNode, path, "../existingValue", objectNode.get("abc"));
+        $class->j_invoke('setRelativeReference', [
+          $rootObjVar, 
+          $pathVar, 
+          j_string($df.source->cast(@RelativeFieldReference).path), // TODO: handle other types of references
+          $objVar->j_invoke('get', [j_string($token.fieldName)], javaVoid())
+        ], javaObject()),
+
+        // objectNode.remove("abc");
+        $objVar->j_invoke('remove', [j_string($token.fieldName)], javaVoid())
+      ]
+    ])
+  );
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::_handleChangeFieldTypeDowncast
+(
+  class:meta::external::language::java::metamodel::Class[1],
+  token:ChangeFieldType[1], objVar:Code[1], typeVar:Code[1], version:String[1], pathVar:Code[1], rootObjVar:Code[1], resVar:Code[1]
+):Code[1]
+{
+  // if (type.equals(token.class))
+  j_if(
+    $typeVar->j_invoke('equals', [j_string($token.class)]),
+    [
+      // res.put("abc", convertField_StringToInteger(path, objectNode.get("abc")))
+      $resVar->j_invoke('put', [
+        j_string($token.fieldName),
+        $class->j_invoke(_getChangeFieldTypeConverter($token.newFieldType, $token.oldFieldType), 
+        [
+          $pathVar, 
+          $objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())
+        ], javaObject())
+      ], javaVoid())
+    ]
+  );
+}
+
+
+function <<access.private>> meta::pure::changetoken::cast_generation::_generateUtilMethods():meta::external::language::java::metamodel::Method[*]
+{
+  [
+  // public static Object resolveRelativeReference(Map<String, Object> rootObjectNode, List<Object> path, String relativeReference)
+  javaMethod(['public', 'static'], javaObject(), 'resolveRelativeReference', [
+    j_parameter(objectNode(), 'rootObjectNode'),
+    j_parameter(javaList(javaObject()), 'path'),
+    j_parameter(javaString(), 'relativeReference')
+  ],
+      '        List<Object> newPath = resolvePath(path, relativeReference);\n' +
+      '\n' +
+      '        /*\n' +
+      '            extract the value by path\n' +
+      '         */\n' +
+      '        Object cur = rootObjectNode;\n' +
+      '        int i = 0;\n' +
+      '        for (Object key : newPath)\n' +
+      '        {\n' +
+      '            try\n' +
+      '            {\n' +
+      '                if (cur instanceof Map)\n' +
+      '                {\n' +
+      '                    cur = ((Map<String, Object>) cur).get((String) key);\n' +
+      '                }\n' +
+      '                else if (cur instanceof List)\n' +
+      '                {\n' +
+      '                    cur = ((List<Object>) cur).get(toInt(key));\n' +
+      '                }\n' +
+      '                else\n' +
+      '                {\n' +
+      '                    throw new RuntimeException("Unexpected key on a non-container object of type " + cur.getClass().getName());\n' +
+      '                }\n' +
+      '                if (cur == null)\n' +
+      '                {\n' +
+      '                    throw new RuntimeException("No such element");\n' +
+      '                }\n' +
+      '            }\n' +
+      '            catch (RuntimeException ex)\n' +
+      '            {\n' +
+      '                throw new RuntimeException(\n' +
+      '                        ex + ": at index " + i + " of " + pathToString(newPath), ex);\n' +
+      '            }\n' +
+      '            ++i;\n' +
+      '        }\n' +
+      '        return cur;\n'
+  ),
+  // public static void setRelativeReference(Map<String,Object> rootObjectNode, List<Object> path, String relativeReference, Object value)
+  javaMethod(['public', 'static'], javaVoid(), 'setRelativeReference', [
+    j_parameter(objectNode(), 'rootObjectNode'),
+    j_parameter(javaList(javaObject()), 'path'),
+    j_parameter(javaString(), 'relativeReference'),
+    j_parameter(javaObject(), 'value')
+  ],
+      '        List<Object> newPath = resolvePath(path, relativeReference);\n' +
+      '\n' +
+      '        /*\n' +
+      '            set the value by path\n' +
+      '         */\n' +
+      '        Object cur = rootObjectNode;\n' +
+      '        int i = 0;\n' +
+      '        for (Object key : newPath.subList(0, newPath.size() - 1))\n' +
+      '        {\n' +
+      '            try\n' +
+      '            {\n' +
+      '                if (cur instanceof Map)\n' +
+      '                {\n' +
+      '                    cur = ((Map<String, Object>) cur).get((String) key);\n' +
+      '                }\n' +
+      '                else if (cur instanceof List)\n' +
+      '                {\n' +
+      '                    cur = ((List<Object>) cur).get(toInt(key));\n' +
+      '                }\n' +
+      '                else\n' +
+      '                {\n' +
+      '                    throw new RuntimeException("Unexpected key on a non-container object of type " + cur.getClass().getName());\n' +
+      '                }\n' +
+      '                if (cur == null)\n' +
+      '                {\n' +
+      '                    throw new RuntimeException("No such element");\n' +
+      '                }\n' +
+      '            }\n' +
+      '            catch (RuntimeException ex)\n' +
+      '            {\n' +
+      '                throw new RuntimeException(\n' +
+      '                        ex + ": at index " + i + " of " + pathToString(newPath), ex);\n' +
+      '            }\n' +
+      '            ++i;\n' +
+      '        }\n' +
+      '        try\n' +
+      '        {\n' +
+      '            if (cur instanceof Map)\n' +
+      '            {\n' +
+      '                ((Map<String, Object>) cur).put((String) newPath.get(newPath.size() - 1), value);\n' +
+      '            }\n' +
+      '            else if (cur instanceof List)\n' +
+      '            {\n' +
+      '                ((List<Object>) cur).set(toInt(newPath.get(newPath.size() - 1)), value);\n' +
+      '            }\n' +
+      '            else\n' +
+      '            {\n' +
+      '                throw new RuntimeException("Unexpected non-container object of type " + cur.getClass().getName());\n' +
+      '            }\n' +
+      '        }\n' +
+      '        catch (RuntimeException ex)\n' +
+      '        {\n' +
+      '            throw new RuntimeException(\n' +
+      '                    ex + ": at index " + i + " of " + pathToString(newPath), ex);\n' +
+      '        }\n'
+  ),
+  // public static List<Object> resolvePath(List<Object> path, String relativeReference)
+  javaMethod(['public', 'static'], javaList(javaObject()), 'resolvePath', [
+    j_parameter(javaList(javaObject()), 'path'),
+    j_parameter(javaString(), 'relativeReference')
+  ],
+      '        List<Object> newPath = new ArrayList<>(path);\n' +
+      '        String[] parts = relativeReference.split("/");\n' +
+      '        for (int i = 0; i < parts.length; i++)\n' +
+      '        {\n' +
+      '            String part = parts[i];\n' +
+      '            if ("..".equals(part))\n' +
+      '            {\n' +
+      '                try\n' +
+      '                {\n' +
+      '                    newPath.remove(newPath.size() - 1);\n' +
+      '                }\n' +
+      '                catch (IndexOutOfBoundsException e)\n' +
+      '                {\n' +
+      '                    throw new RuntimeException("Relative reference escapes root ("\n' +
+      '                            + pathToString(path)\n' +
+      '                            + ") at index " + i + " of " + relativeReference, e);\n' +
+      '                }\n' +
+      '            }\n' +
+      '            else\n' +
+      '            {\n' +
+      '                newPath.add(part);\n' +
+      '            }\n' +
+      '        }\n' +
+      '        return newPath;\n'
+  ),
+  // private static int toInt(Object key)
+  javaMethod(['private', 'static'], javaInt(), 'toInt', [
+    j_parameter(javaObject(), 'key')
+  ],
+      '        return (key instanceof Integer) ? (Integer) key : Integer.valueOf((String)key);\n'
+  ),
+  // private static String pathToString(List<Object> path)
+  javaMethod(['private', 'static'], javaString(), 'pathToString', [
+    j_parameter(javaList(javaObject()), 'path')
+  ],
+      '        return path.stream().map(Object::toString).collect(Collectors.joining("/"));\n'
+  ),
+  // public static String convertField_IntegerToString(List<Object> path, Object value)
+  javaMethod(['public', 'static'], javaString(), 'convertField_IntegerToString', [
+    j_parameter(javaList(javaObject()), 'path'),
+    j_parameter(javaObject(), 'value')
+  ],
+      '        if (!(value instanceof Integer))\n' +
+      '        {\n' +
+      '            throw new RuntimeException("Expected an Integer, not " + value + " at path " + pathToString(path));\n' +
+      '        }\n' +
+      '        return value.toString();\n'
+  ),
+  // public static Integer convertField_StringToInteger(List<Object> path, Object value)
+  javaMethod(['public', 'static'], toBoxed(javaInt()), 'convertField_StringToInteger', [
+    j_parameter(javaList(javaObject()), 'path'),
+    j_parameter(javaObject(), 'value')
+  ],
+      '        try\n' +
+      '        {\n' +
+      '            if (!(value instanceof String))\n' +
+      '            {\n' +
+      '                throw new RuntimeException("Expected a String, not " + value);\n' +
+      '            }\n' +
+      '\n' +
+      '            return Integer.parseInt((String) value);\n' +
+      '        }\n' +
+      '        catch (RuntimeException ex)\n' +
+      '        {\n' +
+      '            throw new RuntimeException(ex + " at path " + pathToString(path), ex);\n' +
+      '        }\n'
+    )
+  ]
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::objectNode():meta::external::language::java::metamodel::Type[1] { javaMap(javaString(), javaObject()); }
+function <<access.private>> meta::pure::changetoken::cast_generation::arrayNode():meta::external::language::java::metamodel::Type[1] { javaList(javaObject()); }
+function <<access.private>> meta::pure::changetoken::cast_generation::javaRawMap():meta::external::language::java::metamodel::Type[1] { javaClass('java.util.Map'); }

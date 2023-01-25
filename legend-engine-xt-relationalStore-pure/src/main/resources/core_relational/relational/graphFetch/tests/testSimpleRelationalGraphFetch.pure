@@ -1244,3 +1244,46 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_21_0'} meta::rel
     $result
   );
 }
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::simple::testSimpleGraphFetchForReservedWords(): Boolean[1]
+{
+   let tree = #{
+       testReservedWords {
+        quantity, class, boolean, abstract, assert,
+        break, byte, catch, char,
+        const, continue, default, do, double,
+        else, enum, final, finally, float,
+        goto, implements, instanceof, interface,
+        long, new, package, private, protected,
+        public, return, short, static, strictfp, super,
+        switch, synchronized, this, throw, throws,
+        transient, try, void, volatile, while   
+      }         
+   }#;
+
+   let query = {|testReservedWords.all()->filter(x|$x.class == 'Department A')->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+   
+   assertJsonStringsEqual('{"implements":19,"synchronized":"n","private":"e","const":8,"do":11,"float":17,"interface":"a","while":"v","long":"b","switch":"m","default":10,"goto":18,"protected":"f","public":"g","assert":3,"continue":9,"else":13,"catch":6,"class":"Department A","new":"c","quantity":1,"package":"d","static":"j","void":"t","break":4,"byte":5,"double":12,"finally":16,"this":"o","volatile":"u","abstract":2,"strictfp":"k","throws":"q","enum":14,"instanceof":20,"super":"l","boolean":1,"throw":"p","transient":"r","char":7,"final":15,"short":"i","try":"s","return":"h"}',$result);
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::simple::testSimpleGraphFetchForReservedWordsAsClassName(): Boolean[1]
+{
+   let tree = #{
+       class {
+        desks,
+        students
+        }         
+   }#;
+
+   let query = {|class.all()->filter(x|$x.students == 40)->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+   
+   assertJsonStringsEqual('{"students":40,"desks":25}',$result);
+}

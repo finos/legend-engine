@@ -16,9 +16,9 @@ import meta::external::language::java::metamodel::*;
 import meta::external::language::java::factory::*;
 import meta::external::language::java::serialization::*;
 import meta::external::language::java::transform::*;
-import meta::pure::executionPlan::engine::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
 
-function meta::pure::executionPlan::engine::java::registerAssertLibrary(conventions: Conventions[1]): Conventions[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::assert::registerAssertLibrary(conventions: Conventions[1]): Conventions[1]
 {
    let library  = $conventions->className(Library);
    let noParams = []->cast(@Code);

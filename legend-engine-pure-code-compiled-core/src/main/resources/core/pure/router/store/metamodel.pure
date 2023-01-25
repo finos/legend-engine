@@ -128,15 +128,13 @@ Class meta::pure::graphFetch::routing::RoutedRootGraphFetchTree<T> extends Route
 Class meta::pure::graphFetch::routing::RoutedPropertyGraphFetchTree extends RoutedGraphFetchTree, PropertyGraphFetchTree
 {
    propertyMapping : PropertyMapping[*];
+   isXStoreDependentPrimitiveQualifier : Boolean[0..1];
 }
 
-Class meta::pure::graphFetch::routing::ClusteredGraphFetchTree extends GraphFetchTree
+Class meta::pure::graphFetch::routing::StoreMappingClusteredGraphFetchTree extends ClusteredGraphFetchTree
 {
    s        : StoreContract[1];
    store    : Store[1];
-   tree     : RoutedGraphFetchTree[1];
-   openVars : Map<String, List<Any>>[1];
    runtime  : Runtime[0..1];
    mapping  : Mapping[0..1];
-   exeCtx   : ExecutionContext[0..1];
 }

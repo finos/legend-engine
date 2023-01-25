@@ -19,6 +19,8 @@ import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation._package._Package;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.metadata.Metadata;
+import org.finos.legend.pure.runtime.java.compiled.generation.processors.type.MetadataJavaPaths;
+import org.finos.legend.pure.m3.navigation.enumeration.Enumeration;
 
 public class InterpretedMetadata implements Metadata
 {
@@ -66,6 +68,6 @@ public class InterpretedMetadata implements Metadata
     @Override
     public CoreInstance getEnum(String s, String s1)
     {
-        throw new RuntimeException("Not supported");
+        return Enumeration.findEnum(this.getMetadata(MetadataJavaPaths.Enumeration, s), s1);
     }
 }

@@ -693,6 +693,59 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    }\n" +
                 "  }\n" +
                 "}\n", "COMPILATION error at [50:30-42]: Can't find type 'Result<Any|*>'");
+
+        test(resource + "###Service\n" +
+                "Service meta::pure::myServiceMulti\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/{env}';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'ownerName'\n" +
+                "  ];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Multi\n" +
+                "  {\n" +
+                "    query: {src:    test::class[1]|$src.prop1};\n" +
+                "  }\n" +
+                "  test: Multi\n" +
+                "  {\n" +
+                "    tests['QA']:\n" +
+                "    {\n" +
+                "      data: 'moreData';\n" +
+                "      asserts:\n" +
+                "      [\n" +
+                "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },\n" +
+                "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "    tests['PROD']:\n" +
+                "    {\n" +
+                "      data: 'moreData';\n" +
+                "      asserts:\n" +
+                "      [\n" +
+                "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },\n" +
+                "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n\n" +
+                "ExecutionEnvironment test::executionEnvironment\n" +
+                "{\n" +
+                "      executions:\n" +
+                "      [\n" +
+                "        QA:\n" +
+                "        {\n" +
+                "          mapping: test::mapping;\n" +
+                "          runtime: test::runtime;\n" +
+                "        },\n" +
+                "        PROD:\n" +
+                "        {\n" +
+                "          mapping: test::mapping;\n" +
+                "          runtime: test::runtime;\n" +
+                "        }\n" +
+                "      ];\n" +
+                "}\n", "COMPILATION error at [29:14-32:3]: Service multi execution must not be empty");
     }
 
     @Test
@@ -2893,6 +2946,132 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "\n" +
                 "  ]\n" +
                 "}\n");
+
+        test(resource +
+                "###Service\n" +
+                "Service test::firm::model::myService\n" +
+                "{\n" +
+                "  pattern: '/showcase/binding';\n" +
+                "  documentation: 'Showcase service with binding';\n" +
+                "  autoActivateUpdates: false;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: data: String[1]|test::firm::model::Firm->internalize(test::firm::model::TestBinding1, $data)->externalize(test::firm::model::TestBinding1, #{test::firm::model::Firm{name, ranking}}#);\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          parameters:\n" +
+                "          [\n" +
+                "            data = '[{\"street\":\"street A\"}]'\n" +
+                "          ]\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '[{\"street\":\"street A\"}]';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n");
+
+        test(resource +
+                "###Service\n" +
+                "Service test::firm::model::myService\n" +
+                "{\n" +
+                "  pattern: '/showcase/binding';\n" +
+                "  documentation: 'Showcase service with binding';\n" +
+                "  autoActivateUpdates: false;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: data: ByteStream[1]|test::firm::model::Firm->internalize(test::firm::model::TestBinding1, $data)->externalize(test::firm::model::TestBinding1, #{test::firm::model::Firm{name, ranking}}#);\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          parameters:\n" +
+                "          [\n" +
+                "            data = byteStream('[{\"street\":\"street A\"}]')\n" +
+                "          ]\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '[{\"street\":\"street A\"}]';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n");
+
+        test(resource +
+                "###Service\n" +
+                "Service test::firm::model::myService\n" +
+                "{\n" +
+                "  pattern: '/showcase/binding';\n" +
+                "  documentation: 'Showcase service with binding';\n" +
+                "  autoActivateUpdates: false;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: data: ByteStream[1]|test::firm::model::Firm->internalize(test::firm::model::TestBinding1, $data)->externalize(test::firm::model::TestBinding1, #{test::firm::model::Firm{name, ranking}}#);\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          parameters:\n" +
+                "          [\n" +
+                "            data = '[{\"street\":\"street A\"}]'\n" +
+                "          ]\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '[{\"street\":\"street A\"}]';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n", "COMPILATION error at [87:9-106:9]: Parameter value type does not match with parameter type for parameter: 'data'");
     }
 
     @Test
@@ -3028,5 +3207,65 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    }\n" +
                 "  ]\n" +
                 "}", " at [20:1-42:1]: Error in 'test::Service': Post validation assertion function expects 1 parameter");
+    }
+
+    @Test
+    public void testExecutionEnvironmentCompilation()
+    {
+        test("###Service\n" +
+        "ExecutionEnvironment test::executionEnvironment\n" +
+                "{\n" +
+                "  executions:\n" +
+                "  [\n" +
+                "    UAT:\n" +
+                "    {\n" +
+                "      mapping: test::myMapping1;\n" +
+                "      runtime: test::myRuntime1;\n" +
+                "    },\n" +
+                "    PROD:\n" +
+                "    {\n" +
+                "      mapping: test::myMapping2;\n" +
+                "      runtime: test::myRuntime2;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n","COMPILATION error at [8:16-31]: Can't find mapping 'test::myMapping1'");
+
+        String resource = "Class test::class\n" +
+                "{\n" +
+                "  prop1 : Integer[0..1];\n" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                ")\n" +
+                "###Connection\n" +
+                "JsonModelConnection test::connection\n" +
+                "{\n" +
+                "  class : test::class;" +
+                "  url : 'asd';\n" +
+                "}\n" +
+                "###Runtime\n" +
+                "Runtime test::runtime\n" +
+                "{\n" +
+                " mappings: [test::mapping];\n" +
+                "}\n";
+
+        test(resource + "###Service\n" +
+                "ExecutionEnvironment test::executionEnvironment\n" +
+                "{\n" +
+                "  executions:\n" +
+                "  [\n" +
+                "    UAT:\n" +
+                "    {\n" +
+                "      mapping: test::mapping;\n" +
+                "      runtime: test::myRuntime1;\n" +
+                "    },\n" +
+                "    PROD:\n" +
+                "    {\n" +
+                "      mapping: test::mapping;\n" +
+                "      runtime: test::runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n","COMPILATION error at [27:16-31]: Can't find runtime 'test::myRuntime1'");
     }
 }

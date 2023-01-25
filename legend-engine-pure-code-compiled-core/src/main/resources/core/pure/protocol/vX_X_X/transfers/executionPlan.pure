@@ -106,10 +106,10 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
                                                                             ]))
 
             ),
-         g:meta::pure::graphFetch::executionPlan::GlobalGraphFetchExecutionNode[1]|
-            ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::GlobalGraphFetchExecutionNode
+         g:meta::pure::graphFetch::executionPlan::StoreMappingGlobalGraphFetchExecutionNode[1]|
+            ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::StoreMappingGlobalGraphFetchExecutionNode
             (
-               _type = 'globalGraphFetchExecutionNode',
+               _type = 'storeMappingGlobalGraphFetchExecutionNode',
                resultType = $g.resultType->transformResultType($mapping, $extensions),
                resultSizeRange = $g.resultSizeRange->isEmpty()->if(|[],|$g.resultSizeRange->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()),
                graphFetchTree = $g.graphFetchTree->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], newMap([]->cast(@Pair<String,List<Any>>)), $extensions),
@@ -132,7 +132,34 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
                      targetPropertiesOrdered = $x.targetPropertiesOrdered,
                      subTree = $x.subTree
                   )
-               )
+               ),
+               localTreeIndices = $g.localTreeIndices,
+               dependencyIndices = $g.dependencyIndices
+            ),
+         g:meta::pure::graphFetch::executionPlan::PlatformGlobalGraphFetchExecutionNode[1]|
+            ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::PlatformGlobalGraphFetchExecutionNode
+            (
+               _type = 'platformGlobalGraphFetchExecutionNode',
+               resultType = $g.resultType->transformResultType($mapping, $extensions),
+               resultSizeRange = $g.resultSizeRange->isEmpty()->if(|[],|$g.resultSizeRange->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()),
+               graphFetchTree = $g.graphFetchTree->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], newMap([]->cast(@Pair<String,List<Any>>)), $extensions),
+               children = $g.children->map(s | $s->transformNode($mapping, $extensions))->cast(@meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::GlobalGraphFetchExecutionNode),
+               localGraphFetchExecutionNode = $g.localGraphFetchExecutionNode->transformNode($mapping, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::LocalGraphFetchExecutionNode),
+               parentIndex = $g.parentIndex,
+               enableConstraints = $g.enableConstraints,
+               checked = $g.checked,
+               localTreeIndices = $g.localTreeIndices,
+               dependencyIndices = $g.dependencyIndices
+            ),
+         l:meta::pure::graphFetch::executionPlan::PlatformPrimitiveQualifierLocalGraphFetchExecutionNode[1]|
+            ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::PlatformPrimitiveQualifierLocalGraphFetchExecutionNode
+            (
+               _type = 'platformPrimitiveQualifierLocalGraphFetchExecutionNode',
+               resultType = $l.resultType->transformResultType($mapping, $extensions),
+               resultSizeRange = $l.resultSizeRange->isEmpty()->if(|[],|$l.resultSizeRange->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()),
+               nodeIndex = $l.nodeIndex,
+               parentIndex = $l.parentIndex,
+               graphFetchTree = $l.graphFetchTree->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], newMap([]->cast(@Pair<String,List<Any>>)), $extensions)
             ),
          e:meta::pure::executionPlan::ErrorExecutionNode[1]|
             ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::ErrorExecutionNode
@@ -301,6 +328,14 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
                                                              (
                                                                 _type='void'
                                                              ),
+         lazyVoid:meta::pure::executionPlan::LazyVoidResultType[1]|^meta::protocols::pure::vX_X_X::metamodel::executionPlan::LazyVoidResultType
+                                                              (
+                                                                _type='lazyVoid'
+                                                              ),
+         up:meta::pure::executionPlan::UpdateNodeResultType[1]|^meta::protocols::pure::vX_X_X::metamodel::executionPlan::UpdateNodeResultType
+                                                              (
+                                                                _type='updateNode'
+                                                              );,
          rt:meta::pure::executionPlan::DataTypeResultType[1]|^meta::protocols::pure::vX_X_X::metamodel::executionPlan::DataTypeResultType
                                                               (
                                                                  _type='dataType',

@@ -72,21 +72,23 @@ function meta::relational::extension::relationalExtension(type:String[1]) : meta
                                 {mapping:Mapping[1], runtime: Runtime[1], parametersValues:Pair<VariableExpression, Any>[*], extensions:meta::pure::extension::Extension[*] |
                                    [
                                         r:RelationalInstantiationExecutionNode[1] | let sql = $parametersValues->fold({a,b| let paramName = $a.first->evaluateAndDeactivate().name;
+                                                                                                            assert($r.executionNodes->at(0)->cast(@SQLExecutionNode).connection->size() == 1, 'SQLExecutionNode with less than 1 connection are only supported in engine execution flow and not in pure flow');
                                                                                                             let paramType             = $a.first->evaluateAndDeactivate().genericType.rawType->toOne();
                                                                                                             let sizeProcessedSql      = $b->replace($paramName->buildVariableCollectionSizeString(), if($a.second->instanceOf(List), |$a.second->cast(@List<Any>).values->size()->toString(), |$a.second->size()->toString();));
-                                                                                                            let connection            = $r.executionNodes->at(0)->cast(@SQLExecutionNode).connection;
+                                                                                                            let connection            = $r.executionNodes->at(0)->cast(@SQLExecutionNode).connection->toOne();
                                                                                                             
                                                                                                             let paramTypeListOfList   = $paramType == List && $paramType.classifierGenericType.typeArguments.rawType == List;
                                                                                                             if(!$paramTypeListOfList,  // Need this check because we are trying to build freemarker exp for all params and we can't build freemarker exp for params of type List<List<Any>>
                                                                                                                |
-                                                                                                                let freemarkerTemplate    = $paramName->buildVariableTemplateString($a.second, $paramType, $runtime, $extensions);
-                                                                                                                let freemarkerValue       = $a.second->processLiteralDefaultForPlanService($connection.type, $connection.timeZone, $connection.quoteIdentifiers);
+                                                                                                                let varPlaceHolderFreemarkerTemplate = ^meta::relational::functions::pureToSqlQuery::metamodel::VarPlaceHolder(name=$paramName, type=$paramType)->meta::relational::functions::sqlQueryToString::processOperation($runtime.connections->at(0)->cast(@DatabaseConnection).type, $extensions);
+                                                                                                                let literalFreemarkerTemplate        = $paramName->buildVariableTemplateString($a.second, $paramType, $runtime, $extensions);
+                                                                                                                let freemarkerValue                  = $a.second->processLiteralDefaultForPlanService($connection.type, $connection.timeZone, $connection.quoteIdentifiers);
 
                                                                                                                 //Need to remove quotes to allow execution of freemarkerConditional node and cases like strtsWith where we remove quotes in sqlQueryToString
-                                                                                                                let removeQuotePadding    = ($freemarkerTemplate->startsWith('\'') && $freemarkerTemplate->endsWith('\'')) && ($freemarkerValue->startsWith('\'') && $freemarkerValue->endsWith('\''));
-                                                                                                                let processedTemplate     = if($removeQuotePadding, | $freemarkerTemplate->substring(1, $freemarkerTemplate->length()-1), |$freemarkerTemplate);
+                                                                                                                let removeQuotePadding    = ($literalFreemarkerTemplate->startsWith('\'') && $literalFreemarkerTemplate->endsWith('\'')) && ($freemarkerValue->startsWith('\'') && $freemarkerValue->endsWith('\''));
+                                                                                                                let processedTemplate     = if($removeQuotePadding, | $literalFreemarkerTemplate->substring(1, $literalFreemarkerTemplate->length()-1), |$literalFreemarkerTemplate);
                                                                                                                 let processedValue        = if($removeQuotePadding, | $freemarkerValue->substring(1, $freemarkerValue->length()-1), |$freemarkerValue);
-                                                                                                                $sizeProcessedSql->replace($processedTemplate, $processedValue);,
+                                                                                                                $sizeProcessedSql->replace($processedTemplate, $processedValue)->replace($varPlaceHolderFreemarkerTemplate, $processedValue);,
                                                                                                                |$sizeProcessedSql);}
                                                                                                       , $r.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
 
@@ -115,7 +117,7 @@ function meta::relational::extension::relationalExtension(type:String[1]) : meta
                                                                                    meta::relational::mapping::executeQuery($sql
                                                                                         , []
                                                                                         , $pathInfoPairs->cast(@Pair<String, PathInformation>)
-                                                                                        , $r.executionNodes->at(0)->cast(@SQLExecutionNode).connection
+                                                                                        , $r.executionNodes->at(0)->cast(@SQLExecutionNode).connection->toOne()
                                                                                         , $runtime
                                                                                         , $r.resultType.type
                                                                                         , []->cast(@RoutedValueSpecification)
@@ -127,13 +129,14 @@ function meta::relational::extension::relationalExtension(type:String[1]) : meta
                                                                                         , noDebug());,
                                        c:CreateAndPopulateTempTableExecutionNode[1] | assert($c.inputVarNames->size() == 1, 'CreateAndPopulateTempTableExecutionNode with more than 1 inputs are only supported in engine execution flow and not in pure flow');
                                                                                       assert($c.tempTableColumnMetaData->size() == 1, 'CreateAndPopulateTempTableExecutionNode with more than 1 columns are only supported in engine execution flow and not in pure flow');
+                                                                                      assert($c.connection->size() == 1, 'CreateAndPopulateTempTableExecutionNode with less than 1 connection are only supported in engine execution flow and not in pure flow');
                                                                                       let column = ^Column(name = $c.tempTableColumnMetaData->toOne().column.label, type = $c.tempTableColumnMetaData.column.dataType->toOne());
-                                                                                      meta::relational::metamodel::execute::createTempTable($c.tempTableName, $column, meta::relational::functions::toDDL::createTempTableStatement(), true, $c.connection);
+                                                                                      meta::relational::metamodel::execute::createTempTable($c.tempTableName, $column, meta::relational::functions::toDDL::createTempTableStatement(), true, $c.connection->toOne());
 
                                                                                       let srcvalue = $parametersValues->filter(p | $p.first->evaluateAndDeactivate().name == $c.inputVarNames).second->toOne();
                                                                                       let values   = meta::pure::executionPlan::execution::flattenList($srcvalue);
                                                                                       let insertStatement = 'INSERT INTO '+ $c.tempTableName + '(' + $column.name + ') values ' + $values->map(v | '(' + $v->processLiteralDefaultForPlanService(DatabaseType.H2, [], []) + ')')->joinStrings(', ') + ';';
-                                                                                      meta::relational::metamodel::execute::executeInDb($insertStatement, $c.connection);
+                                                                                      meta::relational::metamodel::execute::executeInDb($insertStatement, $c.connection->toOne());
                                                                                       [];
                                    ]
                                 },

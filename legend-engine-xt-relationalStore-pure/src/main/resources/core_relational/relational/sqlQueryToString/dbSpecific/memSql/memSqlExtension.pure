@@ -32,7 +32,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memSq
       selectSQLQueryProcessor = processSelectSQLQueryForMemSQL_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
       identifierProcessor = processIdentifierWithBackTicks_String_1__DbConfig_1__String_1_,
-      dynaFuncDispatch = $dynaFuncDispatch
+      dynaFuncDispatch = $dynaFuncDispatch,
+      ddlCommandsTranslatorForTempTable = getDDLCommandsTranslatorForTempTable__RelationalDDLCommandsTranslator_1_,
+      getDefaultTempTableIsolationStrategy = getDefaultTempTableIsolationStrategy__TempTableIsolationStrategy_1_
    );
 }
 
@@ -90,6 +92,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memSq
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='LOCATE(%s)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='group_concat(%s separator %s)')),
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='char_length(%s)')),
+    dynaFnToSql('matches',                $allStates,            ^ToSql(format=regexpPattern('%s'), transform={p:String[2]|$p->transformRegexpParams()})),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='minute(%s)')),
     dynaFnToSql('mod',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
     dynaFnToSql('month',                  $allStates,            ^ToSql(format='month(%s)')),
@@ -111,7 +114,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memSq
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='curdate()')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as char)')),
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampMemSQL()})), 
-    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))
+    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
+    dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='weekofyear(%s)'))
   ];
 }
 
@@ -188,4 +192,33 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memSq
   if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
   if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
   + processLimit($s, $format, processTakeDefault_SelectSQLQuery_1__Format_1__String_1_, processSliceOrDropDefault_SelectSQLQuery_1__Format_1__Any_1__String_1_);
+}
+
+function meta::relational::functions::sqlQueryToString::memSql::getDefaultTempTableIsolationStrategy(): meta::pure::alloy::connections::alloy::isolation::TempTableIsolationStrategy[1]
+{
+  ^meta::pure::alloy::connections::alloy::isolation::DefaultIsolationStrategy();
+}
+
+function meta::relational::functions::sqlQueryToString::memSql::translateCreateTableStatementForTempTable(c:CreateTableSQL[1], dbConfig: DbConfig[1]): String[*]
+{
+  'CREATE TEMPORARY TABLE ' + $c.table->toOne().name + ' (' + $c.table.columns->cast(@Column).name->toOne() + ' ' + $c.table.columns->cast(@Column).type->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText() + ');';
+}
+
+function meta::relational::functions::sqlQueryToString::memSql::translateDropTableStatementForTempTable(d:DropTableSQL[1]): String[*]
+{
+  'DROP TEMPORARY TABLE IF EXISTS ' + $d.table->toOne().name + ';';
+}
+
+function meta::relational::functions::sqlQueryToString::memSql::translateLoadStatementForTempTable(l:LoadTableSQL[1], dbConfig: DbConfig[1]): String[*]
+{
+  'LOAD DATA LOCAL INFILE ' + $l.csvFileLocationVarPlaceHolder->toOne() + '.replace("\\", "/") \n INTO TABLE `' + $l.table->toOne().name + '` \nIGNORE 1 LINES;';
+}
+
+function meta::relational::functions::sqlQueryToString::memSql::getDDLCommandsTranslatorForTempTable(): RelationalDDLCommandsTranslator[1]
+{
+  ^RelationalDDLCommandsTranslator(
+                createTable =  translateCreateTableStatementForTempTable_CreateTableSQL_1__DbConfig_1__String_MANY_,
+                dropTable = translateDropTableStatementForTempTable_DropTableSQL_1__String_MANY_,
+                loadTable =  translateLoadStatementForTempTable_LoadTableSQL_1__DbConfig_1__String_MANY_
+              );
 }

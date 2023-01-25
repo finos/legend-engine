@@ -27,6 +27,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applica
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedQualifiedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.UnknownAppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CByteStream;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDecimal;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFloat;
@@ -50,7 +51,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Pri
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Whatever;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.Pair;
 
 import java.util.List;
 import java.util.Stack;
@@ -85,10 +85,10 @@ public class ModelStoreDataGrammarComposer implements ValueSpecificationVisitor<
                     str.append(type).append(":\n");
 
                     ValueSpecification vs = data.instances.get(type);
-                    if ((vs instanceof ClassInstance && ((ClassInstance) vs).value instanceof Pair))
+                    if (vs instanceof PackageableElementPtr)
                     {
                         DataElementReference reference = new DataElementReference();
-                        reference.dataElement = ((PackageableElementPtr) ((Pair) ((ClassInstance) data.instances.get(type)).value).second).fullPath;
+                        reference.dataElement = ((PackageableElementPtr) vs).fullPath;
                         str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(reference, PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(indentString).build()));
                     }
                     else if (vs instanceof Collection && ((Collection) vs).values.size() == 1)
@@ -160,6 +160,12 @@ public class ModelStoreDataGrammarComposer implements ValueSpecificationVisitor<
     public String visit(CStrictTime cStrictTime)
     {
         return HelperValueSpecificationGrammarComposer.generateValidDateValueContainingPercent(cStrictTime.value);
+    }
+
+    @Override
+    public String visit(CByteStream cByteStream)
+    {
+        throw new UnsupportedOperationException("Not implemented for ModelStoreData");
     }
 
     @Override

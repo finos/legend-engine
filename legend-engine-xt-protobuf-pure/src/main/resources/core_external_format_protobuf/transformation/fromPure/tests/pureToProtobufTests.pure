@@ -29,7 +29,7 @@ Class meta::external::format::protobuf::transformation::fromPure::tests::trade::
    id:Integer[1];
    npv:Float[1];
    notionals:Float[*];
-   account : Account[1];
+   account:Account[1];
 }
 
 Enum meta::external::format::protobuf::transformation::fromPure::tests::trade::MyEnum
@@ -48,6 +48,7 @@ Class meta::external::format::protobuf::transformation::fromPure::tests::account
 Class meta::external::format::protobuf::transformation::fromPure::tests::Person
 {
    name : String[1];
+   age  : Integer[0..1];
 }
 
 Class meta::external::format::protobuf::transformation::fromPure::tests::StandaloneThing
@@ -169,6 +170,7 @@ function meta::external::format::protobuf::transformation::fromPure::tests::tran
       + '\n'
       + 'message Person {\n'
       + '  string name = 1;\n'
+      + '  optional int64 age = 2;\n'
       + '}'
       , $results.second);
 }
@@ -313,6 +315,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::external::format::protobuf::tran
                 '\n' + 
                 'message Person {\n' +
                 '  string name = 1;\n' +
+                '  optional int64 age = 2;\n' + 
                 '}\n' +
                 '\n' +  
                 'message StandaloneThing {\n' +

@@ -30,6 +30,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applica
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedQualifiedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.UnknownAppliedFunction;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CByteStream;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.AggregateValue;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDateTime;
@@ -104,6 +105,8 @@ import org.finos.legend.pure.m4.coreinstance.primitive.date.DateFormat;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.LatestDate;
 import org.finos.legend.pure.m4.coreinstance.primitive.strictTime.StrictTimeFormat;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -381,6 +384,15 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
                 ._genericType(this.context.pureModel.getGenericType("Decimal"))
                 ._multiplicity(this.context.pureModel.getMultiplicity(cDecimal.multiplicity))
                 ._values(FastList.newListWith(cDecimal.value));
+    }
+
+    @Override
+    public ValueSpecification visit(CByteStream cByteStream)
+    {
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
+                ._genericType(this.context.pureModel.getGenericType("ByteStream"))
+                ._multiplicity(this.context.pureModel.getMultiplicity(cByteStream.multiplicity))
+                ._values(FastList.newListWith(new ByteArrayInputStream(cByteStream.value.getBytes(cByteStream.charset))));
     }
 
     public ValueSpecification processClassInstance(SerializationConfig serializationConfig)

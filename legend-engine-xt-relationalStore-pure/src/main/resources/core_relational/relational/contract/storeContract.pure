@@ -37,8 +37,8 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
      id = 'relationalStore',
 
      planExecution = meta::relational::contract::planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_,
-     planGraphFetchExecution = meta::relational::contract::planGraphFetchExecution_ClusteredGraphFetchTree_1__String_MANY__Boolean_1__Boolean_1__StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__LocalGraphFetchExecutionNode_1_,
-     planCrossGraphFetchExecution = meta::relational::contract::planCrossGraphFetchExecution_ClusteredGraphFetchTree_1__String_MANY__String_1__Boolean_1__Boolean_1__Map_1__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__LocalGraphFetchExecutionNode_1_,
+     planGraphFetchExecution = meta::relational::contract::planGraphFetchExecution_StoreMappingLocalGraphFetchExecutionNodeGenerationInput_1__LocalGraphFetchExecutionNode_1_,
+     planCrossGraphFetchExecution = meta::relational::contract::planCrossGraphFetchExecution_StoreMappingCrossLocalGraphFetchExecutionNodeGenerationInput_1__LocalGraphFetchExecutionNode_1_,
     
      supports = meta::relational::contract::supports_FunctionExpression_1__Boolean_1_,
      supportsStreamFunction = meta::relational::contract::supportsStream_FunctionExpression_1__Boolean_1_,
@@ -105,11 +105,12 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
 
       printPlanNodeToString = {space : String[1], extensions:meta::pure::extension::Extension[*]|
                                        [
-                                          cpt:CreateAndPopulateTempTableExecutionNode[1]|'CreateAndPopulateTempTable\n'+$space+'('+header($cpt, $space, $extensions)+'\n'+$space+'  inputVarNames = ' + $cpt.inputVarNames->joinStrings('[', ', ', ']') + '\n' + $space + '  tempTableName = ' + $cpt.tempTableName + '\n' +$space+'  tempTableColumns = '+$cpt.tempTableColumnMetaData->map(col|'('+$col.column.label+', '+if($col.column.dataType->isEmpty(),|'""',| $col.column.dataType->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText()) + if($col.identifierForGetter->isEmpty(), | '', | ', ' + $col.identifierForGetter->toOne() + ', ' + if($col.parametersForGetter->isEmpty(),|'[""]',| $col.parametersForGetter->toOne()->keyValues()->map(param| '(' + $param.first + ', ' + $param.second->toString() + ')')->joinStrings('[', ', ', ']') )) + ' )')->joinStrings('[',', ',']') +'\n' + $space + '  connection = '+$cpt.connection ->connectionToString($extensions) +'\n' + $cpt.implementation->printImplementation('implementation', $space+'  ', $extensions) + $space+')\n',
-                                          r:SQLExecutionNode[1]|'SQL\n'+$space+'('+header($r, $space, $extensions)+'\n'+$space+'  resultColumns = '+$r.resultColumns->map(rc|'('+$rc.label+', '+if($rc.dataType->isEmpty(),|'""',| $rc.dataType->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText())+')')->joinStrings('[',', ',']')+'\n'+$space+'  sql = '+$r.sqlQuery+'\n'+ $space + '  connection = '+$r.connection ->connectionToString($extensions) +'\n'+$r.implementation->printImplementation('implementation', $space+'  ', $extensions)+ $space+')\n',
-                                          r:RelationalInstantiationExecutionNode[1]|'Relational\n'+$space+'('+header($r, $space, $extensions)+'\n'+$space+'  resultColumns = '+$r.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).resultColumns->map(rc|'('+$rc.label+', '+if($rc.dataType->isEmpty(),|'""',| $rc.dataType->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText())+')')->joinStrings('[',', ',']')+'\n'+$space+'  sql = '+$r.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery+'\n'+ $space + '  connection = '+$r.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).connection ->connectionToString($extensions) +'\n'+$r.implementation->printImplementation('implementation', $space+'  ', $extensions)+ $space+')\n',
-                                          rb:RelationalBlockExecutionNode[1]|'RelationalBlockExecutionNode\n'+ $space+ '(' + header($rb, $space, $extensions) + $rb->childrenToString($space+'  ', $extensions) +' \n' +$space+ ')\n',
-                                          r: meta::relational::graphFetch::executionPlan::RelationalGraphFetchExecutionNode[1] | $r->relationalGraphFetchExecutionNodeToString($space, $extensions)
+                                          cpt:CreateAndPopulateTempTableExecutionNode[1]|'CreateAndPopulateTempTable\n'+$space+'('+header($cpt, $space, $extensions)+'\n'+$space+'  inputVarNames = ' + $cpt.inputVarNames->joinStrings('[', ', ', ']') + '\n' + $space + '  tempTableName = ' + $cpt.tempTableName + '\n' +$space+'  tempTableColumns = '+$cpt.tempTableColumnMetaData->map(col|'('+$col.column.label+', '+if($col.column.dataType->isEmpty(),|'""',| $col.column.dataType->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText()) + if($col.identifierForGetter->isEmpty(), | '', | ', ' + $col.identifierForGetter->toOne() + ', ' + if($col.parametersForGetter->isEmpty(),|'[""]',| $col.parametersForGetter->toOne()->keyValues()->map(param| '(' + $param.first + ', ' + $param.second->toString() + ')')->joinStrings('[', ', ', ']') )) + ' )')->joinStrings('[',', ',']') +'\n' + $space + '  connection = '+if($cpt.connection->isEmpty(),|'{}',|$cpt.connection->toOne()->connectionToString($extensions)) + $cpt->childrenToString($space+'  ', $extensions) + '\n' + $cpt.implementation->printImplementation('implementation', $space+'  ', $extensions) + $space+')\n',
+                                          r:SQLExecutionNode[1]|'SQL\n'+$space+'('+header($r, $space, $extensions)+'\n'+$space+'  resultColumns = '+$r.resultColumns->map(rc|'('+$rc.label+', '+if($rc.dataType->isEmpty(),|'""',| $rc.dataType->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText())+')')->joinStrings('[',', ',']')+'\n'+$space+'  sql = '+$r.sqlQuery+'\n'+ $space + '  connection = '+if($r.connection->isEmpty(),|'{}',|$r.connection->toOne()->connectionToString($extensions)) +'\n'+$r.implementation->printImplementation('implementation', $space+'  ', $extensions)+ $space+')\n',
+                                          r:RelationalInstantiationExecutionNode[1]|'Relational\n'+$space+'('+header($r, $space, $extensions)+'\n'+$space+'  resultColumns = '+$r.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).resultColumns->map(rc|'('+$rc.label+', '+if($rc.dataType->isEmpty(),|'""',| $rc.dataType->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText())+')')->joinStrings('[',', ',']')+'\n'+$space+'  sql = '+$r.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery+'\n'+ $space + '  connection = '+if($r.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).connection->isEmpty(),|'{}',|$r.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).connection->toOne()->connectionToString($extensions)) +'\n'+$r.implementation->printImplementation('implementation', $space+'  ', $extensions)+ $space+')\n',
+                                          rb:RelationalBlockExecutionNode[1]|'RelationalBlockExecutionNode\n'+ $space+ '(' + header($rb, $space, $extensions) + $rb->childrenToString($space+'  ', $extensions) +' \n' +$space+ '  connection = '+if($rb.connection->isEmpty(),|'{}',|$rb.connection->toOne()->connectionToString($extensions)) + $space + '\n' + $space + '  finallyExecutionNode = '+ $rb.finallyExecutionNode ->childrenToString($space+'  ', $extensions) + '\n'+$space+')\n',
+                                          r: meta::relational::graphFetch::executionPlan::RelationalGraphFetchExecutionNode[1] | $r->relationalGraphFetchExecutionNodeToString($space, $extensions),
+                                          u:meta::relational::executionPlan::UpdateSqlExecutionNode[1] | 'UpdateSqlExecutionNode\n'+$space+'('+header($u, $space, $extensions)+'\n'+$space+'  sqlCommands = ' + $u.sqlCommands->joinStrings('[', ', ', ']') + '\n' + $space + ')\n';
                                        ]},
       printConnectionToString = {extensions:meta::pure::extension::Extension[*]|
                                        [
@@ -146,6 +147,9 @@ function meta::relational::contract::execution(sq:meta::pure::mapping::StoreQuer
 // Functions supported by relational execution
 function meta::relational::contract::supports(f:FunctionExpression[1]):Boolean[1]
 {
+  if($f->meta::pure::router::utils::isUnionOnGraphFetch(true),
+    | false,
+    |
       !meta::relational::functions::pureToSqlQuery::findSupportedFunction(
                         $f,
                         meta::relational::functions::pureToSqlQuery::getSupportedFunctions(),
@@ -157,6 +161,7 @@ function meta::relational::contract::supports(f:FunctionExpression[1]):Boolean[1
             meta::pure::functions::math::sum_Integer_MANY__Integer_1_,
             meta::pure::functions::math::sum_Number_MANY__Number_1_
          ]->contains($f.func);
+  );
 }
 
 function meta::relational::contract::supportsStream(f:FunctionExpression[1]):Boolean[1]
@@ -194,14 +199,14 @@ function meta::relational::contract::planExecution(sq:meta::pure::mapping::Store
    );
 }
 
-function meta::relational::contract::planGraphFetchExecution(tree:ClusteredGraphFetchTree[1], orderedPaths:String[*], enableConstraints:Boolean[1], checked:Boolean[1], sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):LocalGraphFetchExecutionNode[1]
+function meta::relational::contract::planGraphFetchExecution(input: StoreMappingLocalGraphFetchExecutionNodeGenerationInput[1]): LocalGraphFetchExecutionNode[1]
 {
-  meta::relational::graphFetch::executionPlan::planRootGraphFetchExecutionRelational($sq, $ext, $tree, $orderedPaths, $m, $runtime, $exeCtx, $enableConstraints, $checked, $extensions, $debug)
+  meta::relational::graphFetch::executionPlan::planRootGraphFetchExecutionRelational($input.storeQuery, $input.ext, $input.clusteredTree, $input.orderedPaths, $input.mapping, $input.runtime, $input.exeCtx, $input.enableConstraints, $input.checked, $input.extensions, $input.debug)
 }
 
-function meta::relational::contract::planCrossGraphFetchExecution(tree:ClusteredGraphFetchTree[1], orderedPaths:String[*], newParentPath:String[1], enableConstraints:Boolean[1], checked:Boolean[1], inScopeVars: Map<String, List<Any>>[1], m:Mapping[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):LocalGraphFetchExecutionNode[1]
+function meta::relational::contract::planCrossGraphFetchExecution(input: StoreMappingCrossLocalGraphFetchExecutionNodeGenerationInput[1]): LocalGraphFetchExecutionNode[1]
 {
-  meta::relational::graphFetch::executionPlan::planCrossRootGraphFetchExecutionRelational($tree, $orderedPaths, $newParentPath, $inScopeVars, $m, $runtime, $exeCtx, $extensions, $debug);
+  meta::relational::graphFetch::executionPlan::planCrossRootGraphFetchExecutionRelational($input.clusteredTree, $input.orderedPaths, $input.parentPath, $input.inScopeVars, $input.mapping, $input.runtime, $input.exeCtx, $input.extensions, $input.debug);
 }
 
 // Lazy Execution of property

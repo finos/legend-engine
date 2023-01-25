@@ -272,3 +272,17 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   let expected = ^Literal(value=true);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::matches::testMatchesAlphaNumeric(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='matches', parameters=[^Literal(value='abc Bl0ggs xyz12'), ^Literal(value='abc [A-Za-z0-9]* xyz12')]);
+  let expected = ^Literal(value=true);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::matches::testMatchesNonAlphaNumeric(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='matches', parameters=[^Literal(value='Blo$ggs'), ^Literal(value='[A-Za-z0-9]*')]);
+  let expected = ^Literal(value=false);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}

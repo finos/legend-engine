@@ -19,11 +19,10 @@ import meta::external::language::java::metamodel::project::*;
 import meta::external::language::java::serialization::*;
 import meta::external::language::java::transform::*;
 import meta::pure::executionPlan::*;
-import meta::pure::executionPlan::engine::java::*;
-import meta::pure::executionPlan::engine::java::*;
-import meta::pure::executionPlan::engine::java::graphFetch::inMemory::*;
-import meta::pure::executionPlan::engine::java::graphFetch::common::*;
-import meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::*;
+import meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::*;
+import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::graphFetch::*;
 import meta::pure::graphFetch::executionPlan::*;
@@ -33,7 +32,7 @@ import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
 import meta::pure::metamodel::constraint::*;
 
 
-Class meta::pure::executionPlan::engine::java::GenerationContext
+Class meta::pure::executionPlan::platformBinding::legendJava::GenerationContext
 {
    typeInfos                 : TypeInfoSet[1];
    conventions               : Conventions[1];
@@ -41,7 +40,7 @@ Class meta::pure::executionPlan::engine::java::GenerationContext
    baseProject               : Project[0..1];
 }
 
-Class meta::pure::executionPlan::engine::java::NodeInfo
+Class meta::pure::executionPlan::platformBinding::legendJava::NodeInfo
 {
    path            : String[1];
    returnType      : JavaType[1];
@@ -49,30 +48,30 @@ Class meta::pure::executionPlan::engine::java::NodeInfo
    graphFetchTrees : RootGraphFetchTree<Any>[*];
 }
 
-Class meta::pure::executionPlan::engine::java::JavaType
+Class meta::pure::executionPlan::platformBinding::legendJava::JavaType
 {
 }
 
-Class meta::pure::executionPlan::engine::java::SimpleJavaType extends JavaType
+Class meta::pure::executionPlan::platformBinding::legendJava::SimpleJavaType extends JavaType
 {
    pureType   : meta::pure::metamodel::type::Type[1];
    javaType   : meta::external::language::java::metamodel::Type[1];
 }
 
-Class meta::pure::executionPlan::engine::java::CheckedJavaType extends JavaType
+Class meta::pure::executionPlan::platformBinding::legendJava::CheckedJavaType extends JavaType
 {
    checkedOf  : SimpleJavaType[1];
    source     : JavaType[0..1];
 }
 
 
-Class meta::pure::executionPlan::engine::java::GeneratedCode
+Class meta::pure::executionPlan::platformBinding::legendJava::GeneratedCode
 {
    project: Project[0..1];
    implementation: JavaPlatformImplementation[0..1];
 }
 
-Class meta::pure::executionPlan::engine::java::GeneratedNode
+Class meta::pure::executionPlan::platformBinding::legendJava::GeneratedNode
 {
    project: Project[0..1];
    node: ExecutionNode[1];
@@ -85,7 +84,7 @@ Class meta::pure::executionPlan::engine::java::GeneratedNode
 // ----------------------------------------------------------------------------------------------------------
 
 
-function meta::pure::executionPlan::engine::java::projectToImplementation(project:Project[1]):JavaPlatformImplementation[1]
+function meta::pure::executionPlan::platformBinding::legendJava::projectToImplementation(project:Project[1]):JavaPlatformImplementation[1]
 {   
    let sfer = newStringifier($project);
    
@@ -102,14 +101,14 @@ function meta::pure::executionPlan::engine::java::projectToImplementation(projec
     );
 }
 
-function meta::pure::executionPlan::engine::java::fillNewFunctionProhibitedList(context:GenerationContext[1]):GenerationContext[1]
+function meta::pure::executionPlan::platformBinding::legendJava::fillNewFunctionProhibitedList(context:GenerationContext[1]):GenerationContext[1]
 {
    let cls = $context.typeInfos.typeInfos->filter(t|$t->instanceOf(ClassTypeInfo))->cast(@ClassTypeInfo)->filter(c| !$c.isNewInstanceAllowed); //TODO: remove the not in the last filter
    let oldConventions = $context.conventions; 
    ^$context(conventions = ^$oldConventions(newFunctionProhibitedList = $cls->map(c|$c.class())));
 }
 
-function meta::pure::executionPlan::engine::java::generatedCode(project:Project[1], entryPoint:meta::external::language::java::metamodel::Class[1]):GeneratedCode[1]
+function meta::pure::executionPlan::platformBinding::legendJava::generatedCode(project:Project[1], entryPoint:meta::external::language::java::metamodel::Class[1]):GeneratedCode[1]
 {
    assert($project->containsClass($entryPoint), 'Entry point class is missing');
    ^GeneratedCode(
@@ -122,27 +121,27 @@ function meta::pure::executionPlan::engine::java::generatedCode(project:Project[
    );
 }
 
-function meta::pure::executionPlan::engine::java::addNodeInfo(context:GenerationContext[1], nodeInfo:NodeInfo[1]): GenerationContext[1]
+function meta::pure::executionPlan::platformBinding::legendJava::addNodeInfo(context:GenerationContext[1], nodeInfo:NodeInfo[1]): GenerationContext[1]
 {
    ^$context(nodeInfos=$context.nodeInfos->concatenate($nodeInfo));   
 }
 
-function meta::pure::executionPlan::engine::java::nodeInfosForPath(context:GenerationContext[1], path:String[1]): NodeInfo[*]
+function meta::pure::executionPlan::platformBinding::legendJava::nodeInfosForPath(context:GenerationContext[1], path:String[1]): NodeInfo[*]
 {
    $context.nodeInfos->filter(ni| $ni.path == $path);
 }
 
-function meta::pure::executionPlan::engine::java::childNodeInfosForPath(context:GenerationContext[1], path:String[1]): NodeInfo[*]
+function meta::pure::executionPlan::platformBinding::legendJava::childNodeInfosForPath(context:GenerationContext[1], path:String[1]): NodeInfo[*]
 {
    $context.nodeInfos->filter(ni| $ni.path->contains('.') && $ni.path->substring(0, $ni.path->lastIndexOf('.')) == $path);
 }
 
-function meta::pure::executionPlan::engine::java::setTypeInfos(context:GenerationContext[1], typeInfos:TypeInfoSet[1]): GenerationContext[1]
+function meta::pure::executionPlan::platformBinding::legendJava::setTypeInfos(context:GenerationContext[1], typeInfos:TypeInfoSet[1]): GenerationContext[1]
 {
    ^$context(typeInfos=$typeInfos);   
 }
 
-function meta::pure::executionPlan::engine::java::setConventions(context:GenerationContext[1], conventions:Conventions[1]): GenerationContext[1]
+function meta::pure::executionPlan::platformBinding::legendJava::setConventions(context:GenerationContext[1], conventions:Conventions[1]): GenerationContext[1]
 {
    ^$context(conventions=$conventions);   
 }

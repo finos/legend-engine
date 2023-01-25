@@ -21,7 +21,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::c
    ^DbExtension(
       isBooleanLiteralSupported = true,
       aliasLimit = 1000,
-      isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
+      isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords)},
       literalProcessor = $literalProcessor,
       windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
       semiStructuredElementProcessor = processSemiStructuredElementForH2_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
@@ -29,7 +29,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::c
       selectSQLQueryProcessor = processSelectSQLQueryDefault_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
-      ddlCommandsTranslator = getDDLCommandsTranslatorDefault()
+      ddlCommandsTranslator = getDDLCommandsTranslatorDefault(),
+      ddlCommandsTranslatorForTempTable = getDDLCommandsTranslatorForTempTable__RelationalDDLCommandsTranslator_1_,
+      getDefaultTempTableIsolationStrategy = getDefaultTempTableIsolationStrategy__TempTableIsolationStrategy_1_
    );
 }
 
@@ -199,8 +201,37 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::f
    [$day, $current, $day, $current, $day, $current, $current];
 }
 
+function meta::relational::functions::sqlQueryToString::h2::getDefaultTempTableIsolationStrategy(): meta::pure::alloy::connections::alloy::isolation::TempTableIsolationStrategy[1]
+{
+  ^meta::pure::alloy::connections::alloy::isolation::DefaultIsolationStrategy();
+}
+
+function meta::relational::functions::sqlQueryToString::h2::translateCreateTableStatementForTempTable(c:CreateTableSQL[1], dbConfig: DbConfig[1]): String[*]
+{
+  'CREATE LOCAL TEMPORARY TABLE ' + $c.table->toOne().name + '('+ $c.table.columns->cast(@Column).name->toOne() + ' ' + $c.table.columns->cast(@Column).type->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText() + ');';
+}
+
+function meta::relational::functions::sqlQueryToString::h2::translateDropTableStatementForTempTable(d:DropTableSQL[1]): String[*]
+{
+  'Drop table if exists ' + $d.table->toOne().name + ';';
+}
+
+function meta::relational::functions::sqlQueryToString::h2::translateLoadStatementForTempTable(l:LoadTableSQL[1], dbConfig: DbConfig[1]): String[*]
+{
+  'INSERT INTO ' + $l.table->toOne().name + ' SELECT * FROM CSVREAD(\''+$l.csvFileLocationVarPlaceHolder->toOne() + '\');';
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::dayOfWeekNumberH2(dayOfWeek: String[*]):String[1]
 {
    assert(or($dayOfWeek->at(1)=='Sunday',$dayOfWeek->at(1)=='Monday'),'DayOfWeekNumber Function requires either Sunday or Monday as First Day of Week');
    if($dayOfWeek->at(1)=='Sunday',|'DAY_OF_WEEK('+$dayOfWeek->at(0)+')',|'ISO_DAY_OF_WEEK('+$dayOfWeek->at(0)+')');
+}
+
+function meta::relational::functions::sqlQueryToString::h2::getDDLCommandsTranslatorForTempTable(): RelationalDDLCommandsTranslator[1]
+{
+  ^RelationalDDLCommandsTranslator(
+                createTable =  translateCreateTableStatementForTempTable_CreateTableSQL_1__DbConfig_1__String_MANY_,
+                dropTable = translateDropTableStatementForTempTable_DropTableSQL_1__String_MANY_,
+                loadTable =  translateLoadStatementForTempTable_LoadTableSQL_1__DbConfig_1__String_MANY_
+              );
 }

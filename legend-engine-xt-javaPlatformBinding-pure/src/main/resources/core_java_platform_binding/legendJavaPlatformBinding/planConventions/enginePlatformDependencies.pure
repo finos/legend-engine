@@ -16,47 +16,48 @@
  * Generated main configuration: see org.finos.legend.engine.plan.compilation.GeneratePureConfig
  */
 
-import meta::pure::executionPlan::engine::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::external::language::java::factory::*;
 import meta::external::language::java::transform::*;
 
-Class meta::pure::executionPlan::engine::IConstantResult {}
-Class meta::pure::executionPlan::engine::EngineIResult {}
-Class meta::pure::executionPlan::engine::IExecutionNodeContext {}
-Class meta::pure::executionPlan::engine::IGraphFetchM2MExecutionNodeContext {}
-Class meta::pure::executionPlan::engine::StoreStreamReader {}
-Class meta::pure::executionPlan::engine::DataParsingException {}
-Class meta::pure::executionPlan::engine::PredefinedExpressions {}
-Class meta::pure::executionPlan::engine::Library {}
-Class meta::pure::executionPlan::engine::GraphInstance {}
-Class meta::pure::executionPlan::engine::RelationalRootGraphNodeExecutor {}
-Class meta::pure::executionPlan::engine::RelationalCrossRootGraphNodeExecutor {}
-Class meta::pure::executionPlan::engine::RelationalChildGraphNodeExecutor {}
-Class meta::pure::executionPlan::engine::RelationalClassInstantiationNodeExecutor {}
-Class meta::pure::executionPlan::engine::PureDate {}
-Class meta::pure::executionPlan::engine::DataQualityBasicDefectClass {}
-Class meta::pure::executionPlan::engine::DataQualityBasicRelativePathNodeClass {}
-Class meta::pure::executionPlan::engine::DataQualityGraphContextClass {}
-Class meta::pure::executionPlan::engine::DataQualityConstrainedInterface {}
-Class meta::pure::executionPlan::engine::IReferencedObject {}
-Class meta::pure::executionPlan::engine::IRelationalCreateAndPopulateTempTableExecutionNodeSpecifics {}
-Class meta::pure::executionPlan::engine::IPlatformPureExpressionExecutionNodeSerializeSpecifics {}
-Class meta::pure::executionPlan::engine::ISerializationWriter {}
-Class meta::pure::executionPlan::engine::IGraphSerializer {}
-Class meta::pure::executionPlan::engine::IStoreStreamReadingExecutionNodeSpecifics {}
-Class meta::pure::executionPlan::engine::IStoreStreamReadingExecutionNodeContext {}
-Class meta::pure::executionPlan::engine::IInMemoryRootGraphFetchExecutionNodeSpecifics {}
-Class meta::pure::executionPlan::engine::IInMemoryRootGraphFetchMergeExecutionNodeSpecifics {}
+Class meta::pure::executionPlan::platformBinding::legendJava::IConstantResult {}
+Class meta::pure::executionPlan::platformBinding::legendJava::EngineIResult {}
+Class meta::pure::executionPlan::platformBinding::legendJava::IExecutionNodeContext {}
+Class meta::pure::executionPlan::platformBinding::legendJava::IGraphFetchM2MExecutionNodeContext {}
+Class meta::pure::executionPlan::platformBinding::legendJava::StoreStreamReader {}
+Class meta::pure::executionPlan::platformBinding::legendJava::DataParsingException {}
+Class meta::pure::executionPlan::platformBinding::legendJava::PredefinedExpressions {}
+Class meta::pure::executionPlan::platformBinding::legendJava::Library {}
+Class meta::pure::executionPlan::platformBinding::legendJava::GraphInstance {}
+Class meta::pure::executionPlan::platformBinding::legendJava::RelationalRootGraphNodeExecutor {}
+Class meta::pure::executionPlan::platformBinding::legendJava::RelationalCrossRootGraphNodeExecutor {}
+Class meta::pure::executionPlan::platformBinding::legendJava::RelationalChildGraphNodeExecutor {}
+Class meta::pure::executionPlan::platformBinding::legendJava::RelationalClassInstantiationNodeExecutor {}
+Class meta::pure::executionPlan::platformBinding::legendJava::PureDate {}
+Class meta::pure::executionPlan::platformBinding::legendJava::DataQualityBasicDefectClass {}
+Class meta::pure::executionPlan::platformBinding::legendJava::DataQualityBasicRelativePathNodeClass {}
+Class meta::pure::executionPlan::platformBinding::legendJava::DataQualityGraphContextClass {}
+Class meta::pure::executionPlan::platformBinding::legendJava::DataQualityConstrainedInterface {}
+Class meta::pure::executionPlan::platformBinding::legendJava::IReferencedObject {}
+Class meta::pure::executionPlan::platformBinding::legendJava::IRelationalCreateAndPopulateTempTableExecutionNodeSpecifics {}
+Class meta::pure::executionPlan::platformBinding::legendJava::IPlatformPureExpressionExecutionNodeSerializeSpecifics {}
+Class meta::pure::executionPlan::platformBinding::legendJava::ISerializationWriter {}
+Class meta::pure::executionPlan::platformBinding::legendJava::IGraphSerializer {}
+Class meta::pure::executionPlan::platformBinding::legendJava::IStoreStreamReadingExecutionNodeSpecifics {}
+Class meta::pure::executionPlan::platformBinding::legendJava::IStoreStreamReadingExecutionNodeContext {}
+Class meta::pure::executionPlan::platformBinding::legendJava::IInMemoryRootGraphFetchExecutionNodeSpecifics {}
+Class meta::pure::executionPlan::platformBinding::legendJava::IInMemoryRootGraphFetchMergeExecutionNodeSpecifics {}
 
-Class meta::pure::executionPlan::engine::IInMemoryPropertyGraphFetchExecutionNodeSpecifics {}
-Class meta::pure::executionPlan::engine::IRelationalRootQueryTempTableGraphFetchExecutionNodeSpecifics {}
-Class meta::pure::executionPlan::engine::IRelationalCrossRootQueryTempTableGraphFetchExecutionNodeSpecifics {}
-Class meta::pure::executionPlan::engine::IInMemoryCrossStoreGraphFetchExecutionNodeSpecifics {}
-Class meta::pure::executionPlan::engine::IRelationalClassQueryTempTableGraphFetchExecutionNodeSpecifics {}
-Class meta::pure::executionPlan::engine::IRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics {}
-Class meta::pure::executionPlan::engine::IServiceParametersResolutionExecutionNodeSpecifics {}
+Class meta::pure::executionPlan::platformBinding::legendJava::IInMemoryPropertyGraphFetchExecutionNodeSpecifics {}
+Class meta::pure::executionPlan::platformBinding::legendJava::IRelationalRootQueryTempTableGraphFetchExecutionNodeSpecifics {}
+Class meta::pure::executionPlan::platformBinding::legendJava::IRelationalCrossRootQueryTempTableGraphFetchExecutionNodeSpecifics {}
+Class meta::pure::executionPlan::platformBinding::legendJava::IInMemoryCrossStoreGraphFetchExecutionNodeSpecifics {}
+Class meta::pure::executionPlan::platformBinding::legendJava::IRelationalClassQueryTempTableGraphFetchExecutionNodeSpecifics {}
+Class meta::pure::executionPlan::platformBinding::legendJava::IRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics {}
+Class meta::pure::executionPlan::platformBinding::legendJava::IServiceParametersResolutionExecutionNodeSpecifics {}
+Class meta::pure::executionPlan::platformBinding::legendJava::IPlatformPrimitiveQualifierLocalGraphFetchExecutionNodeSpecifics {}
 
-function meta::pure::executionPlan::engine::applyJavaEngineDependencies(conventions:Conventions[1], extensions:meta::pure::extension::Extension[*]):Conventions[1]
+function meta::pure::executionPlan::platformBinding::legendJava::applyJavaEngineDependencies(conventions:Conventions[1], extensions:meta::pure::extension::Extension[*]):Conventions[1]
 {
 
    let jIConstantResult = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.shared.IConstantResult')
@@ -469,51 +470,55 @@ function meta::pure::executionPlan::engine::applyJavaEngineDependencies(conventi
    let jIServiceParametersResolutionExecutionNodeSpecifics = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.serviceStore.IServiceParametersResolutionExecutionNodeSpecifics')
       ->addMethod(javaMethod('public', javaParameterizedType(javaClass('java.util.Map'), [javaString(), javaObject()]), 'resolveServiceParameters', [javaParam(javaParameterizedType(javaClass('java.util.Map'), [javaString(), javaObject()]), 'p0')]));
 
+   let jIPlatformPrimitiveQualifierLocalGraphFetchExecutionNodeSpecifics = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.platform.graphFetch.IPlatformPrimitiveQualifierLocalGraphFetchExecutionNodeSpecifics')
+      ->addMethod(javaMethod('public', javaStream(javaParameterizedType($jIGraphInstance, [javaWildcard()])), 'executeQualifierExpression', [javaParam(javaList(javaWildcard()), 'p0'), javaParam($jIExecutionNodeContext, 'p1')]));
+
    let res = $conventions
-      ->addProvidedType(meta::pure::executionPlan::engine::IConstantResult, $jIConstantResult)
-      ->addProvidedType(meta::pure::executionPlan::engine::EngineIResult, $jIResult)
-      ->addProvidedType(meta::pure::executionPlan::engine::IExecutionNodeContext, $jIExecutionNodeContext)
-      ->addProvidedType(meta::pure::executionPlan::engine::IGraphFetchM2MExecutionNodeContext, $jIGraphFetchM2MExecutionNodeContext)
-      ->addProvidedType(meta::pure::executionPlan::engine::StoreStreamReader, $jIStoreStreamReader)
-      ->addProvidedType(meta::pure::executionPlan::engine::DataParsingException, $jDataParsingException)
-      ->addProvidedType(meta::pure::executionPlan::engine::PredefinedExpressions, $jPredefinedExpressions)
-      ->addProvidedType(meta::pure::executionPlan::engine::Library, $jLibrary)
-      ->addProvidedType(meta::pure::executionPlan::engine::GraphInstance, $jIGraphInstance)
-      ->addProvidedType(meta::pure::executionPlan::engine::RelationalRootGraphNodeExecutor, $jIRelationalRootGraphNodeExecutor)
-      ->addProvidedType(meta::pure::executionPlan::engine::RelationalCrossRootGraphNodeExecutor, $jIRelationalCrossRootGraphNodeExecutor)
-      ->addProvidedType(meta::pure::executionPlan::engine::RelationalChildGraphNodeExecutor, $jIRelationalChildGraphNodeExecutor)
-      ->addProvidedType(meta::pure::executionPlan::engine::RelationalClassInstantiationNodeExecutor, $jIRelationalClassInstantiationNodeExecutor)
-      ->addProvidedType(meta::pure::executionPlan::engine::PureDate, $jPureDate)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::IConstantResult, $jIConstantResult)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::EngineIResult, $jIResult)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::IExecutionNodeContext, $jIExecutionNodeContext)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::IGraphFetchM2MExecutionNodeContext, $jIGraphFetchM2MExecutionNodeContext)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::StoreStreamReader, $jIStoreStreamReader)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::DataParsingException, $jDataParsingException)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::PredefinedExpressions, $jPredefinedExpressions)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::Library, $jLibrary)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::GraphInstance, $jIGraphInstance)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::RelationalRootGraphNodeExecutor, $jIRelationalRootGraphNodeExecutor)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::RelationalCrossRootGraphNodeExecutor, $jIRelationalCrossRootGraphNodeExecutor)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::RelationalChildGraphNodeExecutor, $jIRelationalChildGraphNodeExecutor)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::RelationalClassInstantiationNodeExecutor, $jIRelationalClassInstantiationNodeExecutor)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::PureDate, $jPureDate)
       ->addProvidedType(meta::pure::functions::date::DurationUnit, $jDurationUnit)
       ->addProvidedType(meta::pure::functions::date::DayOfWeek, $jDayOfWeek)
       ->addProvidedType(meta::pure::functions::date::Month, $jMonth)
       ->addProvidedType(meta::pure::functions::date::Quarter, $jQuarter)
-      ->addProvidedType(meta::pure::executionPlan::engine::DataQualityBasicDefectClass, $jBasicDefect)
-      ->addProvidedType(meta::pure::executionPlan::engine::DataQualityBasicRelativePathNodeClass, $jBasicRelativePathNode)
-      ->addProvidedType(meta::pure::executionPlan::engine::DataQualityGraphContextClass, $jGraphContext)
-      ->addProvidedType(meta::pure::executionPlan::engine::DataQualityConstrainedInterface, $jConstrained)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::DataQualityBasicDefectClass, $jBasicDefect)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::DataQualityBasicRelativePathNodeClass, $jBasicRelativePathNode)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::DataQualityGraphContextClass, $jGraphContext)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::DataQualityConstrainedInterface, $jConstrained)
       ->addProvidedType(meta::pure::dataQuality::Checked, $jIChecked)
       ->addProvidedType(meta::pure::dataQuality::Defect, $jIDefect)
       ->addProvidedType(meta::pure::dataQuality::EnforcementLevel, $jEnforcementLevel)
       ->addProvidedType(meta::pure::dataQuality::RuleType, $jRuleType)
       ->addProvidedType(meta::pure::dataQuality::RelativePathNode, $jRelativePathNode)
-      ->addProvidedType(meta::pure::executionPlan::engine::IReferencedObject, $jIReferencedObject)
-      ->addProvidedType(meta::pure::executionPlan::engine::IRelationalCreateAndPopulateTempTableExecutionNodeSpecifics, $jIRelationalCreateAndPopulateTempTableExecutionNodeSpecifics)
-      ->addProvidedType(meta::pure::executionPlan::engine::IPlatformPureExpressionExecutionNodeSerializeSpecifics, $jIPlatformPureExpressionExecutionNodeSerializeSpecifics)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::IReferencedObject, $jIReferencedObject)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::IRelationalCreateAndPopulateTempTableExecutionNodeSpecifics, $jIRelationalCreateAndPopulateTempTableExecutionNodeSpecifics)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::IPlatformPureExpressionExecutionNodeSerializeSpecifics, $jIPlatformPureExpressionExecutionNodeSerializeSpecifics)
 
-      ->addProvidedType(meta::pure::executionPlan::engine::ISerializationWriter, $jISerializationWriter)
-      ->addProvidedType(meta::pure::executionPlan::engine::IGraphSerializer, $jIGraphSerializer)
-      ->addProvidedType(meta::pure::executionPlan::engine::IStoreStreamReadingExecutionNodeSpecifics, $jIStoreStreamReadingExecutionNodeSpecifics)
-      ->addProvidedType(meta::pure::executionPlan::engine::IStoreStreamReadingExecutionNodeContext, $jIStoreStreamReadingExecutionNodeContext)
-      ->addProvidedType(meta::pure::executionPlan::engine::IInMemoryRootGraphFetchExecutionNodeSpecifics, $jIInMemoryRootGraphFetchExecutionNodeSpecifics)
-      ->addProvidedType(meta::pure::executionPlan::engine::IInMemoryRootGraphFetchMergeExecutionNodeSpecifics, $jIInMemoryRootGraphFetchMergeExecutionNodeSpecifics)
-      ->addProvidedType(meta::pure::executionPlan::engine::IInMemoryPropertyGraphFetchExecutionNodeSpecifics, $jIInMemoryPropertyGraphFetchExecutionNodeSpecifics)
-      ->addProvidedType(meta::pure::executionPlan::engine::IRelationalRootQueryTempTableGraphFetchExecutionNodeSpecifics, $jIRelationalRootQueryTempTableGraphFetchExecutionNodeSpecifics)
-      ->addProvidedType(meta::pure::executionPlan::engine::IRelationalCrossRootQueryTempTableGraphFetchExecutionNodeSpecifics, $jIRelationalCrossRootQueryTempTableGraphFetchExecutionNodeSpecifics)
-      ->addProvidedType(meta::pure::executionPlan::engine::IInMemoryCrossStoreGraphFetchExecutionNodeSpecifics, $jIInMemoryCrossStoreGraphFetchExecutionNodeSpecifics)
-      ->addProvidedType(meta::pure::executionPlan::engine::IRelationalClassQueryTempTableGraphFetchExecutionNodeSpecifics, $jIRelationalClassQueryTempTableGraphFetchExecutionNodeSpecifics)
-      ->addProvidedType(meta::pure::executionPlan::engine::IRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics, $jIRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics)
-      ->addProvidedType(meta::pure::executionPlan::engine::IServiceParametersResolutionExecutionNodeSpecifics, $jIServiceParametersResolutionExecutionNodeSpecifics);
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::ISerializationWriter, $jISerializationWriter)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::IGraphSerializer, $jIGraphSerializer)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::IStoreStreamReadingExecutionNodeSpecifics, $jIStoreStreamReadingExecutionNodeSpecifics)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::IStoreStreamReadingExecutionNodeContext, $jIStoreStreamReadingExecutionNodeContext)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::IInMemoryRootGraphFetchExecutionNodeSpecifics, $jIInMemoryRootGraphFetchExecutionNodeSpecifics)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::IInMemoryRootGraphFetchMergeExecutionNodeSpecifics, $jIInMemoryRootGraphFetchMergeExecutionNodeSpecifics)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::IInMemoryPropertyGraphFetchExecutionNodeSpecifics, $jIInMemoryPropertyGraphFetchExecutionNodeSpecifics)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::IRelationalRootQueryTempTableGraphFetchExecutionNodeSpecifics, $jIRelationalRootQueryTempTableGraphFetchExecutionNodeSpecifics)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::IRelationalCrossRootQueryTempTableGraphFetchExecutionNodeSpecifics, $jIRelationalCrossRootQueryTempTableGraphFetchExecutionNodeSpecifics)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::IInMemoryCrossStoreGraphFetchExecutionNodeSpecifics, $jIInMemoryCrossStoreGraphFetchExecutionNodeSpecifics)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::IRelationalClassQueryTempTableGraphFetchExecutionNodeSpecifics, $jIRelationalClassQueryTempTableGraphFetchExecutionNodeSpecifics)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::IRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics, $jIRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::IServiceParametersResolutionExecutionNodeSpecifics, $jIServiceParametersResolutionExecutionNodeSpecifics)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::IPlatformPrimitiveQualifierLocalGraphFetchExecutionNodeSpecifics, $jIPlatformPrimitiveQualifierLocalGraphFetchExecutionNodeSpecifics);
 
    let platformDependencyUpdates = $extensions->meta::pure::executionPlan::platformBinding::legendJava::extractLegendJavaAdhocExtensionsOfType(meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformDependencyUpdateExtension).platformDependencyUpdate;
    $platformDependencyUpdates->fold({e,b|$e->eval($b, $extensions)}, $res);

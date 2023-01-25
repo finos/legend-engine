@@ -22,6 +22,8 @@ import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.RelationResultType;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.CreateAndPopulateTempTableExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.FinallyExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.UpdateSqlExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalBlockExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalClassInstantiationExecutionNode;
@@ -150,6 +152,8 @@ public class RelationalProtocolExtension implements PureProtocolExtension
                         .withSubtype(RelationalGraphFetchExecutionNode.class, "relationalGraphFetchExecutionNode")
                         .withSubtype(RelationalBlockExecutionNode.class, "relationalBlock")
                         .withSubtype(CreateAndPopulateTempTableExecutionNode.class, "createAndPopulateTempTable")
+                        .withSubtype(FinallyExecutionNode.class, "finally")
+                        .withSubtype(UpdateSqlExecutionNode.class, "updateSql")
                         .withSubtype(SQLExecutionNode.class, "sql")
                         .withSubtype(RelationalPrimitiveQueryGraphFetchExecutionNode.class, "relationalPrimitiveQueryGraphFetch")
                         .withSubtype(RelationalClassQueryTempTableGraphFetchExecutionNode.class, "relationalClassQueryTempTableGraphFetch")

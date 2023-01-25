@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>3.28.1-SNAPSHOT</version>
+        <version>3.34.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -51,9 +51,14 @@
         </dependency>
 
         <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-ide-light-pure</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-engine-interpreted</artifactId>
-            <version>${legend.pure.version}</version>
         </dependency>
 
         <!-- Access to Legend Compiler in IDE Light -->
@@ -89,6 +94,11 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-sql-grammar-integration</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-changetoken-pure</artifactId>
             <scope>runtime</scope>
         </dependency>
         <!-- Access to Legend Compiler in IDE Light -->

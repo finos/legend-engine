@@ -120,5 +120,4 @@ public class SqlGrammar extends GrammarAPI
     {
         return jsonToGrammarBatch(renderStyle, documents, (vs, renderStyle1) -> SQLGrammarComposer.newInstance().renderNode(vs), pm, "Json to Grammar : SQL Batch");
     }
-
 }

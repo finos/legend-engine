@@ -17,13 +17,9 @@ package org.finos.legend.engine.language.pure.dsl.persistence.grammar.test;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.antlr.v4.runtime.Vocabulary;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.PersistenceParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.test.TestGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence;
 import org.junit.Test;
 
 import java.util.List;
@@ -2717,7 +2713,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     @Test
     public void success()
     {
-        test("###Persistence\n" +
+        PureModelContextData x = test("###Persistence\n" +
                 "\n" +
                 "import test::*;\n" +
                 "\n" +
@@ -2837,5 +2833,6 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "    ];\n" +
                 "  }\n" +
                 "}\n");
+        System.out.println(x);
     }
 }

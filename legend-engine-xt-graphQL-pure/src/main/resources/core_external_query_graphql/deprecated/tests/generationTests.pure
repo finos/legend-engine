@@ -1,0 +1,91 @@
+import meta::external::query::graphQL::generation::*;
+import meta::external::query::graphQL::generation::tests::model::*;
+import meta::external::query::graphQL::binding::*;
+
+Enum meta::external::query::graphQL::generation::tests::model::IncType
+{
+  LLC, CORP
+}
+
+Class meta::external::query::graphQL::generation::tests::model::Firm
+{
+  legalName : String[1];
+  employees : Person[*];
+  incType : meta::external::query::graphQL::generation::tests::model::IncType[1];
+}
+
+Class meta::external::query::graphQL::generation::tests::model::Person
+{
+  firstName : String[0..1];
+  lastName : String[1];
+  age : Integer[1];
+}
+
+Class <<GraphQL.Query>> meta::external::query::graphQL::generation::tests::model::Query
+{
+  firmByName(name:String[1]){Firm.all()->filter(f|$f.legalName == $name)->first()}:Firm[0..1];
+}
+
+Class <<GraphQL.Query>> meta::external::query::graphQL::generation::tests::model::Query2
+{
+  persons(){Person.all()}:Person[*];
+}
+
+
+function <<test.Test>> meta::external::query::graphQL::generation::tests::testGenerateQuery():Boolean[1]
+{
+  let res = meta::external::query::graphQL::generation::generateGraphQL(
+    ^meta::external::query::graphQL::generation::GraphQLConfig
+    (
+      scopeElements = [Query]
+    )
+  );
+
+  assertEquals(
+    'type Firm {\n' +
+    '  legalName: String!\n' +
+    '  employees: [Person!]!\n' +
+    '  incType: IncType!\n' +
+    '}\n' +
+    'enum IncType {\n' +
+    '  LLC\n' +
+    '  CORP\n' +
+    '}\n' +
+    'type Person {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    'type Query {\n' +
+    '  firmByName(name: String!): Firm\n' +
+    '}\n' +
+    'schema {\n' +
+    '  query : Query\n' +
+    '}', $res.content);
+}
+
+function <<test.Test>> meta::external::query::graphQL::generation::tests::testGenerateClass():Boolean[1]
+{
+  let res = meta::external::query::graphQL::generation::generateGraphQL(
+    ^meta::external::query::graphQL::generation::GraphQLConfig
+    (
+      scopeElements = [Firm]
+    )
+  );
+
+  assertEquals(
+    'type Firm {\n' +
+    '  legalName: String!\n' +
+    '  employees: [Person!]!\n' +
+    '  incType: IncType!\n' +
+    '}\n' +
+    'enum IncType {\n' +
+    '  LLC\n' +
+    '  CORP\n' +
+    '}\n' +
+    'type Person {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}', $res.content);
+}

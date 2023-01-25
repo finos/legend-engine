@@ -1291,8 +1291,249 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
     }
 
     @Test
+    public void testExecutionEnvironment()
+    {
+        test("###Service\n" +
+                "ExecutionEnvironment test::executionEnvironment\n" +
+                "{\n" +
+                "  executions:\n" +
+                "  [\n" +
+                "    UAT:\n" +
+                "    {\n" +
+                "      mapping: test::myMapping1;\n" +
+                "      runtime: test::myRuntime1;\n" +
+                "    },\n" +
+                "    PROD:\n" +
+                "    {\n" +
+                "      mapping: test::myMapping2;\n" +
+                "      runtime: test::myRuntime2;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n");
+
+        test("###Service\n" +
+                "ExecutionEnvironment test::executionEnvironment\n" +
+                "{\n" +
+                "  executions:\n" +
+                "  [\n" +
+                "    UAT:\n" +
+                "    [\n" +
+                "      abc:\n" +
+                "      {\n" +
+                "        mapping: test::myMapping1;\n" +
+                "        runtime: test::myRuntime1;\n" +
+                "      },\n" +
+                "      xyz:\n" +
+                "      {\n" +
+                "        mapping: test::myMapping2;\n" +
+                "        runtime: test::myRuntime2;\n" +
+                "      }\n" +
+                "    ],\n" +
+                "    PROD:\n" +
+                "    [\n" +
+                "      abc:\n" +
+                "      {\n" +
+                "        mapping: test::myMapping3;\n" +
+                "        runtime: test::myRuntime3;\n" +
+                "      },\n" +
+                "      xyz:\n" +
+                "      {\n" +
+                "        mapping: test::myMapping4;\n" +
+                "        runtime:\n" +
+                "        #{\n" +
+                "          connections:\n" +
+                "          [\n" +
+                "            ModelStore:\n" +
+                "            [\n" +
+                "              id1: test::myConnection,\n" +
+                "              id2:\n" +
+                "              #{\n" +
+                "                JsonModelConnection\n" +
+                "                {\n" +
+                "                  class: meta::mySimpleClass;\n" +
+                "                  url: 'my_url';\n" +
+                "                }\n" +
+                "              }#,\n" +
+                "              id3:\n" +
+                "              #{\n" +
+                "                JsonModelConnection\n" +
+                "                {\n" +
+                "                  class: meta::mySimpleClass;\n" +
+                "                  url: 'my_url';\n" +
+                "                }\n" +
+                "              }#\n" +
+                "            ]\n" +
+                "          ];\n" +
+                "        }#;\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testExecutionEnvironmentInMultiExecService()
+    {
+        test("###Service\n" +
+                "Service meta::pure::myServiceMulti\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/{env}';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'ownerName'\n" +
+                "  ];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Multi\n" +
+                "  {\n" +
+                "    query: env: String[1]|model::pure::mapping::modelToModel::test::shared::dest::Product.all()->from(test::executionEnvironment->get($env, 'abc'))->graphFetchChecked(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#)->serialize(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#);\n" +
+                "  }\n" +
+                "  test: Multi\n" +
+                "  {\n" +
+                "    tests['QA']:\n" +
+                "    {\n" +
+                "      data: 'moreData';\n" +
+                "      asserts:\n" +
+                "      [\n" +
+                "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },\n" +
+                "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "    tests['UAT']:\n" +
+                "    {\n" +
+                "      data: 'moreData';\n" +
+                "      asserts:\n" +
+                "      [\n" +
+                "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },\n" +
+                "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n" +
+                "\n" +
+                "ExecutionEnvironment test::executionEnvironment\n" +
+                "{\n" +
+                "  executions:\n" +
+                "  [\n" +
+                "    UAT:\n" +
+                "    [\n" +
+                "      abc:\n" +
+                "      {\n" +
+                "        mapping: test::myMapping1;\n" +
+                "        runtime: test::myRuntime1;\n" +
+                "      },\n" +
+                "      xyz:\n" +
+                "      {\n" +
+                "        mapping: test::myMapping2;\n" +
+                "        runtime: test::myRuntime2;\n" +
+                "      }\n" +
+                "    ],\n" +
+                "    PROD:\n" +
+                "    [\n" +
+                "      abc:\n" +
+                "      {\n" +
+                "        mapping: test::myMapping3;\n" +
+                "        runtime: test::myRuntime3;\n" +
+                "      },\n" +
+                "      xyz:\n" +
+                "      {\n" +
+                "        mapping: test::myMapping4;\n" +
+                "        runtime:\n" +
+                "        #{\n" +
+                "          connections:\n" +
+                "          [\n" +
+                "            ModelStore:\n" +
+                "            [\n" +
+                "              id1: test::myConnection,\n" +
+                "              id2:\n" +
+                "              #{\n" +
+                "                JsonModelConnection\n" +
+                "                {\n" +
+                "                  class: meta::mySimpleClass;\n" +
+                "                  url: 'my_url';\n" +
+                "                }\n" +
+                "              }#,\n" +
+                "              id3:\n" +
+                "              #{\n" +
+                "                JsonModelConnection\n" +
+                "                {\n" +
+                "                  class: meta::mySimpleClass;\n" +
+                "                  url: 'my_url';\n" +
+                "                }\n" +
+                "              }#\n" +
+                "            ]\n" +
+                "          ];\n" +
+                "        }#;\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n"
+        );
+    }
+
+    @Test
+    public void testExecutionEnvironmentInSingleExecService()
+    {
+        test("###Service\n" +
+                "Service meta::pure::myServiceMulti\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/{env}';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'ownerName'\n" +
+                "  ];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Multi\n" +
+                "  {\n" +
+                "    query: env: String[1]|model::pure::mapping::modelToModel::test::shared::dest::Product.all()->from(test::executionEnvironment->get($env))->graphFetchChecked(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#)->serialize(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#);\n" +
+                "  }\n" +
+                "  test: Multi\n" +
+                "  {\n" +
+                "    tests['QA']:\n" +
+                "    {\n" +
+                "      data: 'moreData';\n" +
+                "      asserts:\n" +
+                "      [\n" +
+                "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },\n" +
+                "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "    tests['UAT']:\n" +
+                "    {\n" +
+                "      data: 'moreData';\n" +
+                "      asserts:\n" +
+                "      [\n" +
+                "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },\n" +
+                "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n" +
+                "\n" +
+                "ExecutionEnvironment test::executionEnvironment\n" +
+                "{\n" +
+                "  executions:\n" +
+                "  [\n" +
+                "    UAT:\n" +
+                "    {\n" +
+                "      mapping: test::myMapping1;\n" +
+                "      runtime: test::myRuntime1;\n" +
+                "    },\n" +
+                "    PROD:\n" +
+                "    {\n" +
+                "      mapping: test::myMapping2;\n" +
+                "      runtime: test::myRuntime2;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n"
+        );
+    }
+
+    @Test
     public void testBindingWithService()
     {
+        // Tests with empty test suites
         test("###Service\n" +
                 "Service meta::pure::myServiceSingle\n" +
                 "{\n" +
@@ -1322,6 +1563,89 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  testSuites:\n" +
                 "  [\n" +
                 "\n" +
+                "  ]\n" +
+                "}\n");
+
+        // Test with test suites
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: '/showcase/binding';\n" +
+                "  documentation: 'Showcase service with binding';\n" +
+                "  autoActivateUpdates: false;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: data: String[1]|demo::Address->internalize(demo::InternalizeBinding, $data)->externalize(demo::InternalizeBinding, #{demo::Address{street}}#);\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          parameters:\n" +
+                "          [\n" +
+                "            data = '[{\"street\":\"street A\"}]'\n" +
+                "          ]\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '[{\"street\":\"street A\"}]';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n");
+
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: '/showcase/binding';\n" +
+                "  documentation: 'Showcase service with binding';\n" +
+                "  autoActivateUpdates: false;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: data: ByteStream[1]|demo::Address->internalize(demo::InternalizeBinding, $data)->externalize(demo::InternalizeBinding, #{demo::Address{street}}#);\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          parameters:\n" +
+                "          [\n" +
+                "            data = byteStream('[{\"street\":\"street A\"}]')\n" +
+                "          ]\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '[{\"street\":\"street A\"}]';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
                 "  ]\n" +
                 "}\n");
     }

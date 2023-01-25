@@ -1,0 +1,242 @@
+###Diagram
+Diagram meta::pure::runtime::connection::authentication::AuthenticationMetamodelDiagram(width=0.0, height=0.0)
+{
+    TypeView cview_1(
+        type=meta::pure::runtime::connection::authentication::AuthenticationSpecification,
+        position=(246.00000, 89.00000),
+        width=221.11719,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_2(
+        type=meta::pure::runtime::connection::authentication::ApiKeyAuthenticationSpecification,
+        position=(609.00000, 73.00000),
+        width=228.47656,
+        height=86.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_3(
+        type=meta::pure::runtime::connection::authentication::EncryptedKeyPairAuthenticationSpecification,
+        position=(630.00000, 203.00000),
+        width=263.39258,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::pure::runtime::connection::authentication::UserPasswordAuthenticationSpecification,
+        position=(230.00000, 313.00000),
+        width=262.05078,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_4(
+        type=meta::pure::runtime::connection::authentication::GCPWIFWithAWSIdPAuthenticationSpecification,
+        position=(544.00000, 318.00000),
+        width=327.43066,
+        height=86.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_6(
+        type=meta::pure::runtime::connection::authentication::CredentialVaultSecret,
+        position=(1029.00000, 66.00000),
+        width=217.77734,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_8(
+        type=meta::pure::runtime::connection::authentication::EnvironmentSecret,
+        position=(1307.00000, 67.00000),
+        width=223.77734,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_7(
+        type=meta::pure::runtime::connection::authentication::PropertiesFileSecret,
+        position=(1303.00000, 164.00000),
+        width=223.77734,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_9(
+        type=meta::pure::runtime::connection::authentication::AWSSecretsManagerSecret,
+        position=(1029.00000, 245.00000),
+        width=223.77734,
+        height=100.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_10(
+        type=meta::pure::runtime::connection::authentication::AWSCredentials,
+        position=(1035.00000, 397.00000),
+        width=221.11719,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_11(
+        type=meta::pure::runtime::connection::authentication::AWSDefaultCredentials,
+        position=(883.00000, 540.00000),
+        width=232.67188,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_12(
+        type=meta::pure::runtime::connection::authentication::StaticAWSCredentials,
+        position=(1151.00000, 541.00000),
+        width=246.84277,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_2,
+        target=cview_1,
+        points=[(723.23828,116.00000),(356.55859,118.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_3,
+        target=cview_1,
+        points=[(761.69629,239.00000),(356.55859,118.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_2(
+        source=cview_4,
+        target=cview_1,
+        points=[(707.71533,361.00000),(356.55859,118.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_3(
+        source=cview_5,
+        target=cview_1,
+        points=[(361.02539,349.00000),(356.55859,118.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_4(
+        source=cview_7,
+        target=cview_6,
+        points=[(1414.88867,193.00000),(1137.88867,95.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_5(
+        source=cview_8,
+        target=cview_6,
+        points=[(1418.88867,96.00000),(1137.88867,95.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_6(
+        source=cview_9,
+        target=cview_6,
+        points=[(1140.88867,295.00000),(1137.88867,95.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_7(
+        source=cview_11,
+        target=cview_10,
+        points=[(999.33594,562.00000),(1145.55859,426.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_8(
+        source=cview_12,
+        target=cview_10,
+        points=[(1274.42139,577.00000),(1145.55859,426.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_0(
+        property=meta::pure::runtime::connection::authentication::AWSSecretsManagerSecret.awsCredentials,
+        source=cview_9,
+        target=cview_10,
+        points=[(1140.88867,295.00000),(1145.55859,426.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+}

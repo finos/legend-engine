@@ -51,18 +51,6 @@ public class IngestModeTest
     protected String stagingTableName = "staging";
     protected String stagingTableAlias = "stage";
 
-    protected String tempDbName = "mydb";
-    protected String tempTableName = "temp";
-    protected String tempTableAlias = "temp";
-
-    protected String tempWithDeleteIndicatorDbName = "mydb";
-    protected String tempWithDeleteIndicatorTableName = "tempWithDeleteIndicator";
-    protected String tempWithDeleteIndicatorTableAlias = "tempWithDeleteIndicator";
-
-    protected String stagingWithoutDuplicatesDbName = "mydb";
-    protected String stagingTableWithoutDuplicatesName = "stagingWithoutDuplicates";
-    protected String stagingTableWithoutDuplicatesAlias = "stage";
-
     protected String digestField = "digest";
     protected String dataSplitField = "data_split";
     protected String batchUpdateTimeField = "batch_update_time";
@@ -71,8 +59,6 @@ public class IngestModeTest
     protected String batchTimeInField = "batch_time_in";
     protected String batchTimeOutField = "batch_time_out";
     protected String deleteIndicatorField = "delete_indicator";
-    protected String[] deleteIndicatorValues = new String[]{"yes", "1", "true"};
-    protected Boolean[] deleteIndicatorBooleanValues = new Boolean[]{true};
     protected String validityFromReferenceField = "validity_from_reference";
     protected String validityThroughReferenceField = "validity_through_reference";
     protected String validityFromTargetField = "validity_from_target";
@@ -83,7 +69,6 @@ public class IngestModeTest
     {{
         put("biz_date", new HashSet<>(Arrays.asList("2000-01-01 00:00:00", "2000-01-02 00:00:00")));
     }};
-    protected String[] bitemporalPartitionKeys = new String[]{validityFromReferenceField};
 
     // Base Columns: Primary keys : id, name
     protected Field id = Field.builder().name("id").type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).primaryKey(true).build();
@@ -132,14 +117,6 @@ public class IngestModeTest
         .addFields(amount)
         .addFields(bizDate)
         .build();
-
-    protected SchemaDefinition baseTableSchemaWithDataSplit = SchemaDefinition.builder()
-            .addFields(id)
-            .addFields(name)
-            .addFields(amount)
-            .addFields(bizDate)
-            .addFields(dataSplit)
-            .build();
 
     protected SchemaDefinition baseTableShortenedSchema = SchemaDefinition.builder()
         .addFields(id)
@@ -247,74 +224,11 @@ public class IngestModeTest
         .addFields(digest)
         .build();
 
-    protected SchemaDefinition baseTableSchemaWithNoPrimaryKeys = SchemaDefinition.builder()
-        .addFields(idNonPrimary)
-        .addFields(nameNonPrimary)
-        .addFields(amount)
-        .addFields(bizDate)
-        .addFields(digest)
-        .build();
-
-    protected SchemaDefinition baseTableSchemaWithAuditAndNoPrimaryKeys = SchemaDefinition.builder()
-            .addFields(idNonPrimary)
-            .addFields(nameNonPrimary)
-            .addFields(amount)
-            .addFields(bizDate)
-            .addFields(digest)
-            .addFields(batchUpdateTime)
-            .build();
-
-    protected SchemaDefinition baseTableSchemaWithDigestAndDataSplit = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(amount)
-        .addFields(bizDate)
-        .addFields(digest)
-        .addFields(dataSplit)
-        .build();
-
-    protected SchemaDefinition baseTableSchemaWithDigestAndUpdateBatchTimeField = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(amount)
-        .addFields(bizDate)
-        .addFields(digest)
-        .addFields(batchUpdateTime)
-        .build();
-
     protected SchemaDefinition stagingTableSchemaWithLimitedColumns = SchemaDefinition.builder()
         .addFields(id)
         .addFields(name)
         .addFields(amount)
         .addFields(digest)
-        .build();
-
-    protected SchemaDefinition stagingTableSchemaWithDeleteIndicator = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(amount)
-        .addFields(bizDate)
-        .addFields(digest)
-        .addFields(deleteIndicator)
-        .build();
-
-    protected SchemaDefinition stagingTableSchemaWithDeleteIndicatorWithDataSplit = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(amount)
-        .addFields(bizDate)
-        .addFields(digest)
-        .addFields(deleteIndicator)
-        .addFields(dataSplit)
-        .build();
-
-    protected SchemaDefinition stagingTableSchemaWithBooleanDeleteIndicator = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(amount)
-        .addFields(bizDate)
-        .addFields(digest)
-        .addFields(deleteIndicatorBoolean)
         .build();
 
     protected SchemaDefinition bitemporalMainTableSchema = SchemaDefinition.builder()
@@ -348,73 +262,12 @@ public class IngestModeTest
         .addFields(digest)
         .build();
 
-    protected SchemaDefinition bitemporalStagingTableSchemaWithDeleteIndicator = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(amount)
-        .addFields(validityFromReference)
-        .addFields(validityThroughReference)
-        .addFields(digest)
-        .addFields(deleteIndicator)
-        .build();
-
     protected SchemaDefinition bitemporalFromOnlyStagingTableSchema = SchemaDefinition.builder()
         .addFields(id)
         .addFields(name)
         .addFields(amount)
         .addFields(validityFromReference)
         .addFields(digest)
-        .build();
-
-    protected SchemaDefinition bitemporalFromOnlyStagingTableSchemaWithDataSplit = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(amount)
-        .addFields(validityFromReference)
-        .addFields(digest)
-        .addFields(dataSplit)
-        .build();
-
-    protected SchemaDefinition bitemporalFromOnlyStagingTableSchemaWithDeleteIndicator = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(amount)
-        .addFields(validityFromReference)
-        .addFields(digest)
-        .addFields(deleteIndicator)
-        .build();
-
-    protected SchemaDefinition bitemporalFromOnlyStagingTableSchemaWithDeleteIndicatorWithDataSplit = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(amount)
-        .addFields(validityFromReference)
-        .addFields(digest)
-        .addFields(deleteIndicator)
-        .addFields(dataSplit)
-        .build();
-
-    protected SchemaDefinition bitemporalFromOnlyTempTableSchema = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(amount)
-        .addFields(digest)
-        .addFields(batchIdIn)
-        .addFields(batchIdOut)
-        .addFields(validityFromTarget)
-        .addFields(validityThroughTarget)
-        .build();
-
-    protected SchemaDefinition bitemporalFromOnlyTempTableWithDeleteIndicatorSchema = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(amount)
-        .addFields(digest)
-        .addFields(batchIdIn)
-        .addFields(batchIdOut)
-        .addFields(validityFromTarget)
-        .addFields(validityThroughTarget)
-        .addFields(deleteIndicator)
         .build();
 
     protected String expectedMetadataTableCreateQuery = "CREATE TABLE IF NOT EXISTS batch_metadata" +
@@ -513,17 +366,6 @@ public class IngestModeTest
         "\"validity_through_target\" DATETIME," +
         "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"validity_from_target\"))";
 
-    protected String expectedBitemporalMainTableCreateQueryUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN\"" +
-        "(\"ID\" INTEGER," +
-        "\"NAME\" VARCHAR," +
-        "\"AMOUNT\" DOUBLE," +
-        "\"VALIDITY_FROM_TARGET\" DATETIME," +
-        "\"VALIDITY_THROUGH_TARGET\" DATETIME," +
-        "\"DIGEST\" VARCHAR," +
-        "\"BATCH_ID_IN\" INTEGER," +
-        "\"BATCH_ID_OUT\" INTEGER," +
-        "PRIMARY KEY (\"ID\", \"NAME\", \"VALIDITY_FROM_TARGET\", \"BATCH_ID_IN\"))";
-
     protected String expectedBitemporalFromOnlyMainTableCreateQueryUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN\"" +
         "(\"ID\" INTEGER," +
         "\"NAME\" VARCHAR," +
@@ -534,60 +376,6 @@ public class IngestModeTest
         "\"VALIDITY_FROM_TARGET\" DATETIME," +
         "\"VALIDITY_THROUGH_TARGET\" DATETIME," +
         "PRIMARY KEY (\"ID\", \"NAME\", \"BATCH_ID_IN\", \"VALIDITY_FROM_TARGET\"))";
-
-    protected String expectedBitemporalFromOnlyTempTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"temp\"" +
-        "(\"id\" INTEGER," +
-        "\"name\" VARCHAR," +
-        "\"amount\" DOUBLE," +
-        "\"digest\" VARCHAR," +
-        "\"batch_id_in\" INTEGER," +
-        "\"batch_id_out\" INTEGER," +
-        "\"validity_from_target\" DATETIME," +
-        "\"validity_through_target\" DATETIME," +
-        "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"validity_from_target\"))";
-
-    protected String expectedBitemporalFromOnlyTempTableWithDeleteIndicatorCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"tempWithDeleteIndicator\"" +
-        "(\"id\" INTEGER," +
-        "\"name\" VARCHAR," +
-        "\"amount\" DOUBLE," +
-        "\"digest\" VARCHAR," +
-        "\"batch_id_in\" INTEGER," +
-        "\"batch_id_out\" INTEGER," +
-        "\"validity_from_target\" DATETIME," +
-        "\"validity_through_target\" DATETIME," +
-        "\"delete_indicator\" VARCHAR," +
-        "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"validity_from_target\"))";
-
-    protected String expectedBitemporalFromOnlyStageWithoutDuplicatesTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"stagingWithoutDuplicates\"" +
-        "(\"id\" INTEGER," +
-        "\"name\" VARCHAR," +
-        "\"amount\" DOUBLE," +
-        "\"validity_from_reference\" DATETIME," +
-        "\"digest\" VARCHAR," +
-        "PRIMARY KEY (\"id\", \"name\", \"validity_from_reference\"))";
-
-    protected String expectedBitemporalFromOnlyStageWithDeleteIndicatorWithoutDuplicatesTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"stagingWithoutDuplicates\"" +
-        "(\"id\" INTEGER," +
-        "\"name\" VARCHAR," +
-        "\"amount\" DOUBLE," +
-        "\"validity_from_reference\" DATETIME," +
-        "\"digest\" VARCHAR," +
-        "\"delete_indicator\" VARCHAR," +
-        "PRIMARY KEY (\"id\", \"name\", \"validity_from_reference\"))";
-
-    protected String expectedBitemporalFromOnlyStageWithDataSplitWithoutDuplicatesTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"stagingWithoutDuplicates\"" +
-        "(\"id\" INTEGER," +
-        "\"name\" VARCHAR," +
-        "\"amount\" DOUBLE," +
-        "\"validity_from_reference\" DATETIME," +
-        "\"digest\" VARCHAR," +
-        "\"data_split\" BIGINT," +
-        "PRIMARY KEY (\"id\", \"name\", \"validity_from_reference\", \"data_split\"))";
-
-    protected String getExpectedCleanupSql(String fullName, String alias)
-    {
-        return String.format("DELETE FROM %s as %s", fullName, alias);
-    }
 
     public void assertIfListsAreSameIgnoringOrder(List<String> first, List<String> second)
     {

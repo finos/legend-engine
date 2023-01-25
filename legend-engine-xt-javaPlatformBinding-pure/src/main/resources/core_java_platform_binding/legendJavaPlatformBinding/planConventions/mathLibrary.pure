@@ -17,10 +17,10 @@ import meta::external::language::java::metamodel::*;
 import meta::external::language::java::metamodel::project::*;
 import meta::external::language::java::transform::*;
 import meta::external::language::java::serialization::*;
-import meta::pure::executionPlan::engine::*;
-import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::executionPlan::platformBinding::legendJava::library::math::*;
 
-function meta::pure::executionPlan::engine::java::registerMathsLibrary(conventions: Conventions[1]): Conventions[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::math::registerMathsLibrary(conventions: Conventions[1]): Conventions[1]
 {
    let library  = $conventions->className(Library);
 
@@ -105,12 +105,12 @@ function meta::pure::executionPlan::engine::java::registerMathsLibrary(conventio
    $conventions->registerLibrary($lib);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::reduceFT(type:meta::external::language::java::metamodel::Type[1]): meta::external::language::java::metamodel::Type[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::math::reduceFT(type:meta::external::language::java::metamodel::Type[1]): meta::external::language::java::metamodel::Type[1]
 {
    javaFunctionType([$type, $type], $type);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::maybeReduce(ctx:FuncCoderContext[1], collection:Code[1], zero:Code[1], accumulator:Code[1]) : Code[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::math::maybeReduce(ctx:FuncCoderContext[1], collection:Code[1], zero:Code[1], accumulator:Code[1]) : Code[1]
 {
    if($collection.type->isJavaList(),
       | $collection->j_streamOf()->js_reduce($zero, $accumulator),
@@ -118,7 +118,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::maybeReduce
    );
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::codeCompare(ctx:FuncCoderContext[1], left:Code[1], right:Code[1], apply:Function<{Code[1],Code[1]->Code[1]}>[1], library:meta::external::language::java::metamodel::Class[1]) : Code[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::math::codeCompare(ctx:FuncCoderContext[1], left:Code[1], right:Code[1], apply:Function<{Code[1],Code[1]->Code[1]}>[1], library:meta::external::language::java::metamodel::Class[1]) : Code[1]
 {
    if(($left.type == javaLong() || $left.type == javaLongBoxed()) && ($right.type == javaLong() || $right.type == javaLongBoxed()),
       | $apply->eval($left, $right),
@@ -129,7 +129,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::codeCompare
    ));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::byTypes(typeSpecs:Pair<Pair<meta::external::language::java::metamodel::Class,meta::external::language::java::metamodel::Class>,Code>[*], default:Code[1]): Code[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::math::byTypes(typeSpecs:Pair<Pair<meta::external::language::java::metamodel::Class,meta::external::language::java::metamodel::Class>,Code>[*], default:Code[1]): Code[1]
 {
    let left   = j_parameter(javaNumber(), 'left');
    let right  = j_parameter(javaNumber(), 'right');
@@ -145,37 +145,37 @@ function <<access.private>> meta::pure::executionPlan::engine::java::byTypes(typ
    );
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::valueAsDouble(of:Code[1]) : Code[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::math::valueAsDouble(of:Code[1]) : Code[1]
 {
    j_conditional($of->j_instanceof(javaLongBoxed()), longValue($of), doubleValue($of), javaDouble());
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::longValue(of:Code[1]) : Code[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::math::longValue(of:Code[1]) : Code[1]
 {
    $of->j_invoke('longValue', []);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::doubleValue(of:Code[1]) : Code[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::math::doubleValue(of:Code[1]) : Code[1]
 {
    $of->j_invoke('doubleValue', []);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::bigDecimal(of:Code[1]) : Code[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::math::bigDecimal(of:Code[1]) : Code[1]
 {
    $of->j_cast(javaBigDecimal());
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::bigDecimalZero() : Code[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::math::bigDecimalZero() : Code[1]
 {
    javaBigDecimal()->j_field('ZERO', javaBigDecimal());
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::bigDecimalOne() : Code[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::math::bigDecimalOne() : Code[1]
 {
    javaBigDecimal()->j_field('ONE', javaBigDecimal());
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::bigDecimalValue(of:Code[1]) : Code[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::math::bigDecimalValue(of:Code[1]) : Code[1]
 {
    javaBigDecimal()->j_invoke('valueOf', $of);
 }

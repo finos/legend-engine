@@ -1,17 +1,30 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 import meta::pure::mapping::*;
 import meta::pure::mapping::modelToModel::*;
 import meta::pure::mapping::modelToModel::inMemory::*;
-import meta::pure::executionPlan::engine::java::graphFetch::inMemory::*;
+import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::*;
 import meta::pure::graphFetch::routing::*;
 import meta::external::language::java::factory::*;
 import meta::external::language::java::transform::*;
-import meta::pure::executionPlan::engine::java::graphFetch::common::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::*;
 import meta::pure::extension::*;
-import meta::pure::executionPlan::engine::java::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
 import meta::external::language::java::metamodel::*;
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::MergeOperationForProperty(property:PropertyMapping[0..1]):MergeOperationSetImplementation[0..1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::MergeOperationForProperty(property:PropertyMapping[0..1]):MergeOperationSetImplementation[0..1]
 {
   if($property->isNotEmpty(),
      |let rootMapping = $property->toOne().owner.parent;     
@@ -20,12 +33,12 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
    }
 
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::MergeOperationForInstance(instance:meta::pure::mapping::modelToModel::PureInstanceSetImplementation[1]):MergeOperationSetImplementation[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::MergeOperationForInstance(instance:meta::pure::mapping::modelToModel::PureInstanceSetImplementation[1]):MergeOperationSetImplementation[1]
 {
     $instance.parent.classMappings->filter(m|$m->instanceOf(MergeOperationSetImplementation))->cast(@MergeOperationSetImplementation)->filter(o| $instance.id->in($o.parameters.id))->at(0);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::generateMergeFunction(nodes: InMemoryGraphFetchExecutionNode[*],rootPath:String[1] ,rootClass:meta::external::language::java::metamodel::Class[1], childPath: String[0..1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]):Method[*]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::generateMergeFunction(nodes: InMemoryGraphFetchExecutionNode[*],rootPath:String[1] ,rootClass:meta::external::language::java::metamodel::Class[1], childPath: String[0..1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]):Method[*]
 {
    let updatedChildPath = if($childPath->isNotEmpty(),|$childPath->toOne(),|'');
    let resultPath = $rootPath+'.n1'+$updatedChildPath;
@@ -147,7 +160,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
 
 
 
-Class <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::MergedPropertySource
+Class <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::MergedPropertySource
 {
    source:Code[0..1];
    src:Code[0..1];

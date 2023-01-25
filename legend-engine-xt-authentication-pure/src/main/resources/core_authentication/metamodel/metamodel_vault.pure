@@ -1,0 +1,37 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::runtime::connection::authentication::*;
+
+Class <<typemodifiers.abstract>> {doc.doc = 'Abstract specification of a secret loaded from a vault'} meta::pure::runtime::connection::authentication::CredentialVaultSecret
+{
+}
+
+Class {doc.doc = 'A secret that is loaded from a properties file. The reference attribute is interpreted as a property name. The properties file is injected into the environment at runtime'} meta::pure::runtime::connection::authentication::PropertiesFileSecret extends meta::pure::runtime::connection::authentication::CredentialVaultSecret
+{
+    {doc.doc='Name of the property that contains the secret value'}
+    propertyName: String[1];
+}
+
+Class {doc.doc = 'A secret that is loaded from the runtime environment. The reference attribute is interpreted as a environment variable name. The environment is configured at runtime'} meta::pure::runtime::connection::authentication::EnvironmentSecret extends meta::pure::runtime::connection::authentication::CredentialVaultSecret
+{
+    {doc.doc='Name of the environment variable that contains the secret value'}
+    envVariableName: String[1];
+}
+
+Class {doc.doc = 'A secret that is loaded from the Java system properties. The reference attribute is interpreted as a Java system property name. The Java system properties are configured at runtime'} meta::pure::runtime::connection::authentication::SystemPropertiesSecret extends meta::pure::runtime::connection::authentication::CredentialVaultSecret
+{
+    {doc.doc='Name of system property that contains the secret value'}
+    systemPropertyName: String[1];
+}

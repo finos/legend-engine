@@ -103,7 +103,7 @@ from
     legend.employee as `root`
 ```
 
-You can use the example [pure model](databricks.pure) attached here for reference. 
+You can use the example [pure model](databricks-example-model.pure) attached here for reference. 
 
 ## Authors
 <antoine.amend@databricks.com>

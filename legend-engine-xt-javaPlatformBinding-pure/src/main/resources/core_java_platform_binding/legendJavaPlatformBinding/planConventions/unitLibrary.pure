@@ -15,9 +15,11 @@
 import meta::external::language::java::factory::*;
 import meta::external::language::java::transform::*;
 import meta::pure::executionPlan::engine::java::*;
-import meta::pure::executionPlan::engine::java::naming::*;
+import meta::pure::executionPlan::platformBinding::legendJava::library::jackson::*;
+import meta::pure::executionPlan::platformBinding::legendJava::library::unit::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
 
-function meta::pure::executionPlan::engine::java::registerUnitLibrary(conventions: Conventions[1]): Conventions[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::unit::registerUnitLibrary(conventions: Conventions[1]): Conventions[1]
 {
    let lib = newConventionsLibrary()
       ->usesJavaPackage('java.util')
@@ -32,13 +34,13 @@ function meta::pure::executionPlan::engine::java::registerUnitLibrary(convention
    $conventions->registerLibrary($lib);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::unitImpl(ctx:FuncCoderContext[1], index:Integer[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::unit::unitImpl(ctx:FuncCoderContext[1], index:Integer[1]): meta::external::language::java::metamodel::Class[1]
 {
    let unit = $ctx.params->at($index)->cast(@InstanceValue).values->toOne()->cast(@Unit);
    $ctx.conventions->implClassName($unit);
 }
 
-function meta::pure::executionPlan::engine::java::unitInterface(conventions: Conventions[1]): meta::external::language::java::metamodel::Class[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::unit::unitInterface(conventions: Conventions[1]): meta::external::language::java::metamodel::Class[1]
 {
    $conventions->className(Unit)
       ->addModifiers(['public', 'interface'])

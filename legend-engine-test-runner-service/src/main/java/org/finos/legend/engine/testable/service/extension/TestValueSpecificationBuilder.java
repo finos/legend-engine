@@ -20,6 +20,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ExecutionEnvironmentInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ExecutionParameters;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.SingleExecutionParameters;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.MultiExecutionParameters;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
@@ -27,6 +31,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applica
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedQualifiedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.UnknownAppliedFunction;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CByteStream;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Class;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PrimitiveType;
@@ -89,7 +94,27 @@ public class TestValueSpecificationBuilder implements ValueSpecificationVisitor<
             closeables.addAll(testRuntimeWithCloseable.getTwo());
             return new ClassInstance("runtimeInstance", runtimeInstance);
         }
+        else if (packageableElement instanceof ExecutionEnvironmentInstance)
+        {
+            ExecutionEnvironmentInstance testExecutionEnvironment = (ExecutionEnvironmentInstance) packageableElement;
+            testExecutionEnvironment.executionParameters.stream().forEach(param -> getTestParameters(param));
+            return new ClassInstance("executionEnvironmentInstance", testExecutionEnvironment);
+        }
         return packageableElementPtr;
+    }
+
+    private void getTestParameters(ExecutionParameters params)
+    {
+        if (params instanceof SingleExecutionParameters)
+        {
+            org.eclipse.collections.api.tuple.Pair<Runtime, List<Closeable>> testRuntimeWithCloseable = TestRuntimeBuilder.getTestRuntimeAndClosableResources(((SingleExecutionParameters) params).runtime, testData, pureModelContextData);
+            ((SingleExecutionParameters) params).runtime = testRuntimeWithCloseable.getOne();
+            closeables.addAll(testRuntimeWithCloseable.getTwo());
+        }
+        else if (params instanceof MultiExecutionParameters)
+        {
+            ((MultiExecutionParameters) params).singleExecutionParameters.stream().forEach(param -> getTestParameters(param));
+        }
     }
 
     @Override
@@ -204,6 +229,12 @@ public class TestValueSpecificationBuilder implements ValueSpecificationVisitor<
     public ValueSpecification visit(CFloat cFloat)
     {
         return cFloat;
+    }
+
+    @Override
+    public ValueSpecification visit(CByteStream cByteStream)
+    {
+        return cByteStream;
     }
 
     @Override

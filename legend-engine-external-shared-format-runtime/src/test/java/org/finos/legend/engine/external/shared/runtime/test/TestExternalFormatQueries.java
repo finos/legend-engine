@@ -33,7 +33,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecut
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_executionPlan_engine_java_ExternalFormatLegendJavaPlatformBindingDescriptor;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_executionPlan_platformBinding_legendJava_ExternalFormatLegendJavaPlatformBindingDescriptor;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext_Impl;
 import org.finos.legend.pure.generated.core_java_platform_binding_legendJavaPlatformBinding_binding_bindingLegendJavaPlatformBindingExtension;
@@ -58,7 +58,7 @@ import java.util.Objects;
 public abstract class TestExternalFormatQueries
 {
     protected static List<Root_meta_pure_extension_Extension> formatExtensions;
-    protected static List<Root_meta_external_shared_format_executionPlan_engine_java_ExternalFormatLegendJavaPlatformBindingDescriptor> formatDescriptors = Lists.mutable.empty();
+    protected static List<Root_meta_external_shared_format_executionPlan_platformBinding_legendJava_ExternalFormatLegendJavaPlatformBindingDescriptor> formatDescriptors = Lists.mutable.empty();
 
     protected String runTest(PureModelContextData modelData, String query)
     {

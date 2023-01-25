@@ -16,6 +16,10 @@ package org.finos.legend.engine.plan.generation;
 
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
@@ -43,11 +47,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime;
 import org.finos.legend.pure.m3.execution.Console;
 import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
 
 public class PlanGenerator
 {
@@ -114,20 +113,24 @@ public class PlanGenerator
                 if (debug)
                 {
                     ByteArrayOutputStream bs = new ByteArrayOutputStream();
+                    Console console = pureModel.getExecutionSupport().getConsole();
+                    console.enable();
                     try (PrintStream ps = new PrintStream(bs, true, StandardCharsets.UTF_8.name()))
                     {
-                        Console console = pureModel.getExecutionSupport().getConsole();
-                        console.enable();
                         console.setPrintStream(ps);
                         plan = context == null ?
                                 core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Mapping_1__Runtime_1__Extension_MANY__DebugContext_1__ExecutionPlan_1_(l, mapping, pureRuntime, extensions, core_pure_tools_tools_extension.Root_meta_pure_tools_debug__DebugContext_1_(pureModel.getExecutionSupport()), pureModel.getExecutionSupport())
                                 : core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionPlan_1_(l, mapping, pureRuntime, context, extensions, core_pure_tools_tools_extension.Root_meta_pure_tools_debug__DebugContext_1_(pureModel.getExecutionSupport()), pureModel.getExecutionSupport());
                         debugInfo = bs.toString(StandardCharsets.UTF_8.name());
-                        console.disable();
                     }
                     catch (Exception e)
                     {
-                        throw new RuntimeException(e);
+                        debugInfo = bs.toString();
+                        throw new RuntimeException(e.getMessage() + "-- Debug details before exception: " + debugInfo + "--", e);
+                    }
+                    finally
+                    {
+                        console.disable();
                     }
                 }
                 else

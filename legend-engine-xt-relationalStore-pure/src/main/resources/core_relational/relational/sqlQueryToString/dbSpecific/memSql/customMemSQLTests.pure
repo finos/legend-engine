@@ -20,7 +20,7 @@ Class meta::relational::memsql::tests::db::A
   window : Integer[1];
 }
 
-function meta::relational::memsql::tests::db::testReservedKeywords() : Boolean[1]
+function <<test.Test>> meta::relational::memsql::tests::db::testReservedKeywords() : Boolean[1]
 {
   let result = toSQLString(
     | meta::relational::memsql::tests::db::A.all()->project([s | $s.window], ['WINDOW']), 
@@ -29,6 +29,17 @@ function meta::relational::memsql::tests::db::testReservedKeywords() : Boolean[1
       meta::relational::extension::relationalExtensions());
 
   assertEquals('select `root`.`window` as `WINDOW` from `test table` as `root`', $result);
+}
+
+function <<test.Test>> meta::relational::memsql::tests::db::testWeekOfYear() : Boolean[1]
+{
+    let result = toSQLString(
+        |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project([s|$s.date->weekOfYear()], ['week']),
+        meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
+        meta::relational::runtime::DatabaseType.MemSQL,
+        meta::relational::extension::relationalExtensions());
+
+    assertEquals('select weekofyear(date(`root`.dateTime)) as `week` from dataTable as `root`', $result);
 }
 
 ###Relational

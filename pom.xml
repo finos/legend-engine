@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>3.28.1-SNAPSHOT</version>
+    <version>3.34.4-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -34,6 +34,14 @@
             With our current CI, we must make sure test-report module do not run last,
             otherwise, publishing could fail
         -->
+        <module>legend-engine-xt-authentication-pure</module>
+        <module>legend-engine-xt-authentication-protocol</module>
+        <module>legend-engine-xt-authentication-grammar</module>
+        <module>legend-engine-xt-authentication-implementation-core</module>
+        <module>legend-engine-xt-authentication-implementation-vault-aws</module>
+        <module>legend-engine-xt-authentication-implementation-gcp-federation</module>
+        <module>legend-engine-xt-authentication-example</module>
+
         <module>legend-engine-test-reports</module>
 
         <module>legend-engine-xt-graphQL-grammar</module>
@@ -115,6 +123,19 @@
         <module>legend-engine-xt-relationalStore-bigquery-pure</module>
         <module>legend-engine-xt-relationalStore-bigquery-execution-tests</module>
 
+        <module>legend-engine-xt-relationalStore-spanner-execution</module>
+        <module>legend-engine-xt-relationalStore-spanner-pure</module>
+        <module>legend-engine-xt-relationalStore-spanner-grammar</module>
+        <module>legend-engine-xt-relationalStore-spanner-protocol</module>
+        <module>legend-engine-xt-relationalStore-spanner-execution-tests</module>
+        <module>legend-engine-xt-relationalStore-spanner-jdbc-shaded</module>
+
+        <module>legend-engine-xt-relationalStore-athena-execution</module>
+        <module>legend-engine-xt-relationalStore-athena-execution-tests</module>
+        <module>legend-engine-xt-relationalStore-athena-grammar</module>
+        <module>legend-engine-xt-relationalStore-athena-protocol</module>
+        <module>legend-engine-xt-relationalStore-athena-pure</module>
+
         <module>legend-engine-xt-avro</module>
         <module>legend-engine-xt-avro-pure</module>
 
@@ -151,7 +172,11 @@
 
         <module>legend-engine-pure-code-compiled-core</module>
 
+        <module>legend-engine-xt-changetoken-pure</module>
+        <module>legend-engine-xt-changetoken-compiler</module>
+
         <module>legend-engine-pure-ide-light</module>
+        <module>legend-engine-pure-ide-light-pure</module>
         <module>legend-engine-pure-ide-light-metadata-pure</module>
         <module>legend-engine-pure-runtime-compiler</module>
 
@@ -196,15 +221,11 @@
         <module>legend-engine-extensions-collection-execution</module>
         <module>legend-engine-extensions-collection-generation</module>
         <module>legend-engine-testable</module>
-        <module>legend-engine-xt-relationalStore-spanner-execution</module>
-        <module>legend-engine-xt-relationalStore-spanner-pure</module>
-        <module>legend-engine-xt-relationalStore-spanner-grammar</module>
-        <module>legend-engine-xt-relationalStore-spanner-protocol</module>
-        <module>legend-engine-xt-relationalStore-spanner-execution-tests</module>
         <module>legend-engine-executionPlan-execution-authorizer</module>
         <module>legend-engine-xt-relationalStore-executionPlan-authorizer</module>
         <module>legend-engine-xt-javaGeneration-pure</module>
         <module>legend-engine-xt-javaPlatformBinding-pure</module>
+        <module>legend-engine-xt-java-runtime-compiler</module>
         <module>legend-engine-xt-flatdata-javaPlatformBinding-pure</module>
         <module>legend-engine-xt-json-javaPlatformBinding-pure</module>
         <module>legend-engine-xt-xml-javaPlatformBinding-pure</module>
@@ -223,7 +244,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>3.8.0</legend.pure.version>
+        <legend.pure.version>3.8.4</legend.pure.version>
         <legend.shared.version>0.22.5</legend.shared.version>
 
         <!-- SONAR -->
@@ -256,7 +277,6 @@
         <databricks.version>2.6.25</databricks.version>
         <redshiftJDBC.version>2.0.0.3</redshiftJDBC.version>
         <postgres.version>9.4.1208.jre7</postgres.version>
-        <google-cloud-spanner-jdbc.version>2.7.3</google-cloud-spanner-jdbc.version>
 
         <!-- Dependency versions -->
         <junit.version>4.13.1</junit.version>
@@ -315,7 +335,7 @@
         <maven.resources.plugin.version>3.2.0</maven.resources.plugin.version>
         <maven.surefire.plugin.version>2.22.2</maven.surefire.plugin.version>
         <maven.dependency.plugin.version>2.10</maven.dependency.plugin.version>
-        <maven.shade.plugin.version>3.2.1</maven.shade.plugin.version>
+        <maven.shade.plugin.version>3.4.1</maven.shade.plugin.version>
         <maven.plugin.plugin.version>3.6.0</maven.plugin.plugin.version>
         <maven.enforcer.plugin.version>3.0.0-M1</maven.enforcer.plugin.version>
         <maven.jar.plugin.version>3.1.2</maven.jar.plugin.version>
@@ -661,6 +681,43 @@
             </dependency>
 
             <!-- ENGINE -->
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-authentication-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-authentication-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-authentication-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-authentication-implementation-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-authentication-implementation-vault-aws</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-authentication-implementation-gcp-federation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-authentication-example</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-graphQL-query</artifactId>
@@ -780,6 +837,21 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-spanner-jdbc-shaded</artifactId>
+                <version>${project.version}</version>
+                <!-- we need exclusion to satisfy the enforcer plugin, when shaded dependency is a module
+                within the project, as enforcer (incorrectly) relies on module's source pom.xml instead of
+                it's published pom.xml. As expected, the problem goes away when the same dependency comes
+                from a different project.-->
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-sqlserver-execution-tests</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -811,6 +883,32 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-postgres-execution-tests</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-athena-execution</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-athena-execution-tests</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-athena-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-athena-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-athena-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -1438,6 +1536,11 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-ide-light-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-javaGeneration-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1476,6 +1579,19 @@
                 <artifactId>legend-engine-pure-code-compiled-core-configuration</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-changetoken-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-changetoken-compiler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
@@ -1612,6 +1728,11 @@
                         <artifactId>opentracing-jaxrs2</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-runtime-java-engine-interpreted</artifactId>
+                <version>${legend.pure.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
@@ -2254,31 +2375,6 @@
                 <version>${postgres.version}</version>
                 <scope>runtime</scope>
             </dependency>
-            <dependency>
-                <groupId>com.google.cloud</groupId>
-                <artifactId>google-cloud-spanner-jdbc</artifactId>
-                <version>${google-cloud-spanner-jdbc.version}</version>
-                <scope>runtime</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.annotation</groupId>
-                        <artifactId>javax.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.checkerframework</groupId>
-                        <artifactId>checker-qual</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.google.errorprone</groupId>
-                        <artifactId>error_prone_annotations</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
             <!-- Database -->
 
             <!-- Test Containers -->

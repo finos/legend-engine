@@ -16,6 +16,27 @@ package org.finos.legend.engine.plan.execution.stores.relational.plugin;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalErrorResult;
+import org.finos.legend.engine.plan.execution.result.UpdateNodeResult;
+import org.finos.legend.engine.plan.execution.result.serialization.RequestIdGenerator;
+import org.finos.legend.engine.plan.execution.stores.relational.RelationalDatabaseCommandsVisitorBuilder;
+import org.finos.legend.engine.plan.execution.stores.relational.RelationalExecutor;
+import org.finos.legend.engine.plan.execution.stores.relational.activity.AggregationAwareActivity;
+import org.finos.legend.engine.plan.execution.stores.relational.blockConnection.BlockConnection;
+import org.finos.legend.engine.plan.execution.stores.relational.blockConnection.BlockConnectionContext;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
+
+import org.finos.legend.engine.plan.execution.stores.relational.result.FunctionHelper;
+import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
+import org.finos.legend.engine.plan.execution.stores.relational.result.ResultInterpreterExtension;
+import org.finos.legend.engine.plan.execution.stores.relational.result.SQLExecutionResult;
+import org.finos.legend.engine.plan.execution.stores.relational.result.TempTableStreamingResult;
+import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
+import org.finos.legend.engine.plan.execution.stores.relational.result.PreparedTempTableResult;
+import org.finos.legend.engine.plan.execution.stores.relational.result.ResultColumn;
+
+import org.finos.legend.engine.plan.execution.stores.relational.result.graphFetch.RelationalGraphObjectsBatch;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
@@ -56,23 +77,9 @@ import org.finos.legend.engine.plan.execution.result.builder._class.ClassBuilder
 import org.finos.legend.engine.plan.execution.result.graphFetch.GraphFetchResult;
 import org.finos.legend.engine.plan.execution.result.graphFetch.GraphObjectsBatch;
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
+import org.finos.legend.engine.plan.execution.result.serialization.CsvSerializer;
+import org.finos.legend.engine.plan.execution.result.serialization.TemporaryFile;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
-import org.finos.legend.engine.plan.execution.stores.relational.RelationalDatabaseCommandsVisitorBuilder;
-import org.finos.legend.engine.plan.execution.stores.relational.RelationalExecutor;
-import org.finos.legend.engine.plan.execution.stores.relational.activity.AggregationAwareActivity;
-import org.finos.legend.engine.plan.execution.stores.relational.blockConnection.BlockConnection;
-import org.finos.legend.engine.plan.execution.stores.relational.blockConnection.BlockConnectionContext;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
-import org.finos.legend.engine.plan.execution.stores.relational.result.FunctionHelper;
-import org.finos.legend.engine.plan.execution.stores.relational.result.PreparedTempTableResult;
-import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
-import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
-import org.finos.legend.engine.plan.execution.stores.relational.result.ResultColumn;
-import org.finos.legend.engine.plan.execution.stores.relational.result.ResultInterpreterExtension;
-import org.finos.legend.engine.plan.execution.stores.relational.result.SQLExecutionResult;
-import org.finos.legend.engine.plan.execution.stores.relational.result.TempTableStreamingResult;
-import org.finos.legend.engine.plan.execution.stores.relational.result.graphFetch.RelationalGraphObjectsBatch;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AggregationAwareExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AllocationExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ConstantExecutionNode;
@@ -94,7 +101,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Relati
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalTdsInstantiationExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SequenceExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GlobalGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.LocalGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.RelationalClassQueryTempTableGraphFetchExecutionNode;
@@ -105,6 +111,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphF
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.RelationalRootGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.RelationalRootQueryTempTableGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.RelationalTempTableGraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.FinallyExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.UpdateSqlExecutionNode;
+import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
+import org.finos.legend.engine.plan.execution.stores.relational.serialization.StreamingTempTableResultCSVSerializer;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.StoreMappingGlobalGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryCrossStoreGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryPropertyGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryRootGraphFetchExecutionNode;
@@ -162,18 +173,48 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         {
             RelationalBlockExecutionNode relationalBlockExecutionNode = (RelationalBlockExecutionNode) executionNode;
             ExecutionState connectionAwareState = new ExecutionState(this.executionState);
-            ((RelationalStoreExecutionState) connectionAwareState.getStoreExecutionState(StoreType.Relational)).setRetainConnection(true);
-            try
+            RelationalStoreExecutionState relationalStoreState = ((RelationalStoreExecutionState) connectionAwareState.getStoreExecutionState(StoreType.Relational));
+            relationalStoreState.setRetainConnection(true);
+
+            ExecutionNodeExecutor nodeExecutor = new ExecutionNodeExecutor(this.profiles, connectionAwareState);
+
+            if (relationalBlockExecutionNode.connection != null)
             {
-                Result res = new ExecutionNodeExecutor(this.profiles, connectionAwareState).visit((SequenceExecutionNode) relationalBlockExecutionNode);
-                ((RelationalStoreExecutionState) connectionAwareState.getStoreExecutionState(StoreType.Relational)).getBlockConnectionContext().unlockAllBlockConnections();
-                return res;
+                Result result = null;
+                try
+                {
+                    relationalStoreState.inScopeConnection = getConnection(relationalBlockExecutionNode, profiles, connectionAwareState);
+                    result = nodeExecutor.visit(relationalBlockExecutionNode);
+                }
+                catch (Throwable e)
+                {
+                    result = new RelationalErrorResult(500, "Error occurred while executing plan", relationalStoreState.inScopeConnection);
+                    throw new RuntimeException("Error while executing the plan", e);
+                }
+                finally
+                {
+                    result.addChildrenResults(((UpdateNodeResult) nodeExecutor.visit(relationalBlockExecutionNode.finallyExecutionNode)).getResults());
+                    if (result instanceof RelationalErrorResult)
+                    {
+                        result.close();
+                    }
+                }
+                return result;
             }
-            catch (Exception e)
+            else
             {
-                ((RelationalStoreExecutionState) connectionAwareState.getStoreExecutionState(StoreType.Relational)).getBlockConnectionContext().unlockAllBlockConnections();
-                ((RelationalStoreExecutionState) connectionAwareState.getStoreExecutionState(StoreType.Relational)).getBlockConnectionContext().closeAllBlockConnections();
-                throw e;
+                try
+                {
+                    Result res = nodeExecutor.visit(relationalBlockExecutionNode);
+                    relationalStoreState.getBlockConnectionContext().unlockAllBlockConnections();
+                    return res;
+                }
+                catch (Exception e)
+                {
+                    relationalStoreState.getBlockConnectionContext().unlockAllBlockConnections();
+                    relationalStoreState.getBlockConnectionContext().closeAllBlockConnections();
+                    throw e;
+                }
             }
         }
         else if (executionNode instanceof CreateAndPopulateTempTableExecutionNode)
@@ -245,18 +286,59 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                         executionMethodName, Collections.singletonList(Result.class), Collections.singletonList(new ConstantResult(t.identifierForGetter)), this.executionState, this.profiles));
             }
 
-            RelationalDatabaseCommands databaseCommands = DatabaseManager.fromString(createAndPopulateTempTableExecutionNode.connection.type.name()).relationalDatabaseSupport();
-            try (Connection connectionManagerConnection = this.getConnection(createAndPopulateTempTableExecutionNode, databaseCommands, this.profiles, this.executionState))
+            TempTableStreamingResult tempTableStreamingResult = new TempTableStreamingResult(inputStream, createAndPopulateTempTableExecutionNode);
+            RelationalStoreExecutionState relationalStoreState = ((RelationalStoreExecutionState) this.executionState.getStoreExecutionState(StoreType.Relational));
+
+            if (relationalStoreState.inScopeConnection != null && createAndPopulateTempTableExecutionNode.childNodes().stream().anyMatch(UpdateSqlExecutionNode.class::isInstance))
             {
-                TempTableStreamingResult tempTableStreamingResult = new TempTableStreamingResult(inputStream, createAndPopulateTempTableExecutionNode);
-                String databaseTimeZone = createAndPopulateTempTableExecutionNode.connection.timeZone == null ? RelationalExecutor.DEFAULT_DB_TIME_ZONE : createAndPopulateTempTableExecutionNode.connection.timeZone;
-                databaseCommands.accept(RelationalDatabaseCommandsVisitorBuilder.getStreamResultToTempTableVisitor(((RelationalStoreExecutionState) this.executionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().getRelationalExecutionConfiguration(), connectionManagerConnection, tempTableStreamingResult, createAndPopulateTempTableExecutionNode.tempTableName, databaseTimeZone));
+
+                String requestId = new RequestIdGenerator().generateId();
+                RelationalExecutionConfiguration config = relationalStoreState.getRelationalExecutor().getRelationalExecutionConfiguration();
+                try (TemporaryFile tempFile = new TemporaryFile(config.tempPath, requestId))
+                {
+                    CsvSerializer csvSerializer = new StreamingTempTableResultCSVSerializer(tempTableStreamingResult, true);
+                    tempFile.writeFile(csvSerializer);
+                    prepareExecutionStateForTempTableExecution(this.executionState, requestId, tempFile.getTemporaryPathForFile());
+                    ExecutionNodeExecutor nodeExecutor = new ExecutionNodeExecutor(this.profiles, new ExecutionState(this.executionState));
+                    createAndPopulateTempTableExecutionNode.executionNodes().forEach(n -> n.accept(nodeExecutor));
+                }
+                catch (Exception e)
+                {
+                    throw new RuntimeException("Error when executing UpdateSQLNode within CreateAndPopulateTempTableNode", e);
+                }
             }
-            catch (SQLException e)
+            else
             {
-                throw new RuntimeException(e);
+                RelationalDatabaseCommands databaseCommands = DatabaseManager.fromString(createAndPopulateTempTableExecutionNode.connection.type.name()).relationalDatabaseSupport();
+                try (Connection connectionManagerConnection = this.getConnection(createAndPopulateTempTableExecutionNode, databaseCommands, this.profiles, this.executionState))
+                {
+                    String databaseTimeZone = createAndPopulateTempTableExecutionNode.connection.timeZone == null ? RelationalExecutor.DEFAULT_DB_TIME_ZONE : createAndPopulateTempTableExecutionNode.connection.timeZone;
+                    databaseCommands.accept(RelationalDatabaseCommandsVisitorBuilder.getStreamResultToTempTableVisitor(relationalStoreState.getRelationalExecutor().getRelationalExecutionConfiguration(), connectionManagerConnection, tempTableStreamingResult, createAndPopulateTempTableExecutionNode.tempTableName, databaseTimeZone));
+                }
+                catch (SQLException e)
+                {
+                    throw new RuntimeException(e);
+                }
             }
             return new ConstantResult("success");
+        }
+        else if (executionNode instanceof UpdateSqlExecutionNode)
+        {
+            UpdateSqlExecutionNode updateSqlExecutionNode = (UpdateSqlExecutionNode) executionNode;
+            return ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().execute(updateSqlExecutionNode, profiles, executionState);
+        }
+        else if (executionNode instanceof FinallyExecutionNode)
+        {
+            MutableList<Result> finallyResults = Lists.mutable.empty();
+            ((FinallyExecutionNode)executionNode).executionNodes().forEach(c ->
+            {
+               Result nodeResult =  c.accept(new ExecutionNodeExecutor(this.profiles, new ExecutionState(executionState)));
+              if (nodeResult instanceof UpdateNodeResult)
+              {
+                  finallyResults.addAll(((UpdateNodeResult) nodeResult).getResults());
+              }
+            });
+            return new UpdateNodeResult(finallyResults);
         }
         else if (executionNode instanceof RelationalExecutionNode)
         {
@@ -938,7 +1020,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
     }
 
     @Override
-    public Result visit(GlobalGraphFetchExecutionNode globalGraphFetchExecutionNode)
+    public Result visit(StoreMappingGlobalGraphFetchExecutionNode storeMappingGlobalGraphFetchExecutionNode)
     {
         throw new RuntimeException("Not implemented!");
     }
@@ -1007,6 +1089,11 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             return blockConnection;
         }
         throw new RuntimeException("CreateAndPopulateTempTableExecutionNode should be used within RelationalBlockExecutionNode");
+    }
+
+    private BlockConnection getConnection(RelationalBlockExecutionNode relationalBlockExecutionNode, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    {
+        return ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getBlockConnectionContext().getBlockConnection(((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)), relationalBlockExecutionNode.connection, profiles);
     }
 
     @JsonIgnore
@@ -1227,7 +1314,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                     long currentBatch = batchIndex.incrementAndGet();
                     try (Scope ignored = GlobalTracer.get().buildSpan("graph fetch batch").withTag("storeType", "relational").withTag("batchIndex", currentBatch).withTag("class", ((RootGraphFetchTree) node.graphFetchTree)._class).asChildOf(graphFetchSpan).startActive(true))
                     {
-                        RelationalGraphObjectsBatch relationalGraphObjectsBatch = new RelationalGraphObjectsBatch(currentBatch);
+                        RelationalGraphObjectsBatch relationalGraphObjectsBatch = new RelationalGraphObjectsBatch(currentBatch, executionState.getGraphFetchBatchMemoryLimit());
 
                         List<Object> resultObjects = new ArrayList<>();
                         List<Pair<IGraphInstance<? extends IReferencedObject>, ExecutionCache<GraphFetchCacheKey, Object>>> instancesToDeepFetchAndCache = new ArrayList<>();
@@ -1820,5 +1907,15 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             this.setCaches.add(null);
             this.sqlResultCacheKeys.add(null);
         }
+    }
+
+    public static void prepareExecutionStateForTempTableExecution(ExecutionState state, String requestId, String tempFilePath)
+    {
+        state.addResult("auth_id", new ConstantResult(state.authId));
+        if (!state.getResults().containsKey("request_id"))
+        {
+            state.addResult("request_id", new ConstantResult(requestId));
+        }
+        state.addResult("csv_file_location", new ConstantResult(tempFilePath));
     }
 }

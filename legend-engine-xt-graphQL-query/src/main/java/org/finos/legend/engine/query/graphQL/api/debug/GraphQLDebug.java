@@ -80,25 +80,10 @@ public class GraphQLDebug extends GraphQL
 {
     private final Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensionsFunc;
 
-    @Deprecated
-    public GraphQLDebug(ModelManager modelManager, MetaDataServerConfiguration metadataserver)
-    {
-        this(modelManager, metadataserver, null);
-    }
-
     public GraphQLDebug(ModelManager modelManager, MetaDataServerConfiguration metadataserver, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensionsFunc)
     {
         super(modelManager, metadataserver);
-
-        if (extensionsFunc != null)
-        {
-            this.extensionsFunc = extensionsFunc;
-        }
-        else
-        {
-            MutableList<PlanGeneratorExtension> planGeneratorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
-            this.extensionsFunc = (PureModel pureModel) -> planGeneratorExtensions.flatCollect(e -> e.getExtraExtensions(pureModel));
-        }
+        this.extensionsFunc = extensionsFunc;
     }
 
     private Response generateGraphFetch(String queryClassPath, Query query, PureModel pureModel) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, JsonProcessingException

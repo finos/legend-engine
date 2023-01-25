@@ -18,22 +18,20 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStorePropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.GraphFetchTree;
 
 import java.util.List;
 
-public class GlobalGraphFetchExecutionNode extends ExecutionNode
+public abstract class GlobalGraphFetchExecutionNode extends ExecutionNode
 {
     public GraphFetchTree graphFetchTree;
-    public String store;
     public List<GlobalGraphFetchExecutionNode> children;
     public LocalGraphFetchExecutionNode localGraphFetchExecutionNode;
     public Integer parentIndex;
-    public XStorePropertyMapping xStorePropertyMapping;
     public Boolean enableConstraints;
     public Boolean checked;
-    public XStorePropertyFetchDetails xStorePropertyFetchDetails;
+    public List<Integer> localTreeIndices;
+    public List<Integer> dependencyIndices;
 
     @Override
     public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)

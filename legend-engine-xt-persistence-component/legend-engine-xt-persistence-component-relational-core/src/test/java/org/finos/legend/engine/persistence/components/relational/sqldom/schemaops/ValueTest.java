@@ -47,45 +47,45 @@ class ValueTest
         String sql3 = BaseTest.genSqlIgnoringErrors(item3);
 
         assertEquals("\"id\"", sql1);
-        assertEquals("A.\"item2\" as my_item", sql2);
-        assertEquals("B.\"item3\" as my_item", sql3);
+        assertEquals("A.\"item2\" as \"my_item\"", sql2);
+        assertEquals("B.\"item3\" as \"my_item\"", sql3);
     }
 
     @Test
     void testValueValue()
     {
-        Value item1 = new ObjectValue(4, "val");
-        Value item2 = new StringValue("four", "val");
-        Value item3 = new ObjectValue(3.7, "val");
+        Value item1 = new ObjectValue(4, "val", BaseTest.QUOTE_IDENTIFIER);
+        Value item2 = new StringValue("four", "val", BaseTest.QUOTE_IDENTIFIER);
+        Value item3 = new ObjectValue(3.7, "val", BaseTest.QUOTE_IDENTIFIER);
 
         String sql1 = BaseTest.genSqlIgnoringErrors(item1);
         String sql2 = BaseTest.genSqlIgnoringErrors(item2);
         String sql3 = BaseTest.genSqlIgnoringErrors(item3);
 
-        assertEquals("4 as val", sql1);
-        assertEquals("'four' as val", sql2);
-        assertEquals("3.7 as val", sql3);
+        assertEquals("4 as \"val\"", sql1);
+        assertEquals("'four' as \"val\"", sql2);
+        assertEquals("3.7 as \"val\"", sql3);
     }
 
     @Test
     void testSimpleSelectExpression()
     {
         Value item1 = new Field(null, "id", BaseTest.QUOTE_IDENTIFIER, null);
-        Value item2 = new ObjectValue(4);
-        Value item = new Expression(item1, item2, Operator.PLUS, "temp");
+        Value item2 = new ObjectValue(4, BaseTest.QUOTE_IDENTIFIER);
+        Value item = new Expression(item1, item2, Operator.PLUS, "temp", BaseTest.QUOTE_IDENTIFIER);
 
         String sql1 = BaseTest.genSqlIgnoringErrors(item);
-        assertEquals("\"id\"+4 as temp", sql1);
+        assertEquals("\"id\"+4 as \"temp\"", sql1);
     }
 
     @Test
     void testSelectExpressionWithFunction()
     {
         Value id = new Field(null, "id", BaseTest.QUOTE_IDENTIFIER, null);
-        Value item = new ObjectValue(4);
-        Function function = new Function(FunctionName.SUM, Arrays.asList(id));
-        Value exp = new Expression(function, item, Operator.PLUS, "temp");
+        Value item = new ObjectValue(4, BaseTest.QUOTE_IDENTIFIER);
+        Function function = new Function(FunctionName.SUM, Arrays.asList(id), BaseTest.QUOTE_IDENTIFIER);
+        Value exp = new Expression(function, item, Operator.PLUS, "temp", BaseTest.QUOTE_IDENTIFIER);
         String sql1 = BaseTest.genSqlIgnoringErrors(exp);
-        assertEquals("SUM(\"id\")+4 as temp", sql1);
+        assertEquals("SUM(\"id\")+4 as \"temp\"", sql1);
     }
 }

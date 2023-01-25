@@ -13,12 +13,12 @@
 // limitations under the License.
 
 import meta::external::language::java::factory::*;
-import meta::pure::executionPlan::engine::java::*;
-import meta::pure::executionPlan::engine::java::tests::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::executionPlan::platformBinding::legendJava::tests::utils::*;
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testStringLiteral() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::string::tests::testStringLiteral() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       ->addTest('String literal', {|'"String" literal\n\t\\'}, '"\\"String\\" literal\\n\\t\\\\"', javaString())
@@ -28,7 +28,7 @@ meta::pure::executionPlan::engine::java::tests::testStringLiteral() : Boolean[1]
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testContents() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::string::tests::testContents() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       ->addTest('String contains', {|'Hello, World'->contains('ello')}, '"Hello, World".contains("ello")', javaBoolean())
@@ -42,7 +42,7 @@ meta::pure::executionPlan::engine::java::tests::testContents() : Boolean[1]
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testParsing() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::string::tests::testParsing() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       ->addTest('String parseInteger', {|'777'->parseInteger()}, 'Long.parseLong("777")', javaLong())
@@ -55,7 +55,7 @@ meta::pure::executionPlan::engine::java::tests::testParsing() : Boolean[1]
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testExtractions() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::string::tests::testExtractions() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       ->addTest('Substring', {|'Hello, World'->substring(7, 11)}, '"Hello, World".substring((int) 7L, (int) 11L)', javaString())
@@ -86,7 +86,7 @@ meta::pure::executionPlan::engine::java::tests::testExtractions() : Boolean[1]
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testPositional() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::string::tests::testPositional() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       ->addTest('IndexOf in String', {|'Hello, World'->indexOf('W')}, '(long) "Hello, World".indexOf("W")', javaLong())
@@ -102,7 +102,7 @@ meta::pure::executionPlan::engine::java::tests::testPositional() : Boolean[1]
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::stringConcatenation() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::string::tests::stringConcatenation() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       ->addTest('JoinStrings args: none', {|['what', 'so', 'ever']->joinStrings()}, 'java.util.Arrays.asList("what", "so", "ever").stream().collect(java.util.stream.Collectors.joining(""))', javaString())
@@ -118,7 +118,7 @@ meta::pure::executionPlan::engine::java::tests::stringConcatenation() : Boolean[
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0', doc.todo='Add lots more tests' }
-meta::pure::executionPlan::engine::java::tests::toString() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::string::tests::toString() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       ->addTest('String toString', {|3->toString()}, 'org.finos.legend.engine.plan.dependencies.util.Library.pureToString(3L)', javaString())
@@ -128,7 +128,7 @@ meta::pure::executionPlan::engine::java::tests::toString() : Boolean[1]
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::split() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::string::tests::split() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       ->addTest('String Split', {|'happy-go-lucky'->split('-')}, 'org.finos.legend.engine.plan.dependencies.util.Library.split("happy-go-lucky", "-")', javaList(javaString()))
@@ -144,7 +144,7 @@ meta::pure::executionPlan::engine::java::tests::split() : Boolean[1]
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::stringInequality() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::string::tests::stringInequality() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       // >
@@ -224,9 +224,9 @@ meta::pure::executionPlan::engine::java::tests::stringInequality() : Boolean[1]
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testStringPureTests() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::string::tests::testStringPureTests() : Boolean[1]
 {
-   javaPureTests(meta::pure::executionPlan::engine::java::engineConventions([]), [
+   javaPureTests(engineConventions([]), [
       meta::pure::functions::lang::tests::greaterThan::testGreaterThan_String__Boolean_1_,
       meta::pure::functions::lang::tests::greaterThanEqual::testGreaterThanEqual_String__Boolean_1_,
       meta::pure::functions::lang::tests::lessThan::testLessThan_String__Boolean_1_,
@@ -252,4 +252,13 @@ meta::pure::executionPlan::engine::java::tests::testStringPureTests() : Boolean[
       ->addTestsWithin(meta::pure::functions::string::tests::parseDecimal)
       ->addTestsWithin(meta::pure::functions::string::tests::matches)
       ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::platformBinding::legendJava::library::string::tests::testGetMethodName() : Boolean[1]
+{
+  let testList = ['class','Class',  'quantity','property','function'];
+  let result = $testList->map(v| if($v->meta::external::language::java::transform::checkForReservedWordsForGet(),|'get'+ '_' + $v,|'get'+ $v));
+  meta::pure::functions::asserts::assertEquals(['get_class', 'get_Class', 'getquantity', 'getproperty', 'getfunction'],$result);
 }
