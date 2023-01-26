@@ -43,6 +43,9 @@ public class BaseTestUtils
     public static Field colNumeric = Field.builder().name("col_numeric").type(FieldType.of(DataType.NUMERIC, Optional.empty(), Optional.empty())).build();
     public static Field colBoolean = Field.builder().name("col_boolean").type(FieldType.of(DataType.BOOLEAN, Optional.empty(), Optional.empty())).build();
     public static Field colVarBinary = Field.builder().name("col_varbinary").type(FieldType.of(DataType.VARBINARY, 10, null)).build();
+    public static Field colVariant = Field.builder().name("col_variant").type(FieldType.of(DataType.VARIANT, Optional.empty(), Optional.empty())).build();
+    public static Field colArray = Field.builder().name("col_array").type(FieldType.of(DataType.ARRAY, Optional.empty(), Optional.empty())).build();
+    public static Field colMap = Field.builder().name("col_map").type(FieldType.of(DataType.MAP, Optional.empty(), Optional.empty())).build();
 
     public static SchemaDefinition schemaWithAllColumns = SchemaDefinition.builder()
         .addFields(colInt)

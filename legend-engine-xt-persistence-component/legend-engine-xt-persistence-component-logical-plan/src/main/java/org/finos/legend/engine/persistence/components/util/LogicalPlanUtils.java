@@ -315,21 +315,7 @@ public class LogicalPlanUtils
         return Selection.builder().source(dataset.datasetReference()).condition(condition).addFields(countFunction).build();
     }
 
-    public static void validateOptimizationFilters(List<OptimizationFilter> optimizationFilters, Dataset dataset)
-    {
-        for (OptimizationFilter filter: optimizationFilters)
-        {
-            Field filterField = dataset.schema().fields().stream()
-                    .filter(field -> field.name().equalsIgnoreCase(filter.fieldName()))
-                    .findFirst().orElseThrow(() -> new IllegalStateException(String.format("Optimization filter [%s] not found in Staging Schema", filter.fieldName())));
-            if (!SUPPORTED_DATA_TYPES_FOR_OPTIMIZATION_COLUMNS.contains(filterField.type().dataType()))
-            {
-                throw new IllegalStateException(String.format("Optimization filter's data type [%s] is not supported", filterField.type().dataType()));
-            }
-        }
-    }
-
-    private static Set<DataType> SUPPORTED_DATA_TYPES_FOR_OPTIMIZATION_COLUMNS =
+    public static Set<DataType> SUPPORTED_DATA_TYPES_FOR_OPTIMIZATION_COLUMNS =
             new HashSet<>(Arrays.asList(INT, INTEGER, INT64, BIGINT, FLOAT, DOUBLE, DECIMAL, DATE));
 
 }
