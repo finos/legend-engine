@@ -66,7 +66,7 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
         // Validate if the optimizationFilters are comparable
         if (ingestMode.optimizationFilters().isPresent())
         {
-            LogicalPlanUtils.validateOptimizationFilters(ingestMode.optimizationFilters().get(), stagingDataset());
+            validateOptimizationFilters(ingestMode.optimizationFilters().get(), stagingDataset());
         }
         this.deleteIndicatorField = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD);
         this.deleteIndicatorValues = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_VALUES);
