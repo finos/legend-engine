@@ -14,6 +14,19 @@
 
 package org.finos.legend.engine.connection;
 
-public abstract class ConnectionSpecification
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
+
+public class ConnectionSpecification
 {
+    public String name;
+    public DatasourceSpecification datasourceSpecification;
+    public AuthenticationSpecification authenticationSpecification;
+
+    public ConnectionSpecification(String name, DatasourceSpecification datasourceSpecification, AuthenticationSpecification authenticationSpecification)
+    {
+        this.name = name;
+        this.datasourceSpecification = datasourceSpecification;
+        this.authenticationSpecification = authenticationSpecification;
+    }
 }
