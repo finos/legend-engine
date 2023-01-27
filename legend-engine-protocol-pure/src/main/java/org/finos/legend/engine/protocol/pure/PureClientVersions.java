@@ -28,7 +28,7 @@ public class PureClientVersions
         assert !hasRepeatedVersions(versions) : "Repeated version id :" + versions.toBag().selectByOccurrences(i -> i > 1).toSet().makeString("[", ", ", "]");
     }
 
-    public static String production = "v1_29_0";
+    public static String production = "v1_28_0";
 
     static boolean hasRepeatedVersions(ImmutableList<String> versions)
     {
