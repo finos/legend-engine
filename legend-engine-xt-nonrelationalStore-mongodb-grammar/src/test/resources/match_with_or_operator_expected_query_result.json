@@ -1,0 +1,36 @@
+[
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a8d4001b5d"
+    },
+    "id": 11,
+    "name": "Brown and Sons",
+    "employees": 1477,
+    "phone": "483-313-1027",
+    "dateFounded": "2019-04-18",
+    "sector": "Metal Fabrications",
+    "tags": [],
+    "location": {
+      "country": "Indonesia",
+      "street": "67049 Nova Way",
+      "postalCode": null
+    }
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a7000019cd"
+    },
+    "id": 12,
+    "name": "Vandervort, Grimes and Bergnaum",
+    "employees": 795,
+    "phone": "504-585-0600",
+    "dateFounded": "1993-08-21",
+    "sector": "n/a",
+    "tags": [],
+    "location": {
+      "country": "Mauritius",
+      "street": "5141 Atwood Circle",
+      "postalCode": null
+    }
+  }
+]

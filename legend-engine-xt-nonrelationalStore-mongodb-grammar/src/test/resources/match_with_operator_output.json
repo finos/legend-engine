@@ -1,0 +1,30 @@
+{
+  "type": "aggregate",
+  "collectionName": "\"firm\"",
+  "aggregationPipeline": {
+    "_type": "viewPipeline",
+    "stages": [
+      {
+        "_type": "matchStage",
+        "expression": {
+          "_type": "objectExpression",
+          "keyValues": [
+            {
+              "field": "\"name\"",
+              "argument": {
+                "_type": "eqOperatorExpression",
+                "expression": {
+                  "_type": "literalValue",
+                  "value": {
+                    "_type": "stringTypeValue",
+                    "value": "\"Zemlak-Hegmann\""
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

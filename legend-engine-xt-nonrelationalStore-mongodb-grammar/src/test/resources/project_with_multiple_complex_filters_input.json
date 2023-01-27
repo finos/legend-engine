@@ -1,0 +1,16 @@
+{
+  "aggregate": "firm",
+  "pipeline": [
+    {
+      "$project": {
+        "name": 1,
+        "location.postalCode": 1,
+        "location.street": true,
+        "country": "$location.country",
+        "firmTags": "$tags",
+        "sector": 1
+      }
+    }
+  ],
+  "cursor": {}
+}

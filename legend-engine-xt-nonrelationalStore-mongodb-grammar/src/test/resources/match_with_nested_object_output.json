@@ -1,0 +1,282 @@
+{
+  "type": "aggregate",
+  "collectionName": "\"firm\"",
+  "aggregationPipeline": {
+    "_type": "viewPipeline",
+    "stages": [
+      {
+        "_type": "matchStage",
+        "expression": {
+          "_type": "objectExpression",
+          "keyValues": [
+            {
+              "field": "\"test\"",
+              "argument": {
+                "_type": "eqOperatorExpression",
+                "expression": {
+                  "_type": "literalValue",
+                  "value": {
+                    "_type": "objectTypeValue",
+                    "keyValues": [
+                      {
+                        "key": "\"test1\"",
+                        "value": {
+                          "_type": "objectTypeValue",
+                          "keyValues": [
+                            {
+                              "key": "\"test2\"",
+                              "value": {
+                                "_type": "objectTypeValue",
+                                "keyValues": [
+                                  {
+                                    "key": "\"test3_2\"",
+                                    "value": {
+                                      "_type": "stringTypeValue",
+                                      "value": "\"value2\""
+                                    }
+                                  },
+                                  {
+                                    "key": "\"test3_3\"",
+                                    "value": {
+                                      "_type": "arrayTypeValue",
+                                      "items": [
+                                        {
+                                          "_type": "stringTypeValue",
+                                          "value": "\"value3\""
+                                        },
+                                        {
+                                          "_type": "stringTypeValue",
+                                          "value": "\"value4\""
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  {
+                                    "key": "\"test3_4\"",
+                                    "value": {
+                                      "_type": "objectTypeValue",
+                                      "keyValues": [
+                                        {
+                                          "key": "\"test3_4_1\"",
+                                          "value": {
+                                            "_type": "stringTypeValue",
+                                            "value": "\"4\""
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  {
+                                    "key": "\"test3_5\"",
+                                    "value": {
+                                      "_type": "objectTypeValue",
+                                      "keyValues": [
+                                        {
+                                          "key": "\"test3_5_1\"",
+                                          "value": {
+                                            "_type": "arrayTypeValue",
+                                            "items": [
+                                              {
+                                                "_type": "objectTypeValue",
+                                                "keyValues": [
+                                                  {
+                                                    "key": "\"test3_5_1_1\"",
+                                                    "value": {
+                                                      "_type": "stringTypeValue",
+                                                      "value": "\"value5\""
+                                                    }
+                                                  }
+                                                ]
+                                              },
+                                              {
+                                                "_type": "objectTypeValue",
+                                                "keyValues": [
+                                                  {
+                                                    "key": "\"test3_5_1_2\"",
+                                                    "value": {
+                                                      "_type": "arrayTypeValue",
+                                                      "items": [
+                                                        {
+                                                          "_type": "stringTypeValue",
+                                                          "value": "\"value6\""
+                                                        },
+                                                        {
+                                                          "_type": "stringTypeValue",
+                                                          "value": "\"value7\""
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                ]
+                                              }
+                                            ]
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "field": "\"test6\"",
+              "argument": {
+                "_type": "eqOperatorExpression",
+                "expression": {
+                  "_type": "literalValue",
+                  "value": {
+                    "_type": "arrayTypeValue",
+                    "items": [
+                      {
+                        "_type": "stringTypeValue",
+                        "value": "\"value8\""
+                      },
+                      {
+                        "_type": "stringTypeValue",
+                        "value": "\"value9\""
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "field": "\"test7\"",
+              "argument": {
+                "_type": "eqOperatorExpression",
+                "expression": {
+                  "_type": "literalValue",
+                  "value": {
+                    "_type": "stringTypeValue",
+                    "value": "\"5\""
+                  }
+                }
+              }
+            },
+            {
+              "field": "\"test8\"",
+              "argument": {
+                "_type": "eqOperatorExpression",
+                "expression": {
+                  "_type": "literalValue",
+                  "value": {
+                    "_type": "objectTypeValue",
+                    "keyValues": [
+                      {
+                        "key": "\"test8_1\"",
+                        "value": {
+                          "_type": "stringTypeValue",
+                          "value": "\"8\""
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "field": "\"test9\"",
+              "argument": {
+                "_type": "eqOperatorExpression",
+                "expression": {
+                  "_type": "literalValue",
+                  "value": {
+                    "_type": "objectTypeValue",
+                    "keyValues": [
+                      {
+                        "key": "\"test9_1\"",
+                        "value": {
+                          "_type": "stringTypeValue",
+                          "value": "\"9_1\""
+                        }
+                      },
+                      {
+                        "key": "\"test9_2\"",
+                        "value": {
+                          "_type": "stringTypeValue",
+                          "value": "\"9_2\""
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "field": "\"test10\"",
+              "argument": {
+                "_type": "eqOperatorExpression",
+                "expression": {
+                  "_type": "literalValue",
+                  "value": {
+                    "_type": "arrayTypeValue",
+                    "items": [
+                      {
+                        "_type": "objectTypeValue",
+                        "keyValues": [
+                          {
+                            "key": "\"test10_1\"",
+                            "value": {
+                              "_type": "stringTypeValue",
+                              "value": "\"10_1\""
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "_type": "objectTypeValue",
+                        "keyValues": [
+                          {
+                            "key": "\"test10_2\"",
+                            "value": {
+                              "_type": "stringTypeValue",
+                              "value": "\"10_2\""
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "field": "\"test11\"",
+              "argument": {
+                "_type": "eqOperatorExpression",
+                "expression": {
+                  "_type": "literalValue",
+                  "value": {
+                    "_type": "arrayTypeValue",
+                    "items": [
+                      {
+                        "_type": "intTypeValue",
+                        "value": 0
+                      },
+                      {
+                        "_type": "intTypeValue",
+                        "value": 1
+                      },
+                      {
+                        "_type": "intTypeValue",
+                        "value": 2
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

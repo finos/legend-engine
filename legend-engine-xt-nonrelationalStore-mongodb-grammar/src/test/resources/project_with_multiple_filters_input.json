@@ -1,0 +1,13 @@
+{
+  "aggregate": "firm",
+  "pipeline": [
+    {
+      "$project": {
+        "name": 1,
+        "location.country": true,
+        "_id": 0
+      }
+    }
+  ],
+  "cursor": {}
+}

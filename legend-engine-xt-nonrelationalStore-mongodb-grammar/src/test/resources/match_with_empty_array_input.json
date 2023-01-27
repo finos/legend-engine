@@ -1,0 +1,14 @@
+{
+  "aggregate": "firm",
+  "pipeline": [
+    {
+      "$match": {
+        "location.country": {
+          "$eq": "Indonesia"
+        },
+        "tags": []
+      }
+    }
+  ],
+  "cursor": {}
+}

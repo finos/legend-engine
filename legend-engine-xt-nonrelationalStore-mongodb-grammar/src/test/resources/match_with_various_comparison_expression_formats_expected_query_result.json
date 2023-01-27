@@ -1,0 +1,434 @@
+[
+  {
+    "_id": {
+      "$oid": "63d3a6ddf03239a9f40019c9"
+    },
+    "id": 1,
+    "name": "Wunsch LLC",
+    "employees": 9536,
+    "phone": "217-461-9117",
+    "dateFounded": "1973-09-30",
+    "sector": "Investment Bankers/Brokers/Service",
+    "tags": [
+      "Investment Bank",
+      "Finance"
+    ],
+    "location": {
+      "country": "Thailand",
+      "street": "34 Glacier Hill Way",
+      "postalCode": "64110"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6ddf03239a8ff0019cd"
+    },
+    "id": 2,
+    "name": "Zemlak-Hegmann",
+    "employees": 4730,
+    "phone": "319-972-8213",
+    "dateFounded": "2008-03-15",
+    "sector": "Industrial Machinery/Components",
+    "tags": [
+      "Engineering"
+    ],
+    "location": {
+      "country": "Indonesia",
+      "street": "15783 Susan Pass",
+      "postalCode": null
+    }
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6ddf03239a5cb0019cd"
+    },
+    "id": 3,
+    "name": "Zemlak LLC",
+    "employees": 1424,
+    "phone": "390-727-6983",
+    "dateFounded": "2001-01-09",
+    "sector": "Electric Utilities: Central",
+    "tags": [
+      "Utilities"
+    ],
+    "location": {
+      "country": "Portugal",
+      "street": "46124 Kingsford Street",
+      "postalCode": "4540-379"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a8f6001b5d"
+    },
+    "id": 4,
+    "name": "O'Kon Inc",
+    "employees": 2832,
+    "phone": "138-270-9312",
+    "dateFounded": "2016-12-26",
+    "sector": "Major Banks",
+    "tags": [
+      "Bank",
+      "Finance"
+    ],
+    "location": {
+      "country": "Mongolia",
+      "street": "14 Scoville Park",
+      "postalCode": null
+    }
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6ddf03239a58c00183d"
+    },
+    "id": 5,
+    "name": "Buckridge Inc",
+    "employees": 7577,
+    "phone": "735-832-9880",
+    "dateFounded": "1998-04-18",
+    "sector": "Integrated oil Companies",
+    "tags": [
+      "Oil Industry",
+      "Natural Resources"
+    ],
+    "location": {
+      "country": "Canada",
+      "street": "9 Blackbird Plaza",
+      "postalCode": "R7N"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a4110019cd"
+    },
+    "id": 6,
+    "name": "Hodkiewicz-Hoppe",
+    "employees": 4541,
+    "phone": "928-827-7825",
+    "dateFounded": "1985-05-07",
+    "sector": "Natural Gas Distribution",
+    "tags": [
+      "Natural Resources"
+    ],
+    "location": {
+      "country": "Costa Rica",
+      "street": "023 Forest Dale Lane",
+      "postalCode": "11503"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6ddf03239ac1e001b5d"
+    },
+    "id": 7,
+    "name": "Stokes Inc",
+    "employees": 4723,
+    "phone": "637-259-3994",
+    "dateFounded": "1981-04-05",
+    "sector": "Biotechnology: In Vitro & In Vivo Diagnostic Substances",
+    "tags": [
+      "Technology"
+    ],
+    "location": {
+      "country": "Indonesia",
+      "street": "81 Hoffman Hill",
+      "postalCode": null
+    }
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a6f40019cd"
+    },
+    "id": 8,
+    "name": "Dicki Inc",
+    "employees": 7287,
+    "phone": "749-399-4920",
+    "dateFounded": "2007-07-13",
+    "sector": "Medical/Dental Instruments",
+    "tags": [
+      "Medical",
+      "Health"
+    ],
+    "location": {
+      "country": "Uruguay",
+      "street": "98 Reindahl Road",
+      "postalCode": null
+    }
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239aba1001b5d"
+    },
+    "id": 9,
+    "name": "Rosenbaum, Keeling and Cummerata",
+    "employees": 3217,
+    "phone": "415-642-7075",
+    "dateFounded": "2003-03-05",
+    "sector": "Major Banks",
+    "tags": [
+      "Bank"
+    ],
+    "location": {
+      "country": "Peru",
+      "street": "21 Butterfield Center",
+      "postalCode": null
+    }
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239ac1f0019cd"
+    },
+    "id": 10,
+    "name": "Cummings-Bayer",
+    "employees": 2784,
+    "phone": "996-693-8453",
+    "dateFounded": "1994-01-06",
+    "sector": "n/a",
+    "tags": [],
+    "location": {
+      "country": "Japan",
+      "street": "2320 Westerfield Circle",
+      "postalCode": "979-1543"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a7000019cd"
+    },
+    "id": 12,
+    "name": "Vandervort, Grimes and Bergnaum",
+    "employees": 795,
+    "phone": "504-585-0600",
+    "dateFounded": "1993-08-21",
+    "sector": "n/a",
+    "tags": [],
+    "location": {
+      "country": "Mauritius",
+      "street": "5141 Atwood Circle",
+      "postalCode": null
+    }
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a93a00183d"
+    },
+    "id": 13,
+    "name": "Erdman LLC",
+    "employees": 4572,
+    "phone": "663-885-8010",
+    "dateFounded": "1985-06-26",
+    "sector": "Finance Companies",
+    "tags": [],
+    "location": {
+      "country": "Indonesia",
+      "street": "44 Buell Avenue",
+      "postalCode": null
+    }
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a9570019cd"
+    },
+    "id": 14,
+    "name": "Dietrich-Dooley",
+    "employees": 4022,
+    "phone": "440-313-2149",
+    "dateFounded": "2013-12-06",
+    "sector": "n/a",
+    "tags": [],
+    "location": {
+      "country": "Bosnia and Herzegovina",
+      "street": "23 Granby Parkway",
+      "postalCode": null
+    }
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a64d0019cd"
+    },
+    "id": 15,
+    "name": "Hickle-Howe",
+    "employees": 1159,
+    "phone": "436-257-0435",
+    "dateFounded": "2012-12-22",
+    "sector": "Industrial Machinery/Components",
+    "tags": [],
+    "location": {
+      "country": "Philippines",
+      "street": "9399 7th Drive",
+      "postalCode": "7203"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239acf800183d"
+    },
+    "id": 16,
+    "name": "Hessel-Hilpert",
+    "employees": 8161,
+    "phone": "639-401-5157",
+    "dateFounded": "1988-06-12",
+    "sector": "Radio And Television Broadcasting And Communications Equipment",
+    "tags": [],
+    "location": {
+      "country": "Poland",
+      "street": "7 Grayhawk Way",
+      "postalCode": "46-090"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a40d0019cd"
+    },
+    "id": 17,
+    "name": "Brakus-Roberts",
+    "employees": 155,
+    "phone": "100-988-4149",
+    "dateFounded": "2017-11-23",
+    "sector": "Real Estate Investment Trusts",
+    "tags": [],
+    "location": {
+      "country": "Poland",
+      "street": "98526 Thackeray Parkway",
+      "postalCode": "72-112"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a7710019cd"
+    },
+    "id": 18,
+    "name": "Sanford and Sons",
+    "employees": 2919,
+    "phone": "484-397-5862",
+    "dateFounded": "2002-03-02",
+    "sector": "Steel/Iron Ore",
+    "tags": [],
+    "location": {
+      "country": "Russia",
+      "street": "44432 Mockingbird Trail",
+      "postalCode": "368670"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239ac28001b5d"
+    },
+    "id": 19,
+    "name": "Herzog, Ullrich and Blick",
+    "employees": 1167,
+    "phone": "863-906-0114",
+    "dateFounded": "1994-06-16",
+    "sector": "Precious Metals",
+    "tags": [],
+    "location": {
+      "country": "Russia",
+      "street": "740 Golf View Alley",
+      "postalCode": "446368"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a50d0019cd"
+    },
+    "id": 20,
+    "name": "Klocko, Ebert and Deckow",
+    "employees": 7193,
+    "phone": "785-468-7191",
+    "dateFounded": "2021-02-04",
+    "sector": "Major Pharmaceuticals",
+    "tags": [],
+    "location": {
+      "country": "Indonesia",
+      "street": "68903 Arrowood Trail",
+      "postalCode": null
+    }
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a50d0019ce"
+    },
+    "id": 21,
+    "name": "Jenkins Inc",
+    "employees": 1382,
+    "phone": "579-778-3451",
+    "dateFounded": "2001-02-14",
+    "sector": "Building Products",
+    "tags": [],
+    "location": {
+      "country": "China",
+      "street": "74700 Logan Park",
+      "postalCode": null
+    }
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a50d0019cf"
+    },
+    "id": 22,
+    "name": "Hilpert, Nicolas and Walter",
+    "employees": 2514,
+    "phone": "742-335-1245",
+    "dateFounded": "2021-04-15",
+    "sector": "Major Banks",
+    "tags": [
+      "Bank"
+    ],
+    "location": {
+      "country": "China",
+      "street": "5 Fisk Avenue",
+      "postalCode": null
+    }
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a50d0019d0"
+    },
+    "id": 23,
+    "name": "Mueller-Bednar",
+    "employees": 3672,
+    "phone": "559-474-4488",
+    "dateFounded": "2004-02-21",
+    "sector": "Major Banks",
+    "tags": [],
+    "location": {
+      "country": "Sweden",
+      "street": "89 Pierstorff Center",
+      "postalCode": "612 37"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a50d0019d1"
+    },
+    "id": 24,
+    "name": "Effertz Group",
+    "employees": 2217,
+    "phone": "458-559-3744",
+    "dateFounded": "1970-04-07",
+    "sector": "Major Banks",
+    "tags": [],
+    "location": {
+      "country": "Philippines",
+      "street": "419 2nd Place",
+      "postalCode": "6008"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a50d0019d2"
+    },
+    "id": 25,
+    "name": "Dooley, Klein and Hickle",
+    "employees": 5054,
+    "phone": "429-795-6158",
+    "dateFounded": "1975-12-11",
+    "sector": "Electric Utilities: Central",
+    "tags": [],
+    "location": {
+      "country": "Sweden",
+      "street": "831 Victoria Junction",
+      "postalCode": "231 91"
+    }
+  }
+]

@@ -1,0 +1,22 @@
+[
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a8f6001b5d"
+    },
+    "id": 4,
+    "name": "O'Kon Inc",
+    "employees": 2832,
+    "phone": "138-270-9312",
+    "dateFounded": "2016-12-26",
+    "sector": "Major Banks",
+    "tags": [
+      "Bank",
+      "Finance"
+    ],
+    "location": {
+      "country": "Mongolia",
+      "street": "14 Scoville Park",
+      "postalCode": null
+    }
+  }
+]

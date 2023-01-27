@@ -1,0 +1,16 @@
+{
+  "aggregate": "firm",
+  "pipeline": [
+    {
+      "$match": {
+        "location.country": {
+          "$eq": "Indonesia"
+        },
+        "employees": {
+          "$gt": 5000
+        }
+      }
+    }
+  ],
+  "cursor": {}
+}

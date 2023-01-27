@@ -1,0 +1,351 @@
+[
+  {
+    "_id": {
+      "$oid": "63d3a6ddf03239a9f40019c9"
+    },
+    "name": "Wunsch LLC",
+    "location": {
+      "postalCode": "64110",
+      "street": "34 Glacier Hill Way"
+    },
+    "country": "Thailand",
+    "firmTags": [
+      "Investment Bank",
+      "Finance"
+    ],
+    "sector": "Investment Bankers/Brokers/Service"
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6ddf03239a8ff0019cd"
+    },
+    "name": "Zemlak-Hegmann",
+    "location": {
+      "postalCode": null,
+      "street": "15783 Susan Pass"
+    },
+    "country": "Indonesia",
+    "firmTags": [
+      "Engineering"
+    ],
+    "sector": "Industrial Machinery/Components"
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6ddf03239a5cb0019cd"
+    },
+    "name": "Zemlak LLC",
+    "location": {
+      "postalCode": "4540-379",
+      "street": "46124 Kingsford Street"
+    },
+    "country": "Portugal",
+    "firmTags": [
+      "Utilities"
+    ],
+    "sector": "Electric Utilities: Central"
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a8f6001b5d"
+    },
+    "name": "O'Kon Inc",
+    "location": {
+      "postalCode": null,
+      "street": "14 Scoville Park"
+    },
+    "country": "Mongolia",
+    "firmTags": [
+      "Bank",
+      "Finance"
+    ],
+    "sector": "Major Banks"
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6ddf03239a58c00183d"
+    },
+    "name": "Buckridge Inc",
+    "location": {
+      "postalCode": "R7N",
+      "street": "9 Blackbird Plaza"
+    },
+    "country": "Canada",
+    "firmTags": [
+      "Oil Industry",
+      "Natural Resources"
+    ],
+    "sector": "Integrated oil Companies"
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a4110019cd"
+    },
+    "name": "Hodkiewicz-Hoppe",
+    "location": {
+      "postalCode": "11503",
+      "street": "023 Forest Dale Lane"
+    },
+    "country": "Costa Rica",
+    "firmTags": [
+      "Natural Resources"
+    ],
+    "sector": "Natural Gas Distribution"
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6ddf03239ac1e001b5d"
+    },
+    "name": "Stokes Inc",
+    "location": {
+      "postalCode": null,
+      "street": "81 Hoffman Hill"
+    },
+    "country": "Indonesia",
+    "firmTags": [
+      "Technology"
+    ],
+    "sector": "Biotechnology: In Vitro & In Vivo Diagnostic Substances"
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a6f40019cd"
+    },
+    "name": "Dicki Inc",
+    "location": {
+      "postalCode": null,
+      "street": "98 Reindahl Road"
+    },
+    "country": "Uruguay",
+    "firmTags": [
+      "Medical",
+      "Health"
+    ],
+    "sector": "Medical/Dental Instruments"
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239aba1001b5d"
+    },
+    "name": "Rosenbaum, Keeling and Cummerata",
+    "location": {
+      "postalCode": null,
+      "street": "21 Butterfield Center"
+    },
+    "country": "Peru",
+    "firmTags": [
+      "Bank"
+    ],
+    "sector": "Major Banks"
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239ac1f0019cd"
+    },
+    "name": "Cummings-Bayer",
+    "location": {
+      "postalCode": "979-1543",
+      "street": "2320 Westerfield Circle"
+    },
+    "country": "Japan",
+    "firmTags": [],
+    "sector": "n/a"
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a8d4001b5d"
+    },
+    "name": "Brown and Sons",
+    "location": {
+      "postalCode": null,
+      "street": "67049 Nova Way"
+    },
+    "country": "Indonesia",
+    "firmTags": [],
+    "sector": "Metal Fabrications"
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a7000019cd"
+    },
+    "name": "Vandervort, Grimes and Bergnaum",
+    "location": {
+      "postalCode": null,
+      "street": "5141 Atwood Circle"
+    },
+    "country": "Mauritius",
+    "firmTags": [],
+    "sector": "n/a"
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a93a00183d"
+    },
+    "name": "Erdman LLC",
+    "location": {
+      "postalCode": null,
+      "street": "44 Buell Avenue"
+    },
+    "country": "Indonesia",
+    "firmTags": [],
+    "sector": "Finance Companies"
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a9570019cd"
+    },
+    "name": "Dietrich-Dooley",
+    "location": {
+      "postalCode": null,
+      "street": "23 Granby Parkway"
+    },
+    "country": "Bosnia and Herzegovina",
+    "firmTags": [],
+    "sector": "n/a"
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a64d0019cd"
+    },
+    "name": "Hickle-Howe",
+    "location": {
+      "postalCode": "7203",
+      "street": "9399 7th Drive"
+    },
+    "country": "Philippines",
+    "firmTags": [],
+    "sector": "Industrial Machinery/Components"
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239acf800183d"
+    },
+    "name": "Hessel-Hilpert",
+    "location": {
+      "postalCode": "46-090",
+      "street": "7 Grayhawk Way"
+    },
+    "country": "Poland",
+    "firmTags": [],
+    "sector": "Radio And Television Broadcasting And Communications Equipment"
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a40d0019cd"
+    },
+    "name": "Brakus-Roberts",
+    "location": {
+      "postalCode": "72-112",
+      "street": "98526 Thackeray Parkway"
+    },
+    "country": "Poland",
+    "firmTags": [],
+    "sector": "Real Estate Investment Trusts"
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a7710019cd"
+    },
+    "name": "Sanford and Sons",
+    "location": {
+      "postalCode": "368670",
+      "street": "44432 Mockingbird Trail"
+    },
+    "country": "Russia",
+    "firmTags": [],
+    "sector": "Steel/Iron Ore"
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239ac28001b5d"
+    },
+    "name": "Herzog, Ullrich and Blick",
+    "location": {
+      "postalCode": "446368",
+      "street": "740 Golf View Alley"
+    },
+    "country": "Russia",
+    "firmTags": [],
+    "sector": "Precious Metals"
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a50d0019cd"
+    },
+    "name": "Klocko, Ebert and Deckow",
+    "location": {
+      "postalCode": null,
+      "street": "68903 Arrowood Trail"
+    },
+    "country": "Indonesia",
+    "firmTags": [],
+    "sector": "Major Pharmaceuticals"
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a50d0019ce"
+    },
+    "name": "Jenkins Inc",
+    "location": {
+      "postalCode": null,
+      "street": "74700 Logan Park"
+    },
+    "country": "China",
+    "firmTags": [],
+    "sector": "Building Products"
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a50d0019cf"
+    },
+    "name": "Hilpert, Nicolas and Walter",
+    "location": {
+      "postalCode": null,
+      "street": "5 Fisk Avenue"
+    },
+    "country": "China",
+    "firmTags": [
+      "Bank"
+    ],
+    "sector": "Major Banks"
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a50d0019d0"
+    },
+    "name": "Mueller-Bednar",
+    "location": {
+      "postalCode": "612 37",
+      "street": "89 Pierstorff Center"
+    },
+    "country": "Sweden",
+    "firmTags": [],
+    "sector": "Major Banks"
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a50d0019d1"
+    },
+    "name": "Effertz Group",
+    "location": {
+      "postalCode": "6008",
+      "street": "419 2nd Place"
+    },
+    "country": "Philippines",
+    "firmTags": [],
+    "sector": "Major Banks"
+  },
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a50d0019d2"
+    },
+    "name": "Dooley, Klein and Hickle",
+    "location": {
+      "postalCode": "231 91",
+      "street": "831 Victoria Junction"
+    },
+    "country": "Sweden",
+    "firmTags": [],
+    "sector": "Electric Utilities: Central"
+  }
+]

@@ -1,0 +1,28 @@
+{
+  "aggregate": "firm",
+  "pipeline": [
+    {
+      "$match": {
+        "sector": {
+          "$not": [
+            true
+          ]
+        },
+        "employees": {
+          "$not": 1477
+        },
+        "location": {
+          "$not": [
+            null
+          ]
+        },
+        "dateFounded": {
+          "$not": [
+            0
+          ]
+        }
+      }
+    }
+  ],
+  "cursor": {}
+}

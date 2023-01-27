@@ -1,8 +1,0 @@
-{
-  "type": "aggregate",
-  "collectionName": "\"firms\"",
-  "aggregationPipeline": {
-    "_type": "viewPipeline",
-    "stages": []
-  }
-}

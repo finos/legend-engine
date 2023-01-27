@@ -1,0 +1,19 @@
+[
+  {
+    "_id": {
+      "$oid": "63d3a6def03239a50d0019cd"
+    },
+    "id": 20,
+    "name": "Klocko, Ebert and Deckow",
+    "employees": 7193,
+    "phone": "785-468-7191",
+    "dateFounded": "2021-02-04",
+    "sector": "Major Pharmaceuticals",
+    "tags": [],
+    "location": {
+      "country": "Indonesia",
+      "street": "68903 Arrowood Trail",
+      "postalCode": null
+    }
+  }
+]
