@@ -272,7 +272,7 @@ public class TestServiceRunner
                 .withSerializationFormat(SerializationFormat.PURE);
 
         String result = serviceRunnerWithLetVariablePureExpression.run(serviceRunnerInput);
-        Assert.assertEquals("[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"}]", result);
+        Assert.assertEquals("{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}", result);
     }
 
     @Test
@@ -285,7 +285,7 @@ public class TestServiceRunner
                 .withSerializationFormat(SerializationFormat.PURE);
 
         String result = serviceRunnerWithLetVariablePureExpression.run(serviceRunnerInput);
-        Assert.assertEquals("[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"}]", result);
+        Assert.assertEquals("{\"firstName\":\"John\",\"lastName\":\"Johnson\"}", result);
     }
 
     @Test
