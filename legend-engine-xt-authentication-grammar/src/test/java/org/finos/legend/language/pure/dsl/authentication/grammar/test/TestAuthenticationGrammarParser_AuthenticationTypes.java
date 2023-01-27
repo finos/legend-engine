@@ -82,6 +82,7 @@ public class TestAuthenticationGrammarParser_AuthenticationTypes extends TestGra
                 "{\n" +
                 "  authentication: EncryptedPrivateKey\n" +
                 "  {\n" +
+                "    userName: 'alice';\n" +
                 "    privateKey: PropertiesFileSecret\n" +
                 "    {\n" +
                 "      propertyName: 'property1';\n" +

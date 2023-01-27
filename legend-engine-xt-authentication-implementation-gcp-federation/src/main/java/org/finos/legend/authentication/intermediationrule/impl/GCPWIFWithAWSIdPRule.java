@@ -30,8 +30,9 @@ import org.finos.legend.authentication.vault.CredentialVaultProvider;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.GCPWIFWithAWSIdPAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSCredentials;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSDefaultCredentials;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.StaticAWSCredentials;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSStaticCredentials;
 import org.finos.legend.engine.shared.core.identity.Credential;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.OAuthCredential;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
@@ -77,7 +78,7 @@ public class GCPWIFWithAWSIdPRule extends IntermediationRule<GCPWIFWithAWSIdPAut
     }
 
     @Override
-    public OAuthCredential makeCredential(GCPWIFWithAWSIdPAuthenticationSpecification authenticationSpecification, Credential credential) throws Exception
+    public OAuthCredential makeCredential(GCPWIFWithAWSIdPAuthenticationSpecification authenticationSpecification, Credential credential, Identity identity) throws Exception
     {
         GCPWIFWithAWSIdPAuthenticationSpecification.IdPConfiguration idPConfiguration = authenticationSpecification.idPConfiguration;
         GCPWIFWithAWSIdPAuthenticationSpecification.WorkloadConfiguration workloadConfiguration = authenticationSpecification.workloadConfiguration;
@@ -106,11 +107,11 @@ public class GCPWIFWithAWSIdPRule extends IntermediationRule<GCPWIFWithAWSIdPAut
             return DefaultCredentialsProvider.builder().build();
         }
 
-        if (awsCredentials instanceof StaticAWSCredentials)
+        if (awsCredentials instanceof AWSStaticCredentials)
         {
-            StaticAWSCredentials staticAWSCredentials  = (StaticAWSCredentials)awsCredentials;
-            String accessKeyIdValue = super.lookupSecret(staticAWSCredentials.accessKeyId);
-            String secretAccessKeyValue = super.lookupSecret(staticAWSCredentials.secretAccessKey);
+            AWSStaticCredentials awsStaticCredentials = (AWSStaticCredentials)awsCredentials;
+            String accessKeyIdValue = super.lookupSecret(awsStaticCredentials.accessKeyId);
+            String secretAccessKeyValue = super.lookupSecret(awsStaticCredentials.secretAccessKey);
             return StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKeyIdValue, secretAccessKeyValue));
         }
 

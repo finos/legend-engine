@@ -17,6 +17,7 @@ package org.finos.legend.authentication.testrules;
 import org.finos.legend.authentication.intermediationrule.IntermediationRule;
 import org.finos.legend.authentication.vault.CredentialVaultProvider;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.UserPasswordAuthenticationSpecification;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
 import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;
 
@@ -28,7 +29,7 @@ public class CannedUserPasswordRuleWithKerberosForTesting extends Intermediation
     }
 
     @Override
-    public PlaintextUserPasswordCredential makeCredential(UserPasswordAuthenticationSpecification authenticationSpecification, LegendKerberosCredential credential) throws Exception
+    public PlaintextUserPasswordCredential makeCredential(UserPasswordAuthenticationSpecification authenticationSpecification, LegendKerberosCredential credential, Identity identity) throws Exception
     {
         return new PlaintextUserPasswordCredential("hello", "world");
     }

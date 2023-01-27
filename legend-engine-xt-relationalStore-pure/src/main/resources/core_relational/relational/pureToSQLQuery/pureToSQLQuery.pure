@@ -1490,6 +1490,18 @@ function meta::relational::functions::pureToSqlQuery::isSimpleJoinToPk(join:Join
 }
 
 
+function meta::relational::functions::pureToSqlQuery::getUnionPropertyName(union: Union[1], property: AbstractProperty<Any>[1], relationalPropertyMappings: RelationalPropertyMapping[*], state: State[1], extensions: Extension[*]): String[1]
+{
+   if ($union.setImplementations->removeDuplicates()->size() == 1,
+       | $union->getPropertyName($property, $relationalPropertyMappings, $extensions),
+       | let relOps = $union.setImplementations->size()->range()->map(i |
+            let propMapping = findUnionPropertyMapping($union, $i, $property, $relationalPropertyMappings, $state, $extensions)->first();
+            $propMapping.relationalOperationElement->defaultIfEmpty(^Literal(value = '__SQLNULL__')); 
+         );
+         '"' + $relOps->buildUniqueName(false, $extensions) + '"';
+   )
+}
+
 function meta::relational::functions::pureToSqlQuery::getPropertyName(relationalElement:RelationalOperationElement[1],property:AbstractProperty<Any>[1], relationalPropertyMappings:RelationalPropertyMapping[*], extensions:Extension[*]):String[1]
 {
    $relationalElement->match(
@@ -1497,16 +1509,21 @@ function meta::relational::functions::pureToSqlQuery::getPropertyName(relational
              a:Any[1]|'"'+$property.name->toOne()+'"'] );
 }
 
+function meta::relational::functions::pureToSqlQuery::findUnionPropertyMapping(union: Union[1], index: Integer[1], property: AbstractProperty<Any>[1], relationalPropertyMappings: RelationalPropertyMapping[*], state: State[1], extensions: Extension[*]): RelationalPropertyMapping[*]
+{
+   let setImpl = $union.setImplementations->at($index);
+   let allSourceSetImplementationIds = $setImpl->cast(@PropertyMappingsImplementation).allPropertyMappings().sourceSetImplementationId->distinct();
+   if ($setImpl->instanceOf(EmbeddedRelationalInstanceSetImplementation),
+       | $setImpl->cast(@EmbeddedRelationalInstanceSetImplementation).propertyMappingsByPropertyName($property.name->toOne())->filter(r|$r->instanceOf(RelationalPropertyMapping))->cast(@RelationalPropertyMapping),
+       | $relationalPropertyMappings->filter(r|$state.mapping.classMappingById($r.sourceSetImplementationId)->match([r:RootRelationalInstanceSetImplementation[1]|$r,e:EmbeddedRelationalInstanceSetImplementation[1]|$e.setMappingOwner])->cast(@InstanceSetImplementation).id->in($allSourceSetImplementationIds))
+   );
+}
+
 function meta::relational::functions::pureToSqlQuery::addMissingColumn(nested:Boolean[1], union:Union[1], propName:String[1], relationalPropertyMappings:RelationalPropertyMapping[*], property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1], oldSrcOperation:SelectWithCursor[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
 {
    $oldSrcOperation->addMissingColumnToUnion({q,i|if( $q.columns->filter(c|$c->cast(@Alias).name == $propName)->isEmpty(),
-                                                     | let setImpl = $union.setImplementations->at($i);
-                                                     let allSourceSetImplementationIds = $setImpl->cast(@PropertyMappingsImplementation).allPropertyMappings().sourceSetImplementationId->distinct();
-                                                     let filteredRelationalPropertyMappings = if ($setImpl->instanceOf(EmbeddedRelationalInstanceSetImplementation),
-                                                                                                  | $setImpl->cast(@EmbeddedRelationalInstanceSetImplementation).propertyMappingsByPropertyName($property.name->toOne())->filter(r|$r->instanceOf(RelationalPropertyMapping))->cast(@RelationalPropertyMapping),
-                                                                                                  | $relationalPropertyMappings->filter(r|$state.mapping.classMappingById($r.sourceSetImplementationId)->match([r:RootRelationalInstanceSetImplementation[1]|$r,e:EmbeddedRelationalInstanceSetImplementation[1]|$e.setMappingOwner])->cast(@InstanceSetImplementation).id->in($allSourceSetImplementationIds))
-                                                                                              );
-
+                                                     |
+                                                     let filteredRelationalPropertyMappings =  findUnionPropertyMapping($union, $i, $property, $relationalPropertyMappings, $state, $extensions);
                                                      if ($filteredRelationalPropertyMappings->isEmpty(),
                                                          | ^$q(columns=$q.columns->concatenate(^Alias(name=$propName, relationalElement=^Literal(value=^SQLNull())))),
                                                          | let y = $union.currentTreeNodes->at($i);
@@ -1547,12 +1564,12 @@ function meta::relational::functions::pureToSqlQuery::processRelationalPropertyM
                                                     // Potentially add missing columns in the union!
                                                     let relationalElement = $oldSrcOperation.currentTreeNode.alias.relationalElement->toOne();
                                                     let result  = if ($relationalElement->instanceOf(Union) && !$relationalElement->cast(@Union).currentTreeNodes->isEmpty(),
-                                                                               |let propName = $relationalElement->getPropertyName($property, $relationalPropertyMappings, $extensions);
+                                                                               |let propName = $relationalElement->cast(@Union)->getUnionPropertyName($property, $relationalPropertyMappings, $state, $extensions);
                                                                                 pair($propName, addMissingColumn(false, $relationalElement->cast(@Union), $propName,  $relationalPropertyMappings, $property, $propertyOwnerClass, $oldSrcOperation, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions));,
                                                                                |if($relationalElement->instanceOf(SelectSQLQuery),
                                                                                    |let element = $relationalElement->cast(@SelectSQLQuery).data.alias.relationalElement->toOne();
                                                                                     if ($element->instanceOf(Union) && !$element->cast(@Union).currentTreeNodes->isEmpty(),
-                                                                                        |let propName = $element->getPropertyName($property, $relationalPropertyMappings, $extensions);
+                                                                                        |let propName = $element->cast(@Union)->getUnionPropertyName($property, $relationalPropertyMappings, $state, $extensions);
                                                                                          pair($propName, addMissingColumn(true, $element->cast(@Union), $propName,  $relationalPropertyMappings, $property, $propertyOwnerClass, $oldSrcOperation, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions));,
                                                                                         |let propName = $relationalElement->getPropertyName($property, $relationalPropertyMappings, $extensions);
                                                                                          pair($propName, $oldSrcOperation);
@@ -1597,8 +1614,8 @@ function meta::relational::functions::pureToSqlQuery::processRelationalPropertyM
                                                                );
                                                     let sel = $res.select;
                                                     let firstStep = if ($state.inFilter,
-                                                                        |^$res(select = ^$sel(filteringOperation = $sel.filteringOperation->at(0)->usePropertyName($property, $relationalPropertyMappings, $extensions)));,
-                                                                        |^$res(select = ^$sel(filteringOperation = [], columns = $sel.columns->at(0)->usePropertyName($property, $relationalPropertyMappings, $extensions)));
+                                                                        |^$res(select = ^$sel(filteringOperation = $sel.filteringOperation->at(0)->usePropertyName($property, $relationalPropertyMappings, $state, $extensions)));,
+                                                                        |^$res(select = ^$sel(filteringOperation = [], columns = $sel.columns->at(0)->usePropertyName($property, $relationalPropertyMappings, $state, $extensions)));
                                                                        );
                                                     let secondStep = $mappingImpl->match([
                                                                                          r : RelationalOperationElementWithJoin[1] | $firstStep;,
@@ -6891,13 +6908,13 @@ function meta::relational::functions::pureToSqlQuery::reprocessTableAliasColumns
                  )
 }
 
-function meta::relational::functions::pureToSqlQuery::usePropertyName(element:RelationalOperationElement[1], property:AbstractProperty<Any>[1], relationalPropertyMappings:RelationalPropertyMapping[*], extensions:Extension[*]):RelationalOperationElement[1]
+function meta::relational::functions::pureToSqlQuery::usePropertyName(element:RelationalOperationElement[1], property:AbstractProperty<Any>[1], relationalPropertyMappings:RelationalPropertyMapping[*], state: State[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
   $element->match(   [
                         c:TableAliasColumn[1]|if($c.alias.relationalElement->instanceOf(Union),
                                                    |let supportedColumnNames = $c.alias.relationalElement->cast(@Union).queries->at(0)->cast(@SelectSQLQuery).columns->cast(@Alias).name;
                                                     let column = $c.column;
-                                                    let propertyName = $c.alias.relationalElement->getPropertyName($property, $relationalPropertyMappings, $extensions);
+                                                    let propertyName = $c.alias.relationalElement->cast(@Union)->getUnionPropertyName($property, $relationalPropertyMappings, $state, $extensions);
                                                     if ($supportedColumnNames->contains($propertyName),
                                                        |^$c(column = ^$column(name=$propertyName));,
                                                        |let range = range(0, $relationalPropertyMappings->size(), 1);
@@ -6914,14 +6931,14 @@ function meta::relational::functions::pureToSqlQuery::usePropertyName(element:Re
                                               ),
                         l:Literal[1]|$l,
                         ll:LiteralList[1]|$ll,
-                        j:JoinStrings[1]|^$j(strings=$j.strings->map(s | $s->usePropertyName($property, $relationalPropertyMappings, $extensions)));,
-                        s:SelectSQLQuery[1]|^$s(filteringOperation = $s.filteringOperation->map(f|$f->usePropertyName($property, $relationalPropertyMappings, $extensions)));,
+                        j:JoinStrings[1]|^$j(strings=$j.strings->map(s | $s->usePropertyName($property, $relationalPropertyMappings, $state, $extensions)));,
+                        s:SelectSQLQuery[1]|^$s(filteringOperation = $s.filteringOperation->map(f|$f->usePropertyName($property, $relationalPropertyMappings, $state, $extensions)));,
                         t:TableAlias[1]| $t,
-                        a:Alias[1]|^$a(relationalElement = $a.relationalElement->usePropertyName($property, $relationalPropertyMappings, $extensions));,
-                        d:DynaFunction[1]|newDynaFunction($d.name, $d.parameters->map(p | $p->usePropertyName($property, $relationalPropertyMappings, $extensions))),
-                        op:UnaryOperation[1]|^$op(nested=$op.nested->usePropertyName($property, $relationalPropertyMappings, $extensions)),
-                        op:BinaryOperation[1]|^$op(left=$op.left->usePropertyName($property, $relationalPropertyMappings, $extensions), right=$op.right->usePropertyName($property, $relationalPropertyMappings, $extensions)),
-                        op:VariableArityOperation[1]|^$op(args=$op.args->map(arg | $arg->usePropertyName($property, $relationalPropertyMappings, $extensions))),
+                        a:Alias[1]|^$a(relationalElement = $a.relationalElement->usePropertyName($property, $relationalPropertyMappings, $state, $extensions));,
+                        d:DynaFunction[1]|newDynaFunction($d.name, $d.parameters->map(p | $p->usePropertyName($property, $relationalPropertyMappings, $state, $extensions))),
+                        op:UnaryOperation[1]|^$op(nested=$op.nested->usePropertyName($property, $relationalPropertyMappings, $state, $extensions)),
+                        op:BinaryOperation[1]|^$op(left=$op.left->usePropertyName($property, $relationalPropertyMappings, $state, $extensions), right=$op.right->usePropertyName($property, $relationalPropertyMappings, $state, $extensions)),
+                        op:VariableArityOperation[1]|^$op(args=$op.args->map(arg | $arg->usePropertyName($property, $relationalPropertyMappings, $state, $extensions))),
                         cn:ColumnName[1] |$cn
                     ]
                  )

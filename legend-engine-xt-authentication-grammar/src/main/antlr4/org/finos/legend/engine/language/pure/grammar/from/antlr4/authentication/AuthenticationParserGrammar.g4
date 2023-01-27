@@ -90,10 +90,14 @@ apiKeyAuthentication_value:    API_KEY_AUTHENTICATION_VALUE COLON secret_value
 encryptedPrivateKeyAuthentication :     ENCRYPTED_PRIVATE_KEY_AUTHENTICATION
                                 BRACE_OPEN
                                 (
+                                    encryptedPrivateKeyAuthentication_userName |
                                     encryptedPrivateKeyAuthentication_privateKey |
                                     encryptedPrivateKeyAuthentication_passphrase
                                 )*
                                 BRACE_CLOSE
+;
+
+encryptedPrivateKeyAuthentication_userName:     ENCRYPTED_PRIVATE_KEY_USERNAME COLON STRING SEMI_COLON
 ;
 
 encryptedPrivateKeyAuthentication_privateKey:    ENCRYPTED_PRIVATE_KEY_PRIVATE_KEY COLON secret_value
@@ -230,7 +234,8 @@ awsSecretsManagerSecret_awsCredentials:   AWSCREDENTIALS COLON awsCredentialsVal
 
 awsCredentialsValue:    (
                             awsStaticCredentialsValue |
-                            awsDefaultCredentialsValue
+                            awsDefaultCredentialsValue |
+                            awsSTSAssumeRoleCredentialsValue
                         )
 ;
 
@@ -256,3 +261,21 @@ awsStaticCredentialsValue_accessKeyId:  AWS_CREDENTIALS_STATIC_ACCESSKEYID COLON
 awsStaticCredentialsValue_secretAccessKey:  AWS_CREDENTIALS_STATIC_SECRETACCESSKEY COLON secret_value
 ;
 
+awsSTSAssumeRoleCredentialsValue:  AWS_CREDENTIALS_STS_ASSUMEROLE
+                            BRACE_OPEN
+                            (
+                                awsSTSAssumeRoleCredentialsValue_roleArn |
+                                awsSTSAssumeRoleCredentialsValue_roleSessionName |
+                                awsSTSAssumeRoleCredentialsValue_awsCredentials
+                            )*
+                            BRACE_CLOSE
+;
+
+awsSTSAssumeRoleCredentialsValue_awsCredentials:   AWSCREDENTIALS COLON awsCredentialsValue
+;
+
+awsSTSAssumeRoleCredentialsValue_roleArn: AWS_CREDENTIALS_STS_ASSUMEROLE_ROLE_ARN COLON STRING SEMI_COLON
+;
+
+awsSTSAssumeRoleCredentialsValue_roleSessionName: AWS_CREDENTIALS_STS_ASSUMEROLE_ROLE_SESSION_NAME COLON STRING SEMI_COLON
+;

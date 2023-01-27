@@ -158,7 +158,7 @@ public class SDLCLoader implements ModelLoader
                     return ListIterate.injectInto(
                             new PureModelContextData.Builder(),
                             context.sdlcInfo.packageableElementPointers,
-                            (builder, pointers) -> builder.withPureModelContextData(this.pureLoader.loadPurePackageableElementPointer(pm, pointers, clientVersion, subject == null ? "" : "?auth=kerberos"))
+                            (builder, pointers) -> builder.withPureModelContextData(this.pureLoader.loadPurePackageableElementPointer(pm, pointers, clientVersion, subject == null ? "" : "?auth=kerberos", ((PureSDLC) context.sdlcInfo).overrideUrl))
                     ).distinct().sorted().build();
                 }
             };

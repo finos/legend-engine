@@ -49,12 +49,19 @@ public class CredentialVaultProvider
      public static class Builder
      {
           private CredentialVaultProvider credentialVaultProvider = new CredentialVaultProvider();
+          private PlatformCredentialVaultProvider platformCredentialVaultProvider;
+
+          public Builder with(PlatformCredentialVaultProvider platformCredentialVaultProvider)
+          {
+               this.platformCredentialVaultProvider = platformCredentialVaultProvider;
+               this.platformCredentialVaultProvider.getVaults().forEach(vault -> credentialVaultProvider.register(vault));
+               return this;
+          }
 
           public Builder with(CredentialVault credentialVault)
           {
                credentialVaultProvider.register(credentialVault);
                return this;
-
           }
 
           public CredentialVaultProvider build()

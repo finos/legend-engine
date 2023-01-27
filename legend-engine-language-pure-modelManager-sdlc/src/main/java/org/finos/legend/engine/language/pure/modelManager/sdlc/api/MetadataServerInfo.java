@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.modelManager.sdlc.api;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
+import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.PureServerConnectionConfiguration;
 import org.slf4j.Logger;
 
 import javax.ws.rs.GET;
@@ -35,12 +36,21 @@ public class MetadataServerInfo
 
     public MetadataServerInfo(MetaDataServerConfiguration metaDataServerConfiguration)
     {
+        String typeOfServerConnectionConfiguration = "";
+        String allowedOverrideUrls = "";
+        if (metaDataServerConfiguration.pure instanceof PureServerConnectionConfiguration)
+        {
+            typeOfServerConnectionConfiguration = "      \"_type\":\"pureServerConnectionConfiguration\",";
+            allowedOverrideUrls = "," + "      \"allowedOverrideUrls\":" + (((PureServerConnectionConfiguration) metaDataServerConfiguration.pure).allowedOverrideUrls == null ? "[]" : "[\"" + String.join("\",\"", ((PureServerConnectionConfiguration) metaDataServerConfiguration.pure).allowedOverrideUrls) + "\"]");
+        }
         this.message = "{" +
                 "\"metadataserver\": {" +
                 "   \"pure\":" +
                 "   {" +
+                typeOfServerConnectionConfiguration +
                 "      \"host\":\"" + metaDataServerConfiguration.getPure().host + "\"," +
                 "      \"port\":" + metaDataServerConfiguration.getPure().port +
+                allowedOverrideUrls +
                 "   }," +
                 "   \"alloy\":" +
                 "   {" +

@@ -29,12 +29,18 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authent
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSCredentials;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
-public class AutenticationParseTreeWalker
+public class AuthenticationParseTreeWalker
 {
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final PureGrammarParserContext context;
 
-    public AutenticationParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, PureGrammarParserContext context)
+    public AuthenticationParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation)
+    {
+        this.walkerSourceInformation = walkerSourceInformation;
+        this.context = null;
+    }
+
+    public AuthenticationParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, PureGrammarParserContext context)
     {
         this.walkerSourceInformation = walkerSourceInformation;
         this.context = context;
@@ -68,7 +74,7 @@ public class AutenticationParseTreeWalker
         throw new EngineException("Unsupported authentication", sourceInformation, EngineErrorType.PARSER);
     }
 
-    private AuthenticationSpecification visitGcpWIFWithAWSIdPAuthenticationContext(AuthenticationParserGrammar.GcpWIFWithAWSIdPAuthenticationContext ctx)
+    public AuthenticationSpecification visitGcpWIFWithAWSIdPAuthenticationContext(AuthenticationParserGrammar.GcpWIFWithAWSIdPAuthenticationContext ctx)
     {
         GCPWIFWithAWSIdPAuthenticationSpecification authenticationSpecification = new GCPWIFWithAWSIdPAuthenticationSpecification();
         authenticationSpecification.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
@@ -86,13 +92,13 @@ public class AutenticationParseTreeWalker
         return authenticationSpecification;
     }
 
-    private GCPWIFWithAWSIdPAuthenticationSpecification.IdPConfiguration visitGCPWithAWSIdPIdp(AuthenticationParserGrammar.GcpWIFWithAWSIdPAuthentication_awsIdpContext ctx)
+    public GCPWIFWithAWSIdPAuthenticationSpecification.IdPConfiguration visitGCPWithAWSIdPIdp(AuthenticationParserGrammar.GcpWIFWithAWSIdPAuthentication_awsIdpContext ctx)
     {
         GCPWIFWithAWSIdPAuthenticationSpecification.IdPConfiguration configuration = new GCPWIFWithAWSIdPAuthenticationSpecification.IdPConfiguration();
 
         AuthenticationParserGrammar.GcpWIFWithAWSIdPAuthentication_awsIdp_accountIdContext accountIdContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.gcpWIFWithAWSIdPAuthentication_awsIdp_accountId(), "accountId", walkerSourceInformation.getSourceInformation(ctx));
         String accountId = PureGrammarParserUtility.fromGrammarString(accountIdContext.STRING().getText(), true);
-        configuration.accountId  = accountId;
+        configuration.accountId = accountId;
 
         AuthenticationParserGrammar.GcpWIFWithAWSIdPAuthentication_awsIdp_regionContext regionContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.gcpWIFWithAWSIdPAuthentication_awsIdp_region(), "region", walkerSourceInformation.getSourceInformation(ctx));
         String region = PureGrammarParserUtility.fromGrammarString(regionContext.STRING().getText(), true);
@@ -108,17 +114,17 @@ public class AutenticationParseTreeWalker
         return configuration;
     }
 
-    private GCPWIFWithAWSIdPAuthenticationSpecification.WorkloadConfiguration visitGCPWithAWSIdPWorkload(AuthenticationParserGrammar.GcpWIFWithAWSIdPAuthentication_gcpWorkloadContext ctx)
+    public GCPWIFWithAWSIdPAuthenticationSpecification.WorkloadConfiguration visitGCPWithAWSIdPWorkload(AuthenticationParserGrammar.GcpWIFWithAWSIdPAuthentication_gcpWorkloadContext ctx)
     {
         GCPWIFWithAWSIdPAuthenticationSpecification.WorkloadConfiguration workloadConfiguration = new GCPWIFWithAWSIdPAuthenticationSpecification.WorkloadConfiguration();
 
         AuthenticationParserGrammar.GcpWIFWithAWSIdPAuthentication_gcpWorkload_projectNumberContext projectNumberContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.gcpWIFWithAWSIdPAuthentication_gcpWorkload_projectNumber(), "projectNumber", walkerSourceInformation.getSourceInformation(ctx));
         String projectNumber = PureGrammarParserUtility.fromGrammarString(projectNumberContext.STRING().getText(), true);
-        workloadConfiguration.projectNumber  = projectNumber;
+        workloadConfiguration.projectNumber = projectNumber;
 
         AuthenticationParserGrammar.GcpWIFWithAWSIdPAuthentication_gcpWorkload_providerIdContext providerIdContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.gcpWIFWithAWSIdPAuthentication_gcpWorkload_providerId(), "providerId", walkerSourceInformation.getSourceInformation(ctx));
         String providerId = PureGrammarParserUtility.fromGrammarString(providerIdContext.STRING().getText(), true);
-        workloadConfiguration.providerId  = providerId;
+        workloadConfiguration.providerId = providerId;
 
         AuthenticationParserGrammar.GcpWIFWithAWSIdPAuthentication_gcpWorkload_poolIdContext poolIdContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.gcpWIFWithAWSIdPAuthentication_gcpWorkload_poolId(), "poolId", walkerSourceInformation.getSourceInformation(ctx));
         String poolId = PureGrammarParserUtility.fromGrammarString(poolIdContext.STRING().getText(), true);
@@ -127,7 +133,7 @@ public class AutenticationParseTreeWalker
         return workloadConfiguration;
     }
 
-    private AuthenticationSpecification visitApiKeyAuthentication(AuthenticationParserGrammar.ApiKeyAuthenticationContext ctx)
+    public AuthenticationSpecification visitApiKeyAuthentication(AuthenticationParserGrammar.ApiKeyAuthenticationContext ctx)
     {
         ApiKeyAuthenticationSpecification authenticationSpecification = new ApiKeyAuthenticationSpecification();
         authenticationSpecification.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
@@ -146,14 +152,14 @@ public class AutenticationParseTreeWalker
         return authenticationSpecification;
     }
 
-    private AuthenticationSpecification visitUserPasswordAuthentication(AuthenticationParserGrammar.UserPasswordAuthenticationContext ctx)
+    public AuthenticationSpecification visitUserPasswordAuthentication(AuthenticationParserGrammar.UserPasswordAuthenticationContext ctx)
     {
         UserPasswordAuthenticationSpecification authenticationSpecification = new UserPasswordAuthenticationSpecification();
         authenticationSpecification.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         AuthenticationParserGrammar.UserPasswordAuthentication_usernameContext usernameContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.userPasswordAuthentication_username(), "userName", authenticationSpecification.getSourceInformation());
         String userNameValue = PureGrammarParserUtility.fromGrammarString(usernameContext.STRING().getText(), true);
-        authenticationSpecification.userName = userNameValue;
+        authenticationSpecification.username = userNameValue;
 
         AuthenticationParserGrammar.UserPasswordAuthentication_passwordContext passwordContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.userPasswordAuthentication_password(), "password", authenticationSpecification.getSourceInformation());
         authenticationSpecification.password = visitCredentialVaultSecret(passwordContext.secret_value());
@@ -161,10 +167,13 @@ public class AutenticationParseTreeWalker
         return authenticationSpecification;
     }
 
-    private EncryptedPrivateKeyPairAuthenticationSpecification visitEncryptedKeyPairAuthentication(AuthenticationParserGrammar.EncryptedPrivateKeyAuthenticationContext ctx)
+    public EncryptedPrivateKeyPairAuthenticationSpecification visitEncryptedKeyPairAuthentication(AuthenticationParserGrammar.EncryptedPrivateKeyAuthenticationContext ctx)
     {
         EncryptedPrivateKeyPairAuthenticationSpecification authenticationSpecification = new EncryptedPrivateKeyPairAuthenticationSpecification();
         authenticationSpecification.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        AuthenticationParserGrammar.EncryptedPrivateKeyAuthentication_userNameContext userNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.encryptedPrivateKeyAuthentication_userName(), "userName", authenticationSpecification.sourceInformation);
+        authenticationSpecification.userName = PureGrammarParserUtility.fromGrammarString(userNameContext.STRING().getText(), true);
 
         AuthenticationParserGrammar.EncryptedPrivateKeyAuthentication_privateKeyContext privateKeyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.encryptedPrivateKeyAuthentication_privateKey(), "privateKey", authenticationSpecification.getSourceInformation());
         authenticationSpecification.privateKey = visitCredentialVaultSecret(privateKeyContext.secret_value());
@@ -177,13 +186,13 @@ public class AutenticationParseTreeWalker
 
     private CredentialVaultSecret visitCredentialVaultSecret(AuthenticationParserGrammar.Secret_valueContext secretContext)
     {
-        CredentialVaultSecretParser credentialVaultSecretParser = new CredentialVaultSecretParser(walkerSourceInformation, context);
-        return credentialVaultSecretParser.visitCredentialVaultSecret(secretContext);
+        CredentialVaultSecretParseTreeWalker credentialVaultSecretParseTreeWalker = new CredentialVaultSecretParseTreeWalker(walkerSourceInformation, context);
+        return credentialVaultSecretParseTreeWalker.visitCredentialVaultSecret(secretContext);
     }
 
     private AWSCredentials visitAWSCredentials(AuthenticationParserGrammar.GcpWIFWithAWSIdPAuthentication_awsIdp_awsCredentialsContext awsCredentialsContext)
     {
-        AWSCredentialsParser awsCredentialsParser = new AWSCredentialsParser(walkerSourceInformation, context, new CredentialVaultSecretParser(walkerSourceInformation, context));
+        AWSCredentialsParser awsCredentialsParser = new AWSCredentialsParser(walkerSourceInformation, context, new CredentialVaultSecretParseTreeWalker(walkerSourceInformation, context));
         return awsCredentialsParser.visitAWSCredentials(awsCredentialsContext.awsCredentialsValue());
     }
 }

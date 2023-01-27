@@ -16,6 +16,7 @@ import meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentica
 
 Class meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::EncryptedKeyPairAuthenticationSpecification extends meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::AuthenticationSpecification
 {
+    userName:String[1];
     privateKey:CredentialVaultSecret[1];
     passphrase:CredentialVaultSecret[1];
 }

@@ -21,12 +21,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authent
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.EncryptedPrivateKeyPairAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.GCPWIFWithAWSIdPAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.UserPasswordAuthenticationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSSecretsManagerSecret;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.CredentialVaultSecret;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.CredentialVaultSecretVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.EnvironmentCredentialVaultSecret;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.PropertiesFileSecret;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.SystemPropertiesSecret;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSSecretsManagerSecret;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_connection_authentication_ApiKeyAuthenticationSpecification_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_connection_authentication_AuthenticationSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_connection_authentication_CredentialVaultSecret;
@@ -42,7 +42,7 @@ public class HelperAuthenticationBuilder
         return authenticationSpecification.accept(new AuthenticationSpecificationBuilder(context));
     }
 
-    private static class AuthenticationSpecificationBuilder implements AuthenticationSpecificationVisitor<Root_meta_pure_runtime_connection_authentication_AuthenticationSpecification>
+    public static class AuthenticationSpecificationBuilder implements AuthenticationSpecificationVisitor<Root_meta_pure_runtime_connection_authentication_AuthenticationSpecification>
     {
         private CompileContext context;
 
@@ -65,7 +65,7 @@ public class HelperAuthenticationBuilder
         public Root_meta_pure_runtime_connection_authentication_AuthenticationSpecification visit(UserPasswordAuthenticationSpecification userPasswordAuthenticationSpecification)
         {
             return new Root_meta_pure_runtime_connection_authentication_UserPasswordAuthenticationSpecification_Impl("", null, context.pureModel.getClass("meta::pure::runtime::connection::authentication::UserPasswordAuthenticationSpecification"))
-                    ._username(userPasswordAuthenticationSpecification.userName)
+                    ._username(userPasswordAuthenticationSpecification.username)
                     ._password(buildSecret(userPasswordAuthenticationSpecification.password, context));
         }
 

@@ -20,7 +20,7 @@ Class meta::protocols::pure::v1_22_0::metamodel::executionPlan::SQLExecutionNode
    onConnectionCloseCommitQuery : String[0..1];
    onConnectionCloseRollbackQuery : String[0..1];
    resultColumns : meta::protocols::pure::v1_22_0::metamodel::executionPlan::SQLResultColumn[*];
-   connection : meta::protocols::pure::v1_22_0::metamodel::store::relational::connection::DatabaseConnection[1];
+   connection : meta::protocols::pure::v1_22_0::metamodel::store::relational::connection::DatabaseConnection[0..1];
 }
 
 Class meta::protocols::pure::v1_22_0::metamodel::executionPlan::RelationalInstantiationExecutionNode extends meta::protocols::pure::v1_22_0::metamodel::executionPlan::ExecutionNode
@@ -91,7 +91,7 @@ Class meta::protocols::pure::v1_22_0::metamodel::executionPlan::CreateAndPopulat
    inputVarNames               : String[*];
    tempTableName               : String[1];
    tempTableColumnMetaData     : meta::protocols::pure::v1_22_0::metamodel::executionPlan::TempTableColumnMetaData[*];
-   connection                  : meta::protocols::pure::v1_22_0::metamodel::store::relational::connection::DatabaseConnection[1];
+   connection                  : meta::protocols::pure::v1_22_0::metamodel::store::relational::connection::DatabaseConnection[0..1];
 }
 Class meta::protocols::pure::v1_22_0::metamodel::executionPlan::SQLResultColumn
 {

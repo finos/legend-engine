@@ -15,22 +15,25 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.CredentialVaultSecret;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
-public class StaticAWSCredentials extends AWSCredentials
+public class AWSSTSAssumeRoleCredentials extends AWSCredentials
 {
-    public CredentialVaultSecret accessKeyId;
-    public CredentialVaultSecret secretAccessKey;
+    public AWSCredentials awsCredentials;
 
-    public StaticAWSCredentials()
+    public String roleArn;
+    public String roleSessionName;
+
+    public AWSSTSAssumeRoleCredentials()
     {
+        // Jackson
     }
 
-    public StaticAWSCredentials(CredentialVaultSecret accessKeyId, CredentialVaultSecret secretAccessKey)
+    public AWSSTSAssumeRoleCredentials(AWSCredentials awsCredentials, String roleArn, String roleSessionName)
     {
-        this.accessKeyId = accessKeyId;
-        this.secretAccessKey = secretAccessKey;
+        this.awsCredentials = awsCredentials;
+        this.roleArn = roleArn;
+        this.roleSessionName = roleSessionName;
     }
 
     @Override

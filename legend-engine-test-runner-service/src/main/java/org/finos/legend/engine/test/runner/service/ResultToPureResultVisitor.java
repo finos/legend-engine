@@ -20,6 +20,7 @@ import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.ErrorResult;
+import org.finos.legend.engine.plan.execution.result.UpdateNodeResult;
 import org.finos.legend.engine.plan.execution.result.MultiResult;
 import org.finos.legend.engine.plan.execution.result.StreamingResult;
 import org.finos.legend.engine.plan.execution.result.builder.tds.TDSBuilder;
@@ -152,6 +153,12 @@ public class ResultToPureResultVisitor implements RelationalResultVisitor<Result
 
     @Override
     public Result<Object> visit(MultiResult multiResult)
+    {
+        throw new RuntimeException("Not supported!");
+    }
+
+    @Override
+    public Result<Object> visit(UpdateNodeResult updateNodeResult)
     {
         throw new RuntimeException("Not supported!");
     }

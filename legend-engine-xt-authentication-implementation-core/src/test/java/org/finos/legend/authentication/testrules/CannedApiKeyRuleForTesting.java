@@ -17,6 +17,7 @@ package org.finos.legend.authentication.testrules;
 import org.finos.legend.authentication.intermediationrule.IntermediationRule;
 import org.finos.legend.authentication.vault.CredentialVaultProvider;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiKeyAuthenticationSpecification;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential;
 import org.finos.legend.engine.shared.core.identity.credential.ApiTokenCredential;
 
@@ -28,7 +29,7 @@ public class CannedApiKeyRuleForTesting extends IntermediationRule<ApiKeyAuthent
     }
 
     @Override
-    public ApiTokenCredential makeCredential(ApiKeyAuthenticationSpecification spec, AnonymousCredential credential) throws Exception
+    public ApiTokenCredential makeCredential(ApiKeyAuthenticationSpecification spec, AnonymousCredential credential, Identity identity) throws Exception
     {
         return new ApiTokenCredential("canned api key for testing");
     }

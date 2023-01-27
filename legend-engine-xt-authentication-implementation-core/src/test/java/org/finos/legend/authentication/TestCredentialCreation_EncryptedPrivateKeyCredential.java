@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class TestCredentialCreation_EncryptedApiKey
+public class TestCredentialCreation_EncryptedPrivateKeyCredential
 {
     private Identity identity;
 
@@ -56,11 +56,12 @@ public class TestCredentialCreation_EncryptedApiKey
         credentialProvider.configureWithRules(FastList.newListWith(new EncryptedPrivateKeyFromVaultRule(credentialVaultProvider)));
 
         EncryptedPrivateKeyPairAuthenticationSpecification AuthenticationSpecification = new EncryptedPrivateKeyPairAuthenticationSpecification(
+                "fred",
                 new PropertiesFileSecret("reference1"),
                 new PropertiesFileSecret("reference2")
         );
         PrivateKeyCredential credential = credentialProvider.makeCredential(AuthenticationSpecification, identity);
-        assertEquals("alice", credential.getUser());
+        assertEquals("fred", credential.getUser());
         assertNotNull(credential.getPrivateKey());
     }
 

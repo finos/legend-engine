@@ -16,8 +16,8 @@ import meta::pure::runtime::connection::authentication::*;
 
 Enum meta::pure::runtime::connection::authentication::Location
 {
-  header,
-  cookie
+  HEADER,
+  COOKIE
 }
 
 Class {doc.doc = 'Authentication using an API key'}  meta::pure::runtime::connection::authentication::ApiKeyAuthenticationSpecification extends meta::pure::runtime::connection::authentication::AuthenticationSpecification

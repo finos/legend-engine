@@ -34,6 +34,7 @@ import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodeTDSResu
 import org.finos.legend.engine.plan.execution.nodes.helpers.freemarker.FreeMarkerExecutor;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
+import org.finos.legend.engine.plan.execution.result.UpdateNodeResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.StreamingResult;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
@@ -44,15 +45,17 @@ import org.finos.legend.engine.plan.execution.stores.relational.config.Temporary
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutionState;
+import org.finos.legend.engine.plan.execution.stores.relational.result.LazyVoidRelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.PreparedTempTableResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.ResultInterpreterExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.result.SQLExecutionResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.VoidRelationalResult;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.UpdateSqlExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.LazyVoidResultType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -135,7 +138,7 @@ public class RelationalExecutor
             span.log("Connection acquired");
         }
 
-        this.prepareForSQLExecution(node, connectionManagerConnection, databaseTimeZone, databaseTypeName, tempTableList, profiles, executionState);
+        this.prepareForSQLExecution(node.sqlQuery, connectionManagerConnection, databaseTimeZone, databaseTypeName, tempTableList, profiles, executionState);
 
         if (executionState.inAllocation)
         {
@@ -222,6 +225,48 @@ public class RelationalExecutor
         return null;
     }
 
+    public UpdateNodeResult execute(UpdateSqlExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    {
+        RelationalStoreExecutionState relationalStoreState = ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational));
+        String databaseTimeZone = relationalStoreState.inScopeConnection.databaseConnection.timeZone == null ? DEFAULT_DB_TIME_ZONE : relationalStoreState.inScopeConnection.databaseConnection.timeZone;
+        String databaseType = relationalStoreState.inScopeConnection.databaseConnection.type.name();
+        Connection connectionManagerConnection = relationalStoreState.inScopeConnection;
+
+        Span span = GlobalTracer.get().activeSpan();
+        if (span != null)
+        {
+            span.log("Connection acquired");
+        }
+
+        List<String> tempTableList = FastList.newList();
+        MutableList<Result> subResults = Lists.mutable.empty();
+
+        node.sqlCommands.forEach(sqlQuery ->
+        {
+            this.prepareForSQLExecution(sqlQuery, connectionManagerConnection, databaseTimeZone, databaseType, tempTableList, profiles, executionState);
+
+            if (node.isResultVoid())
+            {
+               subResults.add(new VoidRelationalResult(executionState.activities, connectionManagerConnection, profiles));
+            }
+            else if (node.resultType instanceof LazyVoidResultType)
+            {
+                subResults.add(new LazyVoidRelationalResult(executionState.activities, connectionManagerConnection, profiles));
+            }
+            else
+            {
+                throw new RuntimeException("result type not supported: " + node.resultType.toString());
+            }
+
+            if (span != null)
+            {
+                span.setTag("executedSql", sqlQuery);
+            }
+        });
+
+       return new UpdateNodeResult(subResults);
+    }
+
     public Result execute(SQLExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
         Connection connectionManagerConnection;
@@ -230,13 +275,12 @@ public class RelationalExecutor
         List<String> tempTableList = FastList.newList();
 
         Span span = GlobalTracer.get().activeSpan();
-        connectionManagerConnection = getConnection(node, profiles, (RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational));
+        connectionManagerConnection = ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).inScopeConnection != null ? ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).inScopeConnection : getConnection(node, profiles, (RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational));
         if (span != null)
         {
             span.log("Connection acquired");
         }
-
-        this.prepareForSQLExecution(node, connectionManagerConnection, databaseTimeZone, databaseType, tempTableList, profiles, executionState);
+        this.prepareForSQLExecution(node.sqlQuery, connectionManagerConnection, databaseTimeZone, databaseType, tempTableList, profiles, executionState);
 
         if (node.isResultVoid())
         {
@@ -246,12 +290,8 @@ public class RelationalExecutor
         return new SQLExecutionResult(executionState.activities, node, databaseType, databaseTimeZone, connectionManagerConnection, profiles, tempTableList, executionState.topSpan);
     }
 
-    private void prepareForSQLExecution(ExecutionNode node, Connection connection, String databaseTimeZone, String databaseTypeName, List<String> tempTableList, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    private void prepareForSQLExecution(String sqlQuery, Connection connection, String databaseTimeZone, String databaseTypeName, List<String> tempTableList, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
-        String sqlQuery;
-
-        sqlQuery = node instanceof RelationalExecutionNode ? ((RelationalExecutionNode) node).sqlQuery() : ((SQLExecutionNode) node).sqlQuery();
-
         DatabaseManager databaseManager = DatabaseManager.fromString(databaseTypeName);
         for (Map.Entry<String, Result> var : executionState.getResults().entrySet())
         {

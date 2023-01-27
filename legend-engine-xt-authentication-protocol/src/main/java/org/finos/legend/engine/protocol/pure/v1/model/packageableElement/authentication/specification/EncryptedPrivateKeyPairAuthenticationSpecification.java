@@ -18,6 +18,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authent
 
 public class EncryptedPrivateKeyPairAuthenticationSpecification extends AuthenticationSpecification
 {
+    public String userName;
     public CredentialVaultSecret privateKey;
     public CredentialVaultSecret passphrase;
 
@@ -26,8 +27,9 @@ public class EncryptedPrivateKeyPairAuthenticationSpecification extends Authenti
         // Jackson
     }
 
-    public EncryptedPrivateKeyPairAuthenticationSpecification(CredentialVaultSecret privateKey, CredentialVaultSecret passphrase)
+    public EncryptedPrivateKeyPairAuthenticationSpecification(String userName, CredentialVaultSecret privateKey, CredentialVaultSecret passphrase)
     {
+        this.userName = userName;
         this.privateKey = privateKey;
         this.passphrase = passphrase;
     }
