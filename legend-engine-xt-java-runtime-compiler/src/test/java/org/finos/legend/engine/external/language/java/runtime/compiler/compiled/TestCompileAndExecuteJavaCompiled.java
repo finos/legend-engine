@@ -15,7 +15,6 @@
 package org.finos.legend.engine.external.language.java.runtime.compiler.compiled;
 
 import org.finos.legend.engine.external.language.java.runtime.compiler.AbstractTestCompileAndExecuteJava;
-import org.finos.legend.pure.generated.CoreJavaModelFactoryRegistry;
 import org.finos.legend.pure.runtime.java.compiled.execution.FunctionExecutionCompiledBuilder;
 import org.junit.BeforeClass;
 

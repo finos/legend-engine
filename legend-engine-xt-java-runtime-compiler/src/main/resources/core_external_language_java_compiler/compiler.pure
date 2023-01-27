@@ -36,6 +36,80 @@ Class meta::external::language::java::compiler::ExecutionResult
 {
     successful : Boolean[1];
     error : String[0..1];
+    returnValue : JavaValue[0..1];
+}
+
+Class meta::external::language::java::compiler::JavaValue
+{
+}
+
+Class meta::external::language::java::compiler::JavaNull extends JavaValue
+{
+   <<equality.Key>> key:Nil[0];
+   toString()
+   {
+       'null'
+   }:String[1];
+}
+
+Class meta::external::language::java::compiler::JavaPrimitive extends JavaValue
+{
+    <<equality.Key>> type : String[1];
+    <<equality.Key>> value : String[1];
+    toString()
+    {
+        '(' + $this.type + ') ' + $this.value
+    }:String[1];
+}
+
+Class meta::external::language::java::compiler::JavaArray extends JavaValue
+{
+    <<equality.Key>> componentType : String[1];
+    <<equality.Key>> values : JavaValue[*];
+    toString()
+    {
+        $this.values->map(v | $v->toString())->joinStrings('<' + $this.componentType + '[] [', ', ', ']>')
+    }:String[1];
+}
+
+Class meta::external::language::java::compiler::JavaEnum extends JavaValue
+{
+    <<equality.Key>> class : String[1];
+    <<equality.Key>> name : String[1];
+    toString()
+    {
+        $this.class + '.' + $this.name
+    }:String[1];
+}
+
+Class meta::external::language::java::compiler::JavaIterable extends JavaValue
+{
+    <<equality.Key>> class : String[1];
+    <<equality.Key>> values : JavaValue[*];
+    toString()
+    {
+        $this.values->map(v | $v->toString())->joinStrings('<' + $this.class + ' [', ', ', ']>')
+    }:String[1];
+}
+
+Class meta::external::language::java::compiler::JavaMap extends JavaValue
+{
+    <<equality.Key>> class : String[1];
+    <<equality.Key>> keyValuePairs : Pair<JavaValue, JavaValue>[*];
+    toString()
+    {
+        $this.keyValuePairs->map(p | $p.first->toString() + ' : ' + $p.second->toString())->joinStrings('<' + $this.class + ' {', ', ', '}>')
+    }:String[1];
+}
+
+Class meta::external::language::java::compiler::JavaObject extends JavaValue
+{
+    <<equality.Key>> class : String[1];
+    <<equality.Key>> string : String[1];
+    toString()
+    {
+        '<' + $this.class + ' ' + $this.string + '>'
+    }:String[1];
 }
 
 Class meta::external::language::java::compiler::CompileAndExecuteResult
