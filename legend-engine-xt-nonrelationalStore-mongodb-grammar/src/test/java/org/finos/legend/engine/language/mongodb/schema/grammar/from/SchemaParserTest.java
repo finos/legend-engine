@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.mongodb.schema.grammar.from;
 
+import org.finos.legend.engine.language.mongodb.schema.grammar.to.MongodbSchemaGrammarComposer;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDatabase;
 import org.junit.Assert;
 import org.junit.Test;
@@ -50,6 +51,9 @@ public class SchemaParserTest
     {
         MongodbSchemaGrammarParser parser = MongodbSchemaGrammarParser.newInstance();
         MongoDatabase database = parser.parseDocument(value);
+        MongodbSchemaGrammarComposer composer = MongodbSchemaGrammarComposer.newInstance();
+        String composedString = composer.renderDocument(database);
+        Assert.assertEquals("Round-trip value should match", value, composedString);
         Assert.assertNotNull(database);
     }
 }

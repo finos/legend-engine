@@ -1,7 +1,6 @@
 {
   "database": {
-    "databaseName": "my_database",
-    "type": "clustered",
+    "databaseName": "my_database_2",
     "collections": [
       {
         "options": {
@@ -11,20 +10,6 @@
           "validationLevel": "strict",
           "validationAction": "error"
         },
-        "indexes": [
-          {
-            "v": {
-              "$numberInt": "2"
-            },
-            "key": {
-              "_id": {
-                "$numberInt": "1"
-              }
-            },
-            "name": "_id_"
-          }
-        ],
-        "uuid": "99eb1c3857ae4e2996eb7e2685efbfde",
         "collectionName": "firm",
         "type": "collection"
       }
@@ -33,56 +18,57 @@
       {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "https://github.com/finos/legend/employee.schema",
+        "bsonType": "object",
         "title": "Record of employee",
         "description": "This document records the details of an employee",
-        "type": "object",
         "properties": {
           "id": {
-            "description": "employee ID",
             "bsonType": "long",
+            "description": "employee ID",
             "minimum": 100000
           },
           "name": {
-            "description": "name of the employee",
             "bsonType": "string",
+            "description": "name of the employee",
             "minLength": 2
           },
           "age": {
-            "description": "age of the employee",
             "bsonType": "int",
+            "description": "age of the employee",
             "minimum": 16
           },
           "hobbies": {
-            "description" : "Two lists of indoor & outdoor hobbies",
-            "type": "object",
+            "bsonType": "object",
+            "description": "Two lists of indoor & outdoor hobbies",
             "properties": {
               "indoor": {
+                "bsonType": "array",
+                "description": "List of indoor hobbies",
                 "items": {
-                  "description": "indoor hobby",
-                  "type": "string"
+                  "bsonType": "string",
+                  "description": "indoor hobby"
                 },
                 "minItems": 2,
-                "maxItems" : 10,
-                "uniqueItems": true,
-                "type": "array",
-                "description" : "List of indoor hobbies"
+                "maxItems": 10,
+                "uniqueItems": true
               },
               "outdoor": {
+                "bsonType": "array",
+                "description": "List of outdoor hobbies",
                 "items": {
-                  "description": "outdoor hobby",
-                  "type": "string"
+                  "bsonType": "string",
+                  "description": "outdoor hobby"
                 },
                 "minItems": 1,
-                "maxItems" : 5,
-                "uniqueItems": true,
-                "type": "array",
-                "description" : "List of outdoor hobbies"
-               }
+                "maxItems": 5,
+                "uniqueItems": true
+              }
             },
             "required": [
               "indoor",
               "outdoor"
-            ]
+            ],
+            "additionalProperties": false
           }
         },
         "required": [

@@ -1,7 +1,6 @@
 {
   "database": {
-    "databaseName": "my_database",
-    "type": "clustered",
+    "databaseName": "my_database_1",
     "collections": [
       {
         "options": {
@@ -11,20 +10,6 @@
           "validationLevel": "strict",
           "validationAction": "error"
         },
-        "indexes": [
-          {
-            "v": {
-              "$numberInt": "2"
-            },
-            "key": {
-              "_id": {
-                "$numberInt": "1"
-              }
-            },
-            "name": "_id_"
-          }
-        ],
-        "uuid": "99eb1c3857ae4e2996eb7e2685efbfdc",
         "collectionName": "firm",
         "type": "collection"
       }
@@ -33,41 +18,44 @@
       {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "https://github.com/finos/legend/employee.schema",
+        "bsonType": "object",
         "title": "Record of employee",
         "description": "This document records the details of an employee",
-        "bsonType": "object",
         "properties": {
           "name": {
-            "description": "name of the employee",
             "bsonType": "string",
+            "description": "name of the employee",
             "minLength": 2
           },
           "age": {
-            "description": "age of the employee",
             "bsonType": "int",
+            "description": "age of the employee",
             "minimum": 16
           },
           "location": {
-            "description" : "Location of Employee",
-            "required" : ["country"],
-            "bsonType" : "object",
+            "bsonType": "object",
+            "description": "Location of Employee",
             "properties": {
               "country": {
-                "description": "country of city",
-                "bsonType": "string"
+                "bsonType": "string",
+                "description": "country of city"
               },
               "region": {
-                "description": "region of city",
                 "bsonType": "string",
+                "description": "region of city",
                 "minLength": 2
               }
-            }
+            },
+            "required": [
+              "country"
+            ],
+            "additionalProperties": true
           },
-          "otherNames" : {
-            "description" : "Alternative Names",
+          "otherNames": {
             "bsonType": "array",
-            "items" : {
-              "bsonType" : "string"
+            "description": "Alternative Names",
+            "items": {
+              "bsonType": "string"
             },
             "uniqueItems": true
           }

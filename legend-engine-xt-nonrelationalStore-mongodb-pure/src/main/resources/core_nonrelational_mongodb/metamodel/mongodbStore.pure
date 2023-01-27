@@ -64,10 +64,14 @@ Class meta::external::store::mongodb::metamodel::BsonType extends BaseType
 Class {doc.doc = 'UTF 8'} meta::external::store::mongodb::metamodel::StringType extends BsonType
 {
   pattern: String[0..1];
+  minLength: Integer[0..1];
+  maxLength: Integer[0..1];
 }
 
 Class meta::external::store::mongodb::metamodel::DoubleType extends BsonType
 {
+  maximum: Number[0..1];
+  minimum: Number[0..1];
 }
 
 Class meta::external::store::mongodb::metamodel::BinaryType extends BsonType
@@ -100,7 +104,9 @@ Class meta::external::store::mongodb::metamodel::JavaScriptType extends BsonType
 }
 
 Class meta::external::store::mongodb::metamodel::IntType extends BsonType
-{  
+{
+  maximum: Integer[0..1];
+  minimum: Integer[0..1];
 }
 
 Class meta::external::store::mongodb::metamodel::TimeStampType extends BsonType
@@ -108,11 +114,15 @@ Class meta::external::store::mongodb::metamodel::TimeStampType extends BsonType
 }
 
 Class meta::external::store::mongodb::metamodel::LongType extends BsonType
-{  
+{
+  maximum: Integer[0..1];
+  minimum: Integer[0..1];
 }
 
 Class meta::external::store::mongodb::metamodel::DecimalType extends BsonType
-{  
+{
+  maximum: Number[0..1];
+  minimum: Number[0..1];
 }
 
 Class meta::external::store::mongodb::metamodel::MinKeyType extends BsonType
@@ -123,10 +133,22 @@ Class meta::external::store::mongodb::metamodel::MaxKeyType extends BsonType
 {  
 }
 
+Enum meta::external::store::mongodb::metamodel::SchemaValidationLevel
+{
+    strict, moderate
+}
+
+Enum meta::external::store::mongodb::metamodel::SchemaValidationAction
+{
+    error, warn
+}
+
 Class meta::external::store::mongodb::metamodel::Schema extends ObjectType
 {
     id: String[1];
-    schemaVersion : String[0..1];
+    schemaVersion: String[0..1];
+    validationLevel: SchemaValidationLevel[0..1];
+    validationAction: SchemaValidationAction[0..1];
 }
 
 Class meta::external::store::mongodb::metamodel::Collection

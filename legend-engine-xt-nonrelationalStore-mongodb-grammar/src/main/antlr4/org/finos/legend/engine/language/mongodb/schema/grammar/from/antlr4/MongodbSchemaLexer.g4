@@ -91,6 +91,7 @@ VALIDATION_LEVEL:                           '"validationLevel"';
 VALIDATION_ACTION:                          '"validationAction"';
 ID:                                         '"$id"';
 REF:                                        '"$ref"';
+JSON_SCHEMA:                                '"$jsonSchema"';
 TITLE:                                      '"title"';
 DESCRIPTION:                                '"description"';
 BSONTYPE:                                   '"bsonType"';

@@ -46,6 +46,8 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.ObjectIdType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.ObjectType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.PropertyType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.Schema;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.SchemaValidationAction;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.SchemaValidationLevel;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.StringType;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
@@ -78,6 +80,56 @@ public class MongodbSchemaGrammarParser
             if (pairContext.key().keywords().DESCRIPTION() != null)
             {
                 bType.description = pairContext.value().getText();
+            }
+            else if (pairContext.key().keywords().TITLE() != null)
+            {
+                bType.title = pairContext.value().getText();
+            }
+        }
+    }
+
+    private static void visitOptionsNode(Map<String, Schema> schemas, Collection col, MongodbSchemaParser.PairContext pairContext)
+    {
+        MongodbSchemaParser.ValueContext options = pairContext.value();
+        for (MongodbSchemaParser.PairContext optionsPair : options.obj().pair())
+        {
+            if (optionsPair.key().keywords().VALIDATOR() != null)
+            {
+                MongodbSchemaParser.ValueContext validator = optionsPair.value();
+                for (MongodbSchemaParser.PairContext validatorPair : validator.obj().pair())
+                {
+                    if (validatorPair.key().keywords().REF() != null)
+                    {
+                        String schemaRef = validatorPair.value().STRING().getText();
+                        // Check if we have schemas process - if so - look up in the Map and set.
+                        if (schemas.get(schemaRef) != null)
+                        {
+                            col.schema = schemas.get(schemaRef);
+                            break;
+                        }
+                        else
+                        {
+                            int line = validatorPair.key().getStart().getLine();
+                            SourceInformation sourceInformation = new SourceInformation("", line, 1, line, 1);
+                            throw new MongodbSchemaParserException("SchemaReference not found: " + schemaRef, sourceInformation);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                LOGGER.trace("Skipping key from collections/options object: " + optionsPair.getText());
+            }
+        }
+        for (MongodbSchemaParser.PairContext optionsPair : options.obj().pair())
+        {
+            if (optionsPair.key().keywords().VALIDATION_LEVEL() != null)
+            {
+                col.schema.validationLevel = SchemaValidationLevel.valueOf(optionsPair.value().STRING().getText());
+            }
+            else if (optionsPair.key().keywords().VALIDATION_ACTION() != null)
+            {
+                col.schema.validationAction = SchemaValidationAction.valueOf(optionsPair.value().STRING().getText());
             }
         }
     }
@@ -143,10 +195,10 @@ public class MongodbSchemaGrammarParser
         org.finos.legend.engine.language.mongodb.schema.grammar.from.antlr4.MongodbSchemaParser parser = new org.finos.legend.engine.language.mongodb.schema.grammar.from.antlr4.MongodbSchemaParser(new CommonTokenStream(lexer));
         parser.removeErrorListeners();
         parser.addErrorListener(errorListener);
-        return visitDocument(parser.json());
+        return visitDatabase(parser.json());
     }
 
-    private MongoDatabase visitDocument(MongodbSchemaParser.JsonContext json)
+    private MongoDatabase visitDatabase(MongodbSchemaParser.JsonContext json)
     {
         MongoDatabase database = new MongoDatabase();
         MongodbSchemaParser.ValueContext top_element = json.value();
@@ -165,7 +217,7 @@ public class MongodbSchemaGrammarParser
                 }
                 else
                 {
-                    LOGGER.debug("Skipping keys we don't care: " + pairContext.getText());
+                    LOGGER.trace("Skipping keys we don't care: " + pairContext.getText());
                 }
             }
         }
@@ -194,7 +246,7 @@ public class MongodbSchemaGrammarParser
             else
             {
                 //regular String - can be skipped at this level
-                LOGGER.debug("Skipping key from top level context in pass 1: " + pair.key().getText() + " at line " + pair.start.getLine());
+                LOGGER.trace("Skipping key from top level context in pass 1: " + pair.key().getText() + " at line " + pair.start.getLine());
             }
         }
 
@@ -214,7 +266,7 @@ public class MongodbSchemaGrammarParser
             else
             {
                 //regular String - can be skipped at this level
-                LOGGER.debug("Skipping key from top level context in pass 2: " + pair.key().getText() + " at line " + pair.start.getLine());
+                LOGGER.trace("Skipping key from top level context in pass 2: " + pair.key().getText() + " at line " + pair.start.getLine());
             }
         }
 
@@ -240,62 +292,26 @@ public class MongodbSchemaGrammarParser
         if (collectionContext.obj() != null)
         {
             Collection col = new Collection();
-            Iterator<MongodbSchemaParser.PairContext> iter = collectionContext.obj().pair().iterator();
-            while (iter.hasNext())
+            for (MongodbSchemaParser.PairContext pairContext : collectionContext.obj().pair())
             {
-                pair = iter.next();
-
-                if (pair.key() != null && pair.key().keywords() != null)
+                if (pairContext.key() != null && pairContext.key().keywords() != null)
                 {
-                    if (pair.key().keywords().COLLECTION_NAME() != null)
+                    if (pairContext.key().keywords().COLLECTION_NAME() != null)
                     {
-                        col.name = pair.value().STRING().getText();
+                        col.name = pairContext.value().STRING().getText();
                     }
-                    else if (pair.key().keywords().OPTIONS() != null)
+                    else if (pairContext.key().keywords().OPTIONS() != null)
                     {
-                        MongodbSchemaParser.ValueContext options = pair.value();
-                        Iterator<MongodbSchemaParser.PairContext> optionsIter = options.obj().pair().iterator();
-                        while (optionsIter.hasNext())
-                        {
-                            MongodbSchemaParser.PairContext optionsPair = optionsIter.next();
-                            if (optionsPair.key().keywords().VALIDATOR() != null)
-                            {
-                                MongodbSchemaParser.ValueContext validator = optionsPair.value();
-                                Iterator<MongodbSchemaParser.PairContext> validatorIter = validator.obj().pair().iterator();
-                                while (validatorIter.hasNext())
-                                {
-                                    MongodbSchemaParser.PairContext validatorPair = validatorIter.next();
-                                    if (validatorPair.key().keywords().REF() != null)
-                                    {
-                                        String schemaRef = validatorPair.value().STRING().getText();
-                                        // Check if we have schemas process - if so - look up in the Map and set.
-                                        if (schemas.get(schemaRef) != null)
-                                        {
-                                            col.schema = schemas.get(schemaRef);
-                                        }
-                                        else
-                                        {
-                                            int line = validatorPair.key().getStart().getLine();
-                                            SourceInformation sourceInformation = new SourceInformation("", line, 1, line, 1);
-                                            throw new MongodbSchemaParserException("SchemaReference not found: " + schemaRef, sourceInformation);
-                                        }
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                LOGGER.debug("Skipping key from collections/options object: " + optionsPair.getText());
-                            }
-                        }
+                        visitOptionsNode(schemas, col, pairContext);
                     }
                     else
                     {
-                        LOGGER.debug("Skipping key (KEYWORD) from database value object: " + pair.getText());
+                        LOGGER.trace("Skipping key (KEYWORD) from database value object: " + pairContext.getText());
                     }
                 }
                 else
                 {
-                    LOGGER.debug("Skipping key (STRING) from database value object: " + pair.getText());
+                    LOGGER.trace("Skipping key (STRING) from database value object: " + pairContext.getText());
                 }
             }
             return col;
@@ -312,10 +328,7 @@ public class MongodbSchemaGrammarParser
     {
         if (value.arr() != null)
         {
-            return value.arr().value()
-                    .stream()
-                    .map(this::visitSchema)
-                    .collect(Collectors.toMap(s -> s.id, Function.identity()));
+            return value.arr().value().stream().map(this::visitSchema).collect(Collectors.toMap(s -> s.id, Function.identity()));
         }
         else
         {
@@ -375,10 +388,10 @@ public class MongodbSchemaGrammarParser
     private void visitObjectProperties(ObjectType objType, List<MongodbSchemaParser.PairContext> pairContexts)
     {
         Iterator<MongodbSchemaParser.PairContext> pairIter = pairContexts.iterator();
-
         while (pairIter.hasNext())
         {
             MongodbSchemaParser.PairContext objPair = pairIter.next();
+            objType.additionalPropertiesAllowed = true; // this is default, else if the user doesn't set it to true, java will default it to false
             if (objPair.key().keywords() != null)
             {
                 String key = objPair.key().keywords().getText();
@@ -410,8 +423,23 @@ public class MongodbSchemaGrammarParser
                         break;
                     case "\"anyOf\"":
                         break;
+                    case "\"additionalProperties\"":
+                        if (objPair.value().obj() != null)
+                        {
+                            // additional Properties is a schema - so handle appropriately
+                            objType.additionalPropertiesAllowed = true;
+                            ObjectType addProperties = new ObjectTypeImpl();
+                            visitObjectProperties(addProperties, objPair.value().obj().pair());
+                            objType.additionalProperties = addProperties;
+                        }
+                        else if (objPair.value().FALSE() != null || objPair.value().TRUE() != null)
+                        {
+                            objType.additionalPropertiesAllowed = objPair.value().TRUE() != null ? true : false;
+                        }
+                        // else objPair.value().TRUE()  & we have set the value = true as default at the top
+                        break;
                     default:
-                        LOGGER.debug("Skipping key from object: " + key);
+                        LOGGER.trace("Skipping key from object: " + key);
                 }
             }
         }
@@ -506,6 +534,18 @@ public class MongodbSchemaGrammarParser
             {
                 StringType stringType = new StringType();
                 visitBaseTypeAttributes(pair, stringType);
+                for (MongodbSchemaParser.PairContext pairContext : pair)
+                {
+                    if (pairContext.key().keywords().MIN_LENGTH() != null)
+                    {
+                        stringType.minLength = Long.parseLong(pairContext.value().getText());
+                    }
+                    else if (pairContext.key().keywords().MAX_LENGTH() != null)
+                    {
+                        stringType.maxLength = Long.parseLong(pairContext.value().getText());
+                    }
+                }
+
                 return stringType;
             }
             case "number":
@@ -513,6 +553,17 @@ public class MongodbSchemaGrammarParser
             {
                 LongType longType = new LongType();
                 visitBaseTypeAttributes(pair, longType);
+                for (MongodbSchemaParser.PairContext pairContext : pair)
+                {
+                    if (pairContext.key().keywords().MINIMUM() != null)
+                    {
+                        longType.minimum = Long.parseLong(pairContext.value().getText());
+                    }
+                    else if (pairContext.key().keywords().MAX_LENGTH() != null)
+                    {
+                        longType.maximum = Long.parseLong(pairContext.value().getText());
+                    }
+                }
                 return longType;
             }
             case "bool":
@@ -525,6 +576,17 @@ public class MongodbSchemaGrammarParser
             {
                 IntType intType = new IntType();
                 visitBaseTypeAttributes(pair, intType);
+                for (MongodbSchemaParser.PairContext pairContext : pair)
+                {
+                    if (pairContext.key().keywords().MINIMUM() != null)
+                    {
+                        intType.minimum = Long.parseLong(pairContext.value().getText());
+                    }
+                    else if (pairContext.key().keywords().MAX_LENGTH() != null)
+                    {
+                        intType.maximum = Long.parseLong(pairContext.value().getText());
+                    }
+                }
                 return intType;
             }
             case "double":
@@ -593,7 +655,7 @@ public class MongodbSchemaGrammarParser
             }
             else if (pairContext.key().keywords().UNIQUE_ITEMS() != null)
             {
-                arrayType.uniqueItems = pairContext.value().TRUE() != null ? true : false;
+                arrayType.uniqueItems = pairContext.value().TRUE() != null;
             }
             else if (pairContext.key().keywords().ITEMS() != null)
             {
@@ -604,9 +666,7 @@ public class MongodbSchemaGrammarParser
                 }
                 else if (pairContext.value().arr() != null)
                 {
-                    arrayType.items = pairContext.value().arr().value()
-                            .stream().map(this::visitPropertyType)
-                            .collect(Collectors.toList());
+                    arrayType.items = pairContext.value().arr().value().stream().map(this::visitPropertyType).collect(Collectors.toList());
                 }
             }
         }
@@ -631,7 +691,7 @@ public class MongodbSchemaGrammarParser
             }
             else
             {
-                LOGGER.debug("Skipping key (during SchemaType Identification): " + propType.key().getText());
+                LOGGER.trace("Skipping key (during SchemaType Identification): " + propType.key().getText());
             }
         }
         SourceInformation sourceInformation = new SourceInformation("", lineNumber, 1, lineNumber, 1);
