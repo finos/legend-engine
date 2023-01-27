@@ -121,6 +121,13 @@ function <<test.Test>> meta::external::query::graphQL::generation::tests::testGe
     )
   );
 
+  assertEquals([
+    'meta/external/query/graphQL/generation/tests/model/Firm.graphql', 
+    'meta/external/query/graphQL/generation/tests/model/Person.graphql', 
+    'meta/external/query/graphQL/generation/tests/model/Query.graphql', 
+    'meta/external/query/graphQL/generation/tests/model/Query2.graphql', 
+    'meta/external/query/graphQL/generation/tests/model/IncType.graphql'
+  ], $res.fileName);
   assertEquals([firm_graphql(), person_graphql(), query_graphql(), query2_graphql(), inctype_graphql()], $res.content);
 }
 
