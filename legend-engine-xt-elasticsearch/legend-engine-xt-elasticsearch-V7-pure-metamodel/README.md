@@ -1,0 +1,1 @@
+The schema for the specification was downloaded from: https://raw.githubusercontent.com/elastic/elasticsearch-specification/7.17/output/schema/schema.json

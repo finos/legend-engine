@@ -1,0 +1,5 @@
+{
+  "name" : "core_elasticsearch_seven_metamodel",
+  "pattern" : "(meta::external::store::elasticsearch::v7::metamodel)(::.*)?",
+  "dependencies" : ["platform", "core"]
+}

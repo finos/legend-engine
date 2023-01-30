@@ -349,7 +349,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     public String visit(Class _class)
     {
         StringBuilder builder = new StringBuilder();
-        builder.append("Class ").append(HelperDomainGrammarComposer.renderAnnotations(_class.stereotypes, _class.taggedValues)).append(PureGrammarComposerUtility.convertPath(_class.getPath()));
+        builder.append("Class ").append(HelperDomainGrammarComposer.renderAnnotations(_class.stereotypes, _class.taggedValues)).append(_class.getPath());
         if (!_class.superTypes.isEmpty())
         {
             builder.append(" extends ").append(Lists.mutable.withAll(_class.superTypes).makeString(", "));

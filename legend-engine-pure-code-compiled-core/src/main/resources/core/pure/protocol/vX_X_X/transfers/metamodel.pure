@@ -193,8 +193,6 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::t
 function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformDefaultValue(d:meta::pure::metamodel::function::property::DefaultValue[1], extensions:meta::pure::extension::Extension[*]): meta::protocols::pure::vX_X_X::metamodel::domain::DefaultValue[1]
 {
    ^meta::protocols::pure::vX_X_X::metamodel::domain::DefaultValue(
-       _type = 'defaultValue',
-       name = $d.name->toOne(),
        value = $d.functionDefinition.expressionSequence->at(0)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification([], newMap([]->cast(@Pair<String, List<Any>>)),true, $extensions)
    )
 }

@@ -228,7 +228,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::domain::EnumValue extends meta::
    value : String[1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::domain::DefaultValue extends meta::protocols::pure::vX_X_X::metamodel::PackageableElement, meta::protocols::pure::vX_X_X::metamodel::domain::AnnotatedElement
+Class meta::protocols::pure::vX_X_X::metamodel::domain::DefaultValue
 {
    value :  meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[1];
    sourceInformation : SourceInformation[0..1];

@@ -250,6 +250,7 @@
         <module>legend-engine-xt-sql-grammar-integration</module>
         <module>legend-engine-xt-sql-query</module>
         <module>legend-engine-xt-sql-pure</module>
+        <module>legend-engine-xt-elasticsearch</module>
     </modules>
 
     <properties>
@@ -312,6 +313,7 @@
         <opentracing.version>0.32.0</opentracing.version>
         <prometheus.version>0.8.1</prometheus.version>
         <httpclient.version>4.5.13</httpclient.version>
+        <httpasyncclient.version>4.1.5</httpasyncclient.version>
         <httpcore.version>4.4.13</httpcore.version>
         <janino.version>3.1.0</janino.version>
         <github.classgraph.version>4.8.25</github.classgraph.version>
@@ -359,6 +361,7 @@
         <build-helper.maven.plugin.version>3.2.0</build-helper.maven.plugin.version>
         <dockerfile.maven.plugin.version>1.4.13</dockerfile.maven.plugin.version>
         <maven.plugin.puppycrawl.version>8.25</maven.plugin.puppycrawl.version>
+        <testcontainers.version>1.17.6</testcontainers.version>
     </properties>
 
     <scm>
@@ -2341,6 +2344,22 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpasyncclient</artifactId>
+                <version>${httpasyncclient.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpcore-nio</artifactId>
+                <version>${httpcore.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpcore</artifactId>
                 <version>${httpcore.version}</version>
             </dependency>
@@ -2474,17 +2493,17 @@
             <dependency>
                 <groupId>org.testcontainers</groupId>
                 <artifactId>testcontainers</artifactId>
-                <version>1.16.3</version>
+                <version>${testcontainers.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.testcontainers</groupId>
                 <artifactId>mssqlserver</artifactId>
-                <version>1.16.3</version>
+                <version>${testcontainers.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.testcontainers</groupId>
                 <artifactId>postgresql</artifactId>
-                <version>1.16.3</version>
+                <version>${testcontainers.version}</version>
             </dependency>
             <!-- Test Containers -->
 
