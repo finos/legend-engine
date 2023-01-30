@@ -45,7 +45,7 @@ import static org.finos.legend.engine.language.mongodb.schema.grammar.to.Compose
 import static org.finos.legend.engine.language.mongodb.schema.grammar.to.ComposerUtility.appendJsonObjectKey;
 import static org.finos.legend.engine.language.mongodb.schema.grammar.to.ComposerUtility.appendStringWithQuotes;
 import static org.finos.legend.engine.language.mongodb.schema.grammar.to.ComposerUtility.appendTabString;
-import static org.finos.legend.engine.language.mongodb.schema.grammar.to.ComposerUtility.removeLastChar;
+import static org.finos.legend.engine.language.mongodb.schema.grammar.to.ComposerUtility.getTabString;
 
 public class BaseTypeVisitorImpl implements BaseTypeVisitor<String>
 {
@@ -334,17 +334,14 @@ public class BaseTypeVisitorImpl implements BaseTypeVisitor<String>
     public String visit(ObjectType val)
     {
         StringBuilder builder = new StringBuilder();
-        //appendTabString(builder, indentLevel);
         builder.append("{\n");
         int valuesIndentLevel = indentLevel + 1;
 
         appendTabString(builder, valuesIndentLevel);
         appendJsonKey("bsonType", builder);
         appendStringWithQuotes("object", builder);
-        //builder.append(",\n");
 
         renderObjectType(val, builder, valuesIndentLevel);
-        //removeLastChar(builder);
         builder.append("\n");
 
         appendTabString(builder, indentLevel);
@@ -382,9 +379,7 @@ public class BaseTypeVisitorImpl implements BaseTypeVisitor<String>
         appendTabString(builder, schemaValuesTabIndex);
         appendJsonKey("bsonType", builder);
         appendStringWithQuotes("object", builder);
-        //builder.append(",\n");
         renderObjectType(val, builder, schemaValuesTabIndex);
-        //removeLastChar(builder);
         builder.append("\n");
 
         appendTabString(builder, indentLevel);
@@ -493,19 +488,14 @@ public class BaseTypeVisitorImpl implements BaseTypeVisitor<String>
             appendTabString(builder, valuesIndentLevel);
             appendJsonArrayKey("required", builder);
             builder.append("[");
+
             int itemsIndentLevel = valuesIndentLevel + 1;
-            objType.required.forEach(i ->
-            {
-                builder.append("\n");
-                appendTabString(builder, itemsIndentLevel);
-                appendStringWithQuotes(i, builder);
-                builder.append(",");
-            });
-            removeLastChar(builder);
-            builder.append("\n");
+            String requiredValues = objType.required.stream().map(i -> "\"" + i + "\"")
+                    .collect(Collectors.joining(",\n" + getTabString(itemsIndentLevel), "\n" + getTabString(itemsIndentLevel), "\n"));
+            builder.append(requiredValues);
+
             appendTabString(builder, valuesIndentLevel);
             builder.append("]");
-            //builder.append(",\n");
         }
 
         if (objType.additionalPropertiesAllowed)
@@ -516,14 +506,12 @@ public class BaseTypeVisitorImpl implements BaseTypeVisitor<String>
                 appendTabString(builder, valuesIndentLevel);
                 appendJsonKey("additionalProperties", builder);
                 builder.append("Additional properties with specified schema not supported");
-                //builder.append(",");
             }
             else if (objType.additionalProperties == null)
             {
                 appendTabString(builder, valuesIndentLevel);
                 appendJsonKey("additionalProperties", builder);
                 builder.append(true);
-                //builder.append(",");
             }
         }
         else
@@ -532,7 +520,6 @@ public class BaseTypeVisitorImpl implements BaseTypeVisitor<String>
             appendTabString(builder, valuesIndentLevel);
             appendJsonKey("additionalProperties", builder);
             builder.append(false);
-            //builder.append(",");
         }
     }
 
