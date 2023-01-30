@@ -14,6 +14,7 @@
 
 import meta::external::store::mongodb::metamodel::*;
 import meta::external::store::mongodb::metamodel::aggregation::*;
+import meta::external::store::mongodb::metamodel::authentication::*;
 
 Class meta::external::store::mongodb::metamodel::BaseType
 {
@@ -172,6 +173,8 @@ Class meta::external::store::mongodb::metamodel::MongoDatabase
   name: String[1];
   collections: Collection[*];
   views: CollectionView[*];
+  authenticationEnabled: Boolean[1];
+  authenticationMethod: AuthenticationMethod[0..1];
 }
 
 Class meta::external::store::mongodb::metamodel::Collation
@@ -308,6 +311,36 @@ Class meta::external::store::mongodb::metamodel::aggregation::ConditionExpressio
   predicate: OperatorExpression[1];
   successCase: ArgumentExpression[1];
   failCase: ArgumentExpression[0..1]; 
+}
+
+Enum meta::external::store::mongodb::metamodel::authentication::AuthenticationMechanism
+{
+  SCRAM_SHA_1, SCRAM_SHA_256, GSSAPI
+}
+
+Class meta::external::store::mongodb::metamodel::authentication::AuthenticationMethod
+{
+}
+
+Class meta::external::store::mongodb::metamodel::authentication::SCRAM extends AuthenticationMethod
+{
+  username: String[1];
+  password: String[1];
+  host: String[1];
+  authenticationDatabase: String[1];
+  port: Integer[1];
+  authenticationMechanism: AuthenticationMechanism[0..1];
+  digestPassword: Boolean[0..1];
+}
+
+// https://www.mongodb.com/docs/manual/tutorial/control-access-to-mongodb-with-kerberos-authentication/#connect-mongosh-to-mongod-and-authenticate
+Class meta::external::store::mongodb::metamodel::authentication::Kerberos extends AuthenticationMethod
+{
+  host: String[1];
+  authenticationMechanism: AuthenticationMechanism[1];
+  authenticationDatabase: String[1];
+  username: String[1];
+  keyTab: String[1];
 }
 
 
