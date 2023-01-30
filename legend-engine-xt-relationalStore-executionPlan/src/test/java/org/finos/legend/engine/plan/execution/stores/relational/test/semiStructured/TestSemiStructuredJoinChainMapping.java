@@ -48,6 +48,8 @@ public class TestSemiStructuredJoinChainMapping extends AbstractTestSemiStructur
                 "  connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 ")\n";
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
+
+        Assert.assertEquals("[PERSON_TABLE.FIRM_DETAILS <RelationalOperationElementWithJoin>, PERSON_TABLE.FIRSTNAME <TableAliasColumn>, PERSON_TABLE.ID <JoinTreeNode>, PERSON_TABLE.MANAGERID <JoinTreeNode>]", this.scanColumns("joinChain::multipleJoinsInChain__TabularDataSet_1_", snowflakeMapping));
     }
 
     public String modelResourcePath()
