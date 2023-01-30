@@ -15,6 +15,9 @@
 
 package org.finos.legend.engine.testable.service.extension;
 
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.util.GlobalTracer;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
@@ -50,6 +53,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.Test;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.EqualToJsonAssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestError;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestFailed;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestPassed;
@@ -297,8 +301,9 @@ public class ServiceTestRunner implements TestRunner
 
         SerializationFormat testSerializationFormat = getSerializationFormatForTest(serviceTest);
 
-        try
+        try (Scope scope = GlobalTracer.get().buildSpan("Test status for: " + serviceTest.id).startActive(true))
         {
+            Span span = scope.span();
             Map<String, Object> parameters = Maps.mutable.empty();
             if (serviceTest.parameters != null)
             {
@@ -339,6 +344,7 @@ public class ServiceTestRunner implements TestRunner
             {
                 testResult = new TestPassed();
                 testResult.atomicTestId = atomicTestId;
+                span.log("TEST: " + serviceTest.id + " PASSED");
             }
             else
             {
@@ -347,6 +353,25 @@ public class ServiceTestRunner implements TestRunner
 
                 testResult = testFailed;
                 testResult.atomicTestId = atomicTestId;
+
+                testFailed.assertStatuses.forEach(assertion ->
+                {
+                    if (assertion instanceof EqualToJsonAssertFail)
+                    {
+                       span.log("ASSERTION: " + assertion.id + " FAILED");
+                       span.log("EXPECTED: " + ((EqualToJsonAssertFail)assertion).expected);
+                       span.log("ACTUAL: " + ((EqualToJsonAssertFail)assertion).actual);
+                    }
+                    else if (assertion instanceof AssertFail)
+                    {
+                        span.log("ASSERTION: " + assertion.id + " FAILED");
+                        span.log("MESSAGE: " + ((AssertFail)assertion).message);
+                    }
+                    else
+                    {
+                        span.log("ASSERTION: " + assertion.id + " PASSED");
+                    }
+                });
             }
 
             return testResult;
