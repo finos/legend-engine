@@ -149,6 +149,14 @@ public class ServiceTestRunner
             try (Scope scope = GlobalTracer.get().buildSpan("Generate Tests And Run For MultiExecution Service").startActive(true))
             {
                 MutableMap<String, KeyedExecutionParameter> executionsByKey = Iterate.groupByUniqueKey(((PureMultiExecution) serviceExecution).executionParameters, e -> e.key);
+                MultiExecutionTest tests = ((MultiExecutionTest) service.test);
+                // In some code paths, tests is null.
+                if (tests == null)
+                {
+                    String noAssertMessage = "No tests found !!";
+                    scope.span().log(noAssertMessage);
+                    return Collections.singletonList(new RichServiceTestResult(service.getPath(), Collections.emptyMap(), Collections.emptyMap(), null, null, null));
+                }
                 for (KeyedSingleExecutionTest es : ((MultiExecutionTest) service.test).tests)
                 {
                     List<TestContainer> asserts = es.asserts;
