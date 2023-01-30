@@ -1,0 +1,129 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::protocols::pure::v1_29_0::metamodel::executionPlan::*;
+
+Class meta::protocols::pure::v1_29_0::metamodel::executionPlan::SQLExecutionNode extends meta::protocols::pure::v1_29_0::metamodel::executionPlan::ExecutionNode
+{
+   sqlQuery : String[1];
+   onConnectionCloseCommitQuery : String[0..1];
+   onConnectionCloseRollbackQuery : String[0..1];
+   resultColumns : meta::protocols::pure::v1_29_0::metamodel::executionPlan::SQLResultColumn[*];
+   connection : meta::protocols::pure::v1_29_0::metamodel::store::relational::connection::DatabaseConnection[0..1];
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::executionPlan::RelationalInstantiationExecutionNode extends meta::protocols::pure::v1_29_0::metamodel::executionPlan::ExecutionNode
+{
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::executionPlan::RelationalTdsInstantiationExecutionNode extends meta::protocols::pure::v1_29_0::metamodel::executionPlan::RelationalInstantiationExecutionNode
+[tdsResultType:$this.resultType->instanceOf(TDSResultType)]
+{
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::executionPlan::RelationalClassInstantiationExecutionNode extends meta::protocols::pure::v1_29_0::metamodel::executionPlan::RelationalInstantiationExecutionNode
+[classResultType:$this.resultType->instanceOf(ClassResultType)]
+{
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::executionPlan::RelationalRelationDataInstantiationExecutionNode extends meta::protocols::pure::v1_29_0::metamodel::executionPlan::RelationalInstantiationExecutionNode
+[relationResultType:$this.resultType->instanceOf(RelationResultType)]
+{
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::executionPlan::RelationalDataTypeInstantiationExecutionNode extends meta::protocols::pure::v1_29_0::metamodel::executionPlan::RelationalInstantiationExecutionNode
+[dataTypeResultType:$this.resultType->instanceOf(DataTypeResultType)]
+{
+}
+
+Class <<typemodifiers.abstract>> meta::protocols::pure::v1_29_0::metamodel::executionPlan::RelationalGraphFetchExecutionNode extends meta::protocols::pure::v1_29_0::metamodel::executionPlan::graphFetch::LocalGraphFetchExecutionNode
+{
+   children : RelationalGraphFetchExecutionNode[*];
+}
+
+Class <<typemodifiers.abstract>> meta::protocols::pure::v1_29_0::metamodel::executionPlan::RelationalTempTableGraphFetchExecutionNode extends meta::protocols::pure::v1_29_0::metamodel::executionPlan::RelationalGraphFetchExecutionNode
+{
+   tempTableName : String[1];
+   columns       : SQLResultColumn[*];
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::executionPlan::RelationalClassQueryTempTableGraphFetchExecutionNode extends meta::protocols::pure::v1_29_0::metamodel::executionPlan::RelationalTempTableGraphFetchExecutionNode
+{
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::executionPlan::RelationalPrimitiveQueryGraphFetchExecutionNode extends meta::protocols::pure::v1_29_0::metamodel::executionPlan::RelationalGraphFetchExecutionNode
+{
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::executionPlan::RelationalRootQueryTempTableGraphFetchExecutionNode extends meta::protocols::pure::v1_29_0::metamodel::executionPlan::RelationalClassQueryTempTableGraphFetchExecutionNode
+{
+   batchSize : Integer[0..1];
+   checked : Boolean[0..1];
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::executionPlan::RelationalRootListTempTableGraphFetchExecutionNode extends meta::protocols::pure::v1_29_0::metamodel::executionPlan::RelationalTempTableGraphFetchExecutionNode
+{
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::executionPlan::RelationalCrossRootQueryTempTableGraphFetchExecutionNode extends meta::protocols::pure::v1_29_0::metamodel::executionPlan::RelationalClassQueryTempTableGraphFetchExecutionNode
+{
+   parentTempTableName    : String[1];
+   parentTempTableColumns : SQLResultColumn[*];
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::executionPlan::RelationalBlockExecutionNode extends SequenceExecutionNode
+{
+  finallyExecutionNode: meta::protocols::pure::v1_29_0::metamodel::executionPlan::FinallyExecutionNode[0..1];
+  connection: meta::protocols::pure::v1_29_0::metamodel::store::relational::connection::DatabaseConnection[0..1];
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::executionPlan::CreateAndPopulateTempTableExecutionNode extends ExecutionNode
+{
+   inputVarNames               : String[*];
+   tempTableName               : String[1];
+   tempTableColumnMetaData     : meta::protocols::pure::v1_29_0::metamodel::executionPlan::TempTableColumnMetaData[*];
+   connection                  : meta::protocols::pure::v1_29_0::metamodel::store::relational::connection::DatabaseConnection[0..1];
+}
+Class meta::protocols::pure::v1_29_0::metamodel::executionPlan::SQLResultColumn
+{
+   label : String[1];
+   dataType : String[0..1];
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::executionPlan::TempTableColumnMetaData
+{
+   column                    : meta::protocols::pure::v1_29_0::metamodel::executionPlan::SQLResultColumn[1];
+   identifierForGetter       : String[0..1];
+   parametersForGetter       : Map<String, Any>[0..1];
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::executionPlan::RelationResultType extends ResultType
+{
+   relationName : String[1];
+   relationType : String[1];
+   schemaName : String[1];
+   database : String[1];
+   columns : meta::protocols::pure::v1_29_0::metamodel::store::relational::Column[*];
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::executionPlan::FinallyExecutionNode extends ExecutionNode
+{
+  connection: meta::protocols::pure::v1_29_0::metamodel::store::relational::connection::DatabaseConnection[0..1];
+}
+
+Class meta::protocols::pure::v1_29_0::metamodel::executionPlan::UpdateSqlExecutionNode extends ExecutionNode
+{
+   sqlCommands: String[*];
+   connection: meta::protocols::pure::v1_29_0::metamodel::store::relational::connection::DatabaseConnection[0..1];
+}
