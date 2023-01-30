@@ -26,7 +26,7 @@ function meta::relational::tests::advanced::resultSourcing::getConnection():Conn
    $connection;
  }
 
-function <<meta::pure::profiles::test.Test>> {serverVersion.start = 'vX_X_X'} meta::relational::tests::advanced::resultSourcing::relationalResultSourcingOfList():Boolean[1]
+function <<meta::pure::profiles::test.Test>> {serverVersion.start = 'v1_29_0'} meta::relational::tests::advanced::resultSourcing::relationalResultSourcingOfList():Boolean[1]
 {
    let result = meta::pure::router::execute({|
       let nameList = meta::relational::tests::model::simple::Firm.all()->filter(x|$x.isFirmXGroup()).legalName->distinct();
@@ -40,7 +40,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start = 'vX_X_X'} me
    assertSameElements($expectedValue, $result.values->toCSV());
 }
 
-function <<meta::pure::profiles::test.Test>> {serverVersion.start = 'vX_X_X'} meta::relational::tests::advanced::resultSourcing::relationalResultSourcingOfDateList():Boolean[1]
+function <<meta::pure::profiles::test.Test>> {serverVersion.start = 'v1_29_0'} meta::relational::tests::advanced::resultSourcing::relationalResultSourcingOfDateList():Boolean[1]
 {
    let result = meta::pure::router::execute({|
       let dateList = meta::relational::tests::model::simple::Trade.all()->filter(x|$x.latestEventDate->isNotEmpty()).latestEventDate->distinct()->take(2);
