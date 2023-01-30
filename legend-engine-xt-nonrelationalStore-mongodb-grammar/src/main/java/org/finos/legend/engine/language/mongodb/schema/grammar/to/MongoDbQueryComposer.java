@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.mongodb.schema.grammar.to;
 
+import org.finos.legend.engine.language.mongodb.schema.grammar.roundtrip.OperatorUtility;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.AndOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArgumentExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArgumentExpressionVisitor;
@@ -50,22 +51,10 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Pro
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Stage;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.StageVisitor;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.StringTypeValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Operator;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static org.finos.legend.engine.language.mongodb.schema.grammar.from.ComparisonOperator.EQ;
-import static org.finos.legend.engine.language.mongodb.schema.grammar.from.ComparisonOperator.GT;
-import static org.finos.legend.engine.language.mongodb.schema.grammar.from.ComparisonOperator.GTE;
-import static org.finos.legend.engine.language.mongodb.schema.grammar.from.ComparisonOperator.IN;
-import static org.finos.legend.engine.language.mongodb.schema.grammar.from.ComparisonOperator.LT;
-import static org.finos.legend.engine.language.mongodb.schema.grammar.from.ComparisonOperator.LTE;
-import static org.finos.legend.engine.language.mongodb.schema.grammar.from.ComparisonOperator.NE;
-import static org.finos.legend.engine.language.mongodb.schema.grammar.from.ComparisonOperator.NIN;
-import static org.finos.legend.engine.language.mongodb.schema.grammar.from.LogicalOperator.AND;
-import static org.finos.legend.engine.language.mongodb.schema.grammar.from.LogicalOperator.NOR;
-import static org.finos.legend.engine.language.mongodb.schema.grammar.from.LogicalOperator.NOT;
-import static org.finos.legend.engine.language.mongodb.schema.grammar.from.LogicalOperator.OR;
 
 public class MongoDbQueryComposer
 {
@@ -124,7 +113,7 @@ public class MongoDbQueryComposer
             {
                 List<String> expressionsString = val.expressions.stream()
                         .map(x -> visitArgumentExpression(x)).collect(Collectors.toList());
-                return "{ \"" + AND.label + "\" : [" + String.join(",", expressionsString) + "] }";
+                return "{ \"" + OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.AND) + "\" : [" + String.join(",", expressionsString) + "] }";
             }
 
             @Override
@@ -143,42 +132,42 @@ public class MongoDbQueryComposer
             public String visit(EqOperatorExpression val)
             {
                 String expString = visit(val.expression);
-                return "{ \"" + EQ.label + "\" : " + expString + " }";
+                return "{ \"" + OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.EQ) + "\" : " + expString + " }";
             }
 
             @Override
             public String visit(GTOperatorExpression val)
             {
                 String expString = visit(val.expression);
-                return "{ \"" + GT.label + "\" : " + expString + " }";
+                return "{ \"" + OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.GT) + "\" : " + expString + " }";
             }
 
             @Override
             public String visit(GreaterThanEqualsOperatorExpression val)
             {
                 String expString = visit(val.expression);
-                return "{ \"" + GTE.label + "\" : " + expString + " }";
+                return "{ \"" + OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.GTE) + "\" : " + expString + " }";
             }
 
             @Override
             public String visit(InOperatorExpression val)
             {
                 String expString = visit(val.expression);
-                return "{ \"" + IN.label + "\" : " + expString + " }";
+                return "{ \"" + OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.IN) + "\" : " + expString + " }";
             }
 
             @Override
             public String visit(LTEOperatorExpression val)
             {
                 String expString = visit(val.expression);
-                return "{ \"" + LTE.label + "\" : " + expString + " }";
+                return "{ \"" + OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.LTE) + "\" : " + expString + " }";
             }
 
             @Override
             public String visit(LTOperatorExpression val)
             {
                 String expString = visit(val.expression);
-                return "{ \"" + LT.label + "\" : " + expString + " }";
+                return "{ \"" + OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.LT) + "\" : " + expString + " }";
             }
 
             @Override
@@ -197,14 +186,14 @@ public class MongoDbQueryComposer
             public String visit(NEOperatorExpression val)
             {
                 String expString = visit(val.expression);
-                return "{ \"" + NE.label + "\" : " + expString + " }";
+                return "{ \"" + OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.NE) + "\" : " + expString + " }";
             }
 
             @Override
             public String visit(NinOperatorExpression val)
             {
                 String expString = visit(val.expression);
-                return "{ \"" + NIN.label + "\" : " + expString + " }";
+                return "{ \"" + OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.NIN) + "\" : " + expString + " }";
             }
 
             @Override
@@ -212,7 +201,7 @@ public class MongoDbQueryComposer
             {
                 List<String> expressionsString = val.expressions.stream()
                         .map(x -> visitArgumentExpression(x)).collect(Collectors.toList());
-                return "{ \"" + NOR.label + "\" : [" + String.join(",", expressionsString) + "] }";
+                return "{ \"" + OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.NOR) + "\" : [" + String.join(",", expressionsString) + "] }";
             }
 
             @Override
@@ -220,7 +209,7 @@ public class MongoDbQueryComposer
             {
                 List<String> expressionsString = val.expressions.stream()
                         .map(x -> visitArgumentExpression(x)).collect(Collectors.toList());
-                return "{ \"" + NOT.label + "\" : [" + String.join(",", expressionsString) + "] }";
+                return "{ \"" + OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.NOT) + "\" : [" + String.join(",", expressionsString) + "] }";
             }
 
             @Override
@@ -236,7 +225,7 @@ public class MongoDbQueryComposer
             {
                 List<String> expressionsString = val.expressions.stream()
                         .map(x -> visitArgumentExpression(x)).collect(Collectors.toList());
-                return "{ \"" + OR.label + "\" : [" + String.join(",", expressionsString) + "] }";
+                return "{ \"" + OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.OR) + "\" : [" + String.join(",", expressionsString) + "] }";
             }
         });
     }

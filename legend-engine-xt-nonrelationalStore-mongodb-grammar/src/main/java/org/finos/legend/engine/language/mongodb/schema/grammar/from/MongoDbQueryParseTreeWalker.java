@@ -15,7 +15,9 @@
 package org.finos.legend.engine.language.mongodb.schema.grammar.from;
 
 import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoDbQueryParser;
+import org.finos.legend.engine.language.mongodb.schema.grammar.roundtrip.OperatorUtility;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.AndOperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Operator;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArgumentExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArrayTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.BaseTypeValue;
@@ -288,42 +290,42 @@ public class MongoDbQueryParseTreeWalker
         LiteralValue value = visitValue(valueCtx);
         ComparisonOperatorExpression comparisonOpEx = null;
 
-        if (operator.equals(ComparisonOperator.EQ.label))
+        if (operator.equals(OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.EQ)))
         {
             comparisonOpEx = new EqOperatorExpression();
             comparisonOpEx.expression = value;
         }
-        else if (operator.equals(ComparisonOperator.GT.label))
+        else if (operator.equals(OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.GT)))
         {
             comparisonOpEx = new GTOperatorExpression();
             comparisonOpEx.expression = value;
         }
-        else if (operator.equals(ComparisonOperator.GTE.label))
+        else if (operator.equals(OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.GTE)))
         {
             comparisonOpEx = new GreaterThanEqualsOperatorExpression();
             comparisonOpEx.expression = value;
         }
-        else if (operator.equals(ComparisonOperator.IN.label))
+        else if (operator.equals(OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.IN)))
         {
             comparisonOpEx = new InOperatorExpression();
             comparisonOpEx.expression = value;
         }
-        else if (operator.equals(ComparisonOperator.LT.label))
+        else if (operator.equals(OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.LT)))
         {
             comparisonOpEx = new LTOperatorExpression();
             comparisonOpEx.expression = value;
         }
-        else if (operator.equals(ComparisonOperator.LTE.label))
+        else if (operator.equals(OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.LTE)))
         {
             comparisonOpEx = new LTEOperatorExpression();
             comparisonOpEx.expression = value;
         }
-        else if (operator.equals(ComparisonOperator.NE.label))
+        else if (operator.equals(OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.NE)))
         {
             comparisonOpEx = new NEOperatorExpression();
             comparisonOpEx.expression = value;
         }
-        else if (operator.equals(ComparisonOperator.NIN.label))
+        else if (operator.equals(OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.NIN)))
         {
             comparisonOpEx = new NinOperatorExpression();
             comparisonOpEx.expression = value;
@@ -339,19 +341,19 @@ public class MongoDbQueryParseTreeWalker
 
         List<ArgumentExpression> expressions = visitLogicalOperatorExpressionValueArray(ctx.logicalOperatorExpressionValueArray());
 
-        if (operator.equals(LogicalOperator.AND.label))
+        if (operator.equals(OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.AND)))
         {
             logicalOpEx = new AndOperatorExpression();
         }
-        else if (operator.equals(LogicalOperator.OR.label))
+        else if (operator.equals(OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.OR)))
         {
             logicalOpEx = new OrOperatorExpression();
         }
-        else if (operator.equals(LogicalOperator.NOR.label))
+        else if (operator.equals(OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.NOR)))
         {
             logicalOpEx = new NorOperatorExpression();
         }
-        else if (operator.equals(LogicalOperator.NOT.label))
+        else if (operator.equals(OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.NOT)))
         {
             logicalOpEx = new NotOperatorExpression();
         }

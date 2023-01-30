@@ -12,23 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.mongodb.schema.grammar.from;
+package org.finos.legend.engine.language.mongodb.schema.grammar.roundtrip;
 
-public enum ComparisonOperator
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Operator;
+
+public class OperatorUtility
 {
-    EQ("$eq"),
-    GT("$gt"),
-    GTE("$gte"),
-    IN("$in"),
-    LT("$lt"),
-    LTE("$lte"),
-    NE("$ne"),
-    NIN("$nin");
 
-    public final String label;
-
-    ComparisonOperator(String label)
+    public static String lowerCaseOperatorAndAddDollar(Operator operator)
     {
-        this.label = label;
+        return "$" + operator.toString().toLowerCase();
     }
 }
