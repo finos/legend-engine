@@ -1,0 +1,22 @@
+{
+  "aggregate": "firm",
+  "pipeline": [
+    {
+      "$match": {
+        "someObjectProperty": {
+          "$eq": {
+            "prop1": 2,
+            "prop2": "a string",
+            "prop3": true,
+            "prop4": "true",
+            "prop5": null,
+            "prop6": 2.44546,
+            "prop7": 1.09747567475868,
+            "prop8": 3.0
+          }
+        }
+      }
+    }
+  ],
+  "cursor": {}
+}

@@ -1,0 +1,50 @@
+{
+  "type": "aggregate",
+  "collectionName": "\"firm\"",
+  "aggregationPipeline": {
+    "_type": "viewPipeline",
+    "stages": [
+      {
+        "_type": "matchStage",
+        "expression": {
+          "_type": "andOperatorExpression",
+          "expressions": [
+            {
+              "_type": "objectExpression",
+              "keyValues": [
+                {
+                  "field": "\"location.country\"",
+                  "argument": {
+                    "_type": "eqOperatorExpression",
+                    "expression": {
+                      "_type": "literalValue",
+                      "value": {
+                        "_type": "stringTypeValue",
+                        "value": "\"Indonesia\""
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "_type": "objectExpression",
+              "keyValues": [
+                {
+                  "field": "\"sector\"",
+                  "argument": {
+                    "_type": "literalValue",
+                    "value": {
+                      "_type": "stringTypeValue",
+                      "value": "\"Finance Companies\""
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

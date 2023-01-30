@@ -1,0 +1,81 @@
+{
+  "type": "aggregate",
+  "collectionName": "\"firms\"",
+  "aggregationPipeline": {
+    "_type": "viewPipeline",
+    "stages": [
+      {
+        "_type": "matchStage",
+        "expression": {
+          "_type": "objectExpression",
+          "keyValues": [
+            {
+              "field": "\"test\"",
+              "argument": {
+                "_type": "gTOperatorExpression",
+                "expression": {
+                  "_type": "literalValue",
+                  "value": {
+                    "_type": "intTypeValue",
+                    "value": 3
+                  }
+                }
+              }
+            },
+            {
+              "field": "\"test2\"",
+              "argument": {
+                "_type": "gTOperatorExpression",
+                "expression": {
+                  "_type": "literalValue",
+                  "value": {
+                    "_type": "stringTypeValue",
+                    "value": "\"USA\""
+                  }
+                }
+              }
+            },
+            {
+              "field": "\"test3\"",
+              "argument": {
+                "_type": "literalValue",
+                "value": {
+                  "_type": "stringTypeValue",
+                  "value": "\"testingg\""
+                }
+              }
+            },
+            {
+              "field": "\"test4\"",
+              "argument": {
+                "_type": "gTOperatorExpression",
+                "expression": {
+                  "_type": "literalValue",
+                  "value": {
+                    "_type": "objectTypeValue",
+                    "keyValues": [
+                      {
+                        "key": "\"abd\"",
+                        "value": {
+                          "_type": "intTypeValue",
+                          "value": 3
+                        }
+                      },
+                      {
+                        "key": "\"ade\"",
+                        "value": {
+                          "_type": "intTypeValue",
+                          "value": 4
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

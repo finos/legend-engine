@@ -1,0 +1,30 @@
+{
+  "aggregate": "firm",
+  "pipeline": [
+    {
+      "$match": {
+        "$and": [
+          {
+            "employees": {
+              "$gt": 5000
+            }
+          },
+          {
+            "employees": {
+              "$lt": 10000
+            }
+          }
+        ],
+        "phone": "639-401-5157",
+        "location": {
+          "$eq": {
+            "country": "Poland",
+            "street": "7 Grayhawk Way",
+            "postalCode": "46-090"
+          }
+        }
+      }
+    }
+  ],
+  "cursor": {}
+}

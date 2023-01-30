@@ -1,0 +1,71 @@
+{
+  "type": "aggregate",
+  "collectionName": "\"firm\"",
+  "aggregationPipeline": {
+    "_type": "viewPipeline",
+    "stages": [
+      {
+        "_type": "projectStage",
+        "filters": {
+          "_type": "objectExpression",
+          "keyValues": [
+            {
+              "field": "\"name\"",
+              "argument": {
+                "_type": "literalValue",
+                "value": {
+                  "_type": "intTypeValue",
+                  "value": 1
+                }
+              }
+            },
+            {
+              "field": "\"location.postalCode\"",
+              "argument": {
+                "_type": "literalValue",
+                "value": {
+                  "_type": "intTypeValue",
+                  "value": 1
+                }
+              }
+            },
+            {
+              "field": "\"location.street\"",
+              "argument": {
+                "_type": "literalValue",
+                "value": {
+                  "_type": "boolTypeValue",
+                  "value": true
+                }
+              }
+            },
+            {
+              "field": "\"country\"",
+              "argument": {
+                "_type": "computedFieldValue",
+                "value": "\"$location.country\""
+              }
+            },
+            {
+              "field": "\"firmTags\"",
+              "argument": {
+                "_type": "computedFieldValue",
+                "value": "\"$tags\""
+              }
+            },
+            {
+              "field": "\"sector\"",
+              "argument": {
+                "_type": "literalValue",
+                "value": {
+                  "_type": "intTypeValue",
+                  "value": 1
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

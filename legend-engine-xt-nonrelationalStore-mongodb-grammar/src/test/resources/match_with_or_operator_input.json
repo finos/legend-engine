@@ -1,0 +1,21 @@
+{
+  "aggregate": "firm",
+  "pipeline": [
+    {
+      "$match": {
+        "$or": [
+          {
+            "sector": {
+              "$eq": "Metal Fabrications"
+            }
+          },
+          {
+            "location.country": "Mauritius"
+          }
+        ]
+      }
+    }
+  ],
+  "cursor": {}
+}
+

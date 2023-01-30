@@ -1,0 +1,50 @@
+{
+  "type": "aggregate",
+  "collectionName": "\"firm\"",
+  "aggregationPipeline": {
+    "_type": "viewPipeline",
+    "stages": [
+      {
+        "_type": "matchStage",
+        "expression": {
+          "_type": "orOperatorExpression",
+          "expressions": [
+            {
+              "_type": "objectExpression",
+              "keyValues": [
+                {
+                  "field": "\"sector\"",
+                  "argument": {
+                    "_type": "eqOperatorExpression",
+                    "expression": {
+                      "_type": "literalValue",
+                      "value": {
+                        "_type": "stringTypeValue",
+                        "value": "\"Metal Fabrications\""
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "_type": "objectExpression",
+              "keyValues": [
+                {
+                  "field": "\"location.country\"",
+                  "argument": {
+                    "_type": "literalValue",
+                    "value": {
+                      "_type": "stringTypeValue",
+                      "value": "\"Mauritius\""
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

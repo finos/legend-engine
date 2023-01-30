@@ -1,0 +1,43 @@
+{
+  "type": "aggregate",
+  "collectionName": "\"firm\"",
+  "aggregationPipeline": {
+    "_type": "viewPipeline",
+    "stages": [
+      {
+        "_type": "matchStage",
+        "expression": {
+          "_type": "objectExpression",
+          "keyValues": [
+            {
+              "field": "\"location.country\"",
+              "argument": {
+                "_type": "eqOperatorExpression",
+                "expression": {
+                  "_type": "literalValue",
+                  "value": {
+                    "_type": "stringTypeValue",
+                    "value": "\"Indonesia\""
+                  }
+                }
+              }
+            },
+            {
+              "field": "\"employees\"",
+              "argument": {
+                "_type": "gTOperatorExpression",
+                "expression": {
+                  "_type": "literalValue",
+                  "value": {
+                    "_type": "intTypeValue",
+                    "value": 5000
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

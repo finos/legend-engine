@@ -1,0 +1,86 @@
+{
+  "type": "aggregate",
+  "collectionName": "\"firm\"",
+  "aggregationPipeline": {
+    "_type": "viewPipeline",
+    "stages": [
+      {
+        "_type": "matchStage",
+        "expression": {
+          "_type": "objectExpression",
+          "keyValues": [
+            {
+              "field": "\"someObjectProperty\"",
+              "argument": {
+                "_type": "eqOperatorExpression",
+                "expression": {
+                  "_type": "literalValue",
+                  "value": {
+                    "_type": "objectTypeValue",
+                    "keyValues": [
+                      {
+                        "key": "\"prop1\"",
+                        "value": {
+                          "_type": "intTypeValue",
+                          "value": 2
+                        }
+                      },
+                      {
+                        "key": "\"prop2\"",
+                        "value": {
+                          "_type": "stringTypeValue",
+                          "value": "\"a string\""
+                        }
+                      },
+                      {
+                        "key": "\"prop3\"",
+                        "value": {
+                          "_type": "boolTypeValue",
+                          "value": true
+                        }
+                      },
+                      {
+                        "key": "\"prop4\"",
+                        "value": {
+                          "_type": "stringTypeValue",
+                          "value": "\"true\""
+                        }
+                      },
+                      {
+                        "key": "\"prop5\"",
+                        "value": {
+                          "_type": "nullTypeValue"
+                        }
+                      },
+                      {
+                        "key": "\"prop6\"",
+                        "value": {
+                          "_type": "decimalTypeValue",
+                          "value": 2.44546
+                        }
+                      },
+                      {
+                        "key": "\"prop7\"",
+                        "value": {
+                          "_type": "decimalTypeValue",
+                          "value": 1.09747567475868
+                        }
+                      },
+                      {
+                        "key": "\"prop8\"",
+                        "value": {
+                          "_type": "decimalTypeValue",
+                          "value": 3.0
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

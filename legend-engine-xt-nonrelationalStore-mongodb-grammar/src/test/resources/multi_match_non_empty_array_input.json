@@ -1,0 +1,14 @@
+{
+  "aggregate": "firm",
+  "pipeline": [
+    {
+      "$match": {
+        "tags": [
+          "Bank",
+          "Finance"
+        ]
+      }
+    }
+  ],
+  "cursor": {}
+}

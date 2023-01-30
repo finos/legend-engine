@@ -1,0 +1,11 @@
+{
+  "aggregate": "firm",
+  "pipeline": [
+    {
+      "$project": {
+        "firmName": "$name"
+      }
+    }
+  ],
+  "cursor": {}
+}

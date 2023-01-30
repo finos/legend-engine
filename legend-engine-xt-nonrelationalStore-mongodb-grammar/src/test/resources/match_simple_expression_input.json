@@ -1,0 +1,11 @@
+{
+  "aggregate": "firm",
+  "pipeline": [
+    {
+      "$match": {
+        "name": "Zemlak-Hegmann"
+      }
+    }
+  ],
+  "cursor": {}
+}

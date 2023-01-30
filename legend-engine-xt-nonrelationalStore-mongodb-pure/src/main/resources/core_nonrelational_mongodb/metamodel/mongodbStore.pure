@@ -16,6 +16,11 @@ import meta::external::store::mongodb::metamodel::*;
 import meta::external::store::mongodb::metamodel::aggregation::*;
 import meta::external::store::mongodb::metamodel::authentication::*;
 
+Enum meta::external::store::mongodb::metamodel::aggregation::Operator
+{
+    EQ, GT, GTE, IN, LT, LTE, NE, NIN, AND, NOT, NOR, OR
+}
+
 Class meta::external::store::mongodb::metamodel::BaseType
 {
   allOf: BaseType[*];
@@ -157,7 +162,7 @@ Class meta::external::store::mongodb::metamodel::Collection
   owner: MongoDatabase[1];
   name: String[1];
   schema: Schema[0..1];
-} 
+}
 
 Class meta::external::store::mongodb::metamodel::CollectionView
 {
@@ -182,6 +187,13 @@ Class meta::external::store::mongodb::metamodel::Collation
   locale: String[1];
 }
 
+Class meta::external::store::mongodb::metamodel::aggregation::DatabaseCommand
+{
+    type: String[1];
+    collectionName: String[1];
+    aggregationPipeline: AggregationPipeline[1];
+}
+
 Class meta::external::store::mongodb::metamodel::aggregation::ViewPipeline extends AggregationPipeline
 {
 }
@@ -200,73 +212,107 @@ Class meta::external::store::mongodb::metamodel::aggregation::Stage
 Class {doc.doc = 'Maps to { $match { $expr { <aggregation expression> } } }'}
 meta::external::store::mongodb::metamodel::aggregation::MatchStage extends Stage
 {
-  expression: AggregateExpression[*];
+  expression: ArgumentExpression[1];
 }
 
 Class {doc.doc = 'Maps to { $project { $fieldName { <specification> } } }'}
 meta::external::store::mongodb::metamodel::aggregation::ProjectStage extends Stage
 {
-  expression: ProjectExpression[*];
+  filters: ArgumentExpression[1];
 }
 
-Class {doc.doc = 'Same as Project stage, and alias for set stage'}
-meta::external::store::mongodb::metamodel::aggregation::AddFieldsStage extends ProjectStage
+Class meta::external::store::mongodb::metamodel::aggregation::LiteralValue extends ArgumentExpression
 {
+  value: BaseTypeValue[1];
 }
-
 
 Class meta::external::store::mongodb::metamodel::aggregation::AggregateExpression
 {
-    arguments: ArgumentExpression[*];
+  arguments: ArgumentExpression[*];
 }
 
 Class meta::external::store::mongodb::metamodel::aggregation::ArgumentExpression
 {
 }
 
-Class {doc.doc = 'Operations accessed by $xxx'}
-meta::external::store::mongodb::metamodel::aggregation::OperatorExpression extends ArgumentExpression
+Class {doc.doc = 'Comparison Operator Expressions https://www.mongodb.com/docs/manual/reference/operator/query-comparison/'}
+meta::external::store::mongodb::metamodel::aggregation::ComparisonOperatorExpression extends ArgumentExpression
 {
-  operatorName: String[1];
-  operationExpression: ExpressionObject[1];
+  expression: LiteralValue[1];
 }
 
-Class meta::external::store::mongodb::metamodel::aggregation::OrExpression extends OperatorExpression
-{
-  // translates to $or [ ...arguments ];
-}
-
-Class meta::external::store::mongodb::metamodel::aggregation::AndExpression extends OperatorExpression
+Class meta::external::store::mongodb::metamodel::aggregation::EqOperatorExpression extends ComparisonOperatorExpression
 {
 }
 
-Class meta::external::store::mongodb::metamodel::aggregation::EqualsExpression extends OperatorExpression
+Class meta::external::store::mongodb::metamodel::aggregation::GTOperatorExpression extends ComparisonOperatorExpression
 {
 }
 
-Class meta::external::store::mongodb::metamodel::aggregation::FieldPathExpression extends ArgumentExpression
+Class meta::external::store::mongodb::metamodel::aggregation::GreaterThanEqualsOperatorExpression extends ComparisonOperatorExpression
 {
-  path: String[1];  //maps to $something
 }
 
-Class meta::external::store::mongodb::metamodel::aggregation::VariableExpression extends ArgumentExpression
+Class meta::external::store::mongodb::metamodel::aggregation::InOperatorExpression extends ComparisonOperatorExpression
 {
-  // NOW, CLUSTER_TIME, ROOT, CURRENT, REMOVE, DESCEND, PRUNE, KEEP
-  // PREFIX WITH $$
 }
 
-Class meta::external::store::mongodb::metamodel::aggregation::LiteralExpression extends ArgumentExpression
+Class meta::external::store::mongodb::metamodel::aggregation::LTOperatorExpression extends ComparisonOperatorExpression
 {
-  value: BaseTypeValue[1];
 }
 
-Class meta::external::store::mongodb::metamodel::aggregation::ExpressionObject extends ArgumentExpression
+Class meta::external::store::mongodb::metamodel::aggregation::LTEOperatorExpression extends ComparisonOperatorExpression
 {
-  field: FieldPathExpression[1];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::NEOperatorExpression extends ComparisonOperatorExpression
+{
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::NinOperatorExpression extends ComparisonOperatorExpression
+{
+}
+
+Class {doc.doc = 'Logical Operator Expressions https://www.mongodb.com/docs/manual/reference/operator/query-logical/'}
+meta::external::store::mongodb::metamodel::aggregation::LogicalOperatorExpression extends ArgumentExpression
+{
+  expressions: ArgumentExpression[*];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::AndOperatorExpression extends LogicalOperatorExpression
+{
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::OrOperatorExpression extends LogicalOperatorExpression
+{
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::NotOperatorExpression extends LogicalOperatorExpression
+{
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::NorOperatorExpression extends LogicalOperatorExpression
+{
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::KeyValueExpressionPair
+{
+  field: String[1];
   argument: ArgumentExpression[1];
 }
 
-Class meta::external::store::mongodb::metamodel::aggregation::BaseTypeValue 
+Class {doc.doc = 'Computed field for Project expressions with format $fieldName'}
+meta::external::store::mongodb::metamodel::aggregation::ComputedFieldValue extends ArgumentExpression
+{
+  value: String[1];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::ObjectExpression extends ArgumentExpression
+{
+  keyValues: KeyValueExpressionPair[*];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::BaseTypeValue
 {
 }
 
@@ -277,6 +323,16 @@ Class meta::external::store::mongodb::metamodel::aggregation::StringTypeValue ex
 
 Class meta::external::store::mongodb::metamodel::aggregation::IntTypeValue extends BaseTypeValue
 {
+  value: Integer[1];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::BoolTypeValue extends BaseTypeValue
+{
+  value: Boolean[1];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::NullTypeValue extends BaseTypeValue
+{
 }
 
 Class meta::external::store::mongodb::metamodel::aggregation::LongTypeValue extends BaseTypeValue
@@ -285,11 +341,17 @@ Class meta::external::store::mongodb::metamodel::aggregation::LongTypeValue exte
 
 Class meta::external::store::mongodb::metamodel::aggregation::DecimalTypeValue extends BaseTypeValue
 {
+  value: Float[1];
 }
 
-Class meta::external::store::mongodb::metamodel::aggregation::ObjectTypeTypeValue extends BaseTypeValue
+Class meta::external::store::mongodb::metamodel::aggregation::ObjectTypeValue extends BaseTypeValue
 {
   keyValues: KeyValuePair[*];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::ArrayTypeValue extends BaseTypeValue
+{
+  items: BaseTypeValue[*];
 }
 
 Class meta::external::store::mongodb::metamodel::aggregation::KeyValuePair
@@ -298,20 +360,6 @@ Class meta::external::store::mongodb::metamodel::aggregation::KeyValuePair
   value: BaseTypeValue[1];
 }
 
-
-Class meta::external::store::mongodb::metamodel::aggregation::ProjectExpression extends ArgumentExpression
-{
-  field: FieldPathExpression[1];
-  isProjected: Boolean[1];
-  conditionExpression: ConditionExpression[0..1]; 
-}
-
-Class meta::external::store::mongodb::metamodel::aggregation::ConditionExpression extends ArgumentExpression
-{
-  predicate: OperatorExpression[1];
-  successCase: ArgumentExpression[1];
-  failCase: ArgumentExpression[0..1]; 
-}
 
 Enum meta::external::store::mongodb::metamodel::authentication::AuthenticationMechanism
 {

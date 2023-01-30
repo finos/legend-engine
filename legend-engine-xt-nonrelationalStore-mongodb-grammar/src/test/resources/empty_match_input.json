@@ -1,0 +1,9 @@
+{
+  "aggregate": "firm",
+  "pipeline": [
+    {
+      "$match": {}
+    }
+  ],
+  "cursor": {}
+}

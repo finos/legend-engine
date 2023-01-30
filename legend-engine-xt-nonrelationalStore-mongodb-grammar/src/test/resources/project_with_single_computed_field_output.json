@@ -1,0 +1,24 @@
+{
+  "type": "aggregate",
+  "collectionName": "\"firm\"",
+  "aggregationPipeline": {
+    "_type": "viewPipeline",
+    "stages": [
+      {
+        "_type": "projectStage",
+        "filters": {
+          "_type": "objectExpression",
+          "keyValues": [
+            {
+              "field": "\"firmName\"",
+              "argument": {
+                "_type": "computedFieldValue",
+                "value": "\"$name\""
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
