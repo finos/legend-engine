@@ -2522,4 +2522,147 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
 
         test(code);
     }
+
+    @Test
+    public void testCompilationForNonTemporalModelWithGetAllWithDateParameter()
+    {
+        test("Class test::Person\n" +
+                "{\n" +
+                " name : String[1];\n" +
+                "}\n" +
+                "function my::test():Any[*]\n" +
+                "{\n" +
+                "test::Person.all(%2018-05-05)->project([x|$x.name], ['Name']);\n" +
+                "}\n", "COMPILATION error at [7:1-12]: The type Person is not Temporal, Dates should not be supplied to all()");
+    }
+
+    @Test
+    public void testCompilationForBusinessTemporalWithGetAllWithoutDateParameter()
+    {
+        test("Class <<temporal.businesstemporal>> test::Person\n" +
+                "{\n" +
+                " name : String[1];\n" +
+                "}\n" +
+                "function my::test():Any[*]\n" +
+                "{\n" +
+                "test::Person.all()->project([x|$x.name], ['Name']);\n" +
+                "}\n", "COMPILATION error at [7:1-12]: The type Person is  businesstemporal, [businessDate] should be supplied as a parameter to all()");
+    }
+
+    @Test
+    public void testCompilationForProcessingTemporalWithGetAllWithoutDateParameter()
+    {
+        test("Class <<temporal.processingtemporal>> test::Person\n" +
+                "{\n" +
+                " name : String[1];\n" +
+                "}\n" +
+                "function my::test():Any[*]\n" +
+                "{\n" +
+                "test::Person.all()->project([x|$x.name], ['Name']);\n" +
+                "}\n", "COMPILATION error at [7:1-12]: The type Person is  processingtemporal, [processingDate] should be supplied as a parameter to all()");
+    }
+
+    @Test
+    public void testCompilationForBitemporalWithGetAllWithoutDateParameter()
+    {
+        test("Class <<temporal.bitemporal>> test::Person\n" +
+                "{\n" +
+                " name : String[1];\n" +
+                "}\n" +
+                "function my::test():Any[*]\n" +
+                "{\n" +
+                "test::Person.all()->project([x|$x.name], ['Name']);\n" +
+                "}\n", "COMPILATION error at [7:1-12]: The type Person is  bitemporal, [processingDate,businessDate] should be supplied as a parameter to all()");
+    }
+
+    @Test
+    public void testCompilationForBitemporalWithGetAllOneDateParameter()
+    {
+        test("Class <<temporal.bitemporal>> test::Person\n" +
+                "{\n" +
+                " name : String[1];\n" +
+                "}\n" +
+                "function my::test():Any[*]\n" +
+                "{\n" +
+                "test::Person.all(%2018-05-05)->project([x|$x.name], ['Name']);\n" +
+                "}\n", "COMPILATION error at [7:1-12]: The type Person is  bitemporal, [processingDate,businessDate] should be supplied as a parameter to all()");
+    }
+
+    @Test
+    public void testCompilationForBitemporalWithGetAllTwoDateParameter()
+    {
+        test("Class <<temporal.bitemporal>> test::Person\n" +
+                "{\n" +
+                " name : String[1];\n" +
+                "}\n" +
+                "function my::test():Any[*]\n" +
+                "{\n" +
+                "test::Person.all(%2018-05-05, %2018-09-04)->project([x|$x.name], ['Name']);\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testCompilationForNonTemporalModelWithGetAllVersions()
+    {
+        test("Class test::Person\n" +
+                "{\n" +
+                " name : String[1];\n" +
+                "}\n" +
+                "function my::test():Any[*]\n" +
+                "{\n" +
+                "test::Person.allVersions()->project([x|$x.name], ['Name']);\n" +
+                "}\n", "COMPILATION error at [7:1-12]: The function 'getAllVersions' may only be used with temporal types, the type Person is  not temporal");
+    }
+
+    @Test
+    public void testCompilationForBiTemporalModelWithGetAllVersionsInRange()
+    {
+        test("Class <<temporal.bitemporal>> test::Person\n" +
+                "{\n" +
+                " name : String[1];\n" +
+                "}\n" +
+                "function my::test():Any[*]\n" +
+                "{\n" +
+                "test::Person->getAllVersionsInRange(%2018-05-05, %2018-09-04)->project([x|$x.name], ['Name']);\n" +
+                "}\n", "COMPILATION error at [7:1-12]: The function 'getAllVersionsInRange' is applicable only for businessTemporal and processingTemporal types");
+    }
+
+    @Test
+    public void testCompilationForNonTemporalModelWithGetAllVersionsInRange()
+    {
+        test("Class test::Person\n" +
+                "{\n" +
+                " name : String[1];\n" +
+                "}\n" +
+                "function my::test():Any[*]\n" +
+                "{\n" +
+                "test::Person->getAllVersionsInRange(%2018-05-05, %2018-09-04)->project([x|$x.name], ['Name']);\n" +
+                "}\n", "COMPILATION error at [7:1-12]: The function 'getAllVersionsInRange' is applicable only for businessTemporal and processingTemporal types");
+    }
+
+    @Test
+    public void testCompilationForProcessingTemporalModelWithGetAllVersionsInRange()
+    {
+        test("Class <<temporal.processingtemporal>> test::Person\n" +
+                "{\n" +
+                " name : String[1];\n" +
+                "}\n" +
+                "function my::test():Any[*]\n" +
+                "{\n" +
+                "test::Person->getAllVersionsInRange(%2018-05-05, %2018-09-04)->project([x|$x.name], ['Name']);\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testCompilationForBusinessTemporalModelWithGetAllVersionsInRange()
+    {
+        test("Class <<temporal.businesstemporal>> test::Person\n" +
+                "{\n" +
+                " name : String[1];\n" +
+                "}\n" +
+                "function my::test():Any[*]\n" +
+                "{\n" +
+                "test::Person->getAllVersionsInRange(%2018-05-05, %2018-09-04)->project([x|$x.name], ['Name']);\n" +
+                "}\n");
+    }
 }
