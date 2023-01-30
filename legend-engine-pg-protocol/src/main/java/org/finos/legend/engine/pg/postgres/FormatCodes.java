@@ -21,7 +21,6 @@
 
 package org.finos.legend.engine.pg.postgres;
 
-
 import io.netty.buffer.ByteBuf;
 import javax.annotation.Nullable;
 

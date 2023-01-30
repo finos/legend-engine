@@ -21,7 +21,6 @@
 
 package org.finos.legend.engine.pg.postgres;
 
-
 import io.netty.channel.Channel;
 import java.sql.ResultSet;
 import java.util.List;

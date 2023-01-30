@@ -21,7 +21,6 @@
 
 package org.finos.legend.engine.pg.postgres.auth;
 
-
 import javax.annotation.Nullable;
 import org.finos.legend.engine.pg.postgres.ConnectionProperties;
 
