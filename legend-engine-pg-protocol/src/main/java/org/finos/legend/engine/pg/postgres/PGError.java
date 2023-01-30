@@ -23,52 +23,59 @@ package org.finos.legend.engine.pg.postgres;
 
 //import io.crate.exceptions.*;
 
-import javax.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
+import javax.annotation.Nullable;
 
 
-public class PGError {
+public class PGError
+{
 
-    public static final byte[] SEVERITY_FATAL = "FATAL".getBytes(StandardCharsets.UTF_8);
-    public static final byte[] SEVERITY_ERROR = "ERROR".getBytes(StandardCharsets.UTF_8);
+  public static final byte[] SEVERITY_FATAL = "FATAL".getBytes(StandardCharsets.UTF_8);
+  public static final byte[] SEVERITY_ERROR = "ERROR".getBytes(StandardCharsets.UTF_8);
 
-    private final PGErrorStatus status;
-    private final String message;
+  private final PGErrorStatus status;
+  private final String message;
 
-    @Nullable
-    private final Throwable throwable;
+  @Nullable
+  private final Throwable throwable;
 
 
-    public PGError(PGErrorStatus status, String message, @Nullable Throwable throwable) {
-        this.status = status;
-        this.message = message;
-        this.throwable = throwable;
-    }
+  public PGError(PGErrorStatus status, String message, @Nullable Throwable throwable)
+  {
+    this.status = status;
+    this.message = message;
+    this.throwable = throwable;
+  }
 
-    public PGErrorStatus status() {
-        return status;
-    }
+  public PGErrorStatus status()
+  {
+    return status;
+  }
 
-    @Nullable
-    public Throwable throwable() {
-        return throwable;
-    }
+  @Nullable
+  public Throwable throwable()
+  {
+    return throwable;
+  }
 
-    public String message() {
-        return message;
-    }
+  public String message()
+  {
+    return message;
+  }
 
-    @Override
-    public String toString() {
-        return "PGError{" +
-               "status=" + status +
-               ", message='" + message + '\'' +
-               ", throwable=" + throwable +
-               '}';
-    }
+  @Override
+  public String toString()
+  {
+    return "PGError{" +
+        "status=" + status +
+        ", message='" + message + '\'' +
+        ", throwable=" + throwable +
+        '}';
+  }
 
-    public static PGError fromThrowable(Throwable throwable) {
-        return new PGError(PGErrorStatus.INTERNAL_ERROR, throwable.getMessage(), throwable);
+  public static PGError fromThrowable(Throwable throwable)
+  {
+    return new PGError(PGErrorStatus.INTERNAL_ERROR, throwable.getMessage(), throwable);
        /* PGErrorStatus status = PGErrorStatus.INTERNAL_ERROR;
         if (throwable instanceof IllegalArgumentException || throwable instanceof UnsupportedOperationException) {
             status = PGErrorStatus.FEATURE_NOT_SUPPORTED;
@@ -90,5 +97,5 @@ public class PGError {
             status = PGErrorStatus.UNDEFINED_FUNCTION;
         }
         return new PGError(status, SQLExceptions.messageOf(throwable), throwable);*/
-    }
+  }
 }

@@ -21,21 +21,14 @@
 
 package org.finos.legend.engine.pg.postgres;
 
-import io.netty.buffer.ByteBuf;
-/*import org.apache.lucene.util.BytesRef;
-import org.elasticsearch.common.lucene.BytesRefs;*/
-
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
-
 /**
  * Class to encode postgres client messages and write them onto a buffer.
- *
- * For more information about the messages see {@link Messages} and {@link PostgresWireProtocol} or refer to
- * the PostgreSQL protocol documentation.
+ * <p>
+ * For more information about the messages see {@link Messages} and {@link PostgresWireProtocol} or
+ * refer to the PostgreSQL protocol documentation.
  */
-class ClientMessages {
+class ClientMessages
+{
 /*
     static ByteBuf writeSSLReqMessage(ByteBuf buffer) {
         buffer.writeInt(PgDecoder.MIN_STARTUP_LENGTH);

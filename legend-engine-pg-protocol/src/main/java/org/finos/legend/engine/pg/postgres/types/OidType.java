@@ -22,58 +22,66 @@
 package org.finos.legend.engine.pg.postgres.types;
 
 import io.netty.buffer.ByteBuf;
-
 import java.nio.charset.StandardCharsets;
 
-public class OidType extends PGType<Integer> {
+public class OidType extends PGType<Integer>
+{
 
-    public static final OidType INSTANCE = new OidType();
+  public static final OidType INSTANCE = new OidType();
 
-    static final int OID = 26;
+  static final int OID = 26;
 
-    private static final int TYPE_LEN = 4;
-    private static final int TYPE_MOD = -1;
+  private static final int TYPE_LEN = 4;
+  private static final int TYPE_MOD = -1;
 
-    OidType() {
-        super(OID, TYPE_LEN, TYPE_MOD, "oid");
-    }
+  OidType()
+  {
+    super(OID, TYPE_LEN, TYPE_MOD, "oid");
+  }
 
-    @Override
-    public int typArray() {
-        return PGArray.OID_ARRAY.oid();
-    }
+  @Override
+  public int typArray()
+  {
+    return PGArray.OID_ARRAY.oid();
+  }
 
-    @Override
-    public String typeCategory() {
-        return TypeCategory.NUMERIC.code();
-    }
+  @Override
+  public String typeCategory()
+  {
+    return TypeCategory.NUMERIC.code();
+  }
 
-    @Override
-    public String type() {
-        return Type.BASE.code();
-    }
+  @Override
+  public String type()
+  {
+    return Type.BASE.code();
+  }
 
-    @Override
-    public int writeAsBinary(ByteBuf buffer, Integer value) {
-        buffer.writeInt(TYPE_LEN);
-        buffer.writeInt(value);
-        return INT32_BYTE_SIZE + TYPE_LEN;
-    }
+  @Override
+  public int writeAsBinary(ByteBuf buffer, Integer value)
+  {
+    buffer.writeInt(TYPE_LEN);
+    buffer.writeInt(value);
+    return INT32_BYTE_SIZE + TYPE_LEN;
+  }
 
-    @Override
-    public Integer readBinaryValue(ByteBuf buffer, int valueLength) {
-        assert valueLength == TYPE_LEN
-            : "length should be " + TYPE_LEN + " because oid is int32. Actual length: " + valueLength;
-        return buffer.readInt();
-    }
+  @Override
+  public Integer readBinaryValue(ByteBuf buffer, int valueLength)
+  {
+    assert valueLength == TYPE_LEN
+        : "length should be " + TYPE_LEN + " because oid is int32. Actual length: " + valueLength;
+    return buffer.readInt();
+  }
 
-    @Override
-    byte[] encodeAsUTF8Text(Integer value) {
-        return Integer.toString(value).getBytes(StandardCharsets.UTF_8);
-    }
+  @Override
+  byte[] encodeAsUTF8Text(Integer value)
+  {
+    return Integer.toString(value).getBytes(StandardCharsets.UTF_8);
+  }
 
-    @Override
-    Integer decodeUTF8Text(byte[] bytes) {
-        return Integer.parseInt(new String(bytes, StandardCharsets.UTF_8));
-    }
+  @Override
+  Integer decodeUTF8Text(byte[] bytes)
+  {
+    return Integer.parseInt(new String(bytes, StandardCharsets.UTF_8));
+  }
 }

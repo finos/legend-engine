@@ -22,18 +22,21 @@
 package org.finos.legend.engine.pg.postgres;
 
 
-public enum TransactionState {
-    IDLE('I'),
-    IN_TRANSACTION('T'),
-    FAILED_TRANSACTION('E');
+public enum TransactionState
+{
+  IDLE('I'),
+  IN_TRANSACTION('T'),
+  FAILED_TRANSACTION('E');
 
-    private final char code;
+  private final char code;
 
-    private TransactionState(char code) {
-        this.code = code;
-    }
+  TransactionState(char code)
+  {
+    this.code = code;
+  }
 
-    public int code() {
-        return (int) code;
-    }
+  public int code()
+  {
+    return code;
+  }
 }

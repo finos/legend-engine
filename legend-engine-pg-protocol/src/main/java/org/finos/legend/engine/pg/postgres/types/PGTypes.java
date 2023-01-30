@@ -24,36 +24,37 @@ package org.finos.legend.engine.pg.postgres.types;
 import com.google.common.collect.ImmutableMap;
 import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
-
-
-import javax.annotation.Nullable;
 import java.sql.Types;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import javax.annotation.Nullable;
 
-public class PGTypes {
+public class PGTypes
+{
 
-    private static final Map<Integer, PGType> SQL_TO_PG_TYPES = ImmutableMap.<Integer, PGType>builder()
+  private static final Map<Integer, PGType> SQL_TO_PG_TYPES = ImmutableMap.<Integer, PGType>builder()
 
+      //.put(Types.BYTE, CharType.INSTANCE)
+      .put(Types.VARCHAR, VarCharType.INSTANCE)
+      .put(Types.CHAR, CharType.INSTANCE)
+      .put(Types.BOOLEAN, BooleanType.INSTANCE)
+      .put(Types.BIT, BitType.INSTANCE)
+      //.put(DataTypes.UNTYPED_OBJECT, JsonType.INSTANCE)
+      //.put(RowType.EMPTY, RecordType.EMPTY_RECORD)
+      .put(Types.SMALLINT, SmallIntType.INSTANCE)
+      .put(Types.INTEGER, IntegerType.INSTANCE)
+      .put(Types.BIGINT, BigIntType.INSTANCE)
+      .put(Types.FLOAT, RealType.INSTANCE)
+      .put(Types.DOUBLE, DoubleType.INSTANCE)
+      .put(Types.NUMERIC, NumericType.INSTANCE)
+      //.put(Types.TIMESTAMP_WITH_TIMEZONE, TimeTZType.INSTANCE)
+      //.put(Types.TIMESTAMP, TimestampZType.INSTANCE)
+      .put(Types.TIMESTAMP, TimestampType.INSTANCE)
+      .put(Types.DATE, DateType.INSTANCE)
 
-            //.put(Types.BYTE, CharType.INSTANCE)
-            .put(Types.VARCHAR, VarCharType.INSTANCE)
-            .put(Types.CHAR, CharType.INSTANCE)
-            .put(Types.BOOLEAN, BooleanType.INSTANCE)
-            .put(Types.BIT, BitType.INSTANCE)
-            //.put(DataTypes.UNTYPED_OBJECT, JsonType.INSTANCE)
-            //.put(RowType.EMPTY, RecordType.EMPTY_RECORD)
-            .put(Types.SMALLINT, SmallIntType.INSTANCE)
-            .put(Types.INTEGER, IntegerType.INSTANCE)
-            .put(Types.BIGINT, BigIntType.INSTANCE)
-            .put(Types.FLOAT, RealType.INSTANCE)
-            .put(Types.DOUBLE, DoubleType.INSTANCE)
-            .put(Types.NUMERIC, NumericType.INSTANCE)
-            //.put(Types.TIMESTAMP_WITH_TIMEZONE, TimeTZType.INSTANCE)
-            //.put(Types.TIMESTAMP, TimestampZType.INSTANCE)
-            .put(Types.TIMESTAMP, TimestampType.INSTANCE)
-            .put(Types.DATE, DateType.INSTANCE)
-
-            .build();
+      .build();
      /*   .put(DataTypes.IP, VarCharType.INSTANCE) // postgres has no IP type, so map it to varchar - it matches the client representation
         .put(DataTypes.UNDEFINED, VarCharType.INSTANCE)
         .put(DataTypes.GEO_SHAPE, JsonType.INSTANCE)
@@ -89,17 +90,20 @@ public class PGTypes {
         .put(DataTypes.OIDVECTOR, PgOidVectorType.INSTANCE)*/
 
 
-    private static final IntObjectMap<Integer> PG_TYPES_TO_SQL_TYPE = new IntObjectHashMap<>();
-    private static final Set<PGType> TYPES;
+  private static final IntObjectMap<Integer> PG_TYPES_TO_SQL_TYPE = new IntObjectHashMap<>();
+  private static final Set<PGType> TYPES;
 
-    static {
-        for (Map.Entry<Integer, PGType> e : SQL_TO_PG_TYPES.entrySet()) {
-            int oid = e.getValue().oid();
-            // crate string and ip types both map to pg varchar, avoid overwriting the mapping that is first established.
-            if (!PG_TYPES_TO_SQL_TYPE.containsKey(oid)) {
-                PG_TYPES_TO_SQL_TYPE.put(oid, e.getKey());
-            }
-        }
+  static
+  {
+    for (Map.Entry<Integer, PGType> e : SQL_TO_PG_TYPES.entrySet())
+    {
+      int oid = e.getValue().oid();
+      // crate string and ip types both map to pg varchar, avoid overwriting the mapping that is first established.
+      if (!PG_TYPES_TO_SQL_TYPE.containsKey(oid))
+      {
+        PG_TYPES_TO_SQL_TYPE.put(oid, e.getKey());
+      }
+    }
 /*        PG_TYPES_TO_SQL_TYPE.put(0, DataTypes.UNDEFINED);
         PG_TYPES_TO_SQL_TYPE.put(VarCharType.TextType.OID, DataTypes.STRING);
         PG_TYPES_TO_SQL_TYPE.put(PGArray.TEXT_ARRAY.oid(), new ArrayType<>(DataTypes.STRING));
@@ -107,44 +111,49 @@ public class PGTypes {
         PG_TYPES_TO_SQL_TYPE.put(PGArray.ANY_ARRAY.oid(), new ArrayType<>(DataTypes.UNDEFINED));
         PG_TYPES_TO_SQL_TYPE.put(VarCharType.NameType.OID, DataTypes.STRING);
         PG_TYPES_TO_SQL_TYPE.put(OidType.OID, DataTypes.INTEGER);*/
-        TYPES = new HashSet<>(SQL_TO_PG_TYPES.values()); // some pgTypes are used multiple times, de-dup them
+    TYPES = new HashSet<>(
+        SQL_TO_PG_TYPES.values()); // some pgTypes are used multiple times, de-dup them
 
-        // There is no entry in `CRATE_TO_PG_TYPES` for these because we have no 1:1 mapping from dataType to pgType
-        //TYPES.add(AnyType.INSTANCE);
-        // TYPES.add(PGArray.ANY_ARRAY);
-        TYPES.add(VarCharType.NameType.INSTANCE);
-        TYPES.add(OidType.INSTANCE);
+    // There is no entry in `CRATE_TO_PG_TYPES` for these because we have no 1:1 mapping from dataType to pgType
+    //TYPES.add(AnyType.INSTANCE);
+    // TYPES.add(PGArray.ANY_ARRAY);
+    TYPES.add(VarCharType.NameType.INSTANCE);
+    TYPES.add(OidType.INSTANCE);
 
-        // We map DataTypes.STRING to varchar (for no good reason, other than history)
-        // But want to expose text additionally as well
-        TYPES.add(VarCharType.TextType.INSTANCE);
-        TYPES.add(PGArray.TEXT_ARRAY);
+    // We map DataTypes.STRING to varchar (for no good reason, other than history)
+    // But want to expose text additionally as well
+    TYPES.add(VarCharType.TextType.INSTANCE);
+    TYPES.add(PGArray.TEXT_ARRAY);
+  }
+
+  public static Iterable<PGType> pgTypes()
+  {
+    return TYPES;
+  }
+
+  @Nullable
+  public static int fromOID(int oid)
+  {
+    return PG_TYPES_TO_SQL_TYPE.get(oid);
+  }
+
+  public static PGType get(int columnType, int scale)
+  {
+
+    //TODO why do we need this block?
+    if (columnType == Types.CHAR && scale != 1)
+    {
+      return VarCharType.INSTANCE;
     }
 
-    public static Iterable<PGType> pgTypes() {
-        return TYPES;
+    PGType pgType = SQL_TO_PG_TYPES.get(columnType);
+    if (pgType == null)
+    {
+      throw new IllegalArgumentException(String.format(Locale.ENGLISH,
+          "No type mapping from '%s' to pg_type'", columnType));
     }
-
-    @Nullable
-    public static int fromOID(int oid) {
-        return PG_TYPES_TO_SQL_TYPE.get(oid);
-    }
-
-    public static PGType get(int columnType, int scale) {
-
-        //TODO why do we need this block?
-        if(columnType == Types.CHAR && scale != 1){
-            return VarCharType.INSTANCE;
-        }
-
-
-        PGType pgType = SQL_TO_PG_TYPES.get(columnType);
-        if (pgType == null) {
-            throw new IllegalArgumentException(String.format(Locale.ENGLISH,
-                    "No type mapping from '%s' to pg_type'", columnType));
-        }
-        return pgType;
-    }
+    return pgType;
+  }
 
     /*public static PGType get(DataType<?> type) {
         switch (type.id()) {

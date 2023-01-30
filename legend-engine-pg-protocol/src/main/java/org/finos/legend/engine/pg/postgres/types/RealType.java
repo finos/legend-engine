@@ -21,60 +21,69 @@
 
 package org.finos.legend.engine.pg.postgres.types;
 
-
 import io.netty.buffer.ByteBuf;
-
-import javax.annotation.Nonnull;
 import java.nio.charset.StandardCharsets;
+import javax.annotation.Nonnull;
 
-class RealType extends PGType<Float> {
+class RealType extends PGType<Float>
+{
 
-    public static final RealType INSTANCE = new RealType();
-    static final int OID = 700;
+  public static final RealType INSTANCE = new RealType();
+  static final int OID = 700;
 
-    private static final int TYPE_LEN = 4;
-    private static final int TYPE_MOD = -1;
+  private static final int TYPE_LEN = 4;
+  private static final int TYPE_MOD = -1;
 
-    private RealType() {
-        super(OID, TYPE_LEN, TYPE_MOD, "float4");
-    }
+  private RealType()
+  {
+    super(OID, TYPE_LEN, TYPE_MOD, "float4");
+  }
 
-    @Override
-    public int typArray() {
-        return PGArray.FLOAT4_ARRAY.oid();
-    }
+  @Override
+  public int typArray()
+  {
+    return PGArray.FLOAT4_ARRAY.oid();
+  }
 
-    @Override
-    public String typeCategory() {
-        return TypeCategory.NUMERIC.code();
-    }
+  @Override
+  public String typeCategory()
+  {
+    return TypeCategory.NUMERIC.code();
+  }
 
-    @Override
-    public String type() {
-        return Type.BASE.code();
-    }
+  @Override
+  public String type()
+  {
+    return Type.BASE.code();
+  }
 
-    @Override
-    public int writeAsBinary(ByteBuf buffer, @Nonnull Float value) {
-        buffer.writeInt(TYPE_LEN);
-        buffer.writeFloat(value);
-        return INT32_BYTE_SIZE + TYPE_LEN;
-    }
+  @Override
+  public int writeAsBinary(ByteBuf buffer, @Nonnull Float value)
+  {
+    buffer.writeInt(TYPE_LEN);
+    buffer.writeFloat(value);
+    return INT32_BYTE_SIZE + TYPE_LEN;
+  }
 
-    @Override
-    protected byte[] encodeAsUTF8Text(@Nonnull Float value) {
-        return Float.toString(value).getBytes(StandardCharsets.UTF_8);
-    }
+  @Override
+  protected byte[] encodeAsUTF8Text(@Nonnull Float value)
+  {
+    return Float.toString(value).getBytes(StandardCharsets.UTF_8);
+  }
 
-    @Override
-    public Float readBinaryValue(ByteBuf buffer, int valueLength) {
-        assert valueLength == TYPE_LEN : "length should be " + TYPE_LEN + " because float is int32. Actual length: " +
-                                         valueLength;
-        return buffer.readFloat();
-    }
+  @Override
+  public Float readBinaryValue(ByteBuf buffer, int valueLength)
+  {
+    assert
+        valueLength == TYPE_LEN :
+        "length should be " + TYPE_LEN + " because float is int32. Actual length: " +
+            valueLength;
+    return buffer.readFloat();
+  }
 
-    @Override
-    Float decodeUTF8Text(byte[] bytes) {
-        return Float.parseFloat(new String(bytes, StandardCharsets.UTF_8));
-    }
+  @Override
+  Float decodeUTF8Text(byte[] bytes)
+  {
+    return Float.parseFloat(new String(bytes, StandardCharsets.UTF_8));
+  }
 }

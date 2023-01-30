@@ -21,83 +21,90 @@
 
 package org.finos.legend.engine.pg.postgres.types;
 
-import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import io.netty.buffer.ByteBuf;
-
-import javax.annotation.Nonnull;
 import java.nio.ByteBuffer;
 import java.util.Collection;
-import java.util.Set;
+import javax.annotation.Nonnull;
 
-class BooleanType extends PGType<Boolean> {
+class BooleanType extends PGType<Boolean>
+{
 
-    public static final BooleanType INSTANCE = new BooleanType();
-    static final int OID = 16;
+  public static final BooleanType INSTANCE = new BooleanType();
+  static final int OID = 16;
 
-    private static final int TYPE_LEN = 1;
-    private static final int TYPE_MOD = -1;
+  private static final int TYPE_LEN = 1;
+  private static final int TYPE_MOD = -1;
 
-    private static final byte[] TEXT_TRUE = new byte[]{'t'};
-    private static final byte[] TEXT_FALSE = new byte[]{'f'};
+  private static final byte[] TEXT_TRUE = new byte[]{'t'};
+  private static final byte[] TEXT_FALSE = new byte[]{'f'};
 
-    private static final Collection<ByteBuffer> TRUTH_VALUES = ImmutableList.of(
-        ByteBuffer.wrap(new byte[]{'1'}),
-        ByteBuffer.wrap(new byte[]{'t'}),
-        ByteBuffer.wrap(new byte[]{'T'}),
-        ByteBuffer.wrap(new byte[]{'t', 'r', 'u', 'e'}),
-        ByteBuffer.wrap(new byte[]{'T', 'R', 'U', 'E'})
-    );
+  private static final Collection<ByteBuffer> TRUTH_VALUES = ImmutableList.of(
+      ByteBuffer.wrap(new byte[]{'1'}),
+      ByteBuffer.wrap(new byte[]{'t'}),
+      ByteBuffer.wrap(new byte[]{'T'}),
+      ByteBuffer.wrap(new byte[]{'t', 'r', 'u', 'e'}),
+      ByteBuffer.wrap(new byte[]{'T', 'R', 'U', 'E'})
+  );
 
-    private BooleanType() {
-        super(OID, TYPE_LEN, TYPE_MOD, "bool");
+  private BooleanType()
+  {
+    super(OID, TYPE_LEN, TYPE_MOD, "bool");
+  }
+
+  @Override
+  public int typArray()
+  {
+    return PGArray.BOOL_ARRAY.oid();
+  }
+
+  @Override
+  public String typeCategory()
+  {
+    return TypeCategory.NUMERIC.code();
+  }
+
+  @Override
+  public String type()
+  {
+    return Type.BASE.code();
+  }
+
+  @Override
+  public int writeAsBinary(ByteBuf buffer, @Nonnull Boolean value)
+  {
+    byte byteValue = (byte) (value ? 1 : 0);
+    buffer.writeInt(TYPE_LEN);
+    buffer.writeByte(byteValue);
+    return INT32_BYTE_SIZE + TYPE_LEN;
+  }
+
+  @Override
+  byte[] encodeAsUTF8Text(@Nonnull Boolean value)
+  {
+    return value ? TEXT_TRUE : TEXT_FALSE;
+  }
+
+  @Override
+  public Boolean readBinaryValue(ByteBuf buffer, int valueLength)
+  {
+    assert valueLength == TYPE_LEN : "length should be " + TYPE_LEN +
+        " because boolean is just a byte. Actual length: " + valueLength;
+    byte value = buffer.readByte();
+    switch (value)
+    {
+      case 0:
+        return false;
+      case 1:
+        return true;
+      default:
+        throw new IllegalArgumentException("Unsupported binary bool: " + value);
     }
+  }
 
-    @Override
-    public int typArray() {
-        return PGArray.BOOL_ARRAY.oid();
-    }
-
-    @Override
-    public String typeCategory() {
-        return TypeCategory.NUMERIC.code();
-    }
-
-    @Override
-    public String type() {
-        return Type.BASE.code();
-    }
-
-    @Override
-    public int writeAsBinary(ByteBuf buffer, @Nonnull Boolean value) {
-        byte byteValue = (byte) (value ? 1 : 0);
-        buffer.writeInt(TYPE_LEN);
-        buffer.writeByte(byteValue);
-        return INT32_BYTE_SIZE + TYPE_LEN;
-    }
-
-    @Override
-    byte[] encodeAsUTF8Text(@Nonnull Boolean value) {
-        return value ? TEXT_TRUE : TEXT_FALSE;
-    }
-
-    @Override
-    public Boolean readBinaryValue(ByteBuf buffer, int valueLength) {
-        assert valueLength == TYPE_LEN : "length should be " + TYPE_LEN +
-                                         " because boolean is just a byte. Actual length: " + valueLength;
-        byte value = buffer.readByte();
-        switch (value) {
-            case 0:
-                return false;
-            case 1:
-                return true;
-            default:
-                throw new IllegalArgumentException("Unsupported binary bool: " + value);
-        }
-    }
-
-    @Override
-    Boolean decodeUTF8Text(byte[] bytes) {
-        return TRUTH_VALUES.contains(ByteBuffer.wrap(bytes));
-    }
+  @Override
+  Boolean decodeUTF8Text(byte[] bytes)
+  {
+    return TRUTH_VALUES.contains(ByteBuffer.wrap(bytes));
+  }
 }

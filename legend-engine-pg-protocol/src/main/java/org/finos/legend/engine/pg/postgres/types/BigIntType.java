@@ -21,61 +21,70 @@
 
 package org.finos.legend.engine.pg.postgres.types;
 
-
 import io.netty.buffer.ByteBuf;
-
-import javax.annotation.Nonnull;
 import java.nio.charset.StandardCharsets;
+import javax.annotation.Nonnull;
 
-class BigIntType extends PGType<Long> {
+class BigIntType extends PGType<Long>
+{
 
-    public static final BigIntType INSTANCE = new BigIntType();
-    static final int OID = 20;
+  public static final BigIntType INSTANCE = new BigIntType();
+  static final int OID = 20;
 
-    private static final int TYPE_LEN = 8;
-    private static final int TYPE_MOD = -1;
+  private static final int TYPE_LEN = 8;
+  private static final int TYPE_MOD = -1;
 
 
-    private BigIntType() {
-        super(OID, TYPE_LEN, TYPE_MOD, "int8");
-    }
+  private BigIntType()
+  {
+    super(OID, TYPE_LEN, TYPE_MOD, "int8");
+  }
 
-    @Override
-    public int typArray() {
-        return PGArray.INT8_ARRAY.oid();
-    }
+  @Override
+  public int typArray()
+  {
+    return PGArray.INT8_ARRAY.oid();
+  }
 
-    @Override
-    public int writeAsBinary(ByteBuf buffer, @Nonnull Long value) {
-        buffer.writeInt(TYPE_LEN);
-        buffer.writeLong(value);
-        return INT32_BYTE_SIZE + TYPE_LEN;
-    }
+  @Override
+  public int writeAsBinary(ByteBuf buffer, @Nonnull Long value)
+  {
+    buffer.writeInt(TYPE_LEN);
+    buffer.writeLong(value);
+    return INT32_BYTE_SIZE + TYPE_LEN;
+  }
 
-    @Override
-    public String typeCategory() {
-        return TypeCategory.NUMERIC.code();
-    }
+  @Override
+  public String typeCategory()
+  {
+    return TypeCategory.NUMERIC.code();
+  }
 
-    @Override
-    public String type() {
-        return Type.BASE.code();
-    }
+  @Override
+  public String type()
+  {
+    return Type.BASE.code();
+  }
 
-    @Override
-    protected byte[] encodeAsUTF8Text(@Nonnull Long value) {
-        return Long.toString(value).getBytes(StandardCharsets.UTF_8);
-    }
+  @Override
+  protected byte[] encodeAsUTF8Text(@Nonnull Long value)
+  {
+    return Long.toString(value).getBytes(StandardCharsets.UTF_8);
+  }
 
-    @Override
-    public Long readBinaryValue(ByteBuf buffer, int valueLength) {
-        assert valueLength == TYPE_LEN : "length should be " + TYPE_LEN + " because long is int64. Actual length: " +
-                                         valueLength;
-        return buffer.readLong();
-    }
+  @Override
+  public Long readBinaryValue(ByteBuf buffer, int valueLength)
+  {
+    assert
+        valueLength == TYPE_LEN :
+        "length should be " + TYPE_LEN + " because long is int64. Actual length: " +
+            valueLength;
+    return buffer.readLong();
+  }
 
-    @Override
-    Long decodeUTF8Text(byte[] bytes) {
-        return Long.parseLong(new String(bytes, StandardCharsets.UTF_8));
-    }
+  @Override
+  Long decodeUTF8Text(byte[] bytes)
+  {
+    return Long.parseLong(new String(bytes, StandardCharsets.UTF_8));
+  }
 }

@@ -21,57 +21,64 @@
 
 package org.finos.legend.engine.pg.postgres.types;
 
-
 import io.netty.buffer.ByteBuf;
-
-import javax.annotation.Nonnull;
 import java.nio.charset.StandardCharsets;
+import javax.annotation.Nonnull;
 
-class CharType extends PGType<Byte> {
+class CharType extends PGType<Byte>
+{
 
-    public static final CharType INSTANCE = new CharType();
-    static final int OID = 18;
+  public static final CharType INSTANCE = new CharType();
+  static final int OID = 18;
 
 
-    private CharType() {
-        super(OID, 1, -1, "char");
-    }
+  private CharType()
+  {
+    super(OID, 1, -1, "char");
+  }
 
-    @Override
-    public int typArray() {
-        return PGArray.CHAR_ARRAY.oid();
-    }
+  @Override
+  public int typArray()
+  {
+    return PGArray.CHAR_ARRAY.oid();
+  }
 
-    @Override
-    public String typeCategory() {
-        return TypeCategory.STRING.code();
-    }
+  @Override
+  public String typeCategory()
+  {
+    return TypeCategory.STRING.code();
+  }
 
-    @Override
-    public String type() {
-        return Type.BASE.code();
-    }
+  @Override
+  public String type()
+  {
+    return Type.BASE.code();
+  }
 
-    @Override
-    public int writeAsBinary(ByteBuf buffer, @Nonnull Byte value) {
-        buffer.writeInt(1);
-        buffer.writeByte(value);
-        return 5;
-    }
+  @Override
+  public int writeAsBinary(ByteBuf buffer, @Nonnull Byte value)
+  {
+    buffer.writeInt(1);
+    buffer.writeByte(value);
+    return 5;
+  }
 
-    @Override
-    public Byte readBinaryValue(ByteBuf buffer, int valueLength) {
-        assert valueLength == 1 : "char must have 1 byte";
-        return buffer.readByte();
-    }
+  @Override
+  public Byte readBinaryValue(ByteBuf buffer, int valueLength)
+  {
+    assert valueLength == 1 : "char must have 1 byte";
+    return buffer.readByte();
+  }
 
-    @Override
-    byte[] encodeAsUTF8Text(@Nonnull Byte value) {
-        return Byte.toString(value).getBytes(StandardCharsets.UTF_8);
-    }
+  @Override
+  byte[] encodeAsUTF8Text(@Nonnull Byte value)
+  {
+    return Byte.toString(value).getBytes(StandardCharsets.UTF_8);
+  }
 
-    @Override
-    Byte decodeUTF8Text(byte[] bytes) {
-        return Byte.parseByte(new String(bytes, StandardCharsets.UTF_8));
-    }
+  @Override
+  Byte decodeUTF8Text(byte[] bytes)
+  {
+    return Byte.parseByte(new String(bytes, StandardCharsets.UTF_8));
+  }
 }

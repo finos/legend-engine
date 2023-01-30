@@ -23,53 +23,56 @@ package org.finos.legend.engine.pg.postgres;
 
 
 import io.netty.buffer.ByteBuf;
-
 import javax.annotation.Nullable;
 
-public class FormatCodes {
+public class FormatCodes
+{
 
-    public enum FormatCode {
-        TEXT, // 0
-        BINARY // 1
+  public enum FormatCode
+  {
+    TEXT, // 0
+    BINARY // 1
+  }
+
+  private static final FormatCode[] EMPTY_FORMAT_CODES = new FormatCode[0];
+
+  /**
+   * Read format codes from a ByteBuf.
+   * <p>
+   * Buffer must contain:
+   * <pre>
+   * int16 num formatCodes
+   *      foreach:
+   *      int16 formatCode
+   * </pre>
+   */
+  static FormatCode[] fromBuffer(ByteBuf buffer)
+  {
+    short numFormatCodes = buffer.readShort();
+    if (numFormatCodes == 0)
+    {
+      return EMPTY_FORMAT_CODES;
     }
-
-    private static final FormatCode[] EMPTY_FORMAT_CODES = new FormatCode[0];
-
-    /**
-     * Read format codes from a ByteBuf.
-     * <p>
-     * Buffer must contain:
-     * <pre>
-     * int16 num formatCodes
-     *      foreach:
-     *      int16 formatCode
-     * </pre>
-     */
-    static FormatCode[] fromBuffer(ByteBuf buffer) {
-        short numFormatCodes = buffer.readShort();
-        if (numFormatCodes == 0) {
-            return EMPTY_FORMAT_CODES;
-        }
-        FormatCode[] formatCodes = new FormatCode[numFormatCodes];
-        for (int i = 0; i < numFormatCodes; i++) {
-            formatCodes[i] = FormatCode.values()[buffer.readShort()];
-        }
-        return formatCodes;
+    FormatCode[] formatCodes = new FormatCode[numFormatCodes];
+    for (int i = 0; i < numFormatCodes; i++)
+    {
+      formatCodes[i] = FormatCode.values()[buffer.readShort()];
     }
+    return formatCodes;
+  }
 
-    /**
-     * Get the  for a column idx
-     * <p>
-     * According to spec:
-     * length of formatCodes:
-     * 0 = uses default (TEXT)
-     * 1 = all params uses this format
-     * n = one for each param
-     */
-    static FormatCode getFormatCode(@Nullable FormatCode[] formatCodes, int idx) {
-        if (formatCodes == null || formatCodes.length == 0) {
-            return FormatCode.TEXT;
-        }
-        return formatCodes.length == 1 ? formatCodes[0] : formatCodes[idx];
+  /**
+   * Get the  for a column idx
+   * <p>
+   * According to spec: length of formatCodes: 0 = uses default (TEXT) 1 = all params uses this
+   * format n = one for each param
+   */
+  static FormatCode getFormatCode(@Nullable FormatCode[] formatCodes, int idx)
+  {
+    if (formatCodes == null || formatCodes.length == 0)
+    {
+      return FormatCode.TEXT;
     }
+    return formatCodes.length == 1 ? formatCodes[0] : formatCodes[idx];
+  }
 }

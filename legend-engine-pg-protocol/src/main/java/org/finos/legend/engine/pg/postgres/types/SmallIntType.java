@@ -21,61 +21,68 @@
 
 package org.finos.legend.engine.pg.postgres.types;
 
-
 import io.netty.buffer.ByteBuf;
-
-import javax.annotation.Nonnull;
 import java.nio.charset.StandardCharsets;
+import javax.annotation.Nonnull;
 
-class SmallIntType extends PGType<Short> {
+class SmallIntType extends PGType<Short>
+{
 
-    public static final SmallIntType INSTANCE = new SmallIntType();
-    static final int OID = 21;
+  public static final SmallIntType INSTANCE = new SmallIntType();
+  static final int OID = 21;
 
-    private static final int TYPE_LEN = 2;
-    private static final int TYPE_MOD = -1;
+  private static final int TYPE_LEN = 2;
+  private static final int TYPE_MOD = -1;
 
-    private SmallIntType() {
-        super(OID, TYPE_LEN, TYPE_MOD, "int2");
-    }
+  private SmallIntType()
+  {
+    super(OID, TYPE_LEN, TYPE_MOD, "int2");
+  }
 
-    @Override
-    public int typArray() {
-        return PGArray.INT2_ARRAY.oid();
-    }
+  @Override
+  public int typArray()
+  {
+    return PGArray.INT2_ARRAY.oid();
+  }
 
-    @Override
-    public String typeCategory() {
-        return TypeCategory.NUMERIC.code();
-    }
+  @Override
+  public String typeCategory()
+  {
+    return TypeCategory.NUMERIC.code();
+  }
 
-    @Override
-    public String type() {
-        return Type.BASE.code();
-    }
+  @Override
+  public String type()
+  {
+    return Type.BASE.code();
+  }
 
-    @Override
-    public int writeAsBinary(ByteBuf buffer, @Nonnull Short value) {
-        buffer.writeInt(TYPE_LEN);
-        buffer.writeShort(value);
-        return INT32_BYTE_SIZE + TYPE_LEN;
-    }
+  @Override
+  public int writeAsBinary(ByteBuf buffer, @Nonnull Short value)
+  {
+    buffer.writeInt(TYPE_LEN);
+    buffer.writeShort(value);
+    return INT32_BYTE_SIZE + TYPE_LEN;
+  }
 
-    @Override
-    protected byte[] encodeAsUTF8Text(@Nonnull Short value) {
-        return Short.toString(value).getBytes(StandardCharsets.UTF_8);
-    }
+  @Override
+  protected byte[] encodeAsUTF8Text(@Nonnull Short value)
+  {
+    return Short.toString(value).getBytes(StandardCharsets.UTF_8);
+  }
 
-    @Override
-    public Short readBinaryValue(ByteBuf buffer, int valueLength) {
-        assert
-            valueLength == TYPE_LEN :
-            "length should be " + TYPE_LEN + " because short is int16. Actual length: " + valueLength;
-        return buffer.readShort();
-    }
+  @Override
+  public Short readBinaryValue(ByteBuf buffer, int valueLength)
+  {
+    assert
+        valueLength == TYPE_LEN :
+        "length should be " + TYPE_LEN + " because short is int16. Actual length: " + valueLength;
+    return buffer.readShort();
+  }
 
-    @Override
-    Short decodeUTF8Text(byte[] bytes) {
-        return Short.parseShort(new String(bytes, StandardCharsets.UTF_8));
-    }
+  @Override
+  Short decodeUTF8Text(byte[] bytes)
+  {
+    return Short.parseShort(new String(bytes, StandardCharsets.UTF_8));
+  }
 }

@@ -21,60 +21,69 @@
 
 package org.finos.legend.engine.pg.postgres.types;
 
-
 import io.netty.buffer.ByteBuf;
-
-import javax.annotation.Nonnull;
 import java.nio.charset.StandardCharsets;
+import javax.annotation.Nonnull;
 
-class DoubleType extends PGType<Double> {
+class DoubleType extends PGType<Double>
+{
 
-    public static final DoubleType INSTANCE = new DoubleType();
-    static final int OID = 701;
+  public static final DoubleType INSTANCE = new DoubleType();
+  static final int OID = 701;
 
-    private static final int TYPE_LEN = 8;
-    private static final int TYPE_MOD = -1;
+  private static final int TYPE_LEN = 8;
+  private static final int TYPE_MOD = -1;
 
-    private DoubleType() {
-        super(OID, TYPE_LEN, TYPE_MOD, "float8");
-    }
+  private DoubleType()
+  {
+    super(OID, TYPE_LEN, TYPE_MOD, "float8");
+  }
 
-    @Override
-    public int typArray() {
-        return PGArray.FLOAT8_ARRAY.oid();
-    }
+  @Override
+  public int typArray()
+  {
+    return PGArray.FLOAT8_ARRAY.oid();
+  }
 
-    @Override
-    public String typeCategory() {
-        return TypeCategory.NUMERIC.code();
-    }
+  @Override
+  public String typeCategory()
+  {
+    return TypeCategory.NUMERIC.code();
+  }
 
-    @Override
-    public String type() {
-        return Type.BASE.code();
-    }
+  @Override
+  public String type()
+  {
+    return Type.BASE.code();
+  }
 
-    @Override
-    public int writeAsBinary(ByteBuf buffer, @Nonnull Double value) {
-        buffer.writeInt(TYPE_LEN);
-        buffer.writeDouble(value);
-        return INT32_BYTE_SIZE + TYPE_LEN;
-    }
+  @Override
+  public int writeAsBinary(ByteBuf buffer, @Nonnull Double value)
+  {
+    buffer.writeInt(TYPE_LEN);
+    buffer.writeDouble(value);
+    return INT32_BYTE_SIZE + TYPE_LEN;
+  }
 
-    @Override
-    protected byte[] encodeAsUTF8Text(@Nonnull Double value) {
-        return Double.toString(value).getBytes(StandardCharsets.UTF_8);
-    }
+  @Override
+  protected byte[] encodeAsUTF8Text(@Nonnull Double value)
+  {
+    return Double.toString(value).getBytes(StandardCharsets.UTF_8);
+  }
 
-    @Override
-    public Double readBinaryValue(ByteBuf buffer, int valueLength) {
-        assert valueLength == TYPE_LEN : "length should be " + TYPE_LEN + " because double is int64. Actual length: " +
-                                         valueLength;
-        return buffer.readDouble();
-    }
+  @Override
+  public Double readBinaryValue(ByteBuf buffer, int valueLength)
+  {
+    assert
+        valueLength == TYPE_LEN :
+        "length should be " + TYPE_LEN + " because double is int64. Actual length: " +
+            valueLength;
+    return buffer.readDouble();
+  }
 
-    @Override
-    Double decodeUTF8Text(byte[] bytes) {
-        return Double.parseDouble(new String(bytes, StandardCharsets.UTF_8));
-    }
+  @Override
+  Double decodeUTF8Text(byte[] bytes)
+  {
+    return Double.parseDouble(new String(bytes, StandardCharsets.UTF_8));
+  }
 }

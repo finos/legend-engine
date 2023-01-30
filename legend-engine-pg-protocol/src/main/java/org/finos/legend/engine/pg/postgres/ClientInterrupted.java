@@ -24,5 +24,7 @@ package org.finos.legend.engine.pg.postgres;
 /**
  * Marker exception used to indicate that a client interrupted the current query.
  */
-public class ClientInterrupted extends RuntimeException {
+public class ClientInterrupted extends RuntimeException
+{
+
 }

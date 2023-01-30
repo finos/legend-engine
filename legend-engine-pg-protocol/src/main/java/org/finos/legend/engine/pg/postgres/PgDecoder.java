@@ -26,149 +26,165 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.ssl.SslContext;
-
 import java.util.List;
 import java.util.function.Supplier;
 
-public class PgDecoder extends ByteToMessageDecoder {
+public class PgDecoder extends ByteToMessageDecoder
+{
 
-    static final int CANCEL_CODE = 80877102;
-    static final int SSL_REQUEST_CODE = 80877103;
+  static final int CANCEL_CODE = 80877102;
+  static final int SSL_REQUEST_CODE = 80877103;
 
-    static final int MIN_STARTUP_LENGTH = 8;
-    static final int MIN_MSG_LENGTH = 5;
+  static final int MIN_STARTUP_LENGTH = 8;
+  static final int MIN_MSG_LENGTH = 5;
 
-    public enum State {
+  public enum State
+  {
 
-        /**
-         * In this state we expect a startup message.
-         *
-         * Startup payload is
-         *  int32: length
-         *  int32: requestCode (ssl | protocol version | cancel)
-         *  [payload (parameters)] | [KeyData(int32, int32) in case of cancel]
-         */
-            STARTUP,
+    /**
+     * In this state we expect a startup message.
+     * <p>
+     * Startup payload is int32: length int32: requestCode (ssl | protocol version | cancel)
+     * [payload (parameters)] | [KeyData(int32, int32) in case of cancel]
+     */
+    STARTUP,
 
-        /**
-         * In this state the handler must consume the startup payload and then call {@link #startupDone()
-         */
-        STARTUP_PARAMETERS,
+    /**
+     * In this state the handler must consume the startup payload and then call {@link #startupDone()}
+     */
+    STARTUP_PARAMETERS,
 
-        /**
-         * In this state the handler must read the KeyData and cancel the query
-         */
-        CANCEL,
+    /**
+     * In this state the handler must read the KeyData and cancel the query
+     */
+    CANCEL,
 
-
-        /**
-         * In this state we expect a message.
-         *
-         * Message payload is
-         *  byte: message type
-         *  int32: length
-         *  [payload]
-         */
-        MSG,
-    }
+    /**
+     * In this state we expect a message.
+     * <p>
+     * Message payload is byte: message type int32: length [payload]
+     */
+    MSG,
+  }
 
 
+  {
+    setCumulator(COMPOSITE_CUMULATOR);
+  }
+
+  private final Supplier<SslContext> getSslContext;
+
+  private State state = State.STARTUP;
+  private byte msgType;
+  private int payloadLength;
+
+
+  public PgDecoder(Supplier<SslContext> getSslContext)
+  {
+    this.getSslContext = getSslContext;
+  }
+
+  @Override
+  protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception
+  {
+    ByteBuf decode = decode(ctx, in);
+    if (decode != null)
     {
-        setCumulator(COMPOSITE_CUMULATOR);
+      out.add(decode);
     }
+  }
 
-    private final Supplier<SslContext> getSslContext;
-
-    private State state = State.STARTUP;
-    private byte msgType;
-    private int payloadLength;
-
-
-    public PgDecoder(Supplier<SslContext> getSslContext) {
-        this.getSslContext = getSslContext;
-    }
-
-    @Override
-    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-        ByteBuf decode = decode(ctx, in);
-        if (decode != null) {
-            out.add(decode);
+  private ByteBuf decode(ChannelHandlerContext ctx, ByteBuf in)
+  {
+    switch (state)
+    {
+      case STARTUP:
+      {
+        if (in.readableBytes() < MIN_STARTUP_LENGTH)
+        {
+          return null;
         }
-    }
 
-    private ByteBuf decode(ChannelHandlerContext ctx, ByteBuf in) {
-        switch (state) {
-            case STARTUP: {
-                if (in.readableBytes() < MIN_STARTUP_LENGTH) {
-                    return null;
-                }
+        in.markReaderIndex();
+        payloadLength = in.readInt() - 8;
+        int requestCode = in.readInt();
 
-                in.markReaderIndex();
-                payloadLength = in.readInt() - 8;
-                int requestCode = in.readInt();
-
-                if (requestCode == SSL_REQUEST_CODE) {
-                    SslContext sslContext = getSslContext.get();
-                    Channel channel = ctx.channel();
-                    ByteBuf out = ctx.alloc().buffer(1);
-                    if (sslContext == null) {
-                        channel.writeAndFlush(out.writeByte('N'));
-                    } else {
-                        channel.writeAndFlush(out.writeByte('S'));
-                        ctx.pipeline().addFirst(sslContext.newHandler(ctx.alloc()));
-                    }
-                    in.markReaderIndex();
-                    return decode(ctx, in);
-                } else {
-                    if (in.readableBytes() < payloadLength) {
-                        in.resetReaderIndex();
-                        return null;
-                    }
-                    state = requestCode == CANCEL_CODE ? State.CANCEL : State.STARTUP_PARAMETERS;
-                    return in.readBytes(payloadLength);
-                }
-            }
-
-            /**
-              * Message payload is
-              *  byte: message type
-              *  int32: length (excluding message type, including length itself)
-              *  payload
-              **/
-            case MSG: {
-                if (in.readableBytes() < MIN_MSG_LENGTH) {
-                    return null;
-                }
-                in.markReaderIndex();
-                msgType = in.readByte();
-                payloadLength = in.readInt() - 4; // exclude length itself
-
-                if (in.readableBytes() < payloadLength) {
-                    in.resetReaderIndex();
-                    return null;
-                }
-                return in.readBytes(payloadLength);
-            }
-            default:
-                throw new IllegalStateException("Invalid state " + state);
+        if (requestCode == SSL_REQUEST_CODE)
+        {
+          SslContext sslContext = getSslContext.get();
+          Channel channel = ctx.channel();
+          ByteBuf out = ctx.alloc().buffer(1);
+          if (sslContext == null)
+          {
+            channel.writeAndFlush(out.writeByte('N'));
+          }
+          else
+          {
+            channel.writeAndFlush(out.writeByte('S'));
+            ctx.pipeline().addFirst(sslContext.newHandler(ctx.alloc()));
+          }
+          in.markReaderIndex();
+          return decode(ctx, in);
         }
-    }
+        else
+        {
+          if (in.readableBytes() < payloadLength)
+          {
+            in.resetReaderIndex();
+            return null;
+          }
+          state = requestCode == CANCEL_CODE ? State.CANCEL : State.STARTUP_PARAMETERS;
+          return in.readBytes(payloadLength);
+        }
+      }
 
-    public void startupDone() {
-        assert state == State.STARTUP_PARAMETERS
-            : "Must only call startupDone if state == STARTUP_PARAMETERS";
-        state = State.MSG;
-    }
+      /**
+       * Message payload is
+       *  byte: message type
+       *  int32: length (excluding message type, including length itself)
+       *  payload
+       **/
+      case MSG:
+      {
+        if (in.readableBytes() < MIN_MSG_LENGTH)
+        {
+          return null;
+        }
+        in.markReaderIndex();
+        msgType = in.readByte();
+        payloadLength = in.readInt() - 4; // exclude length itself
 
-    public byte msgType() {
-        return msgType;
+        if (in.readableBytes() < payloadLength)
+        {
+          in.resetReaderIndex();
+          return null;
+        }
+        return in.readBytes(payloadLength);
+      }
+      default:
+        throw new IllegalStateException("Invalid state " + state);
     }
+  }
 
-    public int payloadLength() {
-        return payloadLength;
-    }
+  public void startupDone()
+  {
+    assert state == State.STARTUP_PARAMETERS
+        : "Must only call startupDone if state == STARTUP_PARAMETERS";
+    state = State.MSG;
+  }
 
-    public State state() {
-        return state;
-    }
+  public byte msgType()
+  {
+    return msgType;
+  }
+
+  public int payloadLength()
+  {
+    return payloadLength;
+  }
+
+  public State state()
+  {
+    return state;
+  }
 }

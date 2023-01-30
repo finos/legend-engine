@@ -22,8 +22,11 @@
 package org.finos.legend.engine.pg.postgres;
 
 
-public class BindPostgresException extends RuntimeException {
-    public BindPostgresException(String msg, Throwable cause) {
-        super(msg, cause);
-    }
+public class BindPostgresException extends RuntimeException
+{
+
+  public BindPostgresException(String msg, Throwable cause)
+  {
+    super(msg, cause);
+  }
 }

@@ -21,24 +21,22 @@
 
 package org.finos.legend.engine.pg.postgres.auth;
 
-
-import org.finos.legend.engine.pg.postgres.ConnectionProperties;
-
 import javax.annotation.Nullable;
+import org.finos.legend.engine.pg.postgres.ConnectionProperties;
+public interface AuthenticationMethod
+{
 
-public interface AuthenticationMethod {
+  /**
+   * @param userName the userName sent with the startup message
+   * @param passwd   the password in clear-text or null
+   * @return the user or null; null should be handled as if it's a "guest" user
+   * @throws RuntimeException if the authentication failed
+   */
+  @Nullable
+  User authenticate(String userName, @Nullable String passwd, ConnectionProperties connProperties);
 
-    /**
-     * @param userName the userName sent with the startup message
-     * @param passwd the password in clear-text or null
-     * @return the user or null; null should be handled as if it's a "guest" user
-     * @throws RuntimeException if the authentication failed
-     */
-    @Nullable
-    User authenticate(String userName, @Nullable String passwd, ConnectionProperties connProperties);
-
-    /**
-     * @return unique name of the authentication method
-     */
-    String name();
+  /**
+   * @return unique name of the authentication method
+   */
+  String name();
 }

@@ -22,63 +22,70 @@
 package org.finos.legend.engine.pg.postgres.types;
 
 import io.netty.buffer.ByteBuf;
-
 import javax.annotation.Nonnull;
 
-abstract class BaseTimestampType extends PGType {
+abstract class BaseTimestampType extends PGType
+{
 
-    protected static final int TYPE_LEN = 8;
-    protected static final int TYPE_MOD = -1;
+  protected static final int TYPE_LEN = 8;
+  protected static final int TYPE_MOD = -1;
 
-    // 1st msec where BC date becomes AD date
-    protected static final long FIRST_MSEC_AFTER_CHRIST = -62135596800000L;
+  // 1st msec where BC date becomes AD date
+  protected static final long FIRST_MSEC_AFTER_CHRIST = -62135596800000L;
 
-    // amount of seconds between 1970-01-01 and 2000-01-01
-    private static final long EPOCH_DIFF_IN_MS = 946_684_800_000L;
+  // amount of seconds between 1970-01-01 and 2000-01-01
+  private static final long EPOCH_DIFF_IN_MS = 946_684_800_000L;
 
 
-    BaseTimestampType(int oid, int typeLen, int typeMod, @Nonnull String typeName) {
-        super(oid, typeLen, typeMod, typeName);
-    }
+  BaseTimestampType(int oid, int typeLen, int typeMod, @Nonnull String typeName)
+  {
+    super(oid, typeLen, typeMod, typeName);
+  }
 
-    @Override
-    public int writeAsBinary(ByteBuf buffer, @Nonnull Object value) {
-        buffer.writeInt(TYPE_LEN);
-        buffer.writeLong(toPgTimestamp((long) value));
-        return INT32_BYTE_SIZE + TYPE_LEN;
-    }
+  @Override
+  public int writeAsBinary(ByteBuf buffer, @Nonnull Object value)
+  {
+    buffer.writeInt(TYPE_LEN);
+    buffer.writeLong(toPgTimestamp((long) value));
+    return INT32_BYTE_SIZE + TYPE_LEN;
+  }
 
-    @Override
-    public String typeCategory() {
-        return TypeCategory.DATETIME.code();
-    }
+  @Override
+  public String typeCategory()
+  {
+    return TypeCategory.DATETIME.code();
+  }
 
-    @Override
-    public String type() {
-        return Type.BASE.code();
-    }
+  @Override
+  public String type()
+  {
+    return Type.BASE.code();
+  }
 
-    /**
-     * Convert a crate timestamp (unix timestamp in ms) into a postgres timestamp
-     * (long microseconds since 2000-01-01)
-     */
-    private static long toPgTimestamp(long unixTsInMs) {
-        return (unixTsInMs - EPOCH_DIFF_IN_MS) * 1000;
-    }
+  /**
+   * Convert a crate timestamp (unix timestamp in ms) into a postgres timestamp (long microseconds
+   * since 2000-01-01)
+   */
+  private static long toPgTimestamp(long unixTsInMs)
+  {
+    return (unixTsInMs - EPOCH_DIFF_IN_MS) * 1000;
+  }
 
-    @Override
-    public Object readBinaryValue(ByteBuf buffer, int valueLength) {
-        assert valueLength == TYPE_LEN : "valueLength must be " + TYPE_LEN +
-            " because timestamp is a 64 bit long. Actual length: " + valueLength;
-        long microSecondsSince2K = buffer.readLong();
-        return toCrateTimestamp(microSecondsSince2K);
-    }
+  @Override
+  public Object readBinaryValue(ByteBuf buffer, int valueLength)
+  {
+    assert valueLength == TYPE_LEN : "valueLength must be " + TYPE_LEN +
+        " because timestamp is a 64 bit long. Actual length: " + valueLength;
+    long microSecondsSince2K = buffer.readLong();
+    return toCrateTimestamp(microSecondsSince2K);
+  }
 
-    /**
-     * Convert a postgres timestamp (seconds since 2000-01-01) into a crate
-     * timestamp (unix timestamp in ms).
-     */
-    private static long toCrateTimestamp(long microSecondsSince2k) {
-        return (microSecondsSince2k / 1000) + EPOCH_DIFF_IN_MS;
-    }
+  /**
+   * Convert a postgres timestamp (seconds since 2000-01-01) into a crate timestamp (unix timestamp
+   * in ms).
+   */
+  private static long toCrateTimestamp(long microSecondsSince2k)
+  {
+    return (microSecondsSince2k / 1000) + EPOCH_DIFF_IN_MS;
+  }
 }

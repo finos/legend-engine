@@ -22,56 +22,52 @@
 package org.finos.legend.engine.pg.postgres.types;
 
 import io.netty.buffer.ByteBuf;
-/*import org.elasticsearch.common.bytes.BytesReference;
-import org.elasticsearch.common.xcontent.DeprecationHandler;
-import org.elasticsearch.common.xcontent.NamedXContentRegistry;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentParser;
-import org.elasticsearch.common.xcontent.json.JsonXContent;*/
-
 import javax.annotation.Nonnull;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
 
-class JsonType extends PGType<Object> {
+class JsonType extends PGType<Object>
+{
 
-    public static final JsonType INSTANCE = new JsonType();
-    static final int OID = 114;
+  public static final JsonType INSTANCE = new JsonType();
+  static final int OID = 114;
 
-    private static final int TYPE_LEN = -1;
-    private static final int TYPE_MOD = -1;
+  private static final int TYPE_LEN = -1;
+  private static final int TYPE_MOD = -1;
 
-    private JsonType() {
-        super(OID, TYPE_LEN, TYPE_MOD, "json");
-    }
+  private JsonType()
+  {
+    super(OID, TYPE_LEN, TYPE_MOD, "json");
+  }
 
-    @Override
-    public int typArray() {
-        return PGArray.JSON_ARRAY.oid();
-    }
+  @Override
+  public int typArray()
+  {
+    return PGArray.JSON_ARRAY.oid();
+  }
 
-    @Override
-    public String typeCategory() {
-        return TypeCategory.USER_DEFINED_TYPES.code();
-    }
+  @Override
+  public String typeCategory()
+  {
+    return TypeCategory.USER_DEFINED_TYPES.code();
+  }
 
-    @Override
-    public String type() {
-        return Type.BASE.code();
-    }
+  @Override
+  public String type()
+  {
+    return Type.BASE.code();
+  }
 
-    @Override
-    public int writeAsBinary(ByteBuf buffer, @Nonnull Object value) {
-        byte[] bytes = encodeAsUTF8Text(value);
-        buffer.writeInt(bytes.length);
-        buffer.writeBytes(bytes);
-        return INT32_BYTE_SIZE + bytes.length;
-    }
+  @Override
+  public int writeAsBinary(ByteBuf buffer, @Nonnull Object value)
+  {
+    byte[] bytes = encodeAsUTF8Text(value);
+    buffer.writeInt(bytes.length);
+    buffer.writeBytes(bytes);
+    return INT32_BYTE_SIZE + bytes.length;
+  }
 
-    @Override
-    protected byte[] encodeAsUTF8Text(@Nonnull Object value) {
+  @Override
+  protected byte[] encodeAsUTF8Text(@Nonnull Object value)
+  {
        /* if (value instanceof String str) {
             return str.getBytes(StandardCharsets.UTF_8);
         }
@@ -91,18 +87,20 @@ class JsonType extends PGType<Object> {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }*/
-        throw new UnsupportedOperationException("Not implemented");
-    }
+    throw new UnsupportedOperationException("Not implemented");
+  }
 
-    @Override
-    public Object readBinaryValue(ByteBuf buffer, int valueLength) {
-        byte[] bytes = new byte[valueLength];
-        buffer.readBytes(bytes);
-        return decodeUTF8Text(bytes);
-    }
+  @Override
+  public Object readBinaryValue(ByteBuf buffer, int valueLength)
+  {
+    byte[] bytes = new byte[valueLength];
+    buffer.readBytes(bytes);
+    return decodeUTF8Text(bytes);
+  }
 
-    @Override
-    Object decodeUTF8Text(byte[] bytes) {
+  @Override
+  Object decodeUTF8Text(byte[] bytes)
+  {
         /*try {
             XContentParser parser = JsonXContent.JSON_XCONTENT.createParser(
                 NamedXContentRegistry.EMPTY, DeprecationHandler.THROW_UNSUPPORTED_OPERATION, bytes);
@@ -114,6 +112,6 @@ class JsonType extends PGType<Object> {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }*/
-        throw new UnsupportedOperationException("Not implemented");
-    }
+    throw new UnsupportedOperationException("Not implemented");
+  }
 }
