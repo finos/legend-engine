@@ -328,14 +328,6 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
                                                              (
                                                                 _type='void'
                                                              ),
-         lazyVoid:meta::pure::executionPlan::LazyVoidResultType[1]|^meta::protocols::pure::vX_X_X::metamodel::executionPlan::LazyVoidResultType
-                                                              (
-                                                                _type='lazyVoid'
-                                                              ),
-         up:meta::pure::executionPlan::UpdateNodeResultType[1]|^meta::protocols::pure::vX_X_X::metamodel::executionPlan::UpdateNodeResultType
-                                                              (
-                                                                _type='updateNode'
-                                                              );,
          rt:meta::pure::executionPlan::DataTypeResultType[1]|^meta::protocols::pure::vX_X_X::metamodel::executionPlan::DataTypeResultType
                                                               (
                                                                  _type='dataType',

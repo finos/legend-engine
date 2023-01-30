@@ -39,14 +39,6 @@ Class meta::pure::executionPlan::VoidResultType extends ResultType
 {
 }
 
-Class meta::pure::executionPlan::LazyVoidResultType extends ResultType
-{
-}
-
-Class meta::pure::executionPlan::UpdateNodeResultType extends ResultType
-{
-}
-
 Class meta::pure::executionPlan::TDSResultType extends ResultType
 {
    tdsColumns : TDSColumn[*];

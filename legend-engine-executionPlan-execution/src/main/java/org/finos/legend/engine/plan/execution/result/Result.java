@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.result;
 
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.plan.dependencies.store.shared.IResult;
 
@@ -25,7 +24,6 @@ public abstract class Result implements IResult
     public String status;
     public GenerationInfo generationInfo = null;
     public List<ExecutionActivity> activities;
-    public MutableList<Result> childrenResults = Lists.mutable.empty();
 
     public Result(String status)
     {
@@ -39,11 +37,6 @@ public abstract class Result implements IResult
         this.activities = activities;
     }
 
-    public void addChildrenResults(MutableList<Result> childResults)
-    {
-        this.childrenResults = childResults;
-    }
-
     public abstract <T> T accept(ResultVisitor<T> resultVisitor);
 
     public Result realizeInMemory()
@@ -53,9 +46,6 @@ public abstract class Result implements IResult
 
     public void close()
     {
-        if (!childrenResults.isEmpty())
-        {
-            childrenResults.stream().forEach(result -> result.close());
-        }
+
     }
 }
