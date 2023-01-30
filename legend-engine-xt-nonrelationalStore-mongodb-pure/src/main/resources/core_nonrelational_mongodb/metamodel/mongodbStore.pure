@@ -191,11 +191,6 @@ meta::external::store::mongodb::metamodel::aggregation::ProjectStage extends Sta
   filters: ArgumentExpression[1];
 }
 
-Class {doc.doc = 'Same as Project stage, and alias for set stage'}
-meta::external::store::mongodb::metamodel::aggregation::AddFieldsStage extends Stage
-{
-}
-
 Class meta::external::store::mongodb::metamodel::aggregation::LiteralValue extends ArgumentExpression
 {
   value: BaseTypeValue[1];
@@ -208,13 +203,6 @@ Class meta::external::store::mongodb::metamodel::aggregation::AggregateExpressio
 
 Class meta::external::store::mongodb::metamodel::aggregation::ArgumentExpression
 {
-}
-
-Class {doc.doc = 'Operations accessed by $xxx'}
-meta::external::store::mongodb::metamodel::aggregation::OperatorExpression extends ArgumentExpression
-{
-  operator: Operator[1];
-  expression: ArgumentExpression[1];
 }
 
 Class {doc.doc = 'Comparison Operator Expressions https://www.mongodb.com/docs/manual/reference/operator/query-comparison/'}
@@ -275,39 +263,6 @@ Class meta::external::store::mongodb::metamodel::aggregation::NotOperatorExpress
 
 Class meta::external::store::mongodb::metamodel::aggregation::NorOperatorExpression extends LogicalOperatorExpression
 {
-}
-
-Class meta::external::store::mongodb::metamodel::aggregation::OrExpression extends ArgumentExpression
-{
-  expressions: ArgumentExpression[*];
-  operator: Operator[1];
-}
-
-Class meta::external::store::mongodb::metamodel::aggregation::AndExpression extends ArgumentExpression
-{
-  expressions: ArgumentExpression[*];
-  operator: Operator[1];
-}
-
-Class meta::external::store::mongodb::metamodel::aggregation::ArrayExpression extends ArgumentExpression
-{
-  items: ArgumentExpression[*];
-}
-
-Class meta::external::store::mongodb::metamodel::aggregation::FieldPathExpression extends ArgumentExpression
-{
-  path: String[1];  //maps to $something
-}
-
-Class meta::external::store::mongodb::metamodel::aggregation::VariableExpression extends ArgumentExpression
-{
-  // NOW, CLUSTER_TIME, ROOT, CURRENT, REMOVE, DESCEND, PRUNE, KEEP
-  // PREFIX WITH $$
-}
-
-Class meta::external::store::mongodb::metamodel::aggregation::LiteralExpression extends ArgumentExpression
-{
-  value: BaseTypeValue[1];
 }
 
 Class meta::external::store::mongodb::metamodel::aggregation::KeyValueExpressionPair
@@ -374,22 +329,6 @@ Class meta::external::store::mongodb::metamodel::aggregation::KeyValuePair
   key: String[1];
   value: BaseTypeValue[1];
 }
-
-
-Class meta::external::store::mongodb::metamodel::aggregation::ProjectExpression extends ArgumentExpression
-{
-  field: FieldPathExpression[1];
-  isProjected: Boolean[1];
-  conditionExpression: ConditionExpression[0..1]; 
-}
-
-Class meta::external::store::mongodb::metamodel::aggregation::ConditionExpression extends ArgumentExpression
-{
-  predicate: OperatorExpression[1];
-  successCase: ArgumentExpression[1];
-  failCase: ArgumentExpression[0..1]; 
-}
-
 
 
 
