@@ -21,7 +21,7 @@ env:
   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   MAVEN_OPTS: -Xmx4g
 
-on: [push, pull_request]
+on: [ push, pull_request ]
 
 jobs:
   build:
@@ -68,7 +68,7 @@ jobs:
 
       - name: Build + Test
         if: (github.repository != 'finos/legend-engine') || (github.ref != 'refs/heads/master')
-        run: mvn -B -e install javadoc:javadoc -DargLine="-Xmx2200m"
+        run: mvn -B -e install javadoc:javadoc -DargLine="-Xmx2200m" -P sonar
 
       - name: Build + Test + Maven Deploy + Sonar + Docker Snapshot
         if: (github.repository == 'finos/legend-engine') && (github.ref == 'refs/heads/master')
