@@ -14,13 +14,8 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
-
 public class RelationalBlockExecutionNode extends SequenceExecutionNode
 {
-    public DatabaseConnection connection;
-    public FinallyExecutionNode finallyExecutionNode;
-
     @Override
     public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)
     {
