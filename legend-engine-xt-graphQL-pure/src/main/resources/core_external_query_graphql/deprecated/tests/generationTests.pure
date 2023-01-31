@@ -32,6 +32,15 @@ function meta::external::query::graphQL::generation::tests::constants::person_gr
   '}';
 }
 
+function meta::external::query::graphQL::generation::tests::constants::classWithCustomScalars_graphql(): String[1]
+{
+  'type ClassWithCustomScalars {\n' +
+  '  date: Date!\n' +
+  '  datetime: DateTime!\n' +
+  '  decimal: BigDecimal!\n' +
+  '}';
+}
+
 function meta::external::query::graphQL::generation::tests::constants::query_graphql(): String[1]
 {
   'type Query {\n' +
@@ -72,6 +81,13 @@ Class meta::external::query::graphQL::generation::tests::model::Person
   age : Integer[1];
 }
 
+Class meta::external::query::graphQL::generation::tests::model::ClassWithCustomScalars
+{
+  date: Date[1];
+  datetime:DateTime[1];
+  decimal: Decimal[1];
+}
+
 Class <<GraphQL.Query>> meta::external::query::graphQL::generation::tests::model::Query
 {
   firmByName(name:String[1]){Firm.all()->filter(f|$f.legalName == $name)->first()}:Firm[0..1];
@@ -97,7 +113,8 @@ function <<test.Test>> meta::external::query::graphQL::generation::tests::testGe
     )
   );
 
-  assertEquals(query_graphql() , $res.content);
+  assertEquals(
+  [query_graphql()], $res.content);
 }
 
 function <<test.Test>> meta::external::query::graphQL::generation::tests::testGenerateClass():Boolean[1]
@@ -109,7 +126,8 @@ function <<test.Test>> meta::external::query::graphQL::generation::tests::testGe
     )
   );
 
-  assertEquals(firm_graphql(), $res.content);
+  assertEquals(
+  [firm_graphql()], $res.content);
 }
 
 function <<test.Test>> meta::external::query::graphQL::generation::tests::testGeneratePackage():Boolean[1]
@@ -122,13 +140,17 @@ function <<test.Test>> meta::external::query::graphQL::generation::tests::testGe
   );
 
   assertEquals([
-    'meta/external/query/graphQL/generation/tests/model/Firm.graphql', 
-    'meta/external/query/graphQL/generation/tests/model/Person.graphql', 
-    'meta/external/query/graphQL/generation/tests/model/Query.graphql', 
-    'meta/external/query/graphQL/generation/tests/model/Query2.graphql', 
-    'meta/external/query/graphQL/generation/tests/model/IncType.graphql'
+    'meta/external/query/graphQL/generation/tests/model/Firm.graphql',
+    'meta/external/query/graphQL/generation/tests/model/Person.graphql',
+    'meta/external/query/graphQL/generation/tests/model/ClassWithCustomScalars.graphql',
+    'meta/external/query/graphQL/generation/tests/model/Query.graphql',
+    'meta/external/query/graphQL/generation/tests/model/Query2.graphql',
+    'meta/external/query/graphQL/generation/tests/model/IncType.graphql',
+    'scalars.graphql'
   ], $res.fileName);
-  assertEquals([firm_graphql(), person_graphql(), query_graphql(), query2_graphql(), inctype_graphql()], $res.content);
+
+  let scalars = +'scalar BigDecimal\n'+'scalar Date\n'+'scalar DateTime';
+  assertEquals([firm_graphql(), person_graphql(), classWithCustomScalars_graphql(), query_graphql(), query2_graphql(), inctype_graphql(), $scalars], $res.content);
 }
 
 function <<test.Test>> meta::external::query::graphQL::generation::tests::testGenerateMultiple():Boolean[1]

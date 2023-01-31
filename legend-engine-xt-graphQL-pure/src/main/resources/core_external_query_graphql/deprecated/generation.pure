@@ -15,6 +15,8 @@
 import meta::external::query::graphQL::generation::*;
 import meta::pure::generation::metamodel::*;
 import meta::pure::generation::*;
+import meta::pure::metamodel::type::*;
+import meta::pure::functions::collection::*;
 
 Class <<doc.deprecated>> meta::external::query::graphQL::generation::GraphQLConfig extends GenerationConfiguration
 {
@@ -34,11 +36,31 @@ Class <<doc.deprecated>> meta::external::query::graphQL::generation::GraphQLOutp
 {
 }
 
+function <<access.private, doc.deprecated>> meta::external::query::graphQL::generation::generateGraphQLScalars(scopeElements: PackageableElement[*]): GraphQLOutput[0..1] {
+  let scalarElements = $scopeElements->meta::external::query::graphQL::binding::fromPure::sdl::findTypes()->map(t|$t->match([
+                            c:Class<Any>[1] | $c->meta::pure::functions::meta::allProperties()->map(p|$p->functionReturnType().rawType)->filter(
+                                                t| $t->in(meta::external::query::graphQL::binding::fromPure::sdl::customScalarTypes().first)
+                                              ),
+                            e:Enumeration<Any>[1] | []
+                        ]))->fold({t,v | $v->concatenate($t)},[])->removeDuplicates();
+  if($scalarElements->isEmpty(),
+    | [],
+    | let scalarStringMap =  meta::external::query::graphQL::binding::fromPure::sdl::customScalarTypes()->newMap();
+      ^GraphQLOutput(
+        content=$scalarElements->map(x|'scalar '+ $scalarStringMap->meta::pure::functions::collection::get($x->toOne())->toOne())->sort()->joinStrings('\n'),
+        fileName='scalars.graphql',
+        format='text'
+      );
+  );
+}
+
 function <<doc.deprecated>> meta::external::query::graphQL::generation::generateGraphQL(config: GraphQLConfig[1]): GraphQLOutput[*]
 {
    $config.scopeElements->filter(e| !$e->instanceOf(Package))->map(e|assert($e->instanceOf(Type),' GraphQL generation of ' + $e->type().name->toOne()+ ' is not currently supported. Tried to generate GraphQL for '+ $e->elementToPath()) ;);
    let scopeElements = $config.allPackageScopeElements()->filter(p|$p->instanceOf(Class) || $p->instanceOf(Enumeration));
-   $scopeElements->map(e| $config->meta::external::query::graphQL::generation::generateGraphQLFromPure($e));
+   $scopeElements->map(c| $config->meta::external::query::graphQL::generation::generateGraphQLFromPure($c))->concatenate(
+      meta::external::query::graphQL::generation::generateGraphQLScalars($scopeElements)
+   );
 }
 
 function <<doc.deprecated>> meta::external::query::graphQL::generation::generateGraphQLFromPure(config: GraphQLConfig[1], pe: PackageableElement[1]): GraphQLOutput[*]

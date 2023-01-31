@@ -1,0 +1,5 @@
+type ClassWithCustomScalars {
+  date: Date!
+  datetime: DateTime!
+  decimal: [BigDecimal!]!
+}

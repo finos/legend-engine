@@ -45,7 +45,44 @@ public class TestGraphQLFileGeneration
             Assert.assertEquals(outputs.size(), 4);
             outputs.forEach(o ->
             {
-                Assert.assertEquals(getResourceAsString(o._fileName().substring(o._fileName().lastIndexOf('/') + 1)), o._content());
+                if (o._fileName().endsWith("scalars.graphql"))
+                {
+                    Assert.assertEquals(getResourceAsString("scalars.graphql"), o._content());
+                }
+                else
+                {
+                    Assert.assertEquals(getResourceAsString(o._fileName().substring(o._fileName().lastIndexOf('/') + 1)), o._content());
+                }
+            });
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    public void testScalarGraphQL()
+    {
+        try
+        {
+            PureModelContextData pureModelContextData = getProtocol("scalarFileGeneration.json");
+            PureModel pureModel = new PureModel(pureModelContextData, null, DeploymentMode.TEST);
+            FileGenerationSpecification fileGeneration = pureModelContextData.getElementsOfType(FileGenerationSpecification.class).get(0);
+            GraphQLGenerationExtension graphQLGenerationExtension = new GraphQLGenerationExtension();
+            List<? extends Root_meta_pure_generation_metamodel_GenerationOutput> outputs = graphQLGenerationExtension.generateFromElement(fileGeneration, pureModel.getContext());
+
+            Assert.assertEquals(outputs.size(), 2);
+            outputs.forEach(o ->
+            {
+                if (o._fileName().endsWith("scalars.graphql"))
+                {
+                    Assert.assertEquals(getResourceAsString("scalars.graphql"), o._content());
+                }
+                else
+                {
+                    Assert.assertEquals(getResourceAsString(o._fileName().substring(o._fileName().lastIndexOf('/') + 1)), o._content());
+                }
             });
         }
         catch (Exception e)

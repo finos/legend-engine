@@ -104,14 +104,28 @@ function meta::external::query::graphQL::binding::fromPure::sdl::transformPureTo
   );
 }
 
-function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::buildType(type:meta::pure::metamodel::type::generics::GenericType[1], mul:Multiplicity[1]):TypeReference[1]
+function meta::external::query::graphQL::binding::fromPure::sdl::scalarTypes(): Pair<PrimitiveType,String>[*]
 {
-  let primitives = [
+  [
     pair(String, 'String'),
     pair(Integer, 'Int'),
     pair(Float, 'Float'),
-    pair(Boolean, 'Boolean')
-  ]->newMap();
+    pair(Boolean, 'Boolean') 
+  ];
+}
+
+function meta::external::query::graphQL::binding::fromPure::sdl::customScalarTypes(): Pair<PrimitiveType,String>[*]
+{
+  [
+    pair(Date, 'Date'),
+    pair(DateTime, 'DateTime'),
+    pair(Decimal, 'BigDecimal')
+  ];
+}
+
+function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::buildType(type:meta::pure::metamodel::type::generics::GenericType[1], mul:Multiplicity[1]):TypeReference[1]
+{
+  let primitives = scalarTypes()->concatenate(customScalarTypes())->newMap();
 
   let name = $primitives->get($type.rawType->toOne());
   let fName = if ($name->isEmpty(),|$type.rawType.name->toOne(),|$name->toOne());

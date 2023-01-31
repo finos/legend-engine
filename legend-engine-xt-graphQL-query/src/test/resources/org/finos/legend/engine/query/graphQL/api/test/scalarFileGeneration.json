@@ -1,0 +1,78 @@
+{
+  "_type": "data",
+  "version": "v1_0_0",
+  "domain": {
+    "profiles": [],
+    "enums": [],
+    "measures": [],
+    "classes": [
+      {
+        "_type": "class",
+        "name": "ClassWithCustomScalars",
+        "package": "_meta::pure::generation::tests::model",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "date",
+            "type": "Date"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "datetime",
+            "type": "DateTime"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0
+            },
+            "name": "decimal",
+            "type": "Decimal"
+          }
+        ]
+      }
+    ],
+    "associations": [],
+    "functions": []
+  },
+  "stores": [],
+  "mappings": [],
+  "flattenSpecifications": [],
+  "diagrams": [],
+  "texts": [],
+  "services": [],
+  "runtimes": [],
+  "connections": [],
+  "fileGenerations": [
+    {
+      "_type": "fileGeneration",
+      "configurationProperties": [],
+      "name": "myGraphQL",
+      "package": "_meta",
+      "scopeElements": [
+        "_meta"
+      ],
+      "type": "graphql"
+    }
+  ],
+  "generationSpecifications": [
+    {
+      "_type": "generationSpecification",
+      "fileGenerations": [
+        {
+          "path": "_meta::myGraphQL",
+          "type": "FILE_GENERATION"
+        }
+      ],
+      "generationNodes": [],
+      "name": "MyGenerationSpecification",
+      "package": "_meta"
+    }
+  ],
+  "serializableModelSpecifications": []
+}
