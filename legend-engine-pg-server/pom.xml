@@ -12,5 +12,11 @@
     <artifactId>legend-engine-pg-server-handler</artifactId>
     <name>Legend Engine - XT - Postgres - Server</name>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pg-protocol</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>
