@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::external::language::java::compiler::*;
+import meta::external::language::java::factory::*;
 import meta::external::language::java::serialization::*;
 
 Class meta::external::language::java::compiler::CompilationConfiguration
@@ -127,12 +128,12 @@ Class meta::external::language::java::compiler::JavaSource
 
 function meta::external::language::java::compiler::compileJava(classes:meta::external::language::java::metamodel::Class[*], config:CompilationConfiguration[0..1]):meta::external::language::java::compiler::CompilationResult[1]
 {
-    compileJava($classes->map(c | ^JavaSource(package=$c.package->packageToString(), name=$c.simpleName, content=$c->classToString())), $config);
+    compileJava($classes->map(c | ^JavaSource(package=$c.package->packageToString(), name=$c.simpleName, content=$c->inferImports()->classToString())), $config);
 }
 
 function meta::external::language::java::compiler::compileAndExecuteJava(classes:meta::external::language::java::metamodel::Class[*], compConfig:CompilationConfiguration[0..1], execConfig:ExecutionConfiguration[1]):CompileAndExecuteResult[1]
 {
-    compileAndExecuteJava($classes->map(c | ^JavaSource(package=$c.package->packageToString(), name=$c.simpleName, content=$c->classToString())), $compConfig, $execConfig);
+    compileAndExecuteJava($classes->map(c | ^JavaSource(package=$c.package->packageToString(), name=$c.simpleName, content=$c->inferImports()->classToString())), $compConfig, $execConfig);
 }
 
 native function meta::external::language::java::compiler::compileJava(classes:JavaSource[*], config:CompilationConfiguration[0..1]):meta::external::language::java::compiler::CompilationResult[1];
