@@ -116,7 +116,77 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
         {
             ingestionMethod = snowflakeCommands.getDefaultIngestionMethod();
         }
-        throw new UnsupportedOperationException("not yet implemented");
+        if (ingestionMethod == IngestionMethod.CLIENT_FILE)
+        {
+            try (TemporaryFile tempFile = new TemporaryFile(config.tempPath, generateId()))
+            {
+                CsvSerializer csvSerializer;
+                if (result instanceof RelationalResult)
+                {
+                    csvSerializer = new RelationalResultToCSVSerializer((RelationalResult) result, true);
+                    tempFile.writeFile(csvSerializer);
+                    try (Statement statement = connection.createStatement())
+                    {
+                        statement.execute(snowflakeCommands.dropTempTable(tableName));
+
+                        RelationalResult relationalResult = (RelationalResult) result;
+
+                        if (result.getResultBuilder() instanceof TDSBuilder)
+                        {
+                            snowflakeCommands.createAndLoadTempTable(tableName, relationalResult.getTdsColumns().stream().map(c -> new Column(c.name, c.relationalType)).collect(Collectors.toList()), tempFile.getTemporaryPathForFile()).forEach(x -> checkedExecute(statement, x));
+                        }
+                        else
+                        {
+                            snowflakeCommands.createAndLoadTempTable(tableName, relationalResult.getSQLResultColumns().stream().map(c -> new Column(c.label, c.dataType)).collect(Collectors.toList()), tempFile.getTemporaryPathForFile()).forEach(x -> checkedExecute(statement, x));
+                        }
+                    }
+                }
+                else if (result instanceof RealizedRelationalResult)
+                {
+                    RealizedRelationalResult realizedRelationalResult = (RealizedRelationalResult) this.result;
+                    csvSerializer = new RealizedRelationalResultCSVSerializer(realizedRelationalResult, this.databaseTimeZone, false, false);
+                    tempFile.writeFile(csvSerializer);
+                    try (Statement statement = connection.createStatement())
+                    {
+                        statement.execute(snowflakeCommands.dropTempTable(tableName));
+                        snowflakeCommands.createAndLoadTempTable(tableName, realizedRelationalResult.columns.stream().map(c -> new Column(c.label, c.dataType)).collect(Collectors.toList()), tempFile.getTemporaryPathForFile()).forEach(x -> checkedExecute(statement, x));
+                    }
+                }
+                else if (result instanceof StreamingObjectResult)
+                {
+                    csvSerializer = new StreamingObjectResultCSVSerializer((StreamingObjectResult) result, true);
+                    tempFile.writeFile(csvSerializer);
+                    try (Statement statement = connection.createStatement())
+                    {
+                        statement.execute(snowflakeCommands.dropTempTable(tableName));
+                        snowflakeCommands.createAndLoadTempTable(tableName, csvSerializer.getHeaderColumnsAndTypes().stream().map(c -> new Column(c.getOne(), RelationalExecutor.getRelationalTypeFromDataType(c.getTwo()))).collect(Collectors.toList()), tempFile.getTemporaryPathForFile()).forEach(x -> checkedExecute(statement, x));
+                    }
+                }
+                else if (result instanceof TempTableStreamingResult)
+                {
+                    csvSerializer = new StreamingTempTableResultCSVSerializer((TempTableStreamingResult) result, true);
+                    tempFile.writeFile(csvSerializer);
+                    try (Statement statement = connection.createStatement())
+                    {
+                        statement.execute(snowflakeCommands.dropTempTable(tableName));
+                        snowflakeCommands.createAndLoadTempTable(tableName, csvSerializer.getHeaderColumnsAndTypes().stream().map(c -> new Column(c.getOne(), RelationalExecutor.getRelationalTypeFromDataType(c.getTwo()))).collect(Collectors.toList()), tempFile.getTemporaryPathForFile()).forEach(x -> checkedExecute(statement, x));
+                    }
+                }
+                else
+                {
+                    throw new RuntimeException("Result type " + result.getClass().getCanonicalName() + " not supported yet");
+                }
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+        else
+        {
+            throw new RuntimeException("Ingestion method " + ingestionMethod.name() + " not supported");
+        }
+        return true;
     }
 
     private Boolean visitDatabricks(DatabricksCommands databricksCommands)
@@ -327,4 +397,6 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
             statement.execute(insertSql);
         }
     }
+
+
 }
