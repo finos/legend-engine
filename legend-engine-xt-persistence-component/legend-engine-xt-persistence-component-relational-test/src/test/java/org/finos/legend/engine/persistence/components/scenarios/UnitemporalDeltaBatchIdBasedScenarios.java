@@ -110,7 +110,7 @@ public class UnitemporalDeltaBatchIdBasedScenarios extends BaseTest
                         .batchIdInName(batchIdInField)
                         .batchIdOutName(batchIdOutField)
                         .build())
-                .optimizationFilters(Arrays.asList(filter))
+                .addOptimizationFilters(filter)
                 .build();
         return new TestScenario(mainTableWithBatchIdBasedSchema, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
@@ -124,7 +124,7 @@ public class UnitemporalDeltaBatchIdBasedScenarios extends BaseTest
                         .batchIdInName(batchIdInField)
                         .batchIdOutName(batchIdOutField)
                         .build())
-                .optimizationFilters(Arrays.asList(filter))
+                .addOptimizationFilters(filter)
                 .build();
         return new TestScenario(mainTableWithBatchIdBasedSchema, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
@@ -138,7 +138,7 @@ public class UnitemporalDeltaBatchIdBasedScenarios extends BaseTest
                         .batchIdInName(batchIdInField)
                         .batchIdOutName(batchIdOutField)
                         .build())
-                .optimizationFilters(Arrays.asList(filter))
+                .addOptimizationFilters(filter)
                 .build();
         return new TestScenario(mainTableWithBatchIdBasedSchema, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }

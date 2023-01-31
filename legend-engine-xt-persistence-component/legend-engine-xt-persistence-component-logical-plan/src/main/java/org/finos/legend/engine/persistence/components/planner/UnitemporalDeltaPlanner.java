@@ -64,9 +64,9 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
         super(datasets, ingestMode, plannerOptions);
 
         // Validate if the optimizationFilters are comparable
-        if (ingestMode.optimizationFilters().isPresent())
+        if (!ingestMode.optimizationFilters().isEmpty())
         {
-            validateOptimizationFilters(ingestMode.optimizationFilters().get(), stagingDataset());
+            validateOptimizationFilters(ingestMode.optimizationFilters(), stagingDataset());
         }
         this.deleteIndicatorField = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD);
         this.deleteIndicatorValues = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_VALUES);
@@ -143,9 +143,9 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
         notExistsConditions.add(openRecordCondition);
         notExistsConditions.add(digestMatchCondition);
         notExistsConditions.add(primaryKeysMatchCondition);
-        if (ingestMode().optimizationFilters().isPresent())
+        if (!ingestMode().optimizationFilters().isEmpty())
         {
-            notExistsConditions.addAll(LogicalPlanUtils.getOptimizationFilterConditions(mainDataset(), ingestMode().optimizationFilters().get()));
+            notExistsConditions.addAll(LogicalPlanUtils.getOptimizationFilterConditions(mainDataset(), ingestMode().optimizationFilters()));
         }
         Condition notExistsCondition = Not.of(Exists.of(
             Selection.builder()
@@ -224,9 +224,9 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
 
         List<Condition> milestoningConditions = new ArrayList<>();
         milestoningConditions.add(openRecordCondition);
-        if (ingestMode().optimizationFilters().isPresent())
+        if (!ingestMode().optimizationFilters().isEmpty())
         {
-            milestoningConditions.addAll(LogicalPlanUtils.getOptimizationFilterConditions(mainDataset(), ingestMode().optimizationFilters().get()));
+            milestoningConditions.addAll(LogicalPlanUtils.getOptimizationFilterConditions(mainDataset(), ingestMode().optimizationFilters()));
         }
         milestoningConditions.add(existsCondition);
 

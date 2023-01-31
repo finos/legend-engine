@@ -41,7 +41,7 @@ public interface UnitemporalDeltaAbstract extends IngestMode, TransactionMilesto
 
     Optional<String> dataSplitField();
 
-    Optional<List<OptimizationFilter>> optimizationFilters();
+    List<OptimizationFilter> optimizationFilters();
 
     @Override
     TransactionMilestoning transactionMilestoning();
