@@ -62,13 +62,7 @@ function meta::relational::postProcessor::processInOperation(query:SQLQuery[1], 
 
                                                                                    let firstLiteralValue    = $d.parameters->at(1)->cast(@LiteralList).values->map(l | $l.value)->at(0);
                                                                                    let collectionValueType  = if($firstLiteralValue->instanceOf(VarPlaceHolder), | $firstLiteralValue->cast(@VarPlaceHolder).type, | $firstLiteralValue->type());
-
-                                                                                   let tempTableIsolationStrategy            = if($connection->instanceOf(RelationalDatabaseConnection) && $connection->cast(@RelationalDatabaseConnection).datasourceSpecification.tempTableIsolationStrategy->isNotEmpty(),| $connection->cast(@RelationalDatabaseConnection).datasourceSpecification.tempTableIsolationStrategy,| ^meta::pure::alloy::connections::alloy::isolation::DefaultIsolationStrategy());
-                                                                                   let generateUpdateSQLNodes                = meta::relational::functions::tempTable::generateUpdateSQLNodeforCreateTempTable();
-                                                                                   let tempTable                             = $generateUpdateSQLNodes.generateTable->eval($tempTableIsolationStrategy, $tempTableName, $tempTableColumnName, meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($collectionValueType)->toOne(), true, $connection->instanceOf(TestDatabaseConnection) || ($connection->instanceOf(RelationalDatabaseConnection) && $connection->cast(@RelationalDatabaseConnection).datasourceSpecification->instanceOf(LocalH2DatasourceSpecification)));
-                                                                                   let tempTablePath                         = $generateUpdateSQLNodes.generateFullyQualifiedTempTableName->eval($tempTableIsolationStrategy, $tempTable);
-
-                                                                                   let selectSQLQuery       = generateTempTableSelectSQLQuery('default', $tempTablePath, $tempTableColumnName, meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($collectionValueType)->translateCoreTypeToDbSpecificType(^TranslationContext(dbType=$connection.type))->toOne());
+                                                                                   let selectSQLQuery       = generateTempTableSelectSQLQuery('default', $tempTableName, $tempTableColumnName, meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($collectionValueType)->translateCoreTypeToDbSpecificType(^TranslationContext(dbType=$connection.type))->toOne());
 
                                                                                    ^$d(parameters           = [$d.parameters->at(0), $selectSQLQuery]);,
                                                                                    |$d);,
@@ -121,38 +115,7 @@ function meta::relational::postProcessor::generatePostProcessorResult(changedFun
                           let varPlaceHoldersInCollection           = $collectionValues->filter(val | $val->instanceOf(VarPlaceHolder))->cast(@VarPlaceHolder);
 
                           let translationContext = ^TranslationContext(dbType=$connection.type);
-
-                          let dbConfig                              = createDbConfig($connection.type);
-                          let tempTableIsolationStrategy            = if($connection->instanceOf(RelationalDatabaseConnection) && $connection->cast(@RelationalDatabaseConnection).datasourceSpecification.tempTableIsolationStrategy->isNotEmpty(),
-                                                                          | $connection->cast(@RelationalDatabaseConnection).datasourceSpecification.tempTableIsolationStrategy,
-                                                                          | $dbConfig.dbExtension.getDefaultTempTableIsolationStrategy->toOne()->eval());
-
-                          let generateUpdateSQLNodes                = meta::relational::functions::tempTable::generateUpdateSQLNodeforCreateTempTable();
-
-                          let tempTable = $generateUpdateSQLNodes.generateTable->eval($tempTableIsolationStrategy, $tempTableName, $tempTableColumnName, meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($collectionValueType)->toOne(), $newInFunction.parameters->at(1)->instanceOf(VarPlaceHolder), $connection->instanceOf(TestDatabaseConnection) || ($connection->instanceOf(RelationalDatabaseConnection) && $connection->cast(@RelationalDatabaseConnection).datasourceSpecification->instanceOf(LocalH2DatasourceSpecification)));
-                          let tempTablePath = $generateUpdateSQLNodes.generateFullyQualifiedTempTableName->eval($tempTableIsolationStrategy, $tempTable);
-
-                          let selectSqlQueryForTempTable            = generateTempTableSelectSQLQuery('default', $tempTablePath, $tempTableColumnName, meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($collectionValueType)->translateCoreTypeToDbSpecificType($translationContext)->toOne());
-
-                          let updateSQLCommands                     = $tempTable->meta::relational::functions::tempTable::generateUpdateSQLQueryCommands($connection);
-                          let updateNodes                           = $generateUpdateSQLNodes.updateNodeGenerator->eval($tempTableIsolationStrategy, $updateSQLCommands, $dbConfig);
-
-                          let finallyNodeToBeAdded = if($collectionValues->size() > $dbThreshold,
-                                                        | $generateUpdateSQLNodes.updateNodeForFinallyGenerator->eval($tempTableIsolationStrategy, $updateSQLCommands, $dbConfig.dbExtension)
-                                                         ,
-                                                        |
-                                                          let conditionString            = $varPlaceHoldersInCollection->map(var | 'collectionSize(' + $var.name +'![])?number')
-                                                                                                                                       ->concatenate(if($collectionValuesWithoutVarPlaceHolder->isEmpty(), | [], |$collectionValuesWithoutVarPlaceHolder->size()->toString()))
-                                                                                                                                       ->joinStrings('((' ,' + ',') > ' + $dbThreshold->toString() + ')');
-                                                          let conditionWithStreamHandled = $varPlaceHoldersInCollection->map(var | 'instanceOf(' +$var.name + ', "Stream")')->concatenate($conditionString)->joinStrings('(', ' || ', ')');
-                                                          
-                                                          let conditionalnode      = ^FreeMarkerConditionalExecutionNode(
-                                                              freeMarkerBooleanExpression  = '${' + $conditionWithStreamHandled + '?c}',
-                                                              trueBlock                    = $generateUpdateSQLNodes.updateNodeForFinallyGenerator->eval($tempTableIsolationStrategy, $updateSQLCommands, $dbConfig.dbExtension),
-                                                              resultType                   = ^VoidResultType(type= meta::pure::router::store::routing::Void)
-                                                          );
-                                                      )->meta::relational::functions::tempTable::updateNodeToFinallyNode();
-
+                          let selectSqlQueryForTempTable            = generateTempTableSelectSQLQuery('default', $tempTableName, $tempTableColumnName, meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($collectionValueType)->translateCoreTypeToDbSpecificType($translationContext)->toOne());
                           let processedResultForTempTable           = $selectSqlQueryForTempTable->postProcessSQLQuery($store->toOne(), [], ^Mapping(), $runtime, $exeCtx, $extensions);
 
                           let allocationNode                        = if($collectionValuesWithoutVarPlaceHolder->isNotEmpty(),
@@ -177,8 +140,7 @@ function meta::relational::postProcessor::generatePostProcessorResult(changedFun
                                                                                                                                   dataType = meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($collectionValueType)->toOne()->translateCoreTypeToDbSpecificType($translationContext))
                                                                                                      ),
                                                                           connection              = $connection,
-                                                                          resultType              = ^VoidResultType(type=meta::pure::router::store::routing::Void),
-                                                                          executionNodes          = $updateNodes
+                                                                          resultType              = ^VoidResultType(type=meta::pure::router::store::routing::Void)
                                                                        );
 
                            let executionNodeToBeAdded               = if($collectionValues->size() > $dbThreshold,
@@ -209,6 +171,6 @@ function meta::relational::postProcessor::generatePostProcessorResult(changedFun
 
                            if($outerAllocationNodeName->in($result.executionNodes->filter(node | $node->instanceOf(AllocationExecutionNode))->cast(@AllocationExecutionNode).varName), 
                               |$result,
-                              |^$result(executionNodes += $processedResultForTempTable.executionNodes->concatenate($executionNodeToBeAdded), postExecutionNodes +=$processedResultForTempTable.postExecutionNodes, templateFunctions +=$processedResultForTempTable.templateFunctions, finallyExecutionNode += $finallyNodeToBeAdded));
+                              |^$result(executionNodes += $processedResultForTempTable.executionNodes->concatenate($executionNodeToBeAdded), postExecutionNodes +=$processedResultForTempTable.postExecutionNodes, templateFunctions +=$processedResultForTempTable.templateFunctions));
             }, ^PostProcessorResult(query = $query));
 }

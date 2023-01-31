@@ -37,7 +37,6 @@ Class meta::relational::mapping::PostProcessorResult
    resultPostProcessor : meta::pure::metamodel::function::Function<{Result<Any|*>[1]->Result<Any|*>[1]}>[*];
    executionNodes: meta::pure::executionPlan::ExecutionNode[*];  //nodes are inserted before the relational execution
    postExecutionNodes: meta::pure::executionPlan::ExecutionNode[*];  //Nodes are inserted run after the relational execution
-   finallyExecutionNode:  meta::relational::executionPlan::FinallyExecutionNode[*];
    templateFunctions : String[*];
 }
 
