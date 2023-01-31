@@ -245,7 +245,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>3.8.4</legend.pure.version>
+        <legend.pure.version>3.8.5</legend.pure.version>
         <legend.shared.version>0.22.5</legend.shared.version>
 
         <!-- SONAR -->
