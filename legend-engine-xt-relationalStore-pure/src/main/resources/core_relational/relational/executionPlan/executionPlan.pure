@@ -50,7 +50,7 @@ Class meta::relational::mapping::SQLExecutionNode extends ExecutionNode
    onConnectionCloseCommitQuery : String[0..1];
    onConnectionCloseRollbackQuery : String[0..1];
    resultColumns : SQLResultColumn[*];
-   connection: DatabaseConnection[1];
+   connection: DatabaseConnection[0..1];
 }
 
 Class meta::relational::mapping::RelationalInstantiationExecutionNode extends ExecutionNode
@@ -82,9 +82,22 @@ Class meta::relational::mapping::CreateAndPopulateTempTableExecutionNode extends
    inputVarNames            : String[*];
    tempTableName            : String[1];
    tempTableColumnMetaData  : TempTableColumnMetaData[*];
-   connection               : DatabaseConnection[1];
+   connection               : DatabaseConnection[0..1];
 }
 
 Class meta::pure::executionPlan::RelationalBlockExecutionNode extends meta::pure::executionPlan::SequenceExecutionNode
 {
+  finallyExecutionNode :  meta::relational::executionPlan::FinallyExecutionNode[*];
+  connection: DatabaseConnection[0..1];
+}
+
+Class meta::relational::executionPlan::FinallyExecutionNode extends ExecutionNode
+{
+  connection: DatabaseConnection[0..1];
+}
+
+Class meta::relational::executionPlan::UpdateSqlExecutionNode extends ExecutionNode
+{
+   sqlCommands: String[*];
+   connection: DatabaseConnection[0..1];
 }

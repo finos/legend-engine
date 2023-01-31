@@ -1,0 +1,71 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+import meta::relational::metamodel::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::functions::tempTable::*;
+import meta::relational::executionPlan::*;
+
+Class <<typemodifiers.abstract>> meta::pure::alloy::connections::alloy::isolation::TempTableIsolationStrategy
+{  
+}
+
+Class meta::pure::alloy::connections::alloy::isolation::DefaultIsolationStrategy extends meta::pure::alloy::connections::alloy::isolation::TempTableIsolationStrategy
+{
+  updateNodes(u: meta::relational::commands::UpdateSQLQueryCommands[1], dbConfig: meta::relational::functions::sqlQueryToString::DbConfig[1])
+  {
+    let ddlCommands = $dbConfig.dbExtension.ddlCommandsTranslatorForTempTable->toOne()->eval();
+    let createTempTable = $ddlCommands.createTable->toOne()->eval($u.createTempTable, $dbConfig)->sqlStringToUpdateNode();
+    let loadTable = $ddlCommands.loadTable->toOne()->eval($u.loadTable, $dbConfig)->sqlStringToUpdateNode();
+    [$createTempTable, $loadTable];
+  }:UpdateSqlExecutionNode[*];
+
+  updateNodeForFinally(u: meta::relational::commands::UpdateSQLQueryCommands[1], ext: DbExtension[1])
+  {
+    let ddlCommands = $ext.ddlCommandsTranslatorForTempTable->toOne()->eval();
+    $ddlCommands.dropTable->toOne()->eval($u.dropTable)->sqlStringToUpdateNode()->toLazyVoidRelationalResult();
+  }:UpdateSqlExecutionNode[1];
+
+  generateTempTablePath(t: meta::relational::metamodel::relation::Table[1]){$t.name->toOne()}: String[1];
+
+  createSchema(){^Schema (name = 'default', database = ^Database(name= 'TempTableDb'))}:Schema[1];
+}
+
+Class meta::pure::alloy::connections::alloy::isolation::IsolateByAuthId extends meta::pure::alloy::connections::alloy::isolation::TempTableIsolationStrategy
+{  
+  updateNodes(u: meta::relational::commands::UpdateSQLQueryCommands[1], dbConfig:DbConfig[1])
+  {
+    let ddlCommands = $dbConfig.dbExtension.ddlCommandsTranslatorForTempTable->toOne()->eval();
+    let createSchema = $ddlCommands.createSchema->toOne()->eval($u.createSchema)->sqlStringToUpdateNode();
+    let useDbCommand = $ddlCommands.useDb->toOne()->eval($u.useDb->toOne())->sqlStringToUpdateNode();
+    let createTempTable = $ddlCommands.createTable->toOne()->eval($u.createTempTable, $dbConfig)->sqlStringToUpdateNode();
+    let loadTable = $ddlCommands.loadTable->toOne()->eval($u.loadTable, $dbConfig)->sqlStringToUpdateNode();
+    [$createSchema, $useDbCommand->toOne(), $createTempTable, $loadTable];
+  }:UpdateSqlExecutionNode[*];
+
+  updateNodeForFinally(u: meta::relational::commands::UpdateSQLQueryCommands[1], ext: DbExtension[1])
+  {
+    let ddlCommands = $ext.ddlCommandsTranslatorForTempTable->toOne()->eval();
+    $ddlCommands.dropSchema->toOne()->eval($u.dropSchema)->sqlStringToUpdateNode()->toLazyVoidRelationalResult();
+  }:UpdateSqlExecutionNode[1];
+
+  generateTempTablePath(t: meta::relational::metamodel::relation::Table[1]){$t.schema.database.name->toOne() + '.' + $t.schema.name->toOne() + '.' + $t.name->toOne()}: String[1];
+
+  createSchema(requestIdVarPlaceHolder: String[1])
+  {
+    let authIdVarPlaceHolder = stringToPlaceHolder('auth_id');
+    ^Schema (name = $authIdVarPlaceHolder+'_schema_'+$requestIdVarPlaceHolder, database = ^Database(name= $authIdVarPlaceHolder+'_db'));
+  }:Schema[1];
+}
+
+

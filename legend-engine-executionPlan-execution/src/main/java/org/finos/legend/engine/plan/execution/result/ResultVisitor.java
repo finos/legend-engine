@@ -29,6 +29,8 @@ public interface ResultVisitor<T>
 
     T visit(MultiResult multiResult);
 
+    T visit(UpdateNodeResult updateNodeResult);
+
     default T visit(StreamingResult multiResult)
     {
         throw new UnsupportedOperationException("Not supported");

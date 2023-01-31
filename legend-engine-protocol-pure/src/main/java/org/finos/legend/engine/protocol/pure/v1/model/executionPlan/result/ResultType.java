@@ -24,6 +24,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = TDSResultType.class, name = "tds"),
         @JsonSubTypes.Type(value = DataTypeResultType.class, name = "dataType"),
         @JsonSubTypes.Type(value = VoidResultType.class, name = "void"),
+        @JsonSubTypes.Type(value = LazyVoidResultType.class, name = "lazyVoid"),
+        @JsonSubTypes.Type(value = UpdateNodeResultType.class, name = "updateNode"),
 })
 public abstract class ResultType
 {

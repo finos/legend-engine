@@ -14,6 +14,13 @@
 
 package org.finos.legend.engine.language.pure.modelManager.sdlc.configuration;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, defaultImpl = ServerConnectionConfiguration.class, property = "_type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = PureServerConnectionConfiguration.class, name = "pureServerConnectionConfiguration")
+})
 public class ServerConnectionConfiguration
 {
     public String host;

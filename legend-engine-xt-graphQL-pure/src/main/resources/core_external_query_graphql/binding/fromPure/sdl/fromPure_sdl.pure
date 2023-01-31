@@ -1,6 +1,56 @@
 import meta::external::query::graphQL::binding::fromPure::sdl::*;
 import meta::external::query::graphQL::metamodel::sdl::typeSystem::*;
 import meta::external::query::graphQL::metamodel::sdl::executable::*;
+import meta::pure::model::unit::*;
+
+
+Class meta::external::query::graphQL::metamodel::sdl::GraphQLSDLContainer extends meta::external::shared::format::metamodel::SchemaDetail
+{
+  document : meta::external::query::graphQL::metamodel::sdl::Document[1];
+}
+
+Class meta::external::query::graphQL::binding::fromPure::sdl::ModelToGraphQLConfig extends meta::external::shared::format::transformation::fromPure::ModelToSchemaConfiguration
+{
+}
+
+function meta::external::query::graphQL::binding::fromPure::sdl::pureToGraphQLSDL(modelUnit: ModelUnit[1], config: ModelToGraphQLConfig[1]): meta::external::shared::format::metamodel::SchemaSet[1]
+{
+  let packageableElements = $modelUnit->resolve().packageableElements;
+  let document = 
+  ^meta::external::query::graphQL::metamodel::sdl::Document
+  (
+    definitions = meta::external::query::graphQL::binding::fromPure::sdl::transformPureToGraphQLSDL($packageableElements)
+  );
+  let sdlcContainer = 
+  ^meta::external::query::graphQL::metamodel::sdl::GraphQLSDLContainer
+  (
+    document = $document
+  );
+  let schemaSetSepPos  = $config.targetSchemaSet->lastIndexOf('::');
+  let schemaSetPkgName = $config.targetSchemaSet->substring(0, $schemaSetSepPos);
+  let schemaSet = ^meta::external::shared::format::metamodel::SchemaSet(
+      package = pathToPackage($schemaSetPkgName, true),
+      name    = $config.targetSchemaSet->substring($schemaSetSepPos+2),
+      format  = meta::external::query::graphQL::contract::graphQLSdlContractID()
+   );
+  let schema = 
+  ^meta::external::shared::format::metamodel::Schema(
+    set = $schemaSet,
+    location = 'types.graphql',
+    detail = $sdlcContainer
+   );
+  ^$schemaSet(
+    schemas = $schema
+   );
+  $schemaSet;
+}
+
+function meta::external::query::graphQL::binding::fromPure::sdl::schemaDetailToString(schemaDetail: meta::external::query::graphQL::metamodel::sdl::GraphQLSDLContainer[1]): String[1]
+{
+  $schemaDetail.document.definitions
+                  ->map(x|$x->meta::external::query::graphQL::serialization::graphQLtoString())
+                  ->joinStrings('\n');
+}
 
 function meta::external::query::graphQL::binding::fromPure::sdl::transformPureToGraphQLSDL(types:meta::pure::metamodel::PackageableElement[*]):meta::external::query::graphQL::metamodel::sdl::typeSystem::TypeSystemDefinition[*]
 {

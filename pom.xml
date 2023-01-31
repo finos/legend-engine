@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>3.34.2-SNAPSHOT</version>
+    <version>3.34.5-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -34,6 +34,14 @@
             With our current CI, we must make sure test-report module do not run last,
             otherwise, publishing could fail
         -->
+        <module>legend-engine-xt-authentication-pure</module>
+        <module>legend-engine-xt-authentication-protocol</module>
+        <module>legend-engine-xt-authentication-grammar</module>
+        <module>legend-engine-xt-authentication-implementation-core</module>
+        <module>legend-engine-xt-authentication-implementation-vault-aws</module>
+        <module>legend-engine-xt-authentication-implementation-gcp-federation</module>
+        <module>legend-engine-xt-authentication-example</module>
+
         <module>legend-engine-test-reports</module>
 
         <module>legend-engine-xt-graphQL-grammar</module>
@@ -54,6 +62,7 @@
         <module>legend-engine-xt-persistence-protocol</module>
         <module>legend-engine-xt-persistence-pure</module>
         <module>legend-engine-xt-persistence-test-runner</module>
+        <module>legend-engine-xt-persistence-api</module>
 
         <module>legend-engine-xt-persistence-cloud-grammar</module>
         <module>legend-engine-xt-persistence-cloud-protocol</module>
@@ -229,6 +238,7 @@
         <module>legend-engine-xt-sql-grammar</module>
         <module>legend-engine-xt-sql-protocol</module>
         <module>legend-engine-xt-sql-compiler</module>
+        <module>legend-engine-pure-runtime-execution</module>
         <module>legend-engine-xt-sql-grammar-integration</module>
         <module>legend-engine-xt-sql-query</module>
         <module>legend-engine-xt-sql-pure</module>
@@ -236,7 +246,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>3.8.3</legend.pure.version>
+        <legend.pure.version>3.8.4</legend.pure.version>
         <legend.shared.version>0.22.5</legend.shared.version>
 
         <!-- SONAR -->
@@ -673,6 +683,43 @@
             </dependency>
 
             <!-- ENGINE -->
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-authentication-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-authentication-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-authentication-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-authentication-implementation-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-authentication-implementation-vault-aws</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-authentication-implementation-gcp-federation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-authentication-example</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-graphQL-query</artifactId>
@@ -728,6 +775,11 @@
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-pure-runtime-compiler</artifactId>
                 <type>test-jar</type>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-runtime-execution</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
