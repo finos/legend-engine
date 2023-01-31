@@ -14,13 +14,13 @@
 
 package org.finos.legend.engine;
 
-import java.sql.PreparedStatement;
-import java.sql.Statement;
+import org.finos.legend.engine.pg.postgres.PostgresPreparedStatement;
+import org.finos.legend.engine.pg.postgres.PostgresStatement;
 
 public interface SessionHandler
 {
 
-  PreparedStatement prepareStatement(String query) throws Exception;
+  PostgresPreparedStatement prepareStatement(String query) throws Exception;
 
-  Statement createStatement() throws Exception;
+  PostgresStatement createStatement() throws Exception;
 }

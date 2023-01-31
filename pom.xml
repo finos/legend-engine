@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>3.34.4-SNAPSHOT</version>
+    <version>3.34.5-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -1634,6 +1634,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-sql-grammar-integration</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pg-protocol</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!-- ENGINE -->

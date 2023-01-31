@@ -22,7 +22,6 @@
 package org.finos.legend.engine.pg.postgres;
 
 import io.netty.channel.Channel;
-import java.sql.ResultSet;
 import java.util.List;
 import javax.annotation.Nullable;
 import org.finos.legend.engine.pg.postgres.types.PGType;
@@ -50,7 +49,7 @@ class ResultSetReceiver
     this.formatCodes = formatCodes;
   }
 
-  public void sendResultSet(ResultSet rs)
+  public void sendResultSet(PostgresResultSet rs)
   {
 
   }

@@ -14,10 +14,7 @@
 
 package org.finos.legend.engine;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +22,9 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
 import org.finos.legend.engine.pg.postgres.FormatCodes;
+import org.finos.legend.engine.pg.postgres.PostgresPreparedStatement;
+import org.finos.legend.engine.pg.postgres.PostgresResultSet;
+import org.finos.legend.engine.pg.postgres.PostgresStatement;
 import org.slf4j.Logger;
 
 public class Session implements AutoCloseable
@@ -107,14 +107,14 @@ public class Session implements AutoCloseable
             oldPortal.closeActiveConsumer();
         }*/
 
-    PreparedStatement preparedStatement = portal.prep.prep;
+    PostgresPreparedStatement preparedStatement = portal.prep.prep;
     for (int i = 0; i < params.size(); i++)
     {
       try
       {
         preparedStatement.setObject(i, params.get(i));
       }
-      catch (SQLException e)
+      catch (Exception e)
       {
         throw new RuntimeException(e);
       }
@@ -159,7 +159,7 @@ public class Session implements AutoCloseable
         Prepared prepared = parsed.get(portalOrStatement);
         try
         {
-          PreparedStatement preparedStatement = prepared.prep;
+          PostgresPreparedStatement preparedStatement = prepared.prep;
           if (portalOrStatement == null)
           {
             return new DescribeResult(null, null);
@@ -170,7 +170,7 @@ public class Session implements AutoCloseable
                 preparedStatement.getParameterMetaData());
           }
         }
-        catch (SQLException e)
+        catch (Exception e)
         {
           throw new RuntimeException(e);
         }
@@ -239,7 +239,7 @@ public class Session implements AutoCloseable
         {
           prepared.prep.close();
         }
-        catch (SQLException e)
+        catch (Exception e)
         {
           throw new RuntimeException(e);
         }
@@ -268,7 +268,7 @@ public class Session implements AutoCloseable
     }
   }
 
-  public ResultSet execute(String portalName, int maxRows)
+  public PostgresResultSet execute(String portalName, int maxRows)
   {
     Portal portal = getSafePortal(portalName);
     if (LOGGER.isDebugEnabled())
@@ -278,7 +278,7 @@ public class Session implements AutoCloseable
     try
     {
       //TODO IDENTIFY THE USE CASE
-      PreparedStatement preparedStatement = portal.prep.prep;
+      PostgresPreparedStatement preparedStatement = portal.prep.prep;
       if (preparedStatement == null)
       {
         return null;
@@ -291,13 +291,13 @@ public class Session implements AutoCloseable
       }
       return preparedStatement.getResultSet();
     }
-    catch (SQLException e)
+    catch (Exception e)
     {
       throw new RuntimeException(e);
     }
   }
 
-  public ResultSet executeSimple(String query)
+  public PostgresResultSet executeSimple(String query)
   {
     if (LOGGER.isDebugEnabled())
     {
@@ -305,7 +305,7 @@ public class Session implements AutoCloseable
     }
     try
     {
-      Statement statement = sessionHandler.createStatement();
+      PostgresStatement statement = sessionHandler.createStatement();
       boolean results = statement.execute(query);
       if (!results)
       {
@@ -378,7 +378,7 @@ public class Session implements AutoCloseable
     /**
      * The prepared Statment
      */
-    PreparedStatement prep;
+    PostgresPreparedStatement prep;
 
     /**
      * The list of param types

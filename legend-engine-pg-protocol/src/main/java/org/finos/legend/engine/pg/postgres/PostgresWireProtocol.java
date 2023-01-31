@@ -37,8 +37,6 @@ import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.sql.ParameterMetaData;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -320,7 +318,7 @@ public class PostgresWireProtocol
       }
     }
 
-    private void dispatchState(ByteBuf buffer, DelayableWriteChannel channel) throws SQLException
+    private void dispatchState(ByteBuf buffer, DelayableWriteChannel channel) throws Exception
     {
       switch (decoder.state())
       {
@@ -349,7 +347,7 @@ public class PostgresWireProtocol
       }
     }
 
-    private void dispatchMessage(ByteBuf buffer, DelayableWriteChannel channel) throws SQLException
+    private void dispatchMessage(ByteBuf buffer, DelayableWriteChannel channel) throws Exception
     {
       switch (decoder.msgType())
       {
@@ -707,12 +705,12 @@ public class PostgresWireProtocol
    * <p>
    * Body: | 'S' = prepared statement or 'P' = portal | string nameOfPortalOrStatement
    */
-  private void handleDescribeMessage(ByteBuf buffer, Channel channel) throws SQLException
+  private void handleDescribeMessage(ByteBuf buffer, Channel channel) throws Exception
   {
     byte type = buffer.readByte();
     String portalOrStatement = readCString(buffer);
     DescribeResult describeResult = session.describe((char) type, portalOrStatement);
-    ResultSetMetaData fields = describeResult.getFields();
+    PostgresResultSetMetaData fields = describeResult.getFields();
     if (type == 'S')
     {
       ParameterMetaData parameters = describeResult.getParameters();
@@ -792,17 +790,18 @@ public class PostgresWireProtocol
 
     try
     {
-      ResultSet resultSet = session.execute(portalName, maxRows);
+      PostgresResultSet resultSet = session.execute(portalName, maxRows);
       sendResultSet(channel, query, resultSet, false);
     }
-    catch (SQLException e)
+    catch (Exception e)
     {
       throw new RuntimeException(e);
     }
   }
 
-  private void sendResultSet(Channel channel, String query, ResultSet rs, boolean isSimpleQuery)
-      throws SQLException
+  private void sendResultSet(Channel channel, String query, PostgresResultSet rs,
+      boolean isSimpleQuery)
+      throws Exception
   {
     int rowCount = 0;
     if (rs != null)
@@ -812,7 +811,7 @@ public class PostgresWireProtocol
         //Simple query requires to send description
         Messages.sendRowDescription(channel, rs.getMetaData(), null);
       }
-      ResultSetMetaData metaData = rs.getMetaData();
+      PostgresResultSetMetaData metaData = rs.getMetaData();
       List<PGType> columnTypes = new ArrayList<>(metaData.getColumnCount());
       for (int i = 0; i < metaData.getColumnCount(); i++)
       {
@@ -987,7 +986,7 @@ public class PostgresWireProtocol
     }
     try
     {
-      ResultSet resultSet = session.executeSimple(query);
+      PostgresResultSet resultSet = session.executeSimple(query);
       sendResultSet(channel, query, resultSet, true);
       result.complete(null);
       return result;

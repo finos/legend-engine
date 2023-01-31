@@ -20,6 +20,6 @@ import org.finos.legend.engine.pg.postgres.auth.User;
 public interface SessionsFactory
 {
 
-  Session createSession(@Nullable String defaultSchema, User authenticatedUser);
+  Session createSession(@Nullable String defaultSchema, User authenticatedUser) throws Exception;
 
 }

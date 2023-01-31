@@ -39,9 +39,6 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import java.nio.charset.StandardCharsets;
 import java.sql.ParameterMetaData;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Locale;
 import java.util.SortedSet;
@@ -341,8 +338,8 @@ public class Messages
    * above length.
    */
   @SuppressWarnings({"unchecked", "rawtypes"})
-  static void sendDataRow(Channel channel, ResultSet rs, List<PGType> columnTypes,
-      @Nullable FormatCodes.FormatCode[] formatCodes) throws SQLException
+  static void sendDataRow(Channel channel, PostgresResultSet rs, List<PGType> columnTypes,
+      @Nullable FormatCodes.FormatCode[] formatCodes) throws Exception
   {
     int length = 4 + 2;
     assert columnTypes.size() == rs.getMetaData().getColumnCount()
@@ -458,8 +455,8 @@ public class Messages
    * See https://www.postgresql.org/docs/current/static/protocol-message-formats.html
    */
   static void sendRowDescription(Channel channel,
-      ResultSetMetaData resultSetMetaData,
-      @Nullable FormatCodes.FormatCode[] formatCodes) throws SQLException
+      PostgresResultSetMetaData resultSetMetaData,
+      @Nullable FormatCodes.FormatCode[] formatCodes) throws Exception
   {
     int length = 4 + 2;
     int columnSize = 4 + 2 + 4 + 2 + 4 + 2;
