@@ -1,0 +1,98 @@
+package org.finos.legend.engine.protocol.store.elasticsearch.specification.utils;
+
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.BeanProperty;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TreeTraversingParser;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * Elasticsearch have 3 union variants: externally tagged, internally tagged, and simple union
+ * Only one field of on the union should be not-null
+ * During serialization, we pick the non-null value, and serialize it
+ * We need to find which field we need to assign the value to during deserialization
+ *
+ * This variant is internally tagged - meaning the object itself contains the type name
+ */
+public class InternalTaggedUnionDeserializer extends JsonDeserializer<Object> implements ContextualDeserializer
+{
+    private static final ConcurrentHashMap<Class<?>, String> TYPE_NAMES = new ConcurrentHashMap<>();
+
+    private JavaType type;
+
+    public InternalTaggedUnionDeserializer()
+    {
+
+    }
+
+    public InternalTaggedUnionDeserializer(JavaType type)
+    {
+        this.type = type;
+    }
+
+    @Override
+    public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) throws JsonMappingException
+    {
+        return new InternalTaggedUnionDeserializer(ctxt.getContextualType());
+    }
+
+    @Override
+    public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException
+    {
+        Class<?> rawClass = this.type.getRawClass();
+
+        try
+        {
+            String typeField = TYPE_NAMES.computeIfAbsent(rawClass, c -> c.getAnnotation(JsonTypeName.class).value());
+
+            // read as node
+            ObjectNode node = p.readValueAsTree();
+
+            // get the field value
+            String type = node.get(typeField).asText();
+
+            // find field
+            Field field = rawClass.getField(type);
+
+            // convert json to actual type
+            JavaType javaType = ctxt.getTypeFactory().constructType(field.getGenericType());
+            TreeTraversingParser parserForType = new TreeTraversingParser(node);
+            parserForType.nextToken();
+            Object value = ctxt.readValue(parserForType, javaType);
+
+            // create union class and assign deserialize value
+            Object union = rawClass.getDeclaredConstructor().newInstance();
+            field.set(union, value);
+
+            return union;
+        }
+        catch (ReflectiveOperationException e)
+        {
+            throw ctxt.instantiationException(rawClass, e);
+        }
+    }
+
+    @Override
+    public Object getNullValue(DeserializationContext ctxt) throws JsonMappingException
+    {
+        Class<?> rawClass = this.type.getRawClass();
+
+        try
+        {
+            return rawClass.getDeclaredConstructor().newInstance();
+        }
+        catch (ReflectiveOperationException e)
+        {
+            throw ctxt.instantiationException(rawClass, e);
+        }
+    }
+}
