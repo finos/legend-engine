@@ -15,22 +15,15 @@
 
 package org.finos.legend.engine.pg.postgres;
 
-import java.sql.ParameterMetaData;
+import org.eclipse.collections.api.tuple.Pair;
 
-public interface PostgresPreparedStatement
+import java.util.List;
+
+public interface LegendExecutionClient
 {
+  public List<LegendColumn> getSchema(String query);
 
-  void setObject(int i, Object o) throws Exception;
+  public Iterable<TDSRow> executeQuery(String query);
 
-  PostgresResultSetMetaData getMetaData() throws Exception;
-
-  ParameterMetaData getParameterMetaData() throws Exception;
-
-  void close() throws Exception;
-
-  void setMaxRows(int maxRows) throws Exception;
-
-  boolean execute() throws Exception;
-
-  PostgresResultSet getResultSet() throws Exception;
+  Pair<List<LegendColumn>, Iterable<TDSRow>> getSchemaAndExecuteQuery(String query);
 }
