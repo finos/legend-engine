@@ -210,19 +210,36 @@ meta::external::language::java::metamodel::annotations::json::JsonIgnoreProperti
    value: String[*];
 }
 
-Class meta::external::language::java::metamodel::annotations::json::JsonIgnore extends meta::external::language::java::metamodel::Annotation
+Class
+{
+  meta::external::language::java::metamodel::annotations::AnnotationJavaInfo.javaClass = 'com.fasterxml.jackson.annotation.JsonIgnore'
+}
+meta::external::language::java::metamodel::annotations::json::JsonIgnore extends meta::external::language::java::metamodel::Annotation
 {
 }
 
-Class meta::external::language::java::metamodel::annotations::json::JsonAnyGetter extends meta::external::language::java::metamodel::Annotation
+Class
+{
+  meta::external::language::java::metamodel::annotations::AnnotationJavaInfo.javaClass = 'com.fasterxml.jackson.annotation.JsonAnyGetter'
+}
+meta::external::language::java::metamodel::annotations::json::JsonAnyGetter extends meta::external::language::java::metamodel::Annotation
 {
 }
 
-Class meta::external::language::java::metamodel::annotations::json::JsonAnySetter extends meta::external::language::java::metamodel::Annotation
+Class
 {
+  meta::external::language::java::metamodel::annotations::AnnotationJavaInfo.javaClass = 'com.fasterxml.jackson.annotation.JsonAnySetter'
+}
+meta::external::language::java::metamodel::annotations::json::JsonAnySetter extends meta::external::language::java::metamodel::Annotation
+{
+
 }
 
-Class meta::external::language::java::metamodel::annotations::json::JsonValue extends meta::external::language::java::metamodel::Annotation
+Class 
+{
+  meta::external::language::java::metamodel::annotations::AnnotationJavaInfo.javaClass = 'com.fasterxml.jackson.annotation.JsonValue'
+}
+meta::external::language::java::metamodel::annotations::json::JsonValue extends meta::external::language::java::metamodel::Annotation
 {
 }
 

@@ -43,12 +43,12 @@
             <artifactId>eclipse-collections-api</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-ide-light-metadata-pure</artifactId>
-            <version>${project.version}</version>
-            <scope>runtime</scope>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.finos.legend.engine</groupId>-->
+<!--            <artifactId>legend-engine-pure-ide-light-metadata-pure</artifactId>-->
+<!--            <version>${project.version}</version>-->
+<!--            <scope>runtime</scope>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -66,41 +66,41 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-runtime-compiler</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-grammar</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-graphQL-grammar-integration</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-text-compiler</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-flatdata-model</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-text-grammar</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-sql-grammar-integration</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-changetoken-pure</artifactId>
-            <scope>runtime</scope>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.finos.legend.engine</groupId>-->
+<!--            <artifactId>legend-engine-xt-relationalStore-grammar</artifactId>-->
+<!--            <scope>runtime</scope>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.finos.legend.engine</groupId>-->
+<!--            <artifactId>legend-engine-xt-graphQL-grammar-integration</artifactId>-->
+<!--            <scope>runtime</scope>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.finos.legend.engine</groupId>-->
+<!--            <artifactId>legend-engine-xt-text-compiler</artifactId>-->
+<!--            <scope>runtime</scope>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.finos.legend.engine</groupId>-->
+<!--            <artifactId>legend-engine-xt-flatdata-model</artifactId>-->
+<!--            <scope>runtime</scope>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.finos.legend.engine</groupId>-->
+<!--            <artifactId>legend-engine-xt-text-grammar</artifactId>-->
+<!--            <scope>runtime</scope>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.finos.legend.engine</groupId>-->
+<!--            <artifactId>legend-engine-xt-sql-grammar-integration</artifactId>-->
+<!--            <scope>runtime</scope>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.finos.legend.engine</groupId>-->
+<!--            <artifactId>legend-engine-xt-changetoken-pure</artifactId>-->
+<!--            <scope>runtime</scope>-->
+<!--        </dependency>-->
         <!-- Access to Legend Compiler in IDE Light -->
 
         <!-- Access to Legend Execute in IDE Light -->

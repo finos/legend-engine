@@ -22,7 +22,6 @@ public class ElasticsearchTestServerInvoker
     public static void main(String... args) throws Exception
     {
         String tag = args.length > 0 ? args[0] : "7.8.0";
-        Assume.assumeTrue(DockerClientFactory.instance().isDockerAvailable());
         new ElasticsearchTestServer(tag).run();
     }
 }

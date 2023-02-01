@@ -14,8 +14,6 @@
 
 package org.finos.legend.pure.elasticsearch.specification.generator;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
@@ -25,6 +23,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.Instant;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
@@ -66,9 +66,7 @@ public class ElasticsearchPureSpecificationGenerator
     public void generate() throws Exception
     {
         String specAJson = String.join("", Files.readAllLines(this.specPath));
-
         CompiledExecutionSupport compileSupport = getCompileSupport();
-
         Class<?> generatorClass = Class.forName("org.finos.legend.pure.generated.core_elasticsearch_specification_metamodel_specification_generator");
         Method generatorMethod = generatorClass.getMethod("Root_meta_external_store_elasticsearch_specification_metamodel_generatePureCode_String_1__String_1__String_MANY__Boolean_1__String_1_", String.class, String.class, RichIterable.class, boolean.class, ExecutionSupport.class);
         String pmcdJson = (String) generatorMethod.invoke(null, specAJson, this.pkgPrefix, apisToGenerate, false, compileSupport);
@@ -77,7 +75,11 @@ public class ElasticsearchPureSpecificationGenerator
         PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().withRenderStyle(RenderStyle.PRETTY).build());
         String code = grammarTransformer.renderPureModelContextData(pmcd);
 
-        System.out.println(code);
+        // Legend grammar accepts single quotes on path identifiers, and dont support generics, and these ends wrapping on single quotes (ie abc::'Abc<String>')
+        // So this removes these single quotes
+        Pattern regex = Pattern.compile("(::'(.*)')");
+        Matcher matcher = regex.matcher(code);
+        code = matcher.replaceAll("::$2");
 
         try (InputStream is = ElasticsearchPureSpecificationGenerator.class.getClassLoader().getResourceAsStream("pure_header.txt");
              PrintWriter writer = new PrintWriter(Files.newBufferedWriter(this.generationOutput, StandardCharsets.UTF_8,  StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING))
@@ -95,19 +97,19 @@ public class ElasticsearchPureSpecificationGenerator
             writer.println();
             writer.printf("Profile %s::ESProfile", this.pkgPrefix);
             writer.println("{");
-            writer.println("\tstereotypes: [ContainerProperty, TaggedUnion, ContainerVariant, AdditionalProperty];");
-            writer.println("\ttags: [esQuirk, docURL, specLocation, since, stability, enumName];");
+            writer.println("\tstereotypes: [ContainerProperty, TaggedUnion, ExternalTagged, ContainerVariant, AdditionalProperty];");
+            writer.println("\ttags: [esQuirk, docURL, specLocation, since, stability, name, internalTag];");
             writer.println("}");
             writer.println();
-            writer.printf("Class %s::DictionaryEntrySingleValue<K, V>", this.pkgPrefix);
+            writer.printf("Class %s::DictionaryEntrySingleValue<V>", this.pkgPrefix);
             writer.println("{");
-            writer.println("\tkey: K[1];");
+            writer.println("\tkey: String[1];");
             writer.println("\tvalue: V[0..1];");
             writer.println("}");
             writer.println();
-            writer.printf("Class %s::DictionaryEntryMultiValue<K, V>", this.pkgPrefix);
+            writer.printf("Class %s::DictionaryEntryMultiValue<V>", this.pkgPrefix);
             writer.println("{");
-            writer.println("\tkey: K[1];");
+            writer.println("\tkey: String[1];");
             writer.println("\tvalue: V[*];");
             writer.println("}");
             writer.println();

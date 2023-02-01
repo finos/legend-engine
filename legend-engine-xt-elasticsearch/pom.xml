@@ -34,7 +34,17 @@
     </modules>
 
     <properties>
-<!--        <enforcer.skip>true</enforcer.skip>-->
+<!--        todo -->
+        <skipGeneratePureSpec>false</skipGeneratePureSpec>
     </properties>
+
+    <profiles>
+        <profile>
+            <id>elasticSearchGeneratePure</id>
+            <properties>
+                <skipGeneratePureSpec>false</skipGeneratePureSpec>
+            </properties>
+        </profile>
+    </profiles>
 
 </project>

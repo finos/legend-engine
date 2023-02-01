@@ -14,35 +14,43 @@
 
 package org.finos.legend.engine.plan.execution.stores.elasticsearch.test;
 
-import org.apache.commons.compress.utils.IOUtils;
-import org.apache.http.HttpHost;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.entity.ContentType;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.nio.entity.NStringEntity;
-import org.elasticsearch.client.Request;
-import org.elasticsearch.client.Response;
-import org.elasticsearch.client.RestClient;
-import org.junit.Assert;
-import org.junit.rules.ExternalResource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.testcontainers.elasticsearch.ElasticsearchContainer;
-
-import java.io.ByteArrayOutputStream;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+import org.apache.commons.compress.utils.IOUtils;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.nio.entity.NStringEntity;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.indices.create.CreateRequestBody;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.junit.Assume;
+import org.junit.rules.ExternalResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.testcontainers.DockerClientFactory;
+import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 public class ElasticsearchTestServer extends ExternalResource
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(ElasticsearchTestServer.class);
+    public static final ObjectMapper OBJECT_MAPPER = ObjectMapperFactory.getNewStandardObjectMapper();
 
     private final ElasticsearchContainer container;
-    private RestClient restClient;
+    private CloseableHttpClient restClient;
 
     public ElasticsearchTestServer(String imageTag)
     {
@@ -53,6 +61,7 @@ public class ElasticsearchTestServer extends ExternalResource
     protected void before() throws Throwable
     {
         super.before();
+        Assume.assumeTrue(DockerClientFactory.instance().isDockerAvailable());
         this.run();
     }
 
@@ -61,7 +70,7 @@ public class ElasticsearchTestServer extends ExternalResource
         this.startContainer();
         this.initRestClient();
         this.printTestClusterHealth();
-        this.intTestIndex();
+        this.initTestIndex();
     }
 
     @Override
@@ -79,7 +88,7 @@ public class ElasticsearchTestServer extends ExternalResource
         super.after();
     }
 
-    private void intTestIndex() throws IOException, InterruptedException
+    private void initTestIndex() throws IOException, InterruptedException
     {
         this.createTestIndex();
         this.printTestIndexMapping();
@@ -91,12 +100,14 @@ public class ElasticsearchTestServer extends ExternalResource
 
     private void initRestClient()
     {
+        RequestConfig.Builder requestConfigBuilder = RequestConfig.custom().setConnectTimeout(1000).setSocketTimeout(30000);
+
         CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
         credentialsProvider.setCredentials(AuthScope.ANY,  new UsernamePasswordCredentials("elastic", "s3cret"));
 
-        this.restClient = RestClient
-                .builder(HttpHost.create(this.container.getHttpHostAddress()))
-                .setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider))
+        this.restClient = HttpClientBuilder.create()
+                .setDefaultRequestConfig(requestConfigBuilder.build())
+                .setDefaultCredentialsProvider(credentialsProvider)
                 .build();
     }
 
@@ -110,24 +121,24 @@ public class ElasticsearchTestServer extends ExternalResource
     {
         try (InputStream resource = Objects.requireNonNull(ClassLoader.getSystemResourceAsStream("mapping.json"), "mapping.json not found"))
         {
-            Request request = new Request("PUT", "/omdb-mapped");
-            String mapping = new String(IOUtils.toByteArray(resource), StandardCharsets.UTF_8);
-            request.setJsonEntity(mapping);
-            performRequestAndPrintOutput(this.restClient, request);
+            CreateRequestBody createRequestBody = OBJECT_MAPPER.readValue(resource, CreateRequestBody.class);
+            HttpPut httpPut = new HttpPut(this.container.getHttpHostAddress() + "/omdb-mapped");
+            httpPut.setEntity(new StringEntity(OBJECT_MAPPER.writeValueAsString(createRequestBody), ContentType.APPLICATION_JSON));
+            performRequestAndPrintOutput(this.restClient, httpPut);
         }
     }
 
     private void printTestIndexMapping() throws IOException
     {
-        Request request = new Request("GET", "/omdb-mapped");
-        performRequestAndPrintOutput(this.restClient, request);
+        HttpGet get = new HttpGet(this.container.getHttpHostAddress() + "/omdb-mapped");
+        performRequestAndPrintOutput(this.restClient, get);
     }
 
     private void bulkInsertToTestIndex() throws IOException
     {
         try (InputStream resource = Objects.requireNonNull(ClassLoader.getSystemResourceAsStream("omdb.json"), "mapping.json not found"))
         {
-            Request request = new Request("POST", "/_bulk");
+            HttpPost request = new HttpPost(this.container.getHttpHostAddress() + "/_bulk");
             String records = new String(IOUtils.toByteArray(resource), StandardCharsets.UTF_8);
             request.setEntity(new NStringEntity(records, ContentType.parse("application/x-ndjson")));
             performRequestAndPrintOutput(this.restClient, request);
@@ -136,24 +147,20 @@ public class ElasticsearchTestServer extends ExternalResource
 
     private void printTestIndexCount() throws IOException
     {
-        Request request = new Request("GET", "/omdb-mapped/_count");
-        performRequestAndPrintOutput(this.restClient, request);
+        HttpGet get = new HttpGet(this.container.getHttpHostAddress() + "/omdb-mapped/_count");
+        performRequestAndPrintOutput(this.restClient, get);
     }
 
     private void printTestClusterHealth() throws IOException
     {
-        Request request = new Request("GET", "/_cluster/health");
-        performRequestAndPrintOutput(this.restClient, request);
+        HttpGet get = new HttpGet(this.container.getHttpHostAddress() + "/_cluster/health");
+        performRequestAndPrintOutput(this.restClient, get);
     }
 
-    private void performRequestAndPrintOutput(RestClient client, Request request) throws IOException
+    private void performRequestAndPrintOutput(CloseableHttpClient client, HttpRequestBase request) throws IOException
     {
-        request.addParameter("pretty", Boolean.toString(true));
-        Response response = client.performRequest(request);
-        Assert.assertTrue("Response should be 2xx but got " + response,response.getStatusLine().getStatusCode() >= 200 && response.getStatusLine().getStatusCode() < 300);
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        response.getEntity().writeTo(outputStream);
+//        request.addParameter("pretty", Boolean.toString(true));
+        String response = client.execute(request, new BasicResponseHandler());
         LOGGER.info("{} -> {}", request, response);
-        LOGGER.info("Output:{}{}", System.lineSeparator(), outputStream);
     }
 }

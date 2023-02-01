@@ -26,10 +26,6 @@
     <packaging>jar</packaging>
     <name>Legend Engine - XT - ElasticSearch - V7 - Par/Java - Metamodel</name>
 
-    <properties>
-        <skipGeneratePureSpec>false</skipGeneratePureSpec>
-    </properties>
-
     <dependencies>
         <!-- PURE -->
         <dependency>

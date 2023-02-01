@@ -32,34 +32,15 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <executions>
-<!--                    <execution>-->
-<!--                        <id>generate metamodel</id>-->
-<!--                        <phase>generate-sources</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>java</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <includePluginDependencies>true</includePluginDependencies>-->
-<!--                            <mainClass>org.finos.legend.engine.protocol.generation.GenerateMetaClasses</mainClass>-->
-<!--                            <arguments>-->
-<!--                                <argument>meta::external::store::elasticsearch::metamodel::</argument>-->
-<!--                                <argument>org.finos.legend.engine.protocol.elasticsearch.v7.metamodel</argument>-->
-<!--                                <argument>${project.build.directory}/generated-sources/</argument>-->
-<!--                                <argument/>-->
-<!--                                <argument>meta::protocols::generation::java::configureConventionsWithCoreProtocolClasses_Conventions_1__Conventions_1_</argument>-->
-<!--                            </arguments>-->
-<!--                            <classpathScope>test</classpathScope>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
                     <execution>
-                        <id>generate ES specification protocol</id>
+                        <id>generate ES specification java protocol code</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>java</goal>
                         </goals>
                         <configuration>
                             <includePluginDependencies>true</includePluginDependencies>
-                            <mainClass>org.finos.legend.engine.protocol.generation.GenerateMetaClasses</mainClass>
+                            <mainClass>org.finos.legend.pure.elasticsearch.specification.generator.ElasticsearchJavaSpecificationGenerator</mainClass>
                             <arguments>
                                 <argument>meta::external::store::elasticsearch::v7::metamodel::specification</argument>
                                 <argument>org.finos.legend.engine.protocol.store.elasticsearch.v7.specification</argument>
@@ -83,6 +64,11 @@
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-xt-elasticsearch-V7-pure-metamodel</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-elasticsearch-pure-specification-metamodel</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
