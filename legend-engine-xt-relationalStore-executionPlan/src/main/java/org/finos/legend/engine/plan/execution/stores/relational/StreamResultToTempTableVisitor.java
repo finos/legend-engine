@@ -23,6 +23,7 @@ import org.finos.legend.engine.plan.execution.result.builder.tds.TDSBuilder;
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResultCSVSerializer;
 import org.finos.legend.engine.plan.execution.result.serialization.CsvSerializer;
+import org.finos.legend.engine.plan.execution.result.serialization.RequestIdGenerator;
 import org.finos.legend.engine.plan.execution.result.serialization.TemporaryFile;
 import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.Column;
@@ -118,7 +119,7 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
         }
         if (ingestionMethod == IngestionMethod.CLIENT_FILE)
         {
-            try (TemporaryFile tempFile = new TemporaryFile(config.tempPath, generateId()))
+            try (TemporaryFile tempFile = new TemporaryFile(config.tempPath, RequestIdGenerator.generateId()))
             {
                 CsvSerializer csvSerializer;
                 if (result instanceof RelationalResult)
