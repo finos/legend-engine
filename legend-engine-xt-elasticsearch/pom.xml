@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright 2022 Goldman Sachs
+ Copyright 2023 Goldman Sachs
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -36,9 +36,26 @@
 
     <properties>
 <!--        todo -->
-
         <skipGeneratePureSpec>false</skipGeneratePureSpec>
     </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <!-- Used to copy test results into test reports module -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <useSystemClassLoader>true</useSystemClassLoader>
+                    <useManifestOnlyJar>false</useManifestOnlyJar>
+                    <trimStackTrace>false</trimStackTrace>
+                    <reportsDirectory>
+                        ../../legend-engine-test-reports/surefire-reports-aggregate
+                    </reportsDirectory>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
     <profiles>
         <profile>

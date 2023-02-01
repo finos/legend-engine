@@ -1,4 +1,4 @@
-//  Copyright 2022 Goldman Sachs
+//  Copyright 2023 Goldman Sachs
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -16,13 +16,8 @@ package org.finos.legend.pure.code.core.elasticsearch.v7;
 
 import junit.framework.TestSuite;
 import org.finos.legend.pure.code.core.compiled.test.PureTestBuilderHelper;
-import org.finos.legend.pure.generated.platform_pure_corefunctions_meta;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
-import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
-
-import java.util.regex.Pattern;
 
 public class Test_Pure_ElasticSearch_Metamodel
 {
@@ -30,12 +25,10 @@ public class Test_Pure_ElasticSearch_Metamodel
     {
         CompiledExecutionSupport executionSupport = PureTestBuilderHelper.getClassLoaderExecutionSupport();
         TestSuite suite = new TestSuite();
-        Pattern allowedPackagesPattern = GenericCodeRepository.build("core_elasticsearch_seven_metamodel.definition.json").getAllowedPackagesPattern();
         TestCollection testCollection = TestCollection.collectTests(
-                "meta::external::store::elasticsearch",
+                "meta::external::store::elasticsearch::v7::metamodel",
                 executionSupport.getProcessorSupport(),
-                ci -> allowedPackagesPattern.matcher(platform_pure_corefunctions_meta.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_((PackageableElement) ci, executionSupport)).matches()
-                            && PureTestBuilderHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())
+                ci -> PureTestBuilderHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())
         );
         suite.addTest(PureTestBuilderHelper.buildSuite(testCollection, executionSupport));
         return suite;

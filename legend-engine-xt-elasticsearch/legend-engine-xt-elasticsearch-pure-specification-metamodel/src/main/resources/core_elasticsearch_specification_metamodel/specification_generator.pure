@@ -69,7 +69,6 @@ function meta::external::store::elasticsearch::specification::metamodel::generat
 {
   // todo remove
 
-
   let profile = 'meta::external::store::elasticsearch::v7::metamodel::specification::ESProfile'->pathToElement()->cast(@Profile);
 
   let project = meta::protocols::generation::java::generateProtocolClasses($purePackage, $javaPackage, [], []);
@@ -82,7 +81,6 @@ function meta::external::store::elasticsearch::specification::metamodel::generat
   $elements->fold({element, proj | $element->generateProtocolCode($proj, $conventions, $profile)}, $project);
 
   // todo add helper for mix ins
-
   // add deserializers
 }
 
@@ -152,10 +150,10 @@ function <<access.private>> meta::external::store::elasticsearch::specification:
   // TaggedUnion deserializer
   // -- internal tag - add JsonTypeName too
 
-
   let basicMixIn = javaClass(['public', 'abstract'], $name.first->javaPackage(), $name.second + 'MixIn');
 
   // todo dont do this on external tagged
+
   let withTaggedUnion = if($elem->hasStereotype('TaggedUnion', $esProfile), 
     |
       let lambdaX = j_parameter(javaObject(), 'x');
