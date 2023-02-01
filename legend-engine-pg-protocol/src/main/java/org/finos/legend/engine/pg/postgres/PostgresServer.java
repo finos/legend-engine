@@ -22,15 +22,20 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import javax.net.ssl.SSLContext;
+import org.apache.http.client.CookieStore;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.cookie.BasicClientCookie;
 import org.finos.legend.engine.SessionsFactory;
+import org.finos.legend.engine.pg.postgres.legend.LegendTdsClient;
 import org.finos.legend.engine.pg.postgres.auth.Authentication;
 import org.finos.legend.engine.pg.postgres.auth.AuthenticationMethod;
 import org.finos.legend.engine.pg.postgres.auth.User;
-import org.finos.legend.engine.pg.postgres.jdbc.JDBCSessionFactory;
+import org.finos.legend.engine.pg.postgres.legend.LegendSessionFactory;
 import org.finos.legend.engine.pg.postgres.transport.Netty4OpenChannelsHandler;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.SSLContext;
 
 public class PostgresServer
 {
@@ -128,9 +133,12 @@ public class PostgresServer
   public static void main(String[] args)
   {
     int port = 9998;
-    new PostgresServer(port,
-        new JDBCSessionFactory("jdbc:postgresql://localhost:5432/postgres", "postgres",
-            "vika")).run();
+    CookieStore cookieStore = new BasicCookieStore();
+    BasicClientCookie legendSdlcJsessionid = new BasicClientCookie("LEGEND_SDLC_JSESSIONID", "node0k8i6uzjro6s4tdx2zwqmv8kt1.node0");
+    legendSdlcJsessionid.setDomain("localhost");
+    cookieStore.addCookie(legendSdlcJsessionid);
+    LegendTdsClient client = new LegendTdsClient("localhost", "6300", "SAMPLE-40302763", cookieStore);
+    new PostgresServer(port, new LegendSessionFactory(client)).run();
   }
 }
 

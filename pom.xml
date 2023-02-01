@@ -241,7 +241,6 @@
         <module>legend-engine-xt-sql-query</module>
         <module>legend-engine-xt-sql-pure</module>
         <module>legend-engine-pg-protocol</module>
-        <module>legend-engine-pg-server</module>
     </modules>
 
     <properties>
