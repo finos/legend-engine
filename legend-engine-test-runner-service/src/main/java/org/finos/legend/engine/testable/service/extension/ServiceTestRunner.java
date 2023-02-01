@@ -36,26 +36,23 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.CompositeExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.KeyedExecutionParameter;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureMultiExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTestSuite;
 import org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTest;
-import org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTestId;
 import org.finos.legend.engine.protocol.pure.v1.model.test.Test;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
-import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestError;
-import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestFailed;
-import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestPassed;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
-import org.finos.legend.engine.testable.extension.TestRunner;
 import org.finos.legend.engine.testable.assertion.TestAssertionEvaluator;
+import org.finos.legend.engine.testable.extension.TestRunner;
 import org.finos.legend.engine.testable.helper.PrimitiveValueSpecificationToObjectVisitor;
 import org.finos.legend.engine.testable.service.result.MultiExecutionServiceTestResult;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
@@ -105,32 +102,31 @@ public class ServiceTestRunner implements TestRunner
     }
 
     @Override
-    public List<TestResult> executeTestSuite(Root_meta_pure_test_TestSuite testSuite, List<AtomicTestId> atomicTestIds, PureModel pureModel, PureModelContextData data)
+    public List<TestResult> executeTestSuite(Root_meta_pure_test_TestSuite testSuite, List<String> atomicTestIds, PureModel pureModel, PureModelContextData data)
     {
         RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions = extensions.flatCollect(e -> e.getExtraExtensions(pureModel));
         MutableList<PlanTransformer> planTransformers = extensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers);
 
         Service service = ListIterate.detect(data.getElementsOfType(Service.class), ele -> ele.getPath().equals(getElementFullPath(pureService, pureModel.getExecutionSupport())));
         ServiceTestSuite suite = ListIterate.detect(service.testSuites, ts -> ts.id.equals(testSuite._id()));
-        List<String> testIds = ListIterate.collect(atomicTestIds, testId -> testId.atomicTestId);
         if (service.execution instanceof PureMultiExecution)
         {
             Map<String, MultiExecutionServiceTestResult> testResultsByTestId = Maps.mutable.empty();
-            for (AtomicTest test : suite.tests)
+            List<AtomicTest> atomicTestsInScope = ListIterate.select(suite.tests, t -> atomicTestIds.contains(t.id));
+            for (AtomicTest test : atomicTestsInScope)
             {
                 MultiExecutionServiceTestResult multiExecutionServiceTestResult = new MultiExecutionServiceTestResult();
                 multiExecutionServiceTestResult.testable = getElementFullPath(pureService, pureModel.getExecutionSupport());
-                multiExecutionServiceTestResult.atomicTestId = new AtomicTestId();
-                multiExecutionServiceTestResult.atomicTestId.atomicTestId = test.id;
-                multiExecutionServiceTestResult.atomicTestId.testSuiteId = suite.id;
+                multiExecutionServiceTestResult.atomicTestId = test.id;
+                multiExecutionServiceTestResult.testSuiteId = suite.id;
 
                 testResultsByTestId.put(test.id, multiExecutionServiceTestResult);
             }
-            return executeMultiExecutionTestSuite((PureMultiExecution) service.execution, suite, testIds, pureModel, data, routerExtensions, planTransformers, testResultsByTestId);
+            return executeMultiExecutionTestSuite((PureMultiExecution) service.execution, suite, atomicTestIds, pureModel, data, routerExtensions, planTransformers, testResultsByTestId);
         }
         else if (service.execution instanceof PureSingleExecution)
         {
-            return executeSingleExecutionTestSuite((PureSingleExecution) service.execution, suite, testIds, pureModel, data, routerExtensions, planTransformers);
+            return executeSingleExecutionTestSuite((PureSingleExecution) service.execution, suite, atomicTestIds, pureModel, data, routerExtensions, planTransformers);
         }
         else
         {
@@ -195,7 +191,7 @@ public class ServiceTestRunner implements TestRunner
                             JavaHelper.compilePlan(execPlan, null);
                             org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult testResult = executeServiceTest((ServiceTest) test, execPlan);
                             testResult.testable = getElementFullPath(pureService, pureModel.getExecutionSupport());
-                            testResult.atomicTestId.testSuiteId = suite.id;
+                            testResult.testSuiteId = suite.id;
                             testResultsByTestId.get(test.id).addTestResult(key, testResult);
                         }
                         catch (Exception exception)
@@ -259,7 +255,7 @@ public class ServiceTestRunner implements TestRunner
                 {
                     org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult testResult = executeServiceTest((ServiceTest) test, singleExecutionPlan);
                     testResult.testable = getElementFullPath(pureService, pureModel.getExecutionSupport());
-                    testResult.atomicTestId.testSuiteId = suite.id;
+                    testResult.testSuiteId = suite.id;
 
                     results.add(testResult);
                 }
@@ -292,9 +288,6 @@ public class ServiceTestRunner implements TestRunner
 
     private org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult executeServiceTest(ServiceTest serviceTest, SingleExecutionPlan executionPlan)
     {
-        AtomicTestId atomicTestId = new AtomicTestId();
-        atomicTestId.atomicTestId = serviceTest.id;
-
         SerializationFormat testSerializationFormat = getSerializationFormatForTest(serviceTest);
 
         try
@@ -316,8 +309,6 @@ public class ServiceTestRunner implements TestRunner
                 result = new ConstantResult(((StreamingResult) result).flush(((StreamingResult) result).getSerializer(testSerializationFormat)));
             }
 
-            org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult testResult;
-
             List<AssertionStatus> assertionStatusList = Lists.mutable.empty();
             for (TestAssertion assertion : serviceTest.assertions)
             {
@@ -333,28 +324,15 @@ public class ServiceTestRunner implements TestRunner
                 }
             }
 
-            List<AssertFail> failedAsserts = ListIterate.selectInstancesOf(assertionStatusList, AssertFail.class);
-
-            if (failedAsserts.isEmpty())
-            {
-                testResult = new TestPassed();
-                testResult.atomicTestId = atomicTestId;
-            }
-            else
-            {
-                TestFailed testFailed = new TestFailed();
-                testFailed.assertStatuses = assertionStatusList;
-
-                testResult = testFailed;
-                testResult.atomicTestId = atomicTestId;
-            }
+            TestExecuted testResult = new TestExecuted(assertionStatusList);
+            testResult.atomicTestId = serviceTest.id;
 
             return testResult;
         }
         catch (Exception e)
         {
             TestError testError = new TestError();
-            testError.atomicTestId = atomicTestId;
+            testError.atomicTestId = serviceTest.id;
             testError.error = e.toString();
 
             return testError;

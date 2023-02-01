@@ -33,9 +33,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
       selectSQLQueryProcessor = processSelectSQLQueryForSnowflake_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
-      dynaFuncDispatch = $dynaFuncDispatch,
-      ddlCommandsTranslatorForTempTable = getDDLCommandsTranslatorForTempTable__RelationalDDLCommandsTranslator_1_,
-      getDefaultTempTableIsolationStrategy = getDefaultTempTableIsolationStrategy__TempTableIsolationStrategy_1_
+      dynaFuncDispatch = $dynaFuncDispatch
    );
 }
 
@@ -235,59 +233,4 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
              | '%s limit \'\' offset %s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake()]),
              | '%s limit %s offset %s'->format([$format.separator, $size, $s.fromRow->toOne()->getValueForTake()])),
        | '%s limit %s'->format($size));
-}
-
-function meta::relational::functions::sqlQueryToString::snowflake::getDefaultTempTableIsolationStrategy(): meta::pure::alloy::connections::alloy::isolation::TempTableIsolationStrategy[1]
-{
-  ^meta::pure::alloy::connections::alloy::isolation::IsolateByAuthId();
-}
-
-function meta::relational::functions::sqlQueryToString::snowflake::translateCreateTableStatementForTempTable(c:CreateTableSQL[1], dbConfig: DbConfig[1]): String[*]
-{
-  'CREATE LOCAL TEMP TABLE ' + $c.table.schema.database.name->toOne() + '.'+$c.table.schema.name->toOne() + '.' + $c.table.name->toOne() + '('+ $c.table.columns->cast(@Column).name->toOne() + ' ' + $c.table.columns->cast(@Column).type->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText() +');';
-}
-
-function meta::relational::functions::sqlQueryToString::snowflake::translateDropTableStatementForTempTable(d:DropTableSQL[1]): String[*]
-{
-  'DROP TABLE IF EXISTS ' + $d.table.schema.database.name->toOne() + '.' + $d.table.schema.name->toOne() + '.'+$d.table.name->toOne()+';';
-}
-
-function meta::relational::functions::sqlQueryToString::snowflake::translateLoadStatementForTempTable(l:LoadTableSQL[1], dbConfig: DbConfig[1]): String[*]
-{
-   let loadTempTableCommand = 'PUT file://'+$l.csvFileLocationVarPlaceHolder->toOne() + ' \'@'+$l.table.schema.database.name->toOne() + '.'+$l.table.schema.name->toOne()+'.%' + $l.table.name->toOne() +  '\' PARALLEL= 16 AUTO_COMPRESS=TRUE;';
-   let copyIntoCommand = 'COPY INTO '+$l.table.schema.database.name->toOne() + '.'+$l.table.schema.name->toOne() + '.' + $l.table.name->toOne() + ' FROM \'@'+$l.table.schema.database.name->toOne() + '.'+$l.table.schema.name->toOne() + '.%' + $l.table.name->toOne() + '\' file_format = (type= CSV field_optionally_enclosed_by = \'"\' skip_header=1);';
-   [$loadTempTableCommand, $copyIntoCommand];
-}
-
-function meta::relational::functions::sqlQueryToString::snowflake::translateCreateSchemaStatementForTempTable(c:CreateSchemaSQL[1]): String[*]
-{
-  'CREATE SCHEMA IF NOT EXISTS ' + $c.schema.database.name->toOne()+'.' + $c.schema.name->toOne() + ';';
-}
-
-function meta::relational::functions::sqlQueryToString::snowflake::translateUseDbStatementForTempTable(c:UseDbSQL[1]): String[*]
-{
-  let dbNameOnConnection = $c.dbOnConnection->toOne()->match([
-                                                              rc: meta::pure::alloy::connections::RelationalDatabaseConnection[1] | assert($rc.datasourceSpecification->cast(@meta::pure::alloy::connections::alloy::specification::SnowflakeDatasourceSpecification).databaseName->isNotEmpty(), 'databaseName on RelationalDatabaseConnection cannot be empty');
-                                                                                                                                    $rc.datasourceSpecification->cast(@meta::pure::alloy::connections::alloy::specification::SnowflakeDatasourceSpecification).databaseName;,
-                                                              c : DatabaseConnection[1]                                           | assert(false, 'Connection Type: DatabaseConnection is not Supported for useDb method');
-                                                                                                                                    '';
-                                                            ]);
-  'USE ' + $dbNameOnConnection + ';';
-}
-
-function meta::relational::functions::sqlQueryToString::snowflake::translateDropSchemaStatementForTempTable(d:DropSchemaSQL[1]): String[*]
-{
-  'DROP SCHEMA IF EXISTS ' + $d.schema.database.name->toOne() + '.' + $d.schema.name->toOne() + ';';
-}
-
-function meta::relational::functions::sqlQueryToString::snowflake::getDDLCommandsTranslatorForTempTable(): RelationalDDLCommandsTranslator[1]
-{
-  ^RelationalDDLCommandsTranslator(
-                createSchema = translateCreateSchemaStatementForTempTable_CreateSchemaSQL_1__String_MANY_,
-                dropSchema =  translateDropSchemaStatementForTempTable_DropSchemaSQL_1__String_MANY_,
-                createTable =  translateCreateTableStatementForTempTable_CreateTableSQL_1__DbConfig_1__String_MANY_,
-                dropTable = translateDropTableStatementForTempTable_DropTableSQL_1__String_MANY_,
-                loadTable =  translateLoadStatementForTempTable_LoadTableSQL_1__DbConfig_1__String_MANY_,
-                useDb = translateUseDbStatementForTempTable_UseDbSQL_1__String_MANY_
-              );
 }

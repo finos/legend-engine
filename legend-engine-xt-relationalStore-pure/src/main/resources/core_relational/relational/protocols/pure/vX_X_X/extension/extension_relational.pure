@@ -81,9 +81,7 @@ function meta::protocols::pure::vX_X_X::extension::getRelationalExtension():meta
           [
                      rb:meta::pure::executionPlan::RelationalBlockExecutionNode[1]|
                                ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalBlockExecutionNode( _type = 'relationalBlock',
-                                                                                                                       connection = $rb.connection->isEmpty()->if(|[],|$rb.connection->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::transformDatabaseConnection($extensions)),
-                                                                                                                       resultType = $rb.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
-                                                                                                                       finallyExecutionNode = $rb.finallyExecutionNode->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::transformFinallyExecutionNode($mapping, $extensions)),
+                                                                                                                       resultType = $rb.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions)),
                      rel:meta::relational::mapping::SQLExecutionNode[1]|
                         ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::SQLExecutionNode(
                            _type = 'sql',
@@ -93,7 +91,7 @@ function meta::protocols::pure::vX_X_X::extension::getRelationalExtension():meta
                            sqlQuery = $rel.sqlQuery,
                            onConnectionCloseCommitQuery = $rel.onConnectionCloseCommitQuery,
                            onConnectionCloseRollbackQuery = $rel.onConnectionCloseRollbackQuery,
-                           connection = $rel.connection->isEmpty()->if(|[],|$rel.connection->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::transformDatabaseConnection($extensions))
+                           connection = $rel.connection->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::transformDatabaseConnection($extensions)
                         ),
                      rel:meta::relational::mapping::RelationalTdsInstantiationExecutionNode[1]|
                         ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalTdsInstantiationExecutionNode(
@@ -128,19 +126,7 @@ function meta::protocols::pure::vX_X_X::extension::getRelationalExtension():meta
                            resultType = $cpt.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
                            resultSizeRange = $cpt.resultSizeRange->isEmpty()->if(|[],|$cpt.resultSizeRange->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()),
                            tempTableColumnMetaData = $cpt.tempTableColumnMetaData->map(col | $col->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformTempTableColumnMetaData()),
-                           connection = $cpt.connection->isEmpty()->if(|[],|$cpt.connection->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::transformDatabaseConnection($extensions))
-                        ),
-                     fb:meta::relational::executionPlan::FinallyExecutionNode[1]|
-                        ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::FinallyExecutionNode(
-                          _type = 'finally',
-                          connection = if($fb.connection->isEmpty(),|[],|$fb.connection->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::transformDatabaseConnection($extensions)),
-                          resultType = $fb.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions)
-                          ),
-                     us:meta::relational::executionPlan::UpdateSqlExecutionNode[1]|
-                        ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::UpdateSqlExecutionNode(
-                          _type = 'updateSql',
-                          sqlCommands = $us.sqlCommands,
-                          resultType = $us.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions)
+                           connection = $cpt.connection->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::transformDatabaseConnection($extensions)
                         ),
                      rel:meta::relational::graphFetch::executionPlan::RelationalRootQueryTempTableGraphFetchExecutionNode[1]|
                         ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalRootQueryTempTableGraphFetchExecutionNode(
@@ -347,10 +333,4 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
       identifierForGetter = $c.identifierForGetter,
       parametersForGetter = $c.parametersForGetter
    )
-}
-
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::transformFinallyExecutionNode(f: meta::relational::executionPlan::FinallyExecutionNode[*], mapping: Mapping[1], extensions: meta::pure::extension::Extension[*]): meta::protocols::pure::vX_X_X::metamodel::executionPlan::FinallyExecutionNode[0..1]
-{
-    assert($f->size() <= 1, | 'Can only have 1 FinallyExecutionNode, found: ' + $f->size()->toString());
-    $f->last()->isEmpty()->if(|[],|$f->last()->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformNode($mapping, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::executionPlan::FinallyExecutionNode));
 }

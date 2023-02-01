@@ -66,8 +66,8 @@ import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Single
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Test;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_TestContainer;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_TestContainer_Impl;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_TestData;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_TestData_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ServiceTestData;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ServiceTestData_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
@@ -174,9 +174,9 @@ public class HelperServiceBuilder
                 ._runtime(runtime);
     }
 
-    public static Root_meta_legend_service_metamodel_TestData processServiceTestSuiteData(TestData testData, CompileContext context, ProcessingContext processingContext)
+    public static Root_meta_legend_service_metamodel_ServiceTestData processServiceTestSuiteData(TestData testData, CompileContext context, ProcessingContext processingContext)
     {
-        Root_meta_legend_service_metamodel_TestData pureTestData = new Root_meta_legend_service_metamodel_TestData_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::TestData"));
+        Root_meta_legend_service_metamodel_ServiceTestData pureTestData = new Root_meta_legend_service_metamodel_ServiceTestData_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::ServiceTestData"));
 
         if (testData.connectionsTestData != null && !testData.connectionsTestData.isEmpty())
         {

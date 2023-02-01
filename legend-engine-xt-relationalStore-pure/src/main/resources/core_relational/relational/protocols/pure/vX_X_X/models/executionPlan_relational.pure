@@ -20,7 +20,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::SQLExecutionNode 
    onConnectionCloseCommitQuery : String[0..1];
    onConnectionCloseRollbackQuery : String[0..1];
    resultColumns : meta::protocols::pure::vX_X_X::metamodel::executionPlan::SQLResultColumn[*];
-   connection : meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::DatabaseConnection[0..1];
+   connection : meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::DatabaseConnection[1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalInstantiationExecutionNode extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::ExecutionNode
@@ -84,8 +84,6 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalCrossRo
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalBlockExecutionNode extends SequenceExecutionNode
 {
-  finallyExecutionNode: meta::protocols::pure::vX_X_X::metamodel::executionPlan::FinallyExecutionNode[0..1];
-  connection: meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::DatabaseConnection[0..1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::CreateAndPopulateTempTableExecutionNode extends ExecutionNode
@@ -93,7 +91,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::CreateAndPopulate
    inputVarNames               : String[*];
    tempTableName               : String[1];
    tempTableColumnMetaData     : meta::protocols::pure::vX_X_X::metamodel::executionPlan::TempTableColumnMetaData[*];
-   connection                  : meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::DatabaseConnection[0..1];
+   connection                  : meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::DatabaseConnection[1];
 }
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::SQLResultColumn
 {
@@ -115,15 +113,4 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationResultTyp
    schemaName : String[1];
    database : String[1];
    columns : meta::protocols::pure::vX_X_X::metamodel::store::relational::Column[*];
-}
-
-Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::FinallyExecutionNode extends ExecutionNode
-{
-  connection: meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::DatabaseConnection[0..1];
-}
-
-Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::UpdateSqlExecutionNode extends ExecutionNode
-{
-   sqlCommands: String[*];
-   connection: meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::DatabaseConnection[0..1];
 }

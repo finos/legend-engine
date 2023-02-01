@@ -17,14 +17,13 @@ package org.finos.legend.engine.testable.mapping.extension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.CorePureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTestId;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.testable.extension.TestRunner;
 import org.finos.legend.engine.testable.extension.TestableRunnerExtension;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.test.TestAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Testable;
-import org.finos.legend.engine.testable.mapping.extension.MappingTestRunner;
 
 import java.util.List;
 
@@ -57,15 +56,9 @@ public class MappingTestableRunnerExtension implements TestableRunnerExtension
 
         MappingTestRunner testRunner = new MappingTestRunner((Mapping) testable, pureVersion);
 
-        return ((Mapping) testable)._tests().flatCollect(testSuite ->
+        return testable._tests().flatCollect(testSuite ->
         {
-            List<AtomicTestId> atomicTestIds = ((Root_meta_pure_test_TestSuite) testSuite)._tests().collect(test ->
-            {
-                AtomicTestId id = new AtomicTestId();
-                id.testSuiteId = testSuite._id();
-                id.atomicTestId = test._id();
-                return id;
-            }).toList();
+            List<String> atomicTestIds = ((Root_meta_pure_test_TestSuite) testSuite)._tests().collect(TestAccessor::_id).toList();
             return testRunner.executeTestSuite((Root_meta_pure_test_TestSuite) testSuite, atomicTestIds, pureModel, pureModelContextData);
         }).toList();
     }

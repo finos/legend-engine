@@ -33,6 +33,16 @@ Database test::DB
     ID INTEGER PRIMARY KEY,
     FISCAL_YEAR_VALUE INT
   )
+  Table PersonTableWithBusinessSnapshotMilestoning
+  (
+    milestoning(
+        business(BUS_SNAPSHOT_DATE=SNAPSHOTDATE)
+    )
+    ID Integer PRIMARY KEY,
+    FIRSTNAME VARCHAR(100),
+    LASTNAME VARCHAR(100),
+    SNAPSHOTDATE DATE
+  )
 )
 Database test::DB2
 (
@@ -77,6 +87,13 @@ Class test::Employment
   employmentDateTime : DateTime[0..1];
 }
 
+Class <<temporal.businesstemporal>> test::PersonWithBusinessSnapshotMilestoning
+{
+   id : Integer[1];
+   firstName : String[1];
+   lastName : String[1];
+}
+
 function test::fetch(ip: String[*]): String[1]
 {
    test::Person.all()->filter(x|$x.firstName->in($ip))->graphFetch(#{test::Person{firstName,lastName}}#)->serialize(#{test::Person{firstName,lastName}}#)
@@ -119,8 +136,9 @@ function test::fetchOptionalActiveEmployment(optionalActiveEmployment:Boolean[0.
 
 function test::testMultiExpressionQueryWithMandatoryTemporalDate(businessDate: StrictDate[0..1]): String[1]
 {
-   let asOf = if($businessDate->isNotEmpty(), |$businessDate->toOne(), |now());
-   test::Person.all($asOf)->graphFetch(#{test::Person{firstName,lastName}}#)->serialize(#{test::Person{firstName,lastName}}#);
+   let dummyDate = %2005-03-15;
+   let asOf = if($businessDate->isNotEmpty(), |$businessDate->toOne(), |$dummyDate);
+   test::PersonWithBusinessSnapshotMilestoning.all($asOf)->graphFetch(#{test::PersonWithBusinessSnapshotMilestoning{firstName,lastName}}#)->serialize(#{test::PersonWithBusinessSnapshotMilestoning{firstName,lastName}}#);
 }
 
 function test::fetchWithUserId(): String[1]
@@ -221,6 +239,18 @@ Mapping test::Map
       lastName: [test::DB2]employmentTable.LASTNAME,
       employmentDateTime : [test::DB2]employmentTable.EMPLOYMENT_DATETIME
     }
+
+  *test::PersonWithBusinessSnapshotMilestoning : Relational
+  {
+    ~primaryKey
+    (
+      [test::DB]PersonTableWithBusinessSnapshotMilestoning.ID
+    )
+    ~mainTable [test::DB]PersonTableWithBusinessSnapshotMilestoning
+    id : [test::DB]PersonTableWithBusinessSnapshotMilestoning.ID,
+    firstName : [test::DB]PersonTableWithBusinessSnapshotMilestoning.FIRSTNAME,
+    lastName : [test::DB]PersonTableWithBusinessSnapshotMilestoning.LASTNAME
+  }
 )
 
 ###Runtime
@@ -242,7 +272,7 @@ Runtime test::Runtime
           type: H2;
           specification: LocalH2
           {
-            testDataSetupCSV: 'default\nfiscalCalendarTable\nID,FISCAL_YEAR_VALUE\n111,2015\n222,2005\n333,2010\n---\ndefault\npersonTable\nID,FIRSTNAME,LASTNAME,CITY,AGE,SALARY,DOB,EMPLOYMENT_DATETIME,ACTIVE_EMPLOYMENT,YEAR_OF_START\n1,Peter,Smith,New York,,,1982-01-20,2012-05-20T13:10:52.501,,2015\n2,John,Johnson,,35,80000.75,,2005-03-15T18:47:52,N,2005\n3,Bob,Stevens,Dallas,25,75000.75,1997-12-16,,Y,2010\n---';
+            testDataSetupCSV: 'default\nfiscalCalendarTable\nID,FISCAL_YEAR_VALUE\n111,2015\n222,2005\n333,2010\n---\ndefault\npersonTable\nID,FIRSTNAME,LASTNAME,CITY,AGE,SALARY,DOB,EMPLOYMENT_DATETIME,ACTIVE_EMPLOYMENT,YEAR_OF_START\n1,Peter,Smith,New York,,,1982-01-20,2012-05-20T13:10:52.501,,2015\n2,John,Johnson,,35,80000.75,,2005-03-15T18:47:52,N,2005\n3,Bob,Stevens,Dallas,25,75000.75,1997-12-16,,Y,2010\n---\ndefault\nPersonTableWithBusinessSnapshotMilestoning\nID,FIRSTNAME,LASTNAME,SNAPSHOTDATE\n1,Peter,Smith,1982-01-20\n2,John,Johnson,2005-03-15\n3,Bob,Stevens,1997-12-16\n---';
           };
           auth: DefaultH2;
         }
