@@ -46,6 +46,13 @@ public class TemporaryFile implements Closeable
         this.path = Paths.get(this.getTemporaryPathForFile());
     }
 
+    public TemporaryFile(String tempPath, String fileName)
+    {
+        this.tempPath = tempPath;
+        this.fileName = fileName + ".txt";
+        this.path = Paths.get(this.getTemporaryPathForFile());
+    }
+
     public String getTemporaryPathForFile()
     {
         Path parentPath = Paths.get(SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_UNIX ? this.tempPath : localDevTempPath);

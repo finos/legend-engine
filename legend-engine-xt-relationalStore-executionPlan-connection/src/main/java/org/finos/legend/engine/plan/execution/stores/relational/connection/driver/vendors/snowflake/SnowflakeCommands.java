@@ -19,10 +19,23 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommandsVisitor;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SnowflakeCommands extends RelationalDatabaseCommands
 {
+    @Override
+    public String processTempTableName(String tempTableName)
+    {
+        return "LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA." + tempTableName;
+    }
+
+    public String tempStageName()
+    {
+        return "LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE";
+    }
+
     @Override
     public String dropTempTable(String tableName)
     {
@@ -32,13 +45,20 @@ public class SnowflakeCommands extends RelationalDatabaseCommands
     @Override
     public List<String> createAndLoadTempTable(String tableName, List<Column> columns, String optionalCSVFileLocation)
     {
-        throw new UnsupportedOperationException("not yet implemented");
+        List<String> strings = Arrays.asList(
+                "CREATE TEMPORARY TABLE " + tableName + " " + columns.stream().map(c -> c.name + " " + c.type).collect(Collectors.joining(",", "(", ")")),
+                "CREATE OR REPLACE TEMPORARY STAGE " + tempStageName(),
+                "PUT file://" + optionalCSVFileLocation + " @" + tempStageName() + "/" + optionalCSVFileLocation + " PARALLEL = 16 AUTO_COMPRESS = TRUE",
+                "COPY INTO " + tableName + " FROM @" + tempStageName() + " file_format = (type = CSV field_optionally_enclosed_by= '\"')",
+                "DROP STAGE " + tempStageName()
+        );
+        return strings;
     }
 
     @Override
     public IngestionMethod getDefaultIngestionMethod()
     {
-        throw new UnsupportedOperationException("not yet implemented");
+        return IngestionMethod.CLIENT_FILE;
     }
 
     @Override
