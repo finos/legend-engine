@@ -64,6 +64,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.pure.generated.core_persistence_persistence_validation.Root_meta_pure_persistence_validation_validate_T_1__ValidationRuleSet_1__ValidationResult_1_;
+import static org.finos.legend.pure.generated.core_persistence_persistence_validations_rules.Root_meta_pure_persistence_validation_commonRules_Extension_MANY__ValidationRuleSet_1_;
 import static org.finos.legend.pure.generated.core_persistence_persistence_validations_rules.Root_meta_pure_persistence_validation_commonRules__ValidationRuleSet_1_;
 
 public class PersistenceCompilerExtension implements IPersistenceCompilerExtension
@@ -118,7 +119,7 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
                             Root_meta_pure_persistence_metamodel_PersistenceContext purePersistenceContext = (Root_meta_pure_persistence_metamodel_PersistenceContext) context.pureModel.getOrCreatePackage(persistenceContext._package)._children().detect(c -> persistenceContext.name.equals(c._name()));
 
                             // execute common validations
-                            Root_meta_pure_persistence_validation_ValidationRuleSet<? extends Root_meta_pure_persistence_metamodel_PersistenceContext> pureValidationRuleSet = Root_meta_pure_persistence_validation_commonRules__ValidationRuleSet_1_(context.getExecutionSupport());
+                            Root_meta_pure_persistence_validation_ValidationRuleSet<? extends Root_meta_pure_persistence_metamodel_PersistenceContext> pureValidationRuleSet = Root_meta_pure_persistence_validation_commonRules_Extension_MANY__ValidationRuleSet_1_(Lists.immutable.empty(), context.getExecutionSupport());
                             Root_meta_pure_persistence_validation_ValidationResult pureValidationResult = Root_meta_pure_persistence_validation_validate_T_1__ValidationRuleSet_1__ValidationResult_1_(purePersistenceContext, pureValidationRuleSet, context.getExecutionSupport());
                             if (pureValidationResult.invalid(context.getExecutionSupport()))
                             {
