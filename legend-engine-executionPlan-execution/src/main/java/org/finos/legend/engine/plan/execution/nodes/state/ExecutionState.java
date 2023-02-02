@@ -18,9 +18,11 @@ import io.opentracing.Span;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCache;
+import org.finos.legend.engine.plan.execution.concurrent.ConcurrentExecutionNodeExecutorPool;
 import org.finos.legend.engine.plan.execution.extension.ExecutionExtension;
 import org.finos.legend.engine.plan.execution.extension.ExecutionExtensionLoader;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
@@ -37,7 +39,11 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+/**
+ * copy method is used to create a copy of ExecutionState to be used in isolated/concurrent environment. Do update the copy method in case of any field addition.
+ */
 public class ExecutionState
 {
     public MutableList<ExecutionActivity> activities = Lists.mutable.empty();
@@ -54,6 +60,8 @@ public class ExecutionState
     public List<GraphFetchCache> graphFetchCaches;
 
     private EngineJavaCompiler javaCompiler;
+
+    private ConcurrentExecutionNodeExecutorPool concurrentExecutionNodeExecutorPool;
 
     private final Map<String, Result> res;
     private final List<? extends String> templateFunctions;
@@ -80,6 +88,7 @@ public class ExecutionState
         this.graphFetchBatchMemoryLimit = state.graphFetchBatchMemoryLimit;
         this.graphObjectsBatch = state.graphObjectsBatch;
         this.graphFetchCaches = state.graphFetchCaches;
+        this.concurrentExecutionNodeExecutorPool = state.concurrentExecutionNodeExecutorPool;
         state.states.forEach((storeType, storeExecutionState) -> this.states.put(storeType, storeExecutionState.copy()));
         List<ExecutionExtension> extensions = ExecutionExtensionLoader.extensions();
         this.extraNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraNodeExecutors);
@@ -109,6 +118,28 @@ public class ExecutionState
     public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates)
     {
         this(res, templateFunctions, extraStates, true);
+    }
+
+    public ExecutionState copy()
+    {
+        Map<String, Result> resCopy = Maps.mutable.ofMap(this.res);
+        List<? extends String> templateFunctionsCopy = Lists.mutable.ofAll(this.templateFunctions);
+        List<? extends StoreExecutionState> extraStatesCopy = this.states.values().stream().map(StoreExecutionState::copy).collect(Collectors.toList());
+        ExecutionState copy = new ExecutionState(resCopy, templateFunctionsCopy, extraStatesCopy, this.isJavaCompilationAllowed, this.graphFetchBatchMemoryLimit);
+
+        copy.activities = Lists.mutable.withAll(this.activities);
+        copy.allocationNodeName = this.allocationNodeName;
+        copy.authId = this.authId;
+        copy.concurrentExecutionNodeExecutorPool = this.concurrentExecutionNodeExecutorPool;
+        copy.inAllocation = this.inAllocation;
+        copy.inLake = this.inLake;
+        copy.realizeAllocationResults = this.realizeAllocationResults;
+        copy.realizeInMemory = this.realizeInMemory;
+        copy.graphObjectsBatch = null;  // Explicitly making this null, to prevent conflicts during concurrent executions
+        copy.graphFetchCaches = null;   // Explicitly making this null, to prevent conflicts during concurrent executions
+        copy.javaCompiler = this.javaCompiler;
+        copy.topSpan = this.topSpan;
+        return copy;
     }
 
     public ExecutionState inLake(boolean inLake)
@@ -171,6 +202,16 @@ public class ExecutionState
     public boolean isJavaCompilationForbidden()
     {
         return !isJavaCompilationAllowed();
+    }
+
+    public ConcurrentExecutionNodeExecutorPool getConcurrentExecutionNodeExecutorPool()
+    {
+        return this.concurrentExecutionNodeExecutorPool;
+    }
+
+    public void setConcurrentExecutionNodeExecutorPool(ConcurrentExecutionNodeExecutorPool concurrentExecutionNodeExecutorPool)
+    {
+        this.concurrentExecutionNodeExecutorPool = concurrentExecutionNodeExecutorPool;
     }
 
     public long getGraphFetchBatchMemoryLimit()

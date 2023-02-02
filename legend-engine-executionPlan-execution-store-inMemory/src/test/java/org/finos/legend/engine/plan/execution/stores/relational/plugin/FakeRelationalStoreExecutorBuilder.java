@@ -93,7 +93,7 @@ public class FakeRelationalStoreExecutorBuilder implements StoreExecutorBuilder
                 @Override
                 public StoreExecutionState copy()
                 {
-                    return null;
+                    return this;
                 }
 
                 @Override

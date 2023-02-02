@@ -14,13 +14,23 @@
 
 package org.finos.legend.engine.plan.execution.stores.service.features.union;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
+import org.finos.legend.engine.plan.execution.PlanExecutor;
+import org.finos.legend.engine.plan.execution.concurrent.TestConcurrentExecutionNodeExecution;
+import org.finos.legend.engine.plan.execution.result.Result;
+import org.finos.legend.engine.plan.execution.result.json.JsonStreamToJsonDefaultSerializer;
+import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
 import org.finos.legend.engine.plan.execution.stores.service.utils.ServiceStoreTestSuite;
 import org.finos.legend.engine.plan.execution.stores.service.utils.ServiceStoreTestUtils;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
+import org.finos.legend.server.pac4j.kerberos.KerberosProfile;
+import org.finos.legend.server.pac4j.kerberos.LocalCredentials;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.util.List;
 
 import static org.finos.legend.engine.plan.execution.stores.service.utils.ServiceStoreTestUtils.buildPlanForQuery;
 import static org.finos.legend.engine.plan.execution.stores.service.utils.ServiceStoreTestUtils.executePlan;
@@ -243,5 +253,51 @@ public class TestServiceStoreUnion extends ServiceStoreTestSuite
         String expectedRes = "{\"builder\":{\"_type\":\"json\"},\"values\":[{\"firstName\":\"FirstName ServiceStore\",\"lastName\":\"LastName ServiceStore\",\"firmId\":\"ServiceStore\"},{\"firstName\":\"FirstName ServiceStore\",\"lastName\":\"LastName ServiceStore\",\"firmId\":\"ServiceStore\"},{\"firstName\":\"FirstName ServiceStore\",\"lastName\":\"LastName ServiceStore\",\"firmId\":\"ServiceStore\"},{\"firstName\":\"FirstName ServiceStore\",\"lastName\":\"LastName ServiceStore\",\"firmId\":\"ServiceStore\"},{\"firstName\":\"FirstName ServiceStore\",\"lastName\":\"LastName ServiceStore\",\"firmId\":\"ServiceStore\"}]}";
 
         Assert.assertEquals(expectedRes, executePlan(plan));
+    }
+
+    @Test
+    public void serviceStoreUnionConcurrentExecution()
+    {
+        String query = "###Pure\n" +
+                "function showcase::query(): Any[1]\n" +
+                "{\n" +
+                "   {|meta::external::store::service::showcase::domain::Person.all()" +
+                "       ->graphFetch(#{\n" +
+                "           meta::external::store::service::showcase::domain::Person {\n" +
+                "               firstName,\n" +
+                "               lastName,\n" +
+                "               firmId\n" +
+                "           }\n" +
+                "         }#)" +
+                "       ->serialize(#{\n" +
+                "           meta::external::store::service::showcase::domain::Person {\n" +
+                "               firstName,\n" +
+                "               lastName,\n" +
+                "               firmId\n" +
+                "           }\n" +
+                "        }#)};\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlanForQuery(pureGrammar + "\n\n" + query, "meta::external::store::service::showcase::mapping::ServiceStoreMapping2", "meta::external::store::service::showcase::runtime::ServiceStoreRuntime2");
+        PlanExecutor.ExecuteArgs executeArgs = PlanExecutor.ExecuteArgs.newArgs()
+                .withPlan(plan)
+                .withProfiles(Lists.mutable.with(new KerberosProfile(LocalCredentials.INSTANCE)))
+                .build();
+
+        String expectedRes = "{\"builder\":{\"_type\":\"json\"},\"values\":[{\"firstName\":\"FirstName ServiceStore\",\"lastName\":\"LastName ServiceStore\",\"firmId\":\"ServiceStore\"},{\"firstName\":\"FirstName ServiceStore\",\"lastName\":\"LastName ServiceStore\",\"firmId\":\"ServiceStore\"},{\"firstName\":\"FirstName ServiceStore\",\"lastName\":\"LastName ServiceStore\",\"firmId\":\"ServiceStore\"},{\"firstName\":\"FirstName ServiceStore\",\"lastName\":\"LastName ServiceStore\",\"firmId\":\"ServiceStore\"},{\"firstName\":\"FirstName ServiceStore\",\"lastName\":\"LastName ServiceStore\",\"firmId\":\"ServiceStore\"}]}";
+
+        assertResults(TestConcurrentExecutionNodeExecution.executePlanConcurrently(executeArgs, 10, 1, 1, "[Running, pool size = 5, active threads = 0, queued tasks = 0, completed tasks = 5]"), expectedRes);
+        assertResults(TestConcurrentExecutionNodeExecution.executePlanConcurrently(executeArgs, 10, 10, 1, "[Running, pool size = 10, active threads = 0, queued tasks = 0, completed tasks = 50]"), expectedRes);
+        assertResults(TestConcurrentExecutionNodeExecution.executePlanConcurrently(executeArgs, 10, 10, 3, "[Running, pool size = 10, active threads = 0, queued tasks = 0, completed tasks = 35]"), expectedRes);
+        assertResults(TestConcurrentExecutionNodeExecution.executePlanConcurrently(executeArgs, 10, 10, 5, "[Running, pool size = 10, active threads = 0, queued tasks = 0, completed tasks = 20]"), expectedRes);
+    }
+
+    private void assertResults(List<Result> results, String expectedResult)
+    {
+        for (Result result : results)
+        {
+            JsonStreamingResult jsonStreamingResult = (JsonStreamingResult) result;
+            Assert.assertEquals(expectedResult, jsonStreamingResult.flush(new JsonStreamToJsonDefaultSerializer(jsonStreamingResult)));
+        }
     }
 }

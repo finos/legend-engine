@@ -88,7 +88,7 @@ public class FakeServiceStoreExecutorBuilder implements StoreExecutorBuilder
                 @Override
                 public StoreExecutionState copy()
                 {
-                    return null;
+                    return this;
                 }
 
                 @Override

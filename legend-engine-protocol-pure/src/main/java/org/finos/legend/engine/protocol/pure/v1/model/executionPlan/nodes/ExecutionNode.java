@@ -67,6 +67,7 @@ public abstract class ExecutionNode
     public ResultType resultType;
     public List<ExecutionNode> executionNodes = Collections.emptyList();
     public Multiplicity resultSizeRange;
+    public Boolean isChildrenExecutionParallelizable = false;
     public List<VariableInput> requiredVariableInputs;
     public PlatformImplementation implementation;
     public boolean authDependent;

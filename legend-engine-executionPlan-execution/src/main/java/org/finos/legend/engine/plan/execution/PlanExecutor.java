@@ -22,6 +22,7 @@ import org.eclipse.collections.api.multimap.list.ImmutableListMultimap;
 import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.internal.IterableIterate;
+import org.finos.legend.engine.plan.execution.concurrent.ConcurrentExecutionNodeExecutorPool;
 import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
@@ -64,6 +65,7 @@ public class PlanExecutor
     private final boolean isJavaCompilationAllowed;
     private final ImmutableList<StoreExecutor> extraExecutors;
     private final PlanExecutorInfo planExecutorInfo;
+    private ConcurrentExecutionNodeExecutorPool concurrentExecutionNodeExecutorPool;
     private long graphFetchBatchMemoryLimit;
     private BiFunction<MutableList<CommonProfile>, ExecutionState, ExecutionNodeExecutor> executionNodeExecutorBuilder;
 
@@ -291,6 +293,12 @@ public class PlanExecutor
         this.graphFetchBatchMemoryLimit = graphFetchBatchMemoryLimit;
     }
 
+    public void injectConcurrentExecutionNodeExecutorPoolOfSize(int concurrentExecutionNodeExecutorPoolSize)
+    {
+        ConcurrentExecutionNodeExecutorPool.initializeExecutorPool(concurrentExecutionNodeExecutorPoolSize);
+        this.concurrentExecutionNodeExecutorPool = ConcurrentExecutionNodeExecutorPool.getExecutorPool();
+    }
+
     private EngineJavaCompiler possiblyCompilePlan(SingleExecutionPlan plan, ExecutionState state, MutableList<CommonProfile> profiles)
     {
         if (state.isJavaCompilationForbidden())
@@ -336,6 +344,11 @@ public class PlanExecutor
             {
                 executionState.setGraphFetchCaches(planExecutionContext.getGraphFetchCaches());
             }
+        }
+
+        if (this.concurrentExecutionNodeExecutorPool != null)
+        {
+            executionState.setConcurrentExecutionNodeExecutorPool(this.concurrentExecutionNodeExecutorPool);
         }
 
         return executionState;

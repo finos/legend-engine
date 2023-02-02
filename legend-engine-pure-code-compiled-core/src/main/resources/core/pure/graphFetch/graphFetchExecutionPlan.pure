@@ -207,6 +207,7 @@ function meta::pure::graphFetch::executionPlan::planRouterUnionGraphFetchExecuti
    (
       fromCluster    = ^$firstCluster(val = $fe),
       resultType     = $childNodes->at(0).resultType,
+      isChildrenExecutionParallelizable = true,
       executionNodes = $childNodes
    );
 }
