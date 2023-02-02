@@ -182,7 +182,7 @@ meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlSerializeOneObject
       meta::pure::extension::defaultExtensions()
    );
 
-   assert(jsonEquivalent('{"fullName":"Pierre DeBelen"}'->parseJSON(), $result.values->toOne()->parseJSON()));
+   equalJsonStrings('{"fullName":"Pierre DeBelen"}', $result.values->toOne());
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
@@ -224,7 +224,7 @@ meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlSupportForPrimitiv
       meta::pure::extension::defaultExtensions()
    );
 
-   assert(jsonEquivalent('{"i":4, "f": 0.4, "d": [0.2, 0.4],"sd": ["2018-03-13", "2019-05-31"], "dt": ["2018-03-12T15:20:21.000", "2019-05-30T06:29:01.234"], "b": [false, true, false], "c":"RED", "c2":"BLUE", "c3":["BLUE", "GREEN"]}'->parseJSON(), $result.values->toOne()->parseJSON()));
+   equalJsonStrings('{"i":4, "f": 0.4, "d": [0.2, 0.4],"sd": ["2018-03-13", "2019-05-31"], "dt": ["2018-03-12T15:20:21.000", "2019-05-30T06:29:01.234"], "b": [false, true, false], "c":"RED", "c2":"BLUE", "c3":["BLUE", "GREEN"]}', $result.values->toOne());
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
@@ -258,7 +258,7 @@ meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlSupportForEmptyVal
       meta::pure::extension::defaultExtensions()
    );
 
-   assert(jsonEquivalent('{"i":null, "f": 0.4, "d": []}'->parseJSON(), $result.values->toOne()->parseJSON()));
+   equalJsonStrings('{"i":null, "f": 0.4, "d": []}', $result.values->toOne());
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
@@ -292,7 +292,7 @@ meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlSupportForReplacem
       meta::pure::extension::defaultExtensions()
    );
  
-   assert(jsonEquivalent('{"i":null, "f": 0.4, "d": []}'->parseJSON(), $result.values->toOne()->parseJSON()));
+   equalJsonStrings('{"i":null, "f": 0.4, "d": []}', $result.values->toOne());
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
@@ -329,7 +329,7 @@ meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlIgnoresUnwantedVal
 
    let json = $result.values->toOne();
    let expected= '{"firstName":"Dave", "lastName":"Wathen"}';
-   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+   equalJsonStrings($expected, $json);
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
@@ -362,7 +362,7 @@ meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlDeserializeComplex
       meta::pure::extension::defaultExtensions()
    );
 
-   assert(jsonEquivalent('{"firstName":"Pierre","lastName":"DeBelen","addresses":[{"street":"Digby"},{"street":"Highbury"}]}'->parseJSON(), $result.values->toOne()->parseJSON()));
+   equalJsonStrings('{"firstName":"Pierre","lastName":"DeBelen","addresses":[{"street":"Digby"},{"street":"Highbury"}]}', $result.values->toOne());
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
