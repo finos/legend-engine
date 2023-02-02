@@ -14,7 +14,8 @@
 
 package org.finos.legend.engine.testable.persistence.ingestmode.snapshot.nontemporal;
 
-import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestPassed;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecutionStatus;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.testable.persistence.ingestmode.TestPersistenceBase;
 import org.junit.Assert;
@@ -31,8 +32,9 @@ public class TestNonTemporalSnapshot extends TestPersistenceBase
         String persistenceSpec = readPureCode(path);
         TestResult result = testPersistence(persistenceSpec).results.get(0);
 
-        assertTrue(result instanceof TestPassed);
-        Assert.assertEquals("test::TestPersistence", ((TestPassed) result).testable);
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
     }
 
     @Test
@@ -42,7 +44,8 @@ public class TestNonTemporalSnapshot extends TestPersistenceBase
         String persistenceSpec = readPureCode(path);
         TestResult result = testPersistence(persistenceSpec).results.get(0);
 
-        assertTrue(result instanceof TestPassed);
-        Assert.assertEquals("test::TestPersistence", ((TestPassed) result).testable);
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
     }
 }

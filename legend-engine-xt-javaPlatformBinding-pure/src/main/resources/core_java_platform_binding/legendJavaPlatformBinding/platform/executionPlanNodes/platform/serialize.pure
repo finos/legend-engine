@@ -328,9 +328,9 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
                                                vs : ValueSpecification[1] | $vs->generateJava($conventions, $debug)
                                             ]);
                                             let param = $property->functionType().parameters->evaluateAndDeactivate()->tail()->at($parameters->indexOf($x)); 
-                                            if($param.multiplicity->hasToOneUpperBound(), 
+                                            if($param.multiplicity->hasToOneUpperBound(),
                                                | if($vals->isEmpty(), | j_null(), | $vals->toOne()), 
-                                               | javaArrays()->j_invoke('asList', $vals, $conventions->pureTypeToJavaType($param.genericType.rawType->toOne(), $param.multiplicity))
+                                               | if($vals->size() == 1 && $vals.type->toOne()->isJavaList(), |$vals, |javaArrays()->j_invoke('asList', $vals, $conventions->pureTypeToJavaType($param.genericType.rawType->toOne(), $param.multiplicity)))
                                             );
                                          );
                                       },

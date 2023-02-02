@@ -522,7 +522,7 @@ public class HelperMappingBuilder
     }
 
 
-    public static Test processMappingTestAndTestSuite(org.finos.legend.engine.protocol.pure.v1.model.test.Test test, CompileContext context)
+    public static Test processMappingTestAndTestSuite(org.finos.legend.engine.protocol.pure.v1.model.test.Test test, final org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping pureMapping, CompileContext context)
     {
         if (test instanceof MappingTestSuite)
         {
@@ -542,7 +542,7 @@ public class HelperMappingBuilder
                 throw new EngineException("Multiple tests found with ids : '" + String.join(",", duplicateTestIds) + "'", mappingTestSuite.sourceInformation, EngineErrorType.COMPILATION);
             }
 
-            RichIterable<? extends Root_meta_pure_test_AtomicTest> tests = ListIterate.collect(mappingTestSuite.tests, unitTest -> (Root_meta_pure_test_AtomicTest) HelperMappingBuilder.processMappingTestAndTestSuite(unitTest, context));
+            RichIterable<? extends Root_meta_pure_test_AtomicTest> tests = ListIterate.collect(mappingTestSuite.tests, unitTest -> (Root_meta_pure_test_AtomicTest) HelperMappingBuilder.processMappingTestAndTestSuite(unitTest, pureMapping, context));
 
             pureMappingTestSuite._id(test.id);
             if (mappingTestSuite.storeTestDatas != null)
@@ -554,7 +554,7 @@ public class HelperMappingBuilder
                 throw new EngineException("Test data needs to be provided for a valid test");
             }
             pureMappingTestSuite._tests(tests);
-
+            pureMappingTestSuite._testable(pureMapping);
             return pureMappingTestSuite;
         }
         else if (test instanceof MappingTest)
@@ -579,6 +579,7 @@ public class HelperMappingBuilder
                     .filter(Objects::nonNull)
                     .findFirst()
                     .orElseThrow(() -> new UnsupportedOperationException("No Processors found for assertion: " + assertion.id))));
+            pureMappingTest._testable(pureMapping);
             return pureMappingTest;
         }
         else

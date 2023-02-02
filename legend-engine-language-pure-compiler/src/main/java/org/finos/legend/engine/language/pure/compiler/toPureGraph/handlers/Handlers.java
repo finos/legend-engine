@@ -15,7 +15,6 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers;
 
 import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.api.tuple.Pair;
@@ -27,7 +26,6 @@ import org.eclipse.collections.impl.map.mutable.UnifiedMap;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.Milestoning;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
@@ -42,7 +40,6 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.infer
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.ReturnInference;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.TypeAndMultiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
@@ -53,21 +50,16 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.cla
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.TdsOlapAggregation;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.TdsOlapRank;
 import org.finos.legend.engine.shared.core.operational.Assert;
-import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl;
 import org.finos.legend.pure.generated.platform_pure_corefunctions_meta;
-import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningStereotype;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecificationAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
-import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 
 import java.util.Arrays;
@@ -338,73 +330,6 @@ public class Handlers
         return Stream.concat(Stream.of(firstProcessedParameter), parameters.stream().skip(1).map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc)))).collect(Collectors.toList());
     };
 
-    public static final ParametersInference GetAllInference = (parameters, ov, cc, pc) ->
-    {
-        List<ValueSpecification> processedParameters = parameters.stream().map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc))).collect(Collectors.toList());
-        ValueSpecification firstProcessedParameter = processedParameters.get(0);
-        if (firstProcessedParameter instanceof InstanceValue && ((InstanceValue) firstProcessedParameter)._values().getFirst() instanceof Class)
-        {
-            Class<Object> sourceClass = (Class<Object>) ((InstanceValue) firstProcessedParameter)._values().getFirst();
-            MilestoningStereotype milestoningStereotype = Milestoning.temporalStereotypes(sourceClass._stereotypes());
-            List<ValueSpecification> params = processedParameters.subList(1, processedParameters.size());
-            int numberOfDateParameters = 0;
-            for (ValueSpecification v : params)
-            {
-                String rawTypeName = v._genericType()._rawType().getName();
-                if (M3Paths.Date.equals(rawTypeName) || M3Paths.DateTime.equals(rawTypeName) || M3Paths.StrictDate.equals(rawTypeName) || M3Paths.LatestDate.equals(rawTypeName))
-                {
-                    numberOfDateParameters++;
-                }
-            }
-
-            if (milestoningStereotype != null)
-            {
-                ListIterable<String> temporalDatePropertyNames = milestoningStereotype.getTemporalDatePropertyNames();
-                if (temporalDatePropertyNames.size() != numberOfDateParameters)
-                {
-                    throw new EngineException("The type " + sourceClass._name() + " is  " + milestoningStereotype.getPurePlatformStereotypeName() + ", " + temporalDatePropertyNames.makeString("[", ",", "]" + " should be supplied as a parameter to all()"), parameters.get(0).sourceInformation, EngineErrorType.COMPILATION);
-                }
-            }
-            else if (numberOfDateParameters != 0)
-            {
-                throw new EngineException("The type " + sourceClass._name() + " is not Temporal, Dates should not be supplied to all()", parameters.get(0).sourceInformation, EngineErrorType.COMPILATION);
-            }
-        }
-        return processedParameters;
-    };
-
-    public static final ParametersInference GetAllVersionsInference = (parameters, ov, cc, pc) ->
-    {
-        List<ValueSpecification> processedParameters = parameters.stream().map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc))).collect(Collectors.toList());
-        ValueSpecification firstProcessedParameter = processedParameters.get(0);
-        if (firstProcessedParameter instanceof InstanceValue && ((InstanceValue) firstProcessedParameter)._values().getFirst() instanceof Class)
-        {
-            Class<Object> sourceClass = (Class<Object>) ((InstanceValue) firstProcessedParameter)._values().getFirst();
-            MilestoningStereotype milestoningStereotype = Milestoning.temporalStereotypes(sourceClass._stereotypes());
-            if (milestoningStereotype == null)
-            {
-                throw new EngineException("The function 'getAllVersions' may only be used with temporal types, the type " + sourceClass._name() + " is  not temporal", parameters.get(0).sourceInformation, EngineErrorType.COMPILATION);
-            }
-        }
-        return processedParameters;
-    };
-
-    public static final ParametersInference GetAllVersionsInRangeInference = (parameters, ov, cc, pc) ->
-    {
-        List<ValueSpecification> processedParameters = parameters.stream().map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc))).collect(Collectors.toList());
-        ValueSpecification firstProcessedParameter = processedParameters.get(0);
-        if (firstProcessedParameter instanceof InstanceValue && ((InstanceValue) firstProcessedParameter)._values().getFirst() instanceof Class)
-        {
-            Class<Object> sourceClass = (Class<Object>) ((InstanceValue) firstProcessedParameter)._values().getFirst();
-            MilestoningStereotype milestoningStereotype = Milestoning.temporalStereotypes(sourceClass._stereotypes());
-            if (milestoningStereotype == null || milestoningStereotype.getPurePlatformStereotypeName().equals("bitemporal"))
-            {
-                throw new EngineException("The function 'getAllVersionsInRange' is applicable only for businessTemporal and processingTemporal types", parameters.get(0).sourceInformation, EngineErrorType.COMPILATION);
-            }
-        }
-        return processedParameters;
-    };
-
     private final Map<String, FunctionExpressionBuilder> map = UnifiedMap.newMap();
     private final Map<String, Dispatch> dispatchMap;
     private final PureModel pureModel;
@@ -589,11 +514,11 @@ public class Handlers
         register("meta::pure::functions::lang::new_Class_1__String_1__KeyExpression_MANY__T_1_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "one"));
         register("meta::pure::functions::collection::count_Any_MANY__Integer_1_", false, ps -> res("Integer", "one"));
 
-        register(m(grp(GetAllInference, h("meta::pure::functions::collection::getAll_Class_1__T_MANY_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> ps.size() == 1)),
-                grp(GetAllInference, h("meta::pure::functions::collection::getAll_Class_1__Date_1__T_MANY_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> ps.size() == 2)),
-                grp(GetAllInference, h("meta::pure::functions::collection::getAll_Class_1__Date_1__Date_1__T_MANY_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> ps.size() == 3))));
-        register(grp(GetAllVersionsInference, h("meta::pure::functions::collection::getAllVersions_Class_1__T_MANY_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> ps.size() == 1)));
-        register(grp(GetAllVersionsInRangeInference, h("meta::pure::functions::collection::getAllVersionsInRange_Class_1__Date_1__Date_1__T_MANY_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"))));
+        register(m(m(h("meta::pure::functions::collection::getAll_Class_1__T_MANY_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> ps.size() == 1)),
+                m(h("meta::pure::functions::collection::getAll_Class_1__Date_1__T_MANY_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> ps.size() == 2)),
+                m(h("meta::pure::functions::collection::getAll_Class_1__Date_1__Date_1__T_MANY_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> ps.size() == 3))));
+        register(h("meta::pure::functions::collection::getAllVersions_Class_1__T_MANY_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> ps.size() == 1));
+        register("meta::pure::functions::collection::getAllVersionsInRange_Class_1__Date_1__Date_1__T_MANY_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"));
         register("meta::pure::functions::collection::getAllForEachDate_Class_1__Date_MANY__T_MANY_", false, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"));
 
         register(h("meta::pure::tds::distinct_TabularDataSet_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> "TabularDataSet".equals(ps.get(0)._genericType()._rawType()._name())),

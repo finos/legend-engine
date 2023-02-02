@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>3.34.5-SNAPSHOT</version>
+    <version>3.35.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -238,6 +238,7 @@
         <module>legend-engine-xt-sql-grammar</module>
         <module>legend-engine-xt-sql-protocol</module>
         <module>legend-engine-xt-sql-compiler</module>
+        <module>legend-engine-pure-runtime-execution</module>
         <module>legend-engine-xt-sql-grammar-integration</module>
         <module>legend-engine-xt-sql-query</module>
         <module>legend-engine-xt-sql-pure</module>
@@ -245,7 +246,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>3.8.4</legend.pure.version>
+        <legend.pure.version>3.8.5</legend.pure.version>
         <legend.shared.version>0.22.5</legend.shared.version>
 
         <!-- SONAR -->
@@ -774,6 +775,11 @@
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-pure-runtime-compiler</artifactId>
                 <type>test-jar</type>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-runtime-execution</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

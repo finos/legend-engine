@@ -1,0 +1,5 @@
+{
+    "name" : "core_external_execution",
+    "pattern" : "(meta::legend)(::.*)?",
+    "dependencies" : ["platform", "core", "core_java_platform_binding"]
+}

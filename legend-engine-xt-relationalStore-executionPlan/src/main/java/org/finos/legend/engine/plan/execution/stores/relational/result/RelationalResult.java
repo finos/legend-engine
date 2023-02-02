@@ -328,10 +328,6 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
     @Override
     public void close()
     {
-        if (!childrenResults.isEmpty())
-        {
-            childrenResults.stream().forEach(result -> result.close());
-        }
         if (temporaryTables != null && statement != null)
         {
             temporaryTables.forEach((Consumer<? super String>) table ->

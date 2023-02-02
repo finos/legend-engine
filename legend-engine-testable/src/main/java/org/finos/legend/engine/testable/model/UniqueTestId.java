@@ -12,18 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes;
+package org.finos.legend.engine.testable.model;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
-
-
-public class FinallyExecutionNode extends ExecutionNode
+public class UniqueTestId
 {
-    public DatabaseConnection connection;
-
-    @Override
-    public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)
-    {
-        return executionNodeVisitor.visit(this);
-    }
+    public String testSuiteId;
+    public String atomicTestId;
 }

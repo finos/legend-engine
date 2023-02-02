@@ -20,7 +20,6 @@ import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.StoreState;
 import org.finos.legend.engine.plan.execution.stores.relational.RelationalExecutor;
-import org.finos.legend.engine.plan.execution.stores.relational.blockConnection.BlockConnection;
 import org.finos.legend.engine.plan.execution.stores.relational.blockConnection.BlockConnectionContext;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
 import org.pac4j.core.profile.CommonProfile;
@@ -31,20 +30,18 @@ public class RelationalStoreExecutionState implements StoreExecutionState
     private boolean retainConnection;
     private BlockConnectionContext blockConnectionContext;
     private RuntimeContext runtimeContext;
-    public BlockConnection inScopeConnection;
 
-    private RelationalStoreExecutionState(RelationalStoreState storeState, boolean retainConnection, BlockConnectionContext blockConnectionContext, RuntimeContext runtimeContext, BlockConnection inScopeConnection)
+    private RelationalStoreExecutionState(RelationalStoreState storeState, boolean retainConnection, BlockConnectionContext blockConnectionContext, RuntimeContext runtimeContext)
     {
         this.state = storeState;
         this.retainConnection = retainConnection;
         this.blockConnectionContext = blockConnectionContext;
         this.runtimeContext = runtimeContext;
-        this.inScopeConnection = inScopeConnection;
     }
 
     public RelationalStoreExecutionState(RelationalStoreState storeState)
     {
-        this(storeState, false, new BlockConnectionContext(), StoreExecutionState.emptyRuntimeContext(), null);
+        this(storeState, false, new BlockConnectionContext(), StoreExecutionState.emptyRuntimeContext());
     }
 
     @Override
@@ -62,7 +59,7 @@ public class RelationalStoreExecutionState implements StoreExecutionState
     @Override
     public StoreExecutionState copy()
     {
-        return new RelationalStoreExecutionState(this.state, this.retainConnection, this.retainConnection ? this.blockConnectionContext : this.blockConnectionContext.copy(), this.runtimeContext, this.inScopeConnection);
+        return new RelationalStoreExecutionState(this.state, this.retainConnection, this.retainConnection ? this.blockConnectionContext : this.blockConnectionContext.copy(), this.runtimeContext);
     }
 
     @Override

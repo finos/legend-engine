@@ -21,15 +21,16 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
-import org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTestId;
 import org.finos.legend.engine.testable.extension.TestRunner;
 import org.finos.legend.engine.testable.extension.TestableRunnerExtensionLoader;
+import org.finos.legend.engine.testable.model.UniqueTestId;
 import org.finos.legend.engine.testable.model.RunTestsInput;
 import org.finos.legend.engine.testable.model.RunTestsResult;
 import org.finos.legend.engine.testable.model.RunTestsTestableInput;
 import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.test.TestAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Testable;
 import org.pac4j.core.profile.CommonProfile;
 
@@ -59,7 +60,7 @@ public class TestableRunner
                 throw new UnsupportedOperationException("Element '" + testableInput.testable + "' is not a testable element");
             }
             Testable testable = (Testable) packageableElement;
-            List<AtomicTestId> testIds = testableInput.unitTestIds;
+            List<UniqueTestId> testIds = testableInput.unitTestIds;
             List<String> testIdStrings = ListIterate.collect(testIds, id -> id.atomicTestId);
 
             TestRunner testRunner = TestableRunnerExtensionLoader.forTestable(testable);
@@ -73,12 +74,12 @@ public class TestableRunner
 
                 if (test instanceof Root_meta_pure_test_TestSuite)
                 {
-                    List<AtomicTestId> testIdsForSuite = ListIterate.select(testIds, testId -> test._id().equals(testId.testSuiteId));
+                    List<String> testIdsForSuite = ListIterate.collectIf(testIds, testId -> test._id().equals(testId.testSuiteId), testId -> testId.atomicTestId);
                     if (testIds.isEmpty() || !testIdsForSuite.isEmpty())
                     {
                         Root_meta_pure_test_TestSuite testSuite = (Root_meta_pure_test_TestSuite) test;
-                        List<AtomicTestId> updatedTestIds = testIds.isEmpty()
-                            ? testSuite._tests().collect(pureTest -> atomicTestId(testSuite, pureTest)).toList()
+                        List<String> updatedTestIds = testIds.isEmpty()
+                            ? testSuite._tests().collect(TestAccessor::_id).toList()
                             : testIdsForSuite;
                         runTestsResult.results.addAll(testRunner.executeTestSuite(testSuite, updatedTestIds, pureModel, data));
                     }
@@ -86,13 +87,5 @@ public class TestableRunner
             }
         }
         return runTestsResult;
-    }
-
-    private static AtomicTestId atomicTestId(Root_meta_pure_test_TestSuite testSuite, Root_meta_pure_test_AtomicTest atomicTest)
-    {
-        AtomicTestId id = new AtomicTestId();
-        id.testSuiteId = testSuite._id();
-        id.atomicTestId = atomicTest._id();
-        return id;
     }
 }
