@@ -23,9 +23,13 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.ServiceStoreLex
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.ServiceStoreParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.ServiceStoreConnectionLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.ServiceStoreConnectionParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.authentication.SecuritySchemeLexerGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.authentication.SecuritySchemeParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionValueSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.connection.ServiceStoreConnectionParseTreeWalker;
+import org.finos.legend.engine.language.pure.grammar.from.connection.authentication.SecuritySchemeParseTreeWalker;
+import org.finos.legend.engine.language.pure.grammar.from.connection.authentication.SecuritySchemeSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.data.ServiceStoreEmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.ConnectionValueParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.MappingElementParser;
@@ -37,9 +41,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.connection.ServiceStoreConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.RootServiceStoreClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecurityScheme;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Collections;
+import java.util.List;
+import java.util.function.Function;
 
 public class ServiceStoreGrammarParserExtension implements IServiceStoreGrammarParserExtension
 {
@@ -103,6 +110,24 @@ public class ServiceStoreGrammarParserExtension implements IServiceStoreGrammarP
     }
 
     @Override
+    public List<Function<SecuritySchemeSourceCode, SecurityScheme>> getExtraSecuritySchemesParsers()
+    {
+        return Collections.singletonList(code ->
+        {
+            SecuritySchemeParseTreeWalker walker = new SecuritySchemeParseTreeWalker();
+            switch (code.getType())
+            {
+                case "Http":
+                    return parseSecurityScheme(code, p -> walker.visitSimpleHttpSecurityScheme(code, p.httpSecurityScheme()));
+                case "ApiKey":
+                    return parseSecurityScheme(code, p -> walker.visitApiKeySecurityScheme(code, p.apiKeySecurityScheme()));
+                default:
+                    return null;
+            }
+        });
+    }
+
+    @Override
     public Iterable<? extends EmbeddedDataParser> getExtraEmbeddedDataParsers()
     {
         return Lists.immutable.with(new ServiceStoreEmbeddedDataParser());
@@ -147,5 +172,20 @@ public class ServiceStoreGrammarParserExtension implements IServiceStoreGrammarP
         parser.removeErrorListeners();
         parser.addErrorListener(errorListener);
         return new SourceCodeParserInfo(sectionSourceCode.code, input, sectionSourceCode.sourceInformation, sectionSourceCode.walkerSourceInformation, lexer, parser, parser.definition());
+    }
+
+    private SecurityScheme parseSecurityScheme(SecuritySchemeSourceCode code, Function<SecuritySchemeParserGrammar, SecurityScheme> func)
+    {
+        CharStream input = CharStreams.fromString(code.getCode());
+        ParserErrorListener errorListener = new ParserErrorListener(code.getWalkerSourceInformation());
+        SecuritySchemeLexerGrammar lexer = new SecuritySchemeLexerGrammar(input);
+        SecuritySchemeParserGrammar parser = new SecuritySchemeParserGrammar(new CommonTokenStream(lexer));
+
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(errorListener);
+        parser.removeErrorListeners();
+        parser.addErrorListener(errorListener);
+
+        return func.apply(parser);
     }
 }
