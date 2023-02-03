@@ -15,6 +15,9 @@
 package org.finos.legend.engine.persistence.components.relational.snowflake.sql;
 
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schema.Array;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schema.Object;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schema.Variant;
 import org.finos.legend.engine.persistence.components.relational.sql.DataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.BigInt;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Binary;
@@ -108,6 +111,15 @@ public class SnowflakeDataTypeMapping implements DataTypeMapping
                 break;
             case TIMESTAMP_LTZ:
                 dataType = new TimestampWithLocalTimezone();
+                break;
+            case VARIANT:
+                dataType = new Variant();
+                break;
+            case ARRAY:
+                dataType = new Array();
+                break;
+            case MAP:
+                dataType = new Object();
                 break;
             default:
                 throw new IllegalArgumentException("Unexpected value: " + type.dataType());
