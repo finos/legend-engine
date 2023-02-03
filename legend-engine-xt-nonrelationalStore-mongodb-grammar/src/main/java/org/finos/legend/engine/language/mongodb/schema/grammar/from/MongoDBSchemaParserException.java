@@ -16,12 +16,12 @@ package org.finos.legend.engine.language.mongodb.schema.grammar.from;
 
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
-public class MongodbSchemaParserException extends RuntimeException
+public class MongoDBSchemaParserException extends RuntimeException
 {
     private String message;
     private SourceInformation sourceInformation;
 
-    public MongodbSchemaParserException(String message, SourceInformation sourceInformation)
+    public MongoDBSchemaParserException(String message, SourceInformation sourceInformation)
     {
         this.message = message;
         this.sourceInformation = sourceInformation;

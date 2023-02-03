@@ -15,9 +15,9 @@
 /** Taken from "The Definitive ANTLR 4 Reference" by Terence Parr */
 // Derived from http://json.org as starting point.
 
-parser grammar MongodbSchemaParser;
+parser grammar MongoDBSchemaParser;
 
-options { tokenVocab=MongodbSchemaLexer; }
+options { tokenVocab=MongoDBSchemaLexer; }
 
 keywords:                                   (DATABASE | DATABASE_NAME
                                             | COLLECTIONS | COLLECTION_NAME

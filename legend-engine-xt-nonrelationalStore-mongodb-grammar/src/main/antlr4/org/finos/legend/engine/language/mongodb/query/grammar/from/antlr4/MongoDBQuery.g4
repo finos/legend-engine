@@ -1,4 +1,4 @@
-grammar MongoDbQuery;
+grammar MongoDBQuery;
 
 
 /**

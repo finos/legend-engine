@@ -1,10 +1,10 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//       http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,20 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.mongodb.schema.grammar.roundtrip;
+package org.finos.legend.engine.language.mongodb.schema.grammar.from;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoDbQueryBaseListener;
-import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoDbQueryLexer;
-import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoDbQueryListener;
-import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoDbQueryParser;
-import org.finos.legend.engine.language.mongodb.schema.grammar.from.AntlrThrowingErrorListener;
-import org.finos.legend.engine.language.mongodb.schema.grammar.from.MongoDbQueryParseTreeWalker;
-import org.finos.legend.engine.language.mongodb.schema.grammar.to.MongoDbQueryComposer;
+import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoDBQueryBaseListener;
+import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoDBQueryLexer;
+import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoDBQueryListener;
+import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoDBQueryParser;
+import org.finos.legend.engine.language.mongodb.schema.grammar.to.MongoDBQueryComposer;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DatabaseCommand;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -35,7 +33,7 @@ import static utils.TestUtils.resourceAsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
-public class TestMongoDbQueryRoundtrip
+public class TestQueryParseTreeWalker
 {
     private final ObjectMapper mapper = new ObjectMapper().setDefaultPrettyPrinter(new CustomJSONPrettyPrinter())
             .enable(SerializationFeature.INDENT_OUTPUT)
@@ -45,29 +43,29 @@ public class TestMongoDbQueryRoundtrip
     @Test
     public void testEmptyAggregate()
     {
-        testRoundtrip("empty_pipeline_input.json",
-                "empty_pipeline_output.json");
+        testRoundtrip("json/query/empty_pipeline_input.json",
+                "json/query/empty_pipeline_output.json");
     }
 
     @Test
     public void testAggregateWithEmptyMatch()
     {
-        testRoundtrip("empty_match_input.json",
-                "empty_match_output.json");
+        testRoundtrip("json/query/empty_match_input.json",
+                "json/query/empty_match_output.json");
     }
 
     @Test
     public void testAggregateWithMatchSimpleExpression()
     {
-        testRoundtrip("match_simple_expression_input.json",
-                "match_simple_expression_output.json");
+        testRoundtrip("json/query/match_simple_expression_input.json",
+                "json/query/match_simple_expression_output.json");
     }
 
     @Test
     public void testAggregateWithMatchExpressionWithOperator()
     {
-        testRoundtrip("match_with_operator_input.json",
-                "match_with_operator_output.json");
+        testRoundtrip("json/query/match_with_operator_input.json",
+                "json/query/match_with_operator_output.json");
     }
 
 
@@ -75,29 +73,29 @@ public class TestMongoDbQueryRoundtrip
     @Ignore
     public void testAggregateWithMatchWithVariousComparisonOperatorFormats()
     {
-        testRoundtrip("match_with_various_comparison_expression_formats_input.json",
-                "match_with_various_comparison_expression_formats_output.json");
+        testRoundtrip("json/query/match_with_various_comparison_expression_formats_input.json",
+                "json/query/match_with_various_comparison_expression_formats_output.json");
     }
 
     @Test
     public void testAggregateWithMultiMatchExpressionWithoutAndOperator()
     {
-        testRoundtrip("two_match_with_operators_input.json",
-                "two_match_with_operators_output.json");
+        testRoundtrip("json/query/two_match_with_operators_input.json",
+                "json/query/two_match_with_operators_output.json");
     }
 
     @Test
-    public void testAggregateWithMatchExpressionWithOrOperator() throws Exception
+    public void testAggregateWithMatchExpressionWithOrOperator()
     {
-        testRoundtrip("match_with_or_operator_input.json",
-                "match_with_or_operator_output.json");
+        testRoundtrip("json/query/match_with_or_operator_input.json",
+                "json/query/match_with_or_operator_output.json");
     }
 
     @Test
     public void testAggregateWithMatchExpressionWithAndOperator()
     {
-        testRoundtrip("match_with_and_operator_input.json",
-                "match_with_and_operator_output.json");
+        testRoundtrip("json/query/match_with_and_operator_input.json",
+                "json/query/match_with_and_operator_output.json");
     }
 
 
@@ -105,70 +103,70 @@ public class TestMongoDbQueryRoundtrip
     @Ignore
     public void testAggregateWithMatchExpressionWithLogicalExpressionAndRegularMatchExpressions()
     {
-        testRoundtrip("multi_match_with_gt_with_without_operator_input.json",
-                "multi_match_with_gt_with_without_operator_output.json");
+        testRoundtrip("json/query/multi_match_with_gt_with_without_operator_input.json",
+                "json/query/multi_match_with_gt_with_without_operator_output.json");
     }
 
     @Test
     public void testAggregateWithMultiMatchExpressionWithEmptyArrayWithoutOperator()
     {
-        testRoundtrip("match_with_empty_array_input.json",
-                "match_with_empty_array_output.json");
+        testRoundtrip("json/query/match_with_empty_array_input.json",
+                "json/query/match_with_empty_array_output.json");
     }
 
     @Test
     public void testAggregateWithMultiMatchExpressionWithNonEmptyArraysWithAndWithoutOperators()
     {
-        testRoundtrip("multi_match_non_empty_array_input.json",
-                "multi_match_non_empty_array_output.json");
+        testRoundtrip("json/query/multi_match_non_empty_array_input.json",
+                "json/query/multi_match_non_empty_array_output.json");
     }
 
     @Test
-    public void testAggregateWithMultiMatchExpressionWithManyValueTypes() throws Exception
+    public void testAggregateWithMultiMatchExpressionWithManyValueTypes()
     {
-        testRoundtrip("match_many_types_input.json",
-                "match_many_types_output.json");
+        testRoundtrip("json/query/match_many_types_input.json",
+                "json/query/match_many_types_output.json");
     }
 
     @Test
-    public void testAggregateMatchWithNestedObjectStructure() throws Exception
+    public void testAggregateMatchWithNestedObjectStructure()
     {
-        testRoundtrip("match_with_nested_object_input.json",
-                "match_with_nested_object_output.json");
+        testRoundtrip("json/query/match_with_nested_object_input.json",
+                "json/query/match_with_nested_object_output.json");
     }
 
     @Test
-    public void testProjectWithSingleInclusionFilter() throws Exception
+    public void testProjectWithSingleInclusionFilter()
     {
-        testRoundtrip("project_with_single_inclusion_filter_input.json",
-                "project_with_single_inclusion_filter_output.json");
+        testRoundtrip("json/query/project_with_single_inclusion_filter_input.json",
+                "json/query/project_with_single_inclusion_filter_output.json");
     }
 
     @Test
-    public void testProjectWithSingleComputedField() throws Exception
+    public void testProjectWithSingleComputedField()
     {
-        testRoundtrip("project_with_single_computed_field_input.json",
-                "project_with_single_computed_field_output.json");
+        testRoundtrip("json/query/project_with_single_computed_field_input.json",
+                "json/query/project_with_single_computed_field_output.json");
     }
 
     @Test
-    public void testProjectWithMultipleFilters() throws Exception
+    public void testProjectWithMultipleFilters()
     {
-        testRoundtrip("project_with_multiple_filters_input.json",
-                "project_with_multiple_filters_output.json");
+        testRoundtrip("json/query/project_with_multiple_filters_input.json",
+                "json/query/project_with_multiple_filters_output.json");
     }
 
     @Test
-    public void testProjectWithMultipleComplexFilters() throws Exception
+    public void testProjectWithMultipleComplexFilters()
     {
-        testRoundtrip("project_with_multiple_complex_filters_input.json",
-                "project_with_multiple_complex_filters_output.json");
+        testRoundtrip("json/query/project_with_multiple_complex_filters_input.json",
+                "json/query/project_with_multiple_complex_filters_output.json");
     }
 
     @Test
-    public void testProjectShouldThrowException() throws Exception
+    public void testProjectShouldThrowException()
     {
-        String input = resourceAsString("project_with_wrong_number_should_throw_input.json");
+        String input = resourceAsString("json/query/project_with_wrong_number_should_throw_input.json");
         Exception exception = assertThrows(RuntimeException.class, () -> parseAndWalkDatabaseCommand(input));
         assertEquals(exception.getMessage(), "visitProjectFilterValue error");
     }
@@ -178,7 +176,7 @@ public class TestMongoDbQueryRoundtrip
 
         DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(inputMongoQuery);
 
-        MongoDbQueryComposer composer = new MongoDbQueryComposer();
+        MongoDBQueryComposer composer = new MongoDBQueryComposer();
         String queryString = composer.parseDatabaseCommand(databaseCommand);
 
         try
@@ -214,9 +212,9 @@ public class TestMongoDbQueryRoundtrip
 
     }
 
-    private MongoDbQueryParser getParser(CommonTokenStream tokens)
+    private MongoDBQueryParser getParser(CommonTokenStream tokens)
     {
-        MongoDbQueryParser parser = new MongoDbQueryParser(tokens);
+        MongoDBQueryParser parser = new MongoDBQueryParser(tokens);
 
         parser.removeErrorListeners();
         parser.addErrorListener(AntlrThrowingErrorListener.INSTANCE);
@@ -226,17 +224,17 @@ public class TestMongoDbQueryRoundtrip
 
     private DatabaseCommand parseAndWalkDatabaseCommand(String input)
     {
-        MongoDbQueryLexer programLexer = new MongoDbQueryLexer(CharStreams.fromString(input));
+        MongoDBQueryLexer programLexer = new MongoDBQueryLexer(CharStreams.fromString(input));
 
         CommonTokenStream tokens = new CommonTokenStream(programLexer);
-        MongoDbQueryParser parser = getParser(tokens);
+        MongoDBQueryParser parser = getParser(tokens);
 
-        MongoDbQueryListener listener = new MongoDbQueryBaseListener();
+        MongoDBQueryListener listener = new MongoDBQueryBaseListener();
         parser.addParseListener(listener);
 
-        MongoDbQueryParser.DatabaseCommandContext commandContext = parser.databaseCommand();
+        MongoDBQueryParser.DatabaseCommandContext commandContext = parser.databaseCommand();
 
-        MongoDbQueryParseTreeWalker walker = new MongoDbQueryParseTreeWalker();
+        MongoDBQueryParseTreeWalker walker = new MongoDBQueryParseTreeWalker();
         walker.visit(commandContext);
 
         return walker.getCommand();

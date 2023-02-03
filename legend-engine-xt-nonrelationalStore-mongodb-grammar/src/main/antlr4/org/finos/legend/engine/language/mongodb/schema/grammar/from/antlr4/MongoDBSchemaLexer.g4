@@ -15,7 +15,7 @@
 /** Taken from "The Definitive ANTLR 4 Reference" by Terence Parr */
 // Derived from http://json.org as starting point.
 
-lexer grammar MongodbSchemaLexer;
+lexer grammar MongoDBSchemaLexer;
 
 fragment ESC
    : '\\' (["\\/bfnrt] | UNICODE)

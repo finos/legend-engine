@@ -40,9 +40,7 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.TimeStampType;
 
 import java.util.stream.Collectors;
 
-import static org.finos.legend.engine.language.mongodb.schema.grammar.to.ComposerUtility.appendJsonArrayKey;
 import static org.finos.legend.engine.language.mongodb.schema.grammar.to.ComposerUtility.appendJsonKey;
-import static org.finos.legend.engine.language.mongodb.schema.grammar.to.ComposerUtility.appendJsonObjectKey;
 import static org.finos.legend.engine.language.mongodb.schema.grammar.to.ComposerUtility.appendStringWithQuotes;
 import static org.finos.legend.engine.language.mongodb.schema.grammar.to.ComposerUtility.appendTabString;
 import static org.finos.legend.engine.language.mongodb.schema.grammar.to.ComposerUtility.getTabString;
@@ -67,15 +65,15 @@ public class BaseTypeVisitorImpl implements BaseTypeVisitor<String>
         int valuesIndentLevel = indentLevel + 1;
 
         appendTabString(builder, valuesIndentLevel);
-        appendJsonKey("bsonType", builder);
-        appendStringWithQuotes("array", builder);
+        appendJsonKey(builder, "bsonType");
+        appendStringWithQuotes(builder, "array");
         builder.append(",\n");
 
         if (val.description != null)
         {
             appendTabString(builder, valuesIndentLevel);
-            appendJsonKey("description", builder);
-            appendStringWithQuotes(val.description, builder);
+            appendJsonKey(builder, "description");
+            appendStringWithQuotes(builder, val.description);
             builder.append(",\n");
         }
 
@@ -85,20 +83,16 @@ public class BaseTypeVisitorImpl implements BaseTypeVisitor<String>
             if (val.items.size() == 1)
             {
                 appendTabString(builder, valuesIndentLevel);
-                appendJsonObjectKey("items", builder);
-                //builder.append("{\n");
+                appendJsonKey(builder, "items");
                 ListIterate.collect(val.items, i -> builder.append(renderItem(i, valuesIndentLevel)));
-                // appendTabString(builder, valuesIndentLevel);
-                // builder.append(",\n");
             }
             else if (val.items.size() > 1)
             {
                 appendTabString(builder, valuesIndentLevel);
-                appendJsonObjectKey("items", builder);
+                appendJsonKey(builder, "items");
                 builder.append("[\n");
                 builder.append(val.items.stream().map(p -> renderItem(p, valuesIndentLevel + 1))
                         .collect(Collectors.joining(",\n", "", "\n")));
-                // ListIterate.collect(val.items, i -> builder.append(renderItem(i, valuesIndentLevel + 1)));
                 appendTabString(builder, valuesIndentLevel);
                 builder.append("]");
             }
@@ -107,14 +101,14 @@ public class BaseTypeVisitorImpl implements BaseTypeVisitor<String>
         {
             builder.append(",\n");
             appendTabString(builder, valuesIndentLevel);
-            appendJsonKey("minItems", builder);
+            appendJsonKey(builder, "minItems");
             builder.append(val.minItems);
         }
         if (val.maxItems != null)
         {
             builder.append(",\n");
             appendTabString(builder, valuesIndentLevel);
-            appendJsonKey("maxItems", builder);
+            appendJsonKey(builder, "maxItems");
             builder.append(val.maxItems);
         }
 
@@ -122,7 +116,7 @@ public class BaseTypeVisitorImpl implements BaseTypeVisitor<String>
         {
             builder.append(",\n");
             appendTabString(builder, valuesIndentLevel);
-            appendJsonKey("uniqueItems", builder);
+            appendJsonKey(builder, "uniqueItems");
             builder.append(String.valueOf(val.uniqueItems));
         }
         builder.append("\n");
@@ -142,7 +136,27 @@ public class BaseTypeVisitorImpl implements BaseTypeVisitor<String>
     @Override
     public String visit(BoolType val)
     {
-        return null;
+        StringBuilder builder = new StringBuilder();
+        //øappendTabString(builder, indentLevel);
+        builder.append("{\n");
+        int valuesIndentLevel = indentLevel + 1;
+
+        appendTabString(builder, valuesIndentLevel);
+        appendJsonKey(builder, "bsonType");
+        appendStringWithQuotes(builder, "bool");
+        if (val.description != null)
+        {
+            builder.append(",\n");
+            appendTabString(builder, valuesIndentLevel);
+            appendJsonKey(builder, "description");
+            appendStringWithQuotes(builder, val.description);
+        }
+
+        builder.append("\n");
+        appendTabString(builder, indentLevel);
+        builder.append("}");
+
+        return builder.toString();
     }
 
     @Override
@@ -166,35 +180,35 @@ public class BaseTypeVisitorImpl implements BaseTypeVisitor<String>
         int valuesIndentLevel = indentLevel + 1;
 
         appendTabString(builder, valuesIndentLevel);
-        appendJsonKey("bsonType", builder);
-        appendStringWithQuotes("decimal", builder);
-        builder.append(",\n");
+        appendJsonKey(builder, "bsonType");
+        appendStringWithQuotes(builder, "decimal");
+
 
         if (val.description != null)
         {
-            appendTabString(builder, valuesIndentLevel);
-            appendJsonKey("description", builder);
-            appendStringWithQuotes(val.description, builder);
             builder.append(",\n");
+            appendTabString(builder, valuesIndentLevel);
+            appendJsonKey(builder, "description");
+            appendStringWithQuotes(builder, val.description);
         }
 
         if (val.minimum != null)
         {
-            appendTabString(builder, valuesIndentLevel);
-            appendJsonKey("minimum", builder);
-            builder.append(val.minimum);
             builder.append(",\n");
+            appendTabString(builder, valuesIndentLevel);
+            appendJsonKey(builder, "minimum");
+            builder.append(val.minimum);
         }
 
         if (val.maximum != null)
         {
+            builder.append(",\n");
             appendTabString(builder, valuesIndentLevel);
-            appendJsonKey("maximum", builder);
+            appendJsonKey(builder, "maximum");
             builder.append(val.maximum);
-            builder.append("\n");
         }
 
-
+        builder.append("\n");
         appendTabString(builder, indentLevel);
         builder.append("}");
 
@@ -211,40 +225,36 @@ public class BaseTypeVisitorImpl implements BaseTypeVisitor<String>
     public String visit(IntType val)
     {
         StringBuilder builder = new StringBuilder();
-        //appendTabString(builder, indentLevel);
         builder.append("{\n");
         int valuesIndentLevel = indentLevel + 1;
 
         appendTabString(builder, valuesIndentLevel);
-        appendJsonKey("bsonType", builder);
-        appendStringWithQuotes("int", builder);
+        appendJsonKey(builder, "bsonType");
+        appendStringWithQuotes(builder, "int");
 
 
         if (val.description != null)
         {
             builder.append(",\n");
             appendTabString(builder, valuesIndentLevel);
-            appendJsonKey("description", builder);
-            appendStringWithQuotes(val.description, builder);
-            //builder.append(",\n");
+            appendJsonKey(builder, "description");
+            appendStringWithQuotes(builder, val.description);
         }
 
         if (val.minimum != null)
         {
             builder.append(",\n");
             appendTabString(builder, valuesIndentLevel);
-            appendJsonKey("minimum", builder);
+            appendJsonKey(builder, "minimum");
             builder.append(val.minimum);
-            //builder.append(",\n");
         }
 
         if (val.maximum != null)
         {
             builder.append(",\n");
             appendTabString(builder, valuesIndentLevel);
-            appendJsonKey("maximum", builder);
+            appendJsonKey(builder, "maximum");
             builder.append(val.maximum);
-            //builder.append(",\n");
         }
         builder.append("\n");
         appendTabString(builder, indentLevel);
@@ -263,40 +273,36 @@ public class BaseTypeVisitorImpl implements BaseTypeVisitor<String>
     public String visit(LongType val)
     {
         StringBuilder builder = new StringBuilder();
-        //appendTabString(builder, indentLevel);
         builder.append("{\n");
 
         int valuesIndentLevel = indentLevel + 1;
 
         appendTabString(builder, valuesIndentLevel);
-        appendJsonKey("bsonType", builder);
-        appendStringWithQuotes("long", builder);
+        appendJsonKey(builder, "bsonType");
+        appendStringWithQuotes(builder, "long");
 
         if (val.description != null)
         {
             builder.append(",\n");
             appendTabString(builder, valuesIndentLevel);
-            appendJsonKey("description", builder);
-            appendStringWithQuotes(val.description, builder);
-            //builder.append(",\n");
+            appendJsonKey(builder, "description");
+            appendStringWithQuotes(builder, val.description);
         }
 
         if (val.minimum != null)
         {
             builder.append(",\n");
             appendTabString(builder, valuesIndentLevel);
-            appendJsonKey("minimum", builder);
+            appendJsonKey(builder, "minimum");
             builder.append(val.minimum);
-            //builder.append(",\n");
         }
 
         if (val.maximum != null)
         {
             builder.append(",\n");
             appendTabString(builder, valuesIndentLevel);
-            appendJsonKey("maximum", builder);
+            appendJsonKey(builder, "maximum");
             builder.append(val.maximum);
-            //builder.append("\n");
         }
 
         builder.append("\n");
@@ -338,8 +344,8 @@ public class BaseTypeVisitorImpl implements BaseTypeVisitor<String>
         int valuesIndentLevel = indentLevel + 1;
 
         appendTabString(builder, valuesIndentLevel);
-        appendJsonKey("bsonType", builder);
-        appendStringWithQuotes("object", builder);
+        appendJsonKey(builder, "bsonType");
+        appendStringWithQuotes(builder, "object");
 
         renderObjectType(val, builder, valuesIndentLevel);
         builder.append("\n");
@@ -367,18 +373,18 @@ public class BaseTypeVisitorImpl implements BaseTypeVisitor<String>
 
         int schemaValuesTabIndex = indentLevel + 1;
         appendTabString(builder, schemaValuesTabIndex);
-        appendJsonKey("$schema", builder);
-        appendStringWithQuotes(val.schemaVersion, builder);
+        appendJsonKey(builder, "$schema");
+        appendStringWithQuotes(builder, val.schemaVersion);
         builder.append(",\n");
 
         appendTabString(builder, schemaValuesTabIndex);
-        appendJsonKey("$id", builder);
-        appendStringWithQuotes(val.id, builder);
+        appendJsonKey(builder, "$id");
+        appendStringWithQuotes(builder, val.id);
         builder.append(",\n");
 
         appendTabString(builder, schemaValuesTabIndex);
-        appendJsonKey("bsonType", builder);
-        appendStringWithQuotes("object", builder);
+        appendJsonKey(builder, "bsonType");
+        appendStringWithQuotes(builder, "object");
         renderObjectType(val, builder, schemaValuesTabIndex);
         builder.append("\n");
 
@@ -392,40 +398,36 @@ public class BaseTypeVisitorImpl implements BaseTypeVisitor<String>
     public String visit(StringType val)
     {
         StringBuilder builder = new StringBuilder();
-        //appendTabString(builder, indentLevel);
         builder.append("{\n");
         int valuesIndentLevel = indentLevel + 1;
 
         appendTabString(builder, valuesIndentLevel);
-        appendJsonKey("bsonType", builder);
-        appendStringWithQuotes("string", builder);
-        //builder.append(",\n");
+        appendJsonKey(builder, "bsonType");
+        appendStringWithQuotes(builder, "string");
 
         if (val.description != null)
         {
             builder.append(",\n");
             appendTabString(builder, valuesIndentLevel);
-            appendJsonKey("description", builder);
-            appendStringWithQuotes(val.description, builder);
-            //builder.append(",\n");
+            appendJsonKey(builder, "description");
+            appendStringWithQuotes(builder, val.description);
         }
 
         if (val.minLength != null)
         {
             builder.append(",\n");
             appendTabString(builder, valuesIndentLevel);
-            appendJsonKey("minLength", builder);
+            appendJsonKey(builder, "minLength");
             builder.append(val.minLength);
-            //builder.append(",\n");
         }
         if (val.maxLength != null)
         {
             builder.append(",\n");
             appendTabString(builder, valuesIndentLevel);
-            appendJsonKey("maxLength", builder);
+            appendJsonKey(builder, "maxLength");
             builder.append(val.maxLength);
-            //builder.append(",\n");
         }
+
         builder.append("\n");
         appendTabString(builder, indentLevel);
         builder.append("}");
@@ -439,26 +441,23 @@ public class BaseTypeVisitorImpl implements BaseTypeVisitor<String>
         {
             builder.append(",\n");
             appendTabString(builder, valuesIndentLevel);
-            appendJsonKey("title", builder);
-            appendStringWithQuotes(objType.title, builder);
-            //builder.append(",\n");
+            appendJsonKey(builder, "title");
+            appendStringWithQuotes(builder, objType.title);
         }
         if (objType.description != null)
         {
             builder.append(",\n");
             appendTabString(builder, valuesIndentLevel);
-            appendJsonKey("description", builder);
-            appendStringWithQuotes(objType.description, builder);
-            //builder.append(",\n");
+            appendJsonKey(builder, "description");
+            appendStringWithQuotes(builder, objType.description);
         }
 
         if (objType.properties != null && objType.properties.size() > 0)
         {
             builder.append(",\n");
             appendTabString(builder, valuesIndentLevel);
-            appendJsonObjectKey("properties", builder);
+            appendJsonKey(builder, "properties");
             builder.append("{\n");
-            //ListIterate.collect(objType.properties, p -> builder.append(render(p, valuesIndentLevel + 1)));
             builder.append(objType.properties.stream().map(p -> render(p, valuesIndentLevel + 1))
                     .collect(Collectors.joining(",\n", "", "\n")));
             appendTabString(builder, valuesIndentLevel);
@@ -469,24 +468,22 @@ public class BaseTypeVisitorImpl implements BaseTypeVisitor<String>
         {
             builder.append(",\n");
             appendTabString(builder, valuesIndentLevel);
-            appendJsonKey("minProperties", builder);
+            appendJsonKey(builder, "minProperties");
             builder.append(objType.minProperties);
-            //builder.append(",\n");
         }
         if (objType.maxProperties != null)
         {
             builder.append(",\n");
             appendTabString(builder, valuesIndentLevel);
-            appendJsonKey("maxProperties", builder);
+            appendJsonKey(builder, "maxProperties");
             builder.append(objType.maxProperties);
-            //builder.append(",\n");
         }
 
         if (objType.required != null && objType.required.size() > 0)
         {
             builder.append(",\n");
             appendTabString(builder, valuesIndentLevel);
-            appendJsonArrayKey("required", builder);
+            appendJsonKey(builder, "required");
             builder.append("[");
 
             int itemsIndentLevel = valuesIndentLevel + 1;
@@ -504,13 +501,13 @@ public class BaseTypeVisitorImpl implements BaseTypeVisitor<String>
             if (objType.additionalProperties != null)
             {
                 appendTabString(builder, valuesIndentLevel);
-                appendJsonKey("additionalProperties", builder);
+                appendJsonKey(builder, "additionalProperties");
                 builder.append("Additional properties with specified schema not supported");
             }
             else if (objType.additionalProperties == null)
             {
                 appendTabString(builder, valuesIndentLevel);
-                appendJsonKey("additionalProperties", builder);
+                appendJsonKey(builder, "additionalProperties");
                 builder.append(true);
             }
         }
@@ -518,7 +515,7 @@ public class BaseTypeVisitorImpl implements BaseTypeVisitor<String>
         {
             builder.append(",\n");
             appendTabString(builder, valuesIndentLevel);
-            appendJsonKey("additionalProperties", builder);
+            appendJsonKey(builder, "additionalProperties");
             builder.append(false);
         }
     }
@@ -529,7 +526,7 @@ public class BaseTypeVisitorImpl implements BaseTypeVisitor<String>
         LOGGER.debug(p.key);
         StringBuilder builder = new StringBuilder();
         appendTabString(builder, indentLevel);
-        appendJsonObjectKey(p.key, builder);
+        appendJsonKey(builder, p.key);
         BaseTypeVisitorImpl typeVisitor = new BaseTypeVisitorImpl(indentLevel);
         builder.append(p.value.accept(typeVisitor));
         return builder.toString();

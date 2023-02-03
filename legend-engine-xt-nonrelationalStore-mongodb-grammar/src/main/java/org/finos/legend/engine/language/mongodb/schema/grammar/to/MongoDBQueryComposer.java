@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.language.mongodb.schema.grammar.to;
 
-import org.finos.legend.engine.language.mongodb.schema.grammar.roundtrip.OperatorUtility;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.AndOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArgumentExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArgumentExpressionVisitor;
@@ -56,7 +55,7 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Ope
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MongoDbQueryComposer
+public class MongoDBQueryComposer
 {
 
     public String parseDatabaseCommand(DatabaseCommand databaseCommand)
@@ -113,7 +112,7 @@ public class MongoDbQueryComposer
             {
                 List<String> expressionsString = val.expressions.stream()
                         .map(x -> visitArgumentExpression(x)).collect(Collectors.toList());
-                return "{ \"" + OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.AND) + "\" : [" + String.join(",", expressionsString) + "] }";
+                return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.AND) + "\" : [" + String.join(",", expressionsString) + "] }";
             }
 
             @Override
@@ -132,42 +131,42 @@ public class MongoDbQueryComposer
             public String visit(EqOperatorExpression val)
             {
                 String expString = visit(val.expression);
-                return "{ \"" + OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.EQ) + "\" : " + expString + " }";
+                return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.EQ) + "\" : " + expString + " }";
             }
 
             @Override
             public String visit(GTOperatorExpression val)
             {
                 String expString = visit(val.expression);
-                return "{ \"" + OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.GT) + "\" : " + expString + " }";
+                return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.GT) + "\" : " + expString + " }";
             }
 
             @Override
             public String visit(GreaterThanEqualsOperatorExpression val)
             {
                 String expString = visit(val.expression);
-                return "{ \"" + OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.GTE) + "\" : " + expString + " }";
+                return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.GTE) + "\" : " + expString + " }";
             }
 
             @Override
             public String visit(InOperatorExpression val)
             {
                 String expString = visit(val.expression);
-                return "{ \"" + OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.IN) + "\" : " + expString + " }";
+                return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.IN) + "\" : " + expString + " }";
             }
 
             @Override
             public String visit(LTEOperatorExpression val)
             {
                 String expString = visit(val.expression);
-                return "{ \"" + OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.LTE) + "\" : " + expString + " }";
+                return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.LTE) + "\" : " + expString + " }";
             }
 
             @Override
             public String visit(LTOperatorExpression val)
             {
                 String expString = visit(val.expression);
-                return "{ \"" + OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.LT) + "\" : " + expString + " }";
+                return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.LT) + "\" : " + expString + " }";
             }
 
             @Override
@@ -186,14 +185,14 @@ public class MongoDbQueryComposer
             public String visit(NEOperatorExpression val)
             {
                 String expString = visit(val.expression);
-                return "{ \"" + OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.NE) + "\" : " + expString + " }";
+                return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.NE) + "\" : " + expString + " }";
             }
 
             @Override
             public String visit(NinOperatorExpression val)
             {
                 String expString = visit(val.expression);
-                return "{ \"" + OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.NIN) + "\" : " + expString + " }";
+                return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.NIN) + "\" : " + expString + " }";
             }
 
             @Override
@@ -201,7 +200,7 @@ public class MongoDbQueryComposer
             {
                 List<String> expressionsString = val.expressions.stream()
                         .map(x -> visitArgumentExpression(x)).collect(Collectors.toList());
-                return "{ \"" + OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.NOR) + "\" : [" + String.join(",", expressionsString) + "] }";
+                return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.NOR) + "\" : [" + String.join(",", expressionsString) + "] }";
             }
 
             @Override
@@ -209,7 +208,7 @@ public class MongoDbQueryComposer
             {
                 List<String> expressionsString = val.expressions.stream()
                         .map(x -> visitArgumentExpression(x)).collect(Collectors.toList());
-                return "{ \"" + OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.NOT) + "\" : [" + String.join(",", expressionsString) + "] }";
+                return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.NOT) + "\" : [" + String.join(",", expressionsString) + "] }";
             }
 
             @Override
@@ -225,7 +224,7 @@ public class MongoDbQueryComposer
             {
                 List<String> expressionsString = val.expressions.stream()
                         .map(x -> visitArgumentExpression(x)).collect(Collectors.toList());
-                return "{ \"" + OperatorUtility.lowerCaseOperatorAndAddDollar(Operator.OR) + "\" : [" + String.join(",", expressionsString) + "] }";
+                return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.OR) + "\" : [" + String.join(",", expressionsString) + "] }";
             }
         });
     }

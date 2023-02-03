@@ -58,11 +58,11 @@
                         <artifactId>legend-engine-protocol-generation</artifactId>
                         <version>${project.version}</version>
                     </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-code-compiled-platform-java</artifactId>
-                        <version>${legend.pure.version}</version>
-                    </dependency>
+<!--                    <dependency>-->
+<!--                        <groupId>org.finos.legend.pure</groupId>-->
+<!--                        <artifactId>legend-pure-code-compiled-platform-java</artifactId>-->
+<!--                        <version>${legend.pure.version}</version>-->
+<!--                    </dependency>-->
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-xt-nonrelationalStore-mongodb-pure</artifactId>

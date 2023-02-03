@@ -127,8 +127,8 @@ Class meta::external::store::mongodb::metamodel::LongType extends BsonType
 
 Class meta::external::store::mongodb::metamodel::DecimalType extends BsonType
 {
-  maximum: Number[0..1];
-  minimum: Number[0..1];
+  maximum: Decimal[1];
+  minimum: Decimal[1];
 }
 
 Class meta::external::store::mongodb::metamodel::MinKeyType extends BsonType

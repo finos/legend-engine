@@ -19,26 +19,36 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "https://github.com/finos/legend/employee.schema",
         "bsonType": "object",
-        "title": "Record of employee",
+        "title": "Record of Firm",
         "description": "This document records the details of an employee",
         "properties": {
           "name": {
             "bsonType": "string",
-            "description": "name of the employee",
+            "description": "name of the firm",
             "minLength": 2
           },
-          "age": {
+          "yearOfIncorporation": {
             "bsonType": "int",
-            "description": "age of the employee",
-            "minimum": 16
+            "description": "year of incorporation",
+            "minimum": 2000
+          },
+          "marketCap": {
+            "bsonType": "decimal",
+            "description": "market cap at end of last year",
+            "minimum": 1000.01,
+            "maximum": 100000.001
+          },
+          "regulated": {
+            "bsonType": "bool",
+            "description": "Regulated industry in US"
           },
           "location": {
             "bsonType": "object",
-            "description": "Location of Employee",
+            "description": "Location of firm",
             "properties": {
               "country": {
                 "bsonType": "string",
-                "description": "country of city"
+                "description": "country"
               },
               "region": {
                 "bsonType": "string",
@@ -62,7 +72,7 @@
         },
         "required": [
           "name",
-          "age"
+          "yearOfIncorporation"
         ],
         "additionalProperties": true
       }
