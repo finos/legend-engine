@@ -131,8 +131,8 @@ Class meta::external::store::service::metamodel::HttpSecurityScheme extends meta
 
 Enum meta::external::store::service::metamodel::Scheme
 {
-    Basic,
-    Bearer
+    BASIC,
+    BEARER
 }
 
 Class meta::external::store::service::metamodel::ApiKeySecurityScheme extends meta::external::store::service::metamodel::SecurityScheme
