@@ -19,6 +19,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.google.common.collect.Iterables;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -34,6 +35,7 @@ import org.finos.legend.engine.pg.postgres.TDSRow;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
 
+import java.util.Collections;
 import java.util.List;
 
 public class LegendTdsClient implements LegendExecutionClient
@@ -42,7 +44,7 @@ public class LegendTdsClient implements LegendExecutionClient
     private final String port;
     private final String projectId;
     private final CookieStore cookieStore;
-    private final ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+    private static final ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
 
 
     public LegendTdsClient(String host, String port, String projectId, CookieStore cookieStore)
@@ -93,6 +95,7 @@ public class LegendTdsClient implements LegendExecutionClient
 
     private JsonNode executeQueryApi(String query)
     {
+        System.out.println("executing query " + query);
         try (CloseableHttpClient client = (CloseableHttpClient) HttpClientBuilder.getHttpClient(this.cookieStore))
         {
             HttpPost req = new HttpPost("http://" + this.host + ":" + this.port + "/api/sql/v1/execution/execute/" + this.projectId);
@@ -102,7 +105,14 @@ public class LegendTdsClient implements LegendExecutionClient
             try (CloseableHttpResponse res = client.execute(req))
             {
                 System.out.println(res.getStatusLine());
-                return mapper.readValue(res.getEntity().getContent(), JsonNode.class);
+                JsonNode response = mapper.readValue(res.getEntity().getContent(), JsonNode.class);
+
+                if (res.getStatusLine().getStatusCode() != 200)
+                {
+                    String message = "Failed to execute query " + query + "\n Cause: " + response.toPrettyString();
+                    System.out.println(message);
+                }
+                return response;
             }
         }
         catch (Exception e)
@@ -113,13 +123,21 @@ public class LegendTdsClient implements LegendExecutionClient
 
     private List<LegendColumn> getSchemaFromExecutionResponse(JsonNode jsonNode) throws JsonProcessingException
     {
-        ArrayNode columns = (ArrayNode) jsonNode.get("builder").get("columns");
-        return IterableIterate.collect(columns, c -> new LegendColumn(c.get("name").asText(), c.get("type").asText()));
+        if (jsonNode.get("builder") != null)
+        {
+            ArrayNode columns = (ArrayNode) jsonNode.get("builder").get("columns");
+            return IterableIterate.collect(columns, c -> new LegendColumn(c.get("name").asText(), c.get("type").asText()));
+        }
+        return Collections.emptyList();
     }
 
     private static Iterable<TDSRow> getRowsFromExecutionResponse(JsonNode jsonNode)
     {
-        ArrayNode result = (ArrayNode) jsonNode.get("result").get("rows");
-        return LazyIterate.collect(result, a -> columIndex -> a.get("values").get(columIndex).asText());
+        if (jsonNode.get("result") != null)
+        {
+            ArrayNode result = (ArrayNode) jsonNode.get("result").get("rows");
+            return LazyIterate.collect(result, a -> columIndex -> a.get("values").get(columIndex).asText());
+        }
+        return Collections.emptyList();
     }
 }
