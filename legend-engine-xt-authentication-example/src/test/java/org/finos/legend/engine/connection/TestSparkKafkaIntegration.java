@@ -13,6 +13,7 @@
 // limitations under the License.
 
 package org.finos.legend.engine.connection;
+
 import net.mguenther.kafka.junit.EmbeddedKafkaCluster;
 import net.mguenther.kafka.junit.EmbeddedKafkaClusterConfig;
 import net.mguenther.kafka.junit.KeyValue;
