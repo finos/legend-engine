@@ -35,8 +35,7 @@
     </modules>
 
     <properties>
-<!--        todo -->
-        <skipGeneratePureSpec>false</skipGeneratePureSpec>
+        <skipGeneratePureSpec>true</skipGeneratePureSpec>
     </properties>
 
     <build>

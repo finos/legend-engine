@@ -51,7 +51,7 @@ public class ExternalTaggedUnionSerializer extends DictionarySerializer
 
             if (value.size() == 0)
             {
-                // cannot know type
+                // unknown type, so skip
                 return toSerialize;
             }
             else

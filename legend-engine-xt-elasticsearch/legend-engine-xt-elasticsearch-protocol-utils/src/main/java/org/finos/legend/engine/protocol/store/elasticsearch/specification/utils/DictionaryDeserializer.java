@@ -36,7 +36,7 @@ import java.util.Map;
  * To simplify pure, we have pairs of key/values on the protocol classes.
  * In some cases, is a set of these key/values (ie List on protocol)
  * Elasticsearch expect all these as maps
- *
+ * <p>
  *  4 use cases to consider
  *    DictionaryEntrySingleValue
  *    List of DictionaryEntrySingleValue
@@ -47,9 +47,10 @@ public class DictionaryDeserializer extends JsonDeserializer<Object> implements 
 {
     protected JavaType type;
 
+    @SuppressWarnings("UnusedDeclaration")
     public DictionaryDeserializer()
     {
-        this(null);
+
     }
 
     public DictionaryDeserializer(JavaType type)

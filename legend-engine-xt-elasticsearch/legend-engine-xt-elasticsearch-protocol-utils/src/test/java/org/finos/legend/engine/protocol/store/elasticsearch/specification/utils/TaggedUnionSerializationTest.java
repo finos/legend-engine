@@ -66,6 +66,17 @@ public class TaggedUnionSerializationTest
     }
 
     @Test
+    public void testNull()
+    {
+        Union union = new Union();
+        JsonNode jsonNode = OBJECT_MAPPER.valueToTree(union);
+        Assert.assertTrue(jsonNode.isNull());
+        Union fromJson = OBJECT_MAPPER.convertValue(jsonNode, Union.class);
+        Assert.assertNotNull(fromJson);
+        Assert.assertNull(fromJson.unionValue());
+    }
+
+    @Test
     public void testString()
     {
         Union union = new Union();
@@ -77,7 +88,6 @@ public class TaggedUnionSerializationTest
     }
 
     @Test
-    @Ignore
     public void testPojo1()
     {
         Union union = new Union();
@@ -90,7 +100,6 @@ public class TaggedUnionSerializationTest
     }
 
     @Test
-    @Ignore
     public void testPojo2()
     {
         Union union = new Union();

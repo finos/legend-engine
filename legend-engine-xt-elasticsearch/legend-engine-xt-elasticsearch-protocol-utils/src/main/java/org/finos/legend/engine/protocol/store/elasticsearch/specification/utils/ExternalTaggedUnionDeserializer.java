@@ -29,7 +29,7 @@ import java.util.Map;
  * Only one field of on the union should be not-null
  * During serialization, we pick the non-null value, and serialize it
  * We need to find which field we need to assign the value to during deserialization
- *
+ * <p>
  * This variant expect the value inside a map, and the key is "name#type"
  */
 
@@ -40,6 +40,7 @@ public class ExternalTaggedUnionDeserializer extends DictionaryDeserializer
         super(contextualType);
     }
 
+    @SuppressWarnings("UnusedDeclaration")
     public ExternalTaggedUnionDeserializer()
     {
 

@@ -27,22 +27,22 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TreeTraversingParser;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Elasticsearch have 3 union variants: externally tagged, internally tagged, and simple union
  * Only one field of on the union should be not-null
  * During serialization, we pick the non-null value, and serialize it
- * We need to find which field we need to assign the value to during deserialization
- *
+ * We need to find which field we need to assign the value to during deserialization.
+ * <p>
  * This variant is internally tagged - meaning the object itself contains the type name
  */
 public class InternalTaggedUnionDeserializer extends JsonDeserializer<Object> implements ContextualDeserializer
 {
-    private static final ConcurrentHashMap<Class<?>, String> TYPE_NAMES = new ConcurrentHashMap<>();
+    private String typeField;
 
     private JavaType type;
 
+    @SuppressWarnings("UnusedDeclaration")
     public InternalTaggedUnionDeserializer()
     {
 
@@ -51,6 +51,7 @@ public class InternalTaggedUnionDeserializer extends JsonDeserializer<Object> im
     public InternalTaggedUnionDeserializer(JavaType type)
     {
         this.type = type;
+        this.typeField = type.getRawClass().getAnnotation(JsonTypeName.class).value();
     }
 
     @Override
@@ -63,23 +64,20 @@ public class InternalTaggedUnionDeserializer extends JsonDeserializer<Object> im
     public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException
     {
         Class<?> rawClass = this.type.getRawClass();
-
         try
         {
-            String typeField = TYPE_NAMES.computeIfAbsent(rawClass, c -> c.getAnnotation(JsonTypeName.class).value());
-
             // read as node
             ObjectNode node = p.readValueAsTree();
 
             // get the field value
-            String type = node.get(typeField).asText();
+            String type = node.get(this.typeField).asText();
 
             // find field
             Field field = rawClass.getField(type);
 
             // convert json to actual type
             JavaType javaType = ctxt.getTypeFactory().constructType(field.getGenericType());
-            TreeTraversingParser parserForType = new TreeTraversingParser(node);
+            TreeTraversingParser parserForType = new TreeTraversingParser(node, p.getCodec());
             parserForType.nextToken();
             Object value = ctxt.readValue(parserForType, javaType);
 
