@@ -28,16 +28,16 @@ public class PostgresTestClient
     //Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "vika");
     Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:9998/postgres",
         "postgres", "vika");
-    PreparedStatement statement = connection.prepareStatement("select * from  public.demo");
+    PreparedStatement statement = connection.prepareStatement("SELECT * FROM service.\"/personService\"");
     ResultSet resultSet = statement.executeQuery();
-    ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+//    ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
     /*    for(int i =1; i <= metaData.getColumnCount();i++){
             System.out.println(metaData.getColumnName(i)+"  :  "+metaData.getColumnType(i));
         }*/
     while (resultSet.next())
     {
-      String name = resultSet.getString("name");
-      int age = resultSet.getInt("age");
+      String name = resultSet.getString("First Name");
+      int age = resultSet.getInt("Age");
       System.out.println(name + " : " + age);
       //resultSet.getMetaData().getColumnCount()
     }

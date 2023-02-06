@@ -15,7 +15,7 @@
 package org.finos.legend.engine.pg.postgres;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelFuture;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
@@ -35,13 +35,17 @@ import org.finos.legend.engine.pg.postgres.transport.Netty4OpenChannelsHandler;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
-import javax.net.ssl.SSLContext;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 
 public class PostgresServer
 {
 
   private final int port;
   private final SessionsFactory sessionsFactory;
+  private Channel channel;
+  private NioEventLoopGroup bossGroup;
+  private NioEventLoopGroup workerGroup;
 
   public PostgresServer(int port, SessionsFactory sessionsFactory)
   {
@@ -51,51 +55,35 @@ public class PostgresServer
 
   public void run()
   {
-    Authentication authentication = new Authentication()
+    Authentication authentication = (user, connectionProperties) -> new AuthenticationMethod()
     {
       @Nullable
       @Override
-      public AuthenticationMethod resolveAuthenticationType(String user,
-          ConnectionProperties connectionProperties)
+      public User authenticate(final String userName, @Nullable String passwd,
+          ConnectionProperties connProperties)
       {
-        return new AuthenticationMethod()
-        {
-          @Nullable
-          @Override
-          public User authenticate(final String userName, @Nullable String passwd,
-              ConnectionProperties connProperties)
-          {
-            return new User()
-            {
-              @Override
-              public String name()
-              {
-                return userName;
-              }
-            };
-          }
+        return () -> userName;
+      }
 
-          @Override
-          public String name()
-          {
-            return null;
-          }
-        };
+      @Override
+      public String name()
+      {
+        return null;
       }
     };
-
-    SSLContext sslContext = null;
 
     Netty4OpenChannelsHandler openChannelsHandler = new Netty4OpenChannelsHandler(
         LoggerFactory.getLogger(Netty4OpenChannelsHandler.class));
 
-    NioEventLoopGroup bossGroup = new NioEventLoopGroup();
-    NioEventLoopGroup workerGroup = new NioEventLoopGroup();
+    bossGroup = new NioEventLoopGroup();
+    workerGroup = new NioEventLoopGroup();
+    SocketAddress socketAddress = new InetSocketAddress("127.0.0.1", port);
     try
     {
       ServerBootstrap bootstrap = new ServerBootstrap()
           .group(bossGroup, workerGroup)
           .channel(NioServerSocketChannel.class)
+          .localAddress(socketAddress)
           .childHandler(new ChannelInitializer<SocketChannel>()
           {
             @Override
@@ -113,21 +101,28 @@ public class PostgresServer
           .childOption(ChannelOption.SO_KEEPALIVE, true);
 
       //Bind and start accept incoming connections
-      ChannelFuture future = bootstrap.bind(port).sync();
-
-      //Wait until server socket is closed
-
-      future.channel().closeFuture().sync();
+      this.channel = bootstrap.bind().syncUninterruptibly().channel();
     }
-    catch (InterruptedException e)
-    {
-      throw new RuntimeException(e);
-    }
-    finally
+    catch (RuntimeException e)
     {
       workerGroup.shutdownGracefully();
       bossGroup.shutdownGracefully();
     }
+  }
+
+  public Channel getChannel()
+  {
+    return channel;
+  }
+
+  public NioEventLoopGroup getBossGroup()
+  {
+    return bossGroup;
+  }
+
+  public NioEventLoopGroup getWorkerGroup()
+  {
+    return workerGroup;
   }
 
   public static void main(String[] args)
