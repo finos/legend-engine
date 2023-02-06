@@ -14,15 +14,10 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
-@JsonSubTypes({
-        @JsonSubTypes.Type(value = HttpSecurityScheme.class, name = "http"),
-        @JsonSubTypes.Type(value = ApiKeySecurityScheme.class, name = "apiKey")
-})
 public abstract class SecurityScheme
 {
     public SourceInformation sourceInformation;
