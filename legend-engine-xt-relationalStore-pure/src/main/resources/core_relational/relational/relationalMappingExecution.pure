@@ -175,10 +175,20 @@ function <<access.private>> meta::relational::mapping::addEnumMapSupportFunction
 {
    let enumParam = $sq.inScopeVars->keyValues().second->map(p | $p.values)->filter(e | $e->instanceOf(PlanVarPlaceHolder))->map(p | $p->cast(@PlanVarPlaceHolder).type)->filter(e | $e->instanceOf(Enumeration));
    let enumMapTemplateFunctions = if($enumParam->isNotEmpty(),
-                                      |$m.enumerationMappings->filter(e | $e.enumeration->in($enumParam))->map(enum | let concatStr = if($enum.enumValueMappings->at(0).sourceValues->type() == String, |'\'', |'');
-                                                                                                                      let enumHashMap = $enum.enumValueMappings->map(e | '"'+ $e.enum->cast(@Enum).name +'":"'+ $concatStr + $e.sourceValues->makeString('\', \'') + $concatStr + '"')->makeString(', ');
+                                      |$m.enumerationMappings->filter(e | $e.enumeration->in($enumParam))->map(enum | let enumHashMap = createEnumHashMap($enum);
                                                                                                                       '<#function enumMap_' + fetchEnumFullPath($enum) + ' inputVal> <#assign enumMap = {'->concatenate($enumHashMap)->concatenate('}> <#if inputVal?has_content> <#return enumMap[inputVal]> <#else> <#return ""> </#if> </#function>')->makeString(' ');),
                                       |[]);
+}
+
+function meta::relational::mapping::createEnumHashMap(enum:EnumerationMapping<Any>[*]):String[1]
+{
+  $enum.enumValueMappings->map(e | '"'+ $e.enum->cast(@Enum).name +'":"'+ concatEnumValues($e.sourceValues) +'"')->makeString(', ');
+}
+
+function meta::relational::mapping::concatEnumValues(sourceValues:Any[*]):String[1]
+{
+  let concatStr = if($sourceValues->type()==String, |'\'', |'');
+  $concatStr + $sourceValues->map(v | if($sourceValues->type()==String, |$v->cast(@String)->convertStringToSQLString(), |$v))->makeString($concatStr+', '+$concatStr) + $concatStr;
 }
 
 function meta::relational::mapping::fetchEnumFullPath(enum:EnumerationMapping<Any>[*]):String[1]
