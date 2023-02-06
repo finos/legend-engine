@@ -1229,7 +1229,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlG
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfQuarter_MemSQL():Boolean[1]
 {
-   testToSqlGenerationFirstDayOfQuarter(DatabaseType.MemSQL, 'select adddate(subdate(`root`.tradeDate, INTERVAL dayofyear(`root`.tradeDate) - 1 DAY), INTERVAL (quarter(date(`root`.tradeDate) -1)) QUARTER) as `date` from tradeTable as `root`');
+   testToSqlGenerationFirstDayOfQuarter(DatabaseType.MemSQL, 'select adddate(subdate(`root`.tradeDate, INTERVAL dayofyear(`root`.tradeDate) - 1 DAY), INTERVAL (quarter(date(`root`.tradeDate)) -1) QUARTER) as `date` from tradeTable as `root`');
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationFirstDayOfQuarter_Sybase():Boolean[1]
