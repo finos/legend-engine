@@ -15,6 +15,7 @@
 import meta::external::shared::format::binding::*;
 import meta::pure::functions::io::http::*;
 import meta::pure::model::unit::*;
+import meta::pure::functions::collection::tests::*;
 import meta::external::store::service::metamodel::*;
 import meta::external::store::service::tests::domain::*;
 import meta::external::store::service::tests::store::*;
@@ -44,8 +45,9 @@ function meta::external::store::service::tests::store::tradeServiceStoreSchemaBi
 function meta::external::store::service::tests::store::TradeProductServiceStore():ServiceStore[1]
 {
    let store = ^ServiceStore(
-      package  = meta::external::store::service::tests::store,
-      name     = 'TradeProductServiceStore'
+      package         = meta::external::store::service::tests::store,
+      name            = 'TradeProductServiceStore',
+      securitySchemes = ^Map<String,SecurityScheme>()
    );
    
    let tradeServiceGroup = ^ServiceGroup(
@@ -60,7 +62,7 @@ function meta::external::store::service::tests::store::TradeProductServiceStore(
       id     = 'AllTradeService',
       path   = '/allTradesService',
       method = HTTPMethod.GET,
-      parameters = ^ServiceParameter(name = 'serializationFormat', type = ^StringTypeReference(list = false), location = Location.QUERY),
+      parameters = ^ServiceParameter(name = 'serializationFormat', type = ^StringTypeReference(list = false), location = meta::external::store::service::metamodel::Location.QUERY),
       requestBody = ^ComplexTypeReference(binding = tradeServiceStoreSchemaBinding(), list = false, type = S_RequestBody),
       response = ^ComplexTypeReference(binding = tradeServiceStoreSchemaBinding(), list = true, type = S_Trade)
    );
@@ -79,8 +81,8 @@ function meta::external::store::service::tests::store::TradeProductServiceStore(
       id     = 'ProductByIdService',
       path   = '/getProductById/{id}',
       method = HTTPMethod.GET,
-      parameters = [^ServiceParameter(name = 'id', type = ^StringTypeReference(list = false), location = Location.PATH), 
-                    ^ServiceParameter(name = 'serializationFormat', type = ^StringTypeReference(list = false), location = Location.QUERY)],
+      parameters = [^ServiceParameter(name = 'id', type = ^StringTypeReference(list = false), location = meta::external::store::service::metamodel::Location.PATH),
+                    ^ServiceParameter(name = 'serializationFormat', type = ^StringTypeReference(list = false), location = meta::external::store::service::metamodel::Location.QUERY)],
       response = ^ComplexTypeReference(binding = prodServiceStoreSchemaBinding(), list = true, type = S_Product)
    );
    
@@ -90,7 +92,7 @@ function meta::external::store::service::tests::store::TradeProductServiceStore(
       id     = 'ProductByNameService',
       path   = '/getProductByName',
       method = HTTPMethod.GET,
-      parameters = ^ServiceParameter(name = 'name', type = ^StringTypeReference(list = false), location = Location.QUERY),
+      parameters = ^ServiceParameter(name = 'name', type = ^StringTypeReference(list = false), location = meta::external::store::service::metamodel::Location.QUERY),
       response = ^ComplexTypeReference(binding = prodServiceStoreSchemaBinding(), list = true, type = S_Product)
    );
    
@@ -111,7 +113,8 @@ function meta::external::store::service::tests::runtime::serviceStoreRuntime():R
    let serviceStore = meta::external::store::service::tests::store::TradeProductServiceStore();
    
    ^Runtime(connections = ^ServiceStoreConnection(element = $serviceStore,
-                                                  baseUrl = 'http://127.0.0.1:9090/api/user/serviceStore/test'));
+                                                  baseUrl = 'http://127.0.0.1:9090/api/user/serviceStore/test',
+                                                  authenticationSpecifications = ^Map<String,meta::pure::runtime::connection::authentication::AuthenticationSpecification>()));
 }
 
 function meta::external::store::service::tests::runtime::modelChainConnectionRuntime():Runtime[1]

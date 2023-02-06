@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2022 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,23 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.connection;
+package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecurityScheme;
 
-import java.util.Collections;
-import java.util.Map;
+import java.util.Optional;
 
-public class ServiceStoreConnection extends Connection
+public class SingleAuthenticationSchemeRequirement extends AuthenticationSchemeRequirement
 {
-    public String baseUrl;
-    public Map<String, AuthenticationSpecification> authenticationSpecifications;
-
-    @Override
-    public <T> T accept(ConnectionVisitor<T> connectionVisitor)
-    {
-        return connectionVisitor.visit(this);
-    }
+    public SecurityScheme securityScheme;
+    public AuthenticationSpecification authenticationSpecification;
 }

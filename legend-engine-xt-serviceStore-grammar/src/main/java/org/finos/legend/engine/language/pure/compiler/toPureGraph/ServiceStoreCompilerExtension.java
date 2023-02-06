@@ -63,6 +63,7 @@ public class ServiceStoreCompilerExtension implements IServiceStoreCompilerExten
                                     ._rawType(context.pureModel.getType("meta::external::store::service::metamodel::ServiceStore")));
 
                             context.pureModel.storesIndex.put(context.pureModel.buildPackageString(serviceStore._package, serviceStore.name), pureServiceStore);
+                            HelperServiceStoreBuilder.compileAndAddSecuritySchemesToServiceStore(pureServiceStore, serviceStore.securitySchemes, context);
                             return pureServiceStore;
                         },
                         // Second pass - resolve binding and model elements
@@ -102,7 +103,7 @@ public class ServiceStoreCompilerExtension implements IServiceStoreCompilerExten
                         Root_meta_external_store_service_metamodel_runtime_ServiceStoreConnection pureServiceStoreConnection = new Root_meta_external_store_service_metamodel_runtime_ServiceStoreConnection_Impl("", null, context.pureModel.getClass("meta::external::store::service::metamodel::runtime::ServiceStoreConnection"));
                         pureServiceStoreConnection._element(HelperServiceStoreBuilder.getServiceStore(serviceStoreConnection.element, serviceStoreConnection.elementSourceInformation, context));
                         pureServiceStoreConnection._baseUrl(serviceStoreConnection.baseUrl);
-
+                        HelperServiceStoreBuilder.compileAndAddAuthenticationSpecifications(pureServiceStoreConnection,serviceStoreConnection.authenticationSpecifications,context);
                         return pureServiceStoreConnection;
                     }
                     return null;
