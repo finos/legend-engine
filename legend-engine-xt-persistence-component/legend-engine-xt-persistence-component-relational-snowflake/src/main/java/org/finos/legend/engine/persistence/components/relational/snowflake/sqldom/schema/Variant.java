@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,18 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.test;
+package org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schema;
 
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schema.VariableSizeDataType;
 
-import java.util.List;
-
-public abstract class TestBatch
+public class Variant extends VariableSizeDataType
 {
-    public String id;
-    public int batchId;
-    public List<TestAssertion> assertions;
 
-    public SourceInformation sourceInformation;
+    public Variant()
+    {
+        super("VARIANT");
+    }
 }

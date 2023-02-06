@@ -18,7 +18,8 @@ import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestPassed;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecutionStatus;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.testable.mapping.extension.MappingTestableRunnerExtension;
@@ -189,9 +190,10 @@ public class TestMappingTestRunner
         List<TestResult> mappingTestResults = mappingTestableRunnerExtension.executeAllTest(mappingToTest, pureModelWithReferenceData, modelDataWithReferenceData);
 
         Assert.assertEquals(1, mappingTestResults.size());
-        Assert.assertTrue(mappingTestResults.get(0) instanceof TestPassed); //gets truncated
-        Assert.assertEquals("testServiceStoreTestSuites::ServiceStoreMapping", ((TestPassed) mappingTestResults.get(0)).testable);
-        Assert.assertEquals("testSuite1", ((TestPassed) mappingTestResults.get(0)).atomicTestId.testSuiteId);
-        Assert.assertEquals("test1", ((TestPassed) mappingTestResults.get(0)).atomicTestId.atomicTestId);
+        Assert.assertTrue(mappingTestResults.get(0) instanceof TestExecuted); //gets truncated
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) mappingTestResults.get(0)).testExecutionStatus);
+        Assert.assertEquals("testServiceStoreTestSuites::ServiceStoreMapping", mappingTestResults.get(0).testable);
+        Assert.assertEquals("testSuite1", mappingTestResults.get(0).testSuiteId);
+        Assert.assertEquals("test1", mappingTestResults.get(0).atomicTestId);
     }
 }

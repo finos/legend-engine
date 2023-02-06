@@ -176,7 +176,7 @@ public class PackageableElementFourthPassBuilder implements PackageableElementVi
             {
                 throw new EngineException("Multiple testSuites found with ids : '" + String.join(",", duplicateTestSuiteIds) + "'", mapping.sourceInformation, EngineErrorType.COMPILATION);
             }
-            pureMapping._tests(ListIterate.collect(mapping.testSuites, suite -> HelperMappingBuilder.processMappingTestAndTestSuite(suite, this.context)));
+            pureMapping._tests(ListIterate.collect(mapping.testSuites, suite -> HelperMappingBuilder.processMappingTestAndTestSuite(suite, pureMapping, this.context)));
         }
         return pureMapping;
     }

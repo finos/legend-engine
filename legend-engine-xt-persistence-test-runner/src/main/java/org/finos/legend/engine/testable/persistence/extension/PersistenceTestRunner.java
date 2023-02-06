@@ -14,13 +14,12 @@
 
 package org.finos.legend.engine.testable.persistence.extension;
 
-import java.sql.Connection;
+import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
-import org.finos.legend.engine.persistence.components.common.Datasets;
-import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalIngestor;
 import org.finos.legend.engine.persistence.components.relational.h2.H2Sink;
@@ -32,14 +31,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTestBatch;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.TestData;
-import org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTestId;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
-import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertPass;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestError;
-import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestFailed;
-import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestPassed;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.testable.extension.TestRunner;
 import org.finos.legend.engine.testable.persistence.assertion.PersistenceTestAssertionEvaluator;
@@ -50,10 +46,11 @@ import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Pers
 import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
 
-import java.util.List;
+import java.sql.Connection;
 import java.util.ArrayList;
-import java.util.Set;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder.getElementFullPath;
 
@@ -81,10 +78,6 @@ public class PersistenceTestRunner implements TestRunner
         Persistence persistence = ListIterate.detect(data.getElementsOfType(Persistence.class), ele -> ele.getPath().equals(getElementFullPath(purePersistence, pureModel.getExecutionSupport())));
         PersistenceTest persistenceTest = persistence.tests.stream().filter(test -> test.id.equals(atomicTest._id())).findFirst().get();
         List<PersistenceTestBatch> testBatches = persistenceTest.testBatches;
-
-        AtomicTestId atomicTestId = new AtomicTestId();
-        atomicTestId.atomicTestId = atomicTest._id();
-        atomicTestId.testSuiteId = "";
 
         PersistenceTestH2Connection persistenceTestH2Connection = new PersistenceTestH2Connection();
         Connection connection = persistenceTestH2Connection.getConnection();
@@ -130,12 +123,13 @@ public class PersistenceTestRunner implements TestRunner
                 }
             }
             // Construct the Test Result
-            result = constructTestResult(atomicTestId, persistence.getPath(), assertStatuses);
+            result = constructTestResult(atomicTest._id(), persistence.getPath(), assertStatuses);
         }
         catch (Exception exception)
         {
             TestError testError = new TestError();
-            testError.atomicTestId = atomicTestId;
+            testError.atomicTestId = atomicTest._id();
+            testError.testSuiteId = "";
             testError.error = exception.getMessage();
             result = testError;
         }
@@ -164,22 +158,11 @@ public class PersistenceTestRunner implements TestRunner
         return result;
     }
 
-    private TestResult constructTestResult(AtomicTestId atomicTestId, String testable, List<AssertionStatus> assertionStatuses)
+    private TestResult constructTestResult(String atomicTestId, String testable, List<AssertionStatus> assertionStatuses)
     {
-        TestResult testResult;
-        List<AssertFail> failedAsserts = ListIterate.selectInstancesOf(assertionStatuses, AssertFail.class);
-        if (failedAsserts.isEmpty())
-        {
-            testResult = new TestPassed();
-        }
-        else
-        {
-            TestFailed testFailed = new TestFailed();
-            testFailed.assertStatuses = assertionStatuses;
-            testResult = testFailed;
-        }
-
+        TestExecuted testResult = new TestExecuted(assertionStatuses);
         testResult.atomicTestId = atomicTestId;
+        testResult.testSuiteId = "";
         testResult.testable = testable;
         return testResult;
     }
@@ -200,7 +183,7 @@ public class PersistenceTestRunner implements TestRunner
     }
 
     @Override
-    public List<TestResult> executeTestSuite(Root_meta_pure_test_TestSuite testSuite, List<AtomicTestId> atomicTestIds, PureModel pureModel, PureModelContextData data)
+    public List<TestResult> executeTestSuite(Root_meta_pure_test_TestSuite testSuite, List<String> atomicTestIds, PureModel pureModel, PureModelContextData data)
     {
         throw new UnsupportedOperationException("TestSuite is not supported for Persistence");
     }

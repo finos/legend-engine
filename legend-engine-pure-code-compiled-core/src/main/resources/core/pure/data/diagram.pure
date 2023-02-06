@@ -1,30 +1,6 @@
 ###Diagram
 Diagram meta::pure::data::MetaModelDiagram(width=0.0, height=0.0)
 {
-    TypeView cview_1(
-        type=meta::pure::data::DataElement,
-        position=(527.00000, 220.00000),
-        width=144.69531,
-        height=44.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_2(
-        type=meta::pure::metamodel::PackageableElement,
-        position=(489.84766, 115.00000),
-        width=215.04590,
-        height=58.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
     TypeView cview_3(
         type=meta::pure::data::EmbeddedData,
         position=(817.84766, 220.00000),
@@ -37,11 +13,11 @@ Diagram meta::pure::data::MetaModelDiagram(width=0.0, height=0.0)
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_4(
-        type=meta::pure::data::DataElementReference,
-        position=(611.84766, 385.00000),
-        width=150.72266,
-        height=30.00000,
+    TypeView cview_2(
+        type=meta::pure::metamodel::PackageableElement,
+        position=(212.84766, 90.00000),
+        width=215.04590,
+        height=58.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
@@ -49,10 +25,10 @@ Diagram meta::pure::data::MetaModelDiagram(width=0.0, height=0.0)
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_5(
-        type=meta::pure::data::ModelStoreData,
-        position=(827.02344, 377.00000),
-        width=114.75146,
+    TypeView cview_1(
+        type=meta::pure::data::DataElement,
+        position=(248.00000, 223.00000),
+        width=144.69531,
         height=44.00000,
         stereotypesVisible=true,
         attributesVisible=true,
@@ -63,9 +39,33 @@ Diagram meta::pure::data::MetaModelDiagram(width=0.0, height=0.0)
 
     TypeView cview_6(
         type=meta::external::shared::format::metamodel::data::ExternalFormatData,
-        position=(994.31128, 376.00000),
+        position=(1649.31128, 384.00000),
         width=138.35742,
         height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::pure::data::ModelStoreData,
+        position=(822.02344, 398.00000),
+        width=114.75146,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_9(
+        type=meta::pure::data::DataElementReference,
+        position=(244.75818, 404.25000),
+        width=150.72266,
+        height=30.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
@@ -76,34 +76,34 @@ Diagram meta::pure::data::MetaModelDiagram(width=0.0, height=0.0)
     GeneralizationView gview_0(
         source=cview_1,
         target=cview_2,
-        points=[(599.34766,242.00000),(597.37061,144.00000)],
+        points=[(320.34766,245.00000),(320.37061,119.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
     GeneralizationView gview_1(
-        source=cview_4,
+        source=cview_5,
         target=cview_3,
-        points=[(687.20898,400.00000),(871.52344,242.00000)],
+        points=[(871.02344,404.00000),(871.52344,242.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
     GeneralizationView gview_2(
-        source=cview_5,
+        source=cview_6,
         target=cview_3,
-        points=[(876.02344,383.00000),(871.52344,242.00000)],
+        points=[(1718.48999,413.00000),(871.52344,242.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
     GeneralizationView gview_3(
-        source=cview_6,
+        source=cview_9,
         target=cview_3,
-        points=[(1063.48999,405.00000),(871.52344,242.00000)],
+        points=[(320.11951,419.25000),(871.52344,242.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -112,8 +112,8 @@ Diagram meta::pure::data::MetaModelDiagram(width=0.0, height=0.0)
     PropertyView pview_0(
         property=meta::pure::data::DataElement.data,
         source=cview_1,
-        target=cview_3
-,        points=[(599.34766,242.00000),(871.52344,242.00000)],
+        target=cview_3,
+        points=[(320.34766,245.00000),(871.52344,242.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -125,9 +125,9 @@ Diagram meta::pure::data::MetaModelDiagram(width=0.0, height=0.0)
 
     PropertyView pview_1(
         property=meta::pure::data::DataElementReference.dataElement,
-        source=cview_4,
-        target=cview_1
-,        points=[(687.20898,400.00000),(599.34766,242.00000)],
+        source=cview_9,
+        target=cview_1,
+        points=[(320.11951,419.25000),(320.34766,245.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),

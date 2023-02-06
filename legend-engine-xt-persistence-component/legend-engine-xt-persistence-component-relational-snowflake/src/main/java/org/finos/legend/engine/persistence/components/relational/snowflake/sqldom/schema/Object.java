@@ -12,8 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result;
+package org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schema;
 
-public class UpdateNodeResultType extends ResultType
+import org.finos.legend.engine.persistence.components.relational.sqldom.schema.VariableSizeDataType;
+
+public class Object extends VariableSizeDataType
 {
+
+    public Object()
+    {
+        super("OBJECT");
+    }
 }
