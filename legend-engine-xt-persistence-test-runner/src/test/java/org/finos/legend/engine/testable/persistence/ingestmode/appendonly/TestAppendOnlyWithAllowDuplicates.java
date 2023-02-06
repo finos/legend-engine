@@ -14,9 +14,8 @@
 
 package org.finos.legend.engine.testable.persistence.ingestmode.appendonly;
 
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.assertion.status.AllRowsEquivalentToJsonAssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertFail;
-import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertPass;
-import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.EqualToJsonAssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecutionStatus;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
@@ -63,8 +62,7 @@ public class TestAppendOnlyWithAllowDuplicates extends TestPersistenceBase
         Assert.assertEquals(TestExecutionStatus.FAIL, ((TestExecuted) result).testExecutionStatus);
         Assert.assertEquals("test::TestPersistence", result.testable);
         TestExecuted testFailed = (TestExecuted) result;
-        EqualToJsonAssertFail batch1Status = (EqualToJsonAssertFail) testFailed.assertStatuses.get(0);
-        AssertPass batch2Status = (AssertPass) testFailed.assertStatuses.get(1);
+        AllRowsEquivalentToJsonAssertFail batch1Status = (AllRowsEquivalentToJsonAssertFail) testFailed.assertStatuses.get(0);
 
         // no space
         Assert.assertEquals("[{\"ID\":1,\"NAME\":\"ANDY\"},{\"ID\":2,\"NAME\":\"BRAD\"}]", batch1Status.actual);

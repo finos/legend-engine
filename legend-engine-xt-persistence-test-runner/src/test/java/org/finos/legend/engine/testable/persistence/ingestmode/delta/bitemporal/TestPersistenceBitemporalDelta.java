@@ -72,8 +72,9 @@ public class TestPersistenceBitemporalDelta extends TestPersistenceBase
 
         TestResult result = testPersistence(persistenceSpec).results.get(0);
 
-        assertTrue(result instanceof TestPassed);
-        Assert.assertEquals("test::TestPersistence", ((TestPassed) result).testable);
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
     }
 
     @Test
@@ -84,8 +85,9 @@ public class TestPersistenceBitemporalDelta extends TestPersistenceBase
 
         TestResult result = testPersistence(persistenceSpec).results.get(0);
 
-        assertTrue(result instanceof TestPassed);
-        Assert.assertEquals("test::TestPersistence", ((TestPassed) result).testable);
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
     }
 
     @Test
@@ -96,7 +98,8 @@ public class TestPersistenceBitemporalDelta extends TestPersistenceBase
 
         TestResult result = testPersistence(persistenceSpec).results.get(0);
 
-        assertTrue(result instanceof TestPassed);
-        Assert.assertEquals("test::TestPersistence", ((TestPassed) result).testable);
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
     }
 }
