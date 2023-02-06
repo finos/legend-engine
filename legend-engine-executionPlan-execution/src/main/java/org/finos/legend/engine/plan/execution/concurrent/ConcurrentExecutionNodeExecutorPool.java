@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.plan.execution.concurrent;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.opentracing.Scope;
 import io.opentracing.contrib.concurrent.TracedExecutorService;
 import io.opentracing.util.GlobalTracer;
@@ -32,6 +34,7 @@ import org.finos.legend.engine.shared.core.url.StreamProvider;
 import org.finos.legend.engine.shared.core.url.StreamProviderHolder;
 import org.pac4j.core.profile.CommonProfile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -41,6 +44,7 @@ import java.util.concurrent.Semaphore;
 /**
  * Pool management class. This class should be instantiated only during server spin up to help manage thread pool and guard system against thread explosions.
  */
+@JsonSerialize(using = ConcurrentExecutionNodeExecutorPoolSerializer.class)
 public final class ConcurrentExecutionNodeExecutorPool implements AutoCloseable
 {
     private final int poolSize;
@@ -132,8 +136,22 @@ public final class ConcurrentExecutionNodeExecutorPool implements AutoCloseable
         return "[" +
                 "poolSize : " + poolSize +
                 ", poolDescription : " + poolDescription +
-                ", delegatedExecutor : " + delegatedExecutor.toString() +
+                ", executor : " + delegatedExecutor.toString() +
                 ", availableThreads : " + availableThreads.toString() +
                 "]";
+    }
+
+    public void serialize(JsonGenerator jsonGenerator) throws IOException
+    {
+        jsonGenerator.writeStartObject();
+        jsonGenerator.writeFieldName("poolDescription");
+        jsonGenerator.writeString(this.poolDescription);
+        jsonGenerator.writeFieldName("poolSize");
+        jsonGenerator.writeNumber(this.poolSize);
+        jsonGenerator.writeFieldName("executor");
+        jsonGenerator.writeString(this.delegatedExecutor.toString());
+        jsonGenerator.writeFieldName("availableThreads");
+        jsonGenerator.writeNumber(this.availableThreads.availablePermits());
+        jsonGenerator.writeEndObject();
     }
 }
