@@ -24,21 +24,16 @@ import org.finos.legend.engine.protocol.pure.v1.model.data.ServiceStoreEmbeddedD
 import org.finos.legend.engine.protocol.pure.v1.model.data.contentPattern.ContentPattern;
 import org.finos.legend.engine.protocol.pure.v1.model.data.contentPattern.EqualToJsonPattern;
 import org.finos.legend.engine.protocol.pure.v1.model.data.contentPattern.EqualToPattern;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AuthenticationSchemeRequirement;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.LimitExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RestServiceExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ServiceParametersResolutionExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SingleAuthenticationSchemeRequirement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.connection.ServiceStoreConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.RootServiceStoreClassMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ApiKeySecurityScheme;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecurityScheme;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceStore;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.HttpSecurityScheme;
 
 import java.util.List;
 import java.util.Map;
@@ -75,15 +70,6 @@ public class ServiceStoreProtocolExtension implements PureProtocolExtension
                 // Packageable element
                 ProtocolSubTypeInfo.newBuilder(PackageableElement.class)
                         .withSubtype(ServiceStore.class, "serviceStore")
-                        .build(),
-                //Security Scheme
-                ProtocolSubTypeInfo.newBuilder(SecurityScheme.class)
-                        .withSubtype(HttpSecurityScheme.class,"http")
-                        .withSubtype(ApiKeySecurityScheme.class,"apiKey")
-                        .build(),
-                //Authentication Scheme
-                ProtocolSubTypeInfo.newBuilder(AuthenticationSchemeRequirement.class)
-                        .withSubtype(SingleAuthenticationSchemeRequirement.class,"singleAuthScheme")
                         .build()
         ));
     }

@@ -17,18 +17,15 @@ import meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::service::
 
 import meta::protocols::pure::vX_X_X::metamodel::store::service::*;
 import meta::protocols::pure::vX_X_X::metamodel::store::service::mapping::*;
-import meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::*;
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::service::RestServiceExecutionNode extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::ExecutionNode
 {
-   url                    : String[1];
-   method                 : meta::pure::functions::io::http::HTTPMethod[1];
-   mimeType               : String[1];
-   params                 : ServiceParameter[*];
+   url             : String[1];
+   method          : meta::pure::functions::io::http::HTTPMethod[1];
+   mimeType        : String[1];
+   params          : ServiceParameter[*];
    requestBodyDescription : RequestBodyDescription[0..1];
-   //TODO: securitySchemes will be removed when we switch completely to authenticationSchemes
-   securitySchemes        : SecurityScheme[*];
-   authenticationSchemes  : AuthenticationSchemeRequirement[*];
+   securitySchemes : SecurityScheme[*];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::service::RequestBodyDescription
@@ -45,21 +42,5 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::service::S
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::service::LimitExecutionNode extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::ExecutionNode
 {
    limit : Integer[1];
-}
-
-Class <<typemodifiers.abstract>> meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::service::AuthenticationSchemeRequirement
-{
-    _type: String[1];
-}
-
-Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::service::SingleAuthenticationSchemeRequirement extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::service::AuthenticationSchemeRequirement
-{
-    securityScheme              : SecurityScheme[1];
-    authenticationSpecification : AuthenticationSpecification[0..1];
-}
-
-Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::service::MultiAuthenticationSchemeRequirement extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::service::AuthenticationSchemeRequirement
-{
-    authenticationSchemes : SingleAuthenticationSchemeRequirement[*];
 }
 

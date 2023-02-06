@@ -214,7 +214,6 @@ public class TestExtensions
                 .with(org.finos.legend.engine.protocol.pure.v1.SpannerProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.ServiceProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.ServiceStoreProtocolExtension.class)
-                .with(org.finos.legend.engine.protocol.pure.v1.AuthenticationProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.TextProtocolExtension.class)
                 .with(org.finos.legend.engine.external.format.flatdata.FlatDataProtocolExtension.class)
                 .with(org.finos.legend.engine.external.format.json.JsonProtocolExtension.class)
@@ -250,7 +249,6 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.pure.dsl.persistence.cloud.grammar.from.PersistenceCloudParserExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.from.RelationalGrammarParserExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.service.grammar.from.ServiceParserExtension.class)
-                .with(org.finos.legend.engine.language.pure.dsl.authentication.grammar.from.demo.AuthenticationDemoParserExtension.class)
                 .with(org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLGrammarParserExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.from.ServiceStoreGrammarParserExtension.class)
                 .with(TextParserExtension.class);
@@ -274,7 +272,6 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.pure.dsl.service.grammar.to.ServiceGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.to.ServiceStoreGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLPureGrammarComposerExtension.class)
-                .with(org.finos.legend.engine.language.pure.dsl.authentication.grammar.to.demo.AuthenticationDemoComposerExtension.class)
                 .with(TextGrammarComposerExtension.class);
     }
 
@@ -297,8 +294,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.BigQueryCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.SpannerCompilerExtension.class)
                 .with(org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLCompilerExtension.class)
-                .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.ServiceStoreCompilerExtension.class)
-                .with(org.finos.legend.engine.language.pure.dsl.authentication.compiler.toPureGraph.AuthenticationDemoCompilerExtension.class);
+                .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.ServiceStoreCompilerExtension.class);
     }
 
     protected Iterable<? extends Class<? extends PlanGeneratorExtension>> getExpectedPlanGeneratorExtensions()
@@ -355,7 +351,6 @@ public class TestExtensions
                 .with("core_relational_bigquery")
                 .with("core_relational_spanner")
                 .with("core_servicestore")
-                .with("core_authentication")
                 .with("core_text")
                 .with("core_external_language_java")
                 .with("core_java_platform_binding")

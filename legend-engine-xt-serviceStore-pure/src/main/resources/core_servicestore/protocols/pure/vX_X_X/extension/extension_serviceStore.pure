@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import meta::pure::mapping::*;
-import meta::pure::functions::collection::*;
 
 import meta::external::store::service::metamodel::*;
 import meta::external::store::service::metamodel::mapping::*;
@@ -32,34 +31,27 @@ function meta::protocols::pure::vX_X_X::extension::store::service::getServiceSto
 {
    ^meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X
    (
-      transfers_store_transformConnection2 = { extensions:meta::pure::extension::Extension[*] |
+      transfers_store_transformConnection = 
           [
-             serviceStoreConnection:ServiceStoreConnection[1] | $serviceStoreConnection->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::store::service::transformServiceStoreConnection($extensions)
-          ]},
+             serviceStoreConnection:ServiceStoreConnection[1] | $serviceStoreConnection->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::store::service::transformServiceStoreConnection()
+          ],
       transfers_executionPlan_transformNode = {mapping:Mapping[1], extensions:meta::pure::extension::Extension[*] |
           [
              ser:meta::external::store::service::executionPlan::nodes::RestServiceExecutionNode[1]|
                 ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::service::RestServiceExecutionNode(
-                   _type                    = 'restService',
-                   resultType               = $ser.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
-                   url                      = $ser.url,
-                   method                   = $ser.method,
-                   mimeType                 = $ser.mimeType,
-                   //TODO: securitySchemes will be removed when we switch completely to authenticationSchemes
-                   securitySchemes          = $ser.authenticationSchemes->map(s | $s->cast(@meta::external::store::service::executionPlan::nodes::SingleAuthenticationSchemeRequirement).securityScheme->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformSecurityScheme($extensions)),
-                   authenticationSchemes    = $ser.authenticationSchemes->map(s | ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::service::SingleAuthenticationSchemeRequirement(
-                                                                _type = 'singleAuthScheme',
-                                                                securityScheme = $s->cast(@meta::external::store::service::executionPlan::nodes::SingleAuthenticationSchemeRequirement).securityScheme->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformSecurityScheme($extensions),
-                                                                authenticationSpecification = if ($s->cast(@meta::external::store::service::executionPlan::nodes::SingleAuthenticationSchemeRequirement).authenticationSpecification->isEmpty(),
-                                                                | [],
-                                                                | $s->cast(@meta::external::store::service::executionPlan::nodes::SingleAuthenticationSchemeRequirement).authenticationSpecification->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::authentication::transformAuthenticationSpecification($extensions)))),
-                   requestBodyDescription   = if($ser.requestBodyDescription->isEmpty(),
+                   _type            = 'restService',
+                   resultType       = $ser.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                   url              = $ser.url,
+                   method           = $ser.method,
+                   mimeType         = $ser.mimeType,
+                   securitySchemes  = $ser.securitySchemes->map(s | $s->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformSecurityScheme($extensions)),
+                   requestBodyDescription = if($ser.requestBodyDescription->isEmpty(),
                                                |[],
                                                |^meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::service::RequestBodyDescription(
                                                     mimeType = $ser.requestBodyDescription.mimeType->toOne(),
                                                     resultKey = $ser.requestBodyDescription.resultKey->toOne()
                                                  )),
-                   params                   = $ser.params->map(p | $p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformServiceStoreParameter())
+                   params           = $ser.params->map(p | $p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformServiceStoreParameter())
                 ),
              spr:meta::external::store::service::executionPlan::nodes::ServiceParametersResolutionExecutionNode[1]|
                 ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::service::ServiceParametersResolutionExecutionNode(
