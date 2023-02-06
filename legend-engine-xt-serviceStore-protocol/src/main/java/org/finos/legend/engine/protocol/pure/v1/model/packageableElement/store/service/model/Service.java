@@ -22,7 +22,5 @@ public class Service extends ServiceStoreElement
     public HttpMethod method;
     public List<ServiceParameter> parameters;
     public ComplexTypeReference response;
-    @Deprecated
     public List<SecurityScheme> security;
-    public List<SecuritySchemeRequirement> securitySchemeRequirements;
 }

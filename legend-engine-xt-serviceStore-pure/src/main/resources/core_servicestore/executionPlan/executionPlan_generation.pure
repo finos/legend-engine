@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import meta::pure::executionPlan::*;
-import meta::pure::functions::collection::*;
 
 import meta::pure::graphFetch::*;
 import meta::pure::graphFetch::execution::*;
@@ -221,15 +220,14 @@ function meta::external::store::service::executionPlan::generation::nodeFromServ
                                                                resultKey = $serviceBodyResolutionNode->toOne()->cast(@AllocationExecutionNode).varName));
 
   let mappedParameters           = $serviceMapping.requestBuildInfo.requestParametersBuildInfo.parameterBuildInfoList.serviceParameter;
-  let serviceStoreNode           = ^RestServiceExecutionNode(url                    = $s.baseUrl + $serviceMapping.service.resolveFullPathRecursively(),
-                                                             method                 = $serviceMapping.service.method,
-                                                             mimeType               = $serviceMapping.service.response.binding.contentType,
-                                                             params                 = $serviceMapping.service.parameters,
-                                                             // Combining Security schemes(with logical AND) is not supported yet.
-                                                             authenticationSchemes  = $serviceMapping.service.security->map(a | ^SingleAuthenticationSchemeRequirement(securityScheme = $a->cast(@SingleSecuritySchemeRequirement).securityScheme, authenticationSpecification = $s.authenticationSpecifications->get($a->cast(@SingleSecuritySchemeRequirement).id))),
+  let serviceStoreNode           = ^RestServiceExecutionNode(url             = $s.baseUrl + $serviceMapping.service.resolveFullPathRecursively(),
+                                                             method          = $serviceMapping.service.method,
+                                                             mimeType        = $serviceMapping.service.response.binding.contentType,
+                                                             params          = $serviceMapping.service.parameters,
+                                                             securitySchemes = $serviceMapping.service.security,
                                                              requestBodyDescription = $requestBodyDescription,
                                                              requiredVariableInputs = $mappedParameters.name->concatenate($requestBodyDescription.resultKey)->map(v | ^VariableInput(name = $v, type = Any, multiplicity = ZeroMany)),
-                                                             resultType             = ^DataTypeResultType(type = String));
+                                                             resultType      = ^DataTypeResultType(type = String));
 
   let allNodes = $serviceStoreQueryProcessedState.executionNodes->concatenate($serviceParamResolutionNode)
                                                                 ->concatenate($serviceBodyResolutionNode)

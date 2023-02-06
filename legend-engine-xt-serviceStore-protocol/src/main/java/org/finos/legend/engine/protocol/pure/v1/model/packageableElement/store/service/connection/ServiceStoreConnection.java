@@ -14,17 +14,12 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.connection;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionVisitor;
-
-import java.util.Collections;
-import java.util.Map;
 
 public class ServiceStoreConnection extends Connection
 {
     public String baseUrl;
-    public Map<String, AuthenticationSpecification> authenticationSpecifications;
 
     @Override
     public <T> T accept(ConnectionVisitor<T> connectionVisitor)
