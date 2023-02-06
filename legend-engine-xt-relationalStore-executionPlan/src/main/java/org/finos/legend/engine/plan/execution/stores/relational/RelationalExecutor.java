@@ -14,8 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational;
 
-import freemarker.template.Configuration;
-import freemarker.template.Template;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
@@ -59,8 +57,6 @@ import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -368,20 +364,7 @@ public class RelationalExecutor
 
     public static String process(String query, Map<?, ?> vars, String templateFunctions)
     {
-        String result = "";
-        try
-        {
-            Configuration cfg = new Configuration();
-            cfg.setNumberFormat("computer");
-            Template t = new Template("sqlTemplate", new StringReader(templateFunctions + "\n" + query), cfg);
-            StringWriter stringWriter = new StringWriter();
-            t.process(vars, stringWriter);
-            result = stringWriter.toString();
-        }
-        catch (Exception ignored)
-        {
-        }
-        return result;
+        return FreeMarkerExecutor.processRecursively("\n" + query, vars.entrySet().stream().collect(Collectors.toMap(e -> String.valueOf(e.getKey()), Map.Entry::getValue)), templateFunctions);
     }
 
     public static String getRelationalTypeFromDataType(String dataType)

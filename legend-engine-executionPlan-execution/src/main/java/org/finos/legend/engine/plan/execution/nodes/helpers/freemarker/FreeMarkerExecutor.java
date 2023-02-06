@@ -27,6 +27,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class FreeMarkerExecutor
 {
@@ -66,12 +67,19 @@ public class FreeMarkerExecutor
 
     public static String processRecursively(String input, Map<String, ?> variableMap, String templateFunctions)
     {
-        String result = process(input, variableMap, templateFunctions);
-        if (!result.equals(input.replace("\\\"", "\"")))
+        return processRecursivelyInternal(input, variableMap.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)), templateFunctions);
+    }
+
+    private static String processRecursivelyInternal(String input, Map<String, Object> vars, String templateFunctions)
+    {
+        vars.forEach((k, v) ->
         {
-            return processRecursively(result, variableMap, templateFunctions);
-        }
-        return result;
+            if (input.contains("${" + k + "}") && !String.valueOf(v).contains("${" + k + "}"))
+            {
+                vars.put(k, process(String.valueOf(v), vars, templateFunctions));
+            }
+        });
+        return process(input, vars, templateFunctions);
     }
 
     private static String process(String input, Map<String, ?> variableMap, String templateFunctions)

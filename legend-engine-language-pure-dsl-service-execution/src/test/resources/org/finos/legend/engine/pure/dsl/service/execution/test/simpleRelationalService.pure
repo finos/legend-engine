@@ -99,6 +99,56 @@ function test::fetch(ip: String[*]): String[1]
    test::Person.all()->filter(x|$x.firstName->in($ip))->graphFetch(#{test::Person{firstName,lastName}}#)->serialize(#{test::Person{firstName,lastName}}#)
 }
 
+function test::fetchByLastNames(ip: String[*]): String[1]
+{
+    test::Person.all()->filter(x|$x.lastName->in($ip))->graphFetch(#{test::Person{firstName,lastName}}#)->serialize(#{test::Person{firstName,lastName}}#)
+}
+
+function test::fetchByLastName(ip: String[1]): String[1]
+{
+    test::Person.all()->filter(x|$x.lastName==$ip)->graphFetch(#{test::Person{firstName,lastName}}#)->serialize(#{test::Person{firstName,lastName}}#)
+}
+
+function test::fetchOConnors(): String[1]
+{
+    test::Person.all()->filter(x|$x.lastName->in(['O\'Connor']))->graphFetch(#{test::Person{firstName,lastName}}#)->serialize(#{test::Person{firstName,lastName}}#)
+}
+
+function test::fetchOConnor(): String[1]
+{
+    test::Person.all()->filter(x|$x.lastName=='O\'Connor')->graphFetch(#{test::Person{firstName,lastName}}#)->serialize(#{test::Person{firstName,lastName}}#)
+}
+
+function test::oConnor(o: String[1]): String[1]
+{
+    'O\'Connor'
+}
+
+function test::oConnorMap(m: String[*]): String[*]
+{
+    $m->map(i|$i->test::oConnor())
+}
+
+function test::fetchByLastNamesReplaced(ip: String[*]): String[1]
+{
+    $ip->test::oConnorMap()->test::fetchByLastNames()
+}
+
+function test::fetchByLastNameNotAtAt(): String[1]
+{
+    test::fetchByLastNameNot('HelloAt@@Escaping')
+}
+
+function test::fetchByLastNameNot(ip: String[1]): String[1]
+{
+    test::Person.all()->filter(x|!($x.lastName==$ip))->graphFetch(#{test::Person{firstName,lastName}}#)->serialize(#{test::Person{firstName,lastName}}#)
+}
+
+function test::fetchByLastNamesNot(ip: String[*]): String[1]
+{
+    test::Person.all()->filter(x|!($x.lastName->in($ip)))->graphFetch(#{test::Person{firstName,lastName}}#)->serialize(#{test::Person{firstName,lastName}}#)
+}
+
 function test::fetchOptionalCity(optionalCity:String[0..1]):Any[*]
 {
     test::Person.all()->filter(p|$p.city==$optionalCity)->graphFetch(#{test::Person{firstName,lastName,city}}#)->serialize(#{test::Person{firstName,lastName,city}}#)
@@ -272,7 +322,7 @@ Runtime test::Runtime
           type: H2;
           specification: LocalH2
           {
-            testDataSetupCSV: 'default\nfiscalCalendarTable\nID,FISCAL_YEAR_VALUE\n111,2015\n222,2005\n333,2010\n---\ndefault\npersonTable\nID,FIRSTNAME,LASTNAME,CITY,AGE,SALARY,DOB,EMPLOYMENT_DATETIME,ACTIVE_EMPLOYMENT,YEAR_OF_START\n1,Peter,Smith,New York,,,1982-01-20,2012-05-20T13:10:52.501,,2015\n2,John,Johnson,,35,80000.75,,2005-03-15T18:47:52,N,2005\n3,Bob,Stevens,Dallas,25,75000.75,1997-12-16,,Y,2010\n---\ndefault\nPersonTableWithBusinessSnapshotMilestoning\nID,FIRSTNAME,LASTNAME,SNAPSHOTDATE\n1,Peter,Smith,1982-01-20\n2,John,Johnson,2005-03-15\n3,Bob,Stevens,1997-12-16\n---';
+            testDataSetupCSV: 'default\nfiscalCalendarTable\nID,FISCAL_YEAR_VALUE\n111,2015\n222,2005\n333,2010\n---\ndefault\npersonTable\nID,FIRSTNAME,LASTNAME,CITY,AGE,SALARY,DOB,EMPLOYMENT_DATETIME,ACTIVE_EMPLOYMENT,YEAR_OF_START\n1,Peter,Smith,New York,,,1982-01-20,2012-05-20T13:10:52.501,,2015\n2,John,Johnson,,35,80000.75,,2005-03-15T18:47:52,N,2005\n3,Bob,Stevens,Dallas,25,75000.75,1997-12-16,,Y,2010\n4,Dave,O\'Connor,Chicago,25,85000.75,1987-11-11,,Y,2010\n---\ndefault\nPersonTableWithBusinessSnapshotMilestoning\nID,FIRSTNAME,LASTNAME,SNAPSHOTDATE\n1,Peter,Smith,1982-01-20\n2,John,Johnson,2005-03-15\n3,Bob,Stevens,1997-12-16\n---';
           };
           auth: DefaultH2;
         }
