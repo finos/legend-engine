@@ -45,7 +45,9 @@ import java.util.Map;
  */
 public class DictionaryDeserializer extends JsonDeserializer<Object> implements ContextualDeserializer
 {
+    protected BeanProperty property;
     protected JavaType type;
+    private boolean singleKey;
 
     @SuppressWarnings("UnusedDeclaration")
     public DictionaryDeserializer()
@@ -53,30 +55,29 @@ public class DictionaryDeserializer extends JsonDeserializer<Object> implements 
 
     }
 
-    public DictionaryDeserializer(JavaType type)
+    public DictionaryDeserializer(JavaType type, BeanProperty property)
     {
         this.type = type;
+        this.singleKey = !this.type.isTypeOrSubTypeOf(List.class);
+        this.property = property;
     }
 
     @Override
     public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) throws JsonMappingException
     {
-        return new DictionaryDeserializer(ctxt.getContextualType());
+        return new DictionaryDeserializer(ctxt.getContextualType(), property);
+    }
+
+    @Override
+    public Object getNullValue(DeserializationContext ctxt) throws JsonMappingException
+    {
+        return this.singleKey ? null : Collections.emptyList();
     }
 
     @Override
     public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException
     {
-        boolean singleKey = !this.type.isTypeOrSubTypeOf(List.class);
-
-        JsonNode jsonNode = p.readValueAsTree();
-
-        if (jsonNode.isEmpty() || jsonNode.isNull())
-        {
-            return singleKey ? null : Collections.emptyList();
-        }
-
-        ObjectNode keyValues = (ObjectNode) jsonNode;
+        ObjectNode keyValues = getNodeToProcess(p, ctxt);
         if (singleKey && keyValues.size() != 1)
         {
             throw new IllegalStateException("Expected only one key");
@@ -92,9 +93,14 @@ public class DictionaryDeserializer extends JsonDeserializer<Object> implements 
         }
 
         JsonNode toDeserialize = singleKey ? arrayNode.get(0) : arrayNode;
-        TreeTraversingParser nodeParser = new TreeTraversingParser(toDeserialize);
+        TreeTraversingParser nodeParser = new TreeTraversingParser(toDeserialize, p.getCodec());
         nodeParser.nextToken();
         return ctxt.readValue(nodeParser, this.type);
+    }
+
+    protected ObjectNode getNodeToProcess(JsonParser p, DeserializationContext ctxt) throws IOException
+    {
+        return p.readValueAsTree();
     }
 
     protected JsonNode getEntryNode(DeserializationContext ctxt, Map.Entry<String, JsonNode> entry) throws JsonMappingException

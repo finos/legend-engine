@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.protocol.store.elasticsearch.specification.utils;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -64,28 +65,26 @@ public class DictionarySerialization
         Pojo pojoFromJson = OBJECT_MAPPER.convertValue(jsonNode, Pojo.class);
         Assert.assertEquals(pojo, pojoFromJson);
 
-        Assert.assertTrue(jsonNode.get("singleEntries").isObject());
-        Assert.assertEquals(0, jsonNode.get("singleEntries").size());
-
-        Assert.assertTrue(jsonNode.get("multiEntries").isObject());
-        Assert.assertEquals(0, jsonNode.get("multiEntries").size());
-
-        Assert.assertTrue(jsonNode.get("groupEntries").isObject());
-        Assert.assertEquals(0, jsonNode.get("groupEntries").size());
+        Assert.assertTrue(jsonNode.path("singleEntries").isMissingNode());
+        Assert.assertTrue(jsonNode.path("multiEntries").isMissingNode());
+        Assert.assertTrue(jsonNode.path("groupEntries").isMissingNode());
     }
 
     public static class Pojo
     {
-        @JsonSerialize(using = DictionarySerializer.class, nullsUsing = DictionarySerializer.class)
+        @JsonSerialize(using = DictionarySerializer.class)
         @JsonDeserialize(using = DictionaryDeserializer.class)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         public List<DictionaryEntry<Person>> multiEntries = Collections.emptyList();
 
-        @JsonSerialize(using = DictionarySerializer.class, nullsUsing = DictionarySerializer.class)
+        @JsonSerialize(using = DictionarySerializer.class)
         @JsonDeserialize(using = DictionaryDeserializer.class)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         public DictionaryEntry<Person> singleEntries;
 
-        @JsonSerialize(using = DictionarySerializer.class, nullsUsing = DictionarySerializer.class)
+        @JsonSerialize(using = DictionarySerializer.class)
         @JsonDeserialize(using = DictionaryDeserializer.class)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         public DictionaryEntry<List<Person>> groupEntries;
 
         @Override

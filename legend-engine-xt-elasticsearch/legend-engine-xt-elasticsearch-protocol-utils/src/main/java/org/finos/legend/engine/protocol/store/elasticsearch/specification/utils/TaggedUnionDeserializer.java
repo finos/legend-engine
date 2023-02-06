@@ -17,6 +17,7 @@ package org.finos.legend.engine.protocol.store.elasticsearch.specification.utils
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.core.util.JsonParserSequence;
 import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.DeserializationConfig;
@@ -26,11 +27,13 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.fasterxml.jackson.databind.node.TreeTraversingParser;
 import com.fasterxml.jackson.databind.util.ClassUtil;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.util.BitSet;
 import java.util.Collection;
@@ -38,9 +41,16 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.multimap.list.MutableListMultimap;
+import org.eclipse.collections.impl.factory.Multimaps;
 
 /**
  * Elasticsearch have 3 union variants: externally tagged, internally tagged, and simple union
@@ -134,7 +144,17 @@ public class TaggedUnionDeserializer extends JsonDeserializer<Object> implements
 
             if (p.isExpectedStartObjectToken())
             {
-                deserializeObject(union, p, ctxt);
+                if (this.subtypeFingerprints.valuesView().size() == 1)
+                {
+                    Field field = this.subtypeFingerprints.valuesView().getOnly();
+                    JavaType javaType = ctxt.getTypeFactory().constructType(field.getGenericType());
+                    Object value = ctxt.readValue(p, javaType);
+                    field.set(union, value);
+                }
+                else
+                {
+                    deserializeObject(union, p, ctxt);
+                }
             }
             else
             {
@@ -145,7 +165,7 @@ public class TaggedUnionDeserializer extends JsonDeserializer<Object> implements
                 {
                     Field field = matches.get(0).field;
                     JavaType javaType = ctxt.getTypeFactory().constructType(field.getGenericType());
-                    TreeTraversingParser parserForType = new TreeTraversingParser(node);
+                    TreeTraversingParser parserForType = new TreeTraversingParser(node, p.getCodec());
                     parserForType.nextToken();
                     Object value = ctxt.readValue(parserForType, javaType);
                     field.set(union, value);
@@ -176,14 +196,13 @@ public class TaggedUnionDeserializer extends JsonDeserializer<Object> implements
         }
     }
 
-    // TODO - This is from AsDeductionTypeDeserializer in Jackson 2.12.  Replace with that code once we can upgrade to 2.12
     private final Map<String, Integer> fieldBitIndex = new HashMap<>();
-    private Map<BitSet, Field> subtypeFingerprints;
+    private MutableListMultimap<BitSet, Field> subtypeFingerprints;
 
-    private Map<BitSet, Field> buildFingerprintsForDeduction(DeserializationConfig config, Collection<Field> subtypes)
+    private MutableListMultimap<BitSet, Field> buildFingerprintsForDeduction(DeserializationConfig config, Collection<Field> subtypes)
     {
         int nextField = 0;
-        Map<BitSet, Field> fingerprints = new HashMap<>();
+        MutableListMultimap<BitSet, Field> fingerprints = Multimaps.mutable.list.empty();
 
         for (Field subtype : subtypes)
         {
@@ -203,19 +222,14 @@ public class TaggedUnionDeserializer extends JsonDeserializer<Object> implements
                 fingerprint.set(bitIndex);
             }
 
-            Field existingFingerprint = fingerprints.put(fingerprint, subtype);
-
-            if (existingFingerprint != null)
-            {
-                throw new IllegalStateException(String.format("Subtypes %s and %s have the same signature and cannot be uniquely deduced.", existingFingerprint, subtype.getType().getName()));
-            }
+            fingerprints.put(fingerprint, subtype);
         }
         return fingerprints;
     }
 
     private void deserializeObject(Object union, JsonParser p, DeserializationContext ctxt) throws IOException, ReflectiveOperationException
     {
-        List<BitSet> candidates = new LinkedList<>(this.subtypeFingerprints.keySet());
+        Set<BitSet> candidates = this.subtypeFingerprints.keysView().toSet();
         TokenBuffer tb = new TokenBuffer(p, ctxt);
         for (JsonToken t = p.nextToken(); t == JsonToken.FIELD_NAME; t = p.nextToken())
         {
@@ -227,16 +241,22 @@ public class TaggedUnionDeserializer extends JsonDeserializer<Object> implements
                 candidates.removeIf(bitSet -> !bitSet.get(bit));
                 if (candidates.size() == 1)
                 {
-                    Field field = this.subtypeFingerprints.get(candidates.get(0));
+                    BitSet matching = candidates.iterator().next();
                     p.clearCurrentToken();
                     p = JsonParserSequence.createFlattened(false, tb.asParser(p), p);
                     p.nextToken();
-                    field.set(union, ctxt.readValue(p, ctxt.constructType(field.getGenericType())));
-                    return;
+
+                    MutableList<Field> fields = this.subtypeFingerprints.get(matching);
+                    if (fields.size() == 1)
+                    {
+                        Field field = fields.get(0);
+                        field.set(union, ctxt.readValue(p, ctxt.constructType(field.getGenericType())));
+                        return;
+                    }
                 }
             }
         }
 
-        throw ctxt.instantiationException(this.type.getRawClass(), String.format("Cannot deduce unique type for union %s (%d candidates match)", ClassUtil.getTypeDescription(this.type), candidates.size()));
+        throw ctxt.instantiationException(this.type.getRawClass(), String.format("Cannot deduce unique type for union %s (%d candidates match)", ClassUtil.getTypeDescription(this.type), candidates.stream().mapToLong(x -> this.subtypeFingerprints.get(x).size()).sum()));
     }
 }

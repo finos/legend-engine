@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.protocol.store.elasticsearch.specification.utils;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -102,16 +103,19 @@ public class ExternalTaggedUnionSerializationTest
 
     public static class Wrapper
     {
-        @JsonSerialize(using = ExternalTaggedUnionSerializer.class, nullsUsing = ExternalTaggedUnionSerializer.class)
+        @JsonSerialize(using = ExternalTaggedUnionSerializer.class)
         @JsonDeserialize(using = ExternalTaggedUnionDeserializer.class)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         public DictionaryEntry<Union> union;
 
-        @JsonSerialize(using = ExternalTaggedUnionSerializer.class, nullsUsing = ExternalTaggedUnionSerializer.class)
+        @JsonSerialize(using = ExternalTaggedUnionSerializer.class)
         @JsonDeserialize(using = ExternalTaggedUnionDeserializer.class)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         public List<DictionaryEntry<Union>> unions;
 
-        @JsonSerialize(using = ExternalTaggedUnionSerializer.class, nullsUsing = ExternalTaggedUnionSerializer.class)
+        @JsonSerialize(using = ExternalTaggedUnionSerializer.class)
         @JsonDeserialize(using = ExternalTaggedUnionDeserializer.class)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         public List<DictionaryEntry<List<Union>>> lists;
     }
 

@@ -276,6 +276,8 @@ meta::external::language::java::metamodel::annotations::json::JsonDeserialize ex
 {
    as : meta::external::language::java::metamodel::Class[0..1];
    using : meta::external::language::java::metamodel::Class[0..1];
+   keyUsing : meta::external::language::java::metamodel::Class[0..1];
+   contentUsing : meta::external::language::java::metamodel::Class[0..1];
 }
 
 Class meta::external::language::java::metamodel::annotations::json::EnumValue
@@ -320,7 +322,11 @@ Class meta::external::language::java::metamodel::annotations::json::JsonAutoDete
    setterVisibility: meta::external::language::java::metamodel::annotations::json::EnumValue[1];
 }
 
-Class meta::external::language::java::metamodel::annotations::json::JsonInclude extends meta::external::language::java::metamodel::Annotation
+Class
+{
+  meta::external::language::java::metamodel::annotations::AnnotationJavaInfo.javaClass = 'com.fasterxml.jackson.annotation.JsonInclude'
+}
+meta::external::language::java::metamodel::annotations::json::JsonInclude extends meta::external::language::java::metamodel::Annotation
 {
    value : meta::external::language::java::metamodel::annotations::json::EnumValue[1];
 }

@@ -300,7 +300,7 @@ meta::external::store::elasticsearch::specification::metamodel::createProperty(p
     },
     {any: Any[1] |
       let pureType = $property.type->propertyTypeToPureType($state);
-      let multiplicity = $property.type->propertyTypeMultiplicity($property.required);
+      let multiplicity = $property.type->propertyTypeMultiplicity($property.required, $state);
       let pureProperty = ^meta::protocols::pure::vX_X_X::metamodel::domain::Property(
         name = $name,
         type = $pureType,
@@ -326,33 +326,40 @@ meta::external::store::elasticsearch::specification::metamodel::createProperty(p
 
 function
 <<access.private>>
-meta::external::store::elasticsearch::specification::metamodel::propertyTypeMultiplicity(type: ValueOf[1], required: Boolean[1]): Multiplicity[1]
+meta::external::store::elasticsearch::specification::metamodel::propertyTypeMultiplicity(type: ValueOf[1], required: Boolean[1], state: GenerationState[1]): Multiplicity[1]
 {
   $type->match([
     arrayT: ArrayOf[1] | if($required, |OneMany, |ZeroMany),
     mapT: DictionaryOf[1] | if($required, |if($mapT.singleKey, |PureOne, |OneMany), |if($mapT.singleKey, |ZeroOne, |ZeroMany)),
-    instanceT: InstanceOf[1] | $instanceT->instanceOfTypeMultiplicity($required),
-    unionT: UnionOf[1] | $unionT->unionOfTypeMultiplicity($required),
+    instanceT: InstanceOf[1] | $instanceT->instanceOfTypeMultiplicity($required, $state),
+    unionT: UnionOf[1] | $unionT->unionOfTypeMultiplicity($required, $state),
     userDefT: UserDefinedValue[1] | if($required, |PureOne, |ZeroOne)
   ]);
 }
 
 function
 <<access.private>>
-meta::external::store::elasticsearch::specification::metamodel::instanceOfTypeMultiplicity(type: InstanceOf[1], required: Boolean[1]): Multiplicity[1]
+meta::external::store::elasticsearch::specification::metamodel::instanceOfTypeMultiplicity(type: InstanceOf[1], required: Boolean[1], state: GenerationState[1]): Multiplicity[1]
 {
-  $type.type->match([
-    alias: TypeAlias[1] | $alias.type->propertyTypeMultiplicity($required),
-    any: Any[1] | if($required, |PureOne, |ZeroOne)
+  let instanceType = $state.type($type.type);
+  let multiplicity = $instanceType->match([
+    alias: TypeAlias[1] | $alias.type->propertyTypeMultiplicity($required, $state),
+    any: Any[0..1] | if($required, |PureOne, |ZeroOne)
   ]);
+
+  $state.log(|'Multiplicity inference for instanceOf type: %s yielded: %s'->format([$type.type.name, $multiplicity->toString()])); 
+
+  $multiplicity;
 }
 
 function
 <<access.private>>
-meta::external::store::elasticsearch::specification::metamodel::unionOfTypeMultiplicity(type: UnionOf[1], required: Boolean[1]):Multiplicity[1]
+meta::external::store::elasticsearch::specification::metamodel::unionOfTypeMultiplicity(type: UnionOf[1], required: Boolean[1], state: GenerationState[1]):Multiplicity[1]
 {
-  let multiplicities = $type.items->map(x | $x->propertyTypeMultiplicity($required))->distinct();
-  if ($multiplicities->size() == 2, |$multiplicities->filter(x | $x->isToMany())->toOne(), |$multiplicities->toOne());
+  let multiplicities = $type.items->map(x | $x->propertyTypeMultiplicity($required, $state))->distinct();
+  let multiplicity = if ($multiplicities->size() == 2, |$multiplicities->filter(x | $x->isToMany())->toOne(), |$multiplicities->toOne());
+  $state.log(|'Multiplicity inference for union with options: %s; yielded: %s'->format([$multiplicities->map(x | $x->toString())->joinStrings(', '), $multiplicity->toString()])); 
+  $multiplicity;
 }
 
 function
@@ -364,10 +371,10 @@ meta::external::store::elasticsearch::specification::metamodel::propertyTypeToPu
     {mapT: DictionaryOf[1] |
       let keyType = $mapT.key->propertyTypeToPureType($state);
       assert($keyType == 'String', |'dictionary with key that is not String are not supported');
-      let keyMult = $mapT.key->propertyTypeMultiplicity(true);
+      let keyMult = $mapT.key->propertyTypeMultiplicity(true, $state);
       assert($keyMult == PureOne, |'dictionary with key that is not pure one are not supported');
       let valueType = $mapT.value->propertyTypeToPureType($state);
-      let valueMult = $mapT.value->propertyTypeMultiplicity(false);
+      let valueMult = $mapT.value->propertyTypeMultiplicity(false, $state);
       let dictionaryClass = if($valueMult->isToMany(), |'DictionaryEntryMultiValue', |'DictionaryEntrySingleValue');
       '%s::%s<%s>'->format([ $state.pkgPrefix, $dictionaryClass, $valueType ]);
     },
@@ -464,16 +471,16 @@ function
 <<access.private>>
 meta::external::store::elasticsearch::specification::metamodel::aliasTypeToPure(type: TypeAlias[1], state: GenerationState[1]): String[1]
 {
-  $state.log(|'Generating started for alias: %s.%s'->format([$type.name.namespace, $type.name.name]));
-
   $type.variants->match([
     {externalTag: ExternalTag[1] |
+      $state.log(|'Generating started for alias: %s.%s using external tagging'->format([$type.name.namespace, $type.name.name]));
       let items = $type.type->collectInstanceOfInterface($state);
       let names = $items->map(x | $state.type($x.type)).variantName;
       let stereotype = ^meta::protocols::pure::vX_X_X::metamodel::domain::StereotypePtr(profile = $state.pkgPrefix + '::ESProfile', value = 'ExternalTagged');
       $type->taggedUnionAliasTypeToPure($names, $items, $stereotype, [], $state);
     },
     {internalTag: InternalTag[1] |
+      $state.log(|'Generating started for alias: %s.%s unsing internal tagging'->format([$type.name.namespace, $type.name.name]));
       let items = $type.type->collectInstanceOfInterface($state);
       let names = $items->map(x | $state.type($x.type))->cast(@Interface).properties->filter(x | $x.name == $internalTag.tag).type->cast(@LiteralValue).value->cast(@String);
       let tag = ^meta::protocols::pure::vX_X_X::metamodel::domain::TaggedValue(tag = ^meta::protocols::pure::vX_X_X::metamodel::domain::TagPtr(profile=$state.pkgPrefix + '::ESProfile', value='internalTag'), value =  $internalTag.tag);
@@ -482,10 +489,12 @@ meta::external::store::elasticsearch::specification::metamodel::aliasTypeToPure(
     {none: Any[0] |
       if($type.codegenNames->isEmpty(),
         {|
+          $state.log(|'Generating started for alias: %s.%s'->format([$type.name.namespace, $type.name.name]));
           let aliasType = $type.type->propertyTypeToPureType($state);
           $state->registerType($type.name, $aliasType);
         },
         {|
+          $state.log(|'Generating started for alias: %s.%s unsing codegen names'->format([$type.name.namespace, $type.name.name]));
           $type->taggedUnionAliasTypeToPure($type.codegenNames, $type.type->cast(@UnionOf).items, [], [], $state);
         }
       );
@@ -666,7 +675,9 @@ function meta::external::store::elasticsearch::specification::metamodel::generat
   let objectMapperClass = javaClass('com.fasterxml.jackson.databind.ObjectMapper');
   let mapper = j_parameter($objectMapperClass, 'objectMapper');
   let mapperDeclaration = $mapper->j_declare(
-      javaClass('org.finos.legend.engine.shared.core.ObjectMapperFactory')->j_invoke('getNewStandardObjectMapper', [], $objectMapperClass)
+      javaClass('org.finos.legend.engine.shared.core.ObjectMapperFactory')
+        ->j_invoke('getNewStandardObjectMapper', [], $objectMapperClass)
+        ->j_invoke('setSerializationInclusion', j_field(javaClass('com.fasterxml.jackson.annotation.JsonInclude'), 'Include.NON_EMPTY', javaClass('com.fasterxml.jackson.annotation.JsonInclude.Include')), $objectMapperClass)
   );
 
   let results = $elements->filter(e | $e->instanceOf(Class) || $e->instanceOf(Enumeration))->fold({element, pair | 
@@ -686,7 +697,7 @@ function meta::external::store::elasticsearch::specification::metamodel::generat
   
   let utilsPkg = $conventions.typeAndPackageNameStrategy->toOne()->eval('%s::DictionaryEntryMultiValue'->format($purePackage)->pathToElement()->cast(@Type), $conventions).first;
 
-  let jsonHelper = javaClass('public', $utilsPkg->javaPackage(), 'ObjectMapperProvider')
+  let jsonHelper = javaClass('public', $utilsPkg->javaPackage(), 'ElasticsearchObjectMapperProvider')
     ->addField({cls|javaField(['public', 'static'],  $objectMapperClass, 'OBJECT_MAPPER', $cls->j_invoke('objectMapper',[], $objectMapperClass))})
     ->addMethod(javaMethod(['private', 'static'], $objectMapperClass, 'objectMapper', [], j_block($mixInInvocations)));
 
@@ -753,7 +764,7 @@ function <<access.private>> meta::external::store::elasticsearch::specification:
   let lambdaX = j_parameter(javaObject(), 'x');
   let pickFirstNotNullCode = javaStream()
     ->j_invoke(javaObject(), 'of', $javaClass.fields->map(f | j_this($javaClass)->j_field($f.name)), javaStream(javaObject()))
-    ->js_filter(javaObjects()->j_methodReference('nonNull', javaFunctionType(javaObject(), javaBoolean())))
+    ->js_filter(javaClass('org.finos.legend.engine.protocol.store.elasticsearch.specification.utils.TaggedUnionUtils')->j_methodReference('nonEmpty', javaFunctionType(javaObject(), javaBoolean())))
     ->js_resolve(javaObject())
     ->j_return();  
   let method = javaMethod('public', javaObject(), 'unionValue', [], $pickFirstNotNullCode);
@@ -777,7 +788,7 @@ function <<access.private>> meta::external::store::elasticsearch::specification:
         |
           $withJsonValueOnUnionMethod
             ->addAnnotation(^meta::external::language::java::metamodel::annotations::json::JsonDeserialize(using = javaClass('org.finos.legend.engine.protocol.store.elasticsearch.specification.utils.TaggedUnionDeserializer')))
-      ); 
+      );
     );
 
   pair($unionClass, $unionMixIn);
@@ -794,6 +805,9 @@ function <<access.private>> meta::external::store::elasticsearch::specification:
 
   if($prop->hasStereotype('AdditionalProperty', $esProfile),
     |
+      let entryValueType = $prop->functionReturnType().typeArguments->at(0).rawType;
+      let isExternalTaggedValue = $entryValueType->isNotEmpty() && $entryValueType->toOne()->hasStereotype('ExternalTagged', $esProfile);
+
       let field = $javaClass.fields->filter(f | $f.name == $prop.name)->toOne();
       let fieldType = $field.type->cast(@meta::external::language::java::metamodel::ParameterizedType);
       let dictionaryClassName = $fieldType.rawType->cast(@meta::external::language::java::metamodel::Class).simpleName;
@@ -822,8 +836,14 @@ function <<access.private>> meta::external::store::elasticsearch::specification:
           ->addMethod(
             javaMethod(['public', 'abstract'], $anyGetterReturnType, 'additionalProperties', [])
               ->addAnnotation(^meta::external::language::java::metamodel::annotations::json::JsonAnyGetter())
+              ->map(m | if ($isExternalTaggedValue,
+                              |$m->addAnnotation(^meta::external::language::java::metamodel::annotations::json::JsonSerialize(
+                                  using = javaClass('org.finos.legend.engine.protocol.store.elasticsearch.specification.utils.ExternalTaggedUnionSerializer')
+                                )),
+                              |$m
+                            )
             )
-          ->addField($field->addAnnotation(^meta::external::language::java::metamodel::annotations::json::JsonIgnore()));
+          )->addField($field->addAnnotation(^meta::external::language::java::metamodel::annotations::json::JsonIgnore()));
 
       let keyParamDef = javaParam(javaString(), 'key');
       let keyParam = j_parameter($keyParamDef);
@@ -856,6 +876,14 @@ function <<access.private>> meta::external::store::elasticsearch::specification:
       let withAnySetterMixIn = $withAnyGetterMixIn->addMethod(
         javaMethod(['public', 'abstract'], javaVoid(), 'additionalProperties', [$keyParamDef, $valueParamDef])
           ->addAnnotation(^meta::external::language::java::metamodel::annotations::json::JsonAnySetter())
+          ->map(m | if ($isExternalTaggedValue,
+              |$m->addAnnotation(^meta::external::language::java::metamodel::annotations::json::JsonDeserialize(
+                  keyUsing = javaClass('org.finos.legend.engine.protocol.store.elasticsearch.specification.utils.ExternalTaggedUnionKeyDeserializer'),
+                  contentUsing = javaClass('org.finos.legend.engine.protocol.store.elasticsearch.specification.utils.ExternalTaggedUnionDeserializer')
+                )),
+              |$m
+            )
+          )
       );
       pair($withAnySetter, $withAnySetterMixIn);,
     | 
@@ -879,28 +907,32 @@ function <<access.private>> meta::external::store::elasticsearch::specification:
               $mixInWithPropName->addField(
                   $field->addAnnotation(
                     ^meta::external::language::java::metamodel::annotations::json::JsonSerialize(
-                      using = javaClass('org.finos.legend.engine.protocol.store.elasticsearch.specification.utils.ExternalTaggedUnionSerializer'),
-                      nullsUsing = javaClass('org.finos.legend.engine.protocol.store.elasticsearch.specification.utils.ExternalTaggedUnionSerializer')
+                      using = javaClass('org.finos.legend.engine.protocol.store.elasticsearch.specification.utils.ExternalTaggedUnionSerializer')
                     )
                   )->addAnnotation(
                     ^meta::external::language::java::metamodel::annotations::json::JsonDeserialize(
                       using = javaClass('org.finos.legend.engine.protocol.store.elasticsearch.specification.utils.ExternalTaggedUnionDeserializer')
                     )
-                  )
-              ),
+                  )->addAnnotation(
+                   ^meta::external::language::java::metamodel::annotations::json::JsonInclude(
+                     value = ^meta::external::language::java::metamodel::annotations::json::EnumValue(value='JsonInclude.Include.NON_EMPTY'))
+                   )
+                 );,
             |
               $mixInWithPropName->addField(
                 $field->addAnnotation(
                   ^meta::external::language::java::metamodel::annotations::json::JsonSerialize(
-                    using = javaClass('org.finos.legend.engine.protocol.store.elasticsearch.specification.utils.DictionarySerializer'),
-                    nullsUsing = javaClass('org.finos.legend.engine.protocol.store.elasticsearch.specification.utils.DictionarySerializer')
+                    using = javaClass('org.finos.legend.engine.protocol.store.elasticsearch.specification.utils.DictionarySerializer')
                   )
                 )->addAnnotation(
                   ^meta::external::language::java::metamodel::annotations::json::JsonDeserialize(
                     using = javaClass('org.finos.legend.engine.protocol.store.elasticsearch.specification.utils.DictionaryDeserializer')
                   )
-                )
-              )
+                )->addAnnotation(
+                 ^meta::external::language::java::metamodel::annotations::json::JsonInclude(
+                   value = ^meta::external::language::java::metamodel::annotations::json::EnumValue(value='JsonInclude.Include.NON_EMPTY'))
+                 )
+               )
           );,
         |
           $mixInWithPropName
@@ -936,7 +968,7 @@ function <<access.private>> meta::external::store::elasticsearch::specification:
                                   ->map(a | ^meta::external::language::java::metamodel::annotations::json::JsonTypeInfo(use = ^meta::external::language::java::metamodel::annotations::json::EnumValue(value='JsonTypeInfo.Id.NONE')));
 
   let mixInWithAnnotations = ^$mixInClassWithProperties(
-    annotations = $jsonTypeInfoAnnotation
+    annotations = $mixInClassWithProperties.annotations->concatenate($jsonTypeInfoAnnotation)
   );
   
   let totalMixIns = $mixInWithAnnotations.fields->size() + $mixInWithAnnotations.methods->size() + $mixInWithAnnotations.annotations->size();

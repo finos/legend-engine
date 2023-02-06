@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.protocol.store.elasticsearch.specification.utils;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JavaType;
@@ -22,6 +23,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -35,9 +37,9 @@ import java.util.Map;
 
 public class ExternalTaggedUnionDeserializer extends DictionaryDeserializer
 {
-    public ExternalTaggedUnionDeserializer(JavaType contextualType)
+    public ExternalTaggedUnionDeserializer(JavaType contextualType, BeanProperty property)
     {
-        super(contextualType);
+        super(contextualType, property);
     }
 
     @SuppressWarnings("UnusedDeclaration")
@@ -49,7 +51,29 @@ public class ExternalTaggedUnionDeserializer extends DictionaryDeserializer
     @Override
     public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) throws JsonMappingException
     {
-        return new ExternalTaggedUnionDeserializer(ctxt.getContextualType());
+        return new ExternalTaggedUnionDeserializer(ctxt.getContextualType(), property);
+    }
+
+    private boolean isAdditionalProperties()
+    {
+        return this.property.getName().equals("additionalProperties");
+    }
+
+    @Override
+    protected ObjectNode getNodeToProcess(JsonParser p, DeserializationContext ctxt) throws IOException
+    {
+        ObjectNode nodeToProcess = super.getNodeToProcess(p, ctxt);
+        if (this.isAdditionalProperties())
+        {
+            String key = p.getParsingContext().getCurrentName();
+            ObjectNode jsonNodes = ctxt.getNodeFactory().objectNode();
+
+            return jsonNodes.set(key, nodeToProcess);
+        }
+        else
+        {
+            return nodeToProcess;
+        }
     }
 
     @Override
@@ -83,8 +107,15 @@ public class ExternalTaggedUnionDeserializer extends DictionaryDeserializer
             }
         }
 
-        return ctxt.getNodeFactory().objectNode()
-                .<ObjectNode>set("key", ctxt.getNodeFactory().textNode(name))
-                .set("value", unionNode);
+        if (this.isAdditionalProperties())
+        {
+            return unionNode;
+        }
+        else
+        {
+            return ctxt.getNodeFactory().objectNode()
+                    .<ObjectNode>set("key", ctxt.getNodeFactory().textNode(name))
+                    .set("value", unionNode);
+        }
     }
 }

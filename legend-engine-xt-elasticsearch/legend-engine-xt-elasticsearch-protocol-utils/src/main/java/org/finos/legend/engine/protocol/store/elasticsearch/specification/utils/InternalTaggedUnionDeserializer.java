@@ -17,6 +17,7 @@ package org.finos.legend.engine.protocol.store.elasticsearch.specification.utils
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JavaType;
@@ -48,16 +49,18 @@ public class InternalTaggedUnionDeserializer extends JsonDeserializer<Object> im
 
     }
 
-    public InternalTaggedUnionDeserializer(JavaType type)
+    public InternalTaggedUnionDeserializer(String typeField, JavaType type)
     {
         this.type = type;
-        this.typeField = type.getRawClass().getAnnotation(JsonTypeName.class).value();
+        this.typeField = typeField;
     }
 
     @Override
     public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) throws JsonMappingException
     {
-        return new InternalTaggedUnionDeserializer(ctxt.getContextualType());
+        BeanDescription beanDescription = ctxt.getConfig().introspectClassAnnotations(ctxt.getContextualType());
+        String typeField = ctxt.getConfig().getAnnotationIntrospector().findTypeName(beanDescription.getClassInfo());
+        return new InternalTaggedUnionDeserializer(typeField, ctxt.getContextualType());
     }
 
     @Override

@@ -16,13 +16,17 @@ package org.finos.legend.engine.protocol.store.elasticsearch.specification.utils
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.ObjectCodec;
+import com.fasterxml.jackson.databind.BeanProperty;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.ser.ContextualSerializer;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * To simplify pure, we have pairs of key/values on the protocol classes.
@@ -35,8 +39,39 @@ import java.io.IOException;
  *    DictionaryEntryMultiValue
  *    List of DictionaryEntryMultiValue
  */
-public class DictionarySerializer extends JsonSerializer<Object>
+public class DictionarySerializer extends JsonSerializer<Object> implements ContextualSerializer
 {
+
+    protected BeanProperty property;
+
+    @SuppressWarnings("UnusedDeclaration")
+    public DictionarySerializer()
+    {
+
+    }
+
+    public DictionarySerializer(BeanProperty property)
+    {
+        this.property = property;
+    }
+
+    @Override
+    public JsonSerializer<?> createContextual(SerializerProvider prov, BeanProperty property) throws JsonMappingException
+    {
+        return new DictionarySerializer(property);
+    }
+
+    @Override
+    public boolean isEmpty(SerializerProvider provider, Object value)
+    {
+        if (value instanceof List)
+        {
+            return ((List<?>) value).isEmpty();
+        }
+
+        return super.isEmpty(provider, value);
+    }
+
     @Override
     public void serialize(Object value, JsonGenerator gen, SerializerProvider serializers) throws IOException
     {
@@ -61,6 +96,18 @@ public class DictionarySerializer extends JsonSerializer<Object>
             toSerialize = addToSerialize(codec, toSerialize, dictionaryEntry);
         }
 
+        if (toSerialize.isEmpty())
+        {
+            gen.writeNull();
+        }
+        else
+        {
+            getWriteTree(gen, toSerialize);
+        }
+    }
+
+    protected void getWriteTree(JsonGenerator gen, ObjectNode toSerialize) throws IOException
+    {
         gen.writeTree(toSerialize);
     }
 
