@@ -60,6 +60,7 @@ import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.api.ExecutePlanLegacy;
 import org.finos.legend.engine.plan.execution.api.ExecutePlanStrategic;
+import org.finos.legend.engine.plan.execution.api.concurrent.ConcurrentExecutionNodeExecutorPoolInfo;
 import org.finos.legend.engine.plan.execution.service.api.ServiceModelingApi;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemory;
 import org.finos.legend.engine.plan.execution.stores.relational.api.RelationalExecutorInformation;
@@ -103,6 +104,7 @@ import org.slf4j.Logger;
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
 import javax.ws.rs.container.DynamicFeature;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
@@ -187,6 +189,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new CurrentUser());
         environment.jersey().register(new Memory());
         environment.jersey().register(new RelationalExecutorInformation());
+        environment.jersey().register(new ConcurrentExecutionNodeExecutorPoolInfo(Collections.emptyList()));
 
         // Grammar
         environment.jersey().register(new GrammarToJson());

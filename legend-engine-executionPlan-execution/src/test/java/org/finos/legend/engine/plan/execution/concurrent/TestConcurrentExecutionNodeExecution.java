@@ -30,39 +30,39 @@ public class TestConcurrentExecutionNodeExecution
 {
     public static List<Result> executePlanConcurrently(PlanExecutor.ExecuteArgs executeArgs, int concurrentExecutionNodeExecutorPoolSize, int planExecutionCount, int planExecutionPoolSize, String executorPoolStateAssertMessage)
     {
-        PlanExecutor planExecutor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
-        planExecutor.injectConcurrentExecutionNodeExecutorPoolOfSize(concurrentExecutionNodeExecutorPoolSize);
-        ConcurrentExecutionNodeExecutorPool concurrentExecutionNodeExecutorPool = ConcurrentExecutionNodeExecutorPool.getExecutorPool();
-
-        List<Result> results = FastList.newList();
-        for (int i = 0; i < planExecutionCount; i += planExecutionPoolSize)
+        try (ConcurrentExecutionNodeExecutorPool concurrentExecutionNodeExecutorPool = new ConcurrentExecutionNodeExecutorPool(concurrentExecutionNodeExecutorPoolSize, "Pool for concurrent testing"))
         {
-            ExecutorService executorService = Executors.newFixedThreadPool(planExecutionPoolSize);
-            List<CompletableFuture<Result>> resultsFuture = FastList.newList();
+            PlanExecutor planExecutor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
+            planExecutor.injectConcurrentExecutionNodeExecutorPool(concurrentExecutionNodeExecutorPool);
 
-            IntStream.range(i, Math.min(planExecutionCount, i + planExecutionPoolSize)).forEach(j -> resultsFuture.add(CompletableFuture.supplyAsync(() -> planExecutor.executeWithArgs(executeArgs), executorService)));
-
-            CompletableFuture<Void> allResultsFuture = CompletableFuture.allOf(resultsFuture.toArray(new CompletableFuture[0]));
-
-            allResultsFuture.whenComplete((v, th) ->
+            List<Result> results = FastList.newList();
+            for (int i = 0; i < planExecutionCount; i += planExecutionPoolSize)
             {
-                resultsFuture.forEach(result ->
+                ExecutorService executorService = Executors.newFixedThreadPool(planExecutionPoolSize);
+                List<CompletableFuture<Result>> resultsFuture = FastList.newList();
+
+                IntStream.range(i, Math.min(planExecutionCount, i + planExecutionPoolSize)).forEach(j -> resultsFuture.add(CompletableFuture.supplyAsync(() -> planExecutor.executeWithArgs(executeArgs), executorService)));
+
+                CompletableFuture<Void> allResultsFuture = CompletableFuture.allOf(resultsFuture.toArray(new CompletableFuture[0]));
+
+                allResultsFuture.whenComplete((v, th) ->
                 {
-                    try
+                    resultsFuture.forEach(result ->
                     {
-                        results.add(result.get(1, TimeUnit.SECONDS));
-                    }
-                    catch (Exception e)
-                    {
-                        e.printStackTrace();
-                    }
-                });
-            }).join();
+                        try
+                        {
+                            results.add(result.get(1, TimeUnit.SECONDS));
+                        }
+                        catch (Exception e)
+                        {
+                            e.printStackTrace();
+                        }
+                    });
+                }).join();
+            }
+
+            Assert.assertTrue("Response : " + concurrentExecutionNodeExecutorPool, concurrentExecutionNodeExecutorPool.toString().contains(executorPoolStateAssertMessage));
+            return results;
         }
-
-        Assert.assertTrue(concurrentExecutionNodeExecutorPool.toString().contains(executorPoolStateAssertMessage));
-        ConcurrentExecutionNodeExecutorPool.teardownExecutorPool();;
-
-        return results;
     }
 }

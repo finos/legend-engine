@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.concurrent;
 
 import io.opentracing.Scope;
+import io.opentracing.contrib.concurrent.TracedExecutorService;
 import io.opentracing.util.GlobalTracer;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
@@ -27,64 +28,45 @@ import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
-import org.finos.legend.engine.shared.core.operational.opentracing.TracedSupplier;
 import org.finos.legend.engine.shared.core.url.StreamProvider;
 import org.finos.legend.engine.shared.core.url.StreamProviderHolder;
 import org.pac4j.core.profile.CommonProfile;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.atomic.AtomicReference;
 
-public final class ConcurrentExecutionNodeExecutorPool
+/**
+ * Pool management class. This class should be instantiated only during server spin up to help manage thread pool and guard system against thread explosions.
+ */
+public final class ConcurrentExecutionNodeExecutorPool implements AutoCloseable
 {
-    private static final AtomicReference<ConcurrentExecutionNodeExecutorPool> INSTANCE = new AtomicReference<>();
-
     private final int poolSize;
-    private final ThreadPoolExecutor executor;
+    private final String poolDescription;
+    private final ExecutorService executor;
+    private final ExecutorService delegatedExecutor;
     private final Semaphore availableThreads;
 
-    private ConcurrentExecutionNodeExecutorPool(int poolSize)
+    public ConcurrentExecutionNodeExecutorPool(int poolSize, String poolDescription)
     {
         this.poolSize = poolSize;
-        this.executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(poolSize);
+        this.poolDescription = poolDescription;
+        this.delegatedExecutor = Executors.newFixedThreadPool(poolSize);
+        this.executor = new TracedExecutorService(this.delegatedExecutor, GlobalTracer.get());
         this.availableThreads = new Semaphore(poolSize);
     }
 
-    public static void initializeExecutorPool(int poolSize)
+    @Override
+    public void close()
     {
-        boolean success = INSTANCE.compareAndSet(null, new ConcurrentExecutionNodeExecutorPool(poolSize));
-        if (!success)
-        {
-            throw new UnsupportedOperationException("Can't initialize ConcurrentExecutionNodeExecutorPool multiple times");
-        }
-    }
-
-    public static void teardownExecutorPool()
-    {
-        ConcurrentExecutionNodeExecutorPool concurrentExecutionNodeExecutorPool = getExecutorPool();
-
-        if (concurrentExecutionNodeExecutorPool == null)
-        {
-            throw new IllegalStateException("teardown called on un-initialized pool");
-        }
-
-        concurrentExecutionNodeExecutorPool.executor.shutdown();
-
-        INSTANCE.set(null);
-    }
-
-    public static ConcurrentExecutionNodeExecutorPool getExecutorPool()
-    {
-        return INSTANCE.get();
+        this.executor.shutdown();
     }
 
     public List<? extends Result> execute(final List<ExecutionNode> nodes, final MutableList<CommonProfile> profiles, final ExecutionState executionState)
     {
-        if (INSTANCE.get() != null && availableThreads.tryAcquire(nodes.size()))
+        if (!executor.isShutdown() && availableThreads.tryAcquire(nodes.size()))
         {
             try (Scope scope = GlobalTracer.get().buildSpan("Parallel Execution Triggered").startActive(true))
             {
@@ -112,18 +94,16 @@ public final class ConcurrentExecutionNodeExecutorPool
     {
         List<CompletableFuture<Pair<Result, ExecutionState>>> elements = FastList.newList();
         StreamProvider streamProvider = StreamProviderHolder.streamProviderThreadLocal.get();
-        nodes.forEach(node -> elements.add(CompletableFuture.supplyAsync(
-                TracedSupplier.reActivateSpan(() ->
-                        {
-                            try (Scope scope = GlobalTracer.get().buildSpan(String.format("Execution for child - %d", nodes.indexOf(node))).startActive(true))
-                            {
-                                StreamProviderHolder.streamProviderThreadLocal.set(streamProvider);
-                                ExecutionState executionStateForThread = executionState.copy();
-                                Result result = node.accept(new ExecutionNodeExecutor(Lists.mutable.withAll(profiles), executionStateForThread));
-                                return Tuples.pair(result, executionStateForThread);
-                            }
-                        }
-                ), executor
+        nodes.forEach(node -> elements.add(CompletableFuture.supplyAsync(() ->
+                {
+                    try (Scope scope = GlobalTracer.get().buildSpan(String.format("Execution for child - %d", nodes.indexOf(node))).startActive(true))
+                    {
+                        StreamProviderHolder.streamProviderThreadLocal.set(streamProvider);
+                        ExecutionState executionStateForThread = executionState.copy();
+                        Result result = node.accept(new ExecutionNodeExecutor(Lists.mutable.withAll(profiles), executionStateForThread));
+                        return Tuples.pair(result, executionStateForThread);
+                    }
+                }, executor
         )));
 
         CompletableFuture<Void> allElements = CompletableFuture.allOf(elements.toArray(new CompletableFuture[0]));
@@ -151,7 +131,8 @@ public final class ConcurrentExecutionNodeExecutorPool
     {
         return "[" +
                 "poolSize : " + poolSize +
-                ", executor : " + executor.toString() +
+                ", poolDescription : " + poolDescription +
+                ", delegatedExecutor : " + delegatedExecutor.toString() +
                 ", availableThreads : " + availableThreads.toString() +
                 "]";
     }

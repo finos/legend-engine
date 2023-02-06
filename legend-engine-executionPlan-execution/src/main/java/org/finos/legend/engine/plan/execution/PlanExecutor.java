@@ -293,10 +293,13 @@ public class PlanExecutor
         this.graphFetchBatchMemoryLimit = graphFetchBatchMemoryLimit;
     }
 
-    public void injectConcurrentExecutionNodeExecutorPoolOfSize(int concurrentExecutionNodeExecutorPoolSize)
+    public void injectConcurrentExecutionNodeExecutorPool(ConcurrentExecutionNodeExecutorPool concurrentExecutionNodeExecutorPool)
     {
-        ConcurrentExecutionNodeExecutorPool.initializeExecutorPool(concurrentExecutionNodeExecutorPoolSize);
-        this.concurrentExecutionNodeExecutorPool = ConcurrentExecutionNodeExecutorPool.getExecutorPool();
+        if (this.concurrentExecutionNodeExecutorPool != null)
+        {
+            throw new IllegalStateException("PlanExecutor already contains a ConcurrentExecutionNodeExecutorPool");
+        }
+        this.concurrentExecutionNodeExecutorPool = concurrentExecutionNodeExecutorPool;
     }
 
     private EngineJavaCompiler possiblyCompilePlan(SingleExecutionPlan plan, ExecutionState state, MutableList<CommonProfile> profiles)
