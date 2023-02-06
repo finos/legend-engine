@@ -343,13 +343,29 @@ meta::external::store::elasticsearch::specification::metamodel::instanceOfTypeMu
 {
   let instanceType = $state.type($type.type);
   let multiplicity = $instanceType->match([
-    alias: TypeAlias[1] | $alias.type->propertyTypeMultiplicity($required, $state),
+    alias: TypeAlias[1] | $alias->aliasTypeMultiplicity($required, $state),
     any: Any[0..1] | if($required, |PureOne, |ZeroOne)
   ]);
 
   $state.log(|'Multiplicity inference for instanceOf type: %s yielded: %s'->format([$type.type.name, $multiplicity->toString()])); 
 
   $multiplicity;
+}
+
+function
+<<access.private>>
+meta::external::store::elasticsearch::specification::metamodel::aliasTypeMultiplicity(type: TypeAlias[1], required: Boolean[1], state: GenerationState[1]): Multiplicity[1]
+{
+  $type.variants->match([
+    externalTag: ExternalTag[1] | if($required, |PureOne, |ZeroOne),
+    internalTag: InternalTag[1] | if($required, |PureOne, |ZeroOne),
+    {none: Any[0] |
+      if($type.codegenNames->isEmpty(),
+        | $type.type->propertyTypeMultiplicity($required, $state),
+        | if($required, |PureOne, |ZeroOne)
+      );
+    }
+  ]);
 }
 
 function

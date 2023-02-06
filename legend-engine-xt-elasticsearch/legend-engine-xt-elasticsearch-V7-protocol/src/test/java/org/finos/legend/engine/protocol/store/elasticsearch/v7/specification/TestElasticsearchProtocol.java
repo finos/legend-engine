@@ -43,7 +43,6 @@ import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.typ
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.MaxAggregate;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.MaxAggregation;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.SamplerAggregate;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.SamplerAggregation;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.SignificantStringTermsAggregate;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.mapping.IntegerNumberProperty;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.mapping.KeywordProperty;
@@ -272,20 +271,20 @@ public class TestElasticsearchProtocol
 
         GeoBounds geoBounds2 = new GeoBounds();
         geoBounds2.tlbr = new TopLeftBottomRightGeoBounds();
-        geoBounds2.tlbr.top_left = Collections.singletonList(new GeoLocation());
-        geoBounds2.tlbr.top_left.get(0).coords = Arrays.asList(1.0, -1.0, 2.0, -2.0);
-        geoBounds2.tlbr.bottom_right = Collections.singletonList(new GeoLocation());
-        geoBounds2.tlbr.bottom_right.get(0).text = "geo-loc";
+        geoBounds2.tlbr.top_left = new GeoLocation();
+        geoBounds2.tlbr.top_left.coords = Arrays.asList(1.0, -1.0, 2.0, -2.0);
+        geoBounds2.tlbr.bottom_right = new GeoLocation();
+        geoBounds2.tlbr.bottom_right.text = "geo-loc";
 
         GeoBounds geoBounds3 = new GeoBounds();
         geoBounds3.trbl = new TopRightBottomLeftGeoBounds();
-        geoBounds3.trbl.top_right = Collections.singletonList(new GeoLocation());
-        geoBounds3.trbl.top_right.get(0).geohash = new GeoHashLocation();
-        geoBounds3.trbl.top_right.get(0).geohash.geohash = "hash123";
-        geoBounds3.trbl.bottom_left = Collections.singletonList(new GeoLocation());
-        geoBounds3.trbl.bottom_left.get(0).latlon = new LatLonGeoLocation();
-        geoBounds3.trbl.bottom_left.get(0).latlon.lat = 1.2;
-        geoBounds3.trbl.bottom_left.get(0).latlon.lon = 13;
+        geoBounds3.trbl.top_right = new GeoLocation();
+        geoBounds3.trbl.top_right.geohash = new GeoHashLocation();
+        geoBounds3.trbl.top_right.geohash.geohash = "hash123";
+        geoBounds3.trbl.bottom_left = new GeoLocation();
+        geoBounds3.trbl.bottom_left.latlon = new LatLonGeoLocation();
+        geoBounds3.trbl.bottom_left.latlon.lat = 1.2;
+        geoBounds3.trbl.bottom_left.latlon.lon = 13;
 
         GeoBounds geoBounds4 = new GeoBounds();
         geoBounds4.wkt = new WktGeoBounds();
@@ -307,30 +306,22 @@ public class TestElasticsearchProtocol
                         "    \"top\": 1.0\n" +
                         "  },\n" +
                         "  {\n" +
-                        "    \"bottom_right\": [\n" +
-                        "      \"geo-loc\"\n" +
-                        "    ],\n" +
+                        "    \"bottom_right\": \"geo-loc\",\n" +
                         "    \"top_left\": [\n" +
-                        "      [\n" +
-                        "        1.0,\n" +
-                        "        -1.0,\n" +
-                        "        2.0,\n" +
-                        "        -2.0\n" +
-                        "      ]\n" +
+                        "      1.0,\n" +
+                        "      -1.0,\n" +
+                        "      2.0,\n" +
+                        "      -2.0\n" +
                         "    ]\n" +
                         "  },\n" +
                         "  {\n" +
-                        "    \"bottom_left\": [\n" +
-                        "      {\n" +
-                        "        \"lat\": 1.2,\n" +
-                        "        \"lon\": 13.0\n" +
-                        "      }\n" +
-                        "    ],\n" +
-                        "    \"top_right\": [\n" +
-                        "      {\n" +
-                        "        \"geohash\": \"hash123\"\n" +
-                        "      }\n" +
-                        "    ]\n" +
+                        "    \"bottom_left\": {\n" +
+                        "      \"lat\": 1.2,\n" +
+                        "      \"lon\": 13.0\n" +
+                        "    },\n" +
+                        "    \"top_right\": {\n" +
+                        "      \"geohash\": \"hash123\"\n" +
+                        "    }\n" +
                         "  },\n" +
                         "  {\n" +
                         "    \"wkt\": \"wkt\"\n" +
@@ -410,7 +401,7 @@ public class TestElasticsearchProtocol
         ResponseBody<Object> responseBody = new ResponseBody<>();
         responseBody.took = 0L;
         responseBody.timed_out = false;
-        responseBody.aggregations = Arrays.asList(
+        responseBody.aggregations = Collections.singletonList(
                 new DictionaryEntrySingleValue<>()
         );
 
@@ -418,7 +409,7 @@ public class TestElasticsearchProtocol
         responseBody.aggregations.get(0).value = new Aggregate();
         responseBody.aggregations.get(0).value.sampler = new SamplerAggregate();
         responseBody.aggregations.get(0).value.sampler.doc_count = 200;
-        responseBody.aggregations.get(0).value.sampler.__additionalProperties = Arrays.asList(
+        responseBody.aggregations.get(0).value.sampler.__additionalProperties = Collections.singletonList(
                 new DictionaryEntrySingleValue<>()
         );
         responseBody.aggregations.get(0).value.sampler.__additionalProperties.get(0).key = "keywords";
