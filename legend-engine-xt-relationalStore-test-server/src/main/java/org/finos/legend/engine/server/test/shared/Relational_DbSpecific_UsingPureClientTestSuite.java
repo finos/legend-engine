@@ -20,7 +20,8 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.eclipse.collections.impl.utility.ArrayIterate;
-import org.finos.legend.pure.code.core.compiled.test.PureTestBuilderHelper;
+import org.finos.legend.pure.m3.execution.test.PureTestBuilder;
+import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
 import org.finos.legend.pure.m3.exception.PureAssertFailException;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
@@ -37,9 +38,9 @@ public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends Tes
         //Run test engine server - needs to be setup before as we need testParam(connection details) to create test suite
         boolean shouldCleanUp = PureWithEngineHelper.initClientVersionIfNotAlreadySet("vX_X_X");
         RelationalTestServer server = PureWithEngineHelper.initEngineServer(testServerConfigFilePath, () -> new RelationalTestServer(extraConfigTypes));
-        CompiledExecutionSupport executionSupport = PureTestBuilderHelper.getClassLoaderExecutionSupport();
+        CompiledExecutionSupport executionSupport = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
 
-        TestSuite suite = wrapTestCases(PureTestBuilderHelper.buildSuite(TestCollection.collectTests(pureTestCollectionPath, executionSupport.getProcessorSupport(), fn -> PureTestBuilderHelper.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilderHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+        TestSuite suite = wrapTestCases(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests(pureTestCollectionPath, executionSupport.getProcessorSupport(), fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
 
         return new TestSetup(suite)
         {

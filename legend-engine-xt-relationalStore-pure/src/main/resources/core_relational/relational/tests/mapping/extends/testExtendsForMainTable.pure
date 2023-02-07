@@ -71,31 +71,33 @@ Mapping meta::relational::tests::mapping::extend::mainTable::C2Mapping
 ###Pure
 import meta::relational::mapping::*;
 import meta::relational::tests::mapping::extend::mainTable::*;
+import meta::pure::mapping::*;
+import meta::relational::metamodel::*;
 
 function <<test.Test>> meta::relational::tests::mapping::extend::mainTable::testMainTableForB1():Any[*]
 {
-   let mainTable = B1Mapping.classMappingById('b1')->cast(@RootRelationalInstanceSetImplementation).mainTable;
-   let superMappingMainTable = AMapping.classMappingById('a')->cast(@RootRelationalInstanceSetImplementation).mainTable;
+   let mainTable = B1Mapping->classMappingById('b1')->cast(@RootRelationalInstanceSetImplementation)->map(x|$x->mainTable());
+   let superMappingMainTable = AMapping->classMappingById('a')->cast(@RootRelationalInstanceSetImplementation)->map(x|$x->mainTable());
    assertEquals($superMappingMainTable, $mainTable);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::extend::mainTable::testMainTableForB2():Any[*]
 {
-   let mainTable = B2Mapping.classMappingById('b2')->cast(@RootRelationalInstanceSetImplementation).mainTable;
-   let superMappingMainTable = AMapping.classMappingById('a')->cast(@RootRelationalInstanceSetImplementation).mainTable;
+   let mainTable = B2Mapping->classMappingById('b2')->cast(@RootRelationalInstanceSetImplementation)->map(x|$x->mainTable());
+   let superMappingMainTable = AMapping->classMappingById('a')->cast(@RootRelationalInstanceSetImplementation)->map(x|$x->mainTable());
    assertEquals($superMappingMainTable, $mainTable);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::extend::mainTable::testMainTableForC1():Any[*]
 {
-   let mainTable = C1Mapping.classMappingById('c1')->cast(@RootRelationalInstanceSetImplementation).mainTable;
-   let superMappingMainTable = B1Mapping.classMappingById('b1')->cast(@RootRelationalInstanceSetImplementation).mainTable;
+   let mainTable = C1Mapping->classMappingById('c1')->cast(@RootRelationalInstanceSetImplementation)->map(x|$x->mainTable());
+   let superMappingMainTable = B1Mapping->classMappingById('b1')->cast(@RootRelationalInstanceSetImplementation)->map(x|$x->mainTable());
    assertEquals($superMappingMainTable, $mainTable);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::extend::mainTable::testMainTableForC2():Any[*]
 {
-   let mainTable = C2Mapping.classMappingById('c2')->cast(@RootRelationalInstanceSetImplementation).mainTable;
-   let superMappingMainTable = B2Mapping.classMappingById('b2')->cast(@RootRelationalInstanceSetImplementation).mainTable;
+   let mainTable = C2Mapping->classMappingById('c2')->cast(@RootRelationalInstanceSetImplementation)->map(x|$x->mainTable());
+   let superMappingMainTable = B2Mapping->classMappingById('b2')->cast(@RootRelationalInstanceSetImplementation)->map(x|$x->mainTable());
    assertEquals($superMappingMainTable, $mainTable);
 }

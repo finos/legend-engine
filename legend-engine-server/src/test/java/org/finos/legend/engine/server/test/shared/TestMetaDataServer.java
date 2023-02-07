@@ -26,10 +26,10 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.HandlerCollection;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.server.test.shared.execute.PureFunctions;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
-import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.CodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.CodeStorageNode;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.vcs.Revision;
@@ -37,9 +37,9 @@ import org.finos.legend.pure.runtime.java.compiled.compiler.JavaCompilerState;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledProcessorSupport;
 import org.finos.legend.pure.runtime.java.compiled.execution.ConsoleCompiled;
+import org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtensionLoader;
 import org.finos.legend.pure.runtime.java.compiled.metadata.ClassCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.FunctionCache;
-import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -67,7 +67,7 @@ public class TestMetaDataServer
         this.server = new Server(port);
         CompiledExecutionSupport executionSupport = new CompiledExecutionSupport(
                 new JavaCompilerState(null, TestMetaDataServer.class.getClassLoader()),
-                new CompiledProcessorSupport(TestMetaDataServer.class.getClassLoader(), MetadataLazy.fromClassLoader(TestMetaDataServer.class.getClassLoader(), CodeRepositoryProviderHelper.findCodeRepositories().collect(CodeRepository::getName)), Sets.mutable.empty()),
+                new CompiledProcessorSupport(TestMetaDataServer.class.getClassLoader(), PureModel.METADATA_LAZY, Sets.mutable.empty()),
                 null,
                 new CodeStorage()
                 {
@@ -197,7 +197,8 @@ public class TestMetaDataServer
                 new FunctionCache(),
                 new ClassCache(),
                 null,
-                Sets.mutable.empty()
+                Sets.mutable.empty(),
+                CompiledExtensionLoader.extensions()
         );
 
         AbstractHandler mappingHandle = registerService(

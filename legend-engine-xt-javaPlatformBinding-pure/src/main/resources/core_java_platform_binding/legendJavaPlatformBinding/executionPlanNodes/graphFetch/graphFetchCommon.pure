@@ -134,7 +134,7 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
       let fieldType   = $conventions->pureTypeToJavaType($p);
       let noMappingDefaultToEmpty = ($fetchTree.sets->size() == 1) && $fetchTree.sets->toOne()->isNoMappingDefaultToEmpty($p);
       let noMappingPassThru = $p.owner->instanceOf(meta::pure::metamodel::type::Class) && ($fetchTree.sets->size() == 1) && $fetchTree.sets->toOne()->passThruProperty($p);
-      if (  !$isMerged && $p.owner->instanceOf(meta::pure::metamodel::type::Class) && ($fetchTree.sets->size() == 1) && $fetchTree.sets->toOne()->cast(@InstanceSetImplementation).propertyMappingsByPropertyName($p.name->toOne())->isEmpty() && !($p->hasGeneratedMilestoningDatePropertyStereotype()) && !($noMappingDefaultToEmpty || $noMappingPassThru ) ,
+      if (  !$isMerged && $p.owner->instanceOf(meta::pure::metamodel::type::Class) && ($fetchTree.sets->size() == 1) && $fetchTree.sets->toOne()->cast(@InstanceSetImplementation)->_propertyMappingsByPropertyName($p.name->toOne())->isEmpty() && !($p->hasGeneratedMilestoningDatePropertyStereotype()) && !($noMappingDefaultToEmpty || $noMappingPassThru ) ,
          {|  
             $javaClass->addMethod(javaMethod(['public'], $fieldType, $getterName, [], j_throw(javaUnsupportedOperationException()->j_new(j_string('No mapping for property \'' + $p.name->toOne() +'\'')))))
          ;},

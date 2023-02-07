@@ -16,7 +16,7 @@ package org.finos.legend.engine.external.language.java.runtime.compiler;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ArrayIterate;
-import org.finos.legend.pure.m3.AbstractPureTestWithCoreCompiled;
+import org.finos.legend.pure.m3.tests.AbstractPureTestWithCoreCompiled;
 import org.finos.legend.pure.m3.exception.PureAssertFailException;
 import org.finos.legend.pure.m3.serialization.filesystem.PureCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;

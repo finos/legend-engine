@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.dsl.authentication.compiler.toPureGraph;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.demo.AuthenticationDemo;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_connection_authentication_demo_AuthenticationDemo;
@@ -22,6 +23,12 @@ import org.finos.legend.pure.generated.Root_meta_pure_runtime_connection_authent
 
 public class AuthenticationDemoCompilerExtension implements IAuthenticationDemoCompilerExtension
 {
+    @Override
+    public CompilerExtension build()
+    {
+        return new AuthenticationDemoCompilerExtension();
+    }
+
     @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
