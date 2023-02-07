@@ -240,7 +240,7 @@
         <module>legend-engine-xt-sql-grammar-integration</module>
         <module>legend-engine-xt-sql-query</module>
         <module>legend-engine-xt-sql-pure</module>
-        <module>legend-engine-pg-protocol</module>
+        <module>legend-engine-xt-postgres-server</module>
     </modules>
 
     <properties>
@@ -1637,7 +1637,7 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-pg-protocol</artifactId>
+                <artifactId>legend-engine-xt-postgres-server</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!-- ENGINE -->

@@ -129,7 +129,7 @@ public class PostgresServer
   {
     int port = 9998;
     CookieStore cookieStore = new BasicCookieStore();
-    BasicClientCookie legendSdlcJsessionid = new BasicClientCookie("LEGEND_SDLC_JSESSIONID", "node0k8i6uzjro6s4tdx2zwqmv8kt1.node0");
+    BasicClientCookie legendSdlcJsessionid = new BasicClientCookie("LEGEND_SDLC_JSESSIONID", "node01gyyiwsbhc8v496714ofgx845.node0");
     legendSdlcJsessionid.setDomain("localhost");
     cookieStore.addCookie(legendSdlcJsessionid);
     LegendTdsClient client = new LegendTdsClient("localhost", "6300", "SAMPLE-40302763", cookieStore);
