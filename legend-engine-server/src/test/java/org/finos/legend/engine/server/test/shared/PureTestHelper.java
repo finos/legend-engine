@@ -104,7 +104,6 @@ public class PureTestHelper
                     PureWithEngineHelper.cleanUp();
                 }
                 System.out.println("STOP");
-                System.in.read();
             }
         };
     }
