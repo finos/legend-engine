@@ -73,7 +73,7 @@ function <<access.private>> meta::external::format::avro::serialization::unionTy
 
 function <<access.private>> meta::external::format::avro::serialization::recordSchemaToJSON(record: AvroRecordSchema[1]): JSONElement[1]
 {
-   if($record.fields->isEmpty(), |
+   if($record.placeHolder->isNotEmpty() && $record.placeHolder->toOne(), |
       ^JSONString(value=$record.name.name()) , |
       let type = newJSONKeyValue('type', ^JSONString(value='record'));
       let name = newJSONKeyValue('name', ^JSONString(value=$record.name.name->toOne()));
