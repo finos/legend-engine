@@ -26,7 +26,6 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import java.net.InetSocketAddress;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -35,6 +34,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
@@ -44,30 +44,34 @@ public class PostgresServerTest
     @ClassRule
     public static WireMockRule wireMockRule = new WireMockRule(options().dynamicPort(), false);
     private static TestPostgresServer testPostgresServer;
-    private static InetSocketAddress localAddress;
 
     @BeforeClass
-    public static void setUp() throws Exception
+    public static void setUp()
     {
         CookieStore cookieStore = new BasicCookieStore();
         LegendTdsClient client = new LegendTdsClient("localhost", "" + wireMockRule.port(), "SAMPLE-123", cookieStore);
         LegendSessionFactory legendSessionFactory = new LegendSessionFactory(client);
         testPostgresServer = new TestPostgresServer(0, legendSessionFactory);
         testPostgresServer.startUp();
-        localAddress = testPostgresServer.getLocalAddress();
         wireMockRule.stubFor(post(urlEqualTo("/api/sql/v1/execution/execute/SAMPLE-123"))
                 .willReturn(aResponse()
-                        .withBody("{ \"builder\": { \"_type\": \"tdsBuilder\", \"columns\": [ { \"name\": \"Age\", \"type\": \"Integer\", \"relationalType\": \"INTEGER\" }, { \"name\": \"First Name\", \"type\": \"String\", \"relationalType\": \"VARCHAR(200)\" }, { \"name\": \"Last Name\", \"type\": \"String\", \"relationalType\": \"VARCHAR(200)\" } ] }, \"activities\": [ { \"_type\": \"relational\", \"sql\": \"select \\\"root\\\".AGE as \\\"Age\\\", \\\"root\\\".FIRSTNAME as \\\"First Name\\\", \\\"root\\\".LASTNAME as \\\"Last Name\\\" from personTable as \\\"root\\\"\" } ], \"result\": { \"columns\": [ \"Age\", \"First Name\", \"Last Name\" ], \"rows\": [ { \"values\": [ 23, \"Peter\", \"Smith\" ] }, { \"values\": [ 30, \"Leonid\", \"Shtivelman\" ] }, { \"values\": [ 25, \"Vignesh\", \"Manickavasagam\" ] }, { \"values\": [ 31, \"Andrew\", \"Ormerod\" ] }, { \"values\": [ 32, \"Pierre\", \"De Belen\" ] } ] } }"))
+                        .withBody("{}"))
+        );
+        wireMockRule.stubFor(post(urlEqualTo("/api/sql/v1/execution/execute/SAMPLE-123"))
+                .withRequestBody(equalTo("SELECT * FROM service.\"/personService\""))
+                .willReturn(aResponse()
+                        .withBody("{ \"builder\": { \"_type\": \"tdsBuilder\", \"columns\": [ { \"name\": \"Age\", \"type\": \"Integer\", \"relationalType\": \"INTEGER\" }, { \"name\": \"First Name\", \"type\": \"String\", \"relationalType\": \"VARCHAR(200)\" }, { \"name\": \"Last Name\", \"type\": \"String\", \"relationalType\": \"VARCHAR(200)\" } ] }, \"activities\": [ { \"_type\": \"relational\", \"sql\": \"select \\\"root\\\".AGE as \\\"Age\\\", \\\"root\\\".FIRSTNAME as \\\"First Name\\\", \\\"root\\\".LASTNAME as \\\"Last Name\\\" from personTable as \\\"root\\\"\" } ], \"result\": { \"columns\": [ \"Age\", \"First Name\", \"Last Name\" ], \"rows\": [ { \"values\": [ 23, \"Peter\", \"Smith\" ] }, { \"values\": [ 30, \"Leonid\", \"Shtivelman\" ] }, { \"values\": [ 25, \"Vignesh\", \"Manickavasagam\" ] }, { \"values\": [ 31, \"Andrew\", \"Ormerod\" ] }, { \"values\": [ 32, \"Pierre\", \"De Belen\" ] } ] } }")
+                )
         );
     }
 
     @Test
     public void testMetadata() throws SQLException
     {
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + localAddress.getPort() + "/postgres",
+        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
                 "dummy", "dummy");
              PreparedStatement statement = connection.prepareStatement("SELECT * FROM service.\"/personService\"");
-             ResultSet resultSet = statement.executeQuery();
+             ResultSet resultSet = statement.executeQuery()
         )
         {
             ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
@@ -75,16 +79,19 @@ public class PostgresServerTest
             Assert.assertEquals("Age", resultSetMetaData.getColumnName(1));
             Assert.assertEquals("First Name", resultSetMetaData.getColumnName(2));
             Assert.assertEquals("Last Name", resultSetMetaData.getColumnName(3));
+            Assert.assertEquals("int4", resultSetMetaData.getColumnTypeName(1));
+            Assert.assertEquals("varchar", resultSetMetaData.getColumnTypeName(2));
+            Assert.assertEquals("varchar", resultSetMetaData.getColumnTypeName(3));
         }
     }
 
     @Test
     public void testNumberOfRows() throws SQLException
     {
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + localAddress.getPort() + "/postgres",
+        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
                 "dummy", "dummy");
              PreparedStatement statement = connection.prepareStatement("SELECT * FROM service.\"/personService\"");
-             ResultSet resultSet = statement.executeQuery();
+             ResultSet resultSet = statement.executeQuery()
         )
         {
             int rows = 0;
@@ -97,7 +104,7 @@ public class PostgresServerTest
     }
 
     @AfterClass
-    public static void tearDown() throws Exception
+    public static void tearDown()
     {
         testPostgresServer.stopListening();
         testPostgresServer.shutDown();
