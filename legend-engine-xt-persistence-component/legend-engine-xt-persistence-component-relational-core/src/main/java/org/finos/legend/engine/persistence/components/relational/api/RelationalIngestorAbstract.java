@@ -56,6 +56,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -149,6 +150,11 @@ public abstract class RelationalIngestorAbstract
 
     public List<IngestorResult> ingestWithDataSplits(Connection connection, Datasets datasets, List<DataSplitRange> dataSplitRanges)
     {
+        // Provide the default dataSplit ranges if missing
+        if (dataSplitRanges == null || dataSplitRanges.isEmpty())
+        {
+            dataSplitRanges = Arrays.asList(DataSplitRange.of(1,1));
+        }
         return ingest(connection, datasets, dataSplitRanges);
     }
 

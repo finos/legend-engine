@@ -66,7 +66,8 @@ function meta::protocols::generation::java::conventions(purePackage:String[1], j
                 ->usesFloat(javaDouble(), javaDoubleBoxed(), {f:Float[1] | j_double($f)})
                 ->usesBoolean(javaBoolean(), javaBooleanBoxed(), {b:Boolean[1] | j_boolean($b)})
                 ->usesNumber(javaNumber(), javaNumber(), {n:Number[1] |  ^Literal(literal=$n->toString(), type=javaNumber())})
-                ->usesString(javaString(), javaString(), {s:String[1]| j_string($s)});
+                ->usesString(javaString(), javaString(), {s:String[1]| j_string($s)})
+                ->usesDecimal(javaBigDecimal(), javaBigDecimal(), {d:Decimal[1]| j_bigDecimal($d)});
 
   let conventions = $customConventionConfigFuncs
     ->map(x | $x->pathToElement()->cast(@PackageableFunction<{Conventions[1]->Conventions[1]}>))
