@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
@@ -31,7 +32,11 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_Property
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_PropertyView_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_Rectangle_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_RelationshipViewEnd_Impl;
+import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningFunctions;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 
 import java.util.Objects;
 
@@ -67,6 +72,22 @@ public class HelperDiagramBuilder
                 ._position(new Root_meta_pure_metamodel_diagram_Point_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::diagram::Point"))._x(classView.position.x)._y(classView.position.y));
     }
 
+
+
+    public static AbstractProperty<?> resolveProperty(PropertyOwner propertyOwner, String propertyName, SourceInformation sourceInformation, CompileContext compileContext)
+    {
+        if (propertyOwner instanceof  org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association)
+        {
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association association = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association) propertyOwner;
+            String edgePointPropertyName = MilestoningFunctions.getEdgePointPropertyName(propertyName);
+            Function<Type, Boolean> isTypeTemporalMilestoned = type -> Milestoning.temporalStereotypes(((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) type)._stereotypes()) != null;
+            Property property = association._properties().detect(p -> (propertyName.equals(p.getName())) || (isTypeTemporalMilestoned.apply(p._genericType()._rawType()) && edgePointPropertyName.equals(p.getName())));
+            Assert.assertTrue(property != null, () -> "Can't find property '" + propertyName + "' in association '" + (HelperModelBuilder.getElementFullPath(association, compileContext.pureModel.getExecutionSupport())) + "'", sourceInformation, EngineErrorType.COMPILATION);
+            return property;
+        }
+        return HelperModelBuilder.getAllOwnedAppliedProperty(propertyOwner, propertyName, sourceInformation, compileContext.pureModel.getExecutionSupport());
+    }
+
     public static Root_meta_pure_metamodel_diagram_PropertyView buildPropertyView(PropertyView propertyView, CompileContext context, Root_meta_pure_metamodel_diagram_Diagram diagram)
     {
         Root_meta_pure_metamodel_diagram_ClassView from = diagram._classViews().select(view -> view._id().equals(propertyView.sourceView)).getAny();
@@ -74,9 +95,10 @@ public class HelperDiagramBuilder
         Root_meta_pure_metamodel_diagram_ClassView to = diagram._classViews().select(view -> view._id().equals(propertyView.targetView)).getAny();
         Assert.assertTrue(to != null, () -> "Can't find target class view '" + propertyView.targetView + "'", propertyView.targetViewSourceInformation, EngineErrorType.COMPILATION);
         PropertyOwner propertyOwner = context.resolvePropertyOwner(propertyView.property._class, propertyView.property.sourceInformation);
+        AbstractProperty<?> property = resolveProperty(propertyOwner, propertyView.property.property, propertyView.property.sourceInformation, context);
         return new Root_meta_pure_metamodel_diagram_PropertyView_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::diagram::PropertyView"))
                 // Property Views can hold either class properties or qualified property views
-                ._property(HelperModelBuilder.getAllOwnedAppliedProperty(propertyOwner, propertyView.property.property, propertyView.property.sourceInformation, context.pureModel.getExecutionSupport()))
+                ._property(property)
                 ._from(new Root_meta_pure_metamodel_diagram_RelationshipViewEnd_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::diagram::RelationshipViewEnd"))._classView(from))
                 ._to(new Root_meta_pure_metamodel_diagram_RelationshipViewEnd_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::diagram::RelationshipViewEnd"))._classView(to))._path(ListIterate.collect(propertyView.line.points, point -> new Root_meta_pure_metamodel_diagram_Point_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::diagram::Point"))._x(point.x)._y(point.y)));
     }
