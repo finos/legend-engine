@@ -1,5 +1,12 @@
 {
     "name" : "pure_ide",
     "pattern" : "(meta::pure::ide)(::.*)?",
-    "dependencies" : ["platform", "core"]
+    "dependencies" : [
+        "platform",
+        "platform_functions",
+        "platform_functions_json",
+        "platform_dsl_mapping",
+        "platform_dsl_diagram",
+        "core"
+    ]
 }

@@ -72,7 +72,6 @@ import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.core_pure_corefunctions_metaExtension;
 import org.finos.legend.pure.generated.core_pure_model_modelUnit;
-import org.finos.legend.pure.generated.platform_pure_corefunctions_meta;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_BindingTransformer_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_functions_collection_Pair_Impl;
@@ -179,6 +178,10 @@ import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
+
+import static org.finos.legend.pure.generated.platform_dsl_mapping_functions_PropertyMappingsImplementation.Root_meta_pure_mapping_superMapping_PropertyMappingsImplementation_1__PropertyMappingsImplementation_$0_1$_;
+import static org.finos.legend.pure.generated.platform_pure_basics_meta_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_;
+import static org.finos.legend.pure.generated.platform_pure_basics_meta_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1__String_1_;
 
 public class HelperRelationalBuilder
 {
@@ -1504,7 +1507,7 @@ public class HelperRelationalBuilder
     {
         if (rsi._mainTableAlias() == null && rsi._superSetImplementationId() != null)
         {
-            PropertyMappingsImplementation superMapping = rsi.superMapping(context.pureModel.getExecutionSupport());
+            PropertyMappingsImplementation superMapping = Root_meta_pure_mapping_superMapping_PropertyMappingsImplementation_1__PropertyMappingsImplementation_$0_1$_(rsi, context.pureModel.getExecutionSupport());
             if (superMapping == null)
             {
                 throw new EngineException("Can't find the main table for class '" + classMapping.id + "'");
@@ -1574,7 +1577,7 @@ public class HelperRelationalBuilder
         Class<?> propertyReturnType = (Class<?>) propertyType;
         if (!bindingClasses.contains(propertyReturnType))
         {
-            throw new EngineException("Class: " + platform_pure_corefunctions_meta.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) propertyType, context.getExecutionSupport()) + " should be included in modelUnit for binding: " + propertyMapping.bindingTransformer.binding, propertyMapping.sourceInformation, EngineErrorType.COMPILATION);
+            throw new EngineException("Class: " + Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) propertyType, context.getExecutionSupport()) + " should be included in modelUnit for binding: " + propertyMapping.bindingTransformer.binding, propertyMapping.sourceInformation, EngineErrorType.COMPILATION);
         }
 
         Sets.mutable.withAll(bindingClasses).forEach(clazz -> addSemiStructuredSetImplementation(parent._parent(), clazz, binding._contentType(), (RootRelationalInstanceSetImplementation) parent, context));
@@ -1600,7 +1603,7 @@ public class HelperRelationalBuilder
 
     private static String generatedSemiStructuredMappingId(Class<?> clazz, String rootSetId, CompileContext context)
     {
-        String elementPath = platform_pure_corefunctions_meta.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1__String_1_(clazz, "_", context.getExecutionSupport());
+        String elementPath = Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1__String_1_(clazz, "_", context.getExecutionSupport());
         return "semi_structured_generated_" + rootSetId + "_" + elementPath;
     }
 

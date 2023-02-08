@@ -207,7 +207,7 @@ function meta::relational::validation::functions::getTables(r:RelationalOperatio
                 u:Union[1] | $u.queries->map(q|$q->getTables()),
                 tac:TableAliasColumn[1] | $tac.alias->getTables(),
                 a:Alias[1] | $a.relationalElement->getTables(),
-                t:Table[1] | if($t.isTemporaryTable(), | [], | [$t]),
+                t:Table[1] | if($t->isTemporaryTable(), | [], | [$t]),
                 u:UnaryOperation[1] | $u.nested->getTables(),
                 b:BinaryOperation[1] | $b.left->getTables()->concatenate($b.right->getTables()),
                 va:VariableArityOperation[1] | $va.args->map(e | $e->getTables()),

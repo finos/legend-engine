@@ -30,6 +30,12 @@ import java.util.Collections;
 public class MasteryCompilerExtension implements CompilerExtension
 {
     @Override
+    public CompilerExtension build()
+    {
+        return new MasteryCompilerExtension();
+    }
+
+    @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
         return Collections.singletonList(Processor.newProcessor(

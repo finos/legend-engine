@@ -26,48 +26,43 @@ import org.finos.legend.engine.plan.execution.result.builder.tds.TDSBuilder;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
-import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
-import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
-import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResultVisitor;
-import org.finos.legend.engine.plan.execution.stores.relational.result.SQLExecutionResult;
-import org.finos.legend.engine.plan.execution.stores.relational.result.TempTableStreamingResult;
-import org.finos.legend.engine.plan.execution.stores.relational.result.VoidRelationalResult;
+import org.finos.legend.engine.plan.execution.stores.relational.result.*;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.TDSColumn;
+import org.finos.legend.pure.generated.Root_meta_pure_mapping_Result;
 import org.finos.legend.pure.generated.Root_meta_pure_tds_TDSColumn_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_tds_TDSNull;
 import org.finos.legend.pure.generated.Root_meta_pure_tds_TDSNull_Impl;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Result;
 
 import java.io.ByteArrayOutputStream;
 import java.sql.ResultSet;
 
-public class ResultToPureResultVisitor implements RelationalResultVisitor<Result<Object>>
+public class ResultToPureResultVisitor implements RelationalResultVisitor<Root_meta_pure_mapping_Result<Object>>
 {
     @Override
-    public Result<Object> visit(ErrorResult errorResult)
+    public Root_meta_pure_mapping_Result<Object> visit(ErrorResult errorResult)
     {
         throw new RuntimeException("Not supported!");
     }
 
     @Override
-    public Result<Object> visit(VoidRelationalResult voidRelationalResult)
+    public Root_meta_pure_mapping_Result<Object> visit(VoidRelationalResult voidRelationalResult)
     {
         throw new RuntimeException("Not supported!");
     }
 
     @Override
-    public Result<Object> visit(RealizedRelationalResult realizedRelationalResult)
+    public Root_meta_pure_mapping_Result<Object> visit(RealizedRelationalResult realizedRelationalResult)
     {
         throw new RuntimeException("Not supported!");
     }
 
     @Override
-    public Result<Object> visit(RelationalResult relationalResult)
+    public Root_meta_pure_mapping_Result<Object> visit(RelationalResult relationalResult)
     {
         // Build Pure Result
         if (relationalResult.builder instanceof TDSBuilder)
         {
-            org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Result<Object> res = new org.finos.legend.pure.generated.Root_meta_pure_mapping_Result_Impl<Object>("Res");
+            Root_meta_pure_mapping_Result<Object> res = new org.finos.legend.pure.generated.Root_meta_pure_mapping_Result_Impl<Object>("Res");
             try
             {
                 org.finos.legend.pure.generated.Root_meta_pure_tds_TabularDataSet set = new org.finos.legend.pure.generated.Root_meta_pure_tds_TabularDataSet_Impl("TDS");
@@ -108,15 +103,15 @@ public class ResultToPureResultVisitor implements RelationalResultVisitor<Result
     }
 
     @Override
-    public Result<Object> visit(StreamingObjectResult tStreamingObjectResult)
+    public Root_meta_pure_mapping_Result<Object> visit(StreamingObjectResult tStreamingObjectResult)
     {
         throw new RuntimeException("Not supported!");
     }
 
     @Override
-    public Result<Object> visit(JsonStreamingResult jsonStreamingResult)
+    public Root_meta_pure_mapping_Result<Object> visit(JsonStreamingResult jsonStreamingResult)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Result<Object> res = new org.finos.legend.pure.generated.Root_meta_pure_mapping_Result_Impl<Object>("Res");
+        Root_meta_pure_mapping_Result<Object> res = new org.finos.legend.pure.generated.Root_meta_pure_mapping_Result_Impl<Object>("Res");
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(1024))
         {
             JsonFactory factory = new JsonFactory();
@@ -139,33 +134,33 @@ public class ResultToPureResultVisitor implements RelationalResultVisitor<Result
     }
 
     @Override
-    public Result<Object> visit(TempTableStreamingResult tempTableStreamingResult)
+    public Root_meta_pure_mapping_Result<Object> visit(TempTableStreamingResult tempTableStreamingResult)
     {
         throw new RuntimeException("Not supported!");
     }
 
     @Override
-    public Result<Object> visit(ConstantResult constantResult)
+    public Root_meta_pure_mapping_Result<Object> visit(ConstantResult constantResult)
     {
         throw new RuntimeException("Not supported!");
     }
 
     @Override
-    public Result<Object> visit(MultiResult multiResult)
+    public Root_meta_pure_mapping_Result<Object> visit(MultiResult multiResult)
     {
         throw new RuntimeException("Not supported!");
     }
 
     @Override
-    public Result<Object> visit(SQLExecutionResult sqlExecutionResult)
+    public Root_meta_pure_mapping_Result<Object> visit(SQLExecutionResult sqlExecutionResult)
     {
         return null;
     }
 
     @Override
-    public Result<Object> visit(StreamingResult streamingResult)
+    public Root_meta_pure_mapping_Result<Object> visit(StreamingResult streamingResult)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Result<Object> res = new org.finos.legend.pure.generated.Root_meta_pure_mapping_Result_Impl<Object>("Res");
+        Root_meta_pure_mapping_Result<Object> res = new org.finos.legend.pure.generated.Root_meta_pure_mapping_Result_Impl<Object>("Res");
         String output = streamingResult.flush(streamingResult.getSerializer(SerializationFormat.DEFAULT));
         res._valuesAdd(output);
         return res;

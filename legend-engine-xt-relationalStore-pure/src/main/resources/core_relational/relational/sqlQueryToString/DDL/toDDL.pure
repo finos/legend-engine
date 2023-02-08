@@ -100,9 +100,9 @@ function meta::relational::functions::database::loadCsvDataToDbTable(csvData:Lis
                                 | let schemaName = $tab.p.values->at(0).values->at(0);
                                   let tableName = $tab.p.values->at(1).values->at(0);
                                   let columnNames = $tab.p.values->at(2).values;
-                                  let schema = $db.schema($schemaName);
+                                  let schema = $db->schema($schemaName);
                                   assertNotEmpty($schema, | 'Schema "' + $schemaName + '" not found in database "' + $db->elementToPath() + '"');
-                                  let table = $schema->toOne().table($tableName);
+                                  let table = $schema->toOne()->table($tableName);
                                   assertNotEmpty($table,| 'Table "' + $tableName + '" not found in Schema "' + $schemaName + '" in Database "' + $db->elementToPath() + '"');
                                   let pTable = $tablePostProcessor->eval($table)->toOne();
                                   let columns = $columnNames->map(cName | let c = $pTable->toOne().columns->cast(@Column)->filter(tc| $tc.name->equalIgnoreCase($cName->trim()))->first();

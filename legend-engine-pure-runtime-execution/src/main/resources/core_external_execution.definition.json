@@ -1,5 +1,10 @@
 {
-    "name" : "core_external_execution",
-    "pattern" : "(meta::legend)(::.*)?",
-    "dependencies" : ["platform", "core", "core_java_platform_binding"]
+  "name": "core_external_execution",
+  "pattern": "(meta::legend)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_dsl_mapping",
+    "core",
+    "core_java_platform_binding"
+  ]
 }

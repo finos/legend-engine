@@ -178,12 +178,12 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
                                   let newFunc = if ($fe.func->instanceOf(Property),
                                                    |let setImpl = $fe.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->at(0)->cast(@PureInstanceSetImplementation);
                                                     let pm = if ($fe.func->functionReturnType().rawType->toOne()->instanceOf(DataType),
-                                                                 |$setImpl.propertyMappingsByPropertyName($fe.func.name->toOne())->cast(@PurePropertyMapping)->toOne();,
-                                                                 |$setImpl.propertyMappingByPropertyNameAndTargetId($fe.func.name->toOne(), $e.sets.id->toOne())->cast(@PurePropertyMapping)->toOne()
+                                                                 |$setImpl->_propertyMappingsByPropertyName($fe.func.name->toOne())->cast(@PurePropertyMapping)->toOne();,
+                                                                 |$setImpl->propertyMappingByPropertyNameAndTargetId($fe.func.name->toOne(), $e.sets.id->toOne())->cast(@PurePropertyMapping)->toOne()
                                                              );
                                                     
                                                     let srcValueSpecification = $results.newExpression->at(0)->cast(@ValueSpecification);
-                                                    let modelTransformLambda = $pm.transform->manageEnumeration([]);                                                   
+                                                    let modelTransformLambda = $pm.transform->manageEnumeration([]);
                                                     let modelTransformLambdaEvalExpression = createEvalFunctionExpression($modelTransformLambda, $srcValueSpecification, $fe);
                                                     let modelTransformerLambda = if ($pm.transformer->isEmpty(),| [],| $pm.transformer->toOne()->manageEnumerationMapping('var' + toString($mappings->indexOf($mapping) + 1)));
                                                     if ($modelTransformerLambda->isEmpty(),
@@ -235,9 +235,9 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
                                                                                                let functionParam = if($f->genericType().typeArguments.rawType->cast(@FunctionType).parameters->isNotEmpty(),
                                                                                                                   |let param = $f->genericType().typeArguments.rawType->cast(@FunctionType).parameters->at(0)->cast(@VariableExpression);
                                                                                                                     pair($param.name, $param.genericType);,
-                                                                                                                  | []); 
-                                                                                               let intermediateRes = $f.expressionSequence->evaluateAndDeactivate()->map(vs|$vs->inlineQualifiedProperties(^Map<VariableExpression, ValueSpecification>(), $f->openVariableValues(),$functionParam ,$extensions));                                                                                              
-                                                                                               let results=  $intermediateRes->map(ir| $ir->reprocessVar($functionParam))->cast(@ValueSpecification)->map(vs|$vs->reprocess($e, $mapping, $mappings, [], $extensions)); 
+                                                                                                                  | []);
+                                                                                               let intermediateRes = $f.expressionSequence->evaluateAndDeactivate()->map(vs|$vs->inlineQualifiedProperties(^Map<VariableExpression, ValueSpecification>(), $f->openVariableValues(),$functionParam ,$extensions));
+                                                                                               let results=  $intermediateRes->map(ir| $ir->reprocessVar($functionParam))->cast(@ValueSpecification)->map(vs|$vs->reprocess($e, $mapping, $mappings, [], $extensions));
                                                                                                let varMap = if($results.vars->isEmpty(),|[],|newMap($results.vars->map(r|$r->keyValues())->reprocessVars($functionParam)));
                                                                                                ^$f(
                                                                                                      classifierGenericType=$f->buildLambdaType($varMap, $r),
@@ -321,7 +321,7 @@ function meta::pure::mapping::modelToModel::chain::reprocessVar(v:Any[1], oldVar
       v:VariableExpression[1]| if(($oldVar->isNotEmpty() && $v.genericType.rawType == $oldVar->toOne().second.rawType) && $v.name=='this' ,| ^$v(name=$oldVar->toOne().first);, |$v);,
       srv: StoreMappingRoutedValueSpecification[1]|  ^$srv(value= $srv.value->reprocessVar($oldVar)->cast(@ValueSpecification));,
       f:FunctionRoutedValueSpecification[1]|^$f(value=$f.value->reprocessVar($oldVar)->cast(@ValueSpecification));,
-      l:LambdaFunction<Any>[1]|^$l(expressionSequence=$l.expressionSequence->map(es| $es->reprocessVar($oldVar))->cast(@ValueSpecification));, 
+      l:LambdaFunction<Any>[1]|^$l(expressionSequence=$l.expressionSequence->map(es| $es->reprocessVar($oldVar))->cast(@ValueSpecification));,
       iv:InstanceValue[1]| ^$iv(values=$iv.values->map(i|$i->reprocessVar($oldVar))),
       a:Any[1]|$a;
 
@@ -333,7 +333,7 @@ function meta::pure::mapping::modelToModel::chain::reprocessVar(v:Any[1], oldVar
 function meta::pure::mapping::modelToModel::chain::reprocessVars(foundVars:Pair<String, GenericType>[*], oldVar:Pair<String, GenericType>[0..1]):Pair<String, GenericType>[*]
 {
     if($oldVar->isNotEmpty(),
-      |$foundVars->map(v| 
+      |$foundVars->map(v|
               if(['this', $oldVar->toOne().first]->contains($v.first),
                 |^$v(first= $oldVar->toOne().first),
                 |$v)
