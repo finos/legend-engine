@@ -21,7 +21,6 @@
 
 package org.finos.legend.engine.postgres;
 
-
 import java.nio.charset.StandardCharsets;
 import javax.annotation.Nullable;
 
