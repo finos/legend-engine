@@ -15,29 +15,18 @@
 package org.finos.legend.pure.code.core.elasticsearch.v7;
 
 import junit.framework.TestSuite;
-import org.finos.legend.pure.code.core.compiled.test.PureTestBuilderHelper;
-import org.finos.legend.pure.generated.platform_pure_corefunctions_meta;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
+import org.finos.legend.pure.m3.execution.test.PureTestBuilder;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
-import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
-
-import java.util.regex.Pattern;
+import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
 
 public class Test_Pure_ElasticSearch_Specification_Metamodel
 {
     public static TestSuite suite()
     {
-        CompiledExecutionSupport executionSupport = PureTestBuilderHelper.getClassLoaderExecutionSupport();
+        CompiledExecutionSupport executionSupport = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
         TestSuite suite = new TestSuite();
-        Pattern allowedPackagesPattern = GenericCodeRepository.build("core_elasticsearch_specification_metamodel.definition.json").getAllowedPackagesPattern();
-        TestCollection testCollection = TestCollection.collectTests(
-                "meta::external::store::elasticsearch",
-                executionSupport.getProcessorSupport(),
-                ci -> allowedPackagesPattern.matcher(platform_pure_corefunctions_meta.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_((PackageableElement) ci, executionSupport)).matches()
-                            && PureTestBuilderHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())
-        );
-        suite.addTest(PureTestBuilderHelper.buildSuite(testCollection, executionSupport));
+        suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::external::store::elasticsearch::specification::metamodel", executionSupport.getProcessorSupport(), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
         return suite;
     }
 }
