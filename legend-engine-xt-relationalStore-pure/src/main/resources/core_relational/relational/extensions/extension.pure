@@ -94,7 +94,7 @@ function meta::relational::extension::relationalExtension(type:String[1]) : meta
                                                                                    let pathInfoPairs = if ($r.resultType->instanceOf(TDSResultType),
                                                                                                             | let tdsColumnsWithEnumProjected = $r.resultType->cast(@TDSResultType).tdsColumns->filter(col|$col.enumMappingId->isNotEmpty());
                                                                                                               if ($tdsColumnsWithEnumProjected->isNotEmpty(),
-                                                                                                                 | let relationalPropertyMappingsWithTransformer = $mapping.classMappings()
+                                                                                                                 | let relationalPropertyMappingsWithTransformer = $mapping->classMappings()
                                                                                                                                                                        ->filter(cm|$cm->instanceOf(PropertyMappingsImplementation))
                                                                                                                                                                        ->cast(@PropertyMappingsImplementation).propertyMappings
                                                                                                                                                                        ->filter(pm|$pm->instanceOf(RelationalPropertyMapping)
@@ -212,8 +212,8 @@ function meta::relational::extension::relationalExtension(type:String[1]) : meta
 function meta::pure::router::clustering::getResolvedStore(rr: meta::relational::mapping::RootRelationalInstanceSetImplementation[*], mapping: Mapping[1]):Store[*]
 {
    $rr->map(r | let mainTableAlias = $r.mainTableAlias;
-                if ($mainTableAlias.database->isEmpty(), | $r.mainTable.schema.database, | $mainTableAlias.database->toOne());
-   )->map(s|$mapping.resolveStore($s))->removeDuplicates();
+                if ($mainTableAlias.database->isEmpty(), | $r->mainTable().schema.database, | $mainTableAlias.database->toOne());
+   )->map(s|$mapping->resolveStore($s))->removeDuplicates();
 }
 
 function meta::pure::executionPlan::execution::flattenList(value:Any[1]):Any[*]

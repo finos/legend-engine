@@ -285,7 +285,7 @@ function meta::relational::functions::sqlQueryToString::default::processJoinTree
    let tableAlias = $joinTreeNode->match(
                                     [
                                        r:RootJoinTreeNode[1] | $r.alias,
-                                       j:JoinTreeNode[1] | $j.join.otherTableFromAlias($parent->toOne());
+                                       j:JoinTreeNode[1] | $j.join->otherTableFromAlias($parent->toOne());
                                     ]
                                     );
    let val = $joinTreeNode->match(
@@ -305,8 +305,8 @@ function meta::relational::functions::sqlQueryToString::default::processJoinTree
                                     ]
                                     );
    let children = if($joinOrder->isNotEmpty(),
-                     |$joinTreeNode.children()->sortBy({node | if($node.joinType->isEmpty(), |2, |$joinOrder->indexOf($node.joinType->toOne()))}),
-                     |$joinTreeNode.children());
+                     |$joinTreeNode->children()->sortBy({node | if($node.joinType->isEmpty(), |2, |$joinOrder->indexOf($node.joinType->toOne()))}),
+                     |$joinTreeNode->children());
    $children->map(child | processJoinTreeNode($child, $tableAlias->cast(@TableAlias), $dbConfig, $format, $joinOrder, $extensions))->joinStrings($val, '', '');
 }
 

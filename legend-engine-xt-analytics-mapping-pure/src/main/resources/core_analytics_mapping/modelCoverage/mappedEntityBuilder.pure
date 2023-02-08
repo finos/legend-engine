@@ -338,7 +338,7 @@ function <<access.private>> meta::analytics::mapping::modelCoverage::buildInheri
       o:OperationSetImplementation[1] |
          let properties = $mappings
             ->filter(c | $c->instanceOf(InstanceSetImplementation))
-            ->cast(@InstanceSetImplementation).allPropertyMappings();
+            ->cast(@InstanceSetImplementation)->map(x|$x->allPropertyMappings());
 
          if ($isRootEntity,
              | $properties->groupBy(p | $p.property)->keyValues()->sort({x,y|$x.first.name->toOne()->compare($y.first.name->toOne())})->map(kv |
@@ -357,7 +357,7 @@ function <<access.private>> meta::analytics::mapping::modelCoverage::buildInheri
                      }, []->cast(@PropertyMapping))
                   ])),
              | $properties->removeDuplicatesBy(pm | $pm.property));,
-      i:InstanceSetImplementation[1] | $i.allPropertyMappings()
+      i:InstanceSetImplementation[1] | $i->allPropertyMappings()
    ]);
 
    let inheritanceTypes = $mapping->match([

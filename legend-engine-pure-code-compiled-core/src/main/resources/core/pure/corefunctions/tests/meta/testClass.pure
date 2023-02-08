@@ -15,34 +15,4 @@
 import meta::pure::profiles::*;
 import meta::pure::functions::tests::model::*;
 
-function <<test.Test>>  meta::pure::functions::meta::tests::class::testClassPrimitive():Boolean[1]
-{
-    assertEmpty(1->class());
-    assertEmpty('the quick brown fox jumps over the lazy dog'->class());
-    assertEmpty(true->class());
-}
 
-function <<test.Test>>  meta::pure::functions::meta::tests::class::testClassInstance():Boolean[1]
-{
-    assertIs(Person, ^Person(firstName='Pierre', lastName='Doe')->class());
-}
-
-function <<test.Test>>  meta::pure::functions::meta::tests::class::testClassFromClass():Boolean[1]
-{
-    assertIs(Class, Person->class());
-}
-
-function <<test.Test>>  meta::pure::functions::meta::tests::class::testClassFromEnum():Boolean[1]
-{
-    assertIs(Enumeration, GeographicEntityType->class());
-}
-
-function <<test.Test>>  meta::pure::functions::meta::tests::class::testClassFromEnumVal():Boolean[1]
-{
-    assertEmpty(GeographicEntityType.CITY->class());
-}
-
-function <<test.Test>>  meta::pure::functions::meta::tests::class::testClassWithGenerics():Boolean[1]
-{
-    assertIs(List, ^List<String>(values=['a', 'b', 'c'])->class());
-}

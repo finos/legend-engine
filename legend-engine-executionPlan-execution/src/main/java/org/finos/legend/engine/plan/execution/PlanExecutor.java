@@ -27,11 +27,7 @@ import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
-import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
-import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
-import org.finos.legend.engine.plan.execution.stores.StoreExecutorBuilder;
-import org.finos.legend.engine.plan.execution.stores.StoreExecutorConfiguration;
-import org.finos.legend.engine.plan.execution.stores.StoreType;
+import org.finos.legend.engine.plan.execution.stores.*;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
@@ -406,7 +402,7 @@ public class PlanExecutor
 
     public static PlanExecutor newPlanExecutorWithAvailableStoreExecutors(boolean isJavaCompilationAllowed, long graphFetchBatchMemoryLimit)
     {
-        return newPlanExecutor(isJavaCompilationAllowed, IterableIterate.collect(ServiceLoader.load(StoreExecutorBuilder.class), StoreExecutorBuilder::build, Lists.mutable.empty()), graphFetchBatchMemoryLimit);
+        return newPlanExecutor(isJavaCompilationAllowed, IterableIterate.collect(StoreExecutorBuilderLoader.extensions(), StoreExecutorBuilder::build, Lists.mutable.empty()), graphFetchBatchMemoryLimit);
     }
 
     public static PlanExecutor newPlanExecutorWithAvailableStoreExecutors(boolean isJavaCompilationAllowed)
@@ -421,13 +417,12 @@ public class PlanExecutor
 
     public static List<StoreExecutorBuilder> loadStoreExecutorBuilders()
     {
-        return Iterate.addAllTo(ServiceLoader.load(StoreExecutorBuilder.class), Lists.mutable.empty());
+        return Iterate.addAllTo(StoreExecutorBuilderLoader.extensions(), Lists.mutable.empty());
     }
 
     public static PlanExecutor newPlanExecutorWithConfigurations(StoreExecutorConfiguration... storeExecutorConfigurations)
     {
-
-        MutableList<StoreExecutorBuilder> storeExecutorBuilders = Iterate.addAllTo(ServiceLoader.load(StoreExecutorBuilder.class), org.eclipse.collections.impl.factory.Lists.mutable.empty());
+        MutableList<StoreExecutorBuilder> storeExecutorBuilders = Iterate.addAllTo(StoreExecutorBuilderLoader.extensions(), org.eclipse.collections.impl.factory.Lists.mutable.empty());
         ImmutableListMultimap<StoreType, StoreExecutorConfiguration> configurationsByType = Lists.immutable.with(storeExecutorConfigurations).groupBy(storeExecutorConfiguration -> storeExecutorConfiguration.getStoreType());
         ImmutableListMultimap<StoreType, StoreExecutorBuilder> buildersByType = Lists.immutable.withAll(storeExecutorBuilders).groupBy(storeExecutorBuilder -> storeExecutorBuilder.getStoreType());
 

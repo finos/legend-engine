@@ -20,34 +20,43 @@ import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class PureProtocolExtensionLoader
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final AtomicReference<List<PureProtocolExtension>> INSTANCE = new AtomicReference<>();
 
     public static void logExtensionList()
     {
         if (LOGGER.isDebugEnabled())
         {
-            LOGGER.debug(LazyIterate.collect(extensions(), extension -> "- " + extension.getClass().getSimpleName()).makeString("Pure protocol extension(s) loaded:\n", "\n", ""));
+            LOGGER.debug(LazyIterate.collect(extensions(), extension -> "- " + extension.getClass().getSimpleName()).makeString("PureProtocolExtension loaded:\n", "\n", ""));
         }
     }
 
     public static List<PureProtocolExtension> extensions()
     {
-        List<PureProtocolExtension> extensions = Lists.mutable.empty();
-        for (PureProtocolExtension extension : ServiceLoader.load(PureProtocolExtension.class))
+        return INSTANCE.updateAndGet(existing ->
         {
-            try
+            if (existing == null)
             {
-                extensions.add(extension);
+                List<PureProtocolExtension> extensions = Lists.mutable.empty();
+                for (PureProtocolExtension extension : ServiceLoader.load(PureProtocolExtension.class))
+                {
+                    try
+                    {
+                        extensions.add(extension);
+                    }
+                    catch (Throwable throwable)
+                    {
+                        LOGGER.error("Failed to load PureProtocolExtension '" + extension.getClass().getSimpleName() + "'");
+                        // Needs to be silent ... during the build process
+                    }
+                }
+                return extensions;
             }
-            catch (Throwable throwable)
-            {
-                LOGGER.error("Failed to load PURE protocol extension '" + extension.getClass().getSimpleName() + "'");
-                // Needs to be silent ... during the build process
-            }
-        }
-        return extensions;
+            return existing;
+        });
     }
 }

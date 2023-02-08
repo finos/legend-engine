@@ -75,10 +75,7 @@ import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
 import org.finos.legend.engine.shared.javaCompiler.StringJavaSource;
 import org.finos.legend.engine.test.runner.shared.TestResult;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_SingleExecutionTest;
-import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
-import org.finos.legend.pure.generated.core_relational_relational_helperFunctions_helperFunctions;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.slf4j.Logger;
@@ -342,7 +339,7 @@ public class ServiceTestRunner
                     );
                     Result result = this.executor.execute(executionPlan, testExecutionState, null, null);
 
-                    org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Result<Object> pureResult = result.accept(new ResultToPureResultVisitor());
+                    Root_meta_pure_mapping_Result<Object> pureResult = result.accept(new ResultToPureResultVisitor());
 
                     // Execute Assert
                     String testName = ServiceTestGenerationHelper.getAssertMethodName(tc.getTwo());
@@ -350,7 +347,7 @@ public class ServiceTestRunner
                     TestResult testResult;
                     try
                     {
-                        Boolean assertResult = (Boolean) assertsClass.getMethod(testName, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Result.class, ExecutionSupport.class).invoke(null, pureResult, pureModel.getExecutionSupport());
+                        Boolean assertResult = (Boolean) assertsClass.getMethod(testName, Root_meta_pure_mapping_Result.class, ExecutionSupport.class).invoke(null, pureResult, pureModel.getExecutionSupport());
                         testResult = assertResult ? TestResult.SUCCESS : TestResult.FAILURE;
                         scope.span().setTag(testName + "_assert", assertResult);
                     }
@@ -409,7 +406,7 @@ public class ServiceTestRunner
     }
 
 
-    private static String resultToString(org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Result<Object> pureResult, ExecutionSupport executionSupport)
+    private static String resultToString(Root_meta_pure_mapping_Result<Object> pureResult, ExecutionSupport executionSupport)
     {
         Object value = pureResult._values().getAny();
         if (value instanceof org.finos.legend.pure.generated.Root_meta_pure_tds_TabularDataSet)

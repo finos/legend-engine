@@ -18,6 +18,7 @@ import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
@@ -32,6 +33,11 @@ import java.util.Objects;
 
 public class AuthenticationCompilerExtension implements IAuthenticationCompilerExtension
 {
+    @Override
+    public CompilerExtension build()
+    {
+        return new AuthenticationCompilerExtension();
+    }
 
     @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()

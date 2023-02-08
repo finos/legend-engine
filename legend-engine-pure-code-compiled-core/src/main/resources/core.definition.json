@@ -1,5 +1,14 @@
 {
-    "name" : "core",
-    "pattern" : "(meta::json|meta::protocols|meta::external::shared::format|meta::pure|meta::alloy|meta::external::format::yaml|meta::legend)(::.*)?",
-    "dependencies" : ["platform"]
+  "name": "core",
+  "pattern": "(meta::json|meta::protocols|meta::external::shared::format|meta::pure|meta::alloy|meta::external::format::yaml|meta::legend)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_functions",
+    "platform_dsl_mapping",
+    "platform_dsl_path",
+    "platform_dsl_graph",
+    "platform_dsl_diagram",
+    "platform_functions_json",
+    "platform_store_relational"
+  ]
 }
