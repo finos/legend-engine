@@ -16,11 +16,11 @@ function <<meta::pure::profiles::test.Test>> meta::pure::executionPlan::tests::t
 {  
    let tree = ^meta::pure::graphFetch::GraphFetchTree();
    let routedTree = ^meta::pure::graphFetch::routing::RoutedGraphFetchTree();
-   let clusteredTree = ^meta::pure::graphFetch::routing::ClusteredGraphFetchTree(openVars = []->cast(@Pair<String, List<Any>>)->newMap(), s = meta::pure::mapping::modelToModel::contract::modelStoreContract(), tree = $routedTree, store = ^meta::pure::store::Store());
+   let clusteredTree = ^meta::pure::graphFetch::routing::StoreMappingClusteredGraphFetchTree(openVars = []->cast(@Pair<String, List<Any>>)->newMap(), s = meta::pure::mapping::modelToModel::contract::modelStoreContract(), tree = $routedTree, store = ^meta::pure::store::Store());
 
    let voidResultType = ^meta::pure::executionPlan::VoidResultType(type = Any);
    let localGraphNode = ^meta::pure::graphFetch::executionPlan::LocalGraphFetchExecutionNode(graphFetchTree = $routedTree, resultType = $voidResultType, nodeIndex = 0);
-   let globalGraphNode =  ^meta::pure::graphFetch::executionPlan::GlobalGraphFetchExecutionNode(store = ^meta::pure::store::Store(), localGraphFetchExecutionNode = $localGraphNode, graphFetchTree = $clusteredTree, resultType = $voidResultType);
+   let globalGraphNode =  ^meta::pure::graphFetch::executionPlan::StoreMappingGlobalGraphFetchExecutionNode(store = ^meta::pure::store::Store(), localGraphFetchExecutionNode = $localGraphNode, graphFetchTree = $clusteredTree, resultType = $voidResultType);
 
    assertEquals(2, $globalGraphNode->meta::pure::executionPlan::allNodes([])->size());
 }

@@ -14,38 +14,10 @@
 
 package org.finos.legend.engine.persistence.components.relational.snowflake.optmizer;
 
-import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
-import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops.statements.AlterTable;
-import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops.statements.ShowCommand;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.expresssions.table.Table;
-
-public class UpperCaseOptimizer extends org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer
+public class UpperCaseOptimizer extends StringCaseOptimizer
 {
-    @Override
-    public PhysicalPlanNode optimize(PhysicalPlanNode component)
+    public UpperCaseOptimizer()
     {
-        component = super.optimize(component);
-        if (component instanceof AlterTable)
-        {
-            AlterTable alterTable = (AlterTable) component;
-            if (alterTable.getTable() != null)
-            {
-                Table table = alterTable.getTable();
-                table.setDb(table.getDb() != null ? table.getDb().toUpperCase() : table.getDb());
-                table.setSchema(table.getSchema() != null ? table.getSchema().toUpperCase() : table.getSchema());
-                table.setTable(table.getTable() != null ? table.getTable().toUpperCase() : table.getTable());
-                table.setAlias(table.getAlias() != null ? table.getAlias().toUpperCase() : table.getAlias());
-            }
-            return alterTable;
-        }
-        else if (component instanceof ShowCommand)
-        {
-            ShowCommand command = (ShowCommand) component;
-            command.setSchemaName(command.getSchemaName() != null ? command.getSchemaName().toUpperCase() : command.getSchemaName());
-            command.setDatabaseName(command.getDatabaseName() != null ? command.getDatabaseName().toUpperCase() : command.getDatabaseName());
-            command.setTableName(command.getTableName() != null ? command.getTableName().toUpperCase() : command.getTableName());
-            return command;
-        }
-        return component;
+        super(String::toUpperCase);
     }
 }

@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>3.30.2-SNAPSHOT</version>
+        <version>4.0.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -37,9 +37,9 @@
                         <configuration>
                             <!-- The dependency plugin analyzer raises these as false positives -->
                             <ignoredUsedUndeclaredDependencies>
-                                <dependency>org.finos.legend.pure:legend-pure-runtime-java-extension-dsl-mapping
-                                </dependency>
-                                <dependency>org.finos.legend.pure:legend-pure-m2-dsl-mapping</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-runtime-java-extension-dsl-mapping</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-m2-dsl-mapping-grammar</dependency>
+<!--                                <dependency>org.finos.legend.pure:legend-pure-m2-dsl-mapping-java</dependency>-->
                             </ignoredUsedUndeclaredDependencies>
                         </configuration>
                     </execution>
@@ -86,7 +86,6 @@
                                         <include>org.slf4j:slf4j-ext:${slf4j.version}</include>
                                         <include>org.finos.legend.pure:legend-pure-m4</include>
                                     </includes>
-
                                 </bannedDependencies>
                             </rules>
                         </configuration>
@@ -180,6 +179,16 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-javaPlatformBinding-pure</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-mapping-pure</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-dsl-mapping-java</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

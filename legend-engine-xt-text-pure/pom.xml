@@ -3,7 +3,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>3.30.2-SNAPSHOT</version>
+        <version>4.0.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -15,12 +15,11 @@
         <plugins>
             <plugin>
                 <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-maven-compilation-par</artifactId>
+                <artifactId>legend-pure-maven-generation-par</artifactId>
                 <configuration>
                     <sourceDirectory>${project.basedir}/src/main/resources</sourceDirectory>
                     <purePlatformVersion>${legend.pure.version}</purePlatformVersion>
                     <repositories>
-                        <repository>platform</repository>
                         <repository>core_text</repository>
                     </repositories>
                     <extraRepositories>
@@ -35,17 +34,10 @@
                         </goals>
                     </execution>
                 </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-code-compiled-platform-par</artifactId>
-                        <version>${legend.pure.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-maven-java-compiled</artifactId>
+                <artifactId>legend-pure-maven-generation-java</artifactId>
                 <executions>
                     <execution>
                         <phase>compile</phase>
@@ -63,13 +55,6 @@
                         </configuration>
                     </execution>
                 </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-code-compiled-platform-par</artifactId>
-                        <version>${legend.pure.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
         </plugins>
     </build>
@@ -88,11 +73,11 @@
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
         </dependency>
+        <!-- PURE -->
 
         <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-code-compiled-platform-java</artifactId>
-            <scope>runtime</scope>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-java</artifactId>
         </dependency>
 
         <dependency>
@@ -103,20 +88,6 @@
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
         </dependency>
-        <!-- PURE -->
-
-        <!-- TEST -->
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-code-compiled-tests</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <!-- TEST -->
 
     </dependencies>
 </project>

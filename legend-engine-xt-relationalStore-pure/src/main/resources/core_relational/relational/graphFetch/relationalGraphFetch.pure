@@ -83,8 +83,9 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::crossTe
    'cross_temp_table_node_' + toString($index)
 }
 
-function meta::relational::graphFetch::executionPlan::planRootGraphFetchExecutionRelational(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], clusteredTree: ClusteredGraphFetchTree[1], orderedPaths: String[*], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: Extension[*], debug: DebugContext[1]): LocalGraphFetchExecutionNode[1]
+function meta::relational::graphFetch::executionPlan::planRootGraphFetchExecutionRelational(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], clusteredTree: StoreMappingClusteredGraphFetchTree[1], orderedPaths: String[*], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: Extension[*], debug: DebugContext[1]): LocalGraphFetchExecutionNode[1]
 {
+   print(if($debug.debug,|$debug.space+'>Relational root graphFetch plan generation:\n',|''));
    let fe           = $sq.fe->evaluateAndDeactivate();
    let lhsFe        = $fe.parametersValues->evaluateAndDeactivate()->at(0)->byPassRouterInfo()->cast(@FunctionExpression);
    let rootTree     = $clusteredTree->byPassClusteringInfo()->cast(@RoutedRootGraphFetchTree<Any>);
@@ -102,10 +103,12 @@ function meta::relational::graphFetch::executionPlan::planRootGraphFetchExecutio
    $setImpls->map(x | $x->assertConditionsOnSetImpl($simplePrimitiveProperties));
 
    /* Generate SQL Query */
+   print(if($debug.debug,|$debug.space+'   >Process left expression (with properties - '+$simplePrimitiveProperties->map(p|$p.name)->removeDuplicates()->joinStrings('[',', ',']')+'): '+$lhsFe->meta::pure::router::printer::asString()+'\n',|''));
    let pureToSqlState      = createPureToSqlState($simplePrimitiveProperties, $sq.inScopeVars, $mapping, $exeCtx);
-   let selectWithCursor    = $lhsFe->toSelectWithCursor($mapping, $sq.inScopeVars, $debug, $pureToSqlState, $extensions);
+   let selectWithCursor    = $lhsFe->toSelectWithCursor($mapping, $sq.inScopeVars, $debug->indent(2), $pureToSqlState, $extensions);
    let postProcessorResult = $selectWithCursor.select->toOne()->cast(@SelectSQLQuery)->postProcessSQLQuery($store, $ext, $mapping, $oneRuntime, $exeCtx, $extensions);
    let postProcessedQuery  = $postProcessorResult.query->cast(@SelectSQLQuery);
+   print(if($debug.debug,|$debug.space+'   >End process left expression: '+$postProcessedQuery->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.H2, $extensions)+'\n',|''));
 
    /* Create execution node */
    let sqlNode       = $postProcessedQuery->buildSQLExecutionNode($dbConnection, $extensions);
@@ -129,6 +132,8 @@ function meta::relational::graphFetch::executionPlan::planRootGraphFetchExecutio
 
 function <<access.private>> meta::relational::graphFetch::executionPlan::planGraphFetchExecutionPrimitiveChild(currentTree: RoutedPropertyGraphFetchTree[1], parentTree: GraphFetchTree[1], parentPath: String[1], orderedPaths: String[*], parentSets: RelationalInstanceSetImplementation[*], store: Database[1], mapping: Mapping[1], runtime: Runtime[1], inScopeVars: Map<String, List<Any>>[1], mc: TemporalMilestoningContext[0..1], exeCtx : ExecutionContext[1], extensions:Extension[*], debug : DebugContext[1]): RelationalPrimitiveQueryGraphFetchExecutionNode[1]
 {
+   print(if($debug.debug,|$debug.space+'>Generating relational store local child node for primitive property :\''+$currentTree.property.name->toOne()+'\'\n',|''));
+  
    let currentPath = $parentPath + '.' + $currentTree->nodePathName();
 
    /* Assertions */
@@ -140,7 +145,8 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::planGra
    let currentIdxString = $currentIdx->toString();
 
    /* Generate Sql Query */
-   let primitiveQuery     = generatePrimitivePropertyQuery($parentSets, $currentTree, $parentTree, $mapping, $inScopeVars, $mc, $debug, $extensions);
+   print(if($debug.debug,|$debug.space+'   >Generate local store property query\n',|''));
+   let primitiveQuery     = generatePrimitivePropertyQuery($parentSets, $currentTree, $parentTree, $mapping, $inScopeVars, $mc, $debug->indent(2), $extensions);
    let resultColumnnName  = '"node_' + $currentIdxString + '_result"';
    let namedColumnQuery   = ^$primitiveQuery(columns = ^Alias(name = $resultColumnnName, relationalElement = $primitiveQuery.columns->toOne()));
    let changedDriverQuery = $namedColumnQuery->changeDriverToTempWithPkProjection(tempTableName($parentIdx), $parentSets, $extensions);
@@ -158,6 +164,7 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::planGra
 
    let postProcessorResult = $managedAggQuery->postProcessSQLQuery($store, [], $mapping, $runtime, $exeCtx, $extensions);
    let postProcessedQuery  = $postProcessorResult.query->cast(@SelectSQLQuery);
+   print(if($debug.debug,|$debug.space+'   >Generated local store property query: '+$postProcessedQuery->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.H2, $extensions)+'\n',|''));
 
 
    /* Create execution node */
@@ -178,6 +185,8 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::planGra
 
 function <<access.private>> meta::relational::graphFetch::executionPlan::planGraphFetchExecutionNonPrimitiveChild(currentTree: RoutedPropertyGraphFetchTree[1], parentTree: GraphFetchTree[1], parentPath: String[1], orderedPaths: String[*], parentSets: RelationalInstanceSetImplementation[*], store: Database[1], mapping: Mapping[1], runtime: Runtime[1], inScopeVars: Map<String, List<Any>>[1], mc: TemporalMilestoningContext[0..1], exeCtx: ExecutionContext[1], extensions:Extension[*], debug: DebugContext[1]): RelationalClassQueryTempTableGraphFetchExecutionNode[1]
 {
+   print(if($debug.debug,|$debug.space+'>Generating relational store local child node for non-primitive property :\''+$currentTree.property.name->toOne()+'\', tree: '+$currentTree->asString(false)+'\n',|''));
+
    let currentPath = $parentPath + '.' + $currentTree->nodePathName();
 
    /* Assertions */
@@ -198,7 +207,8 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::planGra
 
 
    /* Generate Sql Query */
-   let nonPrimitiveQuery   = generateNonPrimitivePropertyQuery($parentSets, $currentTree, $parentTree, $mapping, $inScopeVars, $mc, $simplePrimitiveProperties, $debug, $extensions);
+   print(if($debug.debug,|$debug.space+'   >Generate local store property query (with properties - '+$simplePrimitiveProperties->map(p|$p.name)->removeDuplicates()->joinStrings('[',', ',']')+'\n',|''));
+   let nonPrimitiveQuery   = generateNonPrimitivePropertyQuery($parentSets, $currentTree, $parentTree, $mapping, $inScopeVars, $mc, $simplePrimitiveProperties, $debug->indent(2), $extensions);
    let changedDriverQuery  = $nonPrimitiveQuery->changeDriverToTempWithPkProjection(tempTableName($parentIdx), $parentSets, $extensions);
    let pkFilteredQuery     = ^$changedDriverQuery
                              (
@@ -206,6 +216,7 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::planGra
                              );
    let postProcessorResult = $pkFilteredQuery->postProcessSQLQuery($store, [], $mapping, $runtime, $exeCtx, $extensions);
    let postProcessedQuery  = $postProcessorResult.query->cast(@SelectSQLQuery);
+   print(if($debug.debug,|$debug.space+'   >Generated local store property query: '+$postProcessedQuery->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.H2, $extensions)+'\n',|''));
 
    /* Create execution node */
    let dbConnection  = $runtime.connections->toOne()->cast(@DatabaseConnection);
@@ -233,8 +244,9 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::planGra
    );
 }
 
-function meta::relational::graphFetch::executionPlan::planCrossRootGraphFetchExecutionRelational(clusteredTree: ClusteredGraphFetchTree[1], orderedPaths: String[*], parentPath: String[1], inScopeVars: Map<String, List<Any>>[1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], extensions: Extension[*], debug: DebugContext[1]): RelationalCrossRootQueryTempTableGraphFetchExecutionNode[1]
+function meta::relational::graphFetch::executionPlan::planCrossRootGraphFetchExecutionRelational(clusteredTree: StoreMappingClusteredGraphFetchTree[1], orderedPaths: String[*], parentPath: String[1], inScopeVars: Map<String, List<Any>>[1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], extensions: Extension[*], debug: DebugContext[1]): RelationalCrossRootQueryTempTableGraphFetchExecutionNode[1]
 {
+   print(if($debug.debug,|$debug.space+'>Relational cross-store graphFetch plan generation:\n',|''));
    let store    = $clusteredTree.store->cast(@Database);
    let rootTree = $clusteredTree->byPassClusteringInfo()->cast(@RoutedPropertyGraphFetchTree);
    let rootPath = $parentPath + '.' + $rootTree->nodePathName();
@@ -248,11 +260,34 @@ function meta::relational::graphFetch::executionPlan::planCrossRootGraphFetchExe
    let currentIdx            = $orderedPaths->indexOf($rootPath);
 
    let xStorePropertyMapping = $rootTree.propertyMapping->toOne()->cast(@XStorePropertyMapping);
-   let allProperties         = $xStorePropertyMapping.crossExpression.expressionSequence->evaluateAndDeactivate()->toOne()->findPropertiesInValueSpecification();
-   let srcClass              = $rootTree.property.owner->cast(@Association).properties->filter(x | $x != $rootTree.property).genericType.rawType->cast(@Class<Any>)->toOne();
-   let srcProperties         = $allProperties->filter(x | $x.owner->cast(@Class<Any>)->_subTypeOf($srcClass) || $srcClass->_subTypeOf($x.owner->cast(@Class<Any>)))->cast(@Property<Nil,Any|*>);
-   let tgtClass              = $rootTree.property.genericType.rawType->cast(@Class<Any>)->toOne();
-   let tgtProperties         = $allProperties->filter(x | $x.owner->cast(@Class<Any>)->_subTypeOf($tgtClass) || $tgtClass->_subTypeOf($x.owner->cast(@Class<Any>)))->cast(@Property<Nil,Any|*>);
+   let crossExpression       = $xStorePropertyMapping.crossExpression.expressionSequence->evaluateAndDeactivate()->toOne();
+   let propertyPathNodes     = $crossExpression->meta::pure::lineage::scanProperties::scanProperties().result;
+   $propertyPathNodes->map({ppn |
+      assert($ppn.values->size() <= 1, | 'Only single property traversal is supported in XStore mappings used in relational graph fetch. Found incompatible traversal: ' +
+                                         $ppn->meta::pure::lineage::scanProperties::printPropertyNodeLists() + ' in XStore mapping from ' +
+                                         '"' + $xStorePropertyMapping.sourceSetImplementationId + '" to "' + $xStorePropertyMapping.targetSetImplementationId + '"')
+   });
+
+   let sourceCls = $mapping->classMappingById($xStorePropertyMapping.sourceSetImplementationId)->toOne()->cast(@InstanceSetImplementation)->map(i | if($i.mappingClass->isNotEmpty(), | $i.mappingClass->toOne(), | $i.class));
+   let targetCls = $mapping->classMappingById($xStorePropertyMapping.targetSetImplementationId)->toOne()->cast(@InstanceSetImplementation)->map(i | if($i.mappingClass->isNotEmpty(), | $i.mappingClass->toOne(), | $i.class));
+   
+   let sourcePropertyPathNodes = $propertyPathNodes->filter(ppn | $sourceCls->_subTypeOf($ppn->get(0).class));
+   let sourceFetchTree         = $sourcePropertyPathNodes->meta::pure::lineage::scanProperties::propertyTree::buildPropertyTree()->propertyTreeToGraphFetchTree($sourceCls);
+   let srcProperties           = $sourceFetchTree.subTrees->cast(@PropertyGraphFetchTree)->map(st |
+      assert($st.property->isPrimitiveValueProperty() && ($st.property->instanceOf(Property) || ($st.property->instanceOf(QualifiedProperty) && $st.property->functionType().parameters->evaluateAndDeactivate()->size() == 1)),
+             | 'Only primitive properties / primitive no-arg qualifiers are supported as source properties in XStore mapping expression in relational graph fetch. Found incompatible property: ' + $st.property.name->toOne()
+      );
+      $st.property;
+   );
+
+   let targetPropertyPathNodes = $propertyPathNodes->filter(ppn | $targetCls->_subTypeOf($ppn->get(0).class));
+   let targetFetchTree         = $targetPropertyPathNodes->meta::pure::lineage::scanProperties::propertyTree::buildPropertyTree()->propertyTreeToGraphFetchTree($targetCls);
+   let tgtProperties           = $targetFetchTree.subTrees->cast(@PropertyGraphFetchTree)->map(st |
+      assert($st.property->isPrimitiveValueProperty() && $st.property->instanceOf(Property),
+             | 'Only primitive properties are supported as target properties in XStore mapping expression in relational graph fetch. Found incompatible property: ' + $st.property.name->toOne()
+      );
+      $st.property->cast(@Property<Nil,Any|*>);
+   );
 
    let simplePrimitiveProperties = $rootTree.subTrees->cast(@PropertyGraphFetchTree).property
                                       ->filter(x | $x->instanceOf(Property))->cast(@Property<Nil,Any|*>)
@@ -263,11 +298,13 @@ function meta::relational::graphFetch::executionPlan::planCrossRootGraphFetchExe
    $setImpl->assertConditionsOnSetImpl($simplePrimitiveProperties);
 
    /* Generate Sql Query */
-   let crossQuery          = generateCrossPropertyQuery($rootTree, $parentIdx, $xStorePropertyMapping, $srcProperties, $mapping, $inScopeVars, $simplePrimitiveProperties, $debug, $extensions);
+   print(if($debug.debug,|$debug.space+'   >Generate cross property query (with properties - '+$simplePrimitiveProperties->map(p|$p.name)->removeDuplicates()->joinStrings('[',', ',']')+'\n',|''));
+   let crossQuery          = generateCrossPropertyQuery($rootTree, $parentIdx, $xStorePropertyMapping, $srcProperties, $mapping, $inScopeVars, $simplePrimitiveProperties, $debug->indent(2), $extensions);
    let dbConnection        = $runtime->connectionByElement($store)->cast(@DatabaseConnection);
    let oneRuntime          = ^Runtime(connections = $dbConnection);
    let postProcessorResult = $crossQuery->postProcessSQLQuery($store, [], $mapping, $oneRuntime, $exeCtx, $extensions);
    let postProcessedQuery  = $postProcessorResult.query->cast(@SelectSQLQuery);
+   print(if($debug.debug,|$debug.space+'   >Generated cross property query: '+$postProcessedQuery->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.H2, $extensions)+'\n',|''));
 
    /* Create execution node */
    let sqlNode      = $postProcessedQuery->buildSQLExecutionNode($dbConnection, $extensions);
@@ -296,12 +333,12 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::assertC
       r: RootRelationalInstanceSetImplementation[1] | $r
    ]);
    
-   assert($r.resolvePrimaryKey()->isNotEmpty(), | 'Primary Key definition is must in graph fetch flow');
+   assert($r->resolvePrimaryKey()->isNotEmpty(), | 'Primary Key definition is must in graph fetch flow');
    assert($r->meta::relational::functions::pureToSqlQuery::getGroupBy()->isEmpty(), | 'Store group by not allowed in graph fetch flow');
    assert($r->meta::relational::functions::pureToSqlQuery::getDistinct() != true,  | 'Store distinct not allowed in graph fetch flow');
    
    $simplePrimitiveProperties->forAll({prop |
-      assert($prop->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype() || $setImpl.propertyMappingsByPropertyName($prop.name->toOne())->isNotEmpty(),
+      assert($prop->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype() || $setImpl->_propertyMappingsByPropertyName($prop.name->toOne())->isNotEmpty(),
              | 'Property "' + $prop.name->toOne() + '" is not mapped in the set: "' + $setImpl.id + '"')
    });
 }
@@ -358,8 +395,8 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::generat
       let property = $st.property;
       if (!$simplePrimitiveProperties->contains($st.property),
           | if ($property->isPrimitiveValueProperty(),
-                | $st->planGraphFetchExecutionPrimitiveChild($tree, $treePath, $orderedPaths, $setImpls, $store, $mapping, $runtime, $inScopeVars, $mc, $exeCtx, $extensions, $debug),
-                | $st->planGraphFetchExecutionNonPrimitiveChild($tree, $treePath, $orderedPaths, $setImpls, $store, $mapping, $runtime, $inScopeVars, $mc, $exeCtx, $extensions, $debug)
+                | $st->planGraphFetchExecutionPrimitiveChild($tree, $treePath, $orderedPaths, $setImpls, $store, $mapping, $runtime, $inScopeVars, $mc, $exeCtx, $extensions, $debug->indent()),
+                | $st->planGraphFetchExecutionNonPrimitiveChild($tree, $treePath, $orderedPaths, $setImpls, $store, $mapping, $runtime, $inScopeVars, $mc, $exeCtx, $extensions, $debug->indent())
             ),
           | []
       );
@@ -375,7 +412,7 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::generat
       s:EmbeddedRelationalInstanceSetImplementation[1] | $s.setMappingOwner;
    ])->cast(@RootRelationalInstanceSetImplementation);
 
-   let mainTable     = $srcSetImpl.mainRelation->processRelation([], '', false, 0, false, [], $pureToSqlState, $debug, $extensions);
+   let mainTable     = $srcSetImpl->mainRelation()->processRelation([], '', false, 0, false, [], $pureToSqlState, $debug, $extensions);
    let currentNode   = ^RootJoinTreeNode(alias=^TableAlias(name = 'root', relationalElement = $mainTable));
    let basePreFilter = ^SelectWithCursor(select = ^SelectSQLQuery(data = $currentNode), currentTreeNode = $currentNode, milestoningContext = $mc)->applyTypeFilter($srcSetImpl, '_gftm', $pureToSqlState, $debug, $extensions);
    let base          = ^$basePreFilter(select = $basePreFilter.select->pushFilters($extensions));
@@ -404,7 +441,7 @@ function meta::relational::graphFetch::executionPlan::generateNonPrimitiveProper
       s:EmbeddedRelationalInstanceSetImplementation[1] | $s.setMappingOwner;
    ])->cast(@RootRelationalInstanceSetImplementation);
 
-   let mainTable     = $srcSetImpl.mainRelation->processRelation([], '', false, 0, false, [], $pureToSqlState, $debug, $extensions);
+   let mainTable     = $srcSetImpl->mainRelation()->processRelation([], '', false, 0, false, [], $pureToSqlState, $debug, $extensions);
    let currentNode   = ^RootJoinTreeNode(alias=^TableAlias(name = 'root', relationalElement = $mainTable));
    let basePreFilter = ^SelectWithCursor(select = ^SelectSQLQuery(data = $currentNode), currentTreeNode = $currentNode, milestoningContext = $mc)->applyTypeFilter($srcSetImpl, '_gftm', $pureToSqlState, $debug, $extensions);
    let base          = ^$basePreFilter(select = $basePreFilter.select->pushFilters($extensions));
@@ -468,11 +505,11 @@ function meta::relational::graphFetch::executionPlan::generateNonPrimitiveProper
    ^$newQueryMergedWithMilestoneFilters(distinct = true)->pushFilters($extensions);
 }
 
-function <<access.private>> meta::relational::graphFetch::executionPlan::generateCrossPropertyQuery(propTree: RoutedPropertyGraphFetchTree[1], parentIndex: Integer[1], xStorePropertyMapping: XStorePropertyMapping[1], srcProperties: Property<Nil,Any|*>[*], mapping: Mapping[1], inScopeVars: Map<String, List<Any>>[1], propertiesToFetch: Property<Nil,Any|*>[*], debug: DebugContext[1], extensions:Extension[*]): SelectSQLQuery[1]
+function <<access.private>> meta::relational::graphFetch::executionPlan::generateCrossPropertyQuery(propTree: RoutedPropertyGraphFetchTree[1], parentIndex: Integer[1], xStorePropertyMapping: XStorePropertyMapping[1], srcProperties: AbstractProperty<Any>[*], mapping: Mapping[1], inScopeVars: Map<String, List<Any>>[1], propertiesToFetch: Property<Nil,Any|*>[*], debug: DebugContext[1], extensions:Extension[*]): SelectSQLQuery[1]
 {
    let setImpl        = $propTree.sets->toOne()->cast(@RootRelationalInstanceSetImplementation);
    let pureToSqlState = ^State(inScopeVars = $inScopeVars, mapping=$mapping, supportedFunctions=getSupportedFunctions(), inProject=false, inFilter=false, filterChainDepth=0, inProjectFunctions=false,  processingProjectionThread=false, shouldIsolate=false, contextBasedSupportedFunctions=getContextBasedSupportedFunctions());
-   let currentNode    = ^RootJoinTreeNode(alias=^TableAlias(name = 'root', relationalElement = $setImpl.mainRelation->processRelation([], '', false, 0, false, [], $pureToSqlState, $debug, $extensions)));
+   let currentNode    = ^RootJoinTreeNode(alias=^TableAlias(name = 'root', relationalElement = $setImpl->mainRelation()->processRelation([], '', false, 0, false, [], $pureToSqlState, $debug, $extensions)));
    let basePreFilter  = ^SelectWithCursor(select = ^SelectSQLQuery(data = $currentNode), currentTreeNode = $currentNode)->applyTypeFilter($setImpl, '_gftcm', $pureToSqlState, $debug, $extensions);
    let base           = ^$basePreFilter(select = $basePreFilter.select->pushFilters($extensions));
 
@@ -481,7 +518,7 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::generat
       rebuildSelectWithCursor($pm.property.name->toOne(), [], $newQuery, true);
    });
 
-   let pks = $setImpl.resolvePrimaryKey();
+   let pks = $setImpl->resolvePrimaryKey();
    let pkQuries = $pks->map({pk |
       let newQuery = $pk->processColumnsInRelationalOperationElements($pureToSqlState, $base->cast(@SelectWithCursor), '_gftcm', ^List<ColumnGroup>(), false, $debug, $extensions);
       rebuildSelectWithCursor('pk_'+$pks->indexOf($pk)->toString(), [], $newQuery, true);
@@ -489,7 +526,8 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::generat
 
    let targetWithFilter = $base->applyTypeFilter($setImpl, '_gftcm', $pureToSqlState, $debug, $extensions);
 
-   let joinOpProcessed = processFunctionExpression($xStorePropertyMapping.crossExpression.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@FunctionExpression), [], $base, ^Map<VariableExpression, ValueSpecification>(), ^$pureToSqlState(inScopeVars = $pureToSqlState.inScopeVars->put('this', list(^PlanVarPlaceHolder(name = 'cross_src$', type = $propTree->typeFromGraphFetchTree(), multiplicity = PureOne)))),  JoinType.LEFT_OUTER, '_gftce', ^List<ColumnGroup>(), $debug, $extensions).element->cast(@SelectWithCursor)->toOne();
+   print(if($debug.debug,|$debug.space+'>Processing xstore join operation: '+$xStorePropertyMapping.crossExpression.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@FunctionExpression)->meta::pure::router::printer::asString()+'\n',|''));
+   let joinOpProcessed = processFunctionExpression($xStorePropertyMapping.crossExpression.expressionSequence->evaluateAndDeactivate()->toOne()->replaceQualifiersWithSynthesizedProperties()->cast(@FunctionExpression), [], $base, ^Map<VariableExpression, ValueSpecification>(), ^$pureToSqlState(inScopeVars = $pureToSqlState.inScopeVars->put('this', list(^PlanVarPlaceHolder(name = 'cross_src$', type = $propTree->typeFromGraphFetchTree(), multiplicity = PureOne)))),  JoinType.LEFT_OUTER, '_gftce', ^List<ColumnGroup>(), $debug->indent(), $extensions).element->cast(@SelectWithCursor)->toOne();
    let joinOpQuery     = rebuildSelectWithCursor('cross_join_op$', [], $joinOpProcessed, true);
 
    let pksAndProperties = $pkQuries->concatenate($propertyQueries).select->mergeSQLQueryData('_gftcm', ^$pureToSqlState(shouldIsolate=true), $debug, $extensions);
@@ -513,12 +551,12 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::generat
                    alias = $tempAlias,
                    childrenData = ^JoinTreeNode
                                   (
-                                     joinName = 'driverTemp_cross_parent_' + $setImpl.mainRelation->cast(@NamedRelation).name,
+                                     joinName = 'driverTemp_cross_parent_' + $setImpl->mainRelation()->cast(@NamedRelation).name,
                                      database = ^Database(),
                                      alias = $mainAlias,
                                      join = ^Join
                                             (
-                                               name = 'driverTemp_cross_parent_' + $setImpl.mainRelation->cast(@NamedRelation).name,
+                                               name = 'driverTemp_cross_parent_' + $setImpl->mainRelation()->cast(@NamedRelation).name,
                                                aliases = [pair($tempAlias, $mainAlias), pair($mainAlias, $tempAlias)],
                                                operation = ^DynaFunction(name = 'equal', parameters = [^Literal(value = 1), ^Literal(value = 1)])
                                             ),
@@ -530,6 +568,18 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::generat
    );
 
 
+}
+
+function <<access.private>> meta::relational::graphFetch::executionPlan::replaceQualifiersWithSynthesizedProperties(vs: ValueSpecification[1]): ValueSpecification[1]
+{
+   $vs->match([
+      fe: FunctionExpression[1] | let newFunc = $fe.func->match([
+                                     q: QualifiedProperty<Any>[1] | ^Property<Nil,Any|*>(name = $q.name, owner = ^PropertyOwner(), aggregation = AggregationKind.None, genericType = $q.genericType, multiplicity = $q->functionReturnMultiplicity()),
+                                     f: meta::pure::metamodel::function::Function<Any>[1] | $f
+                                  ]);
+                                  ^$fe(func = $newFunc, parametersValues = $fe.parametersValues->evaluateAndDeactivate()->map(pv | $pv->replaceQualifiersWithSynthesizedProperties()));,
+      v : ValueSpecification[1] | $v
+   ])
 }
 
 function <<access.private>> meta::relational::graphFetch::executionPlan::pushFilters(query: SelectSQLQuery[1], extensions:Extension[*]):SelectSQLQuery[1]

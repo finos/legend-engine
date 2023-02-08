@@ -151,16 +151,22 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::EnumValidationCon
    validEnumValues: String[*];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::GlobalGraphFetchExecutionNode extends ExecutionNode
+Class <<typemodifiers.abstract>> meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::GlobalGraphFetchExecutionNode extends ExecutionNode
 {
    graphFetchTree : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GraphFetchTree[1];
-   store : String[1];
    children : meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::GlobalGraphFetchExecutionNode[*];
    localGraphFetchExecutionNode : meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::LocalGraphFetchExecutionNode [1];
    parentIndex : Integer[0..1];
-   xStorePropertyMapping : meta::protocols::pure::vX_X_X::metamodel::mapping::xStore::XStorePropertyMapping[0..1];
    enableConstraints : Boolean[0..1];
    checked           : Boolean[0..1];
+   localTreeIndices  : Integer[*];
+   dependencyIndices : Integer[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::StoreMappingGlobalGraphFetchExecutionNode extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::GlobalGraphFetchExecutionNode
+{
+   store : String[1];
+   xStorePropertyMapping : meta::protocols::pure::vX_X_X::metamodel::mapping::xStore::XStorePropertyMapping[0..1];
    xStorePropertyFetchDetails : meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::XStorePropertyFetchDetails[0..1];
 }
 
@@ -176,11 +182,19 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::XStor
    subTree                 : String[1];
 }
 
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::PlatformGlobalGraphFetchExecutionNode extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::GlobalGraphFetchExecutionNode
+{
+}
+
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::LocalGraphFetchExecutionNode extends ExecutionNode
 {
    nodeIndex : Integer[1];
    parentIndex : Integer[0..1];
    graphFetchTree : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GraphFetchTree[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::PlatformPrimitiveQualifierLocalGraphFetchExecutionNode extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::LocalGraphFetchExecutionNode
+{
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::store::inMemory::StoreStreamReadingExecutionNode extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::ExecutionNode
@@ -290,6 +304,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::SDLC
 
 Class meta::protocols::pure::vX_X_X::metamodel::PureSDLC extends meta::protocols::pure::vX_X_X::metamodel::SDLC
 {
+   overrideUrl : String[0..1];
    packageableElementPointers : meta::protocols::pure::vX_X_X::metamodel::PackageableElementPointer[*];
 }
 

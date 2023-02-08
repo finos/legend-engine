@@ -30,11 +30,11 @@ public class BatchStartTimestampVisitor implements LogicalPlanVisitor<BatchStart
         Optional<String> batchStartTimestampPattern = context.batchStartTimestampPattern();
         if (batchStartTimestampPattern.isPresent())
         {
-            prev.push(new org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.StringValue(batchStartTimestampPattern.get()));
+            prev.push(new org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.StringValue(batchStartTimestampPattern.get(), context.quoteIdentifier()));
         }
         else
         {
-            prev.push(new org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.StringValue(context.batchStartTimestamp()));
+            prev.push(new org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.StringValue(context.batchStartTimestamp(), context.quoteIdentifier()));
         }
         return new VisitorResult();
     }

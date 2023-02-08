@@ -227,10 +227,10 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 meta::pure::executionPlan::platformBinding::legendJava::library::string::tests::testStringPureTests() : Boolean[1]
 {
    javaPureTests(engineConventions([]), [
-      meta::pure::functions::lang::tests::greaterThan::testGreaterThan_String__Boolean_1_,
-      meta::pure::functions::lang::tests::greaterThanEqual::testGreaterThanEqual_String__Boolean_1_,
-      meta::pure::functions::lang::tests::lessThan::testLessThan_String__Boolean_1_,
-      meta::pure::functions::lang::tests::lessThanEqual::testLessThanEqual_String__Boolean_1_
+      meta::pure::functions::boolean::tests::greaterThan::testGreaterThan_String__Boolean_1_,
+      meta::pure::functions::boolean::tests::greaterThanEqual::testGreaterThanEqual_String__Boolean_1_,
+      meta::pure::functions::boolean::tests::lessThan::testLessThan_String__Boolean_1_,
+      meta::pure::functions::boolean::tests::lessThanEqual::testLessThanEqual_String__Boolean_1_
    ])
       ->generate(meta::pure::functions::tests::model::GeographicEntityType)
       ->addTestsWithin(meta::pure::functions::string::tests::format)
@@ -252,4 +252,13 @@ meta::pure::executionPlan::platformBinding::legendJava::library::string::tests::
       ->addTestsWithin(meta::pure::functions::string::tests::parseDecimal)
       ->addTestsWithin(meta::pure::functions::string::tests::matches)
       ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::platformBinding::legendJava::library::string::tests::testGetMethodName() : Boolean[1]
+{
+  let testList = ['class','Class',  'quantity','property','function'];
+  let result = $testList->map(v| if($v->meta::external::language::java::transform::checkForReservedWordsForGet(),|'get'+ '_' + $v,|'get'+ $v));
+  meta::pure::functions::asserts::assertEquals(['get_class', 'get_Class', 'getquantity', 'getproperty', 'getfunction'],$result);
 }

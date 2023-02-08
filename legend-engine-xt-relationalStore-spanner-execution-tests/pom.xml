@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>legend-engine</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>3.30.2-SNAPSHOT</version>
+        <version>4.0.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -24,6 +23,7 @@
                         <exclude>**/ExternalIntegration*.java</exclude>
                         <exclude>**/Test_Relational_DbSpecific_Spanner_UsingPureClientTestSuite.java</exclude>
                     </excludes>
+                    <argLine>${argLine} ${surefire.vm.params}</argLine>
                 </configuration>
             </plugin>
         </plugins>
@@ -97,7 +97,7 @@
         <!-- TEST -->
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-configuration-external</artifactId>
+            <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -110,11 +110,7 @@
             <artifactId>legend-engine-xt-relationalStore-javaPlatformBinding-pure</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-code-compiled-tests</artifactId>
-            <scope>test</scope>
-        </dependency>
+
         <!-- TEST -->
     </dependencies>
 

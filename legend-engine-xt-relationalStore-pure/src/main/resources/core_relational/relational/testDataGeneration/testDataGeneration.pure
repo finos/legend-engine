@@ -86,7 +86,7 @@ function meta::relational::testDataGeneration::createTableRowIdentifiers(table: 
 
 function meta::relational::testDataGeneration::getTable(database: Database[1], schema: String[1], table: String[1]):Table[1]
 {
-   $database.schema($schema)->toOne().table($table)->toOne()
+   $database->schema($schema)->toOne()->table($table)->toOne()
 }
 
 function meta::relational::testDataGeneration::createRowIdentifier(columnNames: String[*], columnValues: Any[*]):RowIdentifier[1]
@@ -245,7 +245,7 @@ function <<access.protected>> meta::relational::testDataGeneration::generateSeed
                                                 | $lastExpression->cast(@FunctionExpression).parametersValues->evaluateAndDeactivate()->at(0),
                                                 | $lastExpression);
 
-   let mainTable = $mainRelation->match([t: Table[1]|$t, v:View[1]|$v.mainTable()])->cast(@Table);
+   let mainTable = $mainRelation->match([t: Table[1]|$t, v:View[1]|$v->mainTable()])->cast(@Table);
    let updatedMainTable = if($mainTable.primaryKey->isEmpty(), 
                              | let validNonNullableCols = $mainTable.columns->cast(@Column)->filter(y|$y.nullable == false && !($y.type->instanceOf(Varchar) && ($y.type->cast(@Varchar).size > 1000)) && !($y.type->instanceOf(Varbinary) && ($y.type->cast(@Varchar).size > 1000)));
                                ^$mainTable(primaryKey = $validNonNullableCols);, 
@@ -321,7 +321,7 @@ function meta::relational::testDataGeneration::generateTestDataStartingFromRoot(
 function meta::relational::testDataGeneration::generateTestDataForNestedViewTree(relationTree: RelationTree[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], dbConnection: DatabaseConnection[1], relationColumnMap: Map<NamedRelation, List<Column>>[1], config: TestDataGenerationConfig[1], extensions:Extension[*]):Pair<List<Pair<NamedRelation, ResultSet>>, List<String>>[*]
 {
    let view = $relationTree.view;
-   let mainRelation = $view.mainRelation;
+   let mainRelation = $view->mainRelation();
 
    let initialResults = $mainRelation->match([
       {table : Table[1] |
@@ -565,7 +565,7 @@ function <<access.protected>> meta::relational::testDataGeneration::generateRela
 
 function <<access.protected>> meta::relational::testDataGeneration::findMainTableForView(v: View[1]):Table[1]
 {
-   $v.mainRelation->match([
+   $v->mainRelation()->match([
       t: Table[1] | $t,
       v: View[1] |  $v->findMainTableForView()
    ])
@@ -761,7 +761,7 @@ function meta::relational::testDataGeneration::executionPlan::planSeedDataGenera
    assert($relationTree.root == true, | 'Should start with a relation tree starting from a \'root\'');
    assert($relationTree.children->size() == 1, | 'Seed data generation currently supports queries with a single root table/view (unions are not supported)');
    let mainRelation = $relationTree.children->toOne().relation->toOne();
-   let mainTable = $mainRelation->match([t: Table[1]|$t, v:View[1]|$v.mainTable()]);
+   let mainTable = $mainRelation->match([t: Table[1]|$t, v:View[1]|$v->mainTable()]);
 
    let seedGenerationFunction = $func->generateSeedDataGenerationFunction($mainRelation, $newVars);
    executionPlan($seedGenerationFunction, $mapping, $runtime, $extensions);
@@ -969,7 +969,7 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
 function meta::relational::testDataGeneration::executionPlan::planTestDataGenerationForNestedViewTree(relationTree: RelationTree[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], dbConnection: DatabaseConnection[1], relationColumnMap: Map<NamedRelation, List<Column>>[1], indices: String[*], root: Boolean[1], parentResPlaceHolder: String[0..1], config: TestDataGenerationConfig[1], extensions:Extension[*]):ExecutionNode[*]
 {
    let view = $relationTree.view;
-   let mainRelation = $view.mainRelation;
+   let mainRelation = $view->mainRelation();
    let currentIndices = $indices->add('v');
    let translationContext = ^TranslationContext(dbType=$dbConnection->cast(@DatabaseConnection).type);
                
@@ -1019,7 +1019,7 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
                                  joinName = 'gen_join',
                                  joinType = JoinType.INNER,
                                  database = ^Database(name='default'),
-                                 join = ^Join(name='gen_join', operation=$relationTree.join->toOne().operation->meta::relational::functions::pureToSqlQuery::reprocessAliases([^meta::relational::functions::pureToSqlQuery::OldAliasToNewAlias(first=$relationTree.join->toOne().otherTable($relationTree.relation->toOne()).name->toOne(), second=$mainAlias),^meta::relational::functions::pureToSqlQuery::OldAliasToNewAlias(first=$relationTree.relation.name->toOne(), second=$relatedAlias)])->quoteVarPlaceHolderTableAliasColumnsIfNotQuouted()->cast(@Operation))
+                                 join = ^Join(name='gen_join', operation=$relationTree.join->toOne().operation->meta::relational::functions::pureToSqlQuery::reprocessAliases([^meta::relational::functions::pureToSqlQuery::OldAliasToNewAlias(first=$relationTree.join->toOne()->otherTable($relationTree.relation->toOne()).name->toOne(), second=$mainAlias),^meta::relational::functions::pureToSqlQuery::OldAliasToNewAlias(first=$relationTree.relation.name->toOne(), second=$relatedAlias)])->quoteVarPlaceHolderTableAliasColumnsIfNotQuouted()->cast(@Operation))
                               )
                            )
                         );

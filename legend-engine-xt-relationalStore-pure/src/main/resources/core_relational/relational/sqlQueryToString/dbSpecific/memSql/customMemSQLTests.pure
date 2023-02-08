@@ -31,15 +31,15 @@ function <<test.Test>> meta::relational::memsql::tests::db::testReservedKeywords
   assertEquals('select `root`.`window` as `WINDOW` from `test table` as `root`', $result);
 }
 
-function <<test.Test>> meta::relational::memsql::tests::db::testBooleanConversion() : Boolean[1]
+function <<test.Test>> meta::relational::memsql::tests::db::testWeekOfYear() : Boolean[1]
 {
-  let result = toSQLString(
-    | meta::relational::memsql::tests::db::A.all()->filter(s|if($s.window->in([1,2]), |true, |false))->project([s | $s.window], ['WINDOW']), 
-      meta::relational::memsql::tests::db::simpleRelationalMappingForMemSQLWindowKeyword,
-      meta::relational::runtime::DatabaseType.MemSQL, 
-      meta::relational::extension::relationalExtensions());  
+    let result = toSQLString(
+        |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project([s|$s.date->weekOfYear()], ['week']),
+        meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
+        meta::relational::runtime::DatabaseType.MemSQL,
+        meta::relational::extension::relationalExtensions());
 
-  assertEquals('select `root`.`window` as `WINDOW` from `test table` as `root` where case when `root`.`window` in (1, 2) then true else false end', $result);      
+    assertEquals('select weekofyear(date(`root`.dateTime)) as `week` from dataTable as `root`', $result);
 }
 
 ###Relational

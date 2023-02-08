@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.compiler.test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRelationalBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
@@ -206,6 +207,23 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
             "\n" +
             ")\n\n";
 
+    public static String DB_DUP_INC = "###Relational\n" +
+            "Database model::relational::tests::dbInc\n" +
+            "(\n" +
+            "    Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200) , FIRSTNAME VARCHAR(200), FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)\n" +
+            "    Table differentPersonTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)\n" +
+            "    \n" +
+            "    Table firmTable(ID INT PRIMARY KEY, LEGALNAME VARCHAR(200), LEGALNAME VARCHAR(200), LEGALNAME VARCHAR(200), ADDRESSID INT, ADDRESSID INT, CEOID INT)\n" +
+            "    Table PersonToFirm(PERSONID INT PRIMARY KEY, FIRMID INT PRIMARY KEY)\n" +
+
+            "    Table otherFirmTable(ID INT PRIMARY KEY, LEGALNAME VARCHAR(200), LEGALNAME VARCHAR(200), ADDRESSID INT)\n" +
+            "    \n" +
+            "    Table addressTable(ID INT PRIMARY KEY, TYPE INT, NAME VARCHAR(200), STREET VARCHAR(100), COMMENTS VARCHAR(100))\n" +
+            "    Table locationTable(ID INT PRIMARY KEY, PERSONID INT, PLACE VARCHAR(200),date DATE)\n" +
+            "    Table placeOfInterestTable(ID INT PRIMARY KEY,locationID INT PRIMARY KEY, NAME VARCHAR(200))  \n" +
+            "\n" +
+            "   )\n";
+
     String MODEL = "\n" +
             "Class model::LegalEntity \n" +
             "{\n" +
@@ -242,6 +260,17 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
         return "COMPILATION error at [5:1-7:1]: Duplicated element 'anything::somethingelse'";
+    }
+
+    @Test
+    public void testRelationalDatabaseFail()
+    {
+        MutableList<String> warnings = Lists.mutable.empty();
+        warnings.add("COMPILATION error at [4:5-212]: Duplicate column definitions [FIRSTNAME, LASTNAME] in table: personTable");
+        warnings.add("COMPILATION error at [7:5-152]: Duplicate column definitions [ADDRESSID, LEGALNAME] in table: firmTable");
+        warnings.add("COMPILATION error at [9:5-107]: Duplicate column definitions [LEGALNAME] in table: otherFirmTable");
+        PureModel dbIncModel = test(DB_DUP_INC, null, warnings).getTwo();
+
     }
 
     @Test

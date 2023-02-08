@@ -55,6 +55,7 @@ Class meta::pure::executionPlan::platformBinding::legendJava::IInMemoryCrossStor
 Class meta::pure::executionPlan::platformBinding::legendJava::IRelationalClassQueryTempTableGraphFetchExecutionNodeSpecifics {}
 Class meta::pure::executionPlan::platformBinding::legendJava::IRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics {}
 Class meta::pure::executionPlan::platformBinding::legendJava::IServiceParametersResolutionExecutionNodeSpecifics {}
+Class meta::pure::executionPlan::platformBinding::legendJava::IPlatformPrimitiveQualifierLocalGraphFetchExecutionNodeSpecifics {}
 
 function meta::pure::executionPlan::platformBinding::legendJava::applyJavaEngineDependencies(conventions:Conventions[1], extensions:meta::pure::extension::Extension[*]):Conventions[1]
 {
@@ -469,6 +470,9 @@ function meta::pure::executionPlan::platformBinding::legendJava::applyJavaEngine
    let jIServiceParametersResolutionExecutionNodeSpecifics = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.serviceStore.IServiceParametersResolutionExecutionNodeSpecifics')
       ->addMethod(javaMethod('public', javaParameterizedType(javaClass('java.util.Map'), [javaString(), javaObject()]), 'resolveServiceParameters', [javaParam(javaParameterizedType(javaClass('java.util.Map'), [javaString(), javaObject()]), 'p0')]));
 
+   let jIPlatformPrimitiveQualifierLocalGraphFetchExecutionNodeSpecifics = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.platform.graphFetch.IPlatformPrimitiveQualifierLocalGraphFetchExecutionNodeSpecifics')
+      ->addMethod(javaMethod('public', javaStream(javaParameterizedType($jIGraphInstance, [javaWildcard()])), 'executeQualifierExpression', [javaParam(javaList(javaWildcard()), 'p0'), javaParam($jIExecutionNodeContext, 'p1')]));
+
    let res = $conventions
       ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::IConstantResult, $jIConstantResult)
       ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::EngineIResult, $jIResult)
@@ -513,7 +517,8 @@ function meta::pure::executionPlan::platformBinding::legendJava::applyJavaEngine
       ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::IInMemoryCrossStoreGraphFetchExecutionNodeSpecifics, $jIInMemoryCrossStoreGraphFetchExecutionNodeSpecifics)
       ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::IRelationalClassQueryTempTableGraphFetchExecutionNodeSpecifics, $jIRelationalClassQueryTempTableGraphFetchExecutionNodeSpecifics)
       ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::IRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics, $jIRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics)
-      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::IServiceParametersResolutionExecutionNodeSpecifics, $jIServiceParametersResolutionExecutionNodeSpecifics);
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::IServiceParametersResolutionExecutionNodeSpecifics, $jIServiceParametersResolutionExecutionNodeSpecifics)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::IPlatformPrimitiveQualifierLocalGraphFetchExecutionNodeSpecifics, $jIPlatformPrimitiveQualifierLocalGraphFetchExecutionNodeSpecifics);
 
    let platformDependencyUpdates = $extensions->meta::pure::executionPlan::platformBinding::legendJava::extractLegendJavaAdhocExtensionsOfType(meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformDependencyUpdateExtension).platformDependencyUpdate;
    $platformDependencyUpdates->fold({e,b|$e->eval($b, $extensions)}, $res);

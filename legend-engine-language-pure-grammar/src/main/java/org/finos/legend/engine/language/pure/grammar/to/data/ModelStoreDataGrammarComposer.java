@@ -51,7 +51,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Pri
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Whatever;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.Pair;
 
 import java.util.List;
 import java.util.Stack;
@@ -86,10 +85,10 @@ public class ModelStoreDataGrammarComposer implements ValueSpecificationVisitor<
                     str.append(type).append(":\n");
 
                     ValueSpecification vs = data.instances.get(type);
-                    if ((vs instanceof ClassInstance && ((ClassInstance) vs).value instanceof Pair))
+                    if (vs instanceof PackageableElementPtr)
                     {
                         DataElementReference reference = new DataElementReference();
-                        reference.dataElement = ((PackageableElementPtr) ((Pair) ((ClassInstance) data.instances.get(type)).value).second).fullPath;
+                        reference.dataElement = ((PackageableElementPtr) vs).fullPath;
                         str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(reference, PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(indentString).build()));
                     }
                     else if (vs instanceof Collection && ((Collection) vs).values.size() == 1)

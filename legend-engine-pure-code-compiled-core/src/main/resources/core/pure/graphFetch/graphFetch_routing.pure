@@ -17,6 +17,7 @@ import meta::pure::milestoning::*;
 import meta::pure::mapping::modelToModel::*;
 import meta::pure::lineage::scanProperties::propertyTree::*;
 import meta::pure::mapping::*;
+import meta::pure::mapping::xStore::*;
 import meta::pure::router::clustering::*;
 import meta::pure::router::routing::*;
 import meta::pure::router::store::metamodel::*;
@@ -53,15 +54,15 @@ function meta::pure::graphFetch::routing::propertyMappingInfo(prop: PropertyGrap
                                                                                                                               | let subTypeSetIDs = $routedProperty->cast(@StoreMappingRoutedValueSpecification).sets->meta::pure::router::routing::resolveOperation($mapping).id;
                                                                                                                                 $routedProperty->byPassRouterInfo()->cast(@FunctionExpression).parametersValues->at(0)->byPassRouterInfo()->cast(@FunctionExpression).parametersValues->at(1)->byPassRouterInfo()->cast(@InstanceValue).values->at(0)->cast(@FunctionDefinition<Any>).expressionSequence->filter(x| $x->instanceOf(StoreMappingRoutedValueSpecification))->cast(@StoreMappingRoutedValueSpecification).propertyMapping->filter(x | $x.targetSetImplementationId->in($subTypeSetIDs));)
                                                                                                                         , |[]);
-                                                                                                let sets = if($propertyMappings->isNotEmpty(),|$propertyMappings->map(pm | $mapping.classMappingById($pm.targetSetImplementationId)),|if($routedProperty->instanceOf(StoreMappingRoutedValueSpecification),|$routedProperty->cast(@StoreMappingRoutedValueSpecification).sets->resolveOperation($mapping),|[]))->removeDuplicates();
+                                                                                                let sets = if($propertyMappings->isNotEmpty(),|$propertyMappings->map(pm | $mapping->classMappingById($pm.targetSetImplementationId)),|if($routedProperty->instanceOf(StoreMappingRoutedValueSpecification),|$routedProperty->cast(@StoreMappingRoutedValueSpecification).sets->resolveOperation($mapping),|[]))->removeDuplicates();
                                                                                                 let resolvedPropertyMappings = if ($property->instanceOf(Property) && $sets->isNotEmpty() && $propertyMappings->isEmpty(),
                                                                                                                                    | // Property mapping could not be resolved correctly (union or special union)
                                                                                                                                      let targetSets = $routedProperty->cast(@StoreMappingRoutedValueSpecification).sets;
                                                                                                                                      let fe = $routedProperty->byPassRouterInfo()->cast(@FunctionExpression);
                                                                                                                                      let sourceSets = if($prop.subType->isEmpty(), | $fe, | $fe.parametersValues->evaluateAndDeactivate()->at(0)->byPassRouterInfo()->cast(@FunctionExpression)).parametersValues->evaluateAndDeactivate()->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->resolveOperation($mapping)->cast(@InstanceSetImplementation);
                                                                                                                                      $sourceSets->map({ss |
-                                                                                                                                        let propMaps = $ss.propertyMappingsByPropertyName($property.name->toOne())->filter(x | $x.targetSetImplementationId->in($targetSets.id));
-                                                                                                                                        $propMaps->map(pm | $mapping.classMappingById($pm.targetSetImplementationId)->resolveOperation($mapping)->map(ts | ^$pm(targetSetImplementationId = $ts.id)));
+                                                                                                                                        let propMaps = $ss->_propertyMappingsByPropertyName($property.name->toOne())->filter(x | $x.targetSetImplementationId->in($targetSets.id));
+                                                                                                                                        $propMaps->map(pm | $mapping->classMappingById($pm.targetSetImplementationId)->resolveOperation($mapping)->map(ts | ^$pm(targetSetImplementationId = $ts.id)));
                                                                                                                                      });,
                                                                                                                                    | $propertyMappings
                                                                                                                                );
@@ -69,6 +70,19 @@ function meta::pure::graphFetch::routing::propertyMappingInfo(prop: PropertyGrap
 }
 
 function meta::pure::graphFetch::routing::clusterRoutedGraphFetchTree(r: RoutedGraphFetchTree[1], parentStore: Store[0..1], mapping:Mapping[1], runtime: Runtime[0..1], openVariables:Map<String, List<Any>>[1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):GraphFetchTree[1]
+{
+   if ($r->instanceOf(RoutedPropertyGraphFetchTree) && ($r->cast(@RoutedPropertyGraphFetchTree).isXStoreDependentPrimitiveQualifier == true),
+       | ^PlatformClusteredGraphFetchTree
+         (
+            tree = ^$r(subTrees = []),
+            openVars = $openVariables,
+            exeCtx = $exeCtx
+         ),
+       | $r->clusterRoutedGraphFetchTreeStoreMapping($parentStore, $mapping, $runtime, $openVariables, $exeCtx, $extensions, $debug)
+   )
+}
+
+function meta::pure::graphFetch::routing::clusterRoutedGraphFetchTreeStoreMapping(r: RoutedGraphFetchTree[1], parentStore: Store[0..1], mapping:Mapping[1], runtime: Runtime[0..1], openVariables:Map<String, List<Any>>[1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):GraphFetchTree[1]
 {
    let currentTreeStores = $r.sets->map(x | $x->meta::pure::router::routing::getStoreFromSet($mapping, $extensions));
    let currentTreeStoresWithouDuplicates = $currentTreeStores->removeDuplicatesBy(x | $x->elementToPath());
@@ -79,15 +93,16 @@ function meta::pure::graphFetch::routing::clusterRoutedGraphFetchTree(r: RoutedG
 
    let systemMapping = $extensions->meta::pure::extension::storeContractFromStore($singleStore);
 
-   ^ClusteredGraphFetchTree
+   ^StoreMappingClusteredGraphFetchTree
    (
       s = $systemMapping,
       store = $singleStore,
-      tree = ^$r(subTrees = $subTreeClusters->map(x | $x->match([c:ClusteredGraphFetchTree[1] | let storeSupportNativeJoinsAmongElements = $extensions->meta::pure::extension::storeContractFromStore($c.store).supportsNativeJoinAmongElements;
-                                                                                                if(($storeSupportNativeJoinsAmongElements && $c.store->elementToPath() != $singleStore->elementToPath())
-                                                                                                    || (!$storeSupportNativeJoinsAmongElements && $c.tree->cast(@RoutedPropertyGraphFetchTree).propertyMapping->isNotEmpty() && $c.tree->cast(@RoutedPropertyGraphFetchTree).propertyMapping->map(pm | $pm->instanceOf(meta::pure::mapping::xStore::XStorePropertyMapping))->toOneMany()->or()),
-                                                                                                   | $c, 
-                                                                                                   | $c.tree);,
+      tree = ^$r(subTrees = $subTreeClusters->map(x | $x->match([c:StoreMappingClusteredGraphFetchTree[1] | let storeSupportNativeJoinsAmongElements = $extensions->meta::pure::extension::storeContractFromStore($c.store).supportsNativeJoinAmongElements;
+                                                                                                            if(($storeSupportNativeJoinsAmongElements && $c.store->elementToPath() != $singleStore->elementToPath())
+                                                                                                                || (!$storeSupportNativeJoinsAmongElements && $c.tree->cast(@RoutedPropertyGraphFetchTree).propertyMapping->isNotEmpty() && $c.tree->cast(@RoutedPropertyGraphFetchTree).propertyMapping->map(pm | $pm->instanceOf(meta::pure::mapping::xStore::XStorePropertyMapping))->toOneMany()->or()),
+                                                                                                              | $c, 
+                                                                                                              | $c.tree);,
+                                                                 p:PlatformClusteredGraphFetchTree[1] | $p,
                                                                  g:GraphFetchTree[1] | $g]))),
       openVars = $openVariables,
       runtime = $runtime,
@@ -218,7 +233,77 @@ function meta::pure::graphFetch::routing::routeRootGraphFetchTree(root: RootGrap
                                                                        ])
                      );
 
-   $routedTree->addXStoreProperties($extensions);
+   $routedTree->ensureXStoreRequirementsAtCurrentLevel($rootGetAllExpression, [], [], $mapping, $extensions)->cast(@RoutedRootGraphFetchTree<Any>);
+}
+
+function <<access.private>> meta::pure::graphFetch::routing::ensureXStoreRequirementsAtCurrentLevel(currentTree: RoutedGraphFetchTree[1], currentExpression: ValueSpecification[1], processedXStoreMappings: XStorePropertyMapping[*], processedQualifiers: QualifiedProperty<Any>[*], mapping: Mapping[1], extensions: Extension[*]): RoutedGraphFetchTree[1]
+{
+  // Add XStore requirements
+  let xStoreMappingsCurrentLevel = $currentTree->match([r:RoutedPropertyGraphFetchTree[1] | $r.propertyMapping, g:GraphFetchTree[1] | []])
+                                      ->filter(pm | $pm->instanceOf(XStorePropertyMapping) && (!$pm->in($processedXStoreMappings)))->cast(@XStorePropertyMapping)->map(x | pair($x, $x.targetSetImplementationId));
+
+  let xStoreMappingsInSubTrees   = $currentTree.subTrees
+                                      ->map(s | $s->match([r:RoutedPropertyGraphFetchTree[1] | $r.propertyMapping, g:GraphFetchTree[1] | []]))
+                                      ->filter(pm | $pm->instanceOf(XStorePropertyMapping) && (!$pm->in($processedXStoreMappings)))->cast(@XStorePropertyMapping)->map(x | pair($x, $x.sourceSetImplementationId));
+
+  let subTreesFromXStoreMappings = $xStoreMappingsCurrentLevel->concatenate($xStoreMappingsInSubTrees)->map({xpm |
+    let crossExpr = $xpm.first.crossExpression.expressionSequence->evaluateAndDeactivate()->toOne('Only single expression XStore property mappings are supported. XStore mapping from "' + $xpm.first.sourceSetImplementationId + '" to "' + $xpm.first.targetSetImplementationId + '" is not compatible');
+    let sourceMap = $mapping->classMappingById($xpm.second)->toOne()->cast(@InstanceSetImplementation);
+    let sourceCls = $sourceMap->map(i | if($i.mappingClass->isNotEmpty(), | $i.mappingClass->toOne(), | $i.class));
+    let newSubTrees = $crossExpr->fetchTreeInExpression($sourceCls).subTrees->cast(@PropertyGraphFetchTree);
+    $newSubTrees
+       ->filter(st | if ($st.property->instanceOf(Property) && $st.property->isPrimitiveValueProperty(), | $sourceMap->propertyMappingsByPropertyName($st.property.name->toOne())->isNotEmpty(), | true))
+       ->map(st | $st->routePropertyGraphFetchTree($currentExpression, $mapping, $extensions));
+  });
+
+  // Add XStore qualifier requirements (inling primitive qualifiers which depend on other xstore properties)
+  let withQualifierRequirements = $subTreesFromXStoreMappings->map({st |
+    let plainResult = pair(list([$st]), list([]));
+    if ($st.property->instanceOf(QualifiedProperty) && $st.property->isPrimitiveValueProperty() && (!$st.property->in($processedQualifiers)),
+        | let qp = $st.property->cast(@QualifiedProperty<Any>);
+          if ($qp.expressionSequence->evaluateAndDeactivate()->size() == 1,
+              | // Only looking inside single expression qualifiers
+                let qualifierTree = $qp.expressionSequence->evaluateAndDeactivate()->toOne()->fetchTreeInExpression($currentTree->typeFromGraphFetchTree()->cast(@Class<Any>));
+                if (!$qualifierTree->allPropertiesInFetchTree()->exists(x | $x->instanceOf(QualifiedProperty)),
+                    | // Only looking inside qualifiers not depending on other qualifiers
+                      let routedQualifierSubTrees = $qualifierTree.subTrees->cast(@PropertyGraphFetchTree)->map(s | $s->routePropertyGraphFetchTree($currentExpression, $mapping, $extensions));
+                      if ($routedQualifierSubTrees->map(x | $x->allPropertyMappingsInRoutedFetchTree())->exists(x | $x->instanceOf(XStorePropertyMapping)),
+                          | pair(list(^$st(isXStoreDependentPrimitiveQualifier = true)->concatenate($routedQualifierSubTrees)), list([$qp])),
+                          | $plainResult
+                      );,
+                    | $plainResult
+                );,
+              | $plainResult
+          );,
+        | $plainResult
+    );
+  });
+
+  let noUpdates = $subTreesFromXStoreMappings->isEmpty() && $withQualifierRequirements.second.values->isEmpty();
+  let withNewSubTrees = $currentTree->addSubTrees($withQualifierRequirements.first.values)->cast(@RoutedGraphFetchTree);
+  if ($noUpdates,
+      | $withNewSubTrees,
+      | $withNewSubTrees->ensureXStoreRequirementsAtCurrentLevel($currentExpression, $processedXStoreMappings->concatenate($xStoreMappingsCurrentLevel.first)->concatenate($xStoreMappingsInSubTrees.first), $processedQualifiers->concatenate($withQualifierRequirements.second.values), $mapping, $extensions)
+  );
+}
+
+function meta::pure::graphFetch::routing::fetchTreeInExpression(vs: ValueSpecification[1], sourceCls: Class<Any>[1]): GraphFetchTree[1]
+{
+  $vs
+    ->meta::pure::lineage::scanProperties::scanProperties().result
+    ->filter(ppn | $sourceCls->_subTypeOf($ppn->get(0).class)) // Filter out property path nodes of source class
+    ->meta::pure::lineage::scanProperties::propertyTree::buildPropertyTree()
+    ->propertyTreeToGraphFetchTree($sourceCls);
+}
+
+function <<access.private>> meta::pure::graphFetch::routing::allPropertiesInFetchTree(g: GraphFetchTree[1]): AbstractProperty<Any>[*]
+{
+   $g->match([p:PropertyGraphFetchTree[1] | $p.property, t:GraphFetchTree[1]|[]])->concatenate($g.subTrees->map(st | $st->allPropertiesInFetchTree()))
+}
+
+function <<access.private>> meta::pure::graphFetch::routing::allPropertyMappingsInRoutedFetchTree(g: GraphFetchTree[1]): PropertyMapping[*]
+{
+   $g->match([p:RoutedPropertyGraphFetchTree[1] | $p.propertyMapping, t:GraphFetchTree[1]|[]])->concatenate($g.subTrees->map(st | $st->allPropertyMappingsInRoutedFetchTree()))
 }
 
 function  <<access.private>> meta::pure::graphFetch::routing::ensureConstraintsRequirementsForMappedProperties(treeRoot:RootGraphFetchTree<Any>[1], mapping: Mapping[1]): RootGraphFetchTree<Any>[1]
@@ -284,8 +369,8 @@ function <<access.private>> meta::pure::graphFetch::routing::requiredPropertiesA
 {
    $pTree.value->match([
       {node:PropertyPathNode[1] | 
-         //let classMappings = $class->getAllTypeGeneralisations()->cast(@Class<Any>)->map(c|$mapping.rootClassMappingByClass($c))->filter(s|$s->instanceOf(InstanceSetImplementation))->cast(@InstanceSetImplementation);
-         let classMappings = $mapping.classMappings()
+         //let classMappings = $class->getAllTypeGeneralisations()->cast(@Class<Any>)->map(c|$mapping->rootClassMappingByClass($c))->filter(s|$s->instanceOf(InstanceSetImplementation))->cast(@InstanceSetImplementation);
+         let classMappings = $mapping->classMappings()
                                 ->filter(s|$s->instanceOf(InstanceSetImplementation))->cast(@InstanceSetImplementation)
                                 ->filter(isi| $isi.class == $class || $class->getAllTypeGeneralisations()->contains($isi.class) || $isi.class->getAllTypeGeneralisations()->contains($class));
          let explicitlyMapped = $classMappings.propertyMappings->filter(pm| $pm.property == $node.property)->isNotEmpty();
@@ -346,7 +431,7 @@ function meta::pure::graphFetch::routing::routePropertyGraphFetchTree(prop: Prop
              requiredQualifiedProperties = $prop->match([epgft:ExtendedPropertyGraphFetchTree[1]| $epgft.requiredQualifiedProperties, 
                                                          gft  :GraphFetchTree[1]                | []
                                                         ])
-          ););
+          );)->ensureXStoreRequirementsAtCurrentLevel($propertyApplicationExporession, [], [], $mapping, $extensions)->cast(@RoutedPropertyGraphFetchTree);
 }
 
 function meta::pure::graphFetch::routing::asString(r: GraphFetchTree[1], multiLine: Boolean[1]):String[1]
@@ -359,9 +444,7 @@ function meta::pure::graphFetch::routing::asString(r: GraphFetchTree[1], spaceSt
    let space = if($multiLine, | $spaceString, | '');
    let newLine = if($multiLine, | '\n', | '');
    $r->match([
-      c: ClusteredGraphFetchTree[1] |
-         let start = '{'+$c.store->toOne()->elementToPath()+'> ';
-         $space+$start+$c.tree->asString($space, $multiLine)+'}';,
+      c: ClusteredGraphFetchTree[1] | $c->clusteredGraphFetchTreeToString($spaceString, $multiLine),
 
       rr: RoutedRootGraphFetchTree<Any>[1] |
          $space + $rr.sets.id->joinStrings('[', ', ', ' / ' + $rr.class->elementToPath() + ']') +

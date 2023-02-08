@@ -28,9 +28,9 @@ public class RelationalGraphObjectsBatch extends GraphObjectsBatch
     private Map<Integer, DoubleStrategyHashMap<Object, Object, SQLExecutionResult>> nodeObjectsHashMap;
     private Map<Integer, List<Method>> nodePrimaryKeyGetters;
 
-    public RelationalGraphObjectsBatch(long batchIndex)
+    public RelationalGraphObjectsBatch(long batchIndex, long graphFetchBatchMemoryLimit)
     {
-        super(batchIndex);
+        super(batchIndex, graphFetchBatchMemoryLimit);
         this.nodeObjectsHashMap = new HashMap<>();
         this.nodePrimaryKeyGetters = new HashMap<>();
     }

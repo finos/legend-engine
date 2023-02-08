@@ -237,7 +237,14 @@ public class HelperRelationalGrammarComposer
         StringBuilder builder = new StringBuilder();
         if (!elementWithJoins.joins.isEmpty())
         {
-            builder.append(LazyIterate.collect(elementWithJoins.joins, HelperRelationalGrammarComposer::renderJoinPointer).makeString(" > "));
+            JoinPointer firstJoinPointer = elementWithJoins.joins.get(0);
+            builder.append(renderFirstJoinPointer(firstJoinPointer));
+            if (elementWithJoins.joins.size() > 1)
+            {
+                builder.append(" > ");
+                String joins = LazyIterate.collect((elementWithJoins.joins.subList(1,elementWithJoins.joins.size())), HelperRelationalGrammarComposer::renderJoinPointer).makeString(" > ");
+                builder.append(joins);
+            }
         }
         if (elementWithJoins.relationalElement != null)
         {
@@ -484,6 +491,15 @@ public class HelperRelationalGrammarComposer
             builder.append(" PRIMARY KEY");
         }
         return builder.toString();
+    }
+
+    //  We do this because the first join pointer requires the database pointer to be first inside the main join operator. See:
+    //  https://github.com/finos/legend-engine/blob/master/legend-engine-xt-relationalStore-grammar/src/main/antlr4/org/finos/legend/engine/language/pure/grammar/from/antlr4/RelationalParserGrammar.g4#L197
+    private static String renderFirstJoinPointer(JoinPointer joinPointer)
+    {
+        return (joinPointer.db != null ? renderDatabasePointer(joinPointer.db) : "") +
+                (joinPointer.joinType != null ? (" (" + (joinPointer.joinType.equals("LEFT_OUTER") ? "OUTER" : joinPointer.joinType) + ") ") : "") + "@" +
+                PureGrammarComposerUtility.convertIdentifier(joinPointer.name);
     }
 
     private static String renderJoinPointer(JoinPointer joinPointer)

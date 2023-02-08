@@ -35,8 +35,8 @@ import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.SchemaAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Table;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_Persister;
-import org.finos.legend.pure.generated.platform_relational_relational;
 import static org.finos.legend.engine.testable.persistence.mapper.IngestModeMapper.getIngestMode;
+import static org.finos.legend.pure.generated.platform_store_relational_functions.Root_meta_relational_metamodel_datatype_dataTypeToSqlText_DataType_1__String_1_;
 
 public class DatasetMapper
 {
@@ -111,7 +111,7 @@ public class DatasetMapper
         RichIterable<String> pks = table._primaryKey().select(c -> c instanceof Column).collect(c -> c._name());
         for (Column column : columns)
         {
-            String dataType = platform_relational_relational.Root_meta_relational_metamodel_datatype_dataTypeToSqlText_DataType_1__String_1_(column._type(), null);
+            String dataType = Root_meta_relational_metamodel_datatype_dataTypeToSqlText_DataType_1__String_1_(column._type(), null);
             FieldType fieldType = FieldTypeMapper.from(dataType);
             Field field = Field.builder()
                     .name(column._name())

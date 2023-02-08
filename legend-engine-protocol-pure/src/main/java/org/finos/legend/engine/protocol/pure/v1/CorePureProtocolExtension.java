@@ -64,8 +64,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.Asse
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.EqualToJsonAssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestError;
-import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestFailed;
-import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestPassed;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 
 import java.util.List;
@@ -117,8 +116,7 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                 // Test Result
                 ProtocolSubTypeInfo.newBuilder(TestResult.class)
                         .withSubtype(TestError.class, "testError")
-                        .withSubtype(TestPassed.class, "testPassed")
-                        .withSubtype(TestFailed.class, "testFailed")
+                        .withSubtype(TestExecuted.class, "testExecuted")
                         .build(),
                 // Assertion Status
                 ProtocolSubTypeInfo.newBuilder(AssertionStatus.class)

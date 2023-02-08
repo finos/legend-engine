@@ -15,6 +15,7 @@
 package org.finos.legend.engine.extensions.collection.generation;
 
 import java.util.Set;
+
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
@@ -101,7 +102,7 @@ public class TestExtensions
     @Test
     public void testCodeRepositories()
     {
-        Assert.assertEquals(Lists.mutable.withAll(getExpectedCodeRepositories()).sortThis(), CodeRepositoryProviderHelper.findCodeRepositories().collect(CodeRepository::getName, Lists.mutable.empty()).sortThis());
+        Assert.assertEquals(Lists.mutable.withAll(getExpectedCodeRepositories()).sortThis(), CodeRepositoryProviderHelper.findCodeRepositories().collect(CodeRepository::getName, Lists.mutable.empty()).select(c -> !c.startsWith("platform_")).sortThis());
     }
 
     @Test
@@ -114,7 +115,7 @@ public class TestExtensions
         Assert.assertEquals(Lists.fixedSize.empty(), Iterate.reject(expectedRepos, allSpecNames::contains, Lists.mutable.empty()));
 
         MutableSet<String> specNames = Iterate.collect(DistributedMetadataSpecification.loadSpecifications(classLoader, expectedRepos), DistributedMetadataSpecification::getName, Sets.mutable.empty());
-        Assert.assertEquals(Sets.mutable.withAll(expectedRepos).with("platform"), specNames);
+        Assert.assertEquals(Sets.mutable.withAll(expectedRepos).with("platform"), specNames.select(c -> !c.startsWith("platform_")));
     }
 
     @Test
@@ -313,6 +314,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.external.format.xsd.XsdExternalFormatExtension.class)
                 .with(org.finos.legend.engine.external.format.protobuf.ProtobufFormatExtension.class)
                 .with(org.finos.legend.engine.query.graphQL.api.format.GraphQLFormatExtension.class)
+                .with(org.finos.legend.engine.query.graphQL.api.format.GraphQLSDLFormatExtension.class)
                 .with(org.finos.legend.engine.external.format.daml.DamlFormatExtension.class);
     }
 

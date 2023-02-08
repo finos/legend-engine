@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.dsl.generation.compiler.toPureGrap
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Lists;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.AbstractGenerationSpecification;
@@ -33,6 +34,12 @@ public class GenerationCompilerExtensionImpl implements GenerationCompilerExtens
 {
     final MutableMap<String, Root_meta_pure_generation_metamodel_GenerationSpecification> generationSpecificationsIndex = Maps.mutable.empty();
     final MutableMap<String, Root_meta_pure_generation_metamodel_GenerationConfiguration> fileConfigurationsIndex = Maps.mutable.empty();
+
+    @Override
+    public CompilerExtension build()
+    {
+        return new GenerationCompilerExtensionImpl();
+    }
 
     @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()

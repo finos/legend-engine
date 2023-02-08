@@ -26,7 +26,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.Da
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.ModelStore;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
 
 import java.io.Closeable;
@@ -54,9 +53,10 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
             for (Map.Entry<String, ValueSpecification> map : ((ModelStoreData) testData).instances.entrySet())
             {
                 ValueSpecification vs = map.getValue();
-                if (vs instanceof ClassInstance && ((ClassInstance) vs).value instanceof org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.Pair && ((org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.Pair) ((ClassInstance) vs).value).second instanceof PackageableElementPtr)
+                if (vs instanceof PackageableElementPtr)
                 {
-                    EmbeddedData testDataElement = Iterate.detect(dataElementList, e -> ((PackageableElementPtr) ((org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.Pair) ((ClassInstance) map.getValue()).value).second).fullPath.equals(e.getPath())).data;
+                    EmbeddedData testDataElement = Iterate.detect(dataElementList, e -> ((PackageableElementPtr) vs).fullPath.equals(e.getPath())).data;
+                    //We assume that there is a default binding being used and therefore external data could be referencd in model store data
                     if (testDataElement instanceof ExternalFormatData && APPLICATION_JSON.equals(((ExternalFormatData) testDataElement).contentType))
                     {
                         JsonModelConnection jsonModelConnection = new JsonModelConnection();

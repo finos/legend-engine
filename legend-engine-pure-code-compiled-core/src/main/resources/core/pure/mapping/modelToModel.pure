@@ -263,7 +263,7 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planInMem
          );
    );
 }
-function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planRootGraphFetchExecutionInMemory(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], clusteredTree: ClusteredGraphFetchTree[1], orderedPaths: String[*], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: meta::pure::extension::Extension[*], debug: DebugContext[1]): InMemoryRootGraphFetchExecutionNode[1]
+function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planRootGraphFetchExecutionInMemory(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], clusteredTree: StoreMappingClusteredGraphFetchTree[1], orderedPaths: String[*], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: meta::pure::extension::Extension[*], debug: DebugContext[1]): InMemoryRootGraphFetchExecutionNode[1]
 {
    let store       = $sq.store;
    let fe          = $sq.fe->evaluateAndDeactivate();
@@ -327,7 +327,7 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planRootG
    );
 }
 
-function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planCrossStoreGraphFetchExecutionInMemory(clusteredTree: ClusteredGraphFetchTree[1], orderedPaths: String[*], parentPath: String[1], inScopeVars: Map<String, List<Any>>[1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: Extension[*], debug: DebugContext[1]): InMemoryCrossStoreGraphFetchExecutionNode[1]
+function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planCrossStoreGraphFetchExecutionInMemory(clusteredTree: StoreMappingClusteredGraphFetchTree[1], orderedPaths: String[*], parentPath: String[1], inScopeVars: Map<String, List<Any>>[1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: Extension[*], debug: DebugContext[1]): InMemoryCrossStoreGraphFetchExecutionNode[1]
 {
    let store      = $clusteredTree.store;
    let rootTree   = $clusteredTree->byPassClusteringInfo()->cast(@RoutedPropertyGraphFetchTree);
@@ -599,13 +599,13 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::sourceSup
 {
    $c->match([mcc:ModelChainConnection[1] | 
                      let chainedMappings             = $mapping->concatenate($mcc.mappings->take($mcc.mappings->size() - 1));
-                     let sourceClassWitSetsProcessed = $chainedMappings->fold({m, c | let srcClass      = $m.rootClassMappingByClass($c.first)->cast(@PureInstanceSetImplementation).srcClass->toOne()->cast(@Class<Any>);
+                     let sourceClassWitSetsProcessed = $chainedMappings->fold({m, c | let srcClass      = $m->rootClassMappingByClass($c.first)->cast(@PureInstanceSetImplementation).srcClass->toOne()->cast(@Class<Any>);
                                                                                       let processedSets = $c.second;
-                                                                                      pair($srcClass, ^$processedSets(values += $m.rootClassMappingByClass($c.first)->cast(@PureInstanceSetImplementation)));
+                                                                                      pair($srcClass, ^$processedSets(values += $m->rootClassMappingByClass($c.first)->cast(@PureInstanceSetImplementation)));
                                                                               }, pair($rootClass, ^List<PureInstanceSetImplementation>(values = [])));
                      let sourceClass                 = $sourceClassWitSetsProcessed.first;
                      let setsProcessed               = $sourceClassWitSetsProcessed.second;
-                     let sourceSetImpl               = $mcc.mappings->last()->toOne().rootClassMappingByClass($sourceClass);
+                     let sourceSetImpl               = $mcc.mappings->last()->toOne()->rootClassMappingByClass($sourceClass);
                      
                      let inScopeVars                 = $populatedXStorePropertiesInScope->map(p |
                                                           pair($p->propertyToVarName(), ^List<Any>(values=$p))

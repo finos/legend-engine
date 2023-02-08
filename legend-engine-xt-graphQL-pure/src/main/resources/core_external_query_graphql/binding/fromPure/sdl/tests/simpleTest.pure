@@ -32,20 +32,6 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
             ->joinStrings('\n\n');
 
   assertEquals(
-    'type Firm {\n' +
-    '  legalName: String!\n' +
-    '  employees: [Person!]!\n' +
-    '  incType: IncType!\n' +
-    '}\n\n' +
-    'enum IncType {\n' +
-    '  LLC\n' +
-    '  CORP\n' +
-    '}\n\n' +
-    'type Person {\n' +
-    '  firstName: String\n' +
-    '  lastName: String!\n' +
-    '  age: Int!\n' +
-    '}\n\n' +
     'type Query {\n' +
     '  firmByName(n: String!): Firm\n' +
     '}\n\n' +

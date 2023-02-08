@@ -52,7 +52,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.cla
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl;
-import org.finos.legend.pure.generated.platform_pure_corefunctions_meta;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
@@ -70,6 +69,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static org.finos.legend.pure.generated.platform_pure_basics_meta_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_;
 
 public class Handlers
 {
@@ -503,7 +504,7 @@ public class Handlers
         register("meta::pure::functions::collection::first_T_MANY__T_$0_1$_", true, ps -> res(ps.get(0)._genericType(), "zeroOne"));
         register("meta::pure::functions::collection::last_T_MANY__T_$0_1$_", true, ps -> res(ps.get(0)._genericType(), "zeroOne"));
         register("meta::pure::functions::meta::enumName_Enumeration_1__String_1_", true, ps -> res("String", "one"));
-        register("meta::pure::functions::meta::extractEnumValue_Enumeration_1__String_1__T_1_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "one"));
+        register("meta::pure::functions::lang::extractEnumValue_Enumeration_1__String_1__T_1_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "one"));
         register("meta::pure::functions::meta::enumValues_Enumeration_1__T_MANY_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"));
 
         register(h("meta::pure::tds::drop_TabularDataSet_1__Integer_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> "TabularDataSet".equals(ps.get(0)._genericType()._rawType()._name())),
@@ -596,6 +597,11 @@ public class Handlers
         register("meta::pure::functions::string::isUUID_String_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"));
         register("meta::json::schema::mapSchema_String_1__Type_1__DiscriminatorMapping_1_", false, ps -> res("meta::json::schema::DiscriminatorMapping", "one"));
         register("meta::json::schema::discriminateOneOf_Any_1__Any_1__Type_MANY__DiscriminatorMapping_MANY__Boolean_1_", false, ps -> res("Boolean", "one"));
+
+        // getter for execution parameters from execution environment
+        register(m(
+                m(h("meta::legend::service::get_ExecutionEnvironmentInstance_1__String_1__SingleExecutionParameters_1_", false, ps -> res("meta::legend::service::metamodel::SingleExecutionParameters", "one"), ps -> ps.size() == 2)),
+                m(h("meta::legend::service::get_ExecutionEnvironmentInstance_1__String_1__String_1__SingleExecutionParameters_1_", false, ps -> res("meta::legend::service::metamodel::SingleExecutionParameters", "one"), ps -> ps.size() == 3))));
 
 
         // Extensions
@@ -719,8 +725,9 @@ public class Handlers
                 m(h("meta::pure::tds::sort_TabularDataSet_1__String_MANY__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 2 && "String".equals(ps.get(1)._genericType()._rawType()._name())),
                         h("meta::pure::tds::sort_TabularDataSet_1__SortInformation_MANY__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true))));
 
-        register(m(m(h("meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 3 && "TabularDataSet".equals(ps.get(0)._genericType()._rawType()._name())),
-                        h("meta::pure::mapping::from_T_m__Mapping_1__Runtime_1__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 3)),
+        register(m(m(h("meta::pure::mapping::from_T_m__SingleExecutionParameters_1__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2)),
+                m(h("meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 3 && "TabularDataSet".equals(ps.get(0)._genericType()._rawType()._name())),
+                    h("meta::pure::mapping::from_T_m__Mapping_1__Runtime_1__T_m_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 3)),
                 m(h("meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 4))));
 
         register(m(grp(LambdaCollectionInference, h("meta::pure::tds::tdsContains_T_1__Function_MANY__TabularDataSet_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3)),
@@ -1138,7 +1145,7 @@ public class Handlers
             org.finos.legend.pure.m3.coreinstance.Package pkg = handler.getFunc() instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement ? ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement)handler.getFunc())._package() : null;
             if (pkg != null)
             {
-                String path = platform_pure_corefunctions_meta.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(pkg, pureModel.getExecutionSupport());
+                String path = Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(pkg, pureModel.getExecutionSupport());
                 if (path.startsWith(this.META_PACKAGE_NAME + this.PACKAGE_SEPARATOR))
                 {
                     registeredMetaPackages.add(path);
@@ -1935,6 +1942,9 @@ public class Handlers
         map.put("meta::pure::mapping::from_T_m__Mapping_1__Runtime_1__T_m_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "Mapping".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "Runtime".equals(ps.get(2)._genericType()._rawType()._name())));
         map.put("meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_", (List<ValueSpecification> ps) -> ps.size() == 4 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "TabularDataSet", "TabularDataSetImplementation", "TableTDS").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "Mapping".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "Runtime".equals(ps.get(2)._genericType()._rawType()._name())) && isOne(ps.get(3)._multiplicity()) && Sets.immutable.with("Nil", "ExecutionContext", "ExtendedExecutionContext", "RelationalExecutionContext", "AuthenticationContext", "AnalyticsExecutionContext", "BatchQueryContext", "LatestBatchQueryContext", "DirtyLatestBatchQueryContext", "VectorBatchQueryContext", "WatermarkExecutionContext", "SpecificWatermarkExecutionContext", "RefinerWatermarkExecutionContext").contains(ps.get(3)._genericType()._rawType()._name()));
         map.put("meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "TabularDataSet", "TabularDataSetImplementation", "TableTDS").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "Mapping".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "Runtime".equals(ps.get(2)._genericType()._rawType()._name())));
+        map.put("meta::pure::mapping::from_T_m__SingleExecutionParameters_1__T_m_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "SingleExecutionParameters".equals(ps.get(1)._genericType()._rawType()._name())));
+        map.put("meta::legend::service::get_ExecutionEnvironmentInstance_1__String_1__SingleExecutionParameters_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "ExecutionEnvironmentInstance".equals(ps.get(0)._genericType()._rawType()._name())) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "String".equals(ps.get(1)._genericType()._rawType()._name())));
+        map.put("meta::legend::service::get_ExecutionEnvironmentInstance_1__String_1__String_1__SingleExecutionParameters_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "ExecutionEnvironmentInstance".equals(ps.get(0)._genericType()._rawType()._name())) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "String".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "String".equals(ps.get(2)._genericType()._rawType()._name())));
         map.put("meta::pure::runtime::getRuntimeWithModelConnection_Class_1__Any_MANY__Runtime_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Class", "MappingClass", "ClassProjection").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::tds::agg_String_1__FunctionDefinition_1__FunctionDefinition_1__AggregateValue_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "String".equals(ps.get(0)._genericType()._rawType()._name())) && isOne(ps.get(1)._multiplicity()) && Sets.immutable.with("Nil", "FunctionDefinition", "QualifiedProperty", "ConcreteFunctionDefinition", "LambdaFunction", "NewPropertyRouteNodeFunctionDefinition").contains(ps.get(1)._genericType()._rawType()._name()) && isOne(ps.get(2)._multiplicity()) && Sets.immutable.with("Nil", "FunctionDefinition", "QualifiedProperty", "ConcreteFunctionDefinition", "LambdaFunction", "NewPropertyRouteNodeFunctionDefinition").contains(ps.get(2)._genericType()._rawType()._name()));
         map.put("meta::pure::tds::asc_String_1__SortInformation_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "String".equals(ps.get(0)._genericType()._rawType()._name())));

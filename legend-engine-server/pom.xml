@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>3.30.2-SNAPSHOT</version>
+        <version>4.0.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-server</artifactId>
@@ -53,7 +53,7 @@
                                 </filter>
                             </filters>
                             <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>org.finos.legend.engine.server.Server</mainClass>
                                 </transformer>
@@ -589,7 +589,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-extension-external-json</artifactId>
+            <artifactId>legend-pure-runtime-java-extension-functions-json</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -610,11 +610,6 @@
 <!--            <artifactId>legend-pure</artifactId>-->
 <!--            <scope>test</scope>-->
 <!--        </dependency>-->
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-configuration-external</artifactId>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-test-server-shared</artifactId>

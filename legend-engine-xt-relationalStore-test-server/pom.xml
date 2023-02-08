@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>3.30.2-SNAPSHOT</version>
+        <version>4.0.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-xt-relationalStore-test-server</artifactId>
@@ -42,6 +42,7 @@
                         <exclude>**/Test_Relational_DbSpecific_Snowflake_UsingPureClientTestSuite.java</exclude>
                         <exclude>**/Test_Relational_DbSpecific_Postgres_UsingPureClientTestSuite.java</exclude>
                     </excludes>
+                    <argLine>${argLine} ${surefire.vm.params}</argLine>
                 </configuration>
             </plugin>
         </plugins>
@@ -213,10 +214,6 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-code-compiled-tests</artifactId>
-        </dependency>
         <!-- Test Helper -->
 
         <!-- TEST -->
@@ -237,11 +234,6 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-javaPlatformBinding-pure</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-configuration-external</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

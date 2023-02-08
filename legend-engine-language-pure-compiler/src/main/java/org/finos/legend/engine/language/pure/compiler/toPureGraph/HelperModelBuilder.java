@@ -39,7 +39,6 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_Ge
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_ClassConstraintValueSpecificationContext_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_ExpressionSequenceValueSpecificationContext_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl;
-import org.finos.legend.pure.generated.platform_pure_corefunctions_meta;
 import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningFunctions;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner;
@@ -62,6 +61,8 @@ import org.slf4j.Logger;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import static org.finos.legend.pure.generated.platform_pure_basics_meta_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_;
 
 public class HelperModelBuilder
 {
@@ -503,6 +504,6 @@ public class HelperModelBuilder
             return "ModelStore";
         }
         // TODO: we might want to fix a bugs here where if we pass in element without ID/package + name, we might get `cannot cast a collection of multiplicity [0] to [1]` or so
-        return platform_pure_corefunctions_meta.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(element, executionSupport);
+        return Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(element, executionSupport);
     }
 }

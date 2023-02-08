@@ -27,7 +27,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ModelStoreData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
@@ -35,12 +34,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDe
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFloat;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CInteger;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.EnumValue;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.Pair;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.math.BigDecimal;
@@ -82,12 +79,7 @@ public class ModelStoreDataParseTreeWalker
                 {
                     PackageableElementPtr ptr = new PackageableElementPtr();
                     ptr.fullPath = ((DataElementReference) embeddedData).dataElement;
-                    PackageableElementPtr bindingPtr = new PackageableElementPtr();
-                    bindingPtr.fullPath = "generated::default__generatedBindingForTestData";
-                    Pair pair = new Pair();
-                    pair.first = bindingPtr;
-                    pair.second = ptr;
-                    instances = new ClassInstance("pair", pair);
+                    instances = ptr;
                 }
                 else
                 {

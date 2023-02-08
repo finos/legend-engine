@@ -20,12 +20,15 @@ import io.opentracing.util.GlobalTracer;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
+import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.Constrained;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
+import org.finos.legend.engine.plan.dependencies.domain.graphFetch.IGraphInstance;
 import org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeGraphFetchMergeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeGraphFetchUnionSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeSerializeSpecifics;
+import org.finos.legend.engine.plan.dependencies.store.platform.graphFetch.IPlatformPrimitiveQualifierLocalGraphFetchExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;
 import org.finos.legend.engine.plan.execution.cache.ExecutionCache;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCache;
@@ -70,6 +73,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.extern
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GlobalGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.LocalGraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.PlatformGlobalGraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.PlatformPrimitiveQualifierLocalGraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.StoreMappingGlobalGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.XStorePropertyFetchDetails;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryCrossStoreGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryPropertyGraphFetchExecutionNode;
@@ -78,6 +84,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphF
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.SerializationConfig;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.PropertyGraphFetchTree;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 
@@ -87,6 +94,7 @@ import java.util.DoubleSummaryStatistics;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -143,6 +151,14 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
                 throw new RuntimeException("Expected result for variable : " + ((VariableResolutionExecutionNode) executionNode).varName + ". No result found !");
             }
             return res;
+        }
+        else if (executionNode instanceof PlatformGlobalGraphFetchExecutionNode)
+        {
+            return this.executePlatformGlobalGraphFetchExecutionNode((PlatformGlobalGraphFetchExecutionNode) executionNode);
+        }
+        else if (executionNode instanceof PlatformPrimitiveQualifierLocalGraphFetchExecutionNode)
+        {
+            return this.executePlatformPrimitiveQualifierLocalGraphFetchExecutionNode((PlatformPrimitiveQualifierLocalGraphFetchExecutionNode) executionNode);
         }
 
         return this.executionState.extraNodeExecutors.stream().map(executor -> executor.value(executionNode, profiles, executionState)).filter(Objects::nonNull).findFirst().orElseThrow(() -> new UnsupportedOperationException("Unsupported execution node type '" + executionNode.getClass().getSimpleName() + "'"));
@@ -389,7 +405,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
                                                     try (Scope ignored4 = GlobalTracer.get().buildSpan("Graph Query: Execute Cross Store Child").startActive(true))
                                                     {
                                                         graphExecutionState.setObjectsToGraphFetch(objects);
-                                                        ExecutionNodeExecutor.this.executeGlobalGraphOperation(crossChild, graphExecutionState);
+                                                        ExecutionNodeExecutor.this.executeGlobalGraphOperation((StoreMappingGlobalGraphFetchExecutionNode) crossChild, graphExecutionState);
                                                     }
                                                 }
                                             }
@@ -428,7 +444,8 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
         }
     }
 
-    private void executeGlobalGraphOperation(GlobalGraphFetchExecutionNode globalGraphFetchExecutionNode, GraphExecutionState graphExecutionState)
+    @Deprecated
+    private void executeGlobalGraphOperation(StoreMappingGlobalGraphFetchExecutionNode globalGraphFetchExecutionNode, GraphExecutionState graphExecutionState)
     {
         List<?> parentObjects = graphExecutionState.getObjectsForNodeIndex(globalGraphFetchExecutionNode.parentIndex);
         graphExecutionState.setObjectsToGraphFetch(parentObjects);
@@ -442,7 +459,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
                 {
                     try (Scope ignored2 = GlobalTracer.get().buildSpan("Graph Query: Execute Cross Store Child").startActive(true))
                     {
-                        this.executeGlobalGraphOperation(crossChild, graphExecutionState);
+                        this.executeGlobalGraphOperation((StoreMappingGlobalGraphFetchExecutionNode) crossChild, graphExecutionState);
                     }
                 }
             }
@@ -450,7 +467,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
     }
 
     @Override
-    public Result visit(GlobalGraphFetchExecutionNode globalGraphFetchExecutionNode)
+    public Result visit(StoreMappingGlobalGraphFetchExecutionNode globalGraphFetchExecutionNode)
     {
         final Span topSpan = GlobalTracer.get().activeSpan();
         final boolean isGraphRoot = globalGraphFetchExecutionNode.parentIndex == null;
@@ -472,9 +489,9 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
                 boolean nonEmptyObjectList = !parentObjects.isEmpty();
 
                 ExecutionState newState = new ExecutionState(this.executionState).setGraphObjectsBatch(batch);
-                if (globalGraphFetchExecutionNode.children != null && !globalGraphFetchExecutionNode.children.isEmpty() && nonEmptyObjectList)
+                if (nonEmptyObjectList)
                 {
-                    globalGraphFetchExecutionNode.children.forEach(c -> c.accept(new ExecutionNodeExecutor(this.profiles, newState)));
+                    this.executeGlobalGraphChildren(globalGraphFetchExecutionNode, newState);
                 }
 
                 rowCount.addAndGet(batch.getRowCount());
@@ -537,13 +554,11 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
                 }
                 globalGraphFetchExecutionNode.localGraphFetchExecutionNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
 
-                if (globalGraphFetchExecutionNode.children != null && !globalGraphFetchExecutionNode.children.isEmpty())
-                {
-                    globalGraphFetchExecutionNode.children.forEach(c -> c.accept(new ExecutionNodeExecutor(this.profiles, this.executionState)));
-                }
+                this.executeGlobalGraphChildren(globalGraphFetchExecutionNode, this.executionState);
             }
 
-            return new ConstantResult(parentObjects);
+            List<?> objects = graphObjectsBatch.getObjectsForNodeIndex(globalGraphFetchExecutionNode.localGraphFetchExecutionNode.nodeIndex);
+            return new ConstantResult(objects != null ? objects : Lists.mutable.empty());
         }
     }
 
@@ -592,7 +607,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
         return last;
     }
 
-    private ExecutionCache<GraphFetchCacheKey, List<Object>> findGraphFetchCacheByTargetCrossKeys(GlobalGraphFetchExecutionNode globalGraphFetchExecutionNode)
+    private ExecutionCache<GraphFetchCacheKey, List<Object>> findGraphFetchCacheByTargetCrossKeys(StoreMappingGlobalGraphFetchExecutionNode globalGraphFetchExecutionNode)
     {
         List<GraphFetchCache> graphFetchCaches = this.executionState.graphFetchCaches;
         XStorePropertyFetchDetails fetchDetails = globalGraphFetchExecutionNode.xStorePropertyFetchDetails;
@@ -615,5 +630,96 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
                 })
                 .map(GraphFetchCacheByTargetCrossKeys::getExecutionCache)
                 .findFirst().orElse(null);
+    }
+
+    private Result executePlatformGlobalGraphFetchExecutionNode(PlatformGlobalGraphFetchExecutionNode node)
+    {
+        GraphObjectsBatch graphObjectsBatch = this.executionState.graphObjectsBatch;
+        List<?> parentObjects = graphObjectsBatch.getObjectsForNodeIndex(node.parentIndex);
+
+        if (parentObjects != null && !parentObjects.isEmpty())
+        {
+            node.localGraphFetchExecutionNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+            this.executeGlobalGraphChildren(node, this.executionState);
+        }
+
+        List<?> objects = graphObjectsBatch.getObjectsForNodeIndex(node.localGraphFetchExecutionNode.nodeIndex);
+        return new ConstantResult(objects != null ? objects : Lists.mutable.empty());
+    }
+
+    private Result executePlatformPrimitiveQualifierLocalGraphFetchExecutionNode(PlatformPrimitiveQualifierLocalGraphFetchExecutionNode node)
+    {
+        GraphObjectsBatch graphObjectsBatch = this.executionState.graphObjectsBatch;
+        List<?> parentObjects = graphObjectsBatch.getObjectsForNodeIndex(node.parentIndex);
+        List<Object> childObjects = Lists.mutable.empty();
+        graphObjectsBatch.setObjectsForNodeIndex(node.nodeIndex, childObjects);
+
+        if (parentObjects != null && !parentObjects.isEmpty())
+        {
+            IPlatformPrimitiveQualifierLocalGraphFetchExecutionNodeSpecifics specifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.profiles);
+            Stream<IGraphInstance<?>> graphInstanceStream = specifics.executeQualifierExpression(parentObjects, DefaultExecutionNodeContext.factory().create(this.executionState, null));
+            graphInstanceStream.filter(Objects::nonNull).forEach(graphInstance ->
+            {
+                graphObjectsBatch.addObjectMemoryUtilization(graphInstance.instanceSize());
+                childObjects.add(graphInstance.getValue());
+            });
+        }
+
+        return new ConstantResult(childObjects);
+    }
+
+    private void executeGlobalGraphChildren(GlobalGraphFetchExecutionNode node, ExecutionState state)
+    {
+        if (node.children != null && !node.children.isEmpty())
+        {
+            List<GlobalGraphFetchExecutionNode> childrenToProcess = Lists.mutable.withAll(node.children);
+            Set<Integer> processedIndices = Sets.mutable.empty();
+            if (node.localTreeIndices != null)
+            {
+                processedIndices.addAll(node.localTreeIndices);
+            }
+
+            while (!childrenToProcess.isEmpty())
+            {
+                boolean anyChildProcessed = false;
+
+                for (GlobalGraphFetchExecutionNode nextChild : childrenToProcess)
+                {
+                    if (nextChild.dependencyIndices == null || processedIndices.containsAll(nextChild.dependencyIndices))
+                    {
+                        nextChild.accept(new ExecutionNodeExecutor(this.profiles, state));
+                        this.updateProcessedIndicesRecursively(nextChild, processedIndices);
+                        childrenToProcess.remove(nextChild);
+                        anyChildProcessed = true;
+                        break;
+                    }
+                }
+
+                if (!anyChildProcessed)
+                {
+                    String message = childrenToProcess.stream().map(c ->
+                    {
+                        String dependencyIndicesString = (c.dependencyIndices != null ? c.dependencyIndices : Lists.mutable.empty()).stream().map(Object::toString).collect(Collectors.joining(", ", "Dependency Indices: [", "]"));
+                        Set<Integer> localIndices = Sets.mutable.empty();
+                        this.updateProcessedIndicesRecursively(c, localIndices);
+                        String localTreeIndicesString = localIndices.stream().map(Object::toString).collect(Collectors.joining(", ", "Local Tree Indices: [", "]"));
+                        return ((PropertyGraphFetchTree) c.graphFetchTree).property + " : " + localTreeIndicesString + ", " + dependencyIndicesString;
+                    }).collect(Collectors.joining("\n", "\n", "\n"));
+                    throw new RuntimeException("Cyclic dependencies found between cross store graph fetch properties. Remaining properties and dependencies: " + message);
+                }
+            }
+        }
+    }
+
+    private void updateProcessedIndicesRecursively(GlobalGraphFetchExecutionNode node, Set<Integer> processedIndices)
+    {
+        if (node.localTreeIndices != null)
+        {
+            processedIndices.addAll(node.localTreeIndices);
+        }
+        if (node.children != null && !node.children.isEmpty())
+        {
+            node.children.forEach(x -> this.updateProcessedIndicesRecursively(x, processedIndices));
+        }
     }
 }

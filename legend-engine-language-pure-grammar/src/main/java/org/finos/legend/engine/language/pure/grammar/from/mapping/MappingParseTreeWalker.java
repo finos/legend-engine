@@ -30,11 +30,8 @@ import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarP
 import org.finos.legend.engine.language.pure.grammar.from.test.assertion.HelperTestAssertionGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ModelStoreData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ModelUnit;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumerationMapping;
@@ -49,16 +46,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.Pair;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -182,49 +175,21 @@ public class MappingParseTreeWalker
         mappingTestSuite.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
 
         List<MappingParserGrammar.MappingTestDataContext> validatedDataCtx = PureGrammarParserUtility.validateRequiredListField(ctx.mappingTestData(), "data", mappingTestSuite.sourceInformation);
-        mappingTestSuite.storeTestDatas = validatedDataCtx.stream().map(validateCtx -> this.visitMappingStoreTestData(validateCtx, mappingTestSuite.id, mapping.getPath())).collect(Collectors.toList());
+        mappingTestSuite.storeTestDatas = validatedDataCtx.stream().map(validateCtx -> this.visitMappingStoreTestData(validateCtx)).collect(Collectors.toList());
         List<MappingParserGrammar.MappingTestContext> validatedTestCtx = PureGrammarParserUtility.validateRequiredListField(ctx.mappingTest(), "tests", mappingTestSuite.sourceInformation);
         mappingTestSuite.tests = ListIterate.collect(validatedTestCtx, atomicTest -> this.visitAtomicTest(atomicTest, mapping));
 
         return mappingTestSuite;
     }
 
-    private StoreTestData visitMappingStoreTestData(MappingParserGrammar.MappingTestDataContext ctx, String id, String path)
+    private StoreTestData visitMappingStoreTestData(MappingParserGrammar.MappingTestDataContext ctx)
     {
         StoreTestData testData = new StoreTestData();
         testData.data = HelperEmbeddedDataGrammarParser.parseEmbeddedData(ctx.embeddedData(), this.walkerSourceInformation, this.parserContext.getPureGrammarParserExtensions());
-        this.createDummyBindingIfRequired(testData.data, id, path);
         testData.store = ctx.qualifiedName().packagePath() == null && testData.data instanceof ModelStoreData ?
                 "ModelStore" :
                 PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());     //build store
         return testData;
-    }
-
-    private void createDummyBindingIfRequired(EmbeddedData data, String id, String path)
-    {
-        if (data instanceof ModelStoreData)
-        {
-            Binding binding = new Binding();
-            ModelUnit modelUnit = new ModelUnit();
-            modelUnit.packageableElementIncludes = ((ModelStoreData) data).instances.keySet().stream().collect(Collectors.toList());
-            binding.name = "default__generatedBindingForTestData__" + path.replaceAll("::", "_") + "__" + id;
-            binding._package = "generated";
-            binding.modelUnit = modelUnit;
-            binding.contentType = "application/json";    //default content type
-            //change the pointer for pair
-            Map<String, ValueSpecification> instances = ((ModelStoreData) data).instances;
-            instances.keySet().stream().forEach(key ->
-            {
-                ClassInstance keyInst = (ClassInstance) instances.get(key);
-                Pair pairOfPointers = (Pair) keyInst.value;
-                PackageableElementPtr ptr = new PackageableElementPtr();
-                ptr.fullPath = binding.getPath();
-                pairOfPointers.first = ptr;
-                instances.put(key, keyInst);
-            });
-            this.section.elements.add(binding.getPath());
-            this.elementConsumer.accept(binding);
-        }
     }
 
     private MappingTest visitAtomicTest(MappingParserGrammar.MappingTestContext ctx, Mapping mapping)

@@ -46,5 +46,8 @@ public abstract class PackageableElement
         return this._package == null || this._package.isEmpty() ? this.name : this._package + "::" + this.name;
     }
 
-    public abstract <T> T accept(PackageableElementVisitor<T> visitor);
+    public <T> T accept(PackageableElementVisitor<T> visitor)
+    {
+        return visitor.visit(this);
+    }
 }

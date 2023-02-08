@@ -16,12 +16,13 @@ import meta::relational::metamodel::execute::*;
 import meta::relational::tests::loadCsv::*;
 import meta::relational::runtime::*;
 import meta::relational::tests::model::simple::*;
+import meta::relational::metamodel::*;
 
 function <<test.Test>> meta::relational::tests::loadCsv::testLoadCsv():Boolean[1]
 {
    let connection = meta::relational::tests::testRuntime(db).connections->toOne()->cast(@TestDatabaseConnection);
    meta::relational::functions::toDDL::dropAndCreateTableInDb(db, 'personCsvTable', $connection);
-   loadCsvToDbTable('/core_relational/relational/functions/tests/loadCsvToDbTable/employees.csv', db.schema('default')->toOne().table('personCsvTable')->toOne(),
+   loadCsvToDbTable('/core_relational/relational/functions/tests/loadCsvToDbTable/employees.csv', db->schema('default')->toOne()->table('personCsvTable')->toOne(),
                      $connection);
                      
    let res = execute(|Person.all(), csvMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());

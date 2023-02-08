@@ -7,7 +7,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 {
   let dynaFunc = ^DynaFunction(name= 'count' , parameters=[]);
 
-  let table= meta::relational::tests::db->cast(@Database).schema('default').table('personTable')->toOne();
+  let table= meta::relational::tests::db->cast(@Database)->schema('default')->map(s|$s->table('personTable'))->toOne();
   let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
                                  data= ^meta::relational::metamodel::join::RootJoinTreeNode(
                                      alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
@@ -21,7 +21,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 {
   let dynaFunc = ^DynaFunction(name= 'size' , parameters=[]);
 
-  let table= meta::relational::tests::db->cast(@Database).schema('default').table('personTable')->toOne();
+  let table= meta::relational::tests::db->cast(@Database)->schema('default')->map(x|$x->table('personTable'))->toOne();
   let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
                                  data= ^meta::relational::metamodel::join::RootJoinTreeNode(
                                      alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
@@ -34,7 +34,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 {
   let dynaFunc = ^DynaFunction(name= 'average' , parameters=[^ColumnName(name='AGE')]);
 
-  let table= meta::relational::tests::db->cast(@Database).schema('default').table('personTable')->toOne();
+  let table= meta::relational::tests::db->cast(@Database)->schema('default')->map(x|$x->table('personTable'))->toOne();
   let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
                                  data= ^meta::relational::metamodel::join::RootJoinTreeNode(
                                      alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
@@ -48,7 +48,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 {
   let dynaFunc = ^DynaFunction(name= 'sum' , parameters=[^ColumnName(name='AGE')]);
 
-  let table= meta::relational::tests::db->cast(@Database).schema('default').table('personTable')->toOne();
+  let table= meta::relational::tests::db->cast(@Database)->schema('default')->map(x|$x->table('personTable'))->toOne();
   let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
                                  data= ^meta::relational::metamodel::join::RootJoinTreeNode(
                                      alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
@@ -61,7 +61,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 {
   let dynaFunc = ^DynaFunction(name= 'max' , parameters=[^ColumnName(name='AGE')]);
 
-  let table= meta::relational::tests::db->cast(@Database).schema('default').table('personTable')->toOne();
+  let table= meta::relational::tests::db->cast(@Database)->schema('default')->map(x|$x->table('personTable'))->toOne();
   let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
                                  data= ^meta::relational::metamodel::join::RootJoinTreeNode(
                                      alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
@@ -75,7 +75,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 {
   let dynaFunc = ^DynaFunction(name= 'min' , parameters=[^ColumnName(name='AGE')]);
 
-  let table= meta::relational::tests::db->cast(@Database).schema('default').table('personTable')->toOne();
+  let table= meta::relational::tests::db->cast(@Database)->schema('default')->map(x|$x->table('personTable'))->toOne();
   let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
                                  data= ^meta::relational::metamodel::join::RootJoinTreeNode(
                                      alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
@@ -88,7 +88,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 {
   let dynaFunc = ^DynaFunction(name= 'stdDevSample' , parameters=[^ColumnName(name='AGE')]);
 
-  let table= meta::relational::tests::db->cast(@Database).schema('default').table('personTable')->toOne();
+  let table= meta::relational::tests::db->cast(@Database)->schema('default')->map(x|$x->table('personTable'))->toOne();
   let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
                                  data= ^meta::relational::metamodel::join::RootJoinTreeNode(
                                      alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
@@ -102,7 +102,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 {
   let dynaFunc = ^DynaFunction(name= 'stdDevPopulation' , parameters=[^ColumnName(name='AGE')]);
 
-  let table= meta::relational::tests::db->cast(@Database).schema('default').table('personTable')->toOne();
+  let table= meta::relational::tests::db->cast(@Database)->schema('default')->map(x|$x->table('personTable'))->toOne();
   let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
                                  data= ^meta::relational::metamodel::join::RootJoinTreeNode(
                                      alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
