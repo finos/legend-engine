@@ -33,6 +33,11 @@ public class TestScenario
         this.datasets = Datasets.of(mainTable, stagingTable);
     }
 
+    public TestScenario(IngestMode ingestMode)
+    {
+        this.ingestMode = ingestMode;
+    }
+
     public Dataset getMainTable()
     {
         return mainTable;
@@ -52,4 +57,10 @@ public class TestScenario
     {
         return datasets;
     }
+
+    public void setDatasets(Datasets datasets)
+    {
+        this.datasets = datasets;
+    }
+
 }

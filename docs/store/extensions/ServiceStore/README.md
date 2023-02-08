@@ -45,7 +45,7 @@ REST APIs hosted by different servers should be defined in different service sto
     - method : `HTTPMethod`[1] : The HTTP method for the request. Can be one of the following: `GET` or `POST`.
     - parameters : `ServiceParameter`[*] : Defines the structure of path, query, header, and other REST API parameters.
     - requestBody :`TypeReference`[0..1] : Defines a schema to use for the body of a POST request to the API. This shouldn't be defined for GET requests.
-    - response :`ComplexTypeReference`[1] : Defines a schema to use for data returned from a POST request to the REST API. This shouldn't be defined for GET requests. Follows the grammar required to define`ComplexTypeReference` as described below.
+    - response :`ComplexTypeReference`[1] : Defines a schema along with deserialization strategy to use for data returned from the request to the REST API. Follows the grammar required to define`ComplexTypeReference` as described below.
     - security : `SecurityScheme`[*] : Defines the security scheme used to guard the REST API (for example, Basic).
 - **ServiceParameter**:Service Parameter lets you model parameters of your REST API. It's modelled with these below properties:
     - name : `String`[1] : The name of your parameter.

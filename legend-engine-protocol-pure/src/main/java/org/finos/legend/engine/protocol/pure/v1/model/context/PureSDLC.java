@@ -18,15 +18,26 @@ import java.util.Objects;
 
 public class PureSDLC extends SDLC
 {
+    public String overrideUrl;
+
     @Override
     public boolean equals(Object o)
     {
-        return super.equals(o);
+        if (this == o)
+        {
+            return true;
+        }
+        if ((o == null) || (o.getClass() != this.getClass()))
+        {
+            return false;
+        }
+        PureSDLC that = (PureSDLC) o;
+        return Objects.equals(this.overrideUrl, that.overrideUrl) && Objects.equals(this.version, that.version) && Objects.equals(this.baseVersion, that.baseVersion) && Objects.equals(this.packageableElementPointers, that.packageableElementPointers);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(super.hashCode());
+        return Objects.hash(this.overrideUrl, this.version, this.baseVersion, this.packageableElementPointers);
     }
 }

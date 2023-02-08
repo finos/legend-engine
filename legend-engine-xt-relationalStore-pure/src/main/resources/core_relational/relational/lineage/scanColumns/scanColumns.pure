@@ -66,7 +66,7 @@ function <<access.private>> meta::pure::lineage::scanColumns::scanColumns(p:Prop
                              sp:Property<Nil,Any|*>[1]|
 
                                       print(if($debug.debug,|$debug.space+'Process Property:'+$pr.property.name->toOne()+'\n',|''));
-                                      let propertyMappings = $nsets->map(s|$s.propertyMappingsByPropertyName($pr.property.name->toOne()));
+                                      let propertyMappings = $nsets->map(s|$s->_propertyMappingsByPropertyName($pr.property.name->toOne()));
                                       print(if($debug.debug,|$debug.space + 'property mappings:'+$propertyMappings->map(pm|$pm.sourceSetImplementationId+' -> '+$pm.targetSetImplementationId)->joinStrings('\n                    '+$debug.space)+'\n',|''));
                                       let isDataTypeProperty = !$pr.property.genericType.rawType->isEmpty() && $pr.property.genericType.rawType->toOne()->instanceOf(DataType);
 
@@ -82,7 +82,7 @@ function <<access.private>> meta::pure::lineage::scanColumns::scanColumns(p:Prop
                              q:QualifiedProperty<Any>[1]|
                                       print(if($debug.debug,|$debug.space+'Process Qualifier:'+$pr.property.name->toOne()+'\n',|''));
                                       if($q->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype(),
-                                                            | let propertyMappings = $nsets->map(s|$s.propertyMappingsByPropertyName($pr.property.functionName->toOne()+'AllVersions'));
+                                                            | let propertyMappings = $nsets->map(s|$s->_propertyMappingsByPropertyName($pr.property.functionName->toOne()+'AllVersions'));
                                                               $propertyMappings->fold({pm,state|processNonDataTypeProperty($p, $pm, $possiblePropertyTargetClasses, $m, $state, $debug)},
                                                                         ^meta::pure::lineage::scanColumns::ColResWithState(classToSets=$classToSets, idToSet=$idToSet));,
                                                             | let afterQualifier = $p.qualifierSubTree->toOne()->scanColumns($m, $sets, $classToSets, $idToSet, false, $debug);
@@ -94,7 +94,7 @@ function <<access.private>> meta::pure::lineage::scanColumns::scanColumns(p:Prop
                          print(if($debug.debug,|$debug.space+'Process Class: '+$cl.name->toOne()+'\n',|''));
                           if($isRoot,
                              |
-                                let nClassToSets = if($classToSets->keys()->contains($cl), |$classToSets, | $classToSets->keyValues()->concatenate(pair($cl, list($m.classMappingByClass($cl)->map(s|$s->resolveOperation($m)))))->newMap());
+                                let nClassToSets = if($classToSets->keys()->contains($cl), |$classToSets, | $classToSets->keyValues()->concatenate(pair($cl, list($m->_classMappingByClass($cl)->map(s|$s->resolveOperation($m)))))->newMap());
                                 let nsets = $nClassToSets->get($cl).values;
                                 $p.children->map(c|$c->scanColumns($m, $sets->concatenate($nsets)->removeDuplicates({a,b|$a.id == $b.id}), $nClassToSets, $idToSet, false, ^$debug(space=$debug.space+'    ')));,
                              |
@@ -114,12 +114,12 @@ function <<access.private>> meta::pure::lineage::scanColumns::processNonDataType
       $m->allSubSetImplementationIds($i.inlineSetImplementationId)->removeDuplicates(),
       p:PropertyMapping[1]|
       let targetSiId = $p.targetSetImplementationId;
-      let nIdToSet = $targetSiId->fold({sid,res|if($res->keys()->contains($sid), |$res ,|$res->keyValues()->concatenate(pair($sid,list($m.classMappingById($sid))))->newMap())}, $state.idToSet);
+      let nIdToSet = $targetSiId->fold({sid,res|if($res->keys()->contains($sid), |$res ,|$res->keyValues()->concatenate(pair($sid,list($m->classMappingById($sid))))->newMap())}, $state.idToSet);
       let targetClass = $nIdToSet->get($targetSiId).values.class;
 
       if ($targetClass->isNotEmpty() && $possiblePropertyTargetClasses->isNotEmpty() && !$possiblePropertyTargetClasses->exists(c|$targetClass->toOne()->_subTypeOf($c)),
           | if($possiblePropertyTargetClasses->exists(c|$c->_subTypeOf($targetClass->toOne())),
-               |$m.classMappingByClass($possiblePropertyTargetClasses->filter(c|$c->_subTypeOf($targetClass->toOne()))->toOne())->map(s|$s->resolveOperation($m)).id, |[]),
+               |$m->_classMappingByClass($possiblePropertyTargetClasses->filter(c|$c->_subTypeOf($targetClass->toOne()))->toOne())->map(s|$s->resolveOperation($m)).id, |[]),
       | $targetSiId;);
                                            ]);
 
@@ -131,7 +131,7 @@ function <<access.private>> meta::pure::lineage::scanColumns::processNonDataType
       a:Any[1]|[]
    ]);
 
-   let nIdToSet = $targetSetImplementationId->fold({sid,res|if($res->keys()->contains($sid), |$res ,|$res->keyValues()->concatenate(pair($sid,list($m.classMappingById($sid))))->newMap())}, $state.idToSet);
+   let nIdToSet = $targetSetImplementationId->fold({sid,res|if($res->keys()->contains($sid), |$res ,|$res->keyValues()->concatenate(pair($sid,list($m->classMappingById($sid))))->newMap())}, $state.idToSet);
 
    let columnsFromChildren = meta::pure::lineage::scanColumns::manageQualifiers($p.children, [])
    ->map(c|$c->scanColumns($m, $targetSetImplementationId->map(id|$nIdToSet->get($id).values->toOne()), $state.classToSets, $nIdToSet, false, $debug));
@@ -144,14 +144,14 @@ function <<access.private>> meta::pure::lineage::scanColumns::processNonDataType
 function meta::pure::lineage::scanColumns::allSubSetImplementationIds(m:Mapping[1], ids: String[*]):String[*]
 {
    if($ids->isEmpty(), |[], |
-   $ids->concatenate($m->allSubSetImplementationIds($m.classMappings()->filter(si|!$si.superSetImplementationId->isEmpty()&& $ids->contains($si.superSetImplementationId->toOne())).id)));
+   $ids->concatenate($m->allSubSetImplementationIds($m->classMappings()->filter(si|!$si.superSetImplementationId->isEmpty()&& $ids->contains($si.superSetImplementationId->toOne())).id)));
 }
 
 function <<access.private>> meta::pure::lineage::scanColumns::extractTableAliasColumns(elements:JoinTreeNode[*], context:String[1]):ColumnWithContext[*]
 {
    $elements->map(element|
                   let context = $element->type().name->toOne();
-                  $element.join.operation->extractTableAliasColumns($context)->concatenate($element.children->map(c|$c->extractTableAliasColumns($context))););
+                  $element.join.operation->extractTableAliasColumns($context)->concatenate($element->children()->map(c|$c->extractTableAliasColumns($context))););
 }
 
 function <<access.private>> meta::pure::lineage::scanColumns::extractTableAliasColumns(element:RelationalOperationElement[*], context:String[1]):ColumnWithContext[*]

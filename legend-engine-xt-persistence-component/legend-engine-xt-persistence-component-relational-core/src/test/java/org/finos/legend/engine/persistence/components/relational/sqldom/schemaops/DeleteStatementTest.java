@@ -40,8 +40,8 @@ class DeleteStatementTest
         Value item1 = new Field(null, "item1", BaseTest.QUOTE_IDENTIFIER, null);
         Value item2 = new Field(null, "item2", BaseTest.QUOTE_IDENTIFIER, "my_item");
 
-        Value value1 = new ObjectValue(100);
-        Value value2 = new ObjectValue(50);
+        Value value1 = new ObjectValue(100, BaseTest.QUOTE_IDENTIFIER);
+        Value value2 = new ObjectValue(50, BaseTest.QUOTE_IDENTIFIER);
         Condition condition = new AndCondition(Arrays.asList(new EqualityCondition(item1, value1), new NotEqualCondition(item2, value2)));
 
         DeleteStatement query = new DeleteStatement(table, condition);

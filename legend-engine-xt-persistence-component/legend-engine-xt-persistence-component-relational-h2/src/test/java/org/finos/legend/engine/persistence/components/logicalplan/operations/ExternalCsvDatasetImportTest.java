@@ -55,11 +55,13 @@ public class ExternalCsvDatasetImportTest extends BaseTest
         String expectedLoadCsvString = "INSERT INTO \"TEST_DB\".\"TEST\".\"my_staging_table\" " +
             "(\"id\", \"name\", \"income\", \"start_time\", \"expiry_date\", \"digest\") " +
             "(SELECT \"id\",\"name\",\"income\",\"start_time\",\"expiry_date\",\"digest\" " +
-            "FROM CSVREAD('src/test/resources/data/snapshot-milestoning/input/vanilla_case/data_pass1.csv'," +
+            "FROM CSVREAD('%s'," +
             "'id,name,income,start_time,expiry_date,digest'," +
             "'fieldSeparator=, charset=UTF-8'))";
-
+        expectedLoadCsvString = String.format(expectedLoadCsvString, csvPath);
         Assertions.assertEquals(expectedLoadCsvString, sqlList.get(0));
+
+        validateFileExists(csvPath);
         executor.executePhysicalPlan(csvLoadPhysicalPlan);
 
         String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};

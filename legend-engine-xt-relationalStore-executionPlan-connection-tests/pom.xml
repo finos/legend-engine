@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>3.31.1-SNAPSHOT</version>
+        <version>4.0.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -40,7 +40,7 @@
                 </dependencies>
                 <configuration>
                     <useSystemClassLoader>false</useSystemClassLoader>
-                    <argLine>${argLine} -Xmx2g -Xms1g -XX:MaxPermSize=1024m -XX:SoftRefLRUPolicyMSPerMB=1</argLine>
+                    <argLine>${argLine} ${surefire.vm.params}</argLine>
                     <excludes>
                         <exclude>**/ExternalIntegration*.java</exclude>
                     </excludes>
@@ -112,7 +112,7 @@
                         <!-- Without override, surefire configuration would have skipped our integration tests -->
                         <configuration combine.self="override">
                             <useSystemClassLoader>false</useSystemClassLoader>
-                            <argLine>${argLine} -Xmx2g -Xms1g -XX:MaxPermSize=1024m -XX:SoftRefLRUPolicyMSPerMB=1</argLine>
+                            <argLine>${argLine} ${surefire.vm.params}</argLine>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -134,7 +134,7 @@
                         <!-- Without override, surefire configuration would have skipped our integration tests -->
                         <configuration combine.self="override">
                             <useSystemClassLoader>false</useSystemClassLoader>
-                            <argLine>${argLine} -Xmx2g -Xms1g -XX:MaxPermSize=1024m -XX:SoftRefLRUPolicyMSPerMB=1</argLine>
+                            <argLine>${argLine} ${surefire.vm.params}</argLine>
                             <!--
                             <environmentVariables>
                                 <REDSHIFT_LEGEND_INTEG_USERNAME></REDSHIFT_LEGEND_INTEG_USERNAME>
@@ -260,6 +260,25 @@
             <artifactId>postgresql</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-executionPlan-execution</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.finos.legend.pure</groupId>
+                    <artifactId>legend-pure-m4</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!--
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-executionPlan-dependencies</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        -->
         <!-- Test -->
     </dependencies>
 </project>

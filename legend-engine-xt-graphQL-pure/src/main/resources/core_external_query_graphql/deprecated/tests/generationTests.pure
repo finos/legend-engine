@@ -1,0 +1,144 @@
+import meta::external::query::graphQL::generation::*;
+import meta::external::query::graphQL::generation::tests::model::*;
+import meta::external::query::graphQL::binding::*;
+import meta::external::query::graphQL::generation::tests::constants::*;
+
+function meta::external::query::graphQL::generation::tests::constants::inctype_graphql(): String[1]
+{
+  'enum IncType {\n' +
+  '  LLC\n' +
+  '  CORP\n' +
+  '}';
+}
+
+function meta::external::query::graphQL::generation::tests::constants::firm_graphql(): String[1]
+{
+  'type Firm {\n' +
+  '  id: Int!\n' +
+  '  legalName: String!\n' +
+  '  incType: IncType!\n' +
+  '  employees: [Person!]!\n' +
+  '}';
+}
+
+function meta::external::query::graphQL::generation::tests::constants::person_graphql(): String[1]
+{
+  'type Person {\n' +
+  '  id: Int!\n' +
+  '  firstName: String\n' +
+  '  lastName: String!\n' +
+  '  age: Int!\n' +
+  '  firm: Firm!\n' +
+  '}';
+}
+
+function meta::external::query::graphQL::generation::tests::constants::query_graphql(): String[1]
+{
+  'type Query {\n' +
+  '  firmByName(name: String!): Firm\n' +
+  '}\n' +
+  'schema {\n' +
+  '  query : Query\n' +
+  '}';
+}
+
+function meta::external::query::graphQL::generation::tests::constants::query2_graphql(): String[1]
+{
+  'type Query2 {\n' +
+  '  persons: [Person!]!\n' +
+  '}\n' +
+  'schema {\n' +
+  '  query : Query2\n' +
+  '}';
+}
+
+Enum meta::external::query::graphQL::generation::tests::model::IncType
+{
+  LLC, CORP
+}
+
+Class meta::external::query::graphQL::generation::tests::model::Firm
+{
+  id: Integer[1];
+  legalName : String[1];
+  incType : meta::external::query::graphQL::generation::tests::model::IncType[1];
+}
+
+Class meta::external::query::graphQL::generation::tests::model::Person
+{
+  id: Integer[1];
+  firstName : String[0..1];
+  lastName : String[1];
+  age : Integer[1];
+}
+
+Class <<GraphQL.Query>> meta::external::query::graphQL::generation::tests::model::Query
+{
+  firmByName(name:String[1]){Firm.all()->filter(f|$f.legalName == $name)->first()}:Firm[0..1];
+}
+
+Class <<GraphQL.Query>> meta::external::query::graphQL::generation::tests::model::Query2
+{
+  persons(){Person.all()}:Person[*];
+}
+
+Association meta::external::query::graphQL::generation::tests::model::FirmEmployeeAssociation
+{
+  employees: Person[*];
+  firm: Firm[1];
+}
+
+function <<test.Test>> meta::external::query::graphQL::generation::tests::testGenerateQuery():Boolean[1]
+{
+  let res = meta::external::query::graphQL::generation::generateGraphQL(
+    ^meta::external::query::graphQL::generation::GraphQLConfig
+    (
+      scopeElements = [Query]
+    )
+  );
+
+  assertEquals(query_graphql() , $res.content);
+}
+
+function <<test.Test>> meta::external::query::graphQL::generation::tests::testGenerateClass():Boolean[1]
+{
+  let res = meta::external::query::graphQL::generation::generateGraphQL(
+    ^meta::external::query::graphQL::generation::GraphQLConfig
+    (
+      scopeElements = [Firm]
+    )
+  );
+
+  assertEquals(firm_graphql(), $res.content);
+}
+
+function <<test.Test>> meta::external::query::graphQL::generation::tests::testGeneratePackage():Boolean[1]
+{
+  let res = meta::external::query::graphQL::generation::generateGraphQL(
+    ^meta::external::query::graphQL::generation::GraphQLConfig
+    (
+      scopeElements = [meta::external::query::graphQL::generation::tests]
+    )
+  );
+
+  assertEquals([
+    'meta/external/query/graphQL/generation/tests/model/Firm.graphql', 
+    'meta/external/query/graphQL/generation/tests/model/Person.graphql', 
+    'meta/external/query/graphQL/generation/tests/model/Query.graphql', 
+    'meta/external/query/graphQL/generation/tests/model/Query2.graphql', 
+    'meta/external/query/graphQL/generation/tests/model/IncType.graphql'
+  ], $res.fileName);
+  assertEquals([firm_graphql(), person_graphql(), query_graphql(), query2_graphql(), inctype_graphql()], $res.content);
+}
+
+function <<test.Test>> meta::external::query::graphQL::generation::tests::testGenerateMultiple():Boolean[1]
+{
+  let res = meta::external::query::graphQL::generation::generateGraphQL(
+    ^meta::external::query::graphQL::generation::GraphQLConfig
+    (
+      scopeElements = [Person, Firm, Query2]
+    )
+  );
+
+  assertEquals([person_graphql(), firm_graphql(), query2_graphql()], $res.content);
+}

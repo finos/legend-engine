@@ -291,7 +291,7 @@ function meta::pure::persistence::test::TdsService(): Service[1]
     test = ^SingleExecutionTest(
       data = '',
       asserts = ^TestContainer(assert = x:Result<Any|m>[1] | true)),
-    tests = ^ServiceTest(id = 'test1', assertions = ^EqualTo(id = 'assertion1', expected = ''))
+      tests = ^ServiceTest(id = 'test1', assertions = ^EqualTo(id = 'assertion1', expected = ''), testable = @meta::pure::test::Testable)
   );
 }
 
@@ -449,7 +449,7 @@ function meta::pure::persistence::test::FlatM2mService(): Service[1]
     test = ^SingleExecutionTest(
       data = '',
       asserts = ^TestContainer(assert = x:Result<Any|m>[1] | true)),
-    tests = ^ServiceTest(id = 'test1', assertions = ^EqualTo(id = 'assertion1', expected = ''))
+      tests = ^ServiceTest(id = 'test1', assertions = ^EqualTo(id = 'assertion1', expected = ''), testable = @meta::pure::test::Testable)
   );
 }
 
@@ -642,7 +642,7 @@ function meta::pure::persistence::test::NestedM2mService(): Service[1]
     test = ^SingleExecutionTest(
       data = '',
       asserts = ^TestContainer(assert = x:Result<Any|m>[1] | true)),
-    tests = ^ServiceTest(id = 'test1', assertions = ^EqualTo(id = 'assertion1', expected = ''))
+      tests = ^ServiceTest(id = 'test1', assertions = ^EqualTo(id = 'assertion1', expected = ''), testable = @meta::pure::test::Testable)
   );
 }
 

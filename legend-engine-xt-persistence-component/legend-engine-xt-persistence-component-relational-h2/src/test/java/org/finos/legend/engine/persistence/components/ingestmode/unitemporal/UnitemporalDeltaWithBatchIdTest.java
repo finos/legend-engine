@@ -23,12 +23,14 @@ import org.finos.legend.engine.persistence.components.ingestmode.transactionmile
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
+import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 
 import static org.finos.legend.engine.persistence.components.TestUtils.batchIdInName;
 import static org.finos.legend.engine.persistence.components.TestUtils.batchIdOutName;
@@ -40,6 +42,7 @@ import static org.finos.legend.engine.persistence.components.TestUtils.idName;
 import static org.finos.legend.engine.persistence.components.TestUtils.incomeName;
 import static org.finos.legend.engine.persistence.components.TestUtils.nameName;
 import static org.finos.legend.engine.persistence.components.TestUtils.startTimeName;
+import static org.finos.legend.engine.persistence.components.TestUtils.dataSplitName;
 
 class UnitemporalDeltaWithBatchIdTest extends BaseTest
 {
@@ -293,5 +296,70 @@ class UnitemporalDeltaWithBatchIdTest extends BaseTest
         // 3. Assert that the staging table is truncated
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
         Assertions.assertEquals(stagingTableList.size(), 0);
+    }
+
+    @Test
+    void testMilestoningWithDataSplits() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getUnitemporalIdBasedMainTable();
+        String dataPass1 = basePathForInput + "with_data_splits/staging_data_pass1.csv";
+        Dataset stagingTable = TestUtils.getBasicCsvDatasetReferenceTableWithDataSplits(dataPass1);
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdInName, batchIdOutName};
+
+        UnitemporalDelta ingestMode = UnitemporalDelta.builder()
+                .digestField(digestName)
+                .dataSplitField(dataSplitName)
+                .transactionMilestoning(BatchId.builder()
+                        .batchIdInName(batchIdInName)
+                        .batchIdOutName(batchIdOutName)
+                        .build())
+                .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        // ------------ Perform milestoning Pass1 ------------------------
+        String expectedDataPass1 = basePathForExpected + "with_data_splits/expected_pass1.csv";
+        // Execute plans and verify results
+        List<DataSplitRange> dataSplitRanges = new ArrayList<>();
+        dataSplitRanges.add(DataSplitRange.of(1, 1));
+        dataSplitRanges.add(DataSplitRange.of(2, 2));
+
+        List<Map<String, Object>> expectedStatsList = new ArrayList<>();
+        Map<String, Object> expectedStatsSplit1 = createExpectedStatsMap(4, 0, 4, 0, 0);
+        Map<String, Object> expectedStatsSplit2 = createExpectedStatsMap(2, 0, 0, 2, 0);
+
+        expectedStatsList.add(expectedStatsSplit1);
+        expectedStatsList.add(expectedStatsSplit2);
+
+        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStatsList, dataSplitRanges);
+
+        // ------------ Perform milestoning Pass2 ------------------------
+        String dataPass2 = basePathForInput + "with_data_splits/staging_data_pass2.csv";
+        stagingTable = TestUtils.getBasicCsvDatasetReferenceTableWithDataSplits(dataPass2);
+        String expectedDataPass2 = basePathForExpected + "with_data_splits/expected_pass2.csv";
+        // Execute plans and verify results
+        dataSplitRanges = new ArrayList<>();
+        dataSplitRanges.add(DataSplitRange.of(1, 1));
+        dataSplitRanges.add(DataSplitRange.of(2, 2));
+        dataSplitRanges.add(DataSplitRange.of(3, 3));
+
+        expectedStatsList = new ArrayList<>();
+        expectedStatsList.add(createExpectedStatsMap(4, 0, 1, 1, 0));
+        expectedStatsList.add(createExpectedStatsMap(1, 0, 0, 1, 0));
+        expectedStatsList.add(createExpectedStatsMap(1, 0, 0, 1, 0));
+
+        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, Datasets.of(mainTable, stagingTable), schema, expectedDataPass2, expectedStatsList, dataSplitRanges);
+
+        // ------------ Perform milestoning Pass3 - Empty batch ------------------------
+        String dataPass3 = basePathForInput + "with_data_splits/staging_data_pass3.csv";
+        stagingTable = TestUtils.getBasicCsvDatasetReferenceTableWithDataSplits(dataPass3);
+        String expectedDataPass3 = basePathForExpected + "with_data_splits/expected_pass3.csv";
+        // Execute plans and verify results
+        dataSplitRanges = new ArrayList<>();
+        expectedStatsList = new ArrayList<>();
+        expectedStatsList.add(createExpectedStatsMap(0, 0, 0, 0, 0));
+        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, Datasets.of(mainTable, stagingTable), schema, expectedDataPass3, expectedStatsList, dataSplitRanges);
     }
 }

@@ -83,7 +83,7 @@ function meta::relational::validation::validate<T>(
 {
    let class = $func->functionType().returnType.rawType->toOne()->cast(@Class<Any>);
    let validationQuery = generateValidationQuery($func, $projections, $postTDSOperation, $m, $runtime, $exeCtx, $constraintIds, $constraintInformation);
-   execute($validationQuery, $m, $runtime, if($m.rootClassMappingByClass($class)->toOne()->instanceOf(RootRelationalInstanceSetImplementation), | ^$exeCtx(addDriverTablePkForProject=true), | $exeCtx), $extensions, noDebug());
+   execute($validationQuery, $m, $runtime, if($m->rootClassMappingByClass($class)->toOne()->instanceOf(RootRelationalInstanceSetImplementation), | ^$exeCtx(addDriverTablePkForProject=true), | $exeCtx), $extensions, noDebug());
 }
 
 function {doc.doc = 'Generates the query which can be executed to perform a validation, columns exclude primary keys - add primary keys in extra projections if directly using this'}
@@ -111,7 +111,7 @@ meta::relational::validation::generateValidationQuery<T>(
    
    assertNotEmpty($constraints, 'Class does not have any constraints in the hierarchy to validate');
 
-   let classMapping = $m.rootClassMappingByClass($class);
+   let classMapping = $m->rootClassMappingByClass($class);
    assert($classMapping->size() == 1, | 'No class mapping found for the class \'' + $class.name->toOne() + '\' in the mapping \'' + $m.name->toOne() + '\'');
    
    let lambda = {|^TabularDataSet()};

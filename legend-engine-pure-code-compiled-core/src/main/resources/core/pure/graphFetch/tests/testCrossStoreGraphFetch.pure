@@ -179,7 +179,7 @@ import meta::pure::graphFetch::execution::*;
 import meta::pure::extension::*;
 import meta::pure::graphFetch::tests::XStore::inMemory::*;
 
-function meta::pure::graphFetch::tests::XStore::inMemory::inMemory::InMemoryCrossStoreServiceTestSimple():Any[*]
+function <<test.Test, test.AlloyOnly>> {meta::pure::executionPlan::profiles::serverVersion.start='vX_X_X'} meta::pure::graphFetch::tests::XStore::inMemory::inMemory::InMemoryCrossStoreServiceTestSimple():Any[*]
 {
    let tree = #{
       Trade{
@@ -233,7 +233,8 @@ function meta::pure::graphFetch::tests::XStore::inMemory::inMemory::InMemoryCros
    );
 }
 
-function meta::pure::graphFetch::tests::XStore::inMemory::inMemory::InMemoryCrossStoreServiceTestSimpleChecked():Any[*]
+// ToFix reason: graphFetchChecked is not supported with M2M cross store
+function <<test.Test, test.AlloyOnly, test.ToFix>> {meta::pure::executionPlan::profiles::serverVersion.start='vX_X_X'} meta::pure::graphFetch::tests::XStore::inMemory::inMemory::InMemoryCrossStoreServiceTestSimpleChecked():Any[*]
 {
    let tree = #{
       Trade{

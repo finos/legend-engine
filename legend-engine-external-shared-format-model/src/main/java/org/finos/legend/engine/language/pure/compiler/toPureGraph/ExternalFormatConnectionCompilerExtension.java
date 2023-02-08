@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
@@ -25,11 +26,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.UrlStreamExternalSource;
 import org.finos.legend.engine.shared.core.function.Procedure3;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_executionPlan_ExternalFormatConnection;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_executionPlan_ExternalFormatConnection_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_executionPlan_ExternalSource;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_executionPlan_UrlStreamExternalSource_Impl;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 
 import java.util.Collections;
@@ -37,6 +34,11 @@ import java.util.List;
 
 public class ExternalFormatConnectionCompilerExtension implements IExternalFormatCompilerExtension
 {
+    @Override
+    public CompilerExtension build()
+    {
+        return new ExternalFormatConnectionCompilerExtension();
+    }
 
     @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
@@ -45,7 +47,7 @@ public class ExternalFormatConnectionCompilerExtension implements IExternalForma
     }
 
     @Override
-    public List<Function2<Connection, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection>> getExtraConnectionValueProcessors()
+    public List<Function2<Connection, CompileContext, Root_meta_pure_runtime_Connection>> getExtraConnectionValueProcessors()
     {
         return Collections.singletonList(
                 (connectionValue, context) ->
@@ -60,7 +62,7 @@ public class ExternalFormatConnectionCompilerExtension implements IExternalForma
     }
 
     @Override
-    public List<Procedure3<Connection, org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection, CompileContext>> getExtraConnectionSecondPassProcessors()
+    public List<Procedure3<Connection, Root_meta_pure_runtime_Connection, CompileContext>> getExtraConnectionSecondPassProcessors()
     {
         return Collections.singletonList(
                 (connectionValue, pureConnection, context) ->

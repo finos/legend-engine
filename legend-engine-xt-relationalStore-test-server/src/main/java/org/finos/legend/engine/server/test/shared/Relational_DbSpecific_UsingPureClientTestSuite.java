@@ -20,7 +20,8 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.eclipse.collections.impl.utility.ArrayIterate;
-import org.finos.legend.pure.code.core.compiled.test.PureTestBuilderHelper;
+import org.finos.legend.pure.m3.execution.test.PureTestBuilder;
+import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
 import org.finos.legend.pure.m3.exception.PureAssertFailException;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
@@ -37,9 +38,9 @@ public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends Tes
         //Run test engine server - needs to be setup before as we need testParam(connection details) to create test suite
         boolean shouldCleanUp = PureWithEngineHelper.initClientVersionIfNotAlreadySet("vX_X_X");
         RelationalTestServer server = PureWithEngineHelper.initEngineServer(testServerConfigFilePath, () -> new RelationalTestServer(extraConfigTypes));
-        CompiledExecutionSupport executionSupport = PureTestBuilderHelper.getClassLoaderExecutionSupport();
+        CompiledExecutionSupport executionSupport = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
 
-        TestSuite suite = wrapTestCases(PureTestBuilderHelper.buildSuite(TestCollection.collectTests(pureTestCollectionPath, executionSupport.getProcessorSupport(), fn -> PureTestBuilderHelper.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilderHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+        TestSuite suite = wrapTestCases(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests(pureTestCollectionPath, executionSupport.getProcessorSupport(), fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
 
         return new TestSetup(suite)
         {
@@ -62,6 +63,8 @@ public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends Tes
     private static TestSuite wrapTestCases(TestSuite suite)
     {
         TestSuite wrappedSuite = new TestSuite(suite.getName());
+        String suiteName = wrappedSuite.getName();
+        String dbSuiteName = suiteName.substring(suiteName.contains("sqlQueryTests::") ? suiteName.indexOf("sqlQueryTests::") + 15 : 0, suiteName.contains("[") ? suiteName.indexOf("[") : suiteName.length());
         for (int i = 0; i < suite.testCount(); i++)
         {
             Test test = suite.testAt(i);
@@ -77,21 +80,50 @@ public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends Tes
                     @Override
                     protected void runTest() throws Throwable
                     {
+                        Throwable failureException = null;
+                        boolean ignoreTest = false;
+                        String testName = testCase.getName();
+                        String dbTestName = dbSuiteName + "::" + testName.substring(0, testName.contains("[") ? testName.indexOf("[") : testName.length());
                         try
                         {
+                            System.out.println("Running db test " + dbTestName);
                             testCase.runBare();
                         }
                         catch (PureException e)
                         {
                             if (ArrayIterate.anySatisfy(e.getStackTrace(), x -> x.getMethodName().contains(PURE_NAME_RUN_DATA_ASSERTION_WHICH_DEVIATES_FROM_STANDARD)))
                             {
+                                ignoreTest = true;
+                                System.out.println("| **" + dbTestName + "** | deviates-from-standard :ballot_box_with_check: |");
                                 if (e instanceof PureAssertFailException)
                                 {
                                     throw new PureAssertFailException(e.getSourceInformation(), "[unsupported-api] [deviating-from-standard] " + e.getInfo(), (PureAssertFailException) e);
                                 }
                                 throw new PureExecutionException(e.getSourceInformation(), "[unsupported-api] [deviating-from-standard] " + e.getInfo(), e);
                             }
-                            throw e;
+                            if ((e.getInfo() == null ? "" : e.getInfo()).toLowerCase().startsWith("[unsupported-api]"))
+                            {
+                                ignoreTest = true;
+                                System.out.println("| **" + dbTestName + "** | not-implemented :eight_spoked_asterisk: |");
+                                throw e;
+                            }
+                            failureException = e;
+                        }
+                        catch (Throwable e)
+                        {
+                            failureException = e;
+                        }
+                        finally
+                        {
+                            if (failureException != null)
+                            {
+                                System.out.println("| **" + dbTestName + "** | failing :x: |");
+                                throw failureException;
+                            }
+                            if (!ignoreTest)
+                            {
+                                System.out.println("| **" + dbTestName + "** | working :white_check_mark: |");
+                            }
                         }
                     }
                 });

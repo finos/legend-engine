@@ -43,10 +43,10 @@ public class UpdateStatementTest
     {
         Table table = new Table("mydb", null, "mytable", "alias", BaseTest.QUOTE_IDENTIFIER);
         List<Pair<Field, Value>> setPairs = Arrays.asList(
-            new Pair<>(new Field("col1", BaseTest.QUOTE_IDENTIFIER), new ObjectValue(1)),
-            new Pair<>(new Field("col2", BaseTest.QUOTE_IDENTIFIER), new StringValue("one")),
-            new Pair<>(new Field("col3", BaseTest.QUOTE_IDENTIFIER), new ObjectValue(3.1)),
-            new Pair<>(new Field("col4", BaseTest.QUOTE_IDENTIFIER), new ObjectValue(4L))
+            new Pair<>(new Field("col1", BaseTest.QUOTE_IDENTIFIER), new ObjectValue(1, BaseTest.QUOTE_IDENTIFIER)),
+            new Pair<>(new Field("col2", BaseTest.QUOTE_IDENTIFIER), new StringValue("one", BaseTest.QUOTE_IDENTIFIER)),
+            new Pair<>(new Field("col3", BaseTest.QUOTE_IDENTIFIER), new ObjectValue(3.1, BaseTest.QUOTE_IDENTIFIER)),
+            new Pair<>(new Field("col4", BaseTest.QUOTE_IDENTIFIER), new ObjectValue(4L, BaseTest.QUOTE_IDENTIFIER))
         );
 
         UpdateStatement query = new UpdateStatement(table, setPairs, null);
@@ -65,14 +65,14 @@ public class UpdateStatementTest
     {
         Table table = new Table("mydb", null, "mytable", "alias", BaseTest.QUOTE_IDENTIFIER);
         List<Pair<Field, Value>> setPairs = Arrays.asList(
-            new Pair<>(new Field("col1", BaseTest.QUOTE_IDENTIFIER), new ObjectValue(1)),
-            new Pair<>(new Field("col2", BaseTest.QUOTE_IDENTIFIER), new StringValue("one")),
-            new Pair<>(new Field("col3", BaseTest.QUOTE_IDENTIFIER), new ObjectValue(3.1)),
-            new Pair<>(new Field("col4", BaseTest.QUOTE_IDENTIFIER), new ObjectValue(4L))
+            new Pair<>(new Field("col1", BaseTest.QUOTE_IDENTIFIER), new ObjectValue(1, BaseTest.QUOTE_IDENTIFIER)),
+            new Pair<>(new Field("col2", BaseTest.QUOTE_IDENTIFIER), new StringValue("one", BaseTest.QUOTE_IDENTIFIER)),
+            new Pair<>(new Field("col3", BaseTest.QUOTE_IDENTIFIER), new ObjectValue(3.1, BaseTest.QUOTE_IDENTIFIER)),
+            new Pair<>(new Field("col4", BaseTest.QUOTE_IDENTIFIER), new ObjectValue(4L, BaseTest.QUOTE_IDENTIFIER))
         );
         Condition condition = new EqualityCondition(
             new Field(table.getAlias(), "id", BaseTest.QUOTE_IDENTIFIER, null),
-            new NumericalValue(1L));
+            new NumericalValue(1L, BaseTest.QUOTE_IDENTIFIER));
 
         UpdateStatement query = new UpdateStatement(table, setPairs, condition);
 
@@ -103,19 +103,21 @@ public class UpdateStatementTest
                     Collections.singletonList(new Field(joinTable.getAlias(), "col1", BaseTest.QUOTE_IDENTIFIER, null)),
                     Collections.singletonList(joinTable),
                     pkMatchCondition,
-                    Collections.emptyList()))),
+                    Collections.emptyList()),
+                BaseTest.QUOTE_IDENTIFIER)),
             new Pair<>(new Field("col2", BaseTest.QUOTE_IDENTIFIER), new SelectValue(
                 new SelectStatement(
                     null,
                     Collections.singletonList(new Field(joinTable.getAlias(), "col2", BaseTest.QUOTE_IDENTIFIER, null)),
                     Collections.singletonList(joinTable),
                     pkMatchCondition,
-                    Collections.emptyList()))));
+                    Collections.emptyList()),
+                BaseTest.QUOTE_IDENTIFIER)));
 
         Condition whereCondition = new ExistsCondition(
             new SelectStatement(
                 null,
-                Collections.singletonList(new All()),
+                Collections.singletonList(new All(BaseTest.QUOTE_IDENTIFIER)),
                 Collections.singletonList(joinTable),
                 pkMatchCondition,
                 Collections.emptyList()));

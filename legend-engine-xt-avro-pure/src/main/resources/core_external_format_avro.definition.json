@@ -1,5 +1,10 @@
 {
-    "name" : "core_external_format_avro",
-    "pattern" : "(meta::external::format::avro|meta::protocols::pure)(::.*)?",
-    "dependencies" : ["platform", "core"]
+  "name": "core_external_format_avro",
+  "pattern": "(meta::external::format::avro|meta::protocols::pure)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_functions_json",
+    "platform_functions",
+    "core"
+  ]
 }

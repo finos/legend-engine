@@ -1,5 +1,11 @@
 {
-  "name" : "core_analytics_mapping",
-  "pattern" : "(meta::analytics::mapping)(::.*)?",
-  "dependencies" : ["platform", "core"]
+  "name": "core_analytics_mapping",
+  "pattern": "(meta::analytics::mapping)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_functions",
+    "platform_dsl_mapping",
+    "platform_functions_json",
+    "core"
+  ]
 }

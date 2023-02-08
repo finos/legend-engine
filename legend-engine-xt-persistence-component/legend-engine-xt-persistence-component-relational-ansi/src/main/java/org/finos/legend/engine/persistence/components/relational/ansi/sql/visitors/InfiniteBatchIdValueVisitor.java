@@ -32,11 +32,11 @@ public class InfiniteBatchIdValueVisitor implements LogicalPlanVisitor<InfiniteB
         Optional<Long> infiniteBatchIdValue = context.infiniteBatchIdValue();
         if (infiniteBatchIdValue.isPresent())
         {
-            prev.push(new NumericalValue(infiniteBatchIdValue.get()));
+            prev.push(new NumericalValue(infiniteBatchIdValue.get(), context.quoteIdentifier()));
         }
         else
         {
-            prev.push(new NumericalValue(INFINITE_BATCH_ID));
+            prev.push(new NumericalValue(INFINITE_BATCH_ID, context.quoteIdentifier()));
         }
         return new VisitorResult();
     }

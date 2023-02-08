@@ -35,12 +35,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
-import org.finos.legend.pure.generated.Root_meta_pure_data_DataElement;
-import org.finos.legend.pure.generated.Root_meta_pure_data_DataElementReference;
-import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_relationship_Generalization_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_EngineRuntime_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Generalization;
@@ -233,7 +228,7 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
     {
         Root_meta_pure_runtime_PackageableRuntime metamodel = this.context.pureModel.getPackageableRuntime(this.context.pureModel.buildPackageString(packageableRuntime._package, packageableRuntime.name), packageableRuntime.sourceInformation);
         // NOTE: the whole point of this processing is to put the Pure Runtime in an index
-        final org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime runtime = HelperRuntimeBuilder.buildEngineRuntime(packageableRuntime.runtimeValue, this.context);
+        final Root_meta_pure_runtime_Runtime runtime = HelperRuntimeBuilder.buildEngineRuntime(packageableRuntime.runtimeValue, this.context);
         this.context.pureModel.runtimesIndex.put(this.context.pureModel.buildPackageString(packageableRuntime._package, packageableRuntime.name), runtime);
         metamodel._runtimeValue(new Root_meta_pure_runtime_EngineRuntime_Impl("", null, context.pureModel.getClass("meta::pure::runtime::EngineRuntime"))._mappings(ListIterate.collect(packageableRuntime.runtimeValue.mappings, mappingPointer -> context.resolveMapping(mappingPointer.path, mappingPointer.sourceInformation))));
         return metamodel;
@@ -242,7 +237,7 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
     @Override
     public PackageableElement visit(PackageableConnection packageableConnection)
     {
-        final org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection pureConnection = this.context.pureModel.getConnection(this.context.pureModel.buildPackageString(packageableConnection._package, packageableConnection.name), packageableConnection.sourceInformation);
+        final Root_meta_pure_runtime_Connection pureConnection = this.context.pureModel.getConnection(this.context.pureModel.buildPackageString(packageableConnection._package, packageableConnection.name), packageableConnection.sourceInformation);
         packageableConnection.connectionValue.accept(new ConnectionSecondPassBuilder(this.context, pureConnection));
         return null;
     }

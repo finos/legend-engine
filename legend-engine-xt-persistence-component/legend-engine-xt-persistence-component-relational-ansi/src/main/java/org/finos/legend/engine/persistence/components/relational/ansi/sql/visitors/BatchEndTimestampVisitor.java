@@ -33,11 +33,11 @@ public class BatchEndTimestampVisitor implements LogicalPlanVisitor<BatchEndTime
         Optional<String> batchEndTimestampPattern = context.batchEndTimestampPattern();
         if (batchEndTimestampPattern.isPresent())
         {
-            prev.push(new org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.StringValue(batchEndTimestampPattern.get()));
+            prev.push(new org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.StringValue(batchEndTimestampPattern.get(), context.quoteIdentifier()));
         }
         else
         {
-            prev.push(new Function(FunctionName.CURRENT_TIMESTAMP, null));
+            prev.push(new Function(FunctionName.CURRENT_TIMESTAMP, null, context.quoteIdentifier()));
         }
         return new VisitorResult();
     }

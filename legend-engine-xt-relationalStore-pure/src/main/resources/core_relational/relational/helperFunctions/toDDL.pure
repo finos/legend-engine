@@ -161,11 +161,11 @@ function meta::relational::functions::toDDL::getTableToTableIdentityFunction():F
 
 function <<access.private>> meta::relational::functions::toDDL::getTable(database:Database[1], schemaName: String[1], tableName: String[1]):Table[1]
 {
-   let schema = $database.schema($schemaName);
+   let schema = $database->schema($schemaName);
 
    if ($schema->isEmpty(), | fail('No schema found with name ' + $schemaName + ' in ' + $database.name->toOne()); [];, | []);
 
-   let t = $schema->toOne().table($tableName);
+   let t = $schema->toOne()->table($tableName);
 
    if ($t->isEmpty(), | fail('No table found with name ' + $tableName + ' in schema ' + $schemaName + ' in ' + $database.name->toOne()); $t->toOne();, | $t->toOne());
 }

@@ -29,7 +29,7 @@ public class SumBinaryValueOperatorVisitor implements LogicalPlanVisitor<SumBina
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, SumBinaryValueOperator current, VisitorContext context)
     {
-        Expression e = new Expression(Operator.PLUS);
+        Expression e = new Expression(Operator.PLUS, context.quoteIdentifier());
         prev.push(e);
         return new VisitorResult(e, Arrays.asList(current.left(), current.right()));
     }

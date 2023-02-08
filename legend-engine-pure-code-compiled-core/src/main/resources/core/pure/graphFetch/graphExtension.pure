@@ -58,7 +58,7 @@ function meta::pure::graphFetch::switchToMilestoneProperties(tree:GraphFetchTree
 
 
 
-function <<access.private>> meta::pure::graphFetch::addSubTrees(onto:GraphFetchTree[1], subTrees:PropertyGraphFetchTree[*]): GraphFetchTree[1]
+function meta::pure::graphFetch::addSubTrees(onto:GraphFetchTree[1], subTrees:PropertyGraphFetchTree[*]): GraphFetchTree[1]
 {
    $subTrees->fold({st, node|$node->addSubTree($st)}, $onto);
 }
@@ -76,56 +76,6 @@ function <<access.private>> meta::pure::graphFetch::addSubTree(onto:GraphFetchTr
 function <<access.private>> meta::pure::graphFetch::forSameProperty(t1:PropertyGraphFetchTree[1], t2:PropertyGraphFetchTree[1]): Boolean[1]
 {
    $t1.property == $t2.property && $t1.parameters == $t2.parameters && $t1.alias == $t2.alias && $t1.subType == $t2.subType;
-}
-
-
-function meta::pure::graphFetch::addXStoreProperties(node:RoutedRootGraphFetchTree<Any>[1], extensions:meta::pure::extension::Extension[*]): RoutedRootGraphFetchTree<Any>[1]
-{
-   $node->addXStorePropertiesInternal($extensions)->cast(@RoutedRootGraphFetchTree<Any>);
-}
-
-function <<access.private>> meta::pure::graphFetch::addXStorePropertiesInternal(node:RoutedGraphFetchTree[1], extensions:meta::pure::extension::Extension[*]): RoutedGraphFetchTree[1]
-{
-   let currentSubTreeProperties                    = $node.subTrees->cast(@RoutedPropertyGraphFetchTree).property;
-   let srcClass                                    = $node->typeFromGraphFetchTree()->cast(@Class<Any>)->toOne();
-   let extraPropertiesFromThisLevelCrossExpression = $node->xstoreProperties($currentSubTreeProperties, $srcClass);
-   let extraPropertiesFromChildCrossExpressions    = $node.subTrees->xstoreProperties($currentSubTreeProperties, $srcClass);
-
-   let setImpls = $node.sets->map(s|$s->match([
-      o:OperationSetImplementation[1] | $o->meta::pure::router::clustering::resolveInstanceSetImplementations(),
-      i:InstanceSetImplementation[1]  | $i
-   ]));
-   
-   let xstoreTrees = $extraPropertiesFromThisLevelCrossExpression->concatenate($extraPropertiesFromChildCrossExpressions)
-                        ->filter(x | $setImpls->map(setImpl| $setImpl->meta::pure::mapping::propertyMappingsByPropertyName($x.name->toOne());)->isNotEmpty())
-                        ->map(x | ^RoutedPropertyGraphFetchTree(
-                                     propertyMapping = $setImpls->map(setImpl| $setImpl->meta::pure::mapping::propertyMappingsByPropertyName($x.name->toOne());),
-                                     property = $x)
-                        );
-
-   let subTrees = $node.subTrees->concatenate($xstoreTrees);
-
-   ^$node(subTrees=$subTrees->cast(@RoutedPropertyGraphFetchTree)->map({st| 
-      if(!$st.isPrimitive() && !$st->isUnitFunctionReturnType(),
-         | $st->addXStorePropertiesInternal($extensions),
-         | $st
-      );
-   }));
-}
-
-function <<access.private>> meta::pure::graphFetch::xstoreProperties(nodes:GraphFetchTree[*], currentSubTreeProperties:AbstractProperty<Any>[*], srcClass:Class<Any>[1]): AbstractProperty<Any>[*]
-{
-   $nodes
-      ->filter(n| $n->instanceOf(RoutedPropertyGraphFetchTree))
-      ->cast(@RoutedPropertyGraphFetchTree)
-      .propertyMapping
-      ->filter(x | $x->instanceOf(meta::pure::mapping::xStore::XStorePropertyMapping))
-      ->cast(@meta::pure::mapping::xStore::XStorePropertyMapping)
-      ->map({xpm |
-         let allProperties = $xpm.crossExpression.expressionSequence->evaluateAndDeactivate()->toOne()->findPropertiesInValueSpecification();
-         let srcProperties = $allProperties->filter(x | $x.owner->cast(@Class<Any>)->_subTypeOf($srcClass) || $srcClass->_subTypeOf($x.owner->cast(@Class<Any>)));
-         $srcProperties->filter(x | !$currentSubTreeProperties->contains($x));
-      });
 }
 
 function meta::pure::graphFetch::allClasses(root:GraphFetchTree[1]): Class<Any>[*]
@@ -353,7 +303,7 @@ function meta::pure::graphFetch::calculateSourceTree(tree:RootGraphFetchTree<Any
    let replaced = $tree->replaceQualifiedPropertiesWithRequiredProperties();
    
    let rootSetImplementation = $tree->match([r:RoutedRootGraphFetchTree<Any>[1]|$r.sets->toOne(),
-                                             r:RootGraphFetchTree<Any>[1]|$mapping.rootClassMappingByClass($replaced.class)]);
+                                             r:RootGraphFetchTree<Any>[1]|$mapping->rootClassMappingByClass($replaced.class)]);
                                   
    assert($rootSetImplementation->isNotEmpty(), |'Mapping ' + $mapping->elementToPath() + ' does not map class from tree: ' + $replaced.class->elementToPath());
    
@@ -407,8 +357,8 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
          let childSetImpls = $returnType->match([
             {c:Class<Any>[1]|
                let childSIs = $tgtPgft->match([
-                  r:RoutedPropertyGraphFetchTree[1] | if($r.sets->isNotEmpty(), |$r.sets, |$setImplementation.parent.rootClassMappingByClass($c)),
-                  r:PropertyGraphFetchTree[1]       | $setImplementation.parent.rootClassMappingByClass($c)
+                  r:RoutedPropertyGraphFetchTree[1] | if($r.sets->isNotEmpty(), |$r.sets, |$setImplementation.parent->rootClassMappingByClass($c)),
+                  r:PropertyGraphFetchTree[1]       | $setImplementation.parent->rootClassMappingByClass($c)
                ]);
 
                let childSIsResolved = $childSIs->map(childSI|

@@ -26,8 +26,8 @@ function meta::pure::mapping::modelToModel::contract::modelStoreContract():Store
      supports = meta::pure::mapping::modelToModel::contract::supports_FunctionExpression_1__Boolean_1_,
      
      planExecution = meta::pure::mapping::modelToModel::contract::planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_,
-     planGraphFetchExecution = meta::pure::mapping::modelToModel::contract::planGraphFetchExecution_ClusteredGraphFetchTree_1__String_MANY__Boolean_1__Boolean_1__StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__LocalGraphFetchExecutionNode_1_,
-     planCrossGraphFetchExecution = meta::pure::mapping::modelToModel::contract::planCrossGraphFetchExecution_ClusteredGraphFetchTree_1__String_MANY__String_1__Boolean_1__Boolean_1__Map_1__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__LocalGraphFetchExecutionNode_1_,
+     planGraphFetchExecution = meta::pure::mapping::modelToModel::contract::planGraphFetchExecution_StoreMappingLocalGraphFetchExecutionNodeGenerationInput_1__LocalGraphFetchExecutionNode_1_,
+     planCrossGraphFetchExecution = meta::pure::mapping::modelToModel::contract::planCrossGraphFetchExecution_StoreMappingCrossLocalGraphFetchExecutionNodeGenerationInput_1__LocalGraphFetchExecutionNode_1_,
      printConnectionToString =  {extensions:meta::pure::extension::Extension[*]|
                                   [
                                         mc:PureModelConnection[1] | modelToModelConnectionToString($mc, $extensions)
@@ -68,14 +68,14 @@ function meta::pure::mapping::modelToModel::contract::planExecution(sq:meta::pur
    );
 }
 
-function meta::pure::mapping::modelToModel::contract::planGraphFetchExecution(tree:ClusteredGraphFetchTree[1], orderedPaths:String[*], enableConstraints:Boolean[1], checked:Boolean[1], sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):LocalGraphFetchExecutionNode[1]
+function meta::pure::mapping::modelToModel::contract::planGraphFetchExecution(input: StoreMappingLocalGraphFetchExecutionNodeGenerationInput[1]): LocalGraphFetchExecutionNode[1]
 {
-  meta::pure::mapping::modelToModel::graphFetch::executionPlan::planRootGraphFetchExecutionInMemory($sq, $ext, $tree, $orderedPaths, $m, $runtime, $exeCtx, $enableConstraints, $checked, $extensions, $debug)
+  meta::pure::mapping::modelToModel::graphFetch::executionPlan::planRootGraphFetchExecutionInMemory($input.storeQuery, $input.ext, $input.clusteredTree, $input.orderedPaths, $input.mapping, $input.runtime, $input.exeCtx, $input.enableConstraints, $input.checked, $input.extensions, $input.debug)
 }
 
-function meta::pure::mapping::modelToModel::contract::planCrossGraphFetchExecution(tree:ClusteredGraphFetchTree[1], orderedPaths:String[*], newParentPath:String[1], enableConstraints:Boolean[1], checked:Boolean[1], inScopeVars: Map<String, List<Any>>[1], m:Mapping[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):LocalGraphFetchExecutionNode[1]
+function meta::pure::mapping::modelToModel::contract::planCrossGraphFetchExecution(input: StoreMappingCrossLocalGraphFetchExecutionNodeGenerationInput[1]): LocalGraphFetchExecutionNode[1]
 {
-  meta::pure::mapping::modelToModel::graphFetch::executionPlan::planCrossStoreGraphFetchExecutionInMemory($tree, $orderedPaths, $newParentPath, $inScopeVars, $m, $runtime, $exeCtx, $enableConstraints, $checked, $extensions, $debug);
+  meta::pure::mapping::modelToModel::graphFetch::executionPlan::planCrossStoreGraphFetchExecutionInMemory($input.clusteredTree, $input.orderedPaths, $input.parentPath, $input.inScopeVars, $input.mapping, $input.runtime, $input.exeCtx, $input.enableConstraints, $input.checked, $input.extensions, $input.debug);
 }
 
 function meta::pure::mapping::modelToModel::contract::getterOverrideMapped(o:Any[1], propertyMapping:PropertyMapping[1]):Any[*]

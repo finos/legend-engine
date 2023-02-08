@@ -36,10 +36,10 @@ class MergeStatementTest
         Table sourceTable = new Table("mydb", null, "mytable", "main", BaseTest.QUOTE_IDENTIFIER);
         Table targetTable = new Table("mydb", null, "stagetable", "staging", BaseTest.QUOTE_IDENTIFIER);
         List<Pair<Field, Value>> setPairs = Arrays.asList(
-            new Pair<>(new Field("col1", BaseTest.QUOTE_IDENTIFIER), new ObjectValue(1)),
-            new Pair<>(new Field("col2", BaseTest.QUOTE_IDENTIFIER), new StringValue("one")),
-            new Pair<>(new Field("col3", BaseTest.QUOTE_IDENTIFIER), new ObjectValue(3.1)),
-            new Pair<>(new Field("col4", BaseTest.QUOTE_IDENTIFIER), new ObjectValue(4L)));
+            new Pair<>(new Field("col1", BaseTest.QUOTE_IDENTIFIER), new ObjectValue(1, BaseTest.QUOTE_IDENTIFIER)),
+            new Pair<>(new Field("col2", BaseTest.QUOTE_IDENTIFIER), new StringValue("one", BaseTest.QUOTE_IDENTIFIER)),
+            new Pair<>(new Field("col3", BaseTest.QUOTE_IDENTIFIER), new ObjectValue(3.1, BaseTest.QUOTE_IDENTIFIER)),
+            new Pair<>(new Field("col4", BaseTest.QUOTE_IDENTIFIER), new ObjectValue(4L, BaseTest.QUOTE_IDENTIFIER)));
 
         MergeStatement query = new MergeStatement(
             sourceTable,

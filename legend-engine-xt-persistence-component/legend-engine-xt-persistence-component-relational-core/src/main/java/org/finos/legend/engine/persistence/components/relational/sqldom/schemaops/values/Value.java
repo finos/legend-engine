@@ -16,19 +16,28 @@ package org.finos.legend.engine.persistence.components.relational.sqldom.schemao
 
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlDomException;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
+import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.StringUtils;
 
 public abstract class Value implements SqlGen
 {
     private String alias;
+    private String quoteIdentifier;
 
-    protected Value()
+    protected Value(String quoteIdentifier)
     {
+        this.quoteIdentifier = quoteIdentifier;
     }
 
-    protected Value(String alias)
+    protected Value(String alias, String quoteIdentifier)
     {
         this.alias = alias;
+        this.quoteIdentifier = quoteIdentifier;
+    }
+
+    public String getQuoteIdentifier()
+    {
+        return quoteIdentifier;
     }
 
     public String getAlias()
@@ -46,7 +55,7 @@ public abstract class Value implements SqlGen
     {
         if (StringUtils.notEmpty(alias))
         {
-            builder.append(" as ").append(alias);
+            builder.append(" as ").append(SqlGenUtils.getQuotedField(alias, quoteIdentifier));
         }
     }
 

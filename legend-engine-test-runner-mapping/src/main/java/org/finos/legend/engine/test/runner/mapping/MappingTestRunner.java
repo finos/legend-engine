@@ -51,6 +51,7 @@ import org.finos.legend.engine.shared.core.url.DataProtocolHandler;
 import org.finos.legend.engine.test.runner.shared.ComparisonError;
 import org.finos.legend.engine.test.runner.shared.JsonNodeComparator;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_Connection;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 
@@ -102,7 +103,7 @@ public class MappingTestRunner
 
     public void setupTestData()
     {
-        ConnectionVisitor<org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection> connectionVisitor = new ConnectionFirstPassBuilder(this.pureModel.getContext());
+        ConnectionVisitor<Root_meta_pure_runtime_Connection> connectionVisitor = new ConnectionFirstPassBuilder(this.pureModel.getContext());
         this.buildTestConnection(conn -> this.runtime._connectionsAdd(conn.accept(connectionVisitor)));
     }
 

@@ -105,7 +105,7 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
               let replacedSets = $otherStorePairs->map(p |
                  let setId = $p.first;
                  let storeId = $p.second;
-                 $mapping.classMappingById($setId)->toOne()->createCrossSetImplementation($mapping, $mapping.classMappingById($targetStorePairs.first->at(0))->toOne()->meta::pure::router::routing::getStoreFromSet($mapping, $extensions), $setId + '_gen_replaced_' +  toString($otherStorePairs->indexOf($p)), $crossPropertyAccesses->filter(x | $x.sourceSetId == $setId)->removeDuplicates(), $crossPropertyAccesses->filter(x | $x.targetSetId == $setId)->removeDuplicates(), $allPropertyAccesses->filter(x | $x.sourceSetId == $setId));                       
+                 $mapping->classMappingById($setId)->toOne()->createCrossSetImplementation($mapping, $mapping->classMappingById($targetStorePairs.first->at(0))->toOne()->meta::pure::router::routing::getStoreFromSet($mapping, $extensions), $setId + '_gen_replaced_' +  toString($otherStorePairs->indexOf($p)), $crossPropertyAccesses->filter(x | $x.sourceSetId == $setId)->removeDuplicates(), $crossPropertyAccesses->filter(x | $x.targetSetId == $setId)->removeDuplicates(), $allPropertyAccesses->filter(x | $x.sourceSetId == $setId));
               );
                 
               let modifiedSets = $targetStorePairs->map(p |
@@ -113,13 +113,13 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                  let storeId = $p.second;
                  let crossAccesses = $crossPropertyAccesses->filter(x | $x.sourceSetId == $setId)->removeDuplicatesBy({a|list([$a.property, $a.sourceSetId, $a.sourceStore, $a.targetSetId, $a.targetStore])});
                  if($crossAccesses->isNotEmpty(),
-                    | let set = $mapping.classMappingById($setId)->toOne()->cast(@InstanceSetImplementation);
+                    | let set = $mapping->classMappingById($setId)->toOne()->cast(@InstanceSetImplementation);
                       let newSetId = $set.id + '_gen_modified_target_' +  toString($targetStorePairs->indexOf($p));
-                      let allPropertyMappings = $set.allPropertyMappings();
+                      let allPropertyMappings = $set->allPropertyMappings();
                       let nonReplacedPropMappings = $allPropertyMappings->filter(pm | !$crossAccesses->exists(ca | ($ca.property == $pm.property) && ($ca.sourceSetId == $pm.sourceSetImplementationId) && ($ca.targetSetId == $pm.targetSetImplementationId)))->map(pm | ^$pm(sourceSetImplementationId = $newSetId));
                       let replacedPropertyMappings = $crossAccesses->map(ca |
                          let newTargetSet = $replacedSets->filter(s | $s.first.id == $ca.targetSetId).second->toOne();
-                         let crossMapping = $set.propertyMappingByPropertyNameAndTargetId($ca.property.name->toOne(), $ca.targetSetId)->toOne()->cast(@XStorePropertyMapping);
+                         let crossMapping = $set->propertyMappingByPropertyNameAndTargetId($ca.property.name->toOne(), $ca.targetSetId)->toOne()->cast(@XStorePropertyMapping);
                          ^CrossSetImplementationReverseComplexPropertyMapping
                           (
                              property = $ca.property->cast(@Property<Nil,Any|*>), 
@@ -149,11 +149,11 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                                        
                  let newSetId = $os.id + '_gen_modified_flowing_' +  toString($otherStoreSets->indexOf($os));
                  let propertiesAccessed = $allPropertyAccesses->filter(s | $s.sourceSetId == $os.id).property;
-                 let propertiesInSourceCrossExpressions = $crossPropertyAccesses->filter(s | $s.sourceSetId == $os.id)->map(cross | $os->cast(@InstanceSetImplementation).propertyMappingByPropertyNameAndTargetId($cross.property.name->toOne(), $cross.targetSetId)->toOne()->cast(@XStorePropertyMapping).crossExpression.expressionSequence->evaluateAndDeactivate()->at(0)->propertyPairsInMultiEqual().first);
-                 let propertiesInTargetCrossExpressions = $crossPropertyAccesses->filter(s | $s.targetSetId == $os.id)->map(cross | $mapping.classMappingById($cross.sourceSetId)->cast(@InstanceSetImplementation)->toOne().propertyMappingByPropertyNameAndTargetId($cross.property.name->toOne(), $cross.targetSetId)->toOne()->cast(@XStorePropertyMapping).crossExpression.expressionSequence->evaluateAndDeactivate()->at(0)->propertyPairsInMultiEqual().second);
+                 let propertiesInSourceCrossExpressions = $crossPropertyAccesses->filter(s | $s.sourceSetId == $os.id)->map(cross | $os->cast(@InstanceSetImplementation)->propertyMappingByPropertyNameAndTargetId($cross.property.name->toOne(), $cross.targetSetId)->toOne()->cast(@XStorePropertyMapping).crossExpression.expressionSequence->evaluateAndDeactivate()->at(0)->propertyPairsInMultiEqual().first);
+                 let propertiesInTargetCrossExpressions = $crossPropertyAccesses->filter(s | $s.targetSetId == $os.id)->map(cross | $mapping->classMappingById($cross.sourceSetId)->cast(@InstanceSetImplementation)->toOne()->propertyMappingByPropertyNameAndTargetId($cross.property.name->toOne(), $cross.targetSetId)->toOne()->cast(@XStorePropertyMapping).crossExpression.expressionSequence->evaluateAndDeactivate()->at(0)->propertyPairsInMultiEqual().second);
                  let requiredSimpleProperties = $propertiesAccessed->concatenate($propertiesInSourceCrossExpressions)->concatenate($propertiesInTargetCrossExpressions)->removeDuplicates();
                  
-                 let allPropertyMappings = $os.allPropertyMappings()->filter(pm | $requiredSimpleProperties->contains($pm.property))->map(pm | ^$pm(sourceSetImplementationId = $newSetId));
+                 let allPropertyMappings = $os->allPropertyMappings()->filter(pm | $requiredSimpleProperties->contains($pm.property))->map(pm | ^$pm(sourceSetImplementationId = $newSetId));
                  let newSet = ^$os(superSetImplementationId='', id=$newSetId, propertyMappings=[]);
                  let newPropMappingsWithOwner = $allPropertyMappings->map(pm | ^$pm(owner=$newSet));
                  $newSet->mutateAdd('propertyMappings', $newPropMappingsWithOwner);
@@ -416,12 +416,12 @@ function meta::pure::router::clustering::storeContractForSetImplementation(setIm
       i: InstanceSetImplementation[1]|
          let storeContract = $extensions->meta::pure::extension::storeContractForSetImplementation($i->toOne());
          let store = $storeContract.resolveStoreFromSetImplementation->toOne()->eval($i);
-         pair($storeContract, $mapping.resolveStore($store));,
+         pair($storeContract, $mapping->resolveStore($store));,
       o: meta::pure::mapping::OperationSetImplementation[1]|
          let roots = $o->resolveInstanceSetImplementations();
          let storeContract = $roots->map(r|$extensions->meta::pure::extension::storeContractForSetImplementation($r))->removeDuplicates(x|$x.id,{a,b|$a==$b})->toOne();
-         let store = $roots->map(r|$mapping.resolveStore($storeContract.resolveStoreFromSetImplementation->toOne()->eval($r)))->removeDuplicates(x|$x->elementToPath(),{a,b|$a==$b})->toOne();
-         pair($storeContract, $mapping.resolveStore($store));
+         let store = $roots->map(r|$mapping->resolveStore($storeContract.resolveStoreFromSetImplementation->toOne()->eval($r)))->removeDuplicates(x|$x->elementToPath(),{a,b|$a==$b})->toOne();
+         pair($storeContract, $mapping->resolveStore($store));
   ]);
 }
 
@@ -431,7 +431,7 @@ function <<access.private>> meta::pure::router::clustering::buildCluster(r:Store
     genericType  = $r.genericType,
     multiplicity = $r.multiplicity,
     s = $storeContract,
-    store = $mapping.resolveStore($store),
+    store = $mapping->resolveStore($store),
     mapping = $r.mapping,
     runtime = $r.runtime,
     openVars = $openVariables,
@@ -591,11 +591,11 @@ function <<access.private>> meta::pure::router::clustering::createCrossSetImplem
    let newSetId = $varName;
    
    let propertiesAccessed = $allPropertyAccesses.property;
-   let propertiesInSourceCrossExpressions = $sourceCrossAcceses->map(cross | $set->cast(@InstanceSetImplementation).propertyMappingByPropertyNameAndTargetId($cross.property.name->toOne(), $cross.targetSetId)->toOne()->cast(@XStorePropertyMapping).crossExpression.expressionSequence->evaluateAndDeactivate()->at(0)->propertyPairsInMultiEqual().first);
-   let propertiesInTargetCrossExpressions = $targetCrossAcceses->map(cross | $mapping.classMappingById($cross.sourceSetId)->cast(@InstanceSetImplementation)->toOne().propertyMappingByPropertyNameAndTargetId($cross.property.name->toOne(), $cross.targetSetId)->toOne()->cast(@XStorePropertyMapping).crossExpression.expressionSequence->evaluateAndDeactivate()->at(0)->propertyPairsInMultiEqual().second);
+   let propertiesInSourceCrossExpressions = $sourceCrossAcceses->map(cross | $set->cast(@InstanceSetImplementation)->propertyMappingByPropertyNameAndTargetId($cross.property.name->toOne(), $cross.targetSetId)->toOne()->cast(@XStorePropertyMapping).crossExpression.expressionSequence->evaluateAndDeactivate()->at(0)->propertyPairsInMultiEqual().first);
+   let propertiesInTargetCrossExpressions = $targetCrossAcceses->map(cross | $mapping->classMappingById($cross.sourceSetId)->cast(@InstanceSetImplementation)->toOne()->propertyMappingByPropertyNameAndTargetId($cross.property.name->toOne(), $cross.targetSetId)->toOne()->cast(@XStorePropertyMapping).crossExpression.expressionSequence->evaluateAndDeactivate()->at(0)->propertyPairsInMultiEqual().second);
    let requiredSimpleProperties = $propertiesAccessed->concatenate($propertiesInSourceCrossExpressions)->concatenate($propertiesInTargetCrossExpressions)->removeDuplicates();
    
-   let simplePropertyMappings = $set->cast(@InstanceSetImplementation).allPropertyMappings()
+   let simplePropertyMappings = $set->cast(@InstanceSetImplementation)->allPropertyMappings()
                                  ->filter(s| $s.property->genericType().typeArguments->at(1).rawType->toOne()->instanceOf(DataType))
                                  ->filter(s | $requiredSimpleProperties->contains($s.property))
                                  ->map(pm | ^CrossSetImplementationPrimtivePropertyMapping
@@ -611,10 +611,10 @@ function <<access.private>> meta::pure::router::clustering::createCrossSetImplem
    let complexPropertyMappings = $sourceCrossAcceses->map(cross | ^CrossSetImplementationComplexPropertyMapping
                                                                    (
                                                                       property = $cross.property->cast(@Property<Nil,Any|*>), 
-                                                                      crossExperssionPropertyPairs = $set->cast(@InstanceSetImplementation).propertyMappingByPropertyNameAndTargetId($cross.property.name->toOne(), $cross.targetSetId)->toOne()->cast(@XStorePropertyMapping).crossExpression.expressionSequence->evaluateAndDeactivate()->at(0)->propertyPairsInMultiEqual(),
+                                                                      crossExperssionPropertyPairs = $set->cast(@InstanceSetImplementation)->propertyMappingByPropertyNameAndTargetId($cross.property.name->toOne(), $cross.targetSetId)->toOne()->cast(@XStorePropertyMapping).crossExpression.expressionSequence->evaluateAndDeactivate()->at(0)->propertyPairsInMultiEqual(),
                                                                       sourceSetImplementationId = $newSetId, 
                                                                       targetSetImplementationId = $cross.targetSetId,
-                                                                      sourcePropertyMapping = $set->cast(@InstanceSetImplementation).propertyMappingByPropertyNameAndTargetId($cross.property.name->toOne(), $cross.targetSetId)->toOne()
+                                                                      sourcePropertyMapping = $set->cast(@InstanceSetImplementation)->propertyMappingByPropertyNameAndTargetId($cross.property.name->toOne(), $cross.targetSetId)->toOne()
                                                                    )
                                                          );
    
@@ -648,13 +648,13 @@ function meta::pure::router::clustering::doReplacementWithPairsForVS(vs: ValueSp
                                                         value = $evs.value->doReplacementWithPairsForVS($pairs), 
                                                         sets = $evs.sets->map(ss | if($pairs.first.id->contains($ss.id), |$pairs->filter(s|$s.first.id == $ss.id)->at(0).second, |$ss)),
                                                         propertyMapping = $evs.propertyMapping->map(pm | 
-                                                                             let set = $pm.owner.parent->toOne().classMappingById(if($pm.sourceSetImplementationId == '',|$pm.owner->cast(@InstanceSetImplementation).id->toOne(), |$pm.sourceSetImplementationId));
+                                                                             let set = $pm.owner.parent->toOne()->classMappingById(if($pm.sourceSetImplementationId == '',|$pm.owner->cast(@InstanceSetImplementation).id->toOne(), |$pm.sourceSetImplementationId));
                                                                              if($set->isEmpty(), | $pm, |
                                                                              let parent = $set->toOne();
                                                                              let newParent = if($pairs.first.id->contains($parent.id), |$pairs->filter(s|$s.first.id == $parent.id)->at(0).second, |$parent);
                                                                              let targetPairs = $pairs->map(p | pair($p.first.id, $p.second.id))->filter(s | $s.first == $pm.targetSetImplementationId).second;
                                                                              let newTargetSetId = $targetPairs->isEmpty()->if(|$pm.targetSetImplementationId, |$targetPairs->toOne());
-                                                                             if($newParent != $parent, | $newParent->cast(@InstanceSetImplementation).propertyMappingByPropertyNameAndTargetId($pm.property.name->toOne(), $newTargetSetId), | $pm););
+                                                                             if($newParent != $parent, | $newParent->cast(@InstanceSetImplementation)->propertyMappingByPropertyNameAndTargetId($pm.property.name->toOne(), $newTargetSetId), | $pm););
                                                                           )
                                                      )
                                                 ),

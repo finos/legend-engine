@@ -1,5 +1,12 @@
 {
-  "name" : "core_relational_bigquery",
-  "pattern" : "(meta::relational::functions::sqlQueryToString::bigQuery|meta::relational::tests::sqlQueryToString::bigQuery|meta::relational::bigQuery::tests|meta::pure::alloy::connections|meta::protocols::pure)(::.*)?",
-  "dependencies" : ["platform", "core", "core_relational"]
+  "name": "core_relational_bigquery",
+  "pattern": "(meta::relational::functions::sqlQueryToString::bigQuery|meta::relational::tests::sqlQueryToString::bigQuery|meta::relational::bigQuery::tests|meta::pure::alloy::connections|meta::protocols::pure)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_functions",
+    "platform_dsl_mapping",
+    "platform_store_relational",
+    "core",
+    "core_relational"
+  ]
 }

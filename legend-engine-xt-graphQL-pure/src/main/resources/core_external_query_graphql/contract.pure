@@ -1,3 +1,17 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 ###Pure
 import meta::external::query::graphQL::metamodel::introspection::*;
 import meta::external::query::graphQL::transformation::introspection::*;
@@ -9,7 +23,14 @@ import meta::external::shared::format::metamodel::*;
 import meta::external::shared::format::binding::toPure::*;
 import meta::external::shared::format::transformation::toPure::*;
 import meta::pure::model::unit::*;
+import meta::external::query::graphQL::metamodel::sdl::*;
+import meta::external::query::graphQL::binding::fromPure::sdl::*;
 
+
+
+/**********
+ * GraphQLIntrospectionContract
+ **********/
 function meta::external::query::graphQL::contract::graphQLIntrospectionContract(): ExternalFormatContract<GraphQLIntrospectionContainer>[1]
 {
    ^ExternalFormatContract<GraphQLIntrospectionContainer>
@@ -36,4 +57,40 @@ function meta::external::query::graphQL::contract::introspectionToPureDescriptor
 function <<access.private>> meta::external::query::graphQL::contract::defaultConfig(): SchemaToModelConfiguration[1]
 {
   ^SchemaToModelConfiguration(format='GraphQL_Introspection', targetPackage='target::package');
+}
+
+
+/**********
+ * GraphQLSDLCContract
+ **********/
+
+ function meta::external::query::graphQL::contract::graphQLSdlContractID(): String[1]
+ {
+  'GraphQL_SDL';
+ }
+
+function meta::external::query::graphQL::contract::graphQLSdlContract(): ExternalFormatContract<GraphQLSDLContainer>[1]
+{
+   ^ExternalFormatContract<GraphQLSDLContainer>
+   (
+      id                               = meta::external::query::graphQL::contract::graphQLSdlContractID(),
+      contentTypes                     = 'application/text',
+      externalFormatMetamodel          = GraphQLSDLContainer,
+      externalFormatFromPureDescriptor   = meta::external::query::graphQL::contract::graphQLSDLFromPureDescriptor()
+   )
+}
+
+function meta::external::query::graphQL::binding::fromPure::sdl::defaultConfig(): ModelToGraphQLConfig[1]
+{
+  ^ModelToGraphQLConfig(format=meta::external::query::graphQL::contract::graphQLSdlContractID(), targetSchemaSet='target::package::GeneratedSchemaSet');
+}
+
+function meta::external::query::graphQL::contract::graphQLSDLFromPureDescriptor(): ExternalFormatFromPureDescriptor<ModelToGraphQLConfig>[1]
+{
+  ^ExternalFormatFromPureDescriptor<ModelToGraphQLConfig>
+  (
+    configuration        = ModelToGraphQLConfig,
+    generator            = pureToGraphQLSDL_ModelUnit_1__ModelToGraphQLConfig_1__SchemaSet_1_,
+    defaultConfig        = meta::external::query::graphQL::binding::fromPure::sdl::defaultConfig()
+  )
 }

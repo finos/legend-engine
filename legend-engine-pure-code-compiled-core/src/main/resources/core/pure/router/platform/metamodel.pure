@@ -29,3 +29,14 @@ Class meta::pure::router::platform::metamodel::PlatformRoutingStrategy extends R
 Class meta::pure::router::platform::metamodel::clustering::PlatformClusteredValueSpecification extends ClusteredValueSpecification
 {
 }
+
+// =========================================================================================
+// Graph Fetch Tree Models
+// =========================================================================================
+
+###Pure
+import meta::pure::graphFetch::routing::*;
+
+Class meta::pure::graphFetch::routing::PlatformClusteredGraphFetchTree extends ClusteredGraphFetchTree
+{
+}

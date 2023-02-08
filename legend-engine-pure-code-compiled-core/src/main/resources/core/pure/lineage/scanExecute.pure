@@ -107,13 +107,11 @@ function <<access.private>> meta::pure::lineage::scanExecutes::scan(val:Any[1], 
                                     ^$paramsRes(global = ^$global(executes += $e));,
                                    |if ($fe.func == new_Class_1__String_1__KeyExpression_MANY__T_1_ && $fe.parametersValues->at(0).genericType.typeArguments.rawType.name == 'ExecuteRequestSpecification',
                                         |let kv = $fe.parametersValues->evaluateAndDeactivate()->at(2)->cast(@InstanceValue).values->cast(@KeyExpression);
-                                               println('1ok');
                                          let e = ^Execute
                                                  (
                                                    funcEntryPoint = $kv->filter(k|$k.key.values == 'lambda')->cast(@KeyExpression).expression->cast(@ValueSpecification)->toOne()->inLine($paramsRes.local.vars, [])->cast(@ValueSpecification),
                                                    mappingEntryPoint = $kv->filter(k|$k.key.values == 'mapping').expression->cast(@ValueSpecification)->toOne()->inLine($paramsRes.local.vars, [])->cast(@ValueSpecification)
                                                  );
-                                               println('2ok');
                                          let global = $paramsRes.global;
                                          ^$paramsRes(global = ^$global(executes += $e));,
                                         |$paramsRes
