@@ -31,3 +31,228 @@ Class meta::pure::mapping::metamodel::MappingTest extends meta::pure::test::Atom
 {
   query: FunctionDefinition<Any>[1];
 }
+
+###Diagram
+Diagram meta::pure::mapping::metamodel::diagram::MappingMetamodel(width=0.0, height=0.0)
+{
+    TypeView cview_2(
+        type=meta::pure::test::Testable,
+        position=(2503.00000, 295.00000),
+        width=87.64893,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_3(
+        type=meta::pure::test::Test,
+        position=(1463.00000, 296.00000),
+        width=83.55615,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::pure::test::AtomicTest,
+        position=(1250.00000, 432.00000),
+        width=179.96191,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_4(
+        type=meta::pure::test::TestSuite,
+        position=(1552.00000, 430.00000),
+        width=137.15967,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_6(
+        type=meta::pure::mapping::metamodel::MappingTestSuite,
+        position=(1529.00000, 601.00000),
+        width=192.58936,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_7(
+        type=meta::pure::mapping::metamodel::MappingTest,
+        position=(1254.00000, 599.00000),
+        width=169.10693,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_8(
+        type=meta::pure::mapping::metamodel::StoreTestData,
+        position=(1849.00000, 594.00000),
+        width=144.69531,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_10(
+        type=meta::pure::store::Store,
+        position=(1765.00000, 717.00000),
+        width=112.90918,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_9(
+        type=meta::pure::data::EmbeddedData,
+        position=(2024.00000, 716.00000),
+        width=107.35156,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_1(
+        type=meta::pure::mapping::Mapping,
+        position=(2364.00000, 578.00000),
+        width=376.36133,
+        height=254.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_1,
+        target=cview_2,
+        points=[(2552.18066,705.00000),(2546.82446,317.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_4,
+        target=cview_3,
+        points=[(1620.57983,459.00000),(1504.77808,318.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_2(
+        source=cview_5,
+        target=cview_3,
+        points=[(1339.98096,468.00000),(1504.77808,318.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_3(
+        source=cview_6,
+        target=cview_4,
+        points=[(1625.29468,623.00000),(1620.57983,459.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_4(
+        source=cview_7,
+        target=cview_5,
+        points=[(1338.55347,621.00000),(1339.98096,468.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_0(
+        property=meta::pure::test::Testable.tests,
+        source=cview_2,
+        target=cview_3,
+        points=[(2546.82446,317.00000),(1504.77808,318.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_2(
+        property=meta::pure::mapping::metamodel::MappingTestSuite.storeTestDatas,
+        source=cview_6,
+        target=cview_8,
+        points=[(1625.29468,623.00000),(1921.34766,623.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_3(
+        property=meta::pure::mapping::metamodel::StoreTestData.data,
+        source=cview_8,
+        target=cview_9,
+        points=[(1921.34766,623.00000),(2077.67578,738.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_4(
+        property=meta::pure::mapping::metamodel::StoreTestData.store,
+        source=cview_8,
+        target=cview_10,
+        points=[(1921.34766,623.00000),(1821.45459,739.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+}

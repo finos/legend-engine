@@ -110,7 +110,7 @@ public class PureGrammarParserExtensions
 
     public static PureGrammarParserExtensions fromAvailableExtensions()
     {
-        return fromExtensions(ServiceLoader.load(PureGrammarParserExtension.class));
+        return fromExtensions(PureGrammarParserExtensionLoader.extensions());
     }
 
     public static void logExtensionList()

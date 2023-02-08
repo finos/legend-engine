@@ -72,10 +72,9 @@ function meta::relational::extension::relationalExtension(type:String[1]) : meta
                                 {mapping:Mapping[1], runtime: Runtime[1], parametersValues:Pair<VariableExpression, Any>[*], extensions:meta::pure::extension::Extension[*] |
                                    [
                                         r:RelationalInstantiationExecutionNode[1] | let sql = $parametersValues->fold({a,b| let paramName = $a.first->evaluateAndDeactivate().name;
-                                                                                                            assert($r.executionNodes->at(0)->cast(@SQLExecutionNode).connection->size() == 1, 'SQLExecutionNode with less than 1 connection are only supported in engine execution flow and not in pure flow');
                                                                                                             let paramType             = $a.first->evaluateAndDeactivate().genericType.rawType->toOne();
                                                                                                             let sizeProcessedSql      = $b->replace($paramName->buildVariableCollectionSizeString(), if($a.second->instanceOf(List), |$a.second->cast(@List<Any>).values->size()->toString(), |$a.second->size()->toString();));
-                                                                                                            let connection            = $r.executionNodes->at(0)->cast(@SQLExecutionNode).connection->toOne();
+                                                                                                            let connection            = $r.executionNodes->at(0)->cast(@SQLExecutionNode).connection;
                                                                                                             
                                                                                                             let paramTypeListOfList   = $paramType == List && $paramType.classifierGenericType.typeArguments.rawType == List;
                                                                                                             if(!$paramTypeListOfList,  // Need this check because we are trying to build freemarker exp for all params and we can't build freemarker exp for params of type List<List<Any>>
@@ -95,7 +94,7 @@ function meta::relational::extension::relationalExtension(type:String[1]) : meta
                                                                                    let pathInfoPairs = if ($r.resultType->instanceOf(TDSResultType),
                                                                                                             | let tdsColumnsWithEnumProjected = $r.resultType->cast(@TDSResultType).tdsColumns->filter(col|$col.enumMappingId->isNotEmpty());
                                                                                                               if ($tdsColumnsWithEnumProjected->isNotEmpty(),
-                                                                                                                 | let relationalPropertyMappingsWithTransformer = $mapping.classMappings()
+                                                                                                                 | let relationalPropertyMappingsWithTransformer = $mapping->classMappings()
                                                                                                                                                                        ->filter(cm|$cm->instanceOf(PropertyMappingsImplementation))
                                                                                                                                                                        ->cast(@PropertyMappingsImplementation).propertyMappings
                                                                                                                                                                        ->filter(pm|$pm->instanceOf(RelationalPropertyMapping)
@@ -117,7 +116,7 @@ function meta::relational::extension::relationalExtension(type:String[1]) : meta
                                                                                    meta::relational::mapping::executeQuery($sql
                                                                                         , []
                                                                                         , $pathInfoPairs->cast(@Pair<String, PathInformation>)
-                                                                                        , $r.executionNodes->at(0)->cast(@SQLExecutionNode).connection->toOne()
+                                                                                        , $r.executionNodes->at(0)->cast(@SQLExecutionNode).connection
                                                                                         , $runtime
                                                                                         , $r.resultType.type
                                                                                         , []->cast(@RoutedValueSpecification)
@@ -129,14 +128,13 @@ function meta::relational::extension::relationalExtension(type:String[1]) : meta
                                                                                         , noDebug());,
                                        c:CreateAndPopulateTempTableExecutionNode[1] | assert($c.inputVarNames->size() == 1, 'CreateAndPopulateTempTableExecutionNode with more than 1 inputs are only supported in engine execution flow and not in pure flow');
                                                                                       assert($c.tempTableColumnMetaData->size() == 1, 'CreateAndPopulateTempTableExecutionNode with more than 1 columns are only supported in engine execution flow and not in pure flow');
-                                                                                      assert($c.connection->size() == 1, 'CreateAndPopulateTempTableExecutionNode with less than 1 connection are only supported in engine execution flow and not in pure flow');
                                                                                       let column = ^Column(name = $c.tempTableColumnMetaData->toOne().column.label, type = $c.tempTableColumnMetaData.column.dataType->toOne());
-                                                                                      meta::relational::metamodel::execute::createTempTable($c.tempTableName, $column, meta::relational::functions::toDDL::createTempTableStatement(), true, $c.connection->toOne());
+                                                                                      meta::relational::metamodel::execute::createTempTable($c.tempTableName, $column, meta::relational::functions::toDDL::createTempTableStatement(), true, $c.connection);
 
                                                                                       let srcvalue = $parametersValues->filter(p | $p.first->evaluateAndDeactivate().name == $c.inputVarNames).second->toOne();
                                                                                       let values   = meta::pure::executionPlan::execution::flattenList($srcvalue);
                                                                                       let insertStatement = 'INSERT INTO '+ $c.tempTableName + '(' + $column.name + ') values ' + $values->map(v | '(' + $v->processLiteralDefaultForPlanService(DatabaseType.H2, [], []) + ')')->joinStrings(', ') + ';';
-                                                                                      meta::relational::metamodel::execute::executeInDb($insertStatement, $c.connection->toOne());
+                                                                                      meta::relational::metamodel::execute::executeInDb($insertStatement, $c.connection);
                                                                                       [];
                                    ]
                                 },
@@ -214,8 +212,8 @@ function meta::relational::extension::relationalExtension(type:String[1]) : meta
 function meta::pure::router::clustering::getResolvedStore(rr: meta::relational::mapping::RootRelationalInstanceSetImplementation[*], mapping: Mapping[1]):Store[*]
 {
    $rr->map(r | let mainTableAlias = $r.mainTableAlias;
-                if ($mainTableAlias.database->isEmpty(), | $r.mainTable.schema.database, | $mainTableAlias.database->toOne());
-   )->map(s|$mapping.resolveStore($s))->removeDuplicates();
+                if ($mainTableAlias.database->isEmpty(), | $r->mainTable().schema.database, | $mainTableAlias.database->toOne());
+   )->map(s|$mapping->resolveStore($s))->removeDuplicates();
 }
 
 function meta::pure::executionPlan::execution::flattenList(value:Any[1]):Any[*]

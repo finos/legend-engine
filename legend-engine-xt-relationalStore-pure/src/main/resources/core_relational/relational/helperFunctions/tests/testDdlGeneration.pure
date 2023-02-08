@@ -26,7 +26,7 @@ import meta::relational::runtime::*;
 
 function <<test.Test>>  meta::relational::tests::ddl::findTableByName():Boolean[1]
 {
-   let table = foo_db.schema('default')->toOne().table('bar_t');
+   let table = foo_db->schema('default')->toOne()->table('bar_t');
    assertNotEmpty($table, 'Could not find table');
 }
 

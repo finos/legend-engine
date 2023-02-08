@@ -25,7 +25,8 @@ public class CompileExtensionCompiled extends BaseCompiledExtension
     public CompileExtensionCompiled()
     {
         super(
-                Lists.fixedSize.with(new LegendCompile(), new LegendCompileVS()),
+                "core_external_compiler",
+                () -> Lists.fixedSize.with(new LegendCompile(), new LegendCompileVS()),
                 Lists.fixedSize.with(),
                 Lists.fixedSize.empty(),
                 Lists.fixedSize.empty());

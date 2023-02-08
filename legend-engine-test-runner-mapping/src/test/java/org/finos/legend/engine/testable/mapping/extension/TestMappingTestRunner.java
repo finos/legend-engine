@@ -19,7 +19,8 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestPassed;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecutionStatus;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.junit.Assert;
@@ -219,10 +220,11 @@ public class TestMappingTestRunner
         List<TestResult> mappingTestResults = mappingTestableRunnerExtension.executeAllTest(mappingToTest, pureModelWithReferenceData, modelDataWithReferenceData);
 
         Assert.assertEquals(1, mappingTestResults.size());
-        Assert.assertTrue(mappingTestResults.get(0) instanceof TestPassed);
-        Assert.assertEquals("test::modelToModelMapping", ((TestPassed) mappingTestResults.get(0)).testable);
-        Assert.assertEquals("testSuite1", ((TestPassed) mappingTestResults.get(0)).atomicTestId.testSuiteId);
-        Assert.assertEquals("test1", ((TestPassed) mappingTestResults.get(0)).atomicTestId.atomicTestId);
+        Assert.assertTrue(mappingTestResults.get(0) instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) mappingTestResults.get(0)).testExecutionStatus);
+        Assert.assertEquals("test::modelToModelMapping", mappingTestResults.get(0).testable);
+        Assert.assertEquals("testSuite1", mappingTestResults.get(0).testSuiteId);
+        Assert.assertEquals("test1", mappingTestResults.get(0).atomicTestId);
     }
 
     @Test
@@ -236,10 +238,11 @@ public class TestMappingTestRunner
         List<TestResult> mappingTestResults = mappingTestableRunnerExtension.executeAllTest(mappingToTest, pureModelWithReferenceData, modelDataWithReferenceData);
 
         Assert.assertEquals(1, mappingTestResults.size());
-        Assert.assertTrue(mappingTestResults.get(0) instanceof TestPassed);
-        Assert.assertEquals("test::modelToModelTestMapping", ((TestPassed) mappingTestResults.get(0)).testable);
-        Assert.assertEquals("testSuite1", ((TestPassed) mappingTestResults.get(0)).atomicTestId.testSuiteId);
-        Assert.assertEquals("test1", ((TestPassed) mappingTestResults.get(0)).atomicTestId.atomicTestId);
+        Assert.assertTrue(mappingTestResults.get(0) instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) mappingTestResults.get(0)).testExecutionStatus);
+        Assert.assertEquals("test::modelToModelTestMapping", mappingTestResults.get(0).testable);
+        Assert.assertEquals("testSuite1", mappingTestResults.get(0).testSuiteId);
+        Assert.assertEquals("test1", mappingTestResults.get(0).atomicTestId);
     }
 
     @Test
@@ -253,18 +256,20 @@ public class TestMappingTestRunner
         List<TestResult> mappingTestResults1 = mappingTestableRunnerExtension.executeAllTest(mappingToTest1, pureModelWithReferenceData, modelDataWithReferenceData);
 
         Assert.assertEquals(1, mappingTestResults1.size());
-        Assert.assertTrue(mappingTestResults1.get(0) instanceof TestPassed);
-        Assert.assertEquals("test::modelToModelTestMapping", ((TestPassed) mappingTestResults1.get(0)).testable);
-        Assert.assertEquals("testSuite1", ((TestPassed) mappingTestResults1.get(0)).atomicTestId.testSuiteId);
-        Assert.assertEquals("test1", ((TestPassed) mappingTestResults1.get(0)).atomicTestId.atomicTestId);
+        Assert.assertTrue(mappingTestResults1.get(0) instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) mappingTestResults1.get(0)).testExecutionStatus);
+        Assert.assertEquals("test::modelToModelTestMapping", mappingTestResults1.get(0).testable);
+        Assert.assertEquals("testSuite1", mappingTestResults1.get(0).testSuiteId);
+        Assert.assertEquals("test1", mappingTestResults1.get(0).atomicTestId);
 
         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mappingToTest = (org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping) pureModelWithReferenceData.getPackageableElement("test::modelToModelMapping");
         List<TestResult> mappingTestResults2 = mappingTestableRunnerExtension.executeAllTest(mappingToTest, pureModelWithReferenceData, modelDataWithReferenceData);
 
         Assert.assertEquals(1, mappingTestResults2.size());
-        Assert.assertTrue(mappingTestResults2.get(0) instanceof TestPassed);
-        Assert.assertEquals("test::modelToModelMapping", ((TestPassed) mappingTestResults2.get(0)).testable);
-        Assert.assertEquals("testSuite1", ((TestPassed) mappingTestResults2.get(0)).atomicTestId.testSuiteId);
-        Assert.assertEquals("test1", ((TestPassed) mappingTestResults2.get(0)).atomicTestId.atomicTestId);
+        Assert.assertTrue(mappingTestResults2.get(0) instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) mappingTestResults2.get(0)).testExecutionStatus);
+        Assert.assertEquals("test::modelToModelMapping", mappingTestResults2.get(0).testable);
+        Assert.assertEquals("testSuite1", mappingTestResults2.get(0).testSuiteId);
+        Assert.assertEquals("test1", mappingTestResults2.get(0).atomicTestId);
     }
 }

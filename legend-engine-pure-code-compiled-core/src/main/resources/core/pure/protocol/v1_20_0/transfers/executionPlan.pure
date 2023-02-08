@@ -18,6 +18,7 @@ import meta::protocols::pure::v1_20_0::transformation::fromPureGraph::runtime::*
 import meta::protocols::*;
 import meta::protocols::pure::v1_20_0::transformation::fromPureGraph::connection::*;
 import meta::protocols::pure::v1_20_0::transformation::fromPureGraph::executionPlan::*;
+import meta::pure::mapping::*;
 
 function meta::protocols::pure::v1_20_0::transformation::fromPureGraph::executionPlan::transformPlan(sourcePlan:meta::pure::executionPlan::ExecutionPlan[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_20_0::metamodel::executionPlan::ExecutionPlan[1]
 {
@@ -208,7 +209,7 @@ function meta::protocols::pure::v1_20_0::transformation::fromPureGraph::executio
 
 function meta::protocols::pure::v1_20_0::transformation::fromPureGraph::executionPlan::transformSetImplementation(setImplementation:meta::pure::mapping::SetImplementation[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_20_0::metamodel::executionPlan::SetImplementationInfo[1]
 {
-   let propertyMappings = $setImplementation->cast(@meta::pure::mapping::InstanceSetImplementation).allPropertyMappings()
+   let propertyMappings = $setImplementation->cast(@meta::pure::mapping::InstanceSetImplementation)->allPropertyMappings()
                                     ->filter(pm|($pm.localMappingProperty->isEmpty() || $pm.localMappingProperty==false) &&
                                                 $pm.property->genericType().typeArguments->at(1).rawType->toOne()->instanceOf(meta::pure::metamodel::type::DataType)
                                     );

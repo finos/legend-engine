@@ -64,7 +64,7 @@ function meta::pure::alloy::connections::tableMapperPostProcessor(sql:SQLQuery[1
 }
 
 function meta::pure::alloy::connections::postProcessTablesFn(tableNameMappers: meta::pure::alloy::connections::TableNameMapper[*], schemaNameMappers: meta::pure::alloy::connections::SchemaNameMapper[*]):meta::pure::metamodel::function::Function<{RelationalOperationElement[1]->RelationalOperationElement[1]}>[1] {
-     {r:RelationalOperationElement[1]| $r->match([ t:meta::relational::metamodel::relation::Table[1] | if(!$t.isTemporaryTable(),| let nt = processTableMappers($t, $tableNameMappers);
+     {r:RelationalOperationElement[1]| $r->match([ t:meta::relational::metamodel::relation::Table[1] | if(!$t->isTemporaryTable(),| let nt = processTableMappers($t, $tableNameMappers);
                                                                                                                                 if(!$nt->isEmpty(),| $nt->toOne();
                                                                                                                                                   ,| let ns = processSchemaMappers($t.schema, $schemaNameMappers);
                                                                                                                                                     if(!$ns->isEmpty(),|^$t(schema=$ns->toOne());

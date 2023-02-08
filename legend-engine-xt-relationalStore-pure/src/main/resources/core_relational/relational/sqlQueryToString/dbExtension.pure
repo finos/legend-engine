@@ -187,16 +187,6 @@ Class meta::relational::functions::sqlQueryToString::DbExtension
    identifierProcessor: meta::pure::metamodel::function::Function<{String[1], DbConfig[1] -> String[1]}>[1];
    dynaFuncDispatch: meta::pure::metamodel::function::Function<{DynaFunction[1], SqlGenerationContext[1] -> DynaFunctionToSql[1]}>[1];
    ddlCommandsTranslator : RelationalDDLCommandsTranslator[0..1];
-   ddlCommandsTranslatorForTempTable: meta::pure::metamodel::function::Function<{ -> RelationalDDLCommandsTranslator[0..1]}>[0..1];
-   getDefaultTempTableIsolationStrategy : meta::pure::metamodel::function::Function<{ -> meta::pure::alloy::connections::alloy::isolation::TempTableIsolationStrategy[1]}>[0..1];
-}
-
-Class  meta::relational::functions::sqlQueryToString::GenerateUpdateSQLNodesForCreateTempTable
-{
-  updateNodeForFinallyGenerator: meta::pure::metamodel::function::Function<{meta::pure::alloy::connections::alloy::isolation::TempTableIsolationStrategy[0..1], meta::relational::commands::UpdateSQLQueryCommands[1], DbExtension[1]-> meta::relational::executionPlan::UpdateSqlExecutionNode[1]}>[1];
-  updateNodeGenerator: meta::pure::metamodel::function::Function<{meta::pure::alloy::connections::alloy::isolation::TempTableIsolationStrategy[0..1], meta::relational::commands::UpdateSQLQueryCommands[1], DbConfig[1]-> meta::relational::executionPlan::UpdateSqlExecutionNode[*]}>[1];
-  generateTable : meta::pure::metamodel::function::Function<{meta::pure::alloy::connections::alloy::isolation::TempTableIsolationStrategy[0..1], String[1], String[1], meta::relational::metamodel::datatype::DataType[1], Boolean[1], Boolean[1]-> Table[1]}>[1];
-  generateFullyQualifiedTempTableName: meta::pure::metamodel::function::Function<{meta::pure::alloy::connections::alloy::isolation::TempTableIsolationStrategy[0..1], Table[1]-> String[1]}>[1];
 }
 
 Class meta::relational::functions::sqlQueryToString::RelationalDDLCommandsTranslator
@@ -206,7 +196,6 @@ Class meta::relational::functions::sqlQueryToString::RelationalDDLCommandsTransl
   dropTable : meta::pure::metamodel::function::Function<{DropTableSQL[1] -> String[*]}>[0..1];
   createTable : meta::pure::metamodel::function::Function<{CreateTableSQL[1], DbConfig[1] -> String[*]}>[0..1];
   loadTable: meta::pure::metamodel::function::Function<{LoadTableSQL[1], DbConfig[1] ->  String[*]}>[0..1];
-  useDb: meta::pure::metamodel::function::Function<{UseDbSQL[1]->  String[*]}>[0..1];
 }
 
 Class meta::relational::functions::sqlQueryToString::DbExtensionLoader
@@ -398,7 +387,7 @@ function meta::relational::functions::sqlQueryToString::indent(d:Format[1]):Form
 
 function meta::relational::functions::sqlQueryToString::processSelectSQLQuery(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
 {
-   if ($s.columns->isEmpty() && !$s.data->isEmpty() && $s.data.alias.relationalElement->toOne()->instanceOf(Union) && $s.data.children->isEmpty(),
+   if ($s.columns->isEmpty() && !$s.data->isEmpty() && $s.data.alias.relationalElement->toOne()->instanceOf(Union) && $s.data->map(x|$x->children())->isEmpty(),
       | $s.data.alias.relationalElement->toOne()->processOperation($sgc.dbConfig, $sgc.format->indent(), $sgc.config, $sgc.extensions),
       | $sgc.dbConfig.selectSQLQueryProcessor($s, $sgc, $isSubSelect)
    );
@@ -534,7 +523,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::isOptionalPlaceHolder(v:VarPlaceHolder[1]):Boolean[1]
 {
-   $v.multiplicity->isNotEmpty() && eq($v.multiplicity->toOne()->meta::pure::functions::multiplicity::getLowerBound(), 0);
+   $v.multiplicity->isNotEmpty() && eq($v.multiplicity->toOne()->meta::pure::functions::meta::getLowerBound(), 0);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::isCollectionPlaceHolder(v:VarPlaceHolder[1]):Boolean[1]

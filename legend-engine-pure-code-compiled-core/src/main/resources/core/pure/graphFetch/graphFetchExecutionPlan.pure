@@ -251,7 +251,7 @@ function <<access.private>> meta::pure::graphFetch::executionPlan::addCrossStore
 
                   let propertyMapping     = $routedTree.propertyMapping->toOne()->cast(@XStorePropertyMapping);
                   let crossExpr           = $propertyMapping.crossExpression.expressionSequence->evaluateAndDeactivate()->toOne();
-                  let sourceCls           = $m.classMappingById($propertyMapping.sourceSetImplementationId)->toOne()->cast(@InstanceSetImplementation)->map(i | if($i.mappingClass->isNotEmpty(), | $i.mappingClass->toOne(), | $i.class));
+                  let sourceCls           = $m->classMappingById($propertyMapping.sourceSetImplementationId)->toOne()->cast(@InstanceSetImplementation)->map(i | if($i.mappingClass->isNotEmpty(), | $i.mappingClass->toOne(), | $i.class));
                   let crossExprTree       = $crossExpr->fetchTreeInExpression($sourceCls);
 
                   let newCrossNode        = ^StoreMappingGlobalGraphFetchExecutionNode
@@ -323,9 +323,9 @@ function <<access.private>> meta::pure::graphFetch::executionPlan::buildXStorePr
    (
       supportsCaching          = $supportsCaching,
       propertyPath             = $propertyPath,
-      sourceMappingId          = $mapping.classMappingById($xStorePropertyMapping.sourceSetImplementationId)->toOne().parent->elementToPath(),
+      sourceMappingId          = $mapping->classMappingById($xStorePropertyMapping.sourceSetImplementationId)->toOne().parent->elementToPath(),
       sourceSetId              = $xStorePropertyMapping.sourceSetImplementationId,
-      targetMappingId          = $mapping.classMappingById($xStorePropertyMapping.targetSetImplementationId)->toOne().parent->elementToPath(),
+      targetMappingId          = $mapping->classMappingById($xStorePropertyMapping.targetSetImplementationId)->toOne().parent->elementToPath(),
       targetSetId              = $xStorePropertyMapping.targetSetImplementationId,
       targetPropertiesOrdered  = if($supportsCaching, | $xStoreExpressionSequence->toOne()->propertyOrNoArgQualifierPairsInMultiEqual().second.name->sort(), | []),
       subTree                  = $subTreeString

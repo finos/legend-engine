@@ -21,6 +21,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion.TestAssertionFirstPassBuilder;
 import org.finos.legend.engine.language.pure.dsl.persistence.compiler.validation.ValidationResult;
@@ -68,6 +69,12 @@ import static org.finos.legend.pure.generated.core_persistence_persistence_valid
 public class PersistenceCompilerExtension implements IPersistenceCompilerExtension
 {
     @Override
+    public CompilerExtension build()
+    {
+        return new PersistenceCompilerExtension();
+    }
+
+    @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
         return Lists.fixedSize.of(
@@ -84,7 +91,7 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
                             purePersistence._service(HelperPersistenceBuilder.buildService(persistence, context));
                             purePersistence._persister(HelperPersistenceBuilder.buildPersister(persistence.persister, context));
                             purePersistence._notifier(HelperPersistenceBuilder.buildNotifier(persistence.notifier, context));
-                            purePersistence._tests(HelperPersistenceBuilder.buildTests(persistence, context));
+                            purePersistence._tests(HelperPersistenceBuilder.buildTests(persistence, purePersistence, context));
                         }
                 ),
                 Processor.newProcessor(
@@ -170,44 +177,6 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
             }
             return null;
         });
-    }
-
-    @Override
-    public List<Function3<Test, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test>> getExtraTestProcessors()
-    {
-        return Collections.singletonList((test, context, processingContext) ->
-        {
-            if (test instanceof PersistenceTest)
-            {
-                return persistenceTest((PersistenceTest) test, context, processingContext);
-            }
-            return null;
-        });
-    }
-
-    private static org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test persistenceTest(PersistenceTest persistenceTest, CompileContext context, ProcessingContext processingContext)
-    {
-        Root_meta_pure_persistence_metamodel_PersistenceTest purePersistenceTest = new Root_meta_pure_persistence_metamodel_PersistenceTest_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::PersistenceTest"));
-
-        if (persistenceTest.testBatches == null || persistenceTest.testBatches.isEmpty())
-        {
-            throw new EngineException("PersistenceTest should have at least 1 testBatch", persistenceTest.sourceInformation, EngineErrorType.COMPILATION);
-        }
-
-        List<String> batchIds = ListIterate.collect(persistenceTest.testBatches, t -> t.id);
-        List<String> duplicateBatchIds = batchIds.stream().filter(e -> Collections.frequency(batchIds, e) > 1).distinct().collect(Collectors.toList());
-
-        if (!duplicateBatchIds.isEmpty())
-        {
-            throw new EngineException("Multiple testBatches found with ids : '" + String.join(",", duplicateBatchIds) + "'", persistenceTest.sourceInformation, EngineErrorType.COMPILATION);
-        }
-
-        RichIterable<? extends Root_meta_pure_persistence_metamodel_PersistenceTestBatch> testBatches = ListIterate.collect(
-                persistenceTest.testBatches,
-                batch -> persistenceTestBatch(batch, context, processingContext));
-
-        purePersistenceTest._testBatches(testBatches);
-        return purePersistenceTest;
     }
 
     private static Root_meta_pure_persistence_metamodel_PersistenceTestBatch persistenceTestBatch(PersistenceTestBatch batch, CompileContext context, ProcessingContext processingContext)

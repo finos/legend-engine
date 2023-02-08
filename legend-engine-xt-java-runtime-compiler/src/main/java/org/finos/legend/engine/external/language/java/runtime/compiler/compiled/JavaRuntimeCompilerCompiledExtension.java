@@ -24,7 +24,8 @@ public class JavaRuntimeCompilerCompiledExtension extends BaseCompiledExtension
 {
     public JavaRuntimeCompilerCompiledExtension()
     {
-        super(Lists.fixedSize.with(new CompileJava(), new CompileAndExecuteJava()),
+        super("core_external_language_java_compiler",
+                () -> Lists.fixedSize.with(new CompileJava(), new CompileAndExecuteJava()),
                 Lists.fixedSize.empty(),
                 Lists.fixedSize.empty(),
                 Lists.fixedSize.empty());

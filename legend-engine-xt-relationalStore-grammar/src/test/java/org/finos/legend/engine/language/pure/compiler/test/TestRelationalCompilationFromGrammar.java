@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.compiler.test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRelationalBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
@@ -264,14 +265,12 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
     @Test
     public void testRelationalDatabaseFail()
     {
-        try
-        {
-            PureModel dbIncModel = test(DB_DUP_INC).getTwo();
-        }
-        catch (AssertionError e)
-        {
-            Assert.assertEquals("expected no warnings but found [COMPILATION error: Duplicate column definitions [FIRSTNAME, LASTNAME] in table: personTable, COMPILATION error: Duplicate column definitions [ADDRESSID, LEGALNAME] in table: firmTable, COMPILATION error: Duplicate column definitions [LEGALNAME] in table: otherFirmTable]", e.getMessage());
-        }
+        MutableList<String> warnings = Lists.mutable.empty();
+        warnings.add("COMPILATION error at [4:5-212]: Duplicate column definitions [FIRSTNAME, LASTNAME] in table: personTable");
+        warnings.add("COMPILATION error at [7:5-152]: Duplicate column definitions [ADDRESSID, LEGALNAME] in table: firmTable");
+        warnings.add("COMPILATION error at [9:5-107]: Duplicate column definitions [LEGALNAME] in table: otherFirmTable");
+        PureModel dbIncModel = test(DB_DUP_INC, null, warnings).getTwo();
+
     }
 
     @Test

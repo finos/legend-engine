@@ -23,6 +23,7 @@
                         <exclude>**/ExternalIntegration*.java</exclude>
                         <exclude>**/Test_Relational_DbSpecific_${DbType}_UsingPureClientTestSuite.java</exclude>
                     </excludes>
+                    <argLine>${argLine} ${surefire.vm.params}</argLine>
                 </configuration>
             </plugin>
         </plugins>
@@ -76,11 +77,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-configuration-external</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-${dbtype}-pure</artifactId>
             <scope>test</scope>
@@ -95,11 +91,7 @@
             <artifactId>jackson-core</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-code-compiled-tests</artifactId>
-            <scope>test</scope>
-        </dependency>
+
         <!-- TEST -->
     </dependencies>
     

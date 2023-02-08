@@ -27,6 +27,19 @@ function meta::pure::functions::meta::forgivingPathToElement(path:String[1]):Pac
       )
 }
 
+function meta::pure::functions::meta::functionReturnType(f:Function<Any>[1]):GenericType[1]
+{
+   $f->match(
+               [
+                  p:AbstractProperty<Any>[1] | $p.genericType,
+                  p:Path<Nil,Any|*>[1] | $p.classifierGenericType->toOne().typeArguments->at(1),
+                  f:NativeFunction<Any>[1] | $f->genericType().typeArguments->at(0).rawType->toOne()->cast(@FunctionType).returnType,
+                  f:FunctionDefinition<Any>[1] | $f->genericType().typeArguments->at(0).rawType->toOne()->cast(@FunctionType).returnType,
+                  a:Any[1] | assert(false, |'functionReturnType not supported yet for the type '+$a->type()->id());^GenericType();
+               ]
+            );
+}
+
 function meta::pure::functions::meta::instanceValuesAtParameter(expression : FunctionExpression[1], index : Integer[1], inScopeVars:Map<String, List<Any>>[0..1]) : Any[*]
 {
     instanceValuesAtParameter($expression,$index, newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>)),$inScopeVars);
@@ -513,21 +526,9 @@ function meta::pure::functions::meta::reprocessVariableExpressionsName(v:ValueSp
 }
 
 function {doc.doc = 'Get all generalisations of a type'}
- meta::pure::functions::meta::getAllTypeGeneralisations(class:Type[1]):Type[*]
-{
-   let generalisations = $class.generalizations->map(g | $g.general->cast(@GenericType).rawType->toOne()->getAllTypeGeneralisations());
-   $class->concatenate($generalisations);
-}
-
-function {doc.doc = 'Get all generalisations of a type'}
  meta::pure::functions::meta::getAllTypeGeneralisationsExcluded(class:Type[1]):Type[*]
 {
-   $class.generalizations->map(g | $g.general->cast(@GenericType).rawType->toOne()->getAllTypeGeneralisations()) 
-}
-
-function meta::pure::functions::meta::_subTypeOf(subType:Type[1], superType:Type[1]):Boolean[1]
-{
-    if($subType == Nil,|true, |$subType->getAllTypeGeneralisations()->contains($superType));  
+   $class.generalizations->map(g | $g.general->cast(@GenericType).rawType->toOne()->getAllTypeGeneralisations())
 }
 
 function meta::pure::functions::meta::simpleToString(obj : Any[1]) : String[1]
@@ -615,33 +616,11 @@ function meta::pure::functions::meta::hasStereotype(f:Function<Any>[1], stereoty
     $f->instanceOf(ElementWithStereotypes) && $f->cast(@ElementWithStereotypes)->meta::pure::functions::meta::hasStereotype($stereotype, $profile);
 }
 
-function meta::pure::functions::meta::functionType(f:Function<Any>[1]):FunctionType[1]
-{
-   assert($f->instanceOf(FunctionDefinition) || $f->instanceOf(NativeFunction), | 'functionType is not supported yet for this subtype of function '+$f->type()->id());
-   $f.classifierGenericType->toOne().typeArguments->at(0).rawType->toOne()->cast(@FunctionType);
-}
 
-function meta::pure::functions::meta::class<T>(any:T[*]):Class<T>[1]
-{
-    $any->genericType()->genericTypeClass()->cast(@Class<T>);
-}
 
-function meta::pure::functions::meta::reactivate(vs:ValueSpecification[1]):Any[*]
-{
-   meta::pure::functions::meta::reactivate($vs, ^Map<String, List<Any>>());
-}
 
-function meta::pure::functions::meta::pathToElement(path:String[1]):PackageableElement[1]
-{
-    $path->pathToElement('::')
-}
 
-function meta::pure::functions::meta::pathToElement(path:String[1], separator:String[1]):PackageableElement[1]
-{
-    $path->split($separator)->fold({str:String[1], pkg:PackageableElement[1] | let p = $pkg->cast(@Package).children->filter(c | $c.name == $str);
-                                                                               if ($p->isEmpty(), | fail(| $path + ' is not a valid PackageableElement. Package \'' + $str + '\' not found'); $p->toOne();, | $p->toOne());
-                                   }, ::)
-}
+
 
 function meta::pure::functions::meta::mapVariables(pa : PropertyPathElement[1]):Map<VariableExpression, ValueSpecification>[1]
 {
@@ -682,28 +661,11 @@ function meta::pure::functions::meta::resolve(v:VariableExpression[1], vars:Map<
    );
 }
 
-function
-   {doc.doc = 'Get the property with the given name from the given class. Note that this searches only properties defined directly on the class, not those inherited from super-classes or those which come from associations.'}
-   meta::pure::functions::meta::classPropertyByName(class:Class<Any>[1], name:String[1]):Property<Nil,Any|*>[0..1]
-{
-    $class.properties->filter(p | $p.name == $name)->first()
-}
 
-function meta::pure::functions::meta::getHiddenPayload(o:Any[1]):Any[1]
-{
-   $o.elementOverride->toOne()->cast(@GetterOverride).hiddenPayload->toOne();
-}
 
-function meta::pure::functions::meta::properties(genericType:GenericType[1]):Property<Nil,Any|*>[*]
-{
-    // TODO use this once problems with compiled execution are fixed
-//    $genericType.rawType->toOne()->generalizations()->map(cls | $cls->cast(@Class<Any>).properties->concatenate($cls->cast(@Class<Any>).propertiesFromAssociations))
 
-    let theClass = $genericType.rawType->toOne()->cast(@Class<Any>);
-    let result = ^List<Property<Nil,Any|*>>(values = $theClass.properties);
-    let resultWithAssoProps = ^$result(values += $theClass.propertiesFromAssociations);
-    ^$resultWithAssoProps(values += $theClass.generalizations->map(generalization | properties($generalization.general))).values;
-}
+
+
 
 
 function {doc.doc = 'Get all the elements of a package.  If recursive is true, then elements belonging to sub-packages are also returned; otherwise, only elements from the package itself are returned.  The package itself is never returned.'}
