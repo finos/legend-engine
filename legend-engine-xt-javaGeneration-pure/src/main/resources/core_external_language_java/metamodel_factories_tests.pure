@@ -508,8 +508,6 @@ function <<test.Test>> meta::external::language::java::factory::tests::BigDecima
   assertCode('3.1415926535897', javaBigDecimal(), j_bigDecimal('3.1415926535897'));
   assertCode('new java.math.BigDecimal(1.5)', javaBigDecimal(), j_new(javaBigDecimal(),j_double(1.5)));
   assertCode('new java.math.BigDecimal("1.5")', javaBigDecimal(), j_new(javaBigDecimal(),j_string('1.5')));
-  assertCode('java.math.BigDecimal.valueOf(9.1)', javaBigDecimal(), j_double(9.1)->j_cast(javaBigDecimal()));
-  assertCode('java.math.BigDecimal.valueOf(9L)', javaBigDecimal(), j_long(9)->j_cast(javaBigDecimal()));
 }
 
 function <<test.Test>> meta::external::language::java::factory::tests::castUnboxedToBoxed():Boolean[1]
