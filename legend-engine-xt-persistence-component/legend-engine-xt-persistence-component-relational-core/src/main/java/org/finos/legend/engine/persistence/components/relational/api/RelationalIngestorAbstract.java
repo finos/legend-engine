@@ -43,6 +43,7 @@ import org.finos.legend.engine.persistence.components.relational.transformer.Rel
 import org.finos.legend.engine.persistence.components.transformer.TransformOptions;
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
+import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapability;
 import org.immutables.value.Value.Default;
 import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
@@ -52,6 +53,7 @@ import java.sql.Connection;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -110,6 +112,12 @@ public abstract class RelationalIngestorAbstract
     public Clock executionTimestampClock()
     {
         return Clock.systemUTC();
+    }
+
+    @Default
+    public Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet()
+    {
+        return Collections.emptySet();
     }
 
     //---------- FIELDS ----------
@@ -194,6 +202,7 @@ public abstract class RelationalIngestorAbstract
             .cleanupStagingData(cleanupStagingData())
             .collectStatistics(collectStatistics())
             .enableSchemaEvolution(enableSchemaEvolution())
+            .addAllSchemaEvolutionCapabilitySet(schemaEvolutionCapabilitySet())
             .caseConversion(caseConversion())
             .executionTimestampClock(executionTimestampClock())
             .batchStartTimestampPattern(BATCH_START_TS_PATTERN)
@@ -237,6 +246,7 @@ public abstract class RelationalIngestorAbstract
                     .updatedDatasets(datasets)
                     .batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN)) : null))
                     .dataSplitRange(dataSplitRange)
+                    .schemaEvolutionSqlPlan(generatorResult.schemaEvolutionSql())
                     .build();
                 results.add(result);
                 dataSplitIndex++;

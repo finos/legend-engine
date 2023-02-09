@@ -32,6 +32,7 @@ import org.finos.legend.engine.persistence.components.schemaevolution.SchemaEvol
 import org.finos.legend.engine.persistence.components.schemaevolution.SchemaEvolutionResult;
 import org.finos.legend.engine.persistence.components.transformer.TransformOptions;
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
+import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapability;
 import org.immutables.value.Value.Default;
 import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
@@ -42,6 +43,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Immutable
@@ -85,6 +87,8 @@ public abstract class RelationalGeneratorAbstract
     {
         return Clock.systemUTC();
     }
+
+    public abstract Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet();
 
     public abstract Optional<String> batchStartTimestampPattern();
 
@@ -178,7 +182,7 @@ public abstract class RelationalGeneratorAbstract
         if (enableSchemaEvolution())
         {
             // Get logical plan and physical plan for schema evolution and update datasets
-            SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink(), ingestMode());
+            SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink(), ingestMode(), schemaEvolutionCapabilitySet());
             SchemaEvolutionResult schemaEvolutionResult = schemaEvolution.buildLogicalPlanForSchemaEvolution(datasets.mainDataset(), datasets.stagingDataset());
             LogicalPlan schemaEvolutionLogicalPlan = schemaEvolutionResult.logicalPlan();
 

@@ -40,6 +40,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.operations.Alt
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
 import org.finos.legend.engine.persistence.components.sink.Sink;
 import org.finos.legend.engine.persistence.components.util.Capability;
+import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapability;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -75,6 +76,7 @@ public class SchemaEvolution
 
     private final Sink sink;
     private final IngestMode ingestMode;
+    private final Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet;
 
     /*
         1. Check if Schema of main table and staging table is different
@@ -83,10 +85,11 @@ public class SchemaEvolution
         4. Generate the logical operation and modify the milestoning object of main table
      */
 
-    public SchemaEvolution(Sink sink, IngestMode ingestMode)
+    public SchemaEvolution(Sink sink, IngestMode ingestMode, Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet)
     {
         this.sink = sink;
         this.ingestMode = ingestMode;
+        this.schemaEvolutionCapabilitySet = schemaEvolutionCapabilitySet;
     }
 
     public SchemaEvolutionResult buildLogicalPlanForSchemaEvolution(Dataset mainDataset, Dataset stagingDataset)
@@ -118,8 +121,10 @@ public class SchemaEvolution
             Field matchedMainField = mainFields.stream().filter(mainField -> mainField.name().equals(stagingFieldName)).findFirst().orElse(null);
             if (matchedMainField == null)
             {
-                //Add the new column in the main table if schemaEvolutionPermitted and database supports ADD_COLUMN capability
-                if (sink.capabilities().contains(Capability.ADD_COLUMN))
+                // Add the new column in the main table if database supports ADD_COLUMN capability and
+                // if user capability supports ADD_COLUMN or is empty (since empty means no overriden preference)
+                if (sink.capabilities().contains(Capability.ADD_COLUMN)
+                        && (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.ADD_COLUMN) || schemaEvolutionCapabilitySet.isEmpty()))
                 {
                     operations.add(Alter.of(mainDataset, Alter.AlterOperation.ADD, stagingField, Optional.empty()));
                     modifiedFields.add(stagingField);
@@ -138,14 +143,18 @@ public class SchemaEvolution
                     {
                         // If the datatype is an implicit change, we let the database handle the change.
                         // We only alter the length if required (pick the maximum length)
-                        if (sink.capabilities().contains(Capability.IMPLICIT_DATA_TYPE_CONVERSION) && sink.supportsImplicitMapping(matchedMainField.type().dataType(), stagingFieldType.dataType()))
+                        if (sink.capabilities().contains(Capability.IMPLICIT_DATA_TYPE_CONVERSION)
+                                && (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.IMPLICIT_DATA_TYPE_CONVERSION) || schemaEvolutionCapabilitySet.isEmpty())
+                                && sink.supportsImplicitMapping(matchedMainField.type().dataType(), stagingFieldType.dataType()))
                         {
                             Field newField = evolveFieldLength(stagingField, matchedMainField);
                             evolveDataType(newField, matchedMainField, mainDataset, operations, modifiedFields);
                         }
                         // If the datatype is a non-breaking change, we alter the datatype.
                         // We also alter the length if required (pick the maximum length)
-                        else if (sink.capabilities().contains(Capability.EXPLICIT_DATA_TYPE_CONVERSION) && sink.supportsExplicitMapping(matchedMainField.type().dataType(), stagingFieldType.dataType()))
+                        else if (sink.capabilities().contains(Capability.EXPLICIT_DATA_TYPE_CONVERSION)
+                                && (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.EXPLICIT_DATA_TYPE_CONVERSION) || schemaEvolutionCapabilitySet.isEmpty())
+                                && sink.supportsExplicitMapping(matchedMainField.type().dataType(), stagingFieldType.dataType()))
                         {
                             //Modify the column in main table
                             Field newField = evolveFieldLength(matchedMainField, stagingField);
@@ -208,7 +217,8 @@ public class SchemaEvolution
         int length = 0;
         int scale = 0;
         FieldType modifiedFieldType;
-        if (sink.capabilities().contains(Capability.DATA_SIZING_CHANGES))
+        if (sink.capabilities().contains(Capability.DATA_SIZING_CHANGES)
+                && (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_SIZING_CHANGES) || schemaEvolutionCapabilitySet.isEmpty()))
         {
             //If the oldField and newField have a length associated, pick the greater length
             if (oldField.type().length().isPresent() && newField.type().length().isPresent())

@@ -28,6 +28,7 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.utils.Sq
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.finos.legend.engine.persistence.components.transformer.TransformOptions;
 import org.finos.legend.engine.persistence.components.util.Capability;
+import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapability;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -36,6 +37,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -82,7 +84,7 @@ public class SchemaEvolutionTest extends IngestModeTest
             .build();
 
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
-        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode);
+        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, Collections.emptySet());
 
         SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
         RelationalTransformer transformer = new RelationalTransformer(relationalSink);
@@ -110,7 +112,7 @@ public class SchemaEvolutionTest extends IngestModeTest
             .build();
 
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
-        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode);
+        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode,Collections.emptySet());
 
         SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
         SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
@@ -120,6 +122,79 @@ public class SchemaEvolutionTest extends IngestModeTest
 
         Assertions.assertEquals(expectedSchemaEvolutionAddColumnWithUpperCase, sqlsForSchemaEvolution.get(0));
     }
+
+    @Test
+    void testSnapshotMilestoningWithUserProvidedSchemaEvolutionCapabilityThrowsException()
+    {
+        RelationalTransformer transformer = new RelationalTransformer(relationalSink, TransformOptions.builder().addOptimizers(new UpperCaseOptimizer()).build());
+
+        Dataset mainTable = DatasetDefinition.builder()
+                .database(mainDbName).name(mainTableName).alias(mainTableAlias)
+                .schema(baseTableShortenedSchema)
+                .build();
+
+        Dataset stagingTable = DatasetDefinition.builder()
+                .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
+                .schema(baseTableSchema)
+                .build();
+
+        NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.IMPLICIT_DATA_TYPE_CONVERSION);
+        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode,schemaEvolutionCapabilitySet);
+
+        try
+        {
+            SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
+            SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
+
+            // Use the planner utils to return the sql
+            List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
+
+            Assertions.assertEquals(expectedSchemaEvolutionAddColumnWithUpperCase, sqlsForSchemaEvolution.get(0));
+        }
+        catch (IllegalStateException e)
+        {
+            Assertions.assertEquals(e.getMessage(), "Field \"biz_date\" in staging dataset does not exist in main dataset");
+        }
+    }
+
+    @Test
+    void testSnapshotMilestoningWithUserProvidedSchemaEvolutionCapability()
+    {
+        RelationalTransformer transformer = new RelationalTransformer(relationalSink, TransformOptions.builder().addOptimizers(new UpperCaseOptimizer()).build());
+
+        Dataset mainTable = DatasetDefinition.builder()
+                .database(mainDbName).name(mainTableName).alias(mainTableAlias)
+                .schema(baseTableShortenedSchema)
+                .build();
+
+        Dataset stagingTable = DatasetDefinition.builder()
+                .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
+                .schema(baseTableSchema)
+                .build();
+
+        NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.ADD_COLUMN);
+        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode,schemaEvolutionCapabilitySet);
+
+        try
+        {
+            SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
+            SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
+
+            // Use the planner utils to return the sql
+            List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
+
+            Assertions.assertEquals(expectedSchemaEvolutionAddColumnWithUpperCase, sqlsForSchemaEvolution.get(0));
+        }
+        catch (IllegalStateException e)
+        {
+            Assertions.assertEquals(e.getMessage(), "Field \"biz_date\" in staging dataset does not exist in main dataset");
+        }
+    }
+
 
     @Test
     void testSnapshotMilestoningWithSizeChangeEvolution()
@@ -135,7 +210,7 @@ public class SchemaEvolutionTest extends IngestModeTest
             .build();
 
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
-        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode);
+        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode,Collections.emptySet());
 
         SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
         RelationalTransformer transformer = new RelationalTransformer(relationalSink);
@@ -162,7 +237,7 @@ public class SchemaEvolutionTest extends IngestModeTest
             .build();
 
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
-        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode);
+        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode,Collections.emptySet());
 
         SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
         SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
@@ -186,7 +261,7 @@ public class SchemaEvolutionTest extends IngestModeTest
             .build();
 
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
-        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode);
+        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode,Collections.emptySet());
 
         SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
         RelationalTransformer transformer = new RelationalTransformer(relationalSink);
@@ -212,7 +287,7 @@ public class SchemaEvolutionTest extends IngestModeTest
             .build();
 
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
-        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode);
+        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode,Collections.emptySet());
 
         SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
         RelationalTransformer transformer = new RelationalTransformer(relationalSink);
@@ -237,7 +312,7 @@ public class SchemaEvolutionTest extends IngestModeTest
             .build();
 
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
-        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode);
+        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode,Collections.emptySet());
 
         try
         {

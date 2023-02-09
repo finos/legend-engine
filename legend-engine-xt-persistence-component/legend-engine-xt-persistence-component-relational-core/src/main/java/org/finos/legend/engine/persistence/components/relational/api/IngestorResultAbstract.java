@@ -19,6 +19,7 @@ import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.immutables.value.Value.Immutable;
 import org.immutables.value.Value.Style;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -39,4 +40,6 @@ public abstract class IngestorResultAbstract
     public abstract Map<StatisticName, Object> statisticByName();
 
     public abstract Datasets updatedDatasets();
+
+    public abstract Optional<List<String>> schemaEvolutionSqlPlan();
 }
