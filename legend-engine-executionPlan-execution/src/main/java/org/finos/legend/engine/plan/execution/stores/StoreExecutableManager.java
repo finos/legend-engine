@@ -14,9 +14,10 @@
 
 package org.finos.legend.engine.plan.execution.stores;
 
-import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.multimap.MutableMultimap;
-import org.eclipse.collections.impl.multimap.list.FastListMultimap;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.slf4j.Logger;
@@ -30,7 +31,7 @@ import org.slf4j.Logger;
 public enum StoreExecutableManager
 {
     INSTANCE;
-    private MutableMultimap<String, StoreExecutable> sessionExecutableMap = new FastListMultimap<>();
+    private final ConcurrentHashMap<String, List<StoreExecutable>> sessionExecutableMap = new ConcurrentHashMap<>();
     private boolean isRegistered = false;
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(StoreExecutableManager.class);
 
@@ -47,28 +48,40 @@ public enum StoreExecutableManager
     {
         if (isRegistered)
         {
-            sessionExecutableMap.put(sessionID, execution);
+            sessionExecutableMap.computeIfAbsent(sessionID, x -> Collections.synchronizedList(new ArrayList<>())).add(execution);
         }
     }
 
     public void removeExecutable(String sessionID, StoreExecutable executable)
     {
-    if (isRegistered)
+        if (isRegistered)
         {
-        try
+            try
             {
-            sessionExecutableMap.remove(sessionID, executable);
+                sessionExecutableMap.computeIfPresent(sessionID, (a, executableList) ->
+                {
+                    executableList.remove(executable);
+                    if (executableList.isEmpty())
+                    {
+                        return null;
+                    }
+                    else
+                    {
+                        return executableList;
+                    }
+                });
+
             }
-        catch (Exception ignore)
+            catch (Exception ignore)
             {
-            LOGGER.info(new LogInfo(null, LoggingEventType.EXECUTABLE_REMOVE_ERROR, "Unable to remove executable for session " + sessionID).toString());
+                LOGGER.info(new LogInfo(null, LoggingEventType.EXECUTABLE_REMOVE_ERROR, "Unable to remove executable for session " + sessionID).toString());
             }
         }
     }
 
-    public MutableList<StoreExecutable> getExecutables(String sessionID)
+    public List<StoreExecutable> getExecutables(String sessionID)
     {
-        return sessionExecutableMap.get(sessionID).toList();
+        return sessionExecutableMap.getOrDefault(sessionID, Collections.EMPTY_LIST);
     }
 
     public void registerManager()
@@ -76,9 +89,9 @@ public enum StoreExecutableManager
         this.isRegistered = true;
     }
 
-     public void cancelExecutablesOnSession(String sessionID)
+    public void cancelExecutablesOnSession(String sessionID)
     {
-        sessionExecutableMap.get(sessionID).toList().stream().forEach(
+        sessionExecutableMap.remove(sessionID).forEach(
                 executable ->
                 {
                     try
@@ -89,7 +102,6 @@ public enum StoreExecutableManager
                     {
                         LOGGER.info(new LogInfo(null, LoggingEventType.EXECUTABLE_CANCELLATION_ERROR, "Unable to cancel executable for session " + sessionID).toString());
                     }
-                    this.removeExecutable(sessionID, executable);
                 }
         );
     }

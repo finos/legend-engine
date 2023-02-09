@@ -27,8 +27,17 @@ public class TestStoreExecutableManager
         assert (StoreExecutableManager.INSTANCE.getExecutables(session).size() == 0);
 
         StoreExecutableManager.INSTANCE.registerManager();
-        StoreExecutableManager.INSTANCE.addExecutable(session, new TestExecutable());
+        TestExecutable test1 = new TestExecutable();
+        TestExecutable test2 = new TestExecutable();
+        assert (StoreExecutableManager.INSTANCE.getExecutables(session).size() == 0);
+        StoreExecutableManager.INSTANCE.addExecutable(session, test1);
         assert (StoreExecutableManager.INSTANCE.getExecutables(session).size() == 1);
+        StoreExecutableManager.INSTANCE.addExecutable(session, test2);
+        assert (StoreExecutableManager.INSTANCE.getExecutables(session).size() == 2);
+        StoreExecutableManager.INSTANCE.removeExecutable(session, test1);
+        assert (StoreExecutableManager.INSTANCE.getExecutables(session).size() == 1);
+        StoreExecutableManager.INSTANCE.removeExecutable(session, test2);
+        assert (StoreExecutableManager.INSTANCE.getExecutables(session).size() == 0);
         StoreExecutableManager.INSTANCE.reset(); //clean up state of singleton
 
     }
