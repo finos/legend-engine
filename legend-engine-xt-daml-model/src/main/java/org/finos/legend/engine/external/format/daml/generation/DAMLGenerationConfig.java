@@ -24,7 +24,8 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElem
 
 import java.util.List;
 
-import static org.finos.legend.pure.generated.core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_pathToElement_String_1__PackageableElement_1_;
+import static org.finos.legend.pure.generated.platform_pure_basics_meta_pathToElement.Root_meta_pure_functions_meta_pathToElement_String_1__PackageableElement_1_;
+
 
 @Deprecated
 public class DAMLGenerationConfig extends GenerationConfiguration

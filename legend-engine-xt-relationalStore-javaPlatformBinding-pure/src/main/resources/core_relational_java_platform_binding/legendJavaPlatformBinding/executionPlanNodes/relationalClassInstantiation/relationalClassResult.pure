@@ -62,7 +62,7 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       
       {relationalSets: RelationalInstanceSetImplementation[*] | 
          /* Relational */
-         let setToPropertyMappingsMap = newMap($relationalSets->map(rs | pair($rs, list($rs.allPropertyMappings()->filter(pm | $pm.property->instanceOf(Property) && $pm.property->genericType().typeArguments->at(1).rawType->toOne()->instanceOf(meta::pure::metamodel::type::DataType))))));
+         let setToPropertyMappingsMap = newMap($relationalSets->map(rs | pair($rs, list($rs->allPropertyMappings()->filter(pm | $pm.property->instanceOf(Property) && $pm.property->genericType().typeArguments->at(1).rawType->toOne()->instanceOf(meta::pure::metamodel::type::DataType))))));
          generateImplementionForRelationalSetImpls($relationalSets, $setToPropertyMappingsMap, $path, $resultClass, $context, $debug);
       },
 
@@ -86,7 +86,7 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
 
       {relationalSets: RelationalInstanceSetImplementation[*] |
          /* Relational */
-         let setToPropertyMappingsMap = newMap($relationalSets->map(rs | pair($rs, list($rs.allPropertyMappings()->filter(pm | $pm.property->instanceOf(Property) && $pm.property->genericType().typeArguments->at(1).rawType->toOne()->instanceOf(meta::pure::metamodel::type::DataType))->filter(x | $x.property->in($properties))))));
+         let setToPropertyMappingsMap = newMap($relationalSets->map(rs | pair($rs, list($rs->allPropertyMappings()->filter(pm | $pm.property->instanceOf(Property) && $pm.property->genericType().typeArguments->at(1).rawType->toOne()->instanceOf(meta::pure::metamodel::type::DataType))->filter(x | $x.property->in($properties))))));
          generateImplementionForRelationalSetImpls($relationalSets, $setToPropertyMappingsMap, $path, $resultClass, $context, $debug);
       },
       

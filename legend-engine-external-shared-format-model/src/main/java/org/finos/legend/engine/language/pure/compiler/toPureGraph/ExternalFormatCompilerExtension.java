@@ -46,6 +46,12 @@ public class ExternalFormatCompilerExtension implements CompilerExtension
     }
 
     @Override
+    public CompilerExtension build()
+    {
+        return new ExternalFormatCompilerExtension();
+    }
+
+    @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
         return Lists.immutable.with(schemaSetCompiler.getProcessor(), bindingCompiler.getProcessor());

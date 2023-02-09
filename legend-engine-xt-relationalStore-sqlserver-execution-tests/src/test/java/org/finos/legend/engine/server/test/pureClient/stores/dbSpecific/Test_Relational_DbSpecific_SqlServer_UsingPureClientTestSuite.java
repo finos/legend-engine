@@ -18,7 +18,7 @@ import com.fasterxml.jackson.databind.jsontype.NamedType;
 import junit.framework.Test;
 import org.finos.legend.engine.authentication.SqlServerTestDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.server.test.shared.Relational_DbSpecific_UsingPureClientTestSuite;
-import org.finos.legend.pure.code.core.compiled.test.IgnoreUnsupportedApiPureTestSuiteRunner;
+import org.finos.legend.pure.runtime.java.compiled.testHelper.IgnoreUnsupportedApiPureTestSuiteRunner;
 import org.junit.runner.RunWith;
 
 @RunWith(IgnoreUnsupportedApiPureTestSuiteRunner.class)

@@ -78,17 +78,4 @@ function <<test.Test>> meta::pure::functions::collection::tests::removeAll::test
    assertEquals([$c2], $vals->removeAll([^TestClassWithEquality(val = 1), ^TestClassWithEquality(val = 3)]));
 }
 
-function <<test.Test>> meta::pure::functions::collection::tests::removeAll::testRemoveAllOptimizedClassKey():Boolean[1]
-{
-   let c1 = ^TestClassWithEquality(val = 1);
-   let c2 = ^TestClassWithEquality(val = 2);
-   let c3 = ^TestClassWithEquality(val = 3);
-
-   let c11 = ^TestClassWithEquality(val = 1);
-   let c13 = ^TestClassWithEquality(val = 3);
-
-   let vals = [$c1, $c2, $c3];
-
-   assertEquals([$c2], $vals->removeAllOptimized([^TestClassWithEquality(val = 1), ^TestClassWithEquality(val = 3)]));
-}
 

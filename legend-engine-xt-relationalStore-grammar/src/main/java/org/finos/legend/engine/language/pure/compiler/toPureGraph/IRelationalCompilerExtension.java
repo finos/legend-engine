@@ -23,7 +23,6 @@ import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.MappingValidatorContext;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
@@ -34,13 +33,11 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_PostProcessor;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_AuthenticationStrategy;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_DatasourceSpecification;
+import org.finos.legend.pure.generated.Root_meta_relational_runtime_PostProcessorWithParameter;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Column;
-import org.finos.legend.pure.m3.coreinstance.meta.relational.runtime.PostProcessorWithParameter;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.BiConsumer;
 
 public interface IRelationalCompilerExtension extends CompilerExtension
 {
@@ -59,7 +56,7 @@ public interface IRelationalCompilerExtension extends CompilerExtension
         return process(authenticationStrategy, processors, context, "Authentication Strategy", authenticationStrategy.sourceInformation);
     }
 
-    static Pair<Root_meta_pure_alloy_connections_PostProcessor, PostProcessorWithParameter> process(Connection connection, PostProcessor postProcessor, List<Function3<Connection, PostProcessor, CompileContext, Pair<Root_meta_pure_alloy_connections_PostProcessor, PostProcessorWithParameter>>> processors, CompileContext context)
+    static Pair<Root_meta_pure_alloy_connections_PostProcessor, Root_meta_relational_runtime_PostProcessorWithParameter> process(Connection connection, PostProcessor postProcessor, List<Function3<Connection, PostProcessor, CompileContext, Pair<Root_meta_pure_alloy_connections_PostProcessor, Root_meta_relational_runtime_PostProcessorWithParameter>>> processors, CompileContext context)
     {
         SourceInformation srcInfo = postProcessor.sourceInformation;
         return ListIterate
@@ -69,7 +66,7 @@ public interface IRelationalCompilerExtension extends CompilerExtension
                 .orElseThrow(() -> new EngineException("Unsupported Post Processor type '" + postProcessor.getClass() + "'", srcInfo, EngineErrorType.COMPILATION));
     }
 
-    static PostProcessorWithParameter process(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.legacy.PostProcessorWithParameter postProcessorWithParameter, List<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.legacy.PostProcessorWithParameter, CompileContext, PostProcessorWithParameter>> processors, CompileContext context)
+    static Root_meta_relational_runtime_PostProcessorWithParameter process(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.legacy.PostProcessorWithParameter postProcessorWithParameter, List<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.legacy.PostProcessorWithParameter, CompileContext, Root_meta_relational_runtime_PostProcessorWithParameter>> processors, CompileContext context)
     {
         return process(postProcessorWithParameter, processors, context, "Post Processor With Parameter", null);
     }
@@ -102,12 +99,12 @@ public interface IRelationalCompilerExtension extends CompilerExtension
         return Lists.immutable.with();
     }
 
-    default List<Function3<Connection, PostProcessor, CompileContext, Pair<Root_meta_pure_alloy_connections_PostProcessor, PostProcessorWithParameter>>> getExtraConnectionPostProcessor()
+    default List<Function3<Connection, PostProcessor, CompileContext, Pair<Root_meta_pure_alloy_connections_PostProcessor, Root_meta_relational_runtime_PostProcessorWithParameter>>> getExtraConnectionPostProcessor()
     {
         return FastList.newList();
     }
 
-    default List<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.legacy.PostProcessorWithParameter, CompileContext, PostProcessorWithParameter>> getExtraLegacyPostProcessors()
+    default List<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.legacy.PostProcessorWithParameter, CompileContext, Root_meta_relational_runtime_PostProcessorWithParameter>> getExtraLegacyPostProcessors()
     {
         return FastList.newList();
     }
