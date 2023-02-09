@@ -344,3 +344,14 @@ function <<test.Test>> meta::pure::functions::meta::tests::testFindExpressionsFo
   assertEquals($miscNewFunctionCallsRes->size(), 4);
   assertEquals($recursiveFuncRes->size(), 1);
 }
+
+function <<test.Test>> meta::pure::functions::meta::tests::testTypeNameAndPath():Boolean[1]
+{
+
+  assertEquals( ^meta::pure::functions::meta::tests::MyClass()->typeName(),'MyClass');
+  assertEquals( ^meta::pure::functions::meta::tests::MyClass()->typePath(),'meta::pure::functions::meta::tests::MyClass');
+
+  assertEquals( meta::pure::functions::tests::model::GeographicEntityType.CITY->typeName(),'GeographicEntityType');
+  assertEquals( meta::pure::functions::tests::model::GeographicEntityType.CITY->typePath(),'meta::pure::functions::tests::model::GeographicEntityType');
+
+}
