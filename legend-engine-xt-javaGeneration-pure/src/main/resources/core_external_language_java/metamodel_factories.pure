@@ -1453,12 +1453,6 @@ function meta::external::language::java::factory::j_cast(expression:Code[1], cas
    if($castTo == javaDouble() && $expression.type->isBoxedNumberType(),
      | ^CastProxy(expression=$expression, proxy=$expression->j_invoke('doubleValue', [], javaDouble()), type=$castTo),
      |
-   if($castTo == javaBigDecimal() && $expression.type==javaDouble(),
-     | ^CastProxy(expression=$expression, proxy=javaBigDecimal()->j_invoke('valueOf', $expression, $castTo), type=$castTo),
-     |  
-   if($castTo == javaBigDecimal() && $expression.type==javaLong(),
-     | ^CastProxy(expression=$expression, proxy=javaBigDecimal()->j_invoke('valueOf', $expression, $castTo), type=$castTo),
-     |    
    if($expression.type->toBoxed() == $castTo || $expression.type == $castTo->toBoxed(),
      | ^CastProxy(expression=$expression, proxy=$expression, type=$castTo),
      |
@@ -1545,7 +1539,7 @@ function meta::external::language::java::factory::j_cast(expression:Code[1], cas
         ^$deferred(stream=$deferred.stream->j_cast(javaStream($castTo->elementTypeOfJavaList())), type=$castTo);
      },
      |^Cast(expression=$expression, type=$castTo)
-   )))))))))))))))));
+   )))))))))))))));
 }
 
 function <<access.private>> meta::external::language::java::factory::isLambdaReturningCollectionsEmptyList(c:Code[1]):Boolean[1]
