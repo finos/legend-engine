@@ -20,19 +20,14 @@ import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
-import org.finos.legend.pure.m3.navigation.M3Paths;
-import org.finos.legend.pure.m3.navigation.M3Properties;
 import org.finos.legend.pure.m3.navigation.PrimitiveUtilities;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
-import org.finos.legend.pure.m3.navigation._package._Package;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
@@ -41,10 +36,6 @@ import javax.tools.SimpleJavaFileObject;
 
 public class PureCompileAndExecuteJava
 {
-    private static final String PURE_COMP_RESULT = "meta::external::language::java::compiler::CompilationResult";
-    private static final String PURE_EXEC_RESULT = "meta::external::language::java::compiler::ExecutionResult";
-    private static final String PURE_COMP_AND_EXEC_RESULT = "meta::external::language::java::compiler::CompileAndExecuteResult";
-
     @SuppressWarnings("unused")
     public static CoreInstance compilePure(CoreInstance javaSource, CoreInstance config, ExecutionSupport executionSupport)
     {
@@ -64,7 +55,7 @@ public class PureCompileAndExecuteJava
     public static CoreInstance compilePure(Iterable<? extends CoreInstance> javaSources, CoreInstance config, ProcessorSupport processorSupport)
     {
         CompilationResult javaCompResult = CompileAndExecuteJava.compile(toJavaFileObjects(javaSources), toCompileOptions(config));
-        return toPureCompilationResult(javaCompResult, processorSupport);
+        return new PureResultBuilder(processorSupport).buildCompilationResult(javaCompResult);
     }
 
     @SuppressWarnings("unused")
@@ -87,7 +78,7 @@ public class PureCompileAndExecuteJava
     {
         CompilationResult javaCompResult = CompileAndExecuteJava.compile(toJavaFileObjects(javaSources), toCompileOptions(compConfig));
         ExecutionResult javaExecResult = javaCompResult.isSuccess() ? CompileAndExecuteJava.execute(javaCompResult, getExecClassName(execConfig), getExecMethodName(execConfig)) : null;
-        return toPureCompileAndExecuteResult(javaCompResult, javaExecResult, processorSupport);
+        return new PureResultBuilder(processorSupport).buildCompileAndExecuteResult(javaCompResult, javaExecResult);
     }
 
     private static Collection<JavaFileObject> toJavaFileObjects(Iterable<? extends CoreInstance> javaSources)
@@ -151,66 +142,5 @@ public class PureCompileAndExecuteJava
     private static String getExecMethodName(CoreInstance execConfig)
     {
         return PrimitiveUtilities.getStringValue(execConfig.getValueForMetaPropertyToOne("method"));
-    }
-
-    private static CoreInstance toPureCompilationResult(CompilationResult javaCompResult, ProcessorSupport processorSupport)
-    {
-        CoreInstance pureCompResult = processorSupport.newCoreInstance(null, PURE_COMP_RESULT, null);
-
-        CoreInstance success = processorSupport.newCoreInstance(Boolean.toString(javaCompResult.isSuccess()), M3Paths.Boolean, null);
-        pureCompResult.setKeyValues(toPropertyPath(PURE_COMP_RESULT, "successful"), Lists.immutable.with(success));
-
-        if (!javaCompResult.isSuccess())
-        {
-            ListIterable<CoreInstance> errorMessages = javaCompResult.getErrorMessages().collect(e -> processorSupport.newCoreInstance(e, M3Paths.String, null));
-            pureCompResult.setKeyValues(toPropertyPath(PURE_COMP_RESULT, "errors"), errorMessages);
-        }
-
-        return pureCompResult;
-    }
-
-    private static CoreInstance toPureExecutionResult(ExecutionResult javaExecResult, ProcessorSupport processorSupport)
-    {
-        CoreInstance pureExecResult = processorSupport.newCoreInstance(null, PURE_EXEC_RESULT, null);
-
-        CoreInstance success = processorSupport.newCoreInstance(Boolean.toString(javaExecResult.isSuccess()), M3Paths.Boolean, null);
-        pureExecResult.setKeyValues(toPropertyPath(PURE_EXEC_RESULT, "successful"), Lists.immutable.with(success));
-
-        if (!javaExecResult.isSuccess())
-        {
-            Throwable error = javaExecResult.getError();
-            if (error != null)
-            {
-                StringWriter stringWriter = new StringWriter();
-                try (PrintWriter printWriter = new PrintWriter(stringWriter))
-                {
-                    error.printStackTrace(printWriter);
-                }
-                CoreInstance errorMessage = processorSupport.newCoreInstance(stringWriter.toString(), M3Paths.String, null);
-                pureExecResult.setKeyValues(toPropertyPath(PURE_EXEC_RESULT, "error"), Lists.immutable.with(errorMessage));
-            }
-        }
-
-        return pureExecResult;
-    }
-
-    private static CoreInstance toPureCompileAndExecuteResult(CompilationResult javaCompResult, ExecutionResult javaExecResult, ProcessorSupport processorSupport)
-    {
-        CoreInstance pureCompAndExecResult = processorSupport.newCoreInstance(null, PURE_COMP_AND_EXEC_RESULT, null);
-
-        CoreInstance pureCompResult = toPureCompilationResult(javaCompResult, processorSupport);
-        pureCompAndExecResult.setKeyValues(toPropertyPath(PURE_COMP_AND_EXEC_RESULT, "compilationResult"), Lists.immutable.with(pureCompResult));
-
-        if (javaExecResult != null)
-        {
-            CoreInstance pureExecResult = toPureExecutionResult(javaExecResult, processorSupport);
-            pureCompAndExecResult.setKeyValues(toPropertyPath(PURE_COMP_AND_EXEC_RESULT, "executionResult"), Lists.immutable.with(pureExecResult));
-        }
-        return pureCompAndExecResult;
-    }
-
-    private static ListIterable<String> toPropertyPath(String classPath, String propertyName)
-    {
-        return _Package.convertM3PathToM4(classPath).with(M3Properties.properties).with(propertyName);
     }
 }
