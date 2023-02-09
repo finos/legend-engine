@@ -39,6 +39,9 @@ import static org.finos.legend.engine.persistence.components.BaseTestUtils.colTi
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colTinyint;
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colVarBinary;
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.colVarchar;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colVariant;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colMap;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colArray;
 
 public class DataTypeMappingTest
 {
@@ -66,6 +69,10 @@ public class DataTypeMappingTest
         Assertions.assertEquals("NUMBER(38,0)", getGeneratedSql(new SnowflakeDataTypeMapping().getDataType(colNumeric.type())));
         Assertions.assertEquals("BOOLEAN", getGeneratedSql(new SnowflakeDataTypeMapping().getDataType(colBoolean.type())));
         Assertions.assertEquals("BINARY(10)", getGeneratedSql(new SnowflakeDataTypeMapping().getDataType(colVarBinary.type())));
+        Assertions.assertEquals("VARIANT", getGeneratedSql(new SnowflakeDataTypeMapping().getDataType(colVariant.type())));
+        Assertions.assertEquals("OBJECT", getGeneratedSql(new SnowflakeDataTypeMapping().getDataType(colMap.type())));
+        Assertions.assertEquals("ARRAY", getGeneratedSql(new SnowflakeDataTypeMapping().getDataType(colArray.type())));
+
     }
 
     private String getGeneratedSql(SqlGen sqlGen) throws SqlDomException

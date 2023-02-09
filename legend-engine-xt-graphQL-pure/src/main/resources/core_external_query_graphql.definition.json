@@ -1,5 +1,13 @@
 {
-  "name" : "core_external_query_graphql",
-  "pattern" : "(meta::external::query::graphQL)(::.*)?",
-  "dependencies" : ["platform", "core", "core_external_compiler", "core_external_query_graphql_metamodel"]
+  "name": "core_external_query_graphql",
+  "pattern": "(meta::external::query::graphQL)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_functions",
+    "platform_dsl_graph",
+    "platform_dsl_mapping",
+    "core",
+    "core_external_compiler",
+    "core_external_query_graphql_metamodel"
+  ]
 }

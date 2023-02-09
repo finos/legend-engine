@@ -1,5 +1,15 @@
 {
-    "name" : "core_relational_java_platform_binding",
-    "pattern" : "(meta::relational::executionPlan::platformBinding::legendJava)(::.*)?",
-    "dependencies" : ["platform", "core", "core_relational", "core_external_language_java", "core_java_platform_binding"]
+  "name": "core_relational_java_platform_binding",
+  "pattern": "(meta::relational::executionPlan::platformBinding::legendJava)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_functions",
+    "platform_dsl_graph",
+    "platform_dsl_mapping",
+    "platform_store_relational",
+    "core",
+    "core_relational",
+    "core_external_language_java",
+    "core_java_platform_binding"
+  ]
 }

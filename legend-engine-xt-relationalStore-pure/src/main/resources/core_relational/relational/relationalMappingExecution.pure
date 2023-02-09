@@ -103,7 +103,7 @@ function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::
                                                       (
                                                          type=$class,
                                                          setImplementations = if($ext->isEmpty(),
-                                                                                 | $m->toOne().rootClassMappingByClass($c)->toOne(),
+                                                                                 | $m->toOne()->rootClassMappingByClass($c)->toOne(),
                                                                                  | $ext->cast(@StoreMappingRoutedValueSpecification).sets->at(0)
                                                                               )->resolveOperation($m->toOne())
                                                      )
@@ -340,7 +340,7 @@ function meta::relational::mapping::executeQuery(sql:String[1], query:SQLQuery[0
                                              );
                                         ),
                  c : Class<Any>[1] | let setImplementation = if($ext->isEmpty(),
-                                                                 | $m.rootClassMappingByClass($c)->toOne();,
+                                                                 | $m->rootClassMappingByClass($c)->toOne();,
                                                                  | $ext->cast(@StoreMappingRoutedValueSpecification).sets->at(0)
                                                              );
                                      $setImplementation->match(
@@ -365,8 +365,8 @@ function meta::relational::mapping::buildExecutionResultInTDS(sql:String[1], res
                                                                                 | let pm = $matchedPath->toOne().second;
                                                                               if ($pm.propertyMapping == [] && $pm.type != Decimal, |{a:Any[1]|$a},
                                                                                  | if ($pm.propertyMapping == [] && $pm.type == Decimal, |{a:Any[1]|$a->cast(@Number)->toDecimal()},
-                                                                                    | if ($pm.type == Decimal, |{a:Any[1]|$pm.propertyMapping->cast(@RelationalPropertyMapping)->toOne().transform($a)->cast(@Number)->toOne()->toDecimal()},
-                                                                                       | {a:Any[1]|$pm.propertyMapping->cast(@RelationalPropertyMapping)->toOne().transform($a)}););););
+                                                                                    | if ($pm.type == Decimal, |{a:Any[1]|$pm.propertyMapping->cast(@RelationalPropertyMapping)->toOne()->transform($a)->cast(@Number)->toOne()->toDecimal()},
+                                                                                       | {a:Any[1]|$pm.propertyMapping->cast(@RelationalPropertyMapping)->toOne()->transform($a)}););););
                                                                     );
                                                                 );
 
@@ -448,7 +448,7 @@ function meta::relational::mapping::buildBuilders(setImplementations:RelationalI
                                                                      r:RootRelationalInstanceSetImplementation[1] | $setImplementation.class;,
                                                                      e:EmbeddedRelationalInstanceSetImplementation[1] | $e.property->genericType().typeArguments->at(1).rawType->toOne()->cast(@Class<Any>)
                                                                      ]);
-                                                let propertyMappings = $setImplementation.allPropertyMappings()
+                                                let propertyMappings = $setImplementation->allPropertyMappings()
                                                                        ->filter(pm|$pm.localMappingProperty==false &&
                                                                                    $pm.property->instanceOf(Property) &&
                                                                                    $pm.property->genericType().typeArguments->at(1).rawType->toOne()->instanceOf(meta::pure::metamodel::type::DataType)
@@ -464,13 +464,13 @@ function meta::relational::mapping::buildBuilders(setImplementations:RelationalI
 
                                                 let keys = $propertyMappings->map(pm | $pm.property.name);
                                                 let transforms = $propertyMappings->map(p|if($p.property->functionReturnType().rawType == Boolean,|{a:Any[1]|$a == 'true' || $a == true},
-                                                                                             | if($p.property->functionReturnType().rawType == Decimal,|{a:Any[1]|$p->cast(@RelationalPropertyMapping).transform($a)->cast(@Number)->toDecimal()},|{a:Any[1]|$p->cast(@RelationalPropertyMapping).transform($a)});));
+                                                                                             | if($p.property->functionReturnType().rawType == Decimal,|{a:Any[1]|$p->cast(@RelationalPropertyMapping)->transform($a)->cast(@Number)->toDecimal()},|{a:Any[1]|$p->cast(@RelationalPropertyMapping)->transform($a)});));
 
                                                 let indices = range(0, $propertyMappings->size(), 1);
 
                                                 let primaryKeyColumns = $setImplementation->match([
-                                                        r:RootRelationalInstanceSetImplementation[1] | $r.resolvePrimaryKey();,
-                                                        e:EmbeddedRelationalInstanceSetImplementation[1] | $e.setMappingOwner.resolvePrimaryKey()
+                                                        r:RootRelationalInstanceSetImplementation[1] | $r->resolvePrimaryKey();,
+                                                        e:EmbeddedRelationalInstanceSetImplementation[1] | $e.setMappingOwner->resolvePrimaryKey()
                                                         ]);
 
                                                 assert(!$primaryKeyColumns->isEmpty(), 'Must have a valid primary key to allow gettor to work');
@@ -599,7 +599,7 @@ function meta::relational::mapping::generatePropertySql(setImplementation: Relat
 
    let context = ^DebugContext(debug=false, space='');
 
-   let mainTable = $srcSetImplementation.mainRelation->processRelation([], '', false, 0, false, [], $state, $context, $extensions);
+   let mainTable = $srcSetImplementation->mainRelation()->processRelation([], '', false, 0, false, [], $state, $context, $extensions);
 
    let innerJoinFilterExists = $srcSetImplementation->getFilter().joinTreeNode.joinType == JoinType.INNER;
    let updatedMainTable = if ($innerJoinFilterExists,
@@ -619,8 +619,8 @@ function meta::relational::mapping::generatePropertySql(setImplementation: Relat
    let nodeId = '_a';
 
    let primaryKeys = $setImplementation->match([
-												r:RootRelationalInstanceSetImplementation[1] | $r.resolvePrimaryKey();,
-												e:EmbeddedRelationalInstanceSetImplementation[1] | $e.setMappingOwner.resolvePrimaryKey()
+												r:RootRelationalInstanceSetImplementation[1] | $r->resolvePrimaryKey();,
+												e:EmbeddedRelationalInstanceSetImplementation[1] | $e.setMappingOwner->resolvePrimaryKey()
 												]);
 
    assert(!$primaryKeys->isEmpty(), 'Must have a valid primary key to allow gettor to work');
@@ -647,7 +647,7 @@ function meta::relational::mapping::generatePropertySql(setImplementation: Relat
 									 );
 
    let propertySetImplementation = $setImplementation->match([e:EmbeddedSetImplementation[1]|$e->meta::pure::mapping::propertyMappingsByPropertyName($property.name->toOne()),
-                                                              s:PropertyMappingsImplementation[1]|$s.propertyMappingsByPropertyName($property.name->toOne())]);
+                                                              s:PropertyMappingsImplementation[1]|$s->_propertyMappingsByPropertyName($property.name->toOne())]);
 
    let res = processPropertyMapping($propertySetImplementation, $setImplementation.class, $wrappedMerged, ^$state(inGetterFlow=true), $joinType, $nodeId, ^List<ColumnGroup>(), $context, $extensions);
 
@@ -660,8 +660,8 @@ function meta::relational::mapping::generatePropertySql(setImplementation: Relat
 													 rebuildSelectWithCursor($pm.property.name->toOne(), [], $newQuery, true););
 
    let targetPrimaryKeys = $targetSetImplementation->match([
-												r:RootRelationalInstanceSetImplementation[1] | $r.resolvePrimaryKey();,
-												e:EmbeddedRelationalInstanceSetImplementation[1] | $e.setMappingOwner.resolvePrimaryKey()
+												r:RootRelationalInstanceSetImplementation[1] | $r->resolvePrimaryKey();,
+												e:EmbeddedRelationalInstanceSetImplementation[1] | $e.setMappingOwner->resolvePrimaryKey()
 												]);
 
    assert(!$targetPrimaryKeys->isEmpty(), 'Must have a valid primary key to allow gettor to work');
@@ -682,12 +682,12 @@ function meta::relational::mapping::generatePropertySql(setImplementation: Relat
 
 function meta::relational::mapping::getPropertyTargetSetImplementation(sourceSetImplementation: RelationalInstanceSetImplementation[1], property:AbstractProperty<Any>[1], mapping:Mapping[1]):RelationalInstanceSetImplementation[1]
 {
-   let propertySetImplementation = $sourceSetImplementation.propertyMappingsByPropertyName($property.name->toOne());
+   let propertySetImplementation = $sourceSetImplementation->_propertyMappingsByPropertyName($property.name->toOne());
    let propertyReturnTypeClass = $property->functionReturnType()->genericTypeClass();
    $propertySetImplementation->match([
-        o:OtherwiseEmbeddedRelationalInstanceSetImplementation[1]|$mapping.classMappingById($o.otherwisePropertyMapping.targetSetImplementationId)->cast(@RelationalInstanceSetImplementation)->toOne();,
+        o:OtherwiseEmbeddedRelationalInstanceSetImplementation[1]|$mapping->classMappingById($o.otherwisePropertyMapping.targetSetImplementationId)->cast(@RelationalInstanceSetImplementation)->toOne();,
 		e:EmbeddedRelationalInstanceSetImplementation[1] | $e ,
-		r:RelationalPropertyMapping[1] |  let classMappings = $mapping.rootClassMappingByClass($propertyReturnTypeClass)->potentiallyResolveOperation($sourceSetImplementation.parent);
+		r:RelationalPropertyMapping[1] |  let classMappings = $mapping->rootClassMappingByClass($propertyReturnTypeClass)->potentiallyResolveOperation($sourceSetImplementation.parent);
 										  assertSize($classMappings, 1, 'Expected 1 class mapping for %s, found %d', [$propertyReturnTypeClass.name->toOne(), $classMappings->size()]);
 										  $classMappings->toOne()->cast(@RelationalInstanceSetImplementation);
    ]);

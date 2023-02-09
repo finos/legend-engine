@@ -221,7 +221,7 @@ function meta::relational::contract::getStore(r:InstanceSetImplementation[1]):St
       r:RootRelationalInstanceSetImplementation[1]|
           let mainTableAlias = $r.mainTableAlias;
           if ($mainTableAlias.database->isEmpty(),
-            |$r.mainTable.schema.database,
+            |$r->mainTable().schema.database,
             |$mainTableAlias.database->toOne()
           );,
       e:EmbeddedRelationalInstanceSetImplementation[1]|

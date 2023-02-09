@@ -44,12 +44,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.config.Temporary
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutionState;
-import org.finos.legend.engine.plan.execution.stores.relational.result.PreparedTempTableResult;
-import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
-import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
-import org.finos.legend.engine.plan.execution.stores.relational.result.ResultInterpreterExtension;
-import org.finos.legend.engine.plan.execution.stores.relational.result.SQLExecutionResult;
-import org.finos.legend.engine.plan.execution.stores.relational.result.VoidRelationalResult;
+import org.finos.legend.engine.plan.execution.stores.relational.result.*;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
@@ -108,7 +103,7 @@ public class RelationalExecutor
         this.flowProviderHolder = flowProviderHolder;
         this.connectionManager = new ConnectionManagerSelector(temporarytestdb, relationalExecutionConfiguration.oauthProfiles, flowProviderHolder);
         this.relationalExecutionConfiguration = relationalExecutionConfiguration;
-        this.resultInterpreterExtensions = Iterate.addAllTo(ServiceLoader.load(ResultInterpreterExtension.class), Lists.mutable.empty()).collect(ResultInterpreterExtension::additionalResultBuilder);
+        this.resultInterpreterExtensions = Iterate.addAllTo(ResultInterpreterExtensionLoader.extensions(), Lists.mutable.empty()).collect(ResultInterpreterExtension::additionalResultBuilder);
     }
 
     public RelationalExecutionConfiguration getRelationalExecutionConfiguration()

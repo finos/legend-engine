@@ -15,7 +15,7 @@
 package org.finos.legend.engine.pure.code.core;
 
 import org.eclipse.collections.api.factory.Lists;
-import org.finos.legend.pure.m3.AbstractCompiledStateIntegrityTest;
+import org.finos.legend.pure.m3.tests.AbstractCompiledStateIntegrityTest;
 import org.finos.legend.pure.m3.serialization.filesystem.PureCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;

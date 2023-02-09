@@ -45,4 +45,10 @@ public class SQLCompilerExtension implements CompilerExtension
                         ._values(Lists.mutable.with(new org.finos.legend.engine.protocol.sql.metamodel.Translator().translate((Node) obj, context.pureModel)))
         );
     }
+
+    @Override
+    public CompilerExtension build()
+    {
+        return new SQLCompilerExtension();
+    }
 }

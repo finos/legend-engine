@@ -45,7 +45,7 @@ function <<access.private>> meta::pure::router::operations::getMappedLeafTypes_r
                                                                       mapping:Mapping[1]):SetImplementation[*]
 {
    let specs = $type.specializations->map(s | $s.specific);
-   let foundClassMapping = $mapping.rootClassMappingByClass($type);
+   let foundClassMapping = $mapping->rootClassMappingByClass($type);
    let classMapping = if($foundClassMapping->isEmpty()
                          ,| $leafMostClassMapping
                          ,| $foundClassMapping);
@@ -86,7 +86,7 @@ function meta::pure::router::routing::potentiallyResolveOperation(s:SetImplement
 
 function meta::pure::router::routing::reprocessOperationForAssociationMapping(o:OperationSetImplementation[1], mapping:Mapping[1]):OperationSetImplementation[1]
 {
-   if($o.id == 'embedded_operation', | $o, | ^$o(parameters = $o.parameters->map(i| ^$i(setImplementation=$mapping.classMappingById($i.id)->toOne()))))
+   if($o.id == 'embedded_operation', | $o, | ^$o(parameters = $o.parameters->map(i| ^$i(setImplementation=$mapping->classMappingById($i.id)->toOne()))))
 }
 
 function meta::pure::router::routing::reprocessOperationForAssociationMapping(o:OperationSetImplementation[1], mapping:Mapping[1], allClassMappings: SetImplementation[*]):OperationSetImplementation[1]

@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Server External" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="org.finos.legend.engine.server.Server" />
+    <module name="legend-engine-server" />
+    <option name="PROGRAM_PARAMETERS" value="server $PROJECT_DIR$/../../../deployment/legend-local/engine_config.json" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="org.finos.legend.engine.server.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

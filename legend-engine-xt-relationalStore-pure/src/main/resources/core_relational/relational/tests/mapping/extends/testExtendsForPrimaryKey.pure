@@ -16,6 +16,7 @@
 import meta::relational::tests::mapping::extend::primaryKey::*;
 import meta::relational::tests::mapping::extend::store::*;
 import meta::relational::tests::mapping::extend::model::*;
+import meta::pure::mapping::*;
 
 Mapping meta::relational::tests::mapping::extend::primaryKey::AMappingWithGroupBy
 (
@@ -232,26 +233,27 @@ Mapping meta::relational::tests::mapping::extend::primaryKey::BMappingWithNothin
 import meta::relational::metamodel::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::mapping::extend::primaryKey::*;
+import meta::pure::mapping::*;
 
 function <<test.Test>> meta::relational::tests::mapping::extend::primaryKey::testPrimaryKeyForB():Any[*]
 {
-   assertEquals('bName', BMappingWithGroupByAMappingWithGroupBy.classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne().resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
-   assertEquals('aName', BMappingWithDistinctAMappingWithGroupBy.classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne().resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
-   assertEquals('aName', BMappingWithUserDefinedPrimaryKeyAMappingWithGroupBy.classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne().resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
-   assertEquals('aName', BMappingWithNothingAMappingWithGroupBy.classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne().resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
+   assertEquals('bName', BMappingWithGroupByAMappingWithGroupBy->classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne()->resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
+   assertEquals('aName', BMappingWithDistinctAMappingWithGroupBy->classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne()->resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
+   assertEquals('aName', BMappingWithUserDefinedPrimaryKeyAMappingWithGroupBy->classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne()->resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
+   assertEquals('aName', BMappingWithNothingAMappingWithGroupBy->classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne()->resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
 
-   assertEquals('bName', BMappingWithGroupByAMappingWithDistinct.classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne().resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
-   assertEquals('bName', BMappingWithDistinctAMappingWithDistinct.classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne().resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
-   assertSameElements(['id', 'aName'], BMappingWithUserDefinedPrimaryKeyAMappingWithDistinct.classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne().resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
-   assertSameElements(['id', 'aName'], BMappingWithNothingAMappingWithDistinct.classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne().resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
+   assertEquals('bName', BMappingWithGroupByAMappingWithDistinct->classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne()->resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
+   assertEquals('bName', BMappingWithDistinctAMappingWithDistinct->classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne()->resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
+   assertSameElements(['id', 'aName'], BMappingWithUserDefinedPrimaryKeyAMappingWithDistinct->classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne()->resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
+   assertSameElements(['id', 'aName'], BMappingWithNothingAMappingWithDistinct->classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne()->resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
 
-   assertEquals('bName', BMappingWithGroupByAMappingWithUserDefinedPrimaryKey.classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne().resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
-   assertEquals('bName', BMappingWithDistinctAMappingWithUserDefinedPrimaryKey.classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne().resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
-   assertEquals('bName', BMappingWithUserDefinedPrimaryKeyAMappingWithUserDefinedPrimaryKey.classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne().resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
-   assertEquals('aName', BMappingWithNothingAMappingWithUserDefinedPrimaryKey.classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne().resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
+   assertEquals('bName', BMappingWithGroupByAMappingWithUserDefinedPrimaryKey->classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne()->resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
+   assertEquals('bName', BMappingWithDistinctAMappingWithUserDefinedPrimaryKey->classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne()->resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
+   assertEquals('bName', BMappingWithUserDefinedPrimaryKeyAMappingWithUserDefinedPrimaryKey->classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne()->resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
+   assertEquals('aName', BMappingWithNothingAMappingWithUserDefinedPrimaryKey->classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne()->resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
 
-   assertEquals('bName', BMappingWithGroupByAMappingWithNothing.classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne().resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
-   assertEquals('bName', BMappingWithDistinctAMappingWithNothing.classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne().resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
-   assertEquals('bName', BMappingWithUserDefinedPrimaryKeyAMappingWithNothing.classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne().resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
-   assertEquals('id', BMappingWithNothingAMappingWithNothing.classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne().resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
+   assertEquals('bName', BMappingWithGroupByAMappingWithNothing->classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne()->resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
+   assertEquals('bName', BMappingWithDistinctAMappingWithNothing->classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne()->resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
+   assertEquals('bName', BMappingWithUserDefinedPrimaryKeyAMappingWithNothing->classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne()->resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
+   assertEquals('id', BMappingWithNothingAMappingWithNothing->classMappingById('b')->cast(@RootRelationalInstanceSetImplementation)->toOne()->resolvePrimaryKey()->cast(@TableAliasColumn).column.name);
 }

@@ -59,6 +59,8 @@ import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler
 import org.finos.legend.engine.shared.core.operational.prometheus.Prometheus;
 import org.finos.legend.engine.testable.helper.PrimitiveValueSpecificationToObjectVisitor;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.pac4j.core.profile.CommonProfile;
@@ -216,8 +218,8 @@ public class Execute
         PureModel pureModel = modelManager.loadModel(executeInput.model, clientVersion, profiles, null);
         LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambda(executeInput.function.body, executeInput.function.parameters, pureModel.getContext());
         Mapping mapping = executeInput.mapping == null ? null : pureModel.getMapping(executeInput.mapping);
-        org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime runtime = HelperRuntimeBuilder.buildPureRuntime(executeInput.runtime, pureModel.getContext());
-        org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.ExecutionContext context = HelperValueSpecificationBuilder.processExecutionContext(executeInput.context, pureModel.getContext());
+        Root_meta_pure_runtime_Runtime runtime = HelperRuntimeBuilder.buildPureRuntime(executeInput.runtime, pureModel.getContext());
+        Root_meta_pure_runtime_ExecutionContext context = HelperValueSpecificationBuilder.processExecutionContext(executeInput.context, pureModel.getContext());
         return debug ?
                 PlanGenerator.generateExecutionPlanDebug(lambda, mapping, runtime, context, pureModel, clientVersion, PlanPlatform.JAVA, null, this.extensions.apply(pureModel), this.transformers) :
                 new PlanWithDebug(PlanGenerator.generateExecutionPlan(lambda, mapping, runtime, context, pureModel, clientVersion, PlanPlatform.JAVA, null, this.extensions.apply(pureModel), this.transformers), "");
