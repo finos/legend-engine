@@ -40,9 +40,9 @@ public class SessionInfo
     @GET
     @Path("sessionInfo")
     @ApiOperation(value = "Provides information about services")
-    public Response executePureGet(@QueryParam("profile") boolean includeProfile)
+    public Response executePureGet(@QueryParam("profile") boolean includeProfile, @QueryParam("userID") String userID)
     {
-        return Response.status(200).type(MediaType.APPLICATION_JSON).entity(this.sessionTracker.toJSON(includeProfile)).build();
+        return Response.status(200).type(MediaType.APPLICATION_JSON).entity(this.sessionTracker.toJSON(includeProfile, userID)).build();
     }
 
 }

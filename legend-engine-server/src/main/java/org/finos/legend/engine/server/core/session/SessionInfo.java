@@ -25,14 +25,17 @@ public class SessionInfo
     public String principal;
     public Integer requests;
     public CommonProfile profile;
+    public String sessionID;
 
-    public SessionInfo(long creationTime, long lastAccessedTime, String principal, Integer requests, CommonProfile profile)
+
+    public SessionInfo(long creationTime, long lastAccessedTime, String principal, Integer requests, CommonProfile profile, String sessionID)
     {
         this.creationTime = new Date(creationTime).toString();
         this.lastAccessTime = new Date(lastAccessedTime).toString();
         this.principal = principal;
         this.requests = requests;
         this.profile = profile;
+        this.sessionID = sessionID;
         if (this.profile != null)
         {
             this.profile.clearSensitiveData();
