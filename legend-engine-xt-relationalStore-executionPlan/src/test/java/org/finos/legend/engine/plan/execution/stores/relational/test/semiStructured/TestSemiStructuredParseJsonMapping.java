@@ -45,6 +45,8 @@ public class TestSemiStructuredParseJsonMapping extends AbstractTestSemiStructur
                 "Oliver,Firm B,Firm B,,,\n" +
                 "David,Firm B,,,,\n" +
                 "UNKNOWN,,,,,\n", h2Result.replace("\r\n", "\n"));
+
+        Assert.assertEquals("[PERSON_TABLE_VARCHAR.FIRM_DETAILS <DynaFunction>, PERSON_TABLE_VARCHAR.FIRSTNAME <TableAliasColumn>, PERSON_TABLE_VARCHAR.ID <JoinTreeNode>, PERSON_TABLE_VARCHAR.MANAGERID <JoinTreeNode>]", this.scanColumns("parseJson::parseJsonInMapping__TabularDataSet_1_", snowflakeMapping));
     }
 
     public String modelResourcePath()

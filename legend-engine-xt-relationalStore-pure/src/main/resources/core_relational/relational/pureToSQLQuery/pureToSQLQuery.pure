@@ -7011,7 +7011,8 @@ function meta::relational::functions::pureToSqlQuery::extractTableAliasColumns(e
                               wc: WindowColumn[1]| $wc.window->extractTableAliasColumns()->concatenate($wc.func->extractTableAliasColumns()),
                               w:meta::relational::metamodel::Window[1]| $w.partition->extractTableAliasColumns()->concatenate($w.sortBy->extractTableAliasColumns()),
                               f:meta::relational::functions::pureToSqlQuery::metamodel::FreeMarkerOperationHolder[1]| $f.parameters->map(p|$p->extractTableAliasColumns());,
-                              s:SemiStructuredObjectNavigation[1]|$s.operand->extractTableAliasColumns(),
+                              s:SemiStructuredObjectNavigation[1]|if($s.operand->type() != RelationalOperationElement, | $s.operand->extractTableAliasColumns(), | []),
+                              s:SemiStructuredArrayFlatten[1]|$s.navigation->extractTableAliasColumns(),
                               s:SemiStructuredArrayFlattenOutput[1]|$s.tableAliasColumn->extractTableAliasColumns()
                           ]
                       )

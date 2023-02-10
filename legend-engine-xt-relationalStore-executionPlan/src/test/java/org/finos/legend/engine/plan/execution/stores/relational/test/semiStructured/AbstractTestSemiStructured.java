@@ -36,6 +36,7 @@ import org.finos.legend.pure.generated.core_external_format_json_java_platform_b
 import org.finos.legend.pure.generated.core_pure_binding_extension;
 import org.finos.legend.pure.generated.core_pure_executionPlan_executionPlan_print;
 import org.finos.legend.pure.generated.core_relational_java_platform_binding_legendJavaPlatformBinding_relationalLegendJavaPlatformBindingExtension;
+import org.finos.legend.pure.generated.core_relational_relational_lineage_scanColumns_scanColumns;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -96,6 +97,12 @@ public abstract class AbstractTestSemiStructured
 
         RelationalResult result = (RelationalResult) this.planExecutor.execute(executionPlan);
         return new String(new RelationalResultToCSVSerializer(result).flush().toByteArray(), StandardCharsets.UTF_8);
+    }
+
+    protected String scanColumns(String function, String mapping)
+    {
+        Function functionObject = Objects.requireNonNull(contextData.getElementsOfType(Function.class).stream().filter(x -> function.equals(x._package + "::" + x.name)).findFirst().orElse(null));
+        return core_relational_relational_lineage_scanColumns_scanColumns.Root_meta_pure_lineage_scanColumns_scanColumnsAndReturnString_ValueSpecification_1__Mapping_1__String_1_(HelperValueSpecificationBuilder.buildLambda(functionObject.body, functionObject.parameters, pureModel.getContext())._expressionSequence().getOnly(), pureModel.getMapping(mapping), pureModel.getExecutionSupport());
     }
 
     private MutableList<Root_meta_pure_extension_Extension> getExtensions()
