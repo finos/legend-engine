@@ -27,7 +27,9 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::meta::
                                                                                                       | j_string('@')->j_plus(javaInt()->toBoxed()->j_invoke('toHexString', javaSystem()->j_invoke('identityHashCode', $obj, javaInt()), javaString())))}),
          fc2(instanceOf_Any_1__Type_1__Boolean_1_,                     {ctx,candidate,type       | $candidate->j_cast(javaObject())->j_instanceof($type->cast(@Cast).expression.type->toBoxed());}),
          fc(extractEnumValue_Enumeration_1__String_1__T_1_,            extractEnumValue_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_),
-         fc(enumValues_Enumeration_1__T_MANY_,                         enumValues_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_)         
+         fc(enumValues_Enumeration_1__T_MANY_,                         enumValues_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_),
+         fc1(typeName_Any_1__String_1_,                              { ctx,obj | j_string($ctx.params->at(0).genericType.rawType.name->toOne()) }),         
+         fc1(typePath_Any_1__String_1_,                              { ctx,obj | j_string($ctx.params->at(0).genericType.rawType->toOne()->elementToPath())})
       ]);
    
     $conventions->registerClassCoder(

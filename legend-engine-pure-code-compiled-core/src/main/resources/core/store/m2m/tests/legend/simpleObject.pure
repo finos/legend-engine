@@ -777,6 +777,30 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
    assertEquals($expected, $res->meta::pure::executionPlan::toString::planToString(meta::pure::extension::defaultExtensions()));
 }
 
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
+{  serverVersion.start='v1_19_0'
+} 
+meta::pure::mapping::modelToModel::test::alloy::simple::testMappingWithTypeName() : Boolean[1]
+{
+   let tree = #{Person {firstName,lastName,type,description} }#;
+
+   let result = execute(
+      |Person.all()->graphFetch($tree)->serialize($tree),
+      mappingWithTypeName,
+      ^Runtime(connections = ^JsonModelConnection(
+                                element=^ModelStore(), 
+                                class=_S_Person, 
+                                url='data:application/json,{"fullName":"Pierre Doe"}'
+                             )
+      ),
+      meta::pure::extension::defaultExtensions()
+   );
+
+   assert(jsonEquivalent('{"firstName":"Pierre","lastName":"Doe","type":"_S_Person","description":"meta::pure::mapping::modelToModel::test::shared::src::_S_Person"}'->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+
 ###Pure
 import meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::*;
 import meta::pure::mapping::modelToModel::test::alloy::simple::objects::dest::*;
