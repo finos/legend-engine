@@ -502,6 +502,14 @@ function <<test.Test>> meta::external::language::java::factory::tests::castToDif
    assertCode('(CharSequence) "Hello"', javaCharSequence(), j_string('Hello')->j_cast(javaCharSequence()));
 }
 
+function <<test.Test>> meta::external::language::java::factory::tests::BigDecimalOperations():Boolean[1]
+{
+  assertCode('3.14', javaBigDecimal(), j_bigDecimal(3.14d));
+  assertCode('3.1415926535897', javaBigDecimal(), j_bigDecimal('3.1415926535897'));
+  assertCode('new java.math.BigDecimal(1.5)', javaBigDecimal(), j_new(javaBigDecimal(),j_double(1.5)));
+  assertCode('new java.math.BigDecimal("1.5")', javaBigDecimal(), j_new(javaBigDecimal(),j_string('1.5')));
+}
+
 function <<test.Test>> meta::external::language::java::factory::tests::castUnboxedToBoxed():Boolean[1]
 {
    assertCode('4',    javaIntBoxed(),    j_int(4)     ->j_cast(javaIntBoxed()));
