@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
