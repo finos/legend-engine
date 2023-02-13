@@ -51,6 +51,13 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
                             meta::relational::functions::database::tableReference_Database_1__String_1__String_1__Table_1_,
                             meta::relational::functions::columnProjectionsFromRoot_Any_MANY__NamedRelation_1__String_MANY__Boolean_$0_1$__Integer_$0_1$__RelationData_1_
                          ],
+     shouldStopPreeval = {a:Any[*] | $a->match([p: meta::relational::metamodel::Database[1] | true,
+                                                p: meta::relational::metamodel::Column[1] | true,
+                                                p: meta::relational::metamodel::Schema[1] | true,
+                                                p: meta::relational::metamodel::relation::Table[1] | true,
+                                                f: SimpleFunctionExpression[1] | $f.func->in([meta::relational::functions::database::tableReference_Database_1__String_1__String_1__Table_1_, tableToTDS_Table_1__TableTDS_1_]),
+                                                a: Any[*] | false
+                                     ])},
      routeFunctionExpressions = pair(
             fe:FunctionExpression[1] | $fe->evaluateAndDeactivate().genericType.rawType == meta::relational::mapping::TableTDS,
             {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
