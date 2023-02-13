@@ -42,7 +42,9 @@ function meta::external::format::json::contract::jsonSchemaFormatContract(): Ext
       externalFormatBindingValidator   = bindDetails_Binding_1__BindingDetail_1_,
 
       internalizeConfig                = JsonSchemaInternalizeConfig,
-      sourceRecordTree                 = #{JsonDataRecord {number, record}}#
+
+      internalizeReturnsChecked        = true,
+      sourceRecordSerializeTree        = #{JsonDataRecord {number, record}}#
    )
 }
 
