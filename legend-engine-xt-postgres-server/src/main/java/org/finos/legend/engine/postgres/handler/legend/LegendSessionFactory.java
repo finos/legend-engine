@@ -21,7 +21,6 @@ import org.finos.legend.engine.postgres.SessionsFactory;
 import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
 import org.finos.legend.engine.postgres.handler.PostgresStatement;
 import org.finos.legend.engine.postgres.auth.User;
-import org.jetbrains.annotations.Nullable;
 
 public class LegendSessionFactory implements SessionsFactory
 {
@@ -34,7 +33,7 @@ public class LegendSessionFactory implements SessionsFactory
   }
 
   @Override
-  public Session createSession(@Nullable String defaultSchema, User authenticatedUser)
+  public Session createSession(String defaultSchema, User authenticatedUser)
       throws Exception
   {
     return new Session(new SessionHandler()

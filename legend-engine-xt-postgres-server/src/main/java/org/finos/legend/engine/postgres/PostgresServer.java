@@ -38,8 +38,8 @@ import org.finos.legend.engine.postgres.auth.User;
 import org.finos.legend.engine.postgres.handler.legend.LegendSessionFactory;
 import org.finos.legend.engine.postgres.handler.legend.LegendTdsClient;
 import org.finos.legend.engine.postgres.transport.Netty4OpenChannelsHandler;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.LoggerFactory;
+
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
@@ -62,9 +62,8 @@ public class PostgresServer
     {
         Authentication authentication = (user, connectionProperties) -> new AuthenticationMethod()
         {
-            @Nullable
             @Override
-            public User authenticate(final String userName, @Nullable String passwd,
+            public User authenticate(final String userName, String passwd,
                                      ConnectionProperties connProperties)
             {
                 return () -> userName;
@@ -134,7 +133,7 @@ public class PostgresServer
     {
         int port = 9998;
         CookieStore cookieStore = new BasicCookieStore();
-        BasicClientCookie legendSdlcJsessionid = new BasicClientCookie("LEGEND_SDLC_JSESSIONID", "node08k7vsbm64vuntfmi8zm3bylo47.node0");
+        BasicClientCookie legendSdlcJsessionid = new BasicClientCookie("LEGEND_SDLC_JSESSIONID", "node01kj00ctfw9uo01axmpr6phouf51.node0");
         legendSdlcJsessionid.setDomain("localhost");
         cookieStore.addCookie(legendSdlcJsessionid);
         LegendTdsClient client = new LegendTdsClient("localhost", "6300", "SAMPLE-40302763", cookieStore);

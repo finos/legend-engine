@@ -14,6 +14,15 @@
 
 package org.finos.legend.engine.postgres.handler.jdbc;
 
+import org.finos.legend.engine.postgres.Session;
+import org.finos.legend.engine.postgres.SessionsFactory;
+import org.finos.legend.engine.postgres.auth.User;
+import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
+import org.finos.legend.engine.postgres.handler.PostgresResultSet;
+import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
+import org.finos.legend.engine.postgres.handler.PostgresStatement;
+import org.finos.legend.engine.postgres.handler.SessionHandler;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ParameterMetaData;
@@ -22,208 +31,199 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import org.finos.legend.engine.postgres.Session;
-import org.finos.legend.engine.postgres.handler.SessionHandler;
-import org.finos.legend.engine.postgres.SessionsFactory;
-import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
-import org.finos.legend.engine.postgres.handler.PostgresResultSet;
-import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
-import org.finos.legend.engine.postgres.handler.PostgresStatement;
-import org.finos.legend.engine.postgres.auth.User;
-import org.jetbrains.annotations.Nullable;
 
 public class JDBCSessionFactory implements SessionsFactory
 {
 
-  private Connection connection;
-  private final String connectionString;
-  private final String user;
-  private final String password;
+    private Connection connection;
+    private final String connectionString;
+    private final String user;
+    private final String password;
 
-  public JDBCSessionFactory(String connectionString, String user, String password)
-  {
-    this.connectionString = connectionString;
-    this.user = user;
-    this.password = password;
-  }
-
-  @Override
-  public Session createSession(@Nullable String defaultSchema, User authenticatedUser)
-      throws Exception
-  {
-    return new Session(new SessionHandler()
+    public JDBCSessionFactory(String connectionString, String user, String password)
     {
-      @Override
-      public PostgresPreparedStatement prepareStatement(String query) throws SQLException
-      {
-        return new JDBCPostgresPreparedStatement(getConnection().prepareStatement(query));
-      }
-
-      @Override
-      public PostgresStatement createStatement() throws SQLException
-      {
-        return new JDBCPostgresStatement(getConnection().createStatement());
-      }
-    });
-  }
-
-
-  private Connection getConnection() throws SQLException
-  {
-    if (connection == null)
-    {
-      this.connection = DriverManager.getConnection(connectionString, user, password);
-    }
-    return connection;
-  }
-
-  private static class JDBCPostgresStatement implements PostgresStatement
-  {
-
-    private Statement postgresStatement;
-
-    public JDBCPostgresStatement(Statement postgresStatement)
-    {
-      this.postgresStatement = postgresStatement;
+        this.connectionString = connectionString;
+        this.user = user;
+        this.password = password;
     }
 
     @Override
-    public boolean execute(String query) throws Exception
+    public Session createSession(String defaultSchema, User authenticatedUser)
+            throws Exception
     {
-      return postgresStatement.execute(query);
+        return new Session(new SessionHandler()
+        {
+            @Override
+            public PostgresPreparedStatement prepareStatement(String query) throws SQLException
+            {
+                return new JDBCPostgresPreparedStatement(getConnection().prepareStatement(query));
+            }
+
+            @Override
+            public PostgresStatement createStatement() throws SQLException
+            {
+                return new JDBCPostgresStatement(getConnection().createStatement());
+            }
+        });
     }
 
-    @Override
-    public PostgresResultSet getResultSet() throws Exception
+
+    private Connection getConnection() throws SQLException
     {
-      return new JDBCPostgresResultSet(postgresStatement.getResultSet());
-    }
-  }
-
-  private static class JDBCPostgresPreparedStatement implements PostgresPreparedStatement
-  {
-
-    private PreparedStatement preparedStatement;
-
-    public JDBCPostgresPreparedStatement(PreparedStatement preparedStatement)
-    {
-      this.preparedStatement = preparedStatement;
+        if (connection == null)
+        {
+            this.connection = DriverManager.getConnection(connectionString, user, password);
+        }
+        return connection;
     }
 
-    @Override
-    public void setObject(int i, Object o) throws Exception
+    private static class JDBCPostgresStatement implements PostgresStatement
     {
-      preparedStatement.setObject(i, o);
+
+        private Statement postgresStatement;
+
+        public JDBCPostgresStatement(Statement postgresStatement)
+        {
+            this.postgresStatement = postgresStatement;
+        }
+
+        @Override
+        public boolean execute(String query) throws Exception
+        {
+            return postgresStatement.execute(query);
+        }
+
+        @Override
+        public PostgresResultSet getResultSet() throws Exception
+        {
+            return new JDBCPostgresResultSet(postgresStatement.getResultSet());
+        }
     }
 
-    @Override
-    public PostgresResultSetMetaData getMetaData() throws Exception
+    private static class JDBCPostgresPreparedStatement implements PostgresPreparedStatement
     {
-      return new JDBCPostgresResultSetMetaData(preparedStatement.getMetaData());
+
+        private PreparedStatement preparedStatement;
+
+        public JDBCPostgresPreparedStatement(PreparedStatement preparedStatement)
+        {
+            this.preparedStatement = preparedStatement;
+        }
+
+        @Override
+        public void setObject(int i, Object o) throws Exception
+        {
+            preparedStatement.setObject(i, o);
+        }
+
+        @Override
+        public PostgresResultSetMetaData getMetaData() throws Exception
+        {
+            return new JDBCPostgresResultSetMetaData(preparedStatement.getMetaData());
+        }
+
+        @Override
+        public ParameterMetaData getParameterMetaData() throws Exception
+        {
+            return preparedStatement.getParameterMetaData();
+        }
+
+        @Override
+        public void close() throws Exception
+        {
+            preparedStatement.close();
+        }
+
+        @Override
+        public void setMaxRows(int maxRows) throws Exception
+        {
+            preparedStatement.setMaxRows(maxRows);
+        }
+
+        @Override
+        public boolean execute() throws Exception
+        {
+            return preparedStatement.execute();
+        }
+
+        @Override
+        public PostgresResultSet getResultSet() throws Exception
+        {
+            return new JDBCPostgresResultSet(preparedStatement.getResultSet());
+        }
     }
 
-    @Override
-    public ParameterMetaData getParameterMetaData() throws Exception
+    private static class JDBCPostgresResultSet implements PostgresResultSet
     {
-      return preparedStatement.getParameterMetaData();
+
+        private ResultSet resultSet;
+
+        public JDBCPostgresResultSet(ResultSet resultSet)
+        {
+            this.resultSet = resultSet;
+        }
+
+        @Override
+        public PostgresResultSetMetaData getMetaData() throws Exception
+        {
+            return new JDBCPostgresResultSetMetaData(resultSet.getMetaData());
+        }
+
+        @Override
+        public Object getObject(int i) throws Exception
+        {
+            return resultSet.getObject(i);
+        }
+
+        @Override
+        public boolean next() throws Exception
+        {
+            return resultSet.next();
+        }
     }
 
-    @Override
-    public void close() throws Exception
+    private static class JDBCPostgresResultSetMetaData implements PostgresResultSetMetaData
     {
-      preparedStatement.close();
+
+        private ResultSetMetaData resultSetMetaData;
+
+
+        public JDBCPostgresResultSetMetaData(ResultSetMetaData resultSetMetaData)
+        {
+            this.resultSetMetaData = resultSetMetaData;
+        }
+
+        @Override
+        public int getColumnCount() throws Exception
+        {
+            return resultSetMetaData.getColumnCount();
+        }
+
+        @Override
+        public String getColumnName(int i) throws Exception
+        {
+            return resultSetMetaData.getColumnName(i);
+        }
+
+        @Override
+        public int getColumnType(int i) throws Exception
+        {
+            return resultSetMetaData.getColumnType(i);
+        }
+
+        @Override
+        public int getScale(int i) throws Exception
+        {
+            return resultSetMetaData.getScale(i);
+        }
     }
 
-    @Override
-    public void setMaxRows(int maxRows) throws Exception
+
+    public static void main(String[] args) throws Exception
     {
-      preparedStatement.setMaxRows(maxRows);
+        JDBCSessionFactory sessionFactory = new JDBCSessionFactory(
+                "jdbc:postgresql://localhost:5432/postgres", "postgres", "vika");
+        Session session = sessionFactory.createSession(null, null);
+        session.executeSimple("select * from public.demo");
     }
-
-    @Override
-    public boolean execute() throws Exception
-    {
-      return preparedStatement.execute();
-    }
-
-    @Override
-    public PostgresResultSet getResultSet() throws Exception
-    {
-      return new JDBCPostgresResultSet(preparedStatement.getResultSet());
-    }
-  }
-
-  private static class JDBCPostgresResultSet implements PostgresResultSet
-  {
-
-    private ResultSet resultSet;
-
-    public JDBCPostgresResultSet(ResultSet resultSet)
-    {
-      this.resultSet = resultSet;
-    }
-
-    @Override
-    public PostgresResultSetMetaData getMetaData() throws Exception
-    {
-      return new JDBCPostgresResultSetMetaData(resultSet.getMetaData());
-    }
-
-    @Override
-    public Object getObject(int i) throws Exception
-    {
-      return resultSet.getObject(i);
-    }
-
-    @Override
-    public boolean next() throws Exception
-    {
-      return resultSet.next();
-    }
-  }
-
-  private static class JDBCPostgresResultSetMetaData implements PostgresResultSetMetaData
-  {
-
-    private ResultSetMetaData resultSetMetaData;
-
-
-    public JDBCPostgresResultSetMetaData(ResultSetMetaData resultSetMetaData)
-    {
-      this.resultSetMetaData = resultSetMetaData;
-    }
-
-    @Override
-    public int getColumnCount() throws Exception
-    {
-      return resultSetMetaData.getColumnCount();
-    }
-
-    @Override
-    public String getColumnName(int i) throws Exception
-    {
-      return resultSetMetaData.getColumnName(i);
-    }
-
-    @Override
-    public int getColumnType(int i) throws Exception
-    {
-      return resultSetMetaData.getColumnType(i);
-    }
-
-    @Override
-    public int getScale(int i) throws Exception
-    {
-      return resultSetMetaData.getScale(i);
-    }
-  }
-
-
-  public static void main(String[] args) throws Exception
-  {
-    JDBCSessionFactory sessionFactory = new JDBCSessionFactory(
-        "jdbc:postgresql://localhost:5432/postgres", "postgres", "vika");
-    Session session = sessionFactory.createSession(null, null);
-    session.executeSimple("select * from public.demo");
-  }
 }   
