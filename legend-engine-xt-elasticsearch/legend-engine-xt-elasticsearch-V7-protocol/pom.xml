@@ -40,11 +40,13 @@
                         </goals>
                         <configuration>
                             <includePluginDependencies>true</includePluginDependencies>
-                            <mainClass>org.finos.legend.pure.elasticsearch.specification.generator.ElasticsearchJavaSpecificationGenerator</mainClass>
+                            <mainClass>org.finos.legend.engine.protocol.generation.GenerateMetaClasses</mainClass>
                             <arguments>
                                 <argument>meta::external::store::elasticsearch::v7::metamodel::specification</argument>
                                 <argument>org.finos.legend.engine.protocol.store.elasticsearch.v7.specification</argument>
                                 <argument>${project.build.directory}/generated-sources/</argument>
+                                <argument/>
+                                <argument>meta::external::store::elasticsearch::specification::metamodel::elasticsearchGenerator__JavaProtocolGenerator_1_</argument>
                             </arguments>
                             <classpathScope>test</classpathScope>
                         </configuration>
