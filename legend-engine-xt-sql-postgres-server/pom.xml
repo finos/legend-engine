@@ -9,8 +9,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>legend-engine-xt-postgres-server</artifactId>
-    <name>Legend Engine - XT - Postgres - Server</name>
+    <artifactId>legend-engine-xt-sql-postgres-server</artifactId>
+    <name>Legend Engine - XT - SQL - Postgres - Server</name>
 
     <dependencies>
         <dependency>
