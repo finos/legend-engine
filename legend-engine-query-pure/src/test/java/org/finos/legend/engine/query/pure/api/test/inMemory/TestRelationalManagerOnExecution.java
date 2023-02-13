@@ -15,39 +15,38 @@
 package org.finos.legend.engine.query.pure.api.test.inMemory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutableManager;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.model.ExecuteInput;
+import org.junit.Assert;
 import org.junit.Test;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.Objects;
 
 import static org.finos.legend.engine.query.pure.api.test.inMemory.TestExecutionUtility.runTest;
 import static org.junit.Assert.assertEquals;
 
-public class TestQueryExecutionWithParameters
+public class TestRelationalManagerOnExecution
 {
     private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
 
     @Test
-    public void testQueryExecutionWithParameterZeroMany() throws IOException
+    public void testRelationalTrackStateOnExecution() throws IOException
     {
-        ExecuteInput input = objectMapper.readValue(Objects.requireNonNull(getClass().getClassLoader().getResource("relationalQueryExecutionInputZeroMany.json")), ExecuteInput.class);
-        HttpServletRequest mockRequest = TestExecutionUtility.buildMockRequest();
-        String json = TestExecutionUtility.responseAsString(runTest(input, mockRequest));
-        assertEquals("{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"Age\",\"type\":\"Integer\",\"relationalType\":\"INTEGER\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select top 1000 \\\"root\\\".age as \\\"Age\\\" from PersonTable as \\\"root\\\" where \\\"root\\\".age in (20,30)\"}], \"result\" : {\"columns\" : [\"Age\"], \"rows\" : [{\"values\": [20]},{\"values\": [30]}]}}", json);
-    }
-
-    @Test
-    public void testQueryExecutionWithParameterEnumZeroOne() throws IOException
-    {
+        StoreExecutableManager.INSTANCE.registerManager();
         ExecuteInput input = objectMapper.readValue(Objects.requireNonNull(getClass().getClassLoader().getResource("relationalQueryExecutionInputEnumZeroOne.json")), ExecuteInput.class);
         HttpServletRequest mockRequest = TestExecutionUtility.buildMockRequest();
-        String json = TestExecutionUtility.responseAsString(runTest(input, mockRequest));
+        Response response = runTest(input, mockRequest);
+        Assert.assertEquals(1, StoreExecutableManager.INSTANCE.getExecutables(mockRequest.getSession().getId()).size());
+        String json = TestExecutionUtility.responseAsString(response);
+        response.close();
+        Assert.assertTrue(StoreExecutableManager.INSTANCE.getExecutables(mockRequest.getSession().getId()).isEmpty());
         assertEquals("{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"Inc Type\",\"type\":\"model::IncType\",\"relationalType\":\"VARCHAR(200)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select top 1000 \\\"root\\\".Inc as \\\"Inc Type\\\" from FirmTable as \\\"root\\\" where (\\\"root\\\".Inc = 'LLC')\"}], \"result\" : {\"columns\" : [\"Inc Type\"], \"rows\" : [{\"values\": [\"LLC\"]}]}}", json);
+        StoreExecutableManager.INSTANCE.reset();
+
     }
 
-
 }
-

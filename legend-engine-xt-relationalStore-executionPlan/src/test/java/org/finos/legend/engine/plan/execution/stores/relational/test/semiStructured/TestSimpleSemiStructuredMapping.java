@@ -338,6 +338,8 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
                 "Fabrice,Firm A,1,false,2012-11-13,2022-02-14 03:00:00.0,,\n" +
                 "Oliver,Firm B,2,true,2017-07-07,2022-09-01 06:00:00.0,S2,Company\n" +
                 "David,Firm B,2,true,2017-07-07,2022-09-01 06:00:00.0,,Company\n", h2Result.replace("\r\n", "\n"));
+
+        Assert.assertEquals("[PERSON_TABLE.FIRM_DETAILS <TableAliasColumn>, PERSON_TABLE.FIRSTNAME <TableAliasColumn>]", this.scanColumns("simple::semiStructuredDifferentDataTypePropertyAccess__TabularDataSet_1_", h2Mapping));
     }
 
     @Test

@@ -61,6 +61,8 @@ import org.finos.legend.engine.plan.execution.result.serialization.Serialization
 import org.finos.legend.engine.plan.execution.result.serialization.Serializer;
 import org.finos.legend.engine.plan.execution.result.transformer.SetImplTransformers;
 import org.finos.legend.engine.plan.execution.result.transformer.TransformerInput;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutable;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutableManager;
 import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.result.builder.relation.RelationBuilder;
@@ -81,7 +83,7 @@ import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 
-public class RelationalResult extends StreamingResult implements IRelationalResult
+public class RelationalResult extends StreamingResult implements IRelationalResult, StoreExecutable
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
     private static final ImmutableList<String> TEMPORAL_DATE_ALIASES = Lists.immutable.of("k_businessDate", "k_processingDate");
@@ -104,19 +106,24 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
     public Span topSpan;
 
     private final SQLResultDBColumnsMetaData resultDBColumnsMetaData;
-
+    private String sessionID;
     public MutableList<SetImplTransformers> setTransformers = Lists.mutable.empty();
 
     public Builder builder;
 
     public RelationalResult(MutableList<ExecutionActivity> activities, RelationalExecutionNode node, List<SQLResultColumn> sqlResultColumns, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan)
     {
+        this(activities, node, sqlResultColumns, databaseType, databaseTimeZone, connection, profiles, temporaryTables, topSpan, null);
+    }
+
+    public RelationalResult(MutableList<ExecutionActivity> activities, RelationalExecutionNode node, List<SQLResultColumn> sqlResultColumns, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan, String sessionID)
+    {
         super(activities);
         this.databaseType = databaseType;
         this.databaseTimeZone = databaseTimeZone;
         this.temporaryTables = temporaryTables;
         this.topSpan = topSpan;
-
+        this.sessionID = sessionID;
         try
         {
             this.connection = connection;
@@ -125,6 +132,12 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             {
                 this.statement.setFetchSize(100);
             }
+
+            if (sessionID != null)
+            {
+                StoreExecutableManager.INSTANCE.addExecutable(sessionID, this);
+            }
+
             long start = System.currentTimeMillis();
             String sql = ((RelationalExecutionActivity) activities.getLast()).sql;
             LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, sql).toString());
@@ -146,6 +159,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
         }
         catch (Throwable e)
         {
+
             LOGGER.error("error initialising RelationalResult", e);
             this.close();
             if (e instanceof Error)
@@ -167,11 +181,11 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
         this.databaseTimeZone = sqlExecutionResult.getDatabaseTimeZone();
         this.temporaryTables = sqlExecutionResult.getTemporaryTables();
         this.topSpan = sqlExecutionResult.getTopSpan();
-
+        this.sessionID = sqlExecutionResult.getSessionID();
         try
         {
             this.connection = sqlExecutionResult.getConnection();
-            this.statement = connection.createStatement();
+            this.statement = sqlExecutionResult.getStatement();
             this.resultSet = sqlExecutionResult.getResultSet();
             this.executedSQl = sqlExecutionResult.getExecutedSql();
             this.resultSetMetaData = sqlExecutionResult.getResultSetMetaData();
@@ -181,6 +195,10 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             this.resultColumns = sqlExecutionResult.getSqlResultColumns();
             this.resultDBColumnsMetaData = new SQLResultDBColumnsMetaData(this.resultColumns, this.resultSetMetaData);
             this.buildTransformersAndBuilder(node, sqlExecutionResult.getSQLExecutionNode().connection);
+            if (this.sessionID != null)
+            {
+                StoreExecutableManager.INSTANCE.addExecutable(this.sessionID, this);
+            }
         }
         catch (Throwable e)
         {
@@ -342,6 +360,12 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
                 }
             });
         }
+
+        if (sessionID != null)
+        {
+            StoreExecutableManager.INSTANCE.removeExecutable(sessionID, this);
+        }
+
         if (resultSet != null)
         {
             try
@@ -614,5 +638,21 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
         };
 
         return StreamSupport.stream(spliterator, false).onClose(this::close);
+    }
+
+    @Override
+    public void cancel()
+    {
+        try
+        {
+            if (!statement.isClosed())
+            {
+                statement.cancel();
+            }
+        }
+        catch (SQLException ignore)
+        {
+            //ignore when we can't cancel - either the JDBC driver doesn't support cancellation or the statement is already closed
+        }
     }
 }

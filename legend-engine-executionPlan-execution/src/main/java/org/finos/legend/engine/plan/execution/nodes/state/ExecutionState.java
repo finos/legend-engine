@@ -62,6 +62,7 @@ public class ExecutionState
 
     public final List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> extraNodeExecutors;
     public final List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> extraSequenceNodeExecutors;
+    public String sessionID;
 
     public ExecutionState(ExecutionState state)
     {
@@ -84,9 +85,15 @@ public class ExecutionState
         List<ExecutionExtension> extensions = ExecutionExtensionLoader.extensions();
         this.extraNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraNodeExecutors);
         this.extraSequenceNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraSequenceNodeExecutors);
+        this.sessionID = state.sessionID;
     }
 
     public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed, long graphFetchBatchMemoryLimit)
+    {
+        this(res, templateFunctions, extraStates, isJavaCompilationAllowed, graphFetchBatchMemoryLimit, null);
+    }
+
+    public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed, long graphFetchBatchMemoryLimit, String sessionID)
     {
         this.inAllocation = false;
         this.inLake = false;
@@ -99,6 +106,7 @@ public class ExecutionState
         List<ExecutionExtension> extensions = ExecutionExtensionLoader.extensions();
         this.extraNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraNodeExecutors);
         this.extraSequenceNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraSequenceNodeExecutors);
+        this.sessionID = sessionID;
     }
 
     public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed)
@@ -233,4 +241,15 @@ public class ExecutionState
     {
         return Collections.unmodifiableList(this.templateFunctions);
     }
+
+    public String getSessionID()
+    {
+        return sessionID;
+    }
+
+    public void setSessionID(String sessionID)
+    {
+        this.sessionID = sessionID;
+    }
+
 }

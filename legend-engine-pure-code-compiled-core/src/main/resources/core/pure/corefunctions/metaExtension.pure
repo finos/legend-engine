@@ -733,3 +733,12 @@ function meta::pure::functions::meta::isAbstract(class:Type[1]) : Boolean[1]
   $class->cast(@ElementWithStereotypes)->hasStereotype('abstract', meta::pure::profiles::typemodifiers);
 }
 
+function meta::pure::functions::meta::typeName(any:Any[1]):String[1]
+{
+    $any->type().name->toOne();
+}
+
+function meta::pure::functions::meta::typePath(any:Any[1]):String[1]
+{
+    $any->type()->elementToPath();
+}
