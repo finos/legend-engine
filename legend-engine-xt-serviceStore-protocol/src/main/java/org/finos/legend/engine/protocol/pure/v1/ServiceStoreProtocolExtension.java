@@ -37,8 +37,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.s
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.RootServiceStoreClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ApiKeySecurityScheme;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecurityScheme;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecuritySchemeRequirement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceStore;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.HttpSecurityScheme;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SingleSecuritySchemeRequirement;
 
 import java.util.List;
 import java.util.Map;
@@ -81,6 +83,10 @@ public class ServiceStoreProtocolExtension implements PureProtocolExtension
                         .withSubtype(HttpSecurityScheme.class,"http")
                         .withSubtype(ApiKeySecurityScheme.class,"apiKey")
                         .build(),
+                //Security Scheme Requirement
+                ProtocolSubTypeInfo.newBuilder(SecuritySchemeRequirement.class)
+                         .withSubtype(SingleSecuritySchemeRequirement.class,"singleSecuritySchemeReq")
+                         .build(),
                 //Authentication Scheme
                 ProtocolSubTypeInfo.newBuilder(AuthenticationSchemeRequirement.class)
                         .withSubtype(SingleAuthenticationSchemeRequirement.class,"singleAuthScheme")
