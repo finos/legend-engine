@@ -1,5 +1,5 @@
 {
   "name" : "core_nonrelational_mongodb",
-  "pattern" : "(meta::external::store::mongodb|meta::external::store::mongodb::tests|meta::protocols::pure|meta::pure::mapping|meta::pure::executionPlan|meta::pure::legend::connections|meta::pure::alloy::connections|meta::pure::router|meta::pure|meta::pure::graphFetch)(::.*)?",
-  "dependencies" : ["platform", "core", "platform_dsl_mapping", "platform_dsl_path", "platform_functions"]
+  "pattern" : "(meta::external::store::mongodb::metamodel|meta::external::store::mongodb|meta::protocols::pure|meta::pure::mapping|meta::pure::executionPlan|meta::pure::legend::connections|meta::pure::alloy::connections|meta::pure::router|meta::external::language::java)(::.*)?",
+  "dependencies" : ["platform", "core", "platform_dsl_mapping", "platform_dsl_path", "platform_functions","core_external_language_java"]
 }

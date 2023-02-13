@@ -68,17 +68,13 @@ COLON:                                      ':';
 DOT:                                        '.';
 COMMA:                                      ',';
 DOLLAR:                                     '$';
+PATH_SEPARATOR:                             '::';
 
 PLUS:                                       '+';
 STAR:                                       '*';
 MINUS:                                      '-';
 DIVIDE:                                     '/';
-LESS_THAN:                                  '<';
-LESS_OR_EQUAL:                              '<=';
-GREATER_THAN:                               '>';
-GREATER_OR_EQUAL:                           '>=';
 
-//VALID_STRING:                               ValidString;
 DATABASE:                                   '"database"';
 DATABASE_NAME:                              '"databaseName"';
 COLLECTIONS:                                '"collections"';
@@ -120,16 +116,19 @@ ONE_OF:                                     '"oneOf"';
 
 INVALID:                                    Invalid;
 
-
-
 // Fragments
-//fragment ValidString:                       (Letter | Digit | '_' ) (Letter | Digit | '_')*
-//;
+fragment ValidString:                       (Letter | Digit | '_' ) (Letter | Digit | '_')*
+;
+// Not using Field Identifer. REMOVE TBD
 fragment FieldIdentifier:                   ('$' | '$$') (Letter | Digit | '_' )*
 ;
-fragment Letter:                        [A-Za-z]
+fragment Letter:                            [A-Za-z]
 ;
-fragment Digit:                         [0-9]
+fragment Digit:                             [0-9]
+;
+//fragment UNQOTEDSTRINGFRAGMENT:             (ESC | SAFECODEPOINT)*
+//;
+fragment STRINGFRAGMENT:                    '"' (ESC | SAFECODEPOINT)* '"'
 ;
 
 STRING
@@ -137,9 +136,17 @@ STRING
    {setText(getText().substring(1, getText().length()-1));}
 ;
 
-fragment STRINGFRAGMENT
-   : '"' (ESC | SAFECODEPOINT)* '"'
-;
+VALID_STRING:                               ValidString;
+
+
+//UNQUOTED_STRING
+//    : UNQOTEDSTRINGFRAGMENT
+//;
+
+//WORD
+// : ~[ \t\r\n[\]{}=,|&]+
+//;
+
 
 
 // --------------------------------------- INVALID -------------------------------------------

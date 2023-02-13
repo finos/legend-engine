@@ -47,6 +47,8 @@
                                 <argument>meta::external::store::mongodb::metamodel</argument>
                                 <argument>org.finos.legend.engine.protocol.mongodb.schema.metamodel</argument>
                                 <argument>${project.build.directory}/generated-sources/</argument>
+                                <argument>meta::external::store::mongodb::mapping</argument>
+                                <argument>meta::external::store::mongodb::metamodel::configureConventions_Conventions_1__Conventions_1_</argument>
                             </arguments>
                             <classpathScope>test</classpathScope>
                         </configuration>
@@ -58,14 +60,29 @@
                         <artifactId>legend-engine-protocol-generation</artifactId>
                         <version>${project.version}</version>
                     </dependency>
-<!--                    <dependency>-->
-<!--                        <groupId>org.finos.legend.pure</groupId>-->
-<!--                        <artifactId>legend-pure-code-compiled-platform-java</artifactId>-->
-<!--                        <version>${legend.pure.version}</version>-->
-<!--                    </dependency>-->
+                    <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-runtime-java-extension-dsl-mapping</artifactId>
+                        <version>${legend.pure.version}</version>
+                    </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-xt-nonrelationalStore-mongodb-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-m2-dsl-mapping-pure</artifactId>
+                        <version>${legend.pure.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-m2-dsl-path-grammar</artifactId>
+                        <version>${legend.pure.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-platform-dsl-diagram-java</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
@@ -92,6 +109,20 @@
     </build>
 
     <dependencies>
+        <!-- engine -->
+<!--        <dependency>-->
+<!--            <groupId>org.finos.legend.engine</groupId>-->
+<!--            <artifactId>legend-engine-language-pure-grammar</artifactId>-->
+<!--        </dependency>-->
+        <!-- engine -->
+
+        <!--pure -->
+<!--        <dependency>-->
+<!--            <groupId>org.finos.legend.pure</groupId>-->
+<!--            <artifactId>legend-pure-m2-dsl-mapping-pure</artifactId>-->
+<!--        </dependency>-->
+        <!-- pure -->
+
         <!-- JACKSON -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
