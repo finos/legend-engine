@@ -22,7 +22,6 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ModelUnit;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_ExternalFormatFromPureDescriptor;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaDetail;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaSet;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_transformation_fromPure_ModelToSchemaConfiguration;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationParameter;
@@ -39,7 +38,7 @@ import org.finos.legend.pure.generated.core_pure_generation_generations;
  * is also necessary to define the translation from pure model to schema set (via externalFormatFromPureDescriptor)
  * in externalFormatContract modelled in pure.
  */
-public interface ExternalFormatSchemaGenerationExtension<Metamodel extends Root_meta_external_shared_format_metamodel_SchemaDetail, SchemaGenConfig extends ModelToSchemaConfiguration> extends ExternalFormatExtension<Metamodel>
+public interface ExternalFormatSchemaGenerationExtension<Metamodel, SchemaGenConfig extends ModelToSchemaConfiguration> extends ExternalFormatExtension<Metamodel>
 {
     /**
      * Called to compile an external format ModelToSchemaConfiguration.
