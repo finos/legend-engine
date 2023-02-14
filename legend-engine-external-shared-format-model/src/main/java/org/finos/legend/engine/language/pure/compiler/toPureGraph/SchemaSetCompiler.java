@@ -27,7 +27,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalFormatSchemaSet;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_Schema;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaDetail;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaSet;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaSet_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_Schema_Impl;
@@ -113,7 +112,7 @@ public class SchemaSetCompiler
         {
             try
             {
-                Root_meta_external_shared_format_metamodel_SchemaDetail detail = schemaExtension.compileSchema(new SchemaCompileContext(srcSchema, srcSchemaSet, context));
+                Object detail = schemaExtension.compileSchema(new SchemaCompileContext(srcSchema, srcSchemaSet, context));
                 Root_meta_external_shared_format_metamodel_Schema schema = new Root_meta_external_shared_format_metamodel_Schema_Impl("", null, context.pureModel.getClass("meta::external::shared::format::metamodel::Schema"))
                         ._id(srcSchema.id)
                         ._location(srcSchema.location)

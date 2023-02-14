@@ -39,7 +39,8 @@ function meta::external::format::flatdata::contract::flatDataFormatContract(): E
       externalFormatFromPureDescriptor = flatDataFromPureDescriptor(),
       externalFormatBindingValidator   = bindDetails_Binding_1__BindingDetail_1_,
 
-      sourceRecordTree                 = #{RawFlatData {number, lineNumber, record, recordValues {address, rawValue}}}#
+      internalizeReturnsChecked        = true,
+      sourceRecordSerializeTree        = #{RawFlatData {number, lineNumber, record, recordValues {address, rawValue}}}#
    )
 }
 

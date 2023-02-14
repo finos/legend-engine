@@ -19,7 +19,7 @@ Enum meta::external::format::protobuf::metamodel::Syntax
    proto2,proto3
 }
 
-Class meta::external::format::protobuf::metamodel::ProtobufSchema extends meta::external::shared::format::metamodel::SchemaDetail
+Class meta::external::format::protobuf::metamodel::ProtobufSchema
 {
   fileName : String[1];
   file : ProtoFile[1];  

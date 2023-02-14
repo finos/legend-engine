@@ -4,7 +4,7 @@ import meta::external::query::graphQL::metamodel::sdl::executable::*;
 import meta::pure::model::unit::*;
 
 
-Class meta::external::query::graphQL::metamodel::sdl::GraphQLSDLContainer extends meta::external::shared::format::metamodel::SchemaDetail
+Class meta::external::query::graphQL::metamodel::sdl::GraphQLSDLContainer
 {
   document : meta::external::query::graphQL::metamodel::sdl::Document[1];
 }
