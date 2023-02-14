@@ -80,11 +80,11 @@
                         <artifactId>legend-engine-pure-runtime-compiler</artifactId>
                         <version>${project.version}</version>
                     </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-javaGeneration-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
+<!--                    <dependency>-->
+<!--                        <groupId>org.finos.legend.engine</groupId>-->
+<!--                        <artifactId>legend-engine-xt-javaGeneration-pure</artifactId>-->
+<!--                        <version>${project.version}</version>-->
+<!--                    </dependency>-->
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-xt-javaPlatformBinding-pure</artifactId>
@@ -139,11 +139,11 @@
                         <artifactId>legend-engine-pure-runtime-compiler</artifactId>
                         <version>${project.version}</version>
                     </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-javaGeneration-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
+<!--                    <dependency>-->
+<!--                        <groupId>org.finos.legend.engine</groupId>-->
+<!--                        <artifactId>legend-engine-xt-javaGeneration-pure</artifactId>-->
+<!--                        <version>${project.version}</version>-->
+<!--                    </dependency>-->
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-xt-javaPlatformBinding-pure</artifactId>
@@ -181,11 +181,11 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m2-dsl-mapping-pure</artifactId>
+            <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
+            <artifactId>legend-pure-m2-dsl-mapping-pure</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
