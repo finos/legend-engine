@@ -17,8 +17,9 @@ package org.finos.legend.engine.external.shared.format.model.transformation;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ModelUnit;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
-import org.finos.legend.pure.generated.platform_pure_corefunctions_meta;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
+
+import static org.finos.legend.pure.generated.platform_pure_basics_meta_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_;
 
 public class Generator
 {
@@ -45,6 +46,6 @@ public class Generator
 
     protected String elementToPath(PackageableElement element)
     {
-        return platform_pure_corefunctions_meta.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(element, pureModel.getExecutionSupport());
+        return Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(element, pureModel.getExecutionSupport());
     }
 }

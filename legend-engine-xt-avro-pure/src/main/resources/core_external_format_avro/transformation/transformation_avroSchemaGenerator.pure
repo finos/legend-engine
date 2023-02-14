@@ -155,7 +155,7 @@ function <<access.private>> meta::external::format::avro::generation::classToRec
     let name = $class->classToName($config);
 
    if($state.seenNames->keys()->contains($name), 
-     |pair(^AvroRecordSchema(name=$name), $state),
+     |pair(^AvroRecordSchema(name=$name, placeHolder = true), $state),
      |       
          
          let st = ^$state(seenNames=$state.seenNames->put($name, ^AvroRecordSchema(name=$name)));

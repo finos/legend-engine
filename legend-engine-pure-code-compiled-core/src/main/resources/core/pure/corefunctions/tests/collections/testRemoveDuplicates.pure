@@ -15,47 +15,8 @@
 import meta::pure::functions::collection::tests::removeDuplicates::*;
 import meta::pure::profiles::*;
 
-function meta::pure::functions::collection::tests::removeDuplicates::cmp(a:Any[1],b:Any[1]):Boolean[1]
-{
-    $a->toString() == $b->toString()
-}
-
-function <<test.Test>> meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesPrimitiveStandardFunction():Boolean[1]
-{
-    assertEquals([1, 2, 3], [1, 2, 1, 3, 1, 3, 3, 2]->removeDuplicates(eq_Any_1__Any_1__Boolean_1_));
-    assertEquals([1, 2, 3], [1, 2, 1, 3, 1, 3, 3, 2]->removeDuplicates(equal_Any_MANY__Any_MANY__Boolean_1_));
-    assertEquals([1, 2, 3], [1, 2, 1, 3, 1, 3, 3, 2]->removeDuplicates());
-
-    assertEquals(['a', 'b', 'c'], ['a', 'a', 'b', 'b', 'c']->removeDuplicates(eq_Any_1__Any_1__Boolean_1_));
-    assertEquals(['a', 'b', 'c'], ['a', 'a', 'b', 'b', 'c']->removeDuplicates(equal_Any_MANY__Any_MANY__Boolean_1_));
-    assertEquals(['a', 'b', 'c'], ['a', 'a', 'b', 'b', 'c']->removeDuplicates());
-
-    assertEquals([1, 2, '1', '3', 3], [1, 2, '1', '3', 1, 3, '3', 2]->removeDuplicates(eq_Any_1__Any_1__Boolean_1_));
-    assertEquals([1, 2, '1', '3', 3], [1, 2, '1', '3', 1, 3, '3', 2]->removeDuplicates(equal_Any_MANY__Any_MANY__Boolean_1_));
-   
-    assertEquals(['1', 2, '3'], ['1', 2, '1', '3', 1, 3, '3', 2]->removeDuplicates(cmp_Any_1__Any_1__Boolean_1_));
-}
-
-function <<test.Test>> meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesPrimitiveNonStandardFunction():Boolean[1]
-{
-     assertEquals([1, 2, '3'], [1, 2, '1', '3', 1, 3, '3', 2]->removeDuplicates({x, y | $x->toString() == $y->toString()}));
-     assertEquals(['1', 2, '3'], ['1', 2, '1', '3', 1, 3, '3', 2]->removeDuplicates({x, y | $x->toString() == $y->toString()}));
-     assertEquals([4,1,1,1,3,6],[4,1,1,1,2,3,2,6]->removeDuplicates({x:Integer[1], y:Integer[1] | ($x == 2 + $y)}));
-     assertEquals([4,2,3,2,6],[4,1,1,1,2,3,2,6]->removeDuplicates({x:Integer[1] | ($x +2)}, {x:Integer[1], y:Integer[1] | ($x == 3 + $y)}));
-   
-     assertEquals([1, 2, '1', '3', 3], [1, 2, '1', '3', 1, 3, '3', 2]->removeDuplicates());
-}
-
-function <<test.Test>> meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesByPrimitive():Boolean[1]
-{
-    assertEquals([1, 2, '3'], [1, 2, '1', '3', 1, 3, '3', 2]->removeDuplicatesBy({x | $x->toString()}));
-    assertEquals(['1', 2, '3'], ['1', 2, '1', '3', 1, 3, '3', 2]->removeDuplicatesBy({x | $x->toString()}));
-
-    assertEquals(['hello', 'world'], ['hello', 'helloWorld', 'world']->removeDuplicatesBy(x:String[1]|$x->substring(0,1)));
-}
-
 function <<test.Test>> meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesBy():Boolean[1]
-{ 
+{
     assertEquals([pair('hello', 1)], [pair('hello', 1)]->removeDuplicatesBy(p|$p.first));
     assertEquals([pair('hello', 1), pair('world', 5)], [pair('hello', 1), pair('world', 5)]->removeDuplicatesBy(p|$p.first));
     assertEquals([pair('hello', 1), pair('world', 5)], [pair('hello', 1), pair('hello', 2), pair('world', 5)]->removeDuplicatesBy(p|$p.first));
@@ -73,11 +34,4 @@ function <<test.Test>> meta::pure::functions::collection::tests::removeDuplicate
 function <<test.Test>> meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesLongList():Boolean[1]
 {
     assertSameElements(range(100)->concatenate([^List<Integer>(values=[1, 2, 3]), 101, 'a']), range(100)->concatenate(^List<Integer>(values=[1, 2, 3])->repeat(100))->concatenate([3, 3, 101, 'a', 3, 101, 2, 'a', 101, 2, 1, 2, 'a'])->removeDuplicates());
-}
-
-function <<test.Test>> meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesEmptyList():Boolean[1]
-{
-    assertEquals([], []->removeDuplicates());
-    assertEquals([], []->removeDuplicates({x, y | $x->toString() == $y->toString()}));
-    assertEquals([], []->removeDuplicatesBy({x | $x->toString()}));
 }

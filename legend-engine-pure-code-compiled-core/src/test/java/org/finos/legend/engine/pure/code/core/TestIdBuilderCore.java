@@ -22,19 +22,20 @@ import org.eclipse.collections.api.map.primitive.MutableObjectIntMap;
 import org.eclipse.collections.api.map.primitive.ObjectIntMap;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.factory.primitive.ObjectIntMaps;
-import org.finos.legend.engine.pure.code.core.CoreCodeRepositoryProvider;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m3.navigation.PrimitiveUtilities;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.serialization.filesystem.PureCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
+import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.MutableCodeStorage;
 import org.finos.legend.pure.m3.serialization.runtime.PureRuntime;
 import org.finos.legend.pure.m3.serialization.runtime.PureRuntimeBuilder;
 import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.m4.tools.GraphNodeIterable;
+import org.finos.legend.pure.runtime.java.compiled.factory.JavaModelFactoryRegistryLoader;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.IdBuilder;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -48,8 +49,8 @@ public class TestIdBuilderCore
     @BeforeClass
     public static void setUp()
     {
-        MutableCodeStorage codeStorage = PureCodeStorage.createCodeStorage(null, Lists.immutable.with(CodeRepository.newPlatformCodeRepository(), new CoreCodeRepositoryProvider().repository()));
-        runtime = new PureRuntimeBuilder(codeStorage).setTransactionalByDefault(false).buildAndInitialize();
+        MutableCodeStorage codeStorage = PureCodeStorage.createCodeStorage(null, Lists.mutable.with(CodeRepository.newPlatformCodeRepository()).withAll(CodeRepositoryProviderHelper.findCodeRepositories()));
+        runtime = new PureRuntimeBuilder(codeStorage).setTransactionalByDefault(false).withFactoryRegistryOverride(JavaModelFactoryRegistryLoader.loader()).buildAndInitialize();
         processorSupport = runtime.getProcessorSupport();
     }
 

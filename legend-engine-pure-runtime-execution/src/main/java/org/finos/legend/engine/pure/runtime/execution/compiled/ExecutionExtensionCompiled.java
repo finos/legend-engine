@@ -23,8 +23,8 @@ public class ExecutionExtensionCompiled extends BaseCompiledExtension
 {
     public ExecutionExtensionCompiled()
     {
-        super(
-                Lists.fixedSize.with(new LegendExecute()),
+        super("core_external_execution",
+                () -> Lists.fixedSize.with(new LegendExecute()),
                 Lists.fixedSize.with(),
                 Lists.fixedSize.empty(),
                 Lists.fixedSize.empty());

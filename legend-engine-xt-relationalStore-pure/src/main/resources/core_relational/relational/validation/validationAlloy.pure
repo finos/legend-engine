@@ -119,7 +119,7 @@ function <<access.private>> meta::relational::validation::alloy::buildViolations
 
 function <<access.private>> meta::relational::validation::alloy::addClassValidationExceptionMappings<T, U>(exceptionType:Class<T>[1], constraint:Constraint[1], exceptionMapping:Mapping[1], eventDataProperty:Property<Nil, U|*>[0..1]):Mapping[1]
 {
-   let exceptionSetImpl = $exceptionMapping.rootClassMappingByClass($exceptionType)->cast(@PureInstanceSetImplementation)->toOne();
+   let exceptionSetImpl = $exceptionMapping->rootClassMappingByClass($exceptionType)->cast(@PureInstanceSetImplementation)->toOne();
    let templateLambda = {|''};
    let constantPropertyMappings = Constraint.properties->filter(p| ClassValidationException.properties.name->contains($p.name->toOne()))
                                                        ->filter(p| $p.name!='messageFunction')

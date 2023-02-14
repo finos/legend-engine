@@ -467,8 +467,8 @@ function meta::relational::milestoning::getQueryTableRelationalOperationElements
      u : Union[1] | $u.queries->getQueryTableRelationalOperationElements(),
      s : SelectSQLQuery[1]|getQueryTableAliases($s.data)->concatenate(getQueryTableAliases($s.filteringOperation)),
      s : ViewSelectSQLQuery[1]|getQueryTableAliases($s.selectSQLQuery),
-     a : RootJoinTreeNode[1]|getQueryTableAliases($a.alias)->concatenate(getQueryTableAliases($a.children)),
-     b : JoinTreeNode[1]|getQueryTableAliases($b.alias)->concatenate(getQueryTableAliases($b.join.target))->concatenate(getQueryTableAliases($b.children)),
+     a : RootJoinTreeNode[1]|getQueryTableAliases($a.alias)->concatenate(getQueryTableAliases($a->children())),
+     b : JoinTreeNode[1]|getQueryTableAliases($b.alias)->concatenate(getQueryTableAliases($b.join.target))->concatenate(getQueryTableAliases($b->children())),
      t : TableAlias[1]| if ($t.relationalElement->instanceOf(Table) && !$t.relationalElement->instanceOf(ViewSelectSQLQuery),| $t,| getQueryTableAliases($t.relationalElement)),
      a:  Alias[1] | getQueryTableAliases($a.relationalElement),
      op: UnaryOperation[1] | getQueryTableAliases($op.nested),
@@ -484,7 +484,7 @@ function meta::relational::milestoning::getAppliedJoinMilestoningFilters(milesto
 
    let milestoningContextIsAvailable = !$milestoningContext->isEmpty();
    let inUnionChainedJoin = {|$state.inUnionChainedJoin == true};
-   let inIntermediateJoinForClassProperty = {|($milestoningContext->toOne().currentProcessingStateIsMilestonedClassProperty()->toOne() || $milestoningContext.currentProcessingState == MilestoningProcessingState.NON_MILESTONED_CLASS_PROPERTY) && !$joinTreeNode.children()->isEmpty()};
+   let inIntermediateJoinForClassProperty = {|($milestoningContext->toOne().currentProcessingStateIsMilestonedClassProperty()->toOne() || $milestoningContext.currentProcessingState == MilestoningProcessingState.NON_MILESTONED_CLASS_PROPERTY) && !$joinTreeNode->children()->isEmpty()};
    let inDataTypeProperty = {|$milestoningContext.currentProcessingState == MilestoningProcessingState.DATATYPE_PROPERTY };
 
    if($milestoningContextIsAvailable && ($inUnionChainedJoin->eval() || $inIntermediateJoinForClassProperty->eval() || $inDataTypeProperty->eval()) ,| $milestoningContext.currentMilestoningStrategy->toOne()->getMilestoneFilters([$appliedJoinTreeNode.alias],$milestoningContext->toOne())->map(f|pair($appliedJoinTreeNode, $f)),|[]);
@@ -826,7 +826,7 @@ function meta::relational::milestoning::getMilestoningContextFromTemporalDates(t
 
 function meta::relational::milestoning::getMilestoningContextForAllVersions(milestoningStrategy:TemporalStrategy[1], s:SetImplementation[1]):TemporalMilestoningContext[0..1]
 {
-   if ($s->instanceOf(RootRelationalInstanceSetImplementation) && $milestoningStrategy->relationalElementCanSupportStrategy($s->cast(@RootRelationalInstanceSetImplementation).mainTable()),
+   if ($s->instanceOf(RootRelationalInstanceSetImplementation) && $milestoningStrategy->relationalElementCanSupportStrategy($s->cast(@RootRelationalInstanceSetImplementation)->mainTable()),
        | let inclusiveTemporalColumns = $milestoningStrategy->expandToSingleTemporalStrategies()->map(temporalStrategy | $temporalStrategy->getInclusiveTemporalColumn($s->cast(@RootRelationalInstanceSetImplementation)))->reverse();
          $milestoningStrategy->newTemporalMilestoningContext($inclusiveTemporalColumns, [], MilestoningProcessingState.ALL_VERSIONS);,
        | []
@@ -835,7 +835,7 @@ function meta::relational::milestoning::getMilestoningContextForAllVersions(mile
 
 function meta::relational::milestoning::getMilestoningContextForAllVersionsInRange(milestoningStrategy:SingleDateTemporalStrategy[1], s:SetImplementation[1], dateParameters:ValueSpecification[*], state:State[1], vars:Map<VariableExpression, ValueSpecification>[1], context:DebugContext[1], extensions:Extension[*]):TemporalMilestoningContext[0..1]
 {
-   if ($s->instanceOf(RootRelationalInstanceSetImplementation) && $milestoningStrategy->relationalElementCanSupportStrategy($s->cast(@RootRelationalInstanceSetImplementation).mainTable()),
+   if ($s->instanceOf(RootRelationalInstanceSetImplementation) && $milestoningStrategy->relationalElementCanSupportStrategy($s->cast(@RootRelationalInstanceSetImplementation)->mainTable()),
        | let milestoningDates = resolveMilestoningDateParams($milestoningStrategy, $dateParameters, [], $state, $vars, $context, $extensions);
          let inclusiveTemporalColumns = $milestoningStrategy->getInclusiveTemporalColumn($s->cast(@RootRelationalInstanceSetImplementation));
          $milestoningStrategy->newTemporalMilestoningContext($inclusiveTemporalColumns, $milestoningDates, MilestoningProcessingState.ALL_VERSIONS_IN_RANGE);,
@@ -851,7 +851,7 @@ function meta::relational::milestoning::getMilestoningContextForAllVersionsInRan
 
 function meta::relational::milestoning::getMilestoningContextForAllForEachDate(milestoningStrategy:SingleDateTemporalStrategy[1], s:SetImplementation[1]):TemporalMilestoningContext[0..1]
 {
-   if ($s->instanceOf(RootRelationalInstanceSetImplementation) && $milestoningStrategy->relationalElementCanSupportStrategy($s->cast(@RootRelationalInstanceSetImplementation).mainTable()),
+   if ($s->instanceOf(RootRelationalInstanceSetImplementation) && $milestoningStrategy->relationalElementCanSupportStrategy($s->cast(@RootRelationalInstanceSetImplementation)->mainTable()),
        | let inclusiveTemporalColumns = getInclusiveTemporalColumn($milestoningStrategy->cast(@SingleDateTemporalStrategy),$s->cast(@RootRelationalInstanceSetImplementation));
          $milestoningStrategy->newTemporalMilestoningContext($inclusiveTemporalColumns, [], MilestoningProcessingState.ALL_FOR_EACH_DATE);,
        | []
@@ -860,7 +860,7 @@ function meta::relational::milestoning::getMilestoningContextForAllForEachDate(m
 
 function meta::relational::milestoning::getInclusiveTemporalColumn(milestoningStrategy:SingleDateTemporalStrategy[1], r:RootRelationalInstanceSetImplementation[1]):DateWrapper[1]
 {
-   let milestoning = $r.mainTable().milestoning->filter(m| $m->milestoningCanSupportTemporalStrategy($milestoningStrategy));
+   let milestoning = $r->mainTable().milestoning->filter(m| $m->milestoningCanSupportTemporalStrategy($milestoningStrategy));
    let tableAlias = $r.mainTableAlias;
    ^DateWrapper(date = if ($milestoning->isEmpty(),| ^Literal(value = ^SQLNull()),| ^TableAliasColumn(alias = ^$tableAlias(name = 'root'), setMappingOwner = $r, column = $milestoning->toOne()->getInclusiveTemporalColumn())));
 }

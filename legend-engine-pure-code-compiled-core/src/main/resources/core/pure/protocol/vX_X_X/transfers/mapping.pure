@@ -172,9 +172,9 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::
    (
       _type = 'xStore',
       id = $r.id,
-      stores = $r.stores->map(s | $mapping.resolveStore($s)->elementToPath()),
+      stores = $r.stores->map(s | $mapping->resolveStore($s)->elementToPath()),
       association = $r.association->elementToPath(),
-      propertyMappings = $r.allPropertyMappings()->meta::pure::milestoning::excludeRangeMilestoningPropertyMapping()->map(pm | $pm->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::xStore::transformXStorePropertyMapping($mapping, $extensions))
+      propertyMappings = $r->allPropertyMappings()->meta::pure::milestoning::excludeRangeMilestoningPropertyMapping()->map(pm | $pm->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::xStore::transformXStorePropertyMapping($mapping, $extensions))
    );
 }
 

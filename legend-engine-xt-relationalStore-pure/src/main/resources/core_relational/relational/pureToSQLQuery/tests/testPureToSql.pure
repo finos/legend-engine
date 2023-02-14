@@ -186,18 +186,18 @@ function meta::relational::tests::functions::pureToSqlQuery::testOrderImmediateC
    let root = ^$rootTemp(childrenData=[^$rc1(childrenData=$rc1c1WithOrphanJoinAlias), $rc2]);
    let sql = ^SelectSQLQuery(data=$root);
    
-   assertEquals('rc1',$sql->at(0).data.children->at(0)->toOne().alias.name);
-   assertEquals('orphan_rc2',$sql->at(0).data.children->at(1)->toOne().alias.name);
+   assertEquals('rc1',$sql->at(0).data->map(x|$x->children())->at(0)->toOne().alias.name);
+   assertEquals('orphan_rc2',$sql->at(0).data->map(x|$x->children())->at(1)->toOne().alias.name);
    let sqlWithReorderedChildren = $sql->orderImmediateChildNodeByJoinAliasDependencies();
-   assertEquals('orphan_rc2',$sqlWithReorderedChildren->at(0).data.children->at(0)->toOne().alias.name);
-   assertEquals('rc1',$sqlWithReorderedChildren->at(0).data.children->at(1)->toOne().alias.name);
+   assertEquals('orphan_rc2',$sqlWithReorderedChildren->at(0).data->map(x|$x->children())->at(0)->toOne().alias.name);
+   assertEquals('rc1',$sqlWithReorderedChildren->at(0).data->map(x|$x->children())->at(1)->toOne().alias.name);
    
    let rc1c1 = buildJoinTreeNode($rc1,'rc2','root_to_child1_to_child1', false);
    let root2 = ^$rootTemp(childrenData=[^$rc1(childrenData=$rc1c1), $rc2]);
    let sql2 = ^SelectSQLQuery(data=$root2);
    let sqlNoReorderingRequired = $sql2->orderImmediateChildNodeByJoinAliasDependencies();
-   assertEquals('rc1',$sqlNoReorderingRequired->at(0).data.children->at(0)->toOne().alias.name);
-   assertEquals('orphan_rc2',$sqlNoReorderingRequired->at(0).data.children->at(1)->toOne().alias.name);
+   assertEquals('rc1',$sqlNoReorderingRequired->at(0).data->map(x|$x->children())->at(0)->toOne().alias.name);
+   assertEquals('orphan_rc2',$sqlNoReorderingRequired->at(0).data->map(x|$x->children())->at(1)->toOne().alias.name);
 }
 
 function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::testFindAliasMappingBySchemaName():Boolean[1]
@@ -299,13 +299,13 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::testI
    let debugContext = noDebug();
    let extensions = meta::relational::extension::relationalExtensions();
    
-   let schema = meta::relational::tests::dbInc.schema('default');
-   let personTable = $schema.table('personTable')->toOne();
-   let personAddressIdCol = $personTable.column('ADDRESSID')->toOne();
-   let firmTable = $schema.table('firmTable')->toOne();
-   let firmAddressIdCol = $firmTable.column('ADDRESSID')->toOne();
-   let addressTable = $schema.table('addressTable')->toOne();
-   let addressStreetCol = $addressTable.column('STREET')->toOne();
+   let schema = meta::relational::tests::dbInc->schema('default');
+   let personTable = $schema->map(x|$x->table('personTable'))->toOne();
+   let personAddressIdCol = $personTable->column('ADDRESSID')->toOne();
+   let firmTable = $schema->map(x|$x->table('firmTable'))->toOne();
+   let firmAddressIdCol = $firmTable->column('ADDRESSID')->toOne();
+   let addressTable = $schema->map(x|$x->table('addressTable'))->toOne();
+   let addressStreetCol = $addressTable->column('STREET')->toOne();
    
    let context = ^RelationalExecutionContext(
       importDataFlow=true,

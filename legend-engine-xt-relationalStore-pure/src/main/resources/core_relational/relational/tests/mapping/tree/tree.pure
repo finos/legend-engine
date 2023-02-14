@@ -227,8 +227,8 @@ function <<test.Test>> meta::relational::tests::mapping::tree::testJoinIsolation
 // Alloy exclusion reason: 17. Post processors not yet supported
 function <<test.Test, test.ExcludeAlloy>>  meta::relational::tests::mapping::tree::testReplaceTablesPostProcessorJoinIsolation():Boolean[1]
 {
-   let oldTable = myDB.schema('default')->toOne().table('orgTable')->toOne();
-   let newTable = myDB.schema('default')->toOne().table('otherOrgTable')->toOne();
+   let oldTable = myDB->schema('default')->toOne()->table('orgTable')->toOne();
+   let newTable = myDB->schema('default')->toOne()->table('otherOrgTable')->toOne();
    
    let runtime = ^Runtime
    (

@@ -130,7 +130,6 @@ function meta::external::query::graphQL::binding::fromPure::sdl::findTypes(pElem
   $pElems
     ->filter(i|$i->instanceOf(meta::pure::metamodel::type::Type))
     ->cast(@meta::pure::metamodel::type::Type)
-    ->map(p|$p->meta::external::query::graphQL::binding::fromPure::introspection::scanTypes([]))
     ->removeDuplicates()
 }
 

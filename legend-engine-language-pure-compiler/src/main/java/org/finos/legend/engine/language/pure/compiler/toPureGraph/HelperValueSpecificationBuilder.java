@@ -35,14 +35,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.exe
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.PropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
-import org.finos.legend.pure.generated.Root_meta_pure_graphFetch_PropertyGraphFetchTree_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_graphFetch_RootGraphFetchTree_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_LambdaFunction_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_router_analytics_AnalyticsExecutionContext_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext_Impl;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.graphFetch.GraphFetchTree;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
@@ -252,7 +245,7 @@ public class HelperValueSpecificationBuilder
         }
     }
 
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.ExecutionContext processExecutionContext(ExecutionContext executionContext, CompileContext context)
+    public static Root_meta_pure_runtime_ExecutionContext processExecutionContext(ExecutionContext executionContext, CompileContext context)
     {
         if (executionContext instanceof BaseExecutionContext)
         {

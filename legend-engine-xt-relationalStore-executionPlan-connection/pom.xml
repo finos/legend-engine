@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>3.35.2-SNAPSHOT</version>
+        <version>4.0.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -44,7 +44,7 @@
                     <excludes>
                         <exclude>**/ExternalIntegration*.java</exclude>
                     </excludes>
-                    <argLine>${argLine} -Xmx2g -Xms1g -XX:MaxPermSize=1024m -XX:SoftRefLRUPolicyMSPerMB=1</argLine>
+                    <argLine>${argLine} ${surefire.vm.params}</argLine>
                 </configuration>
             </plugin>
             <!-- Block running the _server tests (They should only execute in TeamCity). Run only H2 tests-->
@@ -117,8 +117,7 @@
                             <includes>
                                 <include>**/Test*.java</include>
                             </includes>
-                            <argLine>${argLine} -Xmx2g -Xms1g -XX:MaxPermSize=1024m -XX:SoftRefLRUPolicyMSPerMB=1
-                            </argLine>
+                            <argLine>${argLine} ${surefire.vm.params}</argLine>
                         </configuration>
                     </plugin>
                 </plugins>

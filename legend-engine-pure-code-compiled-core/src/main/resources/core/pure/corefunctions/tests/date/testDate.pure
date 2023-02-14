@@ -12,48 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-function <<test.Test>> meta::pure::functions::date::tests::testDateFromYear():Boolean[1]
-{
-    assertEquals(%1973, date(1973));
-    assertEquals(%2015, date(2015));
-}
 
-function <<test.Test>> meta::pure::functions::date::tests::testDateFromMonth():Boolean[1]
-{
-    assertEquals(%1973-11, date(1973, 11));
-    assertEquals(%2015-04, date(2015, 4));
-}
-
-function <<test.Test>> meta::pure::functions::date::tests::testDateFromDay():Boolean[1]
-{
-    assertEquals(%1973-11-13, date(1973, 11, 13));
-    assertEquals(%2015-04-16, date(2015, 4, 16));
-}
-
-function <<test.Test>> meta::pure::functions::date::tests::testDateFromHour():Boolean[1]
-{
-    assertEquals(%1973-11-13T23, date(1973, 11, 13, 23));
-    assertEquals(%2015-04-16T14, date(2015, 4, 16, 14));
-}
-
-function <<test.Test>> meta::pure::functions::date::tests::testDateFromMinute():Boolean[1]
-{
-    assertEquals(%1973-11-13T23:09, date(1973, 11, 13, 23, 9));
-    assertEquals(%2015-04-16T14:51, date(2015, 4, 16, 14, 51));
-}
-
-function <<test.Test>> meta::pure::functions::date::tests::testDateFromSecond():Boolean[1]
-{
-    assertEquals(%1973-11-13T23:09:11, date(1973, 11, 13, 23, 9, 11));
-    assertEquals(%2015-04-16T14:51:59, date(2015, 4, 16, 14, 51, 59));
-}
-
-function <<test.Test>> {test.excludePlatform = 'Java compiled'} meta::pure::functions::date::tests::testDateFromSubSecond():Boolean[1]
-{
-    assertEquals(%1973-11-13T23:09:11.0, date(1973, 11, 13, 23, 9, 11.0));
-    assertEquals(%2015-04-16T14:51:59.999, date(2015, 4, 16, 14, 51, 59.999));
-    assertEquals(%2015-04-16T14:51:59.999, date(2015, 4, 16, 14, 51, 59.999D));
-}
 
 function <<test.Test>> meta::pure::functions::date::tests::testSystemDefaultTimeZones():Boolean[1]
 {

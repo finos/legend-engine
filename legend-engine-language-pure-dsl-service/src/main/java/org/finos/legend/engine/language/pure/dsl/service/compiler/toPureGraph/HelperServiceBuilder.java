@@ -18,67 +18,23 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRuntimeBuilder;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.*;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ConnectionTestData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Execution;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.KeyedExecutionParameter;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.KeyedSingleExecutionTest;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.MultiExecutionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureMultiExecution;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest_Legacy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.SingleExecutionTest;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestContainer;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.MultiExecutionParameters;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.SingleExecutionParameters;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ExecutionParameters;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.*;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ConnectionTestData;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ConnectionTestData_Impl;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Execution;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_KeyedExecutionParameter;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_KeyedExecutionParameter_Impl;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_KeyedSingleExecutionTest;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_KeyedSingleExecutionTest_Impl;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ExecutionParameters;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_SingleExecutionParameters;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_SingleExecutionParameters_Impl;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_MultiExecutionParameters_Impl;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_MultiExecutionTest;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_MultiExecutionTest_Impl;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ParameterValue;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ParameterValue_Impl;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureMultiExecution_Impl;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureSingleExecution_Impl;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_SingleExecutionTest_Impl;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Test;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_TestContainer;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_TestContainer_Impl;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ServiceTestData;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ServiceTestData_Impl;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class HelperServiceBuilder
@@ -111,7 +67,7 @@ public class HelperServiceBuilder
         {
             PureSingleExecution pureSingleExecution = (PureSingleExecution) execution;
             Mapping mapping = null;
-            org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime runtime = null;
+            Root_meta_pure_runtime_Runtime runtime = null;
             LambdaFunction<?> lambda;
             if (pureSingleExecution.mapping != null && pureSingleExecution.runtime != null)
             {
@@ -162,7 +118,7 @@ public class HelperServiceBuilder
     {
         Mapping mapping = context.resolveMapping(keyedExecutionParameter.mapping, keyedExecutionParameter.mappingSourceInformation);
         inferEmbeddedRuntimeMapping(keyedExecutionParameter.runtime, keyedExecutionParameter.mapping);
-        org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime runtime = HelperRuntimeBuilder.buildPureRuntime(keyedExecutionParameter.runtime, context);
+        Root_meta_pure_runtime_Runtime runtime = HelperRuntimeBuilder.buildPureRuntime(keyedExecutionParameter.runtime, context);
         HelperRuntimeBuilder.checkRuntimeMappingCoverage(runtime, Lists.fixedSize.of(mapping), context, keyedExecutionParameter.runtime.sourceInformation);
         if (!executionKeyValues.add(keyedExecutionParameter.key))
         {
@@ -317,7 +273,7 @@ public class HelperServiceBuilder
             SingleExecutionParameters execParams = (SingleExecutionParameters) params;
             Mapping mapping = context.resolveMapping(execParams.mapping, execParams.mappingSourceInformation);
             inferEmbeddedRuntimeMapping(execParams.runtime, execParams.mapping);
-            org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime runtime = HelperRuntimeBuilder.buildPureRuntime(execParams.runtime, context);
+            Root_meta_pure_runtime_Runtime runtime = HelperRuntimeBuilder.buildPureRuntime(execParams.runtime, context);
             HelperRuntimeBuilder.checkRuntimeMappingCoverage(runtime, Lists.fixedSize.of(mapping), context, execParams.runtime.sourceInformation);
             return new Root_meta_legend_service_metamodel_SingleExecutionParameters_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::SingleExecutionParameters"))
                     ._key(execParams.key)

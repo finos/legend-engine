@@ -40,7 +40,7 @@ function <<access.private>> meta::alloy::objectReference::getPkMapFromObjectRefe
    let mapping                 = $pathToMapping->pathToElement()->cast(@Mapping);
    let setIdx                  = $operationResolvedSetsId->indexOf($setId);
 
-   let set                     = $mapping.classMappingById($setId)->toOne();
+   let set                     = $mapping->classMappingById($setId)->toOne();
 
    if($type->toLower() == 'relational',
       |let newPkMap = resolvePrimaryKeysNames($set->cast(@RelationalInstanceSetImplementation), $orgPkMap, if($operationResolvedSetsId->size() == 1, | '', | '_' + $setIdx->toString()), false, $extensions);

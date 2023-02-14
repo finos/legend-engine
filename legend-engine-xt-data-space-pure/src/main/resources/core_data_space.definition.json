@@ -1,5 +1,11 @@
 {
-    "name" : "core_data_space",
-    "pattern" : "(meta::pure::metamodel::dataSpace)(::.*)?",
-    "dependencies" : ["platform", "core", "core_diagram"]
+  "name": "core_data_space",
+  "pattern": "(meta::pure::metamodel::dataSpace)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_dsl_mapping",
+    "platform_functions",
+    "core",
+    "core_diagram"
+  ]
 }

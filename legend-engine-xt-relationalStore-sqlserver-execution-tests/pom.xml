@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>3.35.2-SNAPSHOT</version>
+        <version>4.0.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-xt-relationalStore-sqlserver-execution-tests</artifactId>
@@ -38,6 +38,7 @@
                         <exclude>**/ExternalIntegration*.java</exclude>
                         <exclude>**/Test_Relational_DbSpecific_SqlServer_UsingPureClientTestSuite.java</exclude>
                     </excludes>
+                    <argLine>${argLine} ${surefire.vm.params}</argLine>
                 </configuration>
             </plugin>
         </plugins>
@@ -105,13 +106,13 @@
 
         <!-- TEST -->
         <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-test-server</artifactId>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-configuration-external</artifactId>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-test-server</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -124,11 +125,7 @@
             <artifactId>legend-engine-xt-relationalStore-javaPlatformBinding-pure</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-code-compiled-tests</artifactId>
-            <scope>test</scope>
-        </dependency>
+
         <!-- TEST -->
     </dependencies>
 </project>

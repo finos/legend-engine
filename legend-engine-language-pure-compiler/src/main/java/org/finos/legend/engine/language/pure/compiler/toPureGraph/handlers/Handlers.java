@@ -52,7 +52,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.cla
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl;
-import org.finos.legend.pure.generated.platform_pure_corefunctions_meta;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
@@ -70,6 +69,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static org.finos.legend.pure.generated.platform_pure_basics_meta_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_;
 
 public class Handlers
 {
@@ -503,7 +504,7 @@ public class Handlers
         register("meta::pure::functions::collection::first_T_MANY__T_$0_1$_", true, ps -> res(ps.get(0)._genericType(), "zeroOne"));
         register("meta::pure::functions::collection::last_T_MANY__T_$0_1$_", true, ps -> res(ps.get(0)._genericType(), "zeroOne"));
         register("meta::pure::functions::meta::enumName_Enumeration_1__String_1_", true, ps -> res("String", "one"));
-        register("meta::pure::functions::meta::extractEnumValue_Enumeration_1__String_1__T_1_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "one"));
+        register("meta::pure::functions::lang::extractEnumValue_Enumeration_1__String_1__T_1_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "one"));
         register("meta::pure::functions::meta::enumValues_Enumeration_1__T_MANY_", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"));
 
         register(h("meta::pure::tds::drop_TabularDataSet_1__Integer_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> "TabularDataSet".equals(ps.get(0)._genericType()._rawType()._name())),
@@ -581,6 +582,9 @@ public class Handlers
         register("meta::pure::functions::collection::containsAll_Any_MANY__Any_MANY__Boolean_1_", false, ps -> res("Boolean", "one"));
 
         register("meta::pure::functions::meta::id_Any_1__String_1_", true, ps -> res("String", "one"));
+        register("meta::pure::functions::meta::typePath_Any_1__String_1_", false, ps -> res("String", "one"));
+        register("meta::pure::functions::meta::typeName_Any_1__String_1_", false, ps -> res("String", "one"));
+
         register("meta::pure::functions::meta::type_Any_MANY__Type_1_", false, ps -> res("meta::pure::metamodel::type::Type", "one"));
         register("meta::pure::functions::lang::compare_T_1__T_1__Integer_1_", true, ps -> res("Integer", "one"));
         // meta::pure::functions::collection::fold<T,V|m>(value:T[*], func:Function<{T[1],V[m]->V[m]}>[1], accumulator:V[m]):V[m], note return type is V and not T
@@ -1144,7 +1148,7 @@ public class Handlers
             org.finos.legend.pure.m3.coreinstance.Package pkg = handler.getFunc() instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement ? ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement)handler.getFunc())._package() : null;
             if (pkg != null)
             {
-                String path = platform_pure_corefunctions_meta.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(pkg, pureModel.getExecutionSupport());
+                String path = Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(pkg, pureModel.getExecutionSupport());
                 if (path.startsWith(this.META_PACKAGE_NAME + this.PACKAGE_SEPARATOR))
                 {
                     registeredMetaPackages.add(path);
@@ -1876,6 +1880,8 @@ public class Handlers
         map.put("meta::pure::functions::meta::instanceOf_Any_1__Type_1__Boolean_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && isOne(ps.get(1)._multiplicity()) && Sets.immutable.with("Nil", "Type", "Class", "DataType", "Measure", "FunctionType", "MappingClass", "ClassProjection", "PrimitiveType", "Unit", "Enumeration").contains(ps.get(1)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::meta::newUnit_Unit_1__Number_1__Any_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "Unit".equals(ps.get(0)._genericType()._rawType()._name())) && isOne(ps.get(1)._multiplicity()) && Sets.immutable.with("Nil", "Number", "Integer", "Float", "Decimal").contains(ps.get(1)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::meta::type_Any_MANY__Type_1_", (List<ValueSpecification> ps) -> ps.size() == 1);
+        map.put("meta::pure::functions::meta::typeName_Any_1__String_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()));
+        map.put("meta::pure::functions::meta::typePath_Any_1__String_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()));
         map.put("meta::pure::functions::multiplicity::toOneMany_T_MANY__T_$1_MANY$_", (List<ValueSpecification> ps) -> ps.size() == 1);
         map.put("meta::pure::functions::multiplicity::toOne_T_MANY__T_1_", (List<ValueSpecification> ps) -> ps.size() == 1);
         map.put("meta::pure::functions::string::chunk_String_1__Integer_1__String_MANY_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "String".equals(ps.get(0)._genericType()._rawType()._name())) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "Integer".equals(ps.get(1)._genericType()._rawType()._name())));

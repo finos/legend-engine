@@ -33,7 +33,7 @@ Class meta::relational::metamodel::RelationData
    }:Schema[1];
 
    database(){
-      $this.schema().database
+      $this.schema.database
    }:Database[1];
 }
 

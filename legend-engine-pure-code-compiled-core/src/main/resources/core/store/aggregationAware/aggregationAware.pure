@@ -110,7 +110,7 @@ function meta::pure::mapping::aggregationAware::rewriteValueSpecification(vs: Va
                                     | $fe->potentiallyRewriteObjectGroupBy($mapping, $vars, $inScopeVars, $debug),
                                     | if($fe.func->in([getAll_Class_1__T_MANY_, getAll_Class_1__Date_1__T_MANY_, getAll_Class_1__Date_1__Date_1__T_MANY_]),
                                          | let mainClass = $fe.parametersValues->evaluateAndDeactivate()->at(0)->cast(@InstanceValue).values->at(0)->cast(@Class<Any>);
-                                           ^$fe(parametersValues=^ClassSetImplementationHolder(genericType=^GenericType(rawType=$mainClass), multiplicity=PureOne, set = $mapping.rootClassMappingByClass($mainClass)->match([a:AggregationAwareSetImplementation[1]|$a.mainSetImplementation, s:SetImplementation[1]|$s]), value = $fe.parametersValues->evaluateAndDeactivate()->at(0))->concatenate($fe.parametersValues->evaluateAndDeactivate()->tail()));,
+                                           ^$fe(parametersValues=^ClassSetImplementationHolder(genericType=^GenericType(rawType=$mainClass), multiplicity=PureOne, set = $mapping->rootClassMappingByClass($mainClass)->match([a:AggregationAwareSetImplementation[1]|$a.mainSetImplementation, s:SetImplementation[1]|$s]), value = $fe.parametersValues->evaluateAndDeactivate()->at(0))->concatenate($fe.parametersValues->evaluateAndDeactivate()->tail()));,
                                          | ^$fe(parametersValues=$fe.parametersValues->evaluateAndDeactivate()->map(v|$v->rewriteValueSpecification($mapping, $vars, $inScopeVars, $debug)))
                                       );
                                   ),
@@ -132,7 +132,7 @@ function meta::pure::mapping::aggregationAware::potentiallyRewriteObjectGroupBy(
    let collection = $params->at(0);
    let collectionType = $collection.genericType.rawType->toOne();
    $collectionType->match([
-      c:Class<Any>[1] | $mapping.rootClassMappingByClass($c)->match([
+      c:Class<Any>[1] | $mapping->rootClassMappingByClass($c)->match([
          agg:AggregationAwareSetImplementation[1] |
             let aggregateSpecifications = $agg.aggregateSetImplementations;
             $aggregateSpecifications->fold({aggSpec, agg |

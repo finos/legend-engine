@@ -40,8 +40,8 @@ import org.finos.legend.pure.generated.core_java_platform_binding_legendJavaPlat
 import org.finos.legend.pure.generated.core_pure_binding_extension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.ExecutionContext;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -278,14 +278,14 @@ public abstract class TestExternalFormatQueries
             Lambda lambdaProtocol = parser.parseLambda(query);
             LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambda(lambdaProtocol.body, lambdaProtocol.parameters, model.getContext());
 
-            ExecutionContext context = new Root_meta_pure_runtime_ExecutionContext_Impl(" ")._enableConstraints(true);
+            Root_meta_pure_runtime_ExecutionContext context = new Root_meta_pure_runtime_ExecutionContext_Impl(" ")._enableConstraints(true);
 
             MutableList<Root_meta_pure_extension_Extension> extensions = Lists.mutable.with(core_pure_binding_extension.Root_meta_external_shared_format_externalFormatExtension__Extension_1_(model.getExecutionSupport()));
             extensions.addAll(formatExtensions);
             extensions.addAllIterable(core_java_platform_binding_legendJavaPlatformBinding_binding_bindingLegendJavaPlatformBindingExtension.Root_meta_external_shared_format_executionPlan_platformBinding_legendJava_bindingExtensionsWithLegendJavaPlatformBinding_ExternalFormatLegendJavaPlatformBindingDescriptor_MANY__Extension_MANY_(Lists.mutable.withAll(formatDescriptors), model.getExecutionSupport()));
 
             Mapping mapping = model.getMapping(mappingPath);
-            Runtime runtime = model.getRuntime(runtimePath);
+            Root_meta_pure_runtime_Runtime runtime = model.getRuntime(runtimePath);
             String plan = PlanGenerator.generateExecutionPlanAsString(lambda, mapping, runtime, context, model, "vX_X_X", PlanPlatform.JAVA, "test", extensions, LegendPlanTransformers.transformers);
             PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors(true);
             StreamingResult streamingResult = (StreamingResult) executor.execute(plan, input);

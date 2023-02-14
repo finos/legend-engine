@@ -200,21 +200,21 @@ function meta::analytics::lineage::flowDatabase::toFlowDatabase(p:PropertyPathTr
                           ]))->removeDuplicates();
                           let wsets = $sets->filter(s|$s->instanceOf(PropertyMappingsImplementation))->cast(@PropertyMappingsImplementation);
                           $pr.property->match([
-                             sp:Property<Nil,Any|*>[1]|let propertyMappings = $wsets->map(s|$s.propertyMappingsByPropertyName($pr.property.name->toOne()););
+                             sp:Property<Nil,Any|*>[1]|let propertyMappings = $wsets->map(s|$s->_propertyMappingsByPropertyName($pr.property.name->toOne()););
                                                        let isDataTypeProperty = !$pr.property.genericType.rawType->isEmpty() && $pr.property.genericType.rawType->toOne()->instanceOf(DataType);
                                                        if ($isDataTypeProperty,
                                                          | $propertyMappings->cast(@RelationalPropertyMapping)->map(pm|$pm->meta::analytics::lineage::flowDatabase::getTables());,
                                                          | $propertyMappings->map(pm|processNonDataTypeProperty($p, $pm, $possiblePropertyTargetClasses, $m, $extraChildren))
                                                        );,
                              q:QualifiedProperty<Any>[1]|if($q->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype(),
-                                                            | let propertyMappings = $wsets->map(s|$s.propertyMappingsByPropertyName($pr.property.functionName->toOne()+'AllVersions'));
+                                                            | let propertyMappings = $wsets->map(s|$s->_propertyMappingsByPropertyName($pr.property.functionName->toOne()+'AllVersions'));
                                                               $propertyMappings->map(pm|processNonDataTypeProperty($p, $pm, $possiblePropertyTargetClasses, $m, $extraChildren));,
                                                             | $p.qualifierSubTree->toOne()->toFlowDatabase($m, $sets, true, $p.children));
                           ]);
                           ,
                      cl: Class<Any>[1]|if($disregardClass,
                                              |meta::analytics::lineage::flowDatabase::manageQualifiers($p.children, $extraChildren)->map(c|$c->toFlowDatabase($m, $sets, false, $extraChildren)),
-                                             |meta::analytics::lineage::flowDatabase::manageQualifiers($p.children, $extraChildren)->map(c|$c->toFlowDatabase($m, $m.rootClassMappingByClass($cl)->last()->meta::pure::router::routing::resolveOperation($m), false, $extraChildren));
+                                             |meta::analytics::lineage::flowDatabase::manageQualifiers($p.children, $extraChildren)->map(c|$c->toFlowDatabase($m, $m->rootClassMappingByClass($cl)->last()->meta::pure::router::routing::resolveOperation($m), false, $extraChildren));
                                        );,
                      a :Any[1]|meta::analytics::lineage::flowDatabase::manageQualifiers($p.children, $extraChildren)->map(c|$c->toFlowDatabase($m, $sets, $disregardClass, $extraChildren))
                    ]);
@@ -227,7 +227,7 @@ function <<access.private>> meta::analytics::lineage::flowDatabase::processNonDa
          $m->meta::analytics::lineage::flowDatabase::allSubSetImplementationIds($i.inlineSetImplementationId)->removeDuplicates(),
       p:PropertyMapping[1]|
          let targetSiId = $p.targetSetImplementationId;
-         let targetClass = $m.classMappingById($targetSiId).class;
+         let targetClass = $m->classMappingById($targetSiId).class;
          if ($targetClass->isNotEmpty() && $possiblePropertyTargetClasses->isNotEmpty() && !$possiblePropertyTargetClasses->exists(c|$targetClass->toOne()->_subTypeOf($c)),
             | [],
             | $targetSiId);
@@ -242,7 +242,7 @@ function <<access.private>> meta::analytics::lineage::flowDatabase::processNonDa
    ]);
 
    let tablesFromChildren = meta::analytics::lineage::flowDatabase::manageQualifiers($p.children, $extraChildren)
-   ->map(c|$c->toFlowDatabase($m, $targetSetImplementationId->map(id|$m.classMappingById($id)), false, $extraChildren));
+   ->map(c|$c->toFlowDatabase($m, $targetSetImplementationId->map(id|$m->classMappingById($id)), false, $extraChildren));
 
    $potentialTablesFromJoin->concatenate($tablesFromChildren);
 }
@@ -273,7 +273,7 @@ function meta::analytics::lineage::getExecutionTables::getExecutionTables(func:F
    let executes = $func->scanExecutes();
    $executes->map( e |  let propertyTree = $e->buildPropertyTree();
                         let mappings = $e.mappingEntryPoint->toOne()->scanMapping();
-                        $mappings->map(m| $propertyTree->toFlowDatabase($m, [], false, [])->map(nr|let table = $nr->match([t:Table[1]|$t, v:View[1]|$v.mainTable]); $table.schema.name+'.'+$table.name;));)->removeDuplicates();
+                        $mappings->map(m| $propertyTree->toFlowDatabase($m, [], false, [])->map(nr|let table = $nr->match([t:Table[1]|$t, v:View[1]|$v->mainTable()]); $table.schema.name+'.'+$table.name;));)->removeDuplicates();
 }
 
 function <<access.private>> meta::analytics::lineage::flowDatabase::getTables(r:RelationalPropertyMapping[1]):NamedRelation[*]
@@ -284,7 +284,7 @@ function <<access.private>> meta::analytics::lineage::flowDatabase::getTables(r:
 function <<access.private>> meta::analytics::lineage::flowDatabase::getTables(r:RelationalOperationElement[*]):NamedRelation[*]
 {
    $r->meta::relational::functions::pureToSqlQuery::extractTableAliasColumns().alias.relationalElement->cast(@NamedRelation)->map(nr|$nr->match([
-      v:View[1]|$v.mainTable
+      v:View[1]|$v->mainTable()
                   ->concatenate($v.filter.joinTreeNode.join.operation->meta::analytics::lineage::flowDatabase::getTables())
                   ->concatenate($v.filter.filter.operation->meta::analytics::lineage::flowDatabase::getTables())
                   ->concatenate($v.groupBy.columns->meta::analytics::lineage::flowDatabase::getTables())
@@ -296,7 +296,7 @@ function <<access.private>> meta::analytics::lineage::flowDatabase::getTables(r:
 function meta::analytics::lineage::flowDatabase::allSubSetImplementationIds(m:Mapping[1], ids: String[*]):String[*]
 {
    if($ids->isEmpty(), |[], |
-   $ids->concatenate($m->meta::analytics::lineage::flowDatabase::allSubSetImplementationIds($m.classMappings()->filter(si|!$si.superSetImplementationId->isEmpty()&& $ids->contains($si.superSetImplementationId->toOne())).id)));
+   $ids->concatenate($m->meta::analytics::lineage::flowDatabase::allSubSetImplementationIds($m->classMappings()->filter(si|!$si.superSetImplementationId->isEmpty()&& $ids->contains($si.superSetImplementationId->toOne())).id)));
 }
 
 function <<access.private>> meta::analytics::lineage::flowDatabase::manageQualifiers(children:PropertyPathTree[*], extraChildren:PropertyPathTree[*]):PropertyPathTree[*]
@@ -325,9 +325,9 @@ function <<access.private>> meta::analytics::lineage::flowClass::toFlowClassOne(
 
 function <<access.private>> meta::analytics::lineage::flowClass::getClassLinksFromMapping(endPointClasses: Class<Any>[*], mapping:Mapping[1], maturityTests:Pair<Function<{FlowNode[1],FlowNode[1]->Boolean[1]}>,LineageMaturity>[*]) : Pair<List<Class<Any>>, List<FlowEdge>>[1]
 {
-   $endPointClasses->fold({a,b | if($mapping.classMappingByClass($a)->isEmpty(),
+   $endPointClasses->fold({a,b | if($mapping->_classMappingByClass($a)->isEmpty(),
                                     |^$b(first=^List<Class<Any>>(values=$b.first.values->concatenate($a)));,
-                                    |let srcClasses = $mapping.classMappingByClass($a)->filter(si | $si->instanceOf(PureInstanceSetImplementation))->map(psi | $psi->cast(@PureInstanceSetImplementation).srcClass->cast(@Class<Any>))->removeDuplicates();
+                                    |let srcClasses = $mapping->_classMappingByClass($a)->filter(si | $si->instanceOf(PureInstanceSetImplementation))->map(psi | $psi->cast(@PureInstanceSetImplementation).srcClass->cast(@Class<Any>))->removeDuplicates();
                                      let srcClassNodes = $srcClasses->map(sc |^ClassNode(class=$sc));
                                      let targetClassNode = ^ClassNode(class=$a);
                                      let srcClassPackageNodes = $srcClasses->map(sc | ^PackageNode(package=$sc.package->toOne()));

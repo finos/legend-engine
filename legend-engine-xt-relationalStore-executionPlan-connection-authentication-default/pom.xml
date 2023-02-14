@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>3.35.2-SNAPSHOT</version>
+        <version>4.0.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-xt-relationalStore-executionPlan-connection-authentication-default</artifactId>
@@ -42,7 +42,7 @@
                     <excludes>
                         <exclude>**/ExternalIntegration*.java</exclude>
                     </excludes>
-                    <argLine>${argLine} -Xmx2g -Xms1g -XX:MaxPermSize=1024m -XX:SoftRefLRUPolicyMSPerMB=1</argLine>
+                    <argLine>${argLine} ${surefire.vm.params}</argLine>
                 </configuration>
             </plugin>
         </plugins>
@@ -64,7 +64,7 @@
                         <!-- Without override, surefire configuration would have skipped our integration tests -->
                         <configuration combine.self="override">
                             <useSystemClassLoader>false</useSystemClassLoader>
-                            <argLine>${argLine} -Xmx2g -Xms1g -XX:MaxPermSize=1024m -XX:SoftRefLRUPolicyMSPerMB=1</argLine>
+                            <argLine>${argLine} ${surefire.vm.params}</argLine>
                             <environmentVariables>
                                 <AWS_ACCESS_KEY_ID>${env.AWS_ACCESS_KEY_ID}</AWS_ACCESS_KEY_ID>
                                 <AWS_SECRET_ACCESS_KEY>${env.AWS_SECRET_ACCESS_KEY}</AWS_SECRET_ACCESS_KEY>

@@ -45,6 +45,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static org.finos.legend.pure.generated.platform_dsl_mapping_functions_Mapping.Root_meta_pure_mapping__classMappingByClass_Mapping_1__Class_1__SetImplementation_MANY_;
+import static org.finos.legend.pure.generated.platform_dsl_mapping_functions_Mapping.Root_meta_pure_mapping__classMappingByIdRecursive_Mapping_1__String_MANY__SetImplementation_MANY_;
+
 public class ClassMappingThirdPassBuilder implements ClassMappingVisitor<SetImplementation>
 {
     private final CompileContext context;
@@ -86,12 +89,12 @@ public class ClassMappingThirdPassBuilder implements ClassMappingVisitor<SetImpl
                 SetImplementation setImplementation;
                 if (p._targetSetImplementationId() != null && !p._targetSetImplementationId().equals(""))
                 {
-                    setImplementation = parentMapping._classMappingByIdRecursive(Lists.fixedSize.with(p._targetSetImplementationId()), this.context.pureModel.getExecutionSupport()).getFirst();
+                    setImplementation = Root_meta_pure_mapping__classMappingByIdRecursive_Mapping_1__String_MANY__SetImplementation_MANY_(parentMapping, Lists.fixedSize.with(p._targetSetImplementationId()), this.context.pureModel.getExecutionSupport()).getFirst();
                     Assert.assertTrue(setImplementation != null, () -> "Can't find class mapping '" + p._targetSetImplementationId() + "'", pSourceInformation, EngineErrorType.COMPILATION);
                 }
                 else
                 {
-                    setImplementation = parentMapping.classMappingByClass((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<Object>) property._genericType()._rawType(), this.context.pureModel.getExecutionSupport()).getFirst();
+                    setImplementation = Root_meta_pure_mapping__classMappingByClass_Mapping_1__Class_1__SetImplementation_MANY_(parentMapping, (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<Object>) property._genericType()._rawType(), this.context.pureModel.getExecutionSupport()).getFirst();
                     Assert.assertTrue(setImplementation != null, () -> "Can't find class mapping for '" + HelperModelBuilder.getElementFullPath((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) property._genericType()._rawType(), this.context.pureModel.getExecutionSupport()) + "'", pSourceInformation, EngineErrorType.COMPILATION);
                 }
 

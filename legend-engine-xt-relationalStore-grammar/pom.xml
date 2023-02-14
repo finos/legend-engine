@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>3.35.2-SNAPSHOT</version>
+        <version>4.0.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -53,6 +53,11 @@
                         </configuration>
                     </execution>
                 </executions>
+                <configuration>
+                    <ignoredUnusedDeclaredDependencies>
+                        <ignoredUnusedDeclaredDependency>org.finos.legend.pure:legend-pure-m2-store-relational-grammar</ignoredUnusedDeclaredDependency>
+                    </ignoredUnusedDeclaredDependencies>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.antlr</groupId>
@@ -67,6 +72,7 @@
                             <listener>true</listener>
                             <treatWarningsAsErrors>true</treatWarningsAsErrors> <!-- DO NOT CHANGE THIS -->
                             <libDirectory>target/antlr</libDirectory>
+                            <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
@@ -84,29 +90,50 @@
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m3-core</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m3-platform</artifactId>
+            <artifactId>legend-pure-m2-dsl-mapping-pure</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m2-dsl-mapping</artifactId>
+            <artifactId>legend-pure-m2-store-relational-pure</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m2-store-relational</artifactId>
+            <artifactId>legend-pure-m2-store-relational-grammar</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-extension-store-relational</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-extension-store-relational</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-extension-dsl-mapping</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-store-relational-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-dsl-mapping-java</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -228,7 +255,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-extension-external-json</artifactId>
+            <artifactId>legend-pure-runtime-java-extension-functions-json</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- TEST - For TC build only - Remove for OSS - investigate why we need this dependency -->

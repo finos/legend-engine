@@ -28,10 +28,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.PrimitiveTypeValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.ServiceParameter;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_context_PersistencePlatform;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_service_ServiceParameter;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_service_ServiceParameter_Impl;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 
 public class HelperPersistenceContextBuilder
@@ -72,7 +69,7 @@ public class HelperPersistenceContextBuilder
         }
         else if (serviceParameter.value instanceof ConnectionValue)
         {
-            org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection value = buildConnection(((ConnectionValue) serviceParameter.value).connection, context);
+            Root_meta_pure_runtime_Connection value = buildConnection(((ConnectionValue) serviceParameter.value).connection, context);
             pureServiceParameter._value(Lists.fixedSize.of(value));
             return pureServiceParameter;
         }
@@ -80,14 +77,14 @@ public class HelperPersistenceContextBuilder
         throw new EngineException(String.format("Unable to build service parameter of type '%s'.", serviceParameter.value.getClass()));
     }
 
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection buildConnection(Connection connection, CompileContext context)
+    public static Root_meta_pure_runtime_Connection buildConnection(Connection connection, CompileContext context)
     {
         if (connection == null)
         {
             return null;
         }
 
-        org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection pureConnection = connection.accept(new ConnectionFirstPassBuilder(context));
+        Root_meta_pure_runtime_Connection pureConnection = connection.accept(new ConnectionFirstPassBuilder(context));
         connection.accept(new ConnectionSecondPassBuilder(context, pureConnection));
         return pureConnection;
     }

@@ -103,7 +103,7 @@ function meta::analytics::mapping::modelCoverage::analyze(
     returnMappedEntityInfo = $returnMappedEntityInfo,
     returnMappedPropertyInfo = $returnMappedPropertyInfo
   );
-  let classMappings = $mapping.classMappings()->reRoot($mapping);
+  let classMappings = $mapping->classMappings()->reRoot($mapping);
   let rootClassMappings = $classMappings->filter(x | !$x->instanceOf(EmbeddedSetImplementation));
   let operations = $classMappings->filter(c | $c->instanceOf(OperationSetImplementation))->cast(@OperationSetImplementation);
   let inheritanceMap = newMap($operations->map(i | pair($i, list($i->resolveOperation($mapping)->sortBy(x | $x.id)))));
@@ -111,7 +111,7 @@ function meta::analytics::mapping::modelCoverage::analyze(
   let allClasses = $classMappings->getAllClassInfo();
   let allMappings = $mapping->concatenate($mapping->getIncludes())->removeDuplicates();
   let mappingToClassMappings = newMap($allMappings->map(map |
-      let mapClassMappingsIds = $map.classMappings().id;
+      let mapClassMappingsIds = $map->classMappings().id;
       pair($map, list($classMappings->filter(cm | $cm.id->in($mapClassMappingsIds))));
   ));
   let entities = $classMappings->map(cm |
@@ -121,7 +121,7 @@ function meta::analytics::mapping::modelCoverage::analyze(
             buildInheritanceEntities($o, $o, [], $subTypeMappings, '', $rootClassMappings, $allClasses, $allProperties, $inheritanceMap, $mappingToClassMappings, $o.root, true, $config);,
          a:meta::pure::mapping::aggregationAware::AggregationAwareSetImplementation[1] |
             buildEntity(
-               $a.mainSetImplementation.class, buildEntityName($a.mainSetImplementation), $a.mainSetImplementation, $a.mainSetImplementation.allPropertyMappings(), $rootClassMappings, $allClasses,
+               $a.mainSetImplementation.class, buildEntityName($a.mainSetImplementation), $a.mainSetImplementation, $a.mainSetImplementation->allPropertyMappings(), $rootClassMappings, $allClasses,
                $allProperties, $inheritanceMap, $mappingToClassMappings, $a.root, $config
             ),
          i:InstanceSetImplementation[1] |

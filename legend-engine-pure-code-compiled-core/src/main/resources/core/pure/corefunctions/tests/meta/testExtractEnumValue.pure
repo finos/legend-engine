@@ -24,5 +24,5 @@ function <<test.Test>> meta::pure::functions::meta::tests::extractEnumValue::tes
 
 function <<test.Test>> meta::pure::functions::meta::tests::extractEnumValue::testExtractEnumValueReflectively():Boolean[1]
 {
-    assertIs(GeographicEntityType.REGION, meta::pure::functions::meta::extractEnumValue_Enumeration_1__String_1__T_1_->evaluate([^List<Enumeration<Any>>(values=GeographicEntityType), ^List<String>(values='REGION')])->cast(@GeographicEntityType)->toOne());
+    assertIs(GeographicEntityType.REGION, meta::pure::functions::lang::extractEnumValue_Enumeration_1__String_1__T_1_->evaluate([^List<Enumeration<Any>>(values=GeographicEntityType), ^List<String>(values='REGION')])->cast(@GeographicEntityType)->toOne());
 }

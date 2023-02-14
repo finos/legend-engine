@@ -43,16 +43,13 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Collectors;
@@ -247,9 +244,8 @@ public class TestM2MGrammarCompileAndExecute
     {
         ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
         PlanExecutor executor = PlanExecutor.newPlanExecutor(InMemory.build());
-        HttpServletRequest request = (HttpServletRequest) Proxy.newProxyInstance(getClass().getClassLoader(), new java.lang.Class<?>[] {HttpServletRequest.class}, new TestExecutionUtility.ReflectiveInvocationHandler(new TestExecutionUtility.Request()));
         //Should use: core_pure_extensions_extension.Root_meta_pure_extension_defaultExtensions__Extension_MANY_(modelManager.)
-        Response result = new Execute(modelManager, executor, (PureModel pureModel) -> core_java_platform_binding_legendJavaPlatformBinding_store_m2m_m2mLegendJavaPlatformBindingExtension.Root_meta_pure_mapping_modelToModel_executionPlan_platformBinding_legendJava_inMemoryExtensionsWithLegendJavaPlatformBinding__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers).execute(request, input, SerializationFormat.defaultFormat, null, null);
+        Response result = new Execute(modelManager, executor, (PureModel pureModel) -> core_java_platform_binding_legendJavaPlatformBinding_store_m2m_m2mLegendJavaPlatformBindingExtension.Root_meta_pure_mapping_modelToModel_executionPlan_platformBinding_legendJava_inMemoryExtensionsWithLegendJavaPlatformBinding__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers).execute(TestExecutionUtility.buildMockRequest(), input, SerializationFormat.defaultFormat, null, null);
         Assert.assertEquals(200, result.getStatus());
         return result;
     }

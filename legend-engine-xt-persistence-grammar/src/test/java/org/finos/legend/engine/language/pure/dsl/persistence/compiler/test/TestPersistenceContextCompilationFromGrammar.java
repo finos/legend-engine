@@ -18,14 +18,8 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_RelationalDatabaseConnection;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceContext;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_context_PersistencePlatform;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_context_PersistencePlatform_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_service_ServiceParameter;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection;
 import org.junit.Test;
 
 import java.util.List;
@@ -445,7 +439,7 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
         Root_meta_pure_alloy_connections_RelationalDatabaseConnection con2 = (Root_meta_pure_alloy_connections_RelationalDatabaseConnection) o4;
         assertEquals("H2", con2._type()._name());
 
-        Connection connection = context._sinkConnection();
+        Root_meta_pure_runtime_Connection connection = context._sinkConnection();
         assertNotNull(connection);
         assertTrue(connection instanceof Root_meta_pure_alloy_connections_RelationalDatabaseConnection);
         Root_meta_pure_alloy_connections_RelationalDatabaseConnection sinkConnection = (Root_meta_pure_alloy_connections_RelationalDatabaseConnection) connection;
@@ -605,7 +599,7 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
 
         Root_meta_pure_persistence_metamodel_PersistenceContext context = (Root_meta_pure_persistence_metamodel_PersistenceContext) packageableElement;
 
-        Connection connection = context._sinkConnection();
+        Root_meta_pure_runtime_Connection connection = context._sinkConnection();
         assertNotNull(connection);
         assertTrue(connection instanceof Root_meta_pure_alloy_connections_RelationalDatabaseConnection);
         Root_meta_pure_alloy_connections_RelationalDatabaseConnection sinkConnection = (Root_meta_pure_alloy_connections_RelationalDatabaseConnection) connection;

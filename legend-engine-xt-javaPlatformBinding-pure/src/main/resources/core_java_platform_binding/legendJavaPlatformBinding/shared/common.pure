@@ -152,7 +152,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::createG
       {mp, project|
          let returnType     = $conventions->pureTypeToJavaType($mp);
          let srcMp          = $mp->meta::pure::milestoning::getSourceMilestonedProperty($set);
-         let childSetImpl   = $set.parent.rootClassMappingByClass($mp->functionReturnType().rawType->cast(@meta::pure::metamodel::type::Class<Any>)->toOne());
+         let childSetImpl   = $set.parent->rootClassMappingByClass($mp->functionReturnType().rawType->cast(@meta::pure::metamodel::type::Class<Any>)->toOne());
          let mapperClass    = $conventions->mapperClassName($childSetImpl->toOne(), $extensions);
 
          let params         = $mp->functionType().parameters->evaluateAndDeactivate()->tail()->map(p | j_parameter($conventions->pureTypeToJavaType($p.genericType.rawType->toOne(), $p.multiplicity), $p.name));

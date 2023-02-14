@@ -31,6 +31,7 @@ import org.finos.legend.pure.runtime.java.compiled.compiler.JavaCompilerState;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledProcessorSupport;
 import org.finos.legend.pure.runtime.java.compiled.execution.ConsoleCompiled;
+import org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtensionLoader;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.Pure;
 import org.finos.legend.pure.runtime.java.compiled.metadata.ClassCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.FunctionCache;
@@ -67,7 +68,8 @@ public abstract class GenerateJavaProject
                 new FunctionCache(),
                 new ClassCache(),
                 null,
-                Sets.mutable.empty()
+                Sets.mutable.empty(),
+                CompiledExtensionLoader.extensions()
         );
     }
 

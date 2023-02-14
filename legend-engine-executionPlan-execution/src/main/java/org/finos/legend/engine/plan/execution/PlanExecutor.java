@@ -27,11 +27,7 @@ import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
-import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
-import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
-import org.finos.legend.engine.plan.execution.stores.StoreExecutorBuilder;
-import org.finos.legend.engine.plan.execution.stores.StoreExecutorConfiguration;
-import org.finos.legend.engine.plan.execution.stores.StoreType;
+import org.finos.legend.engine.plan.execution.stores.*;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
@@ -217,6 +213,17 @@ public class PlanExecutor
         return execute(executionPlan, buildDefaultExecutionState(executionPlan, vars, planExecutionContext), user, profiles);
     }
 
+    public Result execute(SingleExecutionPlan executionPlan, Map<String, Result> vars, String user, MutableList<CommonProfile> profiles, PlanExecutionContext planExecutionContext, String sessionID)
+    {
+        ExecutionState state = buildDefaultExecutionState(executionPlan, vars, planExecutionContext);
+        if (sessionID != null)
+        {
+            state.setSessionID(sessionID);
+        }
+
+        return execute(executionPlan, state, user, profiles);
+    }
+
     public Result execute(SingleExecutionPlan singleExecutionPlan, ExecutionState state, String user, MutableList<CommonProfile> profiles)
     {
         EngineJavaCompiler engineJavaCompiler = possiblyCompilePlan(singleExecutionPlan, state, profiles);
@@ -278,6 +285,11 @@ public class PlanExecutor
                 {
                     state.addResult(USER_ID, new ConstantResult(state.authId));
                 }
+                if (executeArgs.sessionID != null)
+                {
+                    state.setSessionID(executeArgs.sessionID);
+                }
+
                 singleExecutionPlan.getExecutionStateParams(org.eclipse.collections.api.factory.Maps.mutable.empty()).forEach(state::addParameterValue);
                 // execute
                 ExecutionNodeExecutor executionNodeExecutor = this.buildExecutionNodeExecutor(executeArgs.profiles, state);
@@ -327,7 +339,7 @@ public class PlanExecutor
 
     private ExecutionState buildDefaultExecutionState(SingleExecutionPlan executionPlan, Map<String, Result> vars, PlanExecutionContext planExecutionContext)
     {
-        ExecutionState executionState = new ExecutionState(vars, executionPlan.templateFunctions, this.extraExecutors.collect(StoreExecutor::buildStoreExecutionState), this.isJavaCompilationAllowed, this.graphFetchBatchMemoryLimit);
+        ExecutionState executionState = new ExecutionState(vars, executionPlan.templateFunctions, this.extraExecutors.collect(StoreExecutor::buildStoreExecutionState), this.isJavaCompilationAllowed, this.graphFetchBatchMemoryLimit, null);
 
         if (planExecutionContext != null)
         {
@@ -406,7 +418,7 @@ public class PlanExecutor
 
     public static PlanExecutor newPlanExecutorWithAvailableStoreExecutors(boolean isJavaCompilationAllowed, long graphFetchBatchMemoryLimit)
     {
-        return newPlanExecutor(isJavaCompilationAllowed, IterableIterate.collect(ServiceLoader.load(StoreExecutorBuilder.class), StoreExecutorBuilder::build, Lists.mutable.empty()), graphFetchBatchMemoryLimit);
+        return newPlanExecutor(isJavaCompilationAllowed, IterableIterate.collect(StoreExecutorBuilderLoader.extensions(), StoreExecutorBuilder::build, Lists.mutable.empty()), graphFetchBatchMemoryLimit);
     }
 
     public static PlanExecutor newPlanExecutorWithAvailableStoreExecutors(boolean isJavaCompilationAllowed)
@@ -421,13 +433,12 @@ public class PlanExecutor
 
     public static List<StoreExecutorBuilder> loadStoreExecutorBuilders()
     {
-        return Iterate.addAllTo(ServiceLoader.load(StoreExecutorBuilder.class), Lists.mutable.empty());
+        return Iterate.addAllTo(StoreExecutorBuilderLoader.extensions(), Lists.mutable.empty());
     }
 
     public static PlanExecutor newPlanExecutorWithConfigurations(StoreExecutorConfiguration... storeExecutorConfigurations)
     {
-
-        MutableList<StoreExecutorBuilder> storeExecutorBuilders = Iterate.addAllTo(ServiceLoader.load(StoreExecutorBuilder.class), org.eclipse.collections.impl.factory.Lists.mutable.empty());
+        MutableList<StoreExecutorBuilder> storeExecutorBuilders = Iterate.addAllTo(StoreExecutorBuilderLoader.extensions(), org.eclipse.collections.impl.factory.Lists.mutable.empty());
         ImmutableListMultimap<StoreType, StoreExecutorConfiguration> configurationsByType = Lists.immutable.with(storeExecutorConfigurations).groupBy(storeExecutorConfiguration -> storeExecutorConfiguration.getStoreType());
         ImmutableListMultimap<StoreType, StoreExecutorBuilder> buildersByType = Lists.immutable.withAll(storeExecutorBuilders).groupBy(storeExecutorBuilder -> storeExecutorBuilder.getStoreType());
 
@@ -490,6 +501,8 @@ public class PlanExecutor
         private Map<String, Object> params = Maps.mutable.empty();
         private MutableList<CommonProfile> profiles = Lists.mutable.empty();
         private String user;
+        private String sessionID;
+
 
         private ExecuteArgs(ExecuteArgsBuilder builder)
         {
@@ -503,6 +516,7 @@ public class PlanExecutor
             this.params.putAll(builder.params);
             this.profiles.addAll(builder.profiles);
             this.user = builder.user;
+            this.sessionID = sessionID;
         }
 
         public static ExecuteArgsBuilder newArgs()
@@ -522,6 +536,8 @@ public class PlanExecutor
         private Map<String, Object> params = Maps.mutable.empty();
         private MutableList<CommonProfile> profiles = Lists.mutable.empty();
         private String user;
+        private String sessionID;
+
 
         private ExecuteArgsBuilder()
         {
@@ -623,6 +639,12 @@ public class PlanExecutor
         public ExecuteArgsBuilder withStoreRuntimeContext(StoreType storeType, StoreExecutionState.RuntimeContext storeRuntimeContext)
         {
             this.storeRuntimeContexts.put(storeType, storeRuntimeContext);
+            return this;
+        }
+
+        public ExecuteArgsBuilder withSessionID(String sessionID)
+        {
+            this.sessionID = sessionID;
             return this;
         }
 

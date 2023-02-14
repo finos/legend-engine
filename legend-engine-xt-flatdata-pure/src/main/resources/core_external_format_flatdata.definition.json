@@ -1,5 +1,9 @@
 {
-    "name" : "core_external_format_flatdata",
-    "pattern" : "(meta::external::format::flatdata|meta::protocols::pure)(::.*)?",
-    "dependencies" : ["platform", "core"]
+  "name": "core_external_format_flatdata",
+  "pattern": "(meta::external::format::flatdata|meta::protocols::pure)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_functions",
+    "core"
+  ]
 }

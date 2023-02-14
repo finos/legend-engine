@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>3.35.2-SNAPSHOT</version>
+        <version>4.0.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -41,6 +41,7 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <includePluginDependencies>true</includePluginDependencies>
                     <mainClass>org.finos.legend.engine.external.shared.format.test.GeneratePlanDataClasses</mainClass>
                     <arguments>
                         <argument>meta::external::shared::format::executionPlan::tests::model::firm</argument>
@@ -49,6 +50,13 @@
                     </arguments>
                     <classpathScope>test</classpathScope>
                 </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-platform-dsl-diagram-java</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                </dependencies>
             </plugin>
 
             <plugin>
@@ -207,6 +215,11 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-json-javaPlatformBinding-pure</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-extension-store-relational</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- TEST -->

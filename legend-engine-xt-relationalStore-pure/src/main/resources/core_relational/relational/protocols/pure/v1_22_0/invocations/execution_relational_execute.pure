@@ -31,6 +31,7 @@ import meta::pure::milestoning::*;
 import meta::alloy::metadataServer::*;
 import meta::relational::milestoning::*;
 import meta::relational::mapping::*;
+import meta::relational::metamodel::*;
 
 function meta::protocols::pure::v1_22_0::invocation::execution::execute::processTDSResult(r:meta::protocols::pure::v1_22_0::metamodel::invocation::execution::execute::RelationalTDSResult[1], extensions:meta::pure::extension::Extension[*]) : Pair<List<Any>,List<Activity>>[1]
 {
@@ -86,10 +87,10 @@ function meta::protocols::pure::v1_22_0::invocation::execution::execute::process
    let retClass = $builder.class->pathToElement()->cast(@Class<Any>);
 
    let setImplementations = $r.builder->cast(@meta::protocols::pure::v1_22_0::metamodel::invocation::execution::execute::ClassBuilder).classMappings.setImplementationId->map(
-                                             s:String[1]|$m.classMappingById($s)
+                                             s:String[1]|$m->classMappingById($s)
                                           )->cast(@RootRelationalInstanceSetImplementation);
 
-   let setImplMap = $setImplementations->map(set | pair($set.id, pair($set, meta::pure::milestoning::getTemporalMilestoningStrategy($set.class)->isNotEmpty() && meta::pure::milestoning::getTemporalMilestoningStrategy($set.class)->toOne()->meta::pure::milestoning::expandToSingleTemporalStrategies()->forAll(s| $s->meta::relational::milestoning::relationalElementCanSupportStrategy($set.mainTable())))))->newMap();
+   let setImplMap = $setImplementations->map(set | pair($set.id, pair($set, meta::pure::milestoning::getTemporalMilestoningStrategy($set.class)->isNotEmpty() && meta::pure::milestoning::getTemporalMilestoningStrategy($set.class)->toOne()->meta::pure::milestoning::expandToSingleTemporalStrategies()->forAll(s| $s->meta::relational::milestoning::relationalElementCanSupportStrategy($set->mainTable())))))->newMap();
 
    let exeCtx = if($context->isEmpty(), | ^ExecutionContext(), | $context->toOne());
    let precas =  $setImplementations->map(set | pair($set.id, precaForRelationalSetImpl($set, $m, $pureRuntime, $exeCtx, $extensions)))->newMap();
@@ -157,7 +158,7 @@ function meta::protocols::pure::v1_22_0::invocation::execution::execute::process
 
 function meta::protocols::pure::v1_22_0::invocation::execution::execute::generateAlloyObjectReference(mapping:Mapping[1], rootSetId:String[1], setId:String[1], runtime:Runtime[1], pkMap:Map<String, Any>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_22_0::metamodel::objectReference::AlloyObjectReference[1]
 {
-   let sets                 = $mapping.classMappingById($rootSetId)->resolveOperation($mapping);
+   let sets                 = $mapping->classMappingById($rootSetId)->resolveOperation($mapping);
    assert($sets->size() >= 1, | 'No Set Implementation found for setId : ' + $rootSetId + ', in mapping : ' + $mapping->elementToPath());
 
    let set                  = $sets->filter(s | $s.id == $setId)->toOne();
@@ -247,7 +248,7 @@ function meta::protocols::pure::v1_22_0::invocation::execution::execute::transfo
 
 function <<access.private>> meta::protocols::pure::v1_22_0::invocation::execution::execute::precaForRelationalSetImpl(setImplementation:RootRelationalInstanceSetImplementation[1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], extensions:meta::pure::extension::Extension[*]):RelationalSetImplPrecalc[1]
 {
-   let propertyMappings = $setImplementation.allPropertyMappings()
+   let propertyMappings = $setImplementation->allPropertyMappings()
                                     ->filter(pm|$pm.localMappingProperty==false &&
                                                 $pm.property->genericType().typeArguments->at(1).rawType->toOne()->instanceOf(meta::pure::metamodel::type::DataType)
                                     );
@@ -284,11 +285,11 @@ function <<access.private>> meta::protocols::pure::v1_22_0::invocation::executio
                                       extensions = $extensions
                                    ),
       pks = if($setImplementation->meta::relational::functions::pureToSqlQuery::getGroupBy()->isEmpty() && ($setImplementation->meta::relational::functions::pureToSqlQuery::getDistinct()->isEmpty() || $setImplementation->meta::relational::functions::pureToSqlQuery::getDistinct()->toOne() == false),
-               | $setImplementation.resolvePrimaryKey()->map(pk | ^RelationalSetPrimaryKey(element = $pk, type = $pk->meta::relational::functions::typeInference::inferRelationalType())),
+               | $setImplementation->resolvePrimaryKey()->map(pk | ^RelationalSetPrimaryKey(element = $pk, type = $pk->meta::relational::functions::typeInference::inferRelationalType())),
                | []),
       sourceConnection = $runtime->connectionByElement($setImplementation->meta::pure::router::clustering::getResolvedStore($mapping)->toOne())->toOne(),
       propMap = $ps,
-      addMilestoningProperties = meta::pure::milestoning::getTemporalMilestoningStrategy($setImplementation.class)->isNotEmpty() && meta::pure::milestoning::getTemporalMilestoningStrategy($setImplementation.class)->toOne()->meta::pure::milestoning::expandToSingleTemporalStrategies()->forAll(s| $s->meta::relational::milestoning::relationalElementCanSupportStrategy($setImplementation.mainTable()))
+      addMilestoningProperties = meta::pure::milestoning::getTemporalMilestoningStrategy($setImplementation.class)->isNotEmpty() && meta::pure::milestoning::getTemporalMilestoningStrategy($setImplementation.class)->toOne()->meta::pure::milestoning::expandToSingleTemporalStrategies()->forAll(s| $s->meta::relational::milestoning::relationalElementCanSupportStrategy($setImplementation->mainTable()))
    );
 }
 

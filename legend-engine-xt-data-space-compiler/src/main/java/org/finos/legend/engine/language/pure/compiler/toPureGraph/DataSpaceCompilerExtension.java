@@ -44,6 +44,12 @@ public class DataSpaceCompilerExtension implements CompilerExtension
     protected final MutableMap<String, Root_meta_pure_metamodel_dataSpace_DataSpace> dataSpacesIndex = Maps.mutable.empty();
 
     @Override
+    public CompilerExtension build()
+    {
+        return new DataSpaceCompilerExtension();
+    }
+
+    @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
         return Collections.singletonList(Processor.newProcessor(

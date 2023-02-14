@@ -45,7 +45,7 @@ function <<access.private>> meta::pure::router::store::routing::processClass(c:C
    let runtime      = $strategy.runtime;
    
    let state        = ^$s(depth = $s.depth + $c->varToString());
-   let classMapping = if($strategy.toChooseSet->isEmpty(), |$mapping.rootClassMappingByClass($c)->potentiallyResolveOperation($mapping), |$strategy.toChooseSet);
+   let classMapping = if($strategy.toChooseSet->isEmpty(), |$mapping->rootClassMappingByClass($c)->potentiallyResolveOperation($mapping), |$strategy.toChooseSet);
    // Possible when the mapping is 'embedded'
    if ($classMapping->isEmpty(),
       | print(if($debug.debug,|$debug.space+'~>C) ('+$state.routingStrategy->cast(@StoreMappingRoutingStrategy).sets->size()->toString()+') '+$state.value->toOne()->toString()+'\n',|''));

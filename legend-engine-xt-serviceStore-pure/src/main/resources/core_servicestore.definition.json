@@ -1,5 +1,13 @@
 {
-  "name" : "core_servicestore",
-  "pattern" : "(meta::external::store::service|meta::protocols::pure)(::.*)?",
-  "dependencies" : ["platform", "core", "core_external_format_json"]
+  "name": "core_servicestore",
+  "pattern": "(meta::external::store::service|meta::protocols::pure)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_functions",
+    "platform_dsl_graph",
+    "platform_dsl_path",
+    "platform_dsl_mapping",
+    "core",
+    "core_external_format_json"
+  ]
 }

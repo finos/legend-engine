@@ -23,6 +23,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.ServiceStoreEmbeddedDataCompiler;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
@@ -32,12 +33,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.connection.ServiceStoreConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.RootServiceStoreClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceStore;
-import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_ServiceStore;
-import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_ServiceStore_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_runtime_ServiceStoreConnection;
-import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_runtime_ServiceStoreConnection_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
@@ -47,6 +43,12 @@ import java.util.List;
 
 public class ServiceStoreCompilerExtension implements IServiceStoreCompilerExtension
 {
+    @Override
+    public CompilerExtension build()
+    {
+        return new ServiceStoreCompilerExtension();
+    }
+
     @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
@@ -90,7 +92,7 @@ public class ServiceStoreCompilerExtension implements IServiceStoreCompilerExten
     }
 
     @Override
-    public List<Function2<Connection, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection>> getExtraConnectionValueProcessors()
+    public List<Function2<Connection, CompileContext, Root_meta_pure_runtime_Connection>> getExtraConnectionValueProcessors()
     {
         return Lists.mutable.with(
                 (connectionValue, context) ->

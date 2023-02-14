@@ -1,5 +1,13 @@
 {
-    "name" : "core_persistence",
-    "pattern" : "(meta::pure::persistence)(::.*)?",
-    "dependencies" : ["platform", "core", "core_relational"]
+  "name": "core_persistence",
+  "pattern": "(meta::pure::persistence)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_functions",
+    "platform_dsl_mapping",
+    "platform_dsl_graph",
+    "platform_store_relational",
+    "core",
+    "core_relational"
+  ]
 }

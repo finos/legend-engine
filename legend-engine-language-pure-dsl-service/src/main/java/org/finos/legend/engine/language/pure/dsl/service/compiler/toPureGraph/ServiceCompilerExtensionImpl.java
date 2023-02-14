@@ -25,6 +25,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandlerRegistrationInfo;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
@@ -75,6 +76,12 @@ import java.util.stream.Collectors;
 
 public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
 {
+    @Override
+    public CompilerExtension build()
+    {
+        return new ServiceCompilerExtensionImpl();
+    }
+
     @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {

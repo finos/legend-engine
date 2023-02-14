@@ -33,26 +33,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_pure_data_DataElement;
-import org.finos.legend.pure.generated.Root_meta_pure_data_DataElement_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_mapping_Mapping_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_Profile_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_Stereotype_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_Tag_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_TaggedValue_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_ConcreteFunctionDefinition_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_relationship_Association_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_section_SectionIndex;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_section_SectionIndex_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Enum_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Enumeration_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Measure_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableConnection;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableConnection_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime_Impl;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
@@ -296,7 +277,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         metamodel._name(packageableConnection.name)._package(pack);
         pack._childrenAdd(metamodel);
         // NOTE: the whole point of this processing is to put the Pure Connection in an index
-        final org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection connection = packageableConnection.connectionValue.accept(new ConnectionFirstPassBuilder(this.context));
+        final Root_meta_pure_runtime_Connection connection = packageableConnection.connectionValue.accept(new ConnectionFirstPassBuilder(this.context));
         this.context.pureModel.connectionsIndex.put(this.context.pureModel.buildPackageString(packageableConnection._package, packageableConnection.name), connection);
         return metamodel;
     }

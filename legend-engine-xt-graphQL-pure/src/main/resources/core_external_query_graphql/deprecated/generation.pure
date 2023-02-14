@@ -37,19 +37,19 @@ Class <<doc.deprecated>> meta::external::query::graphQL::generation::GraphQLOutp
 function <<doc.deprecated>> meta::external::query::graphQL::generation::generateGraphQL(config: GraphQLConfig[1]): GraphQLOutput[*]
 {
    $config.scopeElements->filter(e| !$e->instanceOf(Package))->map(e|assert($e->instanceOf(Type),' GraphQL generation of ' + $e->type().name->toOne()+ ' is not currently supported. Tried to generate GraphQL for '+ $e->elementToPath()) ;);
-   let scopeElements = $config.allPackageScopeElements()->filter(p|$p->instanceOf(Class))->cast(@Class<Any>);
-   $scopeElements->map(c| $config->meta::external::query::graphQL::generation::generateGraphQLFromPure($c));
+   let scopeElements = $config.allPackageScopeElements()->filter(p|$p->instanceOf(Class) || $p->instanceOf(Enumeration));
+   $scopeElements->map(e| $config->meta::external::query::graphQL::generation::generateGraphQLFromPure($e));
 }
 
-function <<doc.deprecated>> meta::external::query::graphQL::generation::generateGraphQLFromPure(config: GraphQLConfig[1], class: Class<Any>[1]): GraphQLOutput[*]
+function <<doc.deprecated>> meta::external::query::graphQL::generation::generateGraphQLFromPure(config: GraphQLConfig[1], pe: PackageableElement[1]): GraphQLOutput[*]
 {
-   let content = meta::external::query::graphQL::binding::fromPure::sdl::transformPureToGraphQLSDL($config.allPackageScopeElements())
+   let content = meta::external::query::graphQL::binding::fromPure::sdl::transformPureToGraphQLSDL([$pe])
                   ->map(x|$x->meta::external::query::graphQL::serialization::graphQLtoString())
                   ->joinStrings('\n');
    ^GraphQLOutput
    (
         content=$content,
-        fileName=$class->elementToPath()->pathToFileName('graphql'),
+        fileName=$pe->elementToPath()->pathToFileName('graphql'),
         format='text'
    );
 }

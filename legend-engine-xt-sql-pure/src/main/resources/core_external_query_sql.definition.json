@@ -1,5 +1,12 @@
 {
-  "name" : "core_external_query_sql",
-  "pattern" : "(meta::external::query::sql)(::.*)?",
-  "dependencies" : ["platform", "core", "core_external_compiler", "core_external_query_sql_metamodel"]
+  "name": "core_external_query_sql",
+  "pattern": "(meta::external::query::sql)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_functions",
+    "platform_dsl_mapping",
+    "core",
+    "core_external_compiler",
+    "core_external_query_sql_metamodel"
+  ]
 }

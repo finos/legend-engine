@@ -387,7 +387,7 @@ function meta::relational::functions::sqlQueryToString::indent(d:Format[1]):Form
 
 function meta::relational::functions::sqlQueryToString::processSelectSQLQuery(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
 {
-   if ($s.columns->isEmpty() && !$s.data->isEmpty() && $s.data.alias.relationalElement->toOne()->instanceOf(Union) && $s.data.children->isEmpty(),
+   if ($s.columns->isEmpty() && !$s.data->isEmpty() && $s.data.alias.relationalElement->toOne()->instanceOf(Union) && $s.data->map(x|$x->children())->isEmpty(),
       | $s.data.alias.relationalElement->toOne()->processOperation($sgc.dbConfig, $sgc.format->indent(), $sgc.config, $sgc.extensions),
       | $sgc.dbConfig.selectSQLQueryProcessor($s, $sgc, $isSubSelect)
    );
@@ -523,7 +523,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::isOptionalPlaceHolder(v:VarPlaceHolder[1]):Boolean[1]
 {
-   $v.multiplicity->isNotEmpty() && eq($v.multiplicity->toOne()->meta::pure::functions::multiplicity::getLowerBound(), 0);
+   $v.multiplicity->isNotEmpty() && eq($v.multiplicity->toOne()->meta::pure::functions::meta::getLowerBound(), 0);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::isCollectionPlaceHolder(v:VarPlaceHolder[1]):Boolean[1]

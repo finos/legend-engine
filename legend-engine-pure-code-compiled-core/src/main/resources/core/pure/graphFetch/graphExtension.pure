@@ -303,7 +303,7 @@ function meta::pure::graphFetch::calculateSourceTree(tree:RootGraphFetchTree<Any
    let replaced = $tree->replaceQualifiedPropertiesWithRequiredProperties();
    
    let rootSetImplementation = $tree->match([r:RoutedRootGraphFetchTree<Any>[1]|$r.sets->toOne(),
-                                             r:RootGraphFetchTree<Any>[1]|$mapping.rootClassMappingByClass($replaced.class)]);
+                                             r:RootGraphFetchTree<Any>[1]|$mapping->rootClassMappingByClass($replaced.class)]);
                                   
    assert($rootSetImplementation->isNotEmpty(), |'Mapping ' + $mapping->elementToPath() + ' does not map class from tree: ' + $replaced.class->elementToPath());
    
@@ -357,8 +357,8 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
          let childSetImpls = $returnType->match([
             {c:Class<Any>[1]|
                let childSIs = $tgtPgft->match([
-                  r:RoutedPropertyGraphFetchTree[1] | if($r.sets->isNotEmpty(), |$r.sets, |$setImplementation.parent.rootClassMappingByClass($c)),
-                  r:PropertyGraphFetchTree[1]       | $setImplementation.parent.rootClassMappingByClass($c)
+                  r:RoutedPropertyGraphFetchTree[1] | if($r.sets->isNotEmpty(), |$r.sets, |$setImplementation.parent->rootClassMappingByClass($c)),
+                  r:PropertyGraphFetchTree[1]       | $setImplementation.parent->rootClassMappingByClass($c)
                ]);
 
                let childSIsResolved = $childSIs->map(childSI|

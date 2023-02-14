@@ -1,5 +1,10 @@
 {
-  "name" : "core_external_language_daml",
-  "pattern" : "(meta::external::language::daml)(::.*)?",
-  "dependencies" : ["platform", "core", "core_external_language_haskell"]
+  "name": "core_external_language_daml",
+  "pattern": "(meta::external::language::daml)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_functions",
+    "core",
+    "core_external_language_haskell"
+  ]
 }

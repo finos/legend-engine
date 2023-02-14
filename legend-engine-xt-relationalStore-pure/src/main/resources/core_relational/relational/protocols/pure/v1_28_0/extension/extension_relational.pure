@@ -23,6 +23,7 @@ import meta::protocols::pure::v1_28_0::invocation::execution::execute::*;
 import meta::relational::mapping::*;
 import meta::pure::mapping::*;
 import meta::protocols::pure::v1_28_0::transformation::fromPureGraph::*;
+import meta::relational::metamodel::*;
 
 function meta::protocols::pure::v1_28_0::extension::getRelationalExtension(type:String[1]):meta::pure::extension::SerializerExtension[1]
 {
@@ -189,7 +190,7 @@ function meta::protocols::pure::v1_28_0::extension::getRelationalExtension():met
                                                                                                     name = $c.name,
                                                                                                     doc = $c.documentation,
                                                                                                     type = $c.type->toOne()->elementToPath(),
-                                                                                                    enumMapping = if($c.enumMappingId->isEmpty(),|[],|meta::protocols::pure::v1_28_0::transformation::fromPureGraph::executionPlan::transformEnumMapping($mapping.enumerationMappingByName($c.enumMappingId->toOne())->toOne())),
+                                                                                                    enumMapping = if($c.enumMappingId->isEmpty(),|[],|meta::protocols::pure::v1_28_0::transformation::fromPureGraph::executionPlan::transformEnumMapping($mapping->enumerationMappingByName($c.enumMappingId->toOne())->toOne())),
                                                                                                     relationalType = $c.sourceDataType->match(
                                                                                                        [
                                                                                                           d:meta::relational::metamodel::datatype::DataType[0]|[],
@@ -216,9 +217,9 @@ function meta::protocols::pure::v1_28_0::extension::getRelationalExtension():met
                                                    rsi: RootRelationalInstanceSetImplementation[1] |
                                                                      // Main Store
                                                                      let mainTableAlias = $rsi.mainTableAlias;
-                                                                     let mainStore = if ($mainTableAlias.database->isEmpty(), | $rsi.mainTable.schema.database, | $mainTableAlias.database->toOne());
+                                                                     let mainStore = if ($mainTableAlias.database->isEmpty(), | $rsi->mainTable().schema.database, | $mainTableAlias.database->toOne());
                                                                      // Filter
-                                                                     let filter = $rsi.resolveFilter();
+                                                                     let filter = $rsi->resolveFilter();
                                                                      let fromFilter = $filter.database;
                                                                      let fromFilterOpertation = $filter.filter.operation->meta::relational::functions::pureToSqlQuery::extractStore();
                                                                      let fromFilterJoins = $filter.joinTreeNode->map(x|$x->meta::relational::functions::pureToSqlQuery::flatten()).database;

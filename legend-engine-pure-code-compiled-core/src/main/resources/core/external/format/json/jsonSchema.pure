@@ -849,7 +849,7 @@ function <<access.private>> meta::json::schema::generalizations( class:Class<Any
 function <<access.private>> meta::json::schema::shouldCreateArrayProperty( property:Property<Nil,Any|*>[1] ) : Boolean[1]
 {
    ( !$property.multiplicity->meta::pure::functions::multiplicity::isZeroOne()
-   && !$property.multiplicity->meta::pure::functions::multiplicity::isToOne()  || $property->hasStereotype('array',JSONSchemaTypeExtension) );
+   && !$property.multiplicity->meta::pure::functions::meta::isToOne()  || $property->hasStereotype('array',JSONSchemaTypeExtension) );
 }
 
 function <<access.private>> meta::json::schema::createProperty( property : Property<Nil,Any|*>[1], root:Class<Any>[0..1],constraintHasType:Boolean[1] ,constraint:JSONObject[*], constraintHasRef:Boolean[1], config:JSONSchemaConfigInternal[1]) : JSONKeyValue[1]

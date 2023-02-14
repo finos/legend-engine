@@ -14,68 +14,15 @@
 
 import meta::pure::profiles::*;
 
-function <<test.Test>> meta::pure::functions::math::tests::trigonometry::testSine():Boolean[1]
-{
-   assertEq(0.0, sin(0));
-   assertEqWithinTolerance(0.841470984807, sin(1), 0.000000000001);
-   assertEqWithinTolerance(0.997494986604, sin(1.5), 0.000000000001);
-   assertEqWithinTolerance(0.841470984807, sin_Number_1__Float_1_->eval(1), 0.000000000001);
-}
 
-function <<test.Test>> meta::pure::functions::math::tests::trigonometry::testCosine():Boolean[1]
-{
-   assertEq(1.0, cos(0));
-   assertEqWithinTolerance(0.540302305868, cos(-1), 0.000000000001);
-   assertEqWithinTolerance(0.070737201667, cos(-1.5), 0.000000000001);
-   assertEqWithinTolerance(0.540302305868, cos_Number_1__Float_1_->eval(1), 0.000000000001);
-}
 
-function <<test.Test>> meta::pure::functions::math::tests::trigonometry::testTangent():Boolean[1]
-{
-   assertEq(0.0, tan(0));
-   assertEqWithinTolerance(-2.185039863262, tan(2), 0.000000000001);
-   assertEqWithinTolerance(-2.185039863262, tan_Number_1__Float_1_->eval(2), 0.000000000001);
-}
 
-function <<test.Test>> meta::pure::functions::math::tests::trigonometry::testArcSine():Boolean[1]
-{
-   assertEq(0.0, asin(0));
-   assertEqWithinTolerance(1.570796326794, asin(1), 0.000000000001);
-   assertEqWithinTolerance(-0.523598775598, asin(-0.5), 0.000000000001);
-   assertEqWithinTolerance(1.570796326794, asin_Number_1__Float_1_->eval(1), 0.000000000001);
-}
 
-function <<test.Test>> meta::pure::functions::math::tests::trigonometry::testArcCosine():Boolean[1]
-{
-   assertEqWithinTolerance(1.570796326794, acos(0), 0.000000000001);
-   assertEqWithinTolerance(3.141592653589, acos(-1), 0.000000000001);
-   assertEqWithinTolerance(1.047197551196, acos(0.5), 0.000000000001);
-   assertEqWithinTolerance(1.047197551196, acos_Number_1__Float_1_->eval(0.5), 0.000000000001);
-}
 
-function <<test.Test>> meta::pure::functions::math::tests::trigonometry::testArcTangent():Boolean[1]
-{
-   assertEq(0.0, atan(0));
-   assertEqWithinTolerance(0.982793723247, atan(1.5), 0.000000000001);
-   assertEqWithinTolerance(1.560796660108, atan(100), 0.000000000001);
-   assertEqWithinTolerance(1.560796660108, atan_Number_1__Float_1_->eval(100), 0.000000000001);
-}
 
-function <<test.Test>> meta::pure::functions::math::tests::trigonometry::testArcTangent2():Boolean[1]
-{
-   assertEq(0.0, atan2(0, 1));
-   assertEqWithinTolerance(1.570796326794, atan2(1, 0), 0.000000000001);
-   assertEqWithinTolerance(0.141897054604, atan2(0.5, 3.5), 0.000000000001);
-   assertEqWithinTolerance(1.570796326794, atan2_Number_1__Number_1__Float_1_->eval(1,0), 0.000000000001);
-}
 
-function <<test.Test>> meta::pure::functions::math::tests::trigonometry::testSquareRoot():Boolean[1]
-{
-   assertEq(0.0, sqrt(0));
-   assertEq(3.0, sqrt(9));
-   assertEq(0.1, sqrt(0.01));
-   assertEq(3.0, sqrt_Number_1__Float_1_->eval(9));
-}
+
+
 
 function <<test.Test>> meta::pure::functions::math::tests::trigonometry::testCalculatingDistanceHaversine():Boolean[1]
 {

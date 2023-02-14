@@ -135,16 +135,16 @@ function meta::relational::functions::pureToSqlQuery::union::managePrimaryKeys(a
 {
    $allQueries->map(q|let offset = $allQueries->indexOf($q);
                       let setImpl = $setImpls->at($offset);
-                      let key = $q.columns->slice(0, $setImpl.resolvePrimaryKey()->size());
+                      let key = $q.columns->slice(0, $setImpl->resolvePrimaryKey()->size());
                       let sqlNull = ^Literal(value=^SQLNull());
                       let newKeys = $setImpls->map(s|if($s == $setImpl,
                                                           |$key,
                                                           |if($state.importDataFlow==true,
-                                                              |$s.resolvePrimaryKey()->map(p|
+                                                              |$s->resolvePrimaryKey()->map(p|
                                                                 let column = $p->cast(@TableAliasColumn).column;
                                                                 let relationalElement = if($state.importDataFlowImplementationCount->isEmpty(), |$column.type->getDefaultLiteralValue(), |$sqlNull);
                                                                 ^Alias(name='"'+$column.name+'_'+$setImpls->indexOf($s)->toString()+'"', relationalElement = $relationalElement);),
-                                                              |range(0, $s.resolvePrimaryKey()->size(), 1)->map(p| ^Alias(name='"pk_'+$p->toString()+'_'+$setImpls->indexOf($s)->toString()+'"', relationalElement = $sqlNull))
+                                                              |range(0, $s->resolvePrimaryKey()->size(), 1)->map(p| ^Alias(name='"pk_'+$p->toString()+'_'+$setImpls->indexOf($s)->toString()+'"', relationalElement = $sqlNull))
                                                            )
 
                                                       )
@@ -176,7 +176,7 @@ function meta::relational::functions::pureToSqlQuery::union::buildUnion(setImpls
 
    // Get FKs for importDataFlow OR from relationship
    let propertyMappingsInScope = if ($state.importDataFlow == true,
-                                    |$setImpls.allPropertyMappings()->filter(p|$p->instanceOf(RelationalPropertyMapping) && !$p.property->functionReturnType().rawType->toOne()->instanceOf(DataType))
+                                    |$setImpls->map(x|$x->allPropertyMappings())->filter(p|$p->instanceOf(RelationalPropertyMapping) && !$p.property->functionReturnType().rawType->toOne()->instanceOf(DataType))
                                                                ->cast(@RelationalPropertyMapping);
                                     ,
                                     |$relationalPropertyMappings
@@ -188,7 +188,7 @@ function meta::relational::functions::pureToSqlQuery::union::buildUnion(setImpls
    let allColumnsName = if(!$fullGet,|[],
                                    |$simpleAllQueries.select->map(q|let offset = $simpleAllQueries.select->indexOf($q);
                                                                     let setImpl = $setImpls->at($offset);
-                                                                    let vals = $q.columns->slice($setImpl.resolvePrimaryKey()->size(), $q.columns->size());
+                                                                    let vals = $q.columns->slice($setImpl->resolvePrimaryKey()->size(), $q.columns->size());
                                                                     $vals->cast(@Alias).name;
                                                                  )->removeDuplicates()
                         );
@@ -206,7 +206,7 @@ function meta::relational::functions::pureToSqlQuery::union::buildUnion(setImpls
    let queriesWithKeysManaged = $simpleAllQueries.select->managePrimaryKeys($setImpls, $state);
    let allQueries = $simpleAllQueries.select->map(q|let offset = $simpleAllQueries.select->indexOf($q);
                                                     let setImpl = $setImpls->at($offset);
-                                                    let vals = $q.columns->slice($setImpl.resolvePrimaryKey()->size(), $q.columns->size())->cast(@Alias);
+                                                    let vals = $q.columns->slice($setImpl->resolvePrimaryKey()->size(), $q.columns->size())->cast(@Alias);
                                                     let sqlNull = ^Literal(value=^SQLNull());
                                                     let newKeys = if ($fullGet  || $state.importDataFlow == true,
                                                                       |$queriesWithKeysManaged->at($offset).columns,
@@ -325,12 +325,12 @@ function meta::relational::functions::pureToSqlQuery::union::findFkListForEachSe
 
    if ($setImplementationId->size() > 1,
        |   $setImplementationId->map(setId|let offset = $setImplementationId->indexOf($setId);
-                                           let setImplementation = $mapping.classMappingById($setId)->match([r:RootRelationalInstanceSetImplementation[1]|$r,e:EmbeddedRelationalInstanceSetImplementation[1]|$e.setMappingOwner])->toOne();
-                                           let mainTable = $setImplementation.mainRelation();
+                                           let setImplementation = $mapping->classMappingById($setId)->match([r:RootRelationalInstanceSetImplementation[1]|$r,e:EmbeddedRelationalInstanceSetImplementation[1]|$e.setMappingOwner])->toOne();
+                                           let mainTable = $setImplementation->mainRelation();
                                            let cols = $propertyMappingBySetIds->get($setId).values.relationalOperationElement->cast(@RelationalOperationElementWithJoin).joinTreeNode
                                                                               ->extractTableAliasColumns()
                                                                               ->filter(a|$a.alias.relationalElement == $mainTable).column->removeDuplicates();
-                                           let r = $cols->map(c|let rpm = $setImplementation.allPropertyMappings()->filter(c|$c->instanceOf(RelationalPropertyMapping))
+                                           let r = $cols->map(c|let rpm = $setImplementation->allPropertyMappings()->filter(c|$c->instanceOf(RelationalPropertyMapping))
                                                                                              ->filter(pm|let roe = $pm->cast(@RelationalPropertyMapping).relationalOperationElement;
                                                                                                          $roe->instanceOf(TableAliasColumn) && $roe->cast(@TableAliasColumn).column == $c;
                                                                                                      );
@@ -420,13 +420,13 @@ function meta::relational::functions::pureToSqlQuery::union::buildSQLQueryOutMan
 
    // New Queries
    let targetSetImplementationIds = $relationalPropertyMappings.targetSetImplementationId->removeDuplicates();
-   let targetSetImplementations = $targetSetImplementationIds->map(t|$state.mapping.classMappingById($t)->cast(@RootRelationalInstanceSetImplementation)->toOne());
+   let targetSetImplementations = $targetSetImplementationIds->map(t|$state.mapping->classMappingById($t)->cast(@RootRelationalInstanceSetImplementation)->toOne());
 
    print(if(!$context.debug, |'', | $context.space+'  - sourceSetImplIds: ['+$sourceSetImplementationIds->joinStrings(',')+']\n'+$context.space+'  - targetSetImplIds: ['+$targetSetImplementationIds->joinStrings(',')+']\n'));
 
    print(if(!$context.debug, |'', | $context.space+'  - build new Union (using processGetAll)\n'));
    let newTargetOperation = if ($targetSetImplementations->size() == 1,
-                     | $targetSetImplementations->at(0).mainRelation,
+                     | $targetSetImplementations->at(0)->mainRelation(),
                      | buildUnion($targetSetImplementations, $relationalPropertyMappings, true, false, [], $nodeId, $state, $context, $extensions)
                );
 
@@ -477,8 +477,8 @@ function meta::relational::functions::pureToSqlQuery::union::buildUnionJoin(rela
                                                                                                                                                              $targetRelation->findMainNamedRelation(),
                                                                                                                                                              $join.target,
                                                                                                                                                              $processingSide)->cast(@Operation);
-                                                                                             let sourceJoinAlias = if($processingSide.source,| $reprocessedSourceAlias,| $join.otherTable($targetRelation->cast(@NamedRelation))->toOne());
-                                                                                             let targetJoinAlias = if($processingSide.target,| $targetAlias,| $join.otherTable($sourceRelation->cast(@NamedRelation))->toOne());
+                                                                                             let sourceJoinAlias = if($processingSide.source,| $reprocessedSourceAlias,| $join->otherTable($targetRelation->cast(@NamedRelation))->toOne());
+                                                                                             let targetJoinAlias = if($processingSide.target,| $targetAlias,| $join->otherTable($sourceRelation->cast(@NamedRelation))->toOne());
                                                                                              ^$join(name = $newOperation->buildUniqueName(false, $extensions),
                                                                                                     operation = $newOperation,
                                                                                                     target = $targetJoinAlias,
@@ -534,8 +534,8 @@ function meta::relational::functions::pureToSqlQuery::union::addPkForAggregation
    let allQueries = $currentUnion.queries;
    let allQueriesWithAddedPks = $setImpls->size()->range()->map(setIndex | let currentSetImpl = $setImpls->at($setIndex);
                                                                            let query = $allQueries->at($setIndex);
-                                                                           let currentSetImplPk = $currentSetImpl.resolvePrimaryKey()->cast(@TableAliasColumn);
-                                                                           let valid = if ($currentSetImplPk->isEmpty(), |  fail('There is no primary key defined on the table ' + $currentSetImpl.mainTable->toOne().name + '. A primary key must be defined in the table definition in PURE to use this feature'); false; ,| true);
+                                                                           let currentSetImplPk = $currentSetImpl->resolvePrimaryKey()->cast(@TableAliasColumn);
+                                                                           let valid = if ($currentSetImplPk->isEmpty(), |  fail('There is no primary key defined on the table ' + $currentSetImpl->mainTable()->toOne().name + '. A primary key must be defined in the table definition in PURE to use this feature'); false; ,| true);
                                                                            let queryColumns = $query.columns;
                                                                            let newColumns = $currentSetImplPk->size()->range()->map(pkIndex | let pkCol = $currentSetImplPk->at($pkIndex);
                                                                                                                                               let propName = if($state.importDataFlow == true, | '"'+$pkCol.column.name+'_'+$setIndex->toString()+'"', | '"pk_'+$pkIndex->toString()+'_'+$setIndex->toString()+'"');
@@ -549,7 +549,7 @@ function meta::relational::functions::pureToSqlQuery::union::addPkForAggregation
                                                                                   let queryWithPk = $allQueriesWithAddedPks->at($setIndex);
                                                                                   let queryWithManagedPk = $allQueriesWithManagedPks->at($setIndex);
                                                                                   let queryWithManagedPkColumnNames = $queryWithManagedPk.columns->cast(@Alias).name;
-                                                                                  ^$queryWithManagedPk(columns = $queryWithManagedPk.columns->concatenate($queryWithPk.columns->slice($currentSetImpl.resolvePrimaryKey()->size(), $queryWithPk.columns->size())->filter(col | !$queryWithManagedPkColumnNames->contains($col->cast(@Alias).name)))););
+                                                                                  ^$queryWithManagedPk(columns = $queryWithManagedPk.columns->concatenate($queryWithPk.columns->slice($currentSetImpl->resolvePrimaryKey()->size(), $queryWithPk.columns->size())->filter(col | !$queryWithManagedPkColumnNames->contains($col->cast(@Alias).name)))););
 
    let newAlias = ^$currentAlias(relationalElement = ^$currentUnion(queries = $queriesWithPksAndAddnlColumns));
    let newNode = ^$currentTreeNode(alias = $newAlias);
@@ -665,8 +665,8 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::union::
    let lists = $relationalPropertyMappings->map(x | let joinTreeNode = $x->getJoinTreeNode()->toOne();
                                                     let flattenedJoinTreeNodes = $joinTreeNode->extractLine();
                                                     let sourceRelation = $x.sourceSetImplementationId->getRelation($mapping)->cast(@NamedRelation);
-                                                    let sourceAlias = $flattenedJoinTreeNodes->head().join->toOne().otherTable($sourceRelation)->toOne();
-                                                    $flattenedJoinTreeNodes->tail()->fold({x,a | $a->concatenate($x.join.otherTableFromAlias($a->last()->toOne()))}, $sourceAlias)->init()->map(x | pair($x.name, $x.relationalElement))->list();
+                                                    let sourceAlias = $flattenedJoinTreeNodes->head().join->toOne()->otherTable($sourceRelation)->toOne();
+                                                    $flattenedJoinTreeNodes->tail()->fold({x,a | $a->concatenate($x.join->otherTableFromAlias($a->last()->toOne()))}, $sourceAlias)->init()->map(x | pair($x.name, $x.relationalElement))->list();
    );
    let sortedLists = $lists->sort({x,y | $y.values->size() - $x.values->size()});
    $sortedLists->tail()->fold({x,a | $a && $x.values->isOrderedSubsetOf($sortedLists->head().values)}, true);
