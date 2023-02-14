@@ -14,68 +14,69 @@
 
 package org.finos.legend.engine.postgres.handler.legend;
 
-import java.sql.ParameterMetaData;
-import java.util.List;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
 import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
 
+import java.sql.ParameterMetaData;
+import java.util.List;
+
 public class LegendPreparedStatement implements PostgresPreparedStatement
 {
-  private final String query;
-  private final LegendExecutionClient client;
-  private Iterable<TDSRow> tdsRows;
-  private List<LegendColumn> columns;
+    private final String query;
+    private final LegendExecutionClient client;
+    private Iterable<TDSRow> tdsRows;
+    private List<LegendColumn> columns;
 
-  public LegendPreparedStatement(String query, LegendExecutionClient client)
-  {
-    this.query = query;
-    this.client = client;
-  }
+    public LegendPreparedStatement(String query, LegendExecutionClient client)
+    {
+        this.query = query;
+        this.client = client;
+    }
 
-  @Override
-  public void setObject(int i, Object o) throws Exception
-  {
-    throw new UnsupportedOperationException("not implemented");
-  }
+    @Override
+    public void setObject(int i, Object o) throws Exception
+    {
+        throw new UnsupportedOperationException("not implemented");
+    }
 
-  @Override
-  public PostgresResultSetMetaData getMetaData() throws Exception
-  {
-    return new LegendResultSetMetaData(client.getSchema(query));
-  }
+    @Override
+    public PostgresResultSetMetaData getMetaData() throws Exception
+    {
+        return new LegendResultSetMetaData(client.getSchema(query));
+    }
 
-  @Override
-  public ParameterMetaData getParameterMetaData() throws Exception
-  {
-    return null;
-  }
+    @Override
+    public ParameterMetaData getParameterMetaData() throws Exception
+    {
+        return null;
+    }
 
-  @Override
-  public void close() throws Exception
-  {
+    @Override
+    public void close() throws Exception
+    {
 
-  }
+    }
 
-  @Override
-  public void setMaxRows(int maxRows) throws Exception
-  {
+    @Override
+    public void setMaxRows(int maxRows) throws Exception
+    {
 
-  }
+    }
 
-  @Override
-  public boolean execute() throws Exception
-  {
-    Pair<List<LegendColumn>, Iterable<TDSRow>> schemaAndResult = client.getSchemaAndExecuteQuery(query);
-    columns = schemaAndResult.getOne();
-    tdsRows = schemaAndResult.getTwo();
-    return true;
-  }
+    @Override
+    public boolean execute() throws Exception
+    {
+        Pair<List<LegendColumn>, Iterable<TDSRow>> schemaAndResult = client.getSchemaAndExecuteQuery(query);
+        columns = schemaAndResult.getOne();
+        tdsRows = schemaAndResult.getTwo();
+        return true;
+    }
 
-  @Override
-  public PostgresResultSet getResultSet() throws Exception
-  {
-    return new LegendResultSet(tdsRows, columns);
-  }
+    @Override
+    public PostgresResultSet getResultSet() throws Exception
+    {
+        return new LegendResultSet(tdsRows, columns);
+    }
 }

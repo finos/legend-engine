@@ -14,41 +14,42 @@
 
 package org.finos.legend.engine.postgres.handler.legend;
 
-import java.sql.SQLException;
 import org.finos.legend.engine.postgres.Session;
-import org.finos.legend.engine.postgres.handler.SessionHandler;
 import org.finos.legend.engine.postgres.SessionsFactory;
+import org.finos.legend.engine.postgres.auth.User;
 import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
 import org.finos.legend.engine.postgres.handler.PostgresStatement;
-import org.finos.legend.engine.postgres.auth.User;
+import org.finos.legend.engine.postgres.handler.SessionHandler;
+
+import java.sql.SQLException;
 
 public class LegendSessionFactory implements SessionsFactory
 {
 
-  private LegendExecutionClient legendExecutionClient;
+    private LegendExecutionClient legendExecutionClient;
 
-  public LegendSessionFactory(LegendExecutionClient legendExecutionClient)
-  {
-    this.legendExecutionClient = legendExecutionClient;
-  }
-
-  @Override
-  public Session createSession(String defaultSchema, User authenticatedUser)
-      throws Exception
-  {
-    return new Session(new SessionHandler()
+    public LegendSessionFactory(LegendExecutionClient legendExecutionClient)
     {
-      @Override
-      public PostgresPreparedStatement prepareStatement(String query) throws SQLException
-      {
-        return new LegendPreparedStatement(query, legendExecutionClient);
-      }
+        this.legendExecutionClient = legendExecutionClient;
+    }
 
-      @Override
-      public PostgresStatement createStatement() throws SQLException
-      {
-        return new LegendStatement(legendExecutionClient);
-      }
-    });
-  }
+    @Override
+    public Session createSession(String defaultSchema, User authenticatedUser)
+            throws Exception
+    {
+        return new Session(new SessionHandler()
+        {
+            @Override
+            public PostgresPreparedStatement prepareStatement(String query) throws SQLException
+            {
+                return new LegendPreparedStatement(query, legendExecutionClient);
+            }
+
+            @Override
+            public PostgresStatement createStatement() throws SQLException
+            {
+                return new LegendStatement(legendExecutionClient);
+            }
+        });
+    }
 }

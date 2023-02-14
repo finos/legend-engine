@@ -14,35 +14,36 @@
 
 package org.finos.legend.engine.postgres.handler.legend;
 
-import java.util.List;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresStatement;
 
+import java.util.List;
+
 public class LegendStatement implements PostgresStatement
 {
 
-  private LegendExecutionClient client;
-  private Iterable<TDSRow> tdsRows;
-  private List<LegendColumn> columns;
+    private LegendExecutionClient client;
+    private Iterable<TDSRow> tdsRows;
+    private List<LegendColumn> columns;
 
-  public LegendStatement(LegendExecutionClient client)
-  {
-    this.client = client;
-  }
+    public LegendStatement(LegendExecutionClient client)
+    {
+        this.client = client;
+    }
 
-  @Override
-  public boolean execute(String query) throws Exception
-  {
-    Pair<List<LegendColumn>, Iterable<TDSRow>> schemaAndResult = client.getSchemaAndExecuteQuery(query);
-    columns = schemaAndResult.getOne();
-    tdsRows = schemaAndResult.getTwo();
-    return true;
-  }
+    @Override
+    public boolean execute(String query) throws Exception
+    {
+        Pair<List<LegendColumn>, Iterable<TDSRow>> schemaAndResult = client.getSchemaAndExecuteQuery(query);
+        columns = schemaAndResult.getOne();
+        tdsRows = schemaAndResult.getTwo();
+        return true;
+    }
 
-  @Override
-  public PostgresResultSet getResultSet() throws Exception
-  {
-    return new LegendResultSet(tdsRows, columns);
-  }
+    @Override
+    public PostgresResultSet getResultSet() throws Exception
+    {
+        return new LegendResultSet(tdsRows, columns);
+    }
 }

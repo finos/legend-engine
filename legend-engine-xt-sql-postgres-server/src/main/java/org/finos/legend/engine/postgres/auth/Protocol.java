@@ -17,20 +17,20 @@ package org.finos.legend.engine.postgres.auth;
 public enum Protocol
 {
 
-  POSTGRES("pg"),
-  HTTP("http"),
-  TRANSPORT("transport");
+    POSTGRES("pg"),
+    HTTP("http"),
+    TRANSPORT("transport");
 
-  private final String protocolName;
+    private final String protocolName;
 
-  Protocol(String protocolName)
-  {
-    this.protocolName = protocolName;
-  }
+    Protocol(String protocolName)
+    {
+        this.protocolName = protocolName;
+    }
 
-  @Override
-  public String toString()
-  {
-    return protocolName;
-  }
+    @Override
+    public String toString()
+    {
+        return protocolName;
+    }
 }

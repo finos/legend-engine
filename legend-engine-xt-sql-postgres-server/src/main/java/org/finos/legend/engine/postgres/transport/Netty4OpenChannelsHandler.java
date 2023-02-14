@@ -20,6 +20,8 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import org.slf4j.Logger;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,59 +29,58 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import org.slf4j.Logger;
 
 @ChannelHandler.Sharable
 public class Netty4OpenChannelsHandler extends
-    ChannelInboundHandlerAdapter /*implements Releasable*/
+        ChannelInboundHandlerAdapter /*implements Releasable*/
 {
 
-  final Set<Channel> openChannels = Collections.newSetFromMap(new ConcurrentHashMap<>());
-  /* final CounterMetric openChannelsMetric = new CounterMetric();
-   final CounterMetric totalChannelsMetric = new CounterMetric();
-*/
-  final Logger logger;
+    final Set<Channel> openChannels = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    /* final CounterMetric openChannelsMetric = new CounterMetric();
+     final CounterMetric totalChannelsMetric = new CounterMetric();
+  */
+    final Logger logger;
 
-  public Netty4OpenChannelsHandler(Logger logger)
-  {
-    this.logger = logger;
-  }
+    public Netty4OpenChannelsHandler(Logger logger)
+    {
+        this.logger = logger;
+    }
 
 
-  final ChannelFutureListener remover = new ChannelFutureListener()
-  {
+    final ChannelFutureListener remover = new ChannelFutureListener()
+    {
+        @Override
+        public void operationComplete(ChannelFuture future) throws Exception
+        {
+            boolean removed = openChannels.remove(future.channel());
+            if (removed)
+            {
+                // openChannelsMetric.dec();
+            }
+            if (logger.isTraceEnabled())
+            {
+                logger.trace("channel closed: {}", future.channel());
+            }
+        }
+    };
+
     @Override
-    public void operationComplete(ChannelFuture future) throws Exception
+    public void channelActive(ChannelHandlerContext ctx) throws Exception
     {
-      boolean removed = openChannels.remove(future.channel());
-      if (removed)
-      {
-        // openChannelsMetric.dec();
-      }
-      if (logger.isTraceEnabled())
-      {
-        logger.trace("channel closed: {}", future.channel());
-      }
-    }
-  };
+        if (logger.isTraceEnabled())
+        {
+            logger.trace("channel opened: {}", ctx.channel());
+        }
+        final boolean added = openChannels.add(ctx.channel());
+        if (added)
+        {
+            // openChannelsMetric.inc();
+            // totalChannelsMetric.inc();
+            ctx.channel().closeFuture().addListener(remover);
+        }
 
-  @Override
-  public void channelActive(ChannelHandlerContext ctx) throws Exception
-  {
-    if (logger.isTraceEnabled())
-    {
-      logger.trace("channel opened: {}", ctx.channel());
+        super.channelActive(ctx);
     }
-    final boolean added = openChannels.add(ctx.channel());
-    if (added)
-    {
-      // openChannelsMetric.inc();
-      // totalChannelsMetric.inc();
-      ctx.channel().closeFuture().addListener(remover);
-    }
-
-    super.channelActive(ctx);
-  }
 
  /*   public long numberOfOpenChannels() {
         return openChannelsMetric.count();
@@ -90,52 +91,52 @@ public class Netty4OpenChannelsHandler extends
     }*/
 
 
-  public void close()
-  {
-    try
+    public void close()
     {
-      closeChannels(openChannels);
-    }
-    catch (IOException e)
-    {
-      logger.trace("exception while closing channels", e);
-    }
-    openChannels.clear();
-  }
-
-
-  public static void closeChannels(final Collection<Channel> channels) throws IOException
-  {
-    IOException closingExceptions = null;
-    final List<ChannelFuture> futures = new ArrayList<>();
-    for (final Channel channel : channels)
-    {
-      try
-      {
-        if (channel != null && channel.isOpen())
+        try
         {
-          futures.add(channel.close());
+            closeChannels(openChannels);
         }
-      }
-      catch (Exception e)
-      {
-        if (closingExceptions == null)
+        catch (IOException e)
         {
-          closingExceptions = new IOException("failed to close channels");
+            logger.trace("exception while closing channels", e);
         }
-        closingExceptions.addSuppressed(e);
-      }
-    }
-    for (final ChannelFuture future : futures)
-    {
-      future.awaitUninterruptibly();
+        openChannels.clear();
     }
 
-    if (closingExceptions != null)
+
+    public static void closeChannels(final Collection<Channel> channels) throws IOException
     {
-      throw closingExceptions;
+        IOException closingExceptions = null;
+        final List<ChannelFuture> futures = new ArrayList<>();
+        for (final Channel channel : channels)
+        {
+            try
+            {
+                if (channel != null && channel.isOpen())
+                {
+                    futures.add(channel.close());
+                }
+            }
+            catch (Exception e)
+            {
+                if (closingExceptions == null)
+                {
+                    closingExceptions = new IOException("failed to close channels");
+                }
+                closingExceptions.addSuppressed(e);
+            }
+        }
+        for (final ChannelFuture future : futures)
+        {
+            future.awaitUninterruptibly();
+        }
+
+        if (closingExceptions != null)
+        {
+            throw closingExceptions;
+        }
     }
-  }
 
 
 }

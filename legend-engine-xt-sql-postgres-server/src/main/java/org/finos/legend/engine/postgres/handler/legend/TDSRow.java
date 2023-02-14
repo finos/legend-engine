@@ -16,5 +16,5 @@ package org.finos.legend.engine.postgres.handler.legend;
 
 public interface TDSRow
 {
-  String get(int columIndex);
+    String get(int columIndex);
 }

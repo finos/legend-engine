@@ -22,36 +22,36 @@
 package org.finos.legend.engine.postgres;
 
 import io.netty.channel.Channel;
-import java.util.List;
-import javax.annotation.Nullable;
 import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.types.PGType;
+
+import java.util.List;
 
 class ResultSetReceiver
 {
 
-  private final String query;
-  private final Channel channel;
-  private final List<PGType<?>> columnTypes;
+    private final String query;
+    private final Channel channel;
+    private final List<PGType<?>> columnTypes;
 
-  @Nullable
-  private final FormatCodes.FormatCode[] formatCodes;
 
-  private final long rowCount = 0;
+    private final FormatCodes.FormatCode[] formatCodes;
 
-  ResultSetReceiver(String query,
-      Channel channel,
-      List<PGType<?>> columnTypes,
-      @Nullable FormatCodes.FormatCode[] formatCodes)
-  {
-    this.query = query;
-    this.channel = channel;
-    this.columnTypes = columnTypes;
-    this.formatCodes = formatCodes;
-  }
+    private final long rowCount = 0;
 
-  public void sendResultSet(PostgresResultSet rs)
-  {
+    ResultSetReceiver(String query,
+                      Channel channel,
+                      List<PGType<?>> columnTypes,
+                      FormatCodes.FormatCode[] formatCodes)
+    {
+        this.query = query;
+        this.channel = channel;
+        this.columnTypes = columnTypes;
+        this.formatCodes = formatCodes;
+    }
 
-  }
+    public void sendResultSet(PostgresResultSet rs)
+    {
+
+    }
 }

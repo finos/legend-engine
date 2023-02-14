@@ -24,106 +24,88 @@ package org.finos.legend.engine.postgres.types;
 //import io.crate.types.Regproc;
 
 import io.netty.buffer.ByteBuf;
-import java.nio.charset.StandardCharsets;
-import javax.annotation.Nonnull;
 import org.slf4j.Logger;
+
+import java.nio.charset.StandardCharsets;
 
 public abstract class PGType<T>
 {
 
-  enum Type
-  {
-
-    BASE("b"),
-    COMPOSITE("c"),
-    ENUM("e"),
-    DOMAIN("d"),
-    PSEUDO("p"),
-    RANGE("r");
-
-    private final String code;
-
-    Type(String code)
+    enum Type
     {
-      this.code = code;
+
+        BASE("b"), COMPOSITE("c"), ENUM("e"), DOMAIN("d"), PSEUDO("p"), RANGE("r");
+
+        private final String code;
+
+        Type(String code)
+        {
+            this.code = code;
+        }
+
+        public String code()
+        {
+            return code;
+        }
     }
 
-    public String code()
+    enum TypeCategory
     {
-      return code;
-    }
-  }
 
-  enum TypeCategory
-  {
+        ARRAY("A"), BOOLEAN("B"), COMPOSITE("C"), DATETIME("D"), GEOMETRIC("G"), NETWORK("I"), NUMERIC("N"), PSEUDO("P"), RANGE("R"), STRING("S"), TIMESPAN("T"), USER_DEFINED_TYPES("U"), BIT_STRING("V"), UNKNOWN("X");
 
-    ARRAY("A"),
-    BOOLEAN("B"),
-    COMPOSITE("C"),
-    DATETIME("D"),
-    GEOMETRIC("G"),
-    NETWORK("I"),
-    NUMERIC("N"),
-    PSEUDO("P"),
-    RANGE("R"),
-    STRING("S"),
-    TIMESPAN("T"),
-    USER_DEFINED_TYPES("U"),
-    BIT_STRING("V"),
-    UNKNOWN("X");
+        private final String code;
 
-    private final String code;
+        TypeCategory(String code)
+        {
+            this.code = code;
+        }
 
-    TypeCategory(String code)
-    {
-      this.code = code;
+        public String code()
+        {
+            return code;
+        }
     }
 
-    public String code()
+    static final int INT32_BYTE_SIZE = Integer.SIZE / 8;
+    //private static final Logger LOGGER = LogManager.getLogger(PGType.class);
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(PGType.class);
+
+
+    private final int oid;
+    private final int typeLen;
+    private final int typeMod;
+    private final String typName;
+
+    PGType(int oid, int typeLen, int typeMod, String typName)
     {
-      return code;
+        this.oid = oid;
+        this.typeLen = typeLen;
+        this.typeMod = typeMod;
+        this.typName = typName;
     }
-  }
 
-  static final int INT32_BYTE_SIZE = Integer.SIZE / 8;
-  //private static final Logger LOGGER = LogManager.getLogger(PGType.class);
-  private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(PGType.class);
+    public int oid()
+    {
+        return oid;
+    }
 
+    public short typeLen()
+    {
+        return (short) typeLen;
+    }
 
-  private final int oid;
-  private final int typeLen;
-  private final int typeMod;
-  private final String typName;
+    public abstract int typArray();
 
-  PGType(int oid, int typeLen, int typeMod, @Nonnull String typName)
-  {
-    this.oid = oid;
-    this.typeLen = typeLen;
-    this.typeMod = typeMod;
-    this.typName = typName;
-  }
+    public int typeMod()
+    {
+        return typeMod;
+    }
 
-  public int oid()
-  {
-    return oid;
-  }
-
-  public short typeLen()
-  {
-    return (short) typeLen;
-  }
-
-  public abstract int typArray();
-
-  public int typeMod()
-  {
-    return typeMod;
-  }
-
-  public String typName()
-  {
-    return typName;
-  }
+    public String typName()
+    {
+        return typName;
+    }
 /*
 
     public Regproc typInput() {
@@ -159,80 +141,79 @@ public abstract class PGType<T>
     }
 */
 
-  public int typElem()
-  {
-    return 0;
-  }
-
-  public String typDelim()
-  {
-    return ",";
-  }
-
-  public abstract String typeCategory();
-
-  public abstract String type();
-
-  /**
-   * Write the value as text into the buffer.
-   * <p>
-   * Format:
-   * <pre>
-   *  | int32 len (excluding len itself) | byte<b>N</b> value onto the buffer
-   *  </pre>
-   *
-   * @return the number of bytes written. (4 (int32)  + N)
-   */
-  public int writeAsText(ByteBuf buffer, @Nonnull T value)
-  {
-    byte[] bytes = encodeAsUTF8Text(value);
-    buffer.writeInt(bytes.length);
-    buffer.writeBytes(bytes);
-    return INT32_BYTE_SIZE + bytes.length;
-  }
-
-  public T readTextValue(ByteBuf buffer, int valueLength)
-  {
-    byte[] bytes = new byte[valueLength];
-    buffer.readBytes(bytes);
-    try
+    public int typElem()
     {
-      return decodeUTF8Text(bytes);
+        return 0;
     }
-    catch (Throwable t)
+
+    public String typDelim()
     {
-      if (LOGGER.isWarnEnabled())
-      {
-        LOGGER.warn("decodeUTF8Text failed. input={} type={}",
-            new String(bytes, StandardCharsets.UTF_8), typName);
-      }
-      throw t;
+        return ",";
     }
-  }
 
-  /**
-   * Write the value as binary into the buffer.
-   * <p>
-   * Format:
-   * <pre>
-   *  | int32 len (excluding len itself) | byte<b>N</b> value onto the buffer
-   *  </pre>
-   *
-   * @return the number of bytes written. (4 (int32)  + N)
-   */
-  public abstract int writeAsBinary(ByteBuf buffer, @Nonnull T value);
+    public abstract String typeCategory();
 
-  public abstract T readBinaryValue(ByteBuf buffer, int valueLength);
+    public abstract String type();
+
+    /**
+     * Write the value as text into the buffer.
+     * <p>
+     * Format:
+     * <pre>
+     *  | int32 len (excluding len itself) | byte<b>N</b> value onto the buffer
+     *  </pre>
+     *
+     * @return the number of bytes written. (4 (int32)  + N)
+     */
+    public int writeAsText(ByteBuf buffer, T value)
+    {
+        byte[] bytes = encodeAsUTF8Text(value);
+        buffer.writeInt(bytes.length);
+        buffer.writeBytes(bytes);
+        return INT32_BYTE_SIZE + bytes.length;
+    }
+
+    public T readTextValue(ByteBuf buffer, int valueLength)
+    {
+        byte[] bytes = new byte[valueLength];
+        buffer.readBytes(bytes);
+        try
+        {
+            return decodeUTF8Text(bytes);
+        }
+        catch (Throwable t)
+        {
+            if (LOGGER.isWarnEnabled())
+            {
+                LOGGER.warn("decodeUTF8Text failed. input={} type={}", new String(bytes, StandardCharsets.UTF_8), typName);
+            }
+            throw t;
+        }
+    }
+
+    /**
+     * Write the value as binary into the buffer.
+     * <p>
+     * Format:
+     * <pre>
+     *  | int32 len (excluding len itself) | byte<b>N</b> value onto the buffer
+     *  </pre>
+     *
+     * @return the number of bytes written. (4 (int32)  + N)
+     */
+    public abstract int writeAsBinary(ByteBuf buffer, T value);
+
+    public abstract T readBinaryValue(ByteBuf buffer, int valueLength);
 
 
-  /**
-   * Return the UTF8 encoded text representation of the value
-   */
-  abstract byte[] encodeAsUTF8Text(@Nonnull T value);
+    /**
+     * Return the UTF8 encoded text representation of the value
+     */
+    abstract byte[] encodeAsUTF8Text(T value);
 
-  /**
-   * Convert a UTF8 encoded text representation into the actual value
-   */
-  abstract T decodeUTF8Text(byte[] bytes);
+    /**
+     * Convert a UTF8 encoded text representation into the actual value
+     */
+    abstract T decodeUTF8Text(byte[] bytes);
 
 }

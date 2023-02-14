@@ -22,7 +22,6 @@
 package org.finos.legend.engine.postgres;
 
 import java.nio.charset.StandardCharsets;
-import javax.annotation.Nullable;
 
 
 public class PGError
@@ -34,11 +33,11 @@ public class PGError
     private final PGErrorStatus status;
     private final String message;
 
-    @Nullable
+
     private final Throwable throwable;
 
 
-    public PGError(PGErrorStatus status, String message, @Nullable Throwable throwable)
+    public PGError(PGErrorStatus status, String message, Throwable throwable)
     {
         this.status = status;
         this.message = message;
@@ -50,7 +49,7 @@ public class PGError
         return status;
     }
 
-    @Nullable
+
     public Throwable throwable()
     {
         return throwable;

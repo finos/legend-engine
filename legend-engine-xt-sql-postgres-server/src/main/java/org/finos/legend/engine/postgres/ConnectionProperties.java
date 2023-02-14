@@ -25,67 +25,67 @@ package org.finos.legend.engine.postgres;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;*/
 
-import java.net.InetAddress;
-import java.security.cert.Certificate;
-import javax.annotation.Nullable;
-import javax.net.ssl.SSLPeerUnverifiedException;
-import javax.net.ssl.SSLSession;
 import org.finos.legend.engine.postgres.auth.Protocol;
 import org.slf4j.Logger;
+
+import java.net.InetAddress;
+import java.security.cert.Certificate;
+import javax.net.ssl.SSLPeerUnverifiedException;
+import javax.net.ssl.SSLSession;
 
 public class ConnectionProperties
 {
 
-  //private static final Logger LOGGER = LogManager.getLogger(ConnectionProperties.class);
-  private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
-      ConnectionProperties.class);
+    //private static final Logger LOGGER = LogManager.getLogger(ConnectionProperties.class);
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
+            ConnectionProperties.class);
 
 
-  private final InetAddress address;
-  private final Protocol protocol;
-  private final boolean hasSSL;
+    private final InetAddress address;
+    private final Protocol protocol;
+    private final boolean hasSSL;
 
-  @Nullable
-  private final SSLSession sslSession;
 
-  public ConnectionProperties(InetAddress address, Protocol protocol,
-      @Nullable SSLSession sslSession)
-  {
-    this.address = address;
-    this.protocol = protocol;
-    this.hasSSL = sslSession != null;
-    this.sslSession = sslSession;
-  }
+    private final SSLSession sslSession;
 
-  public boolean hasSSL()
-  {
-    return hasSSL;
-  }
-
-  public InetAddress address()
-  {
-    return address;
-  }
-
-  public Protocol protocol()
-  {
-    return protocol;
-  }
-
-  public Certificate clientCert()
-  {
-    // This logic isn't in the constructor to prevent logging in case of SSL without (expected) client-certificate auth
-    if (sslSession != null)
+    public ConnectionProperties(InetAddress address, Protocol protocol,
+                                SSLSession sslSession)
     {
-      try
-      {
-        return sslSession.getPeerCertificates()[0];
-      }
-      catch (ArrayIndexOutOfBoundsException | SSLPeerUnverifiedException e)
-      {
-        LOGGER.debug("Client certificate not available", e);
-      }
+        this.address = address;
+        this.protocol = protocol;
+        this.hasSSL = sslSession != null;
+        this.sslSession = sslSession;
     }
-    return null;
-  }
+
+    public boolean hasSSL()
+    {
+        return hasSSL;
+    }
+
+    public InetAddress address()
+    {
+        return address;
+    }
+
+    public Protocol protocol()
+    {
+        return protocol;
+    }
+
+    public Certificate clientCert()
+    {
+        // This logic isn't in the constructor to prevent logging in case of SSL without (expected) client-certificate auth
+        if (sslSession != null)
+        {
+            try
+            {
+                return sslSession.getPeerCertificates()[0];
+            }
+            catch (ArrayIndexOutOfBoundsException | SSLPeerUnverifiedException e)
+            {
+                LOGGER.debug("Client certificate not available", e);
+            }
+        }
+        return null;
+    }
 }

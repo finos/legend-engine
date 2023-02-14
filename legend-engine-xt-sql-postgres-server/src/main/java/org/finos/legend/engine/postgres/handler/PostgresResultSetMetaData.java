@@ -17,11 +17,11 @@ package org.finos.legend.engine.postgres.handler;
 public interface PostgresResultSetMetaData
 {
 
-  int getColumnCount() throws Exception;
+    int getColumnCount() throws Exception;
 
-  String getColumnName(int i) throws Exception;
+    String getColumnName(int i) throws Exception;
 
-  int getColumnType(int i) throws Exception;
+    int getColumnType(int i) throws Exception;
 
-  int getScale(int i) throws Exception;
+    int getScale(int i) throws Exception;
 }

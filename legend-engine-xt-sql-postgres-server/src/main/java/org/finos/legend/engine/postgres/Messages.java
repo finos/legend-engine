@@ -30,7 +30,7 @@ import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
 import org.finos.legend.engine.postgres.types.PGType;
 import org.finos.legend.engine.postgres.types.PGTypes;
 import org.slf4j.Logger;
-import javax.annotation.Nullable;
+
 import java.nio.charset.StandardCharsets;
 import java.sql.ParameterMetaData;
 import java.util.List;
@@ -329,7 +329,7 @@ public class Messages
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     static void sendDataRow(Channel channel, PostgresResultSet rs, List<PGType> columnTypes,
-                            @Nullable FormatCodes.FormatCode[] formatCodes) throws Exception
+                            FormatCodes.FormatCode[] formatCodes) throws Exception
     {
         int length = 4 + 2;
         assert columnTypes.size() == rs.getMetaData().getColumnCount()
@@ -446,7 +446,7 @@ public class Messages
      */
     static void sendRowDescription(Channel channel,
                                    PostgresResultSetMetaData resultSetMetaData,
-                                   @Nullable FormatCodes.FormatCode[] formatCodes) throws Exception
+                                   FormatCodes.FormatCode[] formatCodes) throws Exception
     {
         int length = 4 + 2;
         int columnSize = 4 + 2 + 4 + 2 + 4 + 2;

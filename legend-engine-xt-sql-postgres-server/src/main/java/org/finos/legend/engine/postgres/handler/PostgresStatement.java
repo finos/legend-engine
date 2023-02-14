@@ -17,7 +17,7 @@ package org.finos.legend.engine.postgres.handler;
 public interface PostgresStatement
 {
 
-  boolean execute(String query) throws Exception;
+    boolean execute(String query) throws Exception;
 
-  PostgresResultSet getResultSet() throws Exception;
+    PostgresResultSet getResultSet() throws Exception;
 }

@@ -14,12 +14,11 @@
 
 package org.finos.legend.engine.postgres;
 
-import javax.annotation.Nullable;
 import org.finos.legend.engine.postgres.auth.User;
 
 public interface SessionsFactory
 {
 
-  Session createSession(@Nullable String defaultSchema, User authenticatedUser) throws Exception;
+    Session createSession(String defaultSchema, User authenticatedUser) throws Exception;
 
 }

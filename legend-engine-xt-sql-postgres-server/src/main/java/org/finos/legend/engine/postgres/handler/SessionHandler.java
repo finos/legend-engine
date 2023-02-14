@@ -17,7 +17,7 @@ package org.finos.legend.engine.postgres.handler;
 public interface SessionHandler
 {
 
-  PostgresPreparedStatement prepareStatement(String query) throws Exception;
+    PostgresPreparedStatement prepareStatement(String query) throws Exception;
 
-  PostgresStatement createStatement() throws Exception;
+    PostgresStatement createStatement() throws Exception;
 }

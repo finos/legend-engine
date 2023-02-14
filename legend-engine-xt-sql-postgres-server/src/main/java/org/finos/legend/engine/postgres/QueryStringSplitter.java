@@ -21,14 +21,10 @@
 
 package org.finos.legend.engine.postgres;
 
-import static org.finos.legend.engine.postgres.QueryStringSplitter.CommentType.LINE;
-import static org.finos.legend.engine.postgres.QueryStringSplitter.CommentType.MULTI_LINE;
-import static org.finos.legend.engine.postgres.QueryStringSplitter.CommentType.NO;
-import static org.finos.legend.engine.postgres.QueryStringSplitter.QuoteType.DOUBLE;
-import static org.finos.legend.engine.postgres.QueryStringSplitter.QuoteType.NONE;
-import static org.finos.legend.engine.postgres.QueryStringSplitter.QuoteType.SINGLE;
 import java.util.ArrayList;
 import java.util.List;
+import static org.finos.legend.engine.postgres.QueryStringSplitter.CommentType.*;
+import static org.finos.legend.engine.postgres.QueryStringSplitter.QuoteType.*;
 
 /**
  * Splits a query string by semicolon into multiple statements.
@@ -36,116 +32,116 @@ import java.util.List;
 class QueryStringSplitter
 {
 
-  enum CommentType
-  {
-    NO,
-    LINE,
-    MULTI_LINE
-  }
-
-  enum QuoteType
-  {
-    NONE,
-    SINGLE,
-    DOUBLE
-  }
-
-  public static List<String> splitQuery(String query)
-  {
-    final List<String> queries = new ArrayList<>(2);
-
-    CommentType commentType = NO;
-    QuoteType quoteType = QuoteType.NONE;
-    boolean restoreSingleQuoteIfEscaped = false;
-
-    char[] chars = query.toCharArray();
-
-    boolean isCurrentlyEmpty = true;
-    int offset = 0;
-    char lastChar = ' ';
-    for (int i = 0; i < chars.length; i++)
+    enum CommentType
     {
-      char aChar = chars[i];
-      if (isCurrentlyEmpty && !Character.isWhitespace(aChar))
-      {
-        isCurrentlyEmpty = false;
-      }
-      switch (aChar)
-      {
-        case '\'':
-          if (commentType == NO && quoteType != DOUBLE)
-          {
-            if (lastChar == '\'')
+        NO,
+        LINE,
+        MULTI_LINE
+    }
+
+    enum QuoteType
+    {
+        NONE,
+        SINGLE,
+        DOUBLE
+    }
+
+    public static List<String> splitQuery(String query)
+    {
+        final List<String> queries = new ArrayList<>(2);
+
+        CommentType commentType = NO;
+        QuoteType quoteType = QuoteType.NONE;
+        boolean restoreSingleQuoteIfEscaped = false;
+
+        char[] chars = query.toCharArray();
+
+        boolean isCurrentlyEmpty = true;
+        int offset = 0;
+        char lastChar = ' ';
+        for (int i = 0; i < chars.length; i++)
+        {
+            char aChar = chars[i];
+            if (isCurrentlyEmpty && !Character.isWhitespace(aChar))
             {
-              // Escaping of ' via '', e.g.: 'hello ''Joe''!'
-              // When we set single quotes state to NONE,
-              // but we find out this was due to an escaped single quote (''),
-              // we restore the previous single quote state here.
-              quoteType = restoreSingleQuoteIfEscaped ? SINGLE : NONE;
-              restoreSingleQuoteIfEscaped = false;
+                isCurrentlyEmpty = false;
             }
-            else
+            switch (aChar)
             {
-              restoreSingleQuoteIfEscaped = quoteType == SINGLE;
-              quoteType = quoteType == SINGLE ? NONE : SINGLE;
+                case '\'':
+                    if (commentType == NO && quoteType != DOUBLE)
+                    {
+                        if (lastChar == '\'')
+                        {
+                            // Escaping of ' via '', e.g.: 'hello ''Joe''!'
+                            // When we set single quotes state to NONE,
+                            // but we find out this was due to an escaped single quote (''),
+                            // we restore the previous single quote state here.
+                            quoteType = restoreSingleQuoteIfEscaped ? SINGLE : NONE;
+                            restoreSingleQuoteIfEscaped = false;
+                        }
+                        else
+                        {
+                            restoreSingleQuoteIfEscaped = quoteType == SINGLE;
+                            quoteType = quoteType == SINGLE ? NONE : SINGLE;
+                        }
+                    }
+                    break;
+                case '"':
+                    if (commentType == NO && quoteType != SINGLE)
+                    {
+                        quoteType = quoteType == DOUBLE ? NONE : DOUBLE;
+                    }
+                    break;
+                case '-':
+                    if (commentType == NO && quoteType == NONE && lastChar == '-')
+                    {
+                        commentType = LINE;
+                    }
+                    break;
+                case '*':
+                    if (commentType == NO && quoteType == NONE && lastChar == '/')
+                    {
+                        commentType = MULTI_LINE;
+                    }
+                    break;
+                case '/':
+                    if (commentType == MULTI_LINE && lastChar == '*')
+                    {
+                        commentType = NO;
+                        offset = i + 1;
+                    }
+                    break;
+                case '\n':
+                    if (commentType == LINE)
+                    {
+                        commentType = NO;
+                        offset = i + 1;
+                    }
+                    break;
+                case ';':
+                    if (commentType == NO && quoteType == NONE)
+                    {
+                        queries.add(new String(chars, offset, i - offset + 1));
+                        offset = i + 1;
+                        isCurrentlyEmpty = true;
+                    }
+                    break;
+
+                default:
             }
-          }
-          break;
-        case '"':
-          if (commentType == NO && quoteType != SINGLE)
-          {
-            quoteType = quoteType == DOUBLE ? NONE : DOUBLE;
-          }
-          break;
-        case '-':
-          if (commentType == NO && quoteType == NONE && lastChar == '-')
-          {
-            commentType = LINE;
-          }
-          break;
-        case '*':
-          if (commentType == NO && quoteType == NONE && lastChar == '/')
-          {
-            commentType = MULTI_LINE;
-          }
-          break;
-        case '/':
-          if (commentType == MULTI_LINE && lastChar == '*')
-          {
-            commentType = NO;
-            offset = i + 1;
-          }
-          break;
-        case '\n':
-          if (commentType == LINE)
-          {
-            commentType = NO;
-            offset = i + 1;
-          }
-          break;
-        case ';':
-          if (commentType == NO && quoteType == NONE)
-          {
-            queries.add(new String(chars, offset, i - offset + 1));
-            offset = i + 1;
-            isCurrentlyEmpty = true;
-          }
-          break;
+            lastChar = aChar;
+        }
+        // statement might not be terminated by semicolon
+        if (!isCurrentlyEmpty && offset < chars.length && commentType == NO)
+        {
+            queries.add(new String(chars, offset, chars.length - offset));
+        }
+        if (queries.isEmpty())
+        {
+            queries.add("");
+        }
 
-        default:
-      }
-      lastChar = aChar;
+        return queries;
     }
-    // statement might not be terminated by semicolon
-    if (!isCurrentlyEmpty && offset < chars.length && commentType == NO)
-    {
-      queries.add(new String(chars, offset, chars.length - offset));
-    }
-    if (queries.isEmpty())
-    {
-      queries.add("");
-    }
-
-    return queries;
-  }
 }

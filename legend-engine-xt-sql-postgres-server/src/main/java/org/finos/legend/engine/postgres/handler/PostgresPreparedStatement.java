@@ -19,17 +19,17 @@ import java.sql.ParameterMetaData;
 public interface PostgresPreparedStatement
 {
 
-  void setObject(int i, Object o) throws Exception;
+    void setObject(int i, Object o) throws Exception;
 
-  PostgresResultSetMetaData getMetaData() throws Exception;
+    PostgresResultSetMetaData getMetaData() throws Exception;
 
-  ParameterMetaData getParameterMetaData() throws Exception;
+    ParameterMetaData getParameterMetaData() throws Exception;
 
-  void close() throws Exception;
+    void close() throws Exception;
 
-  void setMaxRows(int maxRows) throws Exception;
+    void setMaxRows(int maxRows) throws Exception;
 
-  boolean execute() throws Exception;
+    boolean execute() throws Exception;
 
-  PostgresResultSet getResultSet() throws Exception;
+    PostgresResultSet getResultSet() throws Exception;
 }

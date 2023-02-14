@@ -14,13 +14,12 @@
 
 package org.finos.legend.engine.postgres.auth;
 
-import javax.annotation.Nullable;
 import org.finos.legend.engine.postgres.ConnectionProperties;
 
 public interface Authentication
 {
 
-  @Nullable
-  AuthenticationMethod resolveAuthenticationType(String user,
-      ConnectionProperties connectionProperties);
+
+    AuthenticationMethod resolveAuthenticationType(String user,
+                                                   ConnectionProperties connectionProperties);
 }

@@ -17,5 +17,5 @@ package org.finos.legend.engine.postgres.auth;
 public interface User
 {
 
-  String name();
+    String name();
 }

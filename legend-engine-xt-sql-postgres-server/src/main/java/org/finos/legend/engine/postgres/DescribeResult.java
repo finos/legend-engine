@@ -14,28 +14,29 @@
 
 package org.finos.legend.engine.postgres;
 
-import java.sql.ParameterMetaData;
 import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
+
+import java.sql.ParameterMetaData;
 
 public class DescribeResult
 {
 
-  private final PostgresResultSetMetaData fields;
-  private final ParameterMetaData parameters;
+    private final PostgresResultSetMetaData fields;
+    private final ParameterMetaData parameters;
 
-  public DescribeResult(PostgresResultSetMetaData fields, ParameterMetaData parameters)
-  {
-    this.fields = fields;
-    this.parameters = parameters;
-  }
+    public DescribeResult(PostgresResultSetMetaData fields, ParameterMetaData parameters)
+    {
+        this.fields = fields;
+        this.parameters = parameters;
+    }
 
-  public PostgresResultSetMetaData getFields()
-  {
-    return fields;
-  }
+    public PostgresResultSetMetaData getFields()
+    {
+        return fields;
+    }
 
-  public ParameterMetaData getParameters()
-  {
-    return parameters;
-  }
+    public ParameterMetaData getParameters()
+    {
+        return parameters;
+    }
 }

@@ -21,11 +21,10 @@
 
 package org.finos.legend.engine.postgres;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.finos.legend.engine.postgres.auth.AuthenticationMethod;
 import org.finos.legend.engine.postgres.auth.User;
 import org.slf4j.Logger;
-import javax.annotation.Nullable;
+
 import java.io.Closeable;
 
 class AuthenticationContext implements Closeable
@@ -59,7 +58,7 @@ class AuthenticationContext implements Closeable
         this.password = null;
     }
 
-    @Nullable
+
     User authenticate()
     {
         User user = authMethod.authenticate(userName, password, connProperties);
@@ -76,8 +75,7 @@ class AuthenticationContext implements Closeable
         this.password = new String(secureString);
     }
 
-    @Nullable
-    @VisibleForTesting
+
     String password()
     {
         return password;

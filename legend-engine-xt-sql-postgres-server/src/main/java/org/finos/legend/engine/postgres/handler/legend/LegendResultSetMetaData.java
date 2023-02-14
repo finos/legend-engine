@@ -15,6 +15,7 @@
 package org.finos.legend.engine.postgres.handler.legend;
 
 import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
+
 import java.sql.Types;
 import java.util.List;
 

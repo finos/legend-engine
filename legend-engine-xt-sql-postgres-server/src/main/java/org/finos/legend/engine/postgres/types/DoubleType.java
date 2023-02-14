@@ -22,7 +22,7 @@
 package org.finos.legend.engine.postgres.types;
 
 import io.netty.buffer.ByteBuf;
-import javax.annotation.Nonnull;
+
 import java.nio.charset.StandardCharsets;
 
 class DoubleType extends PGType<Double>
@@ -58,7 +58,7 @@ class DoubleType extends PGType<Double>
     }
 
     @Override
-    public int writeAsBinary(ByteBuf buffer, @Nonnull Double value)
+    public int writeAsBinary(ByteBuf buffer, Double value)
     {
         buffer.writeInt(TYPE_LEN);
         buffer.writeDouble(value);
@@ -66,7 +66,7 @@ class DoubleType extends PGType<Double>
     }
 
     @Override
-    protected byte[] encodeAsUTF8Text(@Nonnull Double value)
+    protected byte[] encodeAsUTF8Text(Double value)
     {
         return Double.toString(value).getBytes(StandardCharsets.UTF_8);
     }

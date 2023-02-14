@@ -17,9 +17,9 @@ package org.finos.legend.engine.postgres.handler;
 public interface PostgresResultSet
 {
 
-  PostgresResultSetMetaData getMetaData() throws Exception;
+    PostgresResultSetMetaData getMetaData() throws Exception;
 
-  Object getObject(int i) throws Exception;
+    Object getObject(int i) throws Exception;
 
-  boolean next() throws Exception;
+    boolean next() throws Exception;
 }
