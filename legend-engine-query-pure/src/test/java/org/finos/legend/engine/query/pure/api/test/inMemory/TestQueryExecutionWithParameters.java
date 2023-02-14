@@ -15,6 +15,7 @@
 package org.finos.legend.engine.query.pure.api.test.inMemory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToJsonDefaultSerializer;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.model.ExecuteInput;
 import org.junit.Test;
@@ -36,7 +37,7 @@ public class TestQueryExecutionWithParameters
         ExecuteInput input = objectMapper.readValue(Objects.requireNonNull(getClass().getClassLoader().getResource("relationalQueryExecutionInputZeroMany.json")), ExecuteInput.class);
         HttpServletRequest mockRequest = TestExecutionUtility.buildMockRequest();
         String json = TestExecutionUtility.responseAsString(runTest(input, mockRequest));
-        assertEquals("{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"Age\",\"type\":\"Integer\",\"relationalType\":\"INTEGER\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select top 1000 \\\"root\\\".age as \\\"Age\\\" from PersonTable as \\\"root\\\" where \\\"root\\\".age in (20,30)\"}], \"result\" : {\"columns\" : [\"Age\"], \"rows\" : [{\"values\": [20]},{\"values\": [30]}]}}", json);
+        assertEquals("{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"Age\",\"type\":\"Integer\",\"relationalType\":\"INTEGER\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select top 1000 \\\"root\\\".age as \\\"Age\\\" from PersonTable as \\\"root\\\" where \\\"root\\\".age in (20,30)\"}],\"result\":{\"columns\":[\"Age\"],\"rows\":[{\"values\":[20]},{\"values\":[30]}]}}", RelationalResultToJsonDefaultSerializer.removeComment(json));
     }
 
     @Test
@@ -45,7 +46,7 @@ public class TestQueryExecutionWithParameters
         ExecuteInput input = objectMapper.readValue(Objects.requireNonNull(getClass().getClassLoader().getResource("relationalQueryExecutionInputEnumZeroOne.json")), ExecuteInput.class);
         HttpServletRequest mockRequest = TestExecutionUtility.buildMockRequest();
         String json = TestExecutionUtility.responseAsString(runTest(input, mockRequest));
-        assertEquals("{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"Inc Type\",\"type\":\"model::IncType\",\"relationalType\":\"VARCHAR(200)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select top 1000 \\\"root\\\".Inc as \\\"Inc Type\\\" from FirmTable as \\\"root\\\" where (\\\"root\\\".Inc = 'LLC')\"}], \"result\" : {\"columns\" : [\"Inc Type\"], \"rows\" : [{\"values\": [\"LLC\"]}]}}", json);
+        assertEquals("{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"Inc Type\",\"type\":\"model::IncType\",\"relationalType\":\"VARCHAR(200)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select top 1000 \\\"root\\\".Inc as \\\"Inc Type\\\" from FirmTable as \\\"root\\\" where (\\\"root\\\".Inc = 'LLC')\"}],\"result\":{\"columns\":[\"Inc Type\"],\"rows\":[{\"values\":[\"LLC\"]}]}}", RelationalResultToJsonDefaultSerializer.removeComment(json));
     }
 
 

@@ -37,6 +37,7 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class ExecutionState
 {
@@ -48,6 +49,7 @@ public class ExecutionState
     public boolean realizeInMemory;
     public Span topSpan;
     public boolean realizeAllocationResults;
+    public String execID;
 
     private final long graphFetchBatchMemoryLimit;
     public GraphObjectsBatch graphObjectsBatch;
@@ -72,6 +74,7 @@ public class ExecutionState
         this.allocationNodeName = state.allocationNodeName;
         this.templateFunctions = state.templateFunctions;
         this.authId = state.authId;
+        this.execID = state.execID;
         this.realizeInMemory = state.realizeInMemory;
         this.topSpan = state.topSpan;
         this.activities = state.activities;
@@ -97,6 +100,7 @@ public class ExecutionState
     {
         this.inAllocation = false;
         this.inLake = false;
+        this.execID = UUID.randomUUID().toString();
         this.res = res;
         this.templateFunctions = templateFunctions;
         this.realizeAllocationResults = false;

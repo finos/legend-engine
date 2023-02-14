@@ -16,6 +16,7 @@ import meta::protocols::pure::vX_X_X::metamodel::executionPlan::*;
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::SQLExecutionNode extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::ExecutionNode
 {
+   sqlComment : String[0..1];
    sqlQuery : String[1];
    onConnectionCloseCommitQuery : String[0..1];
    onConnectionCloseRollbackQuery : String[0..1];
