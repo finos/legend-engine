@@ -22,6 +22,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.dsl.persistence.compiler.validation.ValidationResult;
 import org.finos.legend.engine.language.pure.dsl.persistence.compiler.validation.ValidationRuleSet;
@@ -65,6 +66,13 @@ import static org.finos.legend.pure.generated.core_persistence_persistence_valid
 
 public class PersistenceCompilerExtension implements IPersistenceCompilerExtension
 {
+
+    @Override
+    public CompilerExtension build()
+    {
+        return new PersistenceCompilerExtension();
+    }
+
     @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
