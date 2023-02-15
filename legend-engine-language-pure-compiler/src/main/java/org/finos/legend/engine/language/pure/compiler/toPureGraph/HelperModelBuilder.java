@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import java.util.Collections;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.procedure.Procedure;
 import org.eclipse.collections.impl.factory.Lists;
@@ -32,6 +33,7 @@ import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_modelToModel_ModelStore_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_constraint_Constraint_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_TaggedValue_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_property_DefaultValue_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_property_Property_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_property_QualifiedProperty_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_FunctionType_Impl;
@@ -72,9 +74,17 @@ public class HelperModelBuilder
     {
         return property ->
         {
+            Root_meta_pure_metamodel_function_property_DefaultValue_Impl defaultValue = null;
+            if (property.defaultValue != null)
+            {
+                LambdaFunction<?> lambdaFunction = HelperValueSpecificationBuilder.buildLambda(Collections.singletonList(property.defaultValue.value), Collections.emptyList(), context);
+                defaultValue = new Root_meta_pure_metamodel_function_property_DefaultValue_Impl((String)null);
+                defaultValue._functionDefinition(lambdaFunction);
+            }
             GenericType returnGenericType = context.resolveGenericType(property.type, property.propertyTypeSourceInformation);
             return new Root_meta_pure_metamodel_function_property_Property_Impl<>(property.name)
                     ._name(property.name)
+                    ._defaultValue(defaultValue)
                     ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::metamodel::function::property::Property"))._typeArguments(Lists.fixedSize.of(genericType, returnGenericType))._multiplicityArgumentsAdd(context.pureModel.getMultiplicity(property.multiplicity)))
                     ._genericType(returnGenericType)
                     ._multiplicity(context.pureModel.getMultiplicity(property.multiplicity))

@@ -78,7 +78,7 @@ Class <<meta::pure::profiles::typemodifiers.abstract>> meta::external::format::f
 {
 }
 
-Class meta::external::format::flatdata::metamodel::FlatData extends meta::external::shared::format::metamodel::SchemaDetail
+Class meta::external::format::flatdata::metamodel::FlatData
 {
    constraints: meta::pure::metamodel::constraint::Constraint[*];
    sections   : FlatDataSection[*];

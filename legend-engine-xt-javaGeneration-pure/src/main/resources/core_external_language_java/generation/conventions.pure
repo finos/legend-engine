@@ -1244,7 +1244,7 @@ function <<access.private>> meta::external::language::java::transform::listIfMul
    );
 }
 
-function <<access.private>> meta::external::language::java::transform::typeConversion(conventions:Conventions[1], type:meta::pure::metamodel::type::Type[1]): TypeConversion[1]
+function meta::external::language::java::transform::typeConversion(conventions:Conventions[1], type:meta::pure::metamodel::type::Type[1]): TypeConversion[1]
 {
    $conventions.libraries->map(l|$l.typeConversions->get($type))->at(0);
 }

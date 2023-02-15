@@ -35,7 +35,8 @@ function meta::external::format::xml::contract::xsdFormatContract(): ExternalFor
 
       externalFormatToPureDescriptor   = xsdToPureDescriptor(),
 
-      sourceRecordTree                 = #{XmlDataRecord {number, record}}#
+      internalizeReturnsChecked        = true, 
+      sourceRecordSerializeTree        = #{XmlDataRecord {number, record}}#
    )
 }
 

@@ -36,7 +36,7 @@ Class meta::pure::extension::Extension
 
   // External Format Extension ----------------------------------------------------------------
   // TODO: We should change this package to better align with our strategy to have binding as core feature
-  availableExternalFormats : meta::external::shared::format::ExternalFormatContract<meta::external::shared::format::metamodel::SchemaDetail>[*];
+  availableExternalFormats : meta::external::shared::format::ExternalFormatContract<Any>[*];
   // ---------------------------------------------------------------- External Format Extension
 
   // Feature Extension ------------------------------------------------------------------------
