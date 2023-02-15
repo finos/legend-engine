@@ -32,6 +32,10 @@ Class meta::pure::graphFetch::domain::tests::SimpleDomain
   allPersons() {Person.all();}: Person[*];
 }
 
+Class meta::pure::graphFetch::domain::tests::QueryWithLet
+{
+  allPersonsWithLimitOffset(limit:Integer[1], offset: Integer[1]) {let start = $offset; let end = $offset + $limit; Person.all()->slice($start, $end);}: Person[*];
+}
 
 function <<test.Test>> meta::pure::graphFetch::domain::tests::reprocessGraphFetch():Boolean[1]
 {
@@ -53,3 +57,13 @@ function <<test.Test>> meta::pure::graphFetch::domain::tests::simple():Boolean[1
   assertEquals('allPersons', $r->at(0).first);
   assertEquals(' | Class Person.all() -> graphFetch(#{meta::pure::graphFetch::domain::tests::Person}#) -> serialize(#{meta::pure::graphFetch::domain::tests::Person}#);', $r->at(0).second->meta::pure::router::printer::asString());
  }
+
+function <<test.Test>> meta::pure::graphFetch::domain::tests::letStatements():Boolean[1]
+{
+  let r = meta::pure::graphFetch::domain::extractDomainTypeClassFromFunction(
+              |QueryWithLet.all()->meta::pure::graphFetch::execution::graphFetch(#{QueryWithLet{allPersonsWithLimitOffset(1,1)}}#)
+          );
+  assertEquals('allPersonsWithLimitOffset', $r->at(0).first);
+  assertEquals(' | let start = 1;\n   let end = [1, 1] -> plus();\n   Class Person.all() -> slice($start, $end) -> graphFetch(#{meta::pure::graphFetch::domain::tests::Person}#) -> serialize(#{meta::pure::graphFetch::domain::tests::Person}#);', $r->at(0).second->meta::pure::router::printer::asString());
+}
+
