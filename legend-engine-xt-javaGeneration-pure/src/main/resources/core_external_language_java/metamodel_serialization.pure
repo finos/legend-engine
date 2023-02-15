@@ -452,7 +452,8 @@ function <<access.private>> meta::external::language::java::serialization::annot
       b:Boolean[1]                                              | $b->toString(),
       s:String[1]                                               | '"'+$s+'"',
       i:Integer[1]                                              | $i->toString(),
-      r: meta::external::language::java::metamodel::annotations::json::EnumValue[1] | $r.value
+      r: meta::external::language::java::metamodel::annotations::json::EnumValue[1] | $r.value,
+      c: meta::external::language::java::metamodel::Class[1] | $c->qualifiedClassName() + '.class'
    ]));
 
    if($texts->size() == 1,
