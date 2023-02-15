@@ -150,6 +150,11 @@ Class <<temporal.businesstemporal>> meta::relational::tests::model::simple::Temp
     address : Address[*];
 }
 
+Class meta::relational::tests::model::simple::PersonSortable extends meta::relational::tests::model::simple::Person
+{
+   id: Integer[*];
+}
+
 Class meta::relational::tests::model::simple::PersonExtension extends meta::relational::tests::model::simple::Person
 {
    birthdate: Date[0..1];
