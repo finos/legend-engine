@@ -497,7 +497,34 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "          asserts:\n" +
                 "          [\n" +
                 "            assert1:\n" +
-                "              EqualToJson\n" +
+                "              AllRowsEquivalentToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{\"Age\":12, \"Name\":\"dummy\"}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        },\n" +
+                "        testBatch2:\n" +
+                "        {\n" +
+                "          data:\n" +
+                "          {\n" +
+                "            connection:\n" +
+                "            {\n" +
+                "                ExternalFormat\n" +
+                "                #{\n" +
+                "                  contentType: 'application/x.flatdata';\n" +
+                "                  data: 'FIRST_NAME,LAST_NAME\\nFred,Bloggs\\nJane,Doe';\n" +
+                "                }#\n" +
+                "            }\n" +
+                "          }\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              ActiveRowsEquivalentToJson\n" +
                 "              #{\n" +
                 "                expected : \n" +
                 "                  ExternalFormat\n" +

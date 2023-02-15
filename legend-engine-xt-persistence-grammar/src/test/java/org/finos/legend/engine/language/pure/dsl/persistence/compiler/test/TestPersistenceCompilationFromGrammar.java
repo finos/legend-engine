@@ -1088,7 +1088,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "         asserts:\n" +
                 "         [\n" +
                 "           assert1:\n" +
-                "             EqualToJson\n" +
+                "             AllRowsEquivalentToJson\n" +
                 "             #{\n" +
                 "               expected: \n" +
                 "                 ExternalFormat\n" +
@@ -1201,7 +1201,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "         asserts:\n" +
                 "         [\n" +
                 "           assert1:\n" +
-                "             EqualToJson\n" +
+                "             ActiveRowsEquivalentToJson\n" +
                 "             #{\n" +
                 "               expected: \n" +
                 "                 ExternalFormat\n" +
@@ -1430,7 +1430,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "         asserts:\n" +
                 "         [\n" +
                 "           assert1:\n" +
-                "             EqualToJson\n" +
+                "             AllRowsEquivalentToJson\n" +
                 "             #{\n" +
                 "               expected: \n" +
                 "                 ExternalFormat\n" +
