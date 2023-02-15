@@ -70,12 +70,20 @@ function <<access.private>> meta::external::query::graphQL::transformation::quer
                                           (
                                             property = $property->toOne(),
                                             parameters = $field.arguments->map(a|$a.value->match(
-                                                                                            [
-                                                                                              s:StringValue[1]| ^InstanceValue(multiplicity=PureOne, genericType=^GenericType(rawType=String), values=$s.value),
-                                                                                              b:BooleanValue[1]| ^InstanceValue(multiplicity=PureOne, genericType=^GenericType(rawType=Boolean), values=$b.value)
-                                                                                            ]
-                                                                                          )
-                                                                           )
+                                                            [
+                                                              s:StringValue[1]| ^InstanceValue(multiplicity=PureOne, genericType=^GenericType(rawType=String), values=$s.value),
+                                                              b:BooleanValue[1]| ^InstanceValue(multiplicity=PureOne, genericType=^GenericType(rawType=Boolean), values=$b.value),
+                                                              i:IntValue[1]| ^InstanceValue(multiplicity=PureOne, genericType=^GenericType(rawType=Integer), values=$i.value),
+                                                              f:FloatValue[1]| ^InstanceValue(multiplicity=PureOne, genericType=^GenericType(rawType=Float), values=$f.value),
+                                                              l:ListValue[1]| ^InstanceValue(
+                                                                                multiplicity=ZeroMany, 
+                                                                                genericType=^GenericType(
+                                                                                  rawType=$l.values->at(0)->match([s:StringValue[1]|String,i:IntValue[1]|Integer,f:FloatValue[1]|Float])
+                                                                                ), 
+                                                                                values=$l.values->map(v|$v->match([s:StringValue[1]|$s.value,s:IntValue[1]|$s.value,s:FloatValue[1]|$s.value]))
+                                                                              )
+                                                            ])                                                                          
+                                                        )
                                           ),
                           children = if ($field.selectionSet->isEmpty(),|[],|$field.selectionSet->transformSelectionToPure($property->toOne()->functionReturnType().rawType->cast(@Class<Any>)->toOne()))
                         );,
