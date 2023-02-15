@@ -110,7 +110,7 @@ function <<access.private>> meta::external::shared::format::executionPlan::exter
                                                                                                                 v:VariableExpression[1] | $inScopeVars->get($v.name).values,
                                                                                                                 i:InstanceValue[1]      | $i.values
                                                                                                              ])->cast(@Binding)->toOne();
-                                                                let sourceTree = $extensions.availableExternalFormats->getExternalFormatContractForContentType($binding.contentType).sourceRecordTree;
+                                                                let sourceTree = $extensions.availableExternalFormats->getExternalFormatContractForContentType($binding.contentType).sourceRecordSerializeTree;
                                                                 assert($sourceTree->isNotEmpty(), | 'Source Tree not defined for contentType - ' + $binding.contentType);
                                                                 checked($valueTree, #{Defect {id, externalId, message, enforcementLevel, ruleType, ruleDefinerPath, path { propertyName, index }}}#, $sourceTree->toOne());
                                ]), 
