@@ -45,6 +45,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.protocol.sql.metamodel.Node;
+import org.finos.legend.engine.protocol.sql.metamodel.Query;
 import org.finos.legend.engine.protocol.sql.metamodel.Translator;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
@@ -64,6 +65,8 @@ import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
 
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import javax.security.auth.Subject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -75,9 +78,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
-
 import static org.finos.legend.engine.plan.execution.api.result.ResultManager.manageResult;
 import static org.finos.legend.engine.plan.generation.PlanGenerator.transformExecutionPlan;
 
@@ -111,7 +111,7 @@ public class SqlExecute
 
     @POST
     @ApiOperation(value = "Execute a SQL query in the context of a Mapping and a Runtime from a SDLC project")
-    @Path("execute/{projectId}")
+    @Path("executeQueryString/{projectId}")
     @Consumes({MediaType.APPLICATION_JSON})
     public Response executeSql(@Context HttpServletRequest request, @PathParam("projectId") String projectId, String sql, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo) throws Exception
     {
@@ -123,8 +123,21 @@ public class SqlExecute
     }
 
     @POST
+    @ApiOperation(value = "Execute a SQL query in the context of a Mapping and a Runtime from a SDLC project")
+    @Path("executeQuery/{projectId}")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response executeSql(@Context HttpServletRequest request, @PathParam("projectId") String projectId, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo) throws Exception
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+
+        SingleExecutionPlan singleExecutionPlan = generateQueryPlan(request, projectId, query, profiles);
+        long start = System.currentTimeMillis();
+        return this.execImpl(planExecutor, profiles, request.getRemoteUser(), SerializationFormat.defaultFormat, start, singleExecutionPlan);
+    }
+
+    @POST
     @ApiOperation(value = "Generate plans for a SQL query in the context of a Mapping and a Runtime from a SDLC project")
-    @Path("generatePlan/{projectId}")
+    @Path("generatePlanQueryString/{projectId}")
     @Consumes({MediaType.APPLICATION_JSON})
     public Response generatePlan(@Context HttpServletRequest request, @PathParam("projectId") String projectId, String sql, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo) throws Exception
     {
@@ -134,11 +147,28 @@ public class SqlExecute
         return Response.ok().type(MediaType.APPLICATION_JSON_TYPE).entity(singleExecutionPlan).build();
     }
 
+    @POST
+    @ApiOperation(value = "Generate plans for a SQL query in the context of a Mapping and a Runtime from a SDLC project")
+    @Path("generatePlanQuery/{projectId}")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response generatePlan(@Context HttpServletRequest request, @PathParam("projectId") String projectId, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo) throws Exception
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+
+        SingleExecutionPlan singleExecutionPlan = generateQueryPlan(request, projectId, query, profiles);
+        return Response.ok().type(MediaType.APPLICATION_JSON_TYPE).entity(singleExecutionPlan).build();
+    }
+
     private SingleExecutionPlan generateQueryPlan(HttpServletRequest request, String projectId, String sql, MutableList<CommonProfile> profiles) throws PrivilegedActionException
     {
         SQLGrammarParser parser = SQLGrammarParser.newInstance();
         Node node = parser.parseStatement(sql);
+        return generateQueryPlan(request, projectId, node, profiles);
+    }
 
+
+    private SingleExecutionPlan generateQueryPlan(HttpServletRequest request, String projectId, Node node, MutableList<CommonProfile> profiles) throws PrivilegedActionException
+    {
         PureModelContextData pureModelContextData = loadModelContextData(profiles, request, projectId);
         String clientVersion = PureClientVersions.production;
         PureModel pureModel = this.modelManager.loadModel(pureModelContextData, clientVersion, profiles, "");

@@ -1,0 +1,11 @@
+{
+  "name" : "core_elasticsearch_specification_metamodel",
+  "pattern" : "(meta::external::store::elasticsearch::specification::metamodel)(::.*)?",
+  "dependencies" : [
+    "platform",
+    "platform_functions",
+    "platform_functions_json",
+    "core",
+    "core_external_language_java"
+  ]
+}

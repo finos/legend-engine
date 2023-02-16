@@ -20,6 +20,17 @@ Class meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Pers
   age : Integer[1];
 }
 
+Class meta::external::query::graphQL::binding::fromPure::sdl::tests::model::ClassWithPrimitiveTypes
+{
+  string: String[1];
+  integer: Integer[1];
+  float: Float[1];
+  boolean: Boolean[1];
+  date: Date[1];
+  datetime: DateTime[1];
+  decimal: Decimal[1];
+}
+
 Class <<GraphQL.Query>> meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Query
 {
   firmByName(n:String[1]){Firm.all()->filter(z|$z.legalName == $n)->first()}:Firm[0..1];
@@ -37,5 +48,23 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '}\n\n' +
     'schema {\n' +
     '  query : Query\n' +
+    '}', $res);
+}
+
+function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testPrimtiveTypes():Boolean[1]
+{
+  let res = meta::external::query::graphQL::binding::fromPure::sdl::transformPureToGraphQLSDL([ClassWithPrimitiveTypes])
+            ->map(x|$x->meta::external::query::graphQL::serialization::graphQLtoString())
+            ->joinStrings('\n\n');
+
+  assertEquals(
+    'type ClassWithPrimitiveTypes {\n' +
+    '  string: String!\n' +
+    '  integer: Int!\n' +
+    '  float: Float!\n' +
+    '  boolean: Boolean!\n' +
+    '  date: Date!\n' +
+    '  datetime: DateTime!\n' +
+    '  decimal: BigDecimal!\n' +
     '}', $res);
 }

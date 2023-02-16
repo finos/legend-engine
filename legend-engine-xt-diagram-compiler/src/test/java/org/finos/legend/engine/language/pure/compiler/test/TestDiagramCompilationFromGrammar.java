@@ -234,4 +234,97 @@ public class TestDiagramCompilationFromGrammar extends TestCompilationFromGramma
                 "  }\n" +
                 "}\n");
     }
+
+    @Test
+    public void testDiagramWithAssociationOnMilestoneClass()
+    {
+        test(
+            "###Diagram\n" +
+                    "Diagram model::MyDiagram\n" +
+                    "{\n" +
+                    "  classView 47bba0d6-38f1-4c93-aa0a-16d38f480e6a\n" +
+                    "  {\n" +
+                    "    class: model::ClassA;\n" +
+                    "    position: (497.0,168.0);\n" +
+                    "    rectangle: (86.021484375,44.0);\n" +
+                    "  }\n" +
+                    "  classView 8302b3fd-60c1-4336-aef8-56dd7368ce70\n" +
+                    "  {\n" +
+                    "    class: model::ClassB;\n" +
+                    "    position: (821.0,330.0);\n" +
+                    "    rectangle: (60.6875,30.0);\n" +
+                    "  }\n" +
+                    "  propertyView\n" +
+                    "  {\n" +
+                    "    property: model::ClassB.a;\n" +
+                    "    source: 8302b3fd-60c1-4336-aef8-56dd7368ce70;\n" +
+                    "    target: 47bba0d6-38f1-4c93-aa0a-16d38f480e6a;\n" +
+                    "    points: [(851.34375,345.0),(540.0107421875,190.0)];\n" +
+                    "  }\n" +
+                    "  propertyView\n" +
+                    "  {\n" +
+                    "    property: model::ClassA.b;\n" +
+                    "    source: 47bba0d6-38f1-4c93-aa0a-16d38f480e6a;\n" +
+                    "    target: 8302b3fd-60c1-4336-aef8-56dd7368ce70;\n" +
+                    "    points: [(540.0107421875,190.0),(851.34375,345.0)];\n" +
+                    "  }\n" +
+                    "}\n" +
+                    "\n" +
+                    "Diagram model::MilestoneDiagram\n" +
+                    "{\n" +
+                    "  classView afecc712-ce0e-4126-9de0-9dff6e1d68d2\n" +
+                    "  {\n" +
+                    "    class: model::MilestoneClassA;\n" +
+                    "    position: (388.0,211.0);\n" +
+                    "    rectangle: (148.748046875,58.0);\n" +
+                    "  }\n" +
+                    "  classView 791b3fa0-21cb-48a2-aec7-c61148966942\n" +
+                    "  {\n" +
+                    "    class: model::MilestoneClassB;\n" +
+                    "    position: (606.0,271.0);\n" +
+                    "    rectangle: (148.748046875,44.0);\n" +
+                    "  }\n" +
+                    "  propertyView\n" +
+                    "  {\n" +
+                    "    property: model::AssociationAB.a;\n" +
+                    "    source: 791b3fa0-21cb-48a2-aec7-c61148966942;\n" +
+                    "    target: afecc712-ce0e-4126-9de0-9dff6e1d68d2;\n" +
+                    "    points: [(680.3740234375,293.0),(462.3740234375,240.0)];\n" +
+                    "  }\n" +
+                    "  propertyView\n" +
+                    "  {\n" +
+                    "    property: model::AssociationAB.b;\n" +
+                    "    source: afecc712-ce0e-4126-9de0-9dff6e1d68d2;\n" +
+                    "    target: 791b3fa0-21cb-48a2-aec7-c61148966942;\n" +
+                    "    points: [(462.3740234375,240.0),(680.3740234375,293.0)];\n" +
+                    "  }\n" +
+                    "}\n" +
+                    "\n" +
+                    "\n" +
+                    "###Pure\n" +
+                    "Class <<meta::pure::profiles::temporal.businesstemporal>> model::MilestoneClassA\n" +
+                    "{\n" +
+                    "}\n" +
+                    "\n" +
+                    "Class <<meta::pure::profiles::temporal.businesstemporal>> model::MilestoneClassB\n" +
+                    "{\n" +
+                    "}\n" +
+                    "\n" +
+                    "Class model::ClassA\n" +
+                    "{\n" +
+                    "  b: model::ClassB[1];\n" +
+                    "}\n" +
+                    "\n" +
+                    "Class model::ClassB\n" +
+                    "{\n" +
+                    "  a: model::ClassA[1];\n" +
+                    "}\n" +
+                    "\n" +
+                    "Association model::AssociationAB\n" +
+                    "{\n" +
+                    "  a: model::MilestoneClassA[1];\n" +
+                    "  b: model::MilestoneClassB[1];\n" +
+                    "}\n"
+        );
+    }
 }

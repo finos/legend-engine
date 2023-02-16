@@ -14,12 +14,27 @@
 
 package org.finos.legend.engine.query.pure.api.test.inMemory;
 
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.modelManager.ModelManager;
+import org.finos.legend.engine.plan.execution.PlanExecutor;
+import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
+import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
+import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutorBuilder;
+import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
+import org.finos.legend.engine.query.pure.api.Execute;
+import org.finos.legend.engine.shared.core.api.model.ExecuteInput;
+import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.junit.Assert;
+import org.mockito.Mockito;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
+
+import static org.finos.legend.pure.generated.core_relational_java_platform_binding_legendJavaPlatformBinding_relationalLegendJavaPlatformBindingExtension.Root_meta_relational_executionPlan_platformBinding_legendJava_relationalExtensionsWithLegendJavaPlatformBinding__Extension_MANY_;
 
 public class TestExecutionUtility
 {
@@ -31,39 +46,23 @@ public class TestExecutionUtility
         return baos.toString("UTF-8");
     }
 
-    public static class ReflectiveInvocationHandler implements InvocationHandler
+    public static HttpServletRequest buildMockRequest()
     {
-        private final Object[] delegates;
-
-        public ReflectiveInvocationHandler(Object... delegates)
-        {
-            this.delegates = delegates;
-        }
-
-        @Override
-        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
-        {
-            for (Object delegate : delegates)
-            {
-                try
-                {
-                    return delegate.getClass().getMethod(method.getName(), method.getParameterTypes()).invoke(delegate, args);
-                }
-                catch (NoSuchMethodException e)
-                {
-                    // The loop will complete if all delegates fail
-                }
-            }
-            throw new UnsupportedOperationException("Method not simulated: " + method);
-        }
+        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+        HttpSession mockSession = Mockito.mock(HttpSession.class);
+        Mockito.when(mockRequest.getSession()).thenReturn(mockSession);
+        Mockito.when(mockSession.getId()).thenReturn("testSessionID");
+        return mockRequest;
     }
 
-    public static class Request
+    public static Response runTest(ExecuteInput input, HttpServletRequest request)
     {
-        @SuppressWarnings("unused")
-        public String getRemoteUser()
-        {
-            return "someone";
-        }
+        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
+        RelationalStoreExecutor relationalStoreExecutor = new RelationalStoreExecutorBuilder().build();
+        PlanExecutor planExecutor = PlanExecutor.newPlanExecutor(relationalStoreExecutor);
+        Response result = new Execute(modelManager, planExecutor, (PureModel pureModel) -> Root_meta_relational_executionPlan_platformBinding_legendJava_relationalExtensionsWithLegendJavaPlatformBinding__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers).execute(request, input, SerializationFormat.defaultFormat, null, null);
+        Assert.assertEquals(200, result.getStatus());
+        return result;
     }
+
 }

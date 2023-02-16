@@ -86,6 +86,7 @@ import org.finos.legend.engine.server.core.exceptionMappers.CatchAllExceptionMap
 import org.finos.legend.engine.server.core.exceptionMappers.JsonInformationExceptionMapper;
 import org.finos.legend.engine.server.core.session.SessionAttributeBundle;
 import org.finos.legend.engine.server.core.session.SessionTracker;
+import org.finos.legend.engine.server.core.session.StoreExecutableManagerSessionListener;
 import org.finos.legend.engine.server.core.session.api.SessionInfo;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
@@ -170,12 +171,14 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         // Session Management
         SessionTracker sessionTracker = new SessionTracker();
         SessionHandler sessionHandler = new SessionHandler();
+        StoreExecutableManagerSessionListener  storeExecutableManagerSessionListener = new StoreExecutableManagerSessionListener();
         if (serverConfiguration.sessionCookie != null)
         {
             sessionHandler.setSessionCookie(serverConfiguration.sessionCookie);
         }
         environment.servlets().setSessionHandler(sessionHandler);
         environment.servlets().addServletListeners(sessionTracker);
+        environment.servlets().addServletListeners(storeExecutableManagerSessionListener);
         environment.jersey().register(new SessionInfo(sessionTracker));
 
         // API & Swagger
