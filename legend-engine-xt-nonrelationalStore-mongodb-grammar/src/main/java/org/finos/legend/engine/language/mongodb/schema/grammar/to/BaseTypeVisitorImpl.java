@@ -372,15 +372,6 @@ public class BaseTypeVisitorImpl implements BaseTypeVisitor<String>
         builder.append("{\n");
 
         int schemaValuesTabIndex = indentLevel + 1;
-        appendTabString(builder, schemaValuesTabIndex);
-        appendJsonKey(builder, "$schema");
-        appendStringWithQuotes(builder, val.schemaVersion);
-        builder.append(",\n");
-
-        appendTabString(builder, schemaValuesTabIndex);
-        appendJsonKey(builder, "$id");
-        appendStringWithQuotes(builder, val.id);
-        builder.append(",\n");
 
         appendTabString(builder, schemaValuesTabIndex);
         appendJsonKey(builder, "bsonType");

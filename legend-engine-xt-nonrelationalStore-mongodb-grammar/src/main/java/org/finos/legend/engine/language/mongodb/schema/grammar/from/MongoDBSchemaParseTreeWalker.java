@@ -355,37 +355,37 @@ public class MongoDBSchemaParseTreeWalker
     {
         List<MongoDBSchemaParser.PairContext> schemaPair = schemaContext.obj().pair();
         Schema schema = new Schema();
-        visitSchemaProperties(schema, schemaPair);
+        //visitSchemaProperties(schema, schemaPair);
         visitObjectProperties(schema, schemaPair);
         return schema;
 
     }
 
-    private void visitSchemaProperties(Schema schema, List<MongoDBSchemaParser.PairContext> pairContexts)
-    {
-        Iterator<MongoDBSchemaParser.PairContext> schemaIter = pairContexts.iterator();
-        while (schemaIter.hasNext())
-        {
-            MongoDBSchemaParser.PairContext schemaPair = schemaIter.next();
-            if (schemaPair.key().keywords() != null)
-            {
-                String key = schemaPair.key().keywords().getText();
-                switch (key)
-                {
-                    case "\"$schema\"":
-                        // Check schemaPair.value().STRING() is not null
-                        schema.schemaVersion = schemaPair.value().getText();
-                        break;
-                    case "\"$id\"":
-                        // Check schemaPair.value().STRING() is not null
-                        schema.id = schemaPair.value().getText();
-                        break;
-                    default:
-                        LOGGER.debug("Skipping key from object: " + key);
-                }
-            }
-        }
-    }
+//    private void visitSchemaProperties(Schema schema, List<MongoDBSchemaParser.PairContext> pairContexts)
+//    {
+//        Iterator<MongoDBSchemaParser.PairContext> schemaIter = pairContexts.iterator();
+//        while (schemaIter.hasNext())
+//        {
+//            MongoDBSchemaParser.PairContext schemaPair = schemaIter.next();
+//            if (schemaPair.key().keywords() != null)
+//            {
+//                String key = schemaPair.key().keywords().getText();
+//                switch (key)
+//                {
+//                    case "\"$schema\"":
+//                        // Check schemaPair.value().STRING() is not null
+//                        schema.schemaVersion = schemaPair.value().getText();
+//                        break;
+//                    case "\"$id\"":
+//                        // Check schemaPair.value().STRING() is not null
+//                        schema.id = schemaPair.value().getText();
+//                        break;
+//                    default:
+//                        LOGGER.debug("Skipping key from object: " + key);
+//                }
+//            }
+//        }
+//    }
 
     private void visitObjectProperties(ObjectType objType, List<MongoDBSchemaParser.PairContext> pairContexts)
     {

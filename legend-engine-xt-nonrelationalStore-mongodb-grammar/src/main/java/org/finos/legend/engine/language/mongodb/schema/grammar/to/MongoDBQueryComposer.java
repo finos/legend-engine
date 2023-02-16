@@ -26,10 +26,12 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Com
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DatabaseCommand;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DecimalTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.EqOperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.FieldPathExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.GTOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.GreaterThanEqualsOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.InOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.IntTypeValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.JsonSchemaExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.KeyValueExpressionPair;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.KeyValuePair;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LTEOperatorExpression;
@@ -135,6 +137,12 @@ public class MongoDBQueryComposer
             }
 
             @Override
+            public String visit(FieldPathExpression val)
+            {
+                return null;
+            }
+
+            @Override
             public String visit(GTOperatorExpression val)
             {
                 String expString = visit(val.expression);
@@ -153,6 +161,12 @@ public class MongoDBQueryComposer
             {
                 String expString = visit(val.expression);
                 return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.IN) + "\" : " + expString + " }";
+            }
+
+            @Override
+            public String visit(JsonSchemaExpression val)
+            {
+                return null;
             }
 
             @Override
