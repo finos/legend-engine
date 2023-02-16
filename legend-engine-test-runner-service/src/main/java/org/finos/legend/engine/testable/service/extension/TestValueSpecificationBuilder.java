@@ -66,12 +66,21 @@ public class TestValueSpecificationBuilder implements ValueSpecificationVisitor<
     private final List<Closeable> closeables;
     private final TestData testData;
     private final PureModelContextData pureModelContextData;
+    private List<String> keys = null;
 
     public TestValueSpecificationBuilder(List<Closeable> closeables, TestData testData, PureModelContextData pureModelContextData)
     {
         this.closeables = closeables;
         this.testData = testData;
         this.pureModelContextData = pureModelContextData;
+    }
+
+    public TestValueSpecificationBuilder(List<String> keys, List<Closeable> closeables, TestData testData, PureModelContextData pureModelContextData)
+    {
+        this.closeables = closeables;
+        this.testData = testData;
+        this.pureModelContextData = pureModelContextData;
+        this.keys = keys;
     }
 
     @Override
@@ -105,7 +114,7 @@ public class TestValueSpecificationBuilder implements ValueSpecificationVisitor<
 
     private void getTestParameters(ExecutionParameters params)
     {
-        if (params instanceof SingleExecutionParameters)
+        if (params instanceof SingleExecutionParameters && keys.contains(((SingleExecutionParameters) params).key))
         {
             org.eclipse.collections.api.tuple.Pair<Runtime, List<Closeable>> testRuntimeWithCloseable = TestRuntimeBuilder.getTestRuntimeAndClosableResources(((SingleExecutionParameters) params).runtime, testData, pureModelContextData);
             ((SingleExecutionParameters) params).runtime = testRuntimeWithCloseable.getOne();
@@ -113,7 +122,7 @@ public class TestValueSpecificationBuilder implements ValueSpecificationVisitor<
         }
         else if (params instanceof MultiExecutionParameters)
         {
-            ((MultiExecutionParameters) params).singleExecutionParameters.stream().forEach(param -> getTestParameters(param));
+            ((MultiExecutionParameters) params).singleExecutionParameters.stream().filter(param -> keys.contains(param.key)).forEach(param -> getTestParameters(param));
         }
     }
 
