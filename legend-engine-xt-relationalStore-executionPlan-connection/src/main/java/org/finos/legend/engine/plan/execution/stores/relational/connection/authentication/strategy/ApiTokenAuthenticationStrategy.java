@@ -61,7 +61,6 @@ public class ApiTokenAuthenticationStrategy extends AuthenticationStrategy
     {
         ApiTokenCredential apiTokenCredential = this.resolveCredential(properties, this.apiToken);
         Properties connectionProperties = new Properties();
-        connectionProperties.putAll(properties);
         connectionProperties.put("PWD", apiTokenCredential.getApiToken());
         return Tuples.pair(url, connectionProperties);
     }
