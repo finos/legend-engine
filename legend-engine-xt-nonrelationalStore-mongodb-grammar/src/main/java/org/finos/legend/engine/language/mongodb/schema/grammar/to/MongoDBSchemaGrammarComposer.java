@@ -98,7 +98,7 @@ public class MongoDBSchemaGrammarComposer
         collections.stream().forEach(col ->
         {
             int schemaNodeTabIndex = tabIndex + 1;
-            builder.append(col.schema.accept(new BaseTypeVisitorImpl(schemaNodeTabIndex)));
+            //builder.append(col.schema.accept(new BaseTypeVisitorImpl(schemaNodeTabIndex)));
         });
         //removeLastChar(builder);
     }
@@ -123,25 +123,25 @@ public class MongoDBSchemaGrammarComposer
             int validatorValuesIndex = optionValuesIndex + 1;
             appendTabString(builder, validatorValuesIndex);
             appendJsonKey(builder, "$ref");
-            appendStringWithQuotes(builder, col.schema.id);
+            //appendStringWithQuotes(builder, col.schema.id);
             builder.append("\n");
             appendTabString(builder, optionValuesIndex);
             builder.append("}");
-            if (col.schema.validationLevel != null)
-            {
-                builder.append(",\n");
-                appendTabString(builder, optionValuesIndex);
-                appendJsonKey(builder, "validationLevel");
-                appendStringWithQuotes(builder, col.schema.validationLevel.name());
-            }
-
-            if (col.schema.validationAction != null)
-            {
-                builder.append(",\n");
-                appendTabString(builder, optionValuesIndex);
-                appendJsonKey(builder, "validationAction");
-                appendStringWithQuotes(builder, col.schema.validationAction.name());
-            }
+//            if (col.schema.validationLevel != null)
+//            {
+//                builder.append(",\n");
+//                appendTabString(builder, optionValuesIndex);
+//                appendJsonKey(builder, "validationLevel");
+//                appendStringWithQuotes(builder, col.schema.validationLevel.name());
+//            }
+//
+//            if (col.schema.validationAction != null)
+//            {
+//                builder.append(",\n");
+//                appendTabString(builder, optionValuesIndex);
+//                appendJsonKey(builder, "validationAction");
+//                appendStringWithQuotes(builder, col.schema.validationAction.name());
+//            }
             builder.append("\n");
             appendTabString(builder, collectionValuesIndex);
             builder.append("},\n");

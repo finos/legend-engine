@@ -127,8 +127,8 @@ Class meta::external::store::mongodb::metamodel::LongType extends BsonType
 
 Class meta::external::store::mongodb::metamodel::DecimalType extends BsonType
 {
-  maximum: Decimal[1];
-  minimum: Decimal[1];
+  maximum: Decimal[0..1];
+  minimum: Decimal[0..1];
 }
 
 Class meta::external::store::mongodb::metamodel::MinKeyType extends BsonType
@@ -151,18 +151,33 @@ Enum meta::external::store::mongodb::metamodel::SchemaValidationAction
 
 Class meta::external::store::mongodb::metamodel::Schema extends ObjectType
 {
-    id: String[1];
-    schemaVersion: String[0..1];
+    id: String[0..1];
+}
+
+Class meta::external::store::mongodb::metamodel::MongoIndex
+{
+  name: String[1];
+  field: String[*];
+}
+
+Class meta::external::store::mongodb::metamodel::Validator
+{
     validationLevel: SchemaValidationLevel[0..1];
     validationAction: SchemaValidationAction[0..1];
+    validatorExpression: ArgumentExpression[1];
 }
 
 Class meta::external::store::mongodb::metamodel::Collection
 {
   owner: MongoDatabase[1];
   name: String[1];
-  schema: Schema[0..1];
+  uuid: String[1];
+  collation: Collation[0..1];
+  validator: Validator[0..1];
+  indexes:  MongoIndex[0..1];
 }
+
+
 
 Class meta::external::store::mongodb::metamodel::CollectionView
 {
@@ -178,8 +193,7 @@ Class meta::external::store::mongodb::metamodel::MongoDatabase
   name: String[1];
   collections: Collection[*];
   views: CollectionView[*];
-  authenticationEnabled: Boolean[1];
-  authenticationMethod: AuthenticationStrategy[0..1];
+  authenticationStrategy: AuthenticationStrategy[0..1];
 }
 
 Class meta::external::store::mongodb::metamodel::Collation
@@ -234,6 +248,19 @@ Class meta::external::store::mongodb::metamodel::aggregation::AggregateExpressio
 Class meta::external::store::mongodb::metamodel::aggregation::ArgumentExpression
 {
 }
+
+
+Class {doc.doc = 'Expression that starts with $ with format $fieldName.path.to.element'} 
+meta::external::store::mongodb::metamodel::aggregation::FieldPathExpression extends ArgumentExpression
+{
+  fieldPath: String[1];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::JsonSchemaExpression extends ArgumentExpression
+{
+  schemaExpression: meta::external::store::mongodb::metamodel::Schema[1];
+}
+
 
 Class {doc.doc = 'Comparison Operator Expressions https://www.mongodb.com/docs/manual/reference/operator/query-comparison/'}
 meta::external::store::mongodb::metamodel::aggregation::ComparisonOperatorExpression extends ArgumentExpression

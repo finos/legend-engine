@@ -1,0 +1,100 @@
+{
+  "options": {
+    "validator": {
+      "$jsonSchema": {
+        "bsonType": "object",
+        "title": "Record of employee",
+        "description": "This document records the details of an employee",
+        "properties": {
+          "hobbies": {
+            "description": "Two lists of indoor & outdoor hobbies",
+            "properties": {
+              "indoor": {
+                "items": {
+                  "description": "indoor hobby",
+                  "bsonType": "string"
+                },
+                "minItems": {
+                  "$numberInt": "2"
+                },
+                "maxItems": {
+                  "$numberInt": "10"
+                },
+                "uniqueItems": true,
+                "bsonType": "array",
+                "description": "List of indoor hobbies"
+              },
+              "outdoor": {
+                "maxItems": {
+                  "$numberInt": "5"
+                },
+                "uniqueItems": true,
+                "bsonType": "array",
+                "description": "List of outdoor hobbies",
+                "items": {
+                  "bsonType": "string",
+                  "description": "outdoor hobby"
+                },
+                "minItems": {
+                  "$numberInt": "1"
+                }
+              }
+            },
+            "required": [
+              "indoor",
+              "outdoor"
+            ],
+            "additionalProperties": false,
+            "bsonType": "object"
+          },
+          "id": {
+            "description": "employee ID",
+            "minimum": {
+              "$numberInt": "100000"
+            },
+            "bsonType": "long"
+          },
+          "name": {
+            "bsonType": "string",
+            "description": "name of the employee",
+            "minLength": {
+              "$numberInt": "2"
+            }
+          },
+          "age": {
+            "bsonType": "int",
+            "description": "age of the employee",
+            "minimum": {
+              "$numberInt": "16"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "age",
+          "hobbies"
+        ],
+        "additionalProperties": true
+      },
+      "validationLevel": "strict",
+      "validationAction": "error"
+    }
+  },
+  "indexes": [
+    {
+      "v": {
+        "$numberInt": "2"
+      },
+      "key": {
+        "_id": {
+          "$numberInt": "1"
+        }
+      },
+      "name": "_id_"
+    }
+  ],
+  "uuid": "d69afaf3f1a94430a42f3dc7ecb66ada",
+  "collectionName": "employees",
+  "type": "collection"
+}

@@ -91,48 +91,48 @@ public class MongoDBSchemaParseTreeWalker
 
     private static void visitOptionsNode(Map<String, Schema> schemas, Collection col, MongoDBSchemaParser.PairContext pairContext)
     {
-        MongoDBSchemaParser.ValueContext options = pairContext.value();
-        for (MongoDBSchemaParser.PairContext optionsPair : options.obj().pair())
-        {
-            if (optionsPair.key().keywords().VALIDATOR() != null)
-            {
-                MongoDBSchemaParser.ValueContext validator = optionsPair.value();
-                for (MongoDBSchemaParser.PairContext validatorPair : validator.obj().pair())
-                {
-                    if (validatorPair.key().keywords().REF() != null)
-                    {
-                        String schemaRef = validatorPair.value().STRING().getText();
-                        // Check if we have schemas process - if so - look up in the Map and set.
-                        if (schemas.get(schemaRef) != null)
-                        {
-                            col.schema = schemas.get(schemaRef);
-                            break;
-                        }
-                        else
-                        {
-                            int line = validatorPair.key().getStart().getLine();
-                            SourceInformation sourceInformation = new SourceInformation("", line, 1, line, 1);
-                            throw new MongoDBSchemaParserException("SchemaReference not found: " + schemaRef, sourceInformation);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                LOGGER.trace("Skipping key from collections/options object: " + optionsPair.getText());
-            }
-        }
-        for (MongoDBSchemaParser.PairContext optionsPair : options.obj().pair())
-        {
-            if (optionsPair.key().keywords().VALIDATION_LEVEL() != null)
-            {
-                col.schema.validationLevel = SchemaValidationLevel.valueOf(optionsPair.value().STRING().getText());
-            }
-            else if (optionsPair.key().keywords().VALIDATION_ACTION() != null)
-            {
-                col.schema.validationAction = SchemaValidationAction.valueOf(optionsPair.value().STRING().getText());
-            }
-        }
+//        MongoDBSchemaParser.ValueContext options = pairContext.value();
+//        for (MongoDBSchemaParser.PairContext optionsPair : options.obj().pair())
+//        {
+//            if (optionsPair.key().keywords().VALIDATOR() != null)
+//            {
+//                MongoDBSchemaParser.ValueContext validator = optionsPair.value();
+//                for (MongoDBSchemaParser.PairContext validatorPair : validator.obj().pair())
+//                {
+//                    if (validatorPair.key().keywords().REF() != null)
+//                    {
+//                        String schemaRef = validatorPair.value().STRING().getText();
+//                        // Check if we have schemas process - if so - look up in the Map and set.
+//                        if (schemas.get(schemaRef) != null)
+//                        {
+//                            col.schema = schemas.get(schemaRef);
+//                            break;
+//                        }
+//                        else
+//                        {
+//                            int line = validatorPair.key().getStart().getLine();
+//                            SourceInformation sourceInformation = new SourceInformation("", line, 1, line, 1);
+//                            throw new MongoDBSchemaParserException("SchemaReference not found: " + schemaRef, sourceInformation);
+//                        }
+//                    }
+//                }
+//            }
+//            else
+//            {
+//                LOGGER.trace("Skipping key from collections/options object: " + optionsPair.getText());
+//            }
+//        }
+//        for (MongoDBSchemaParser.PairContext optionsPair : options.obj().pair())
+//        {
+//            if (optionsPair.key().keywords().VALIDATION_LEVEL() != null)
+//            {
+//                col.schema.validationLevel = SchemaValidationLevel.valueOf(optionsPair.value().STRING().getText());
+//            }
+//            else if (optionsPair.key().keywords().VALIDATION_ACTION() != null)
+//            {
+//                col.schema.validationAction = SchemaValidationAction.valueOf(optionsPair.value().STRING().getText());
+//            }
+//        }
     }
 
     private static MongoDBSchemaParserException raiseException(int line, int startColumn, String errMessage)

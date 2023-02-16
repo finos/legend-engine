@@ -523,19 +523,6 @@ Diagram meta::external::store::mongodb::metamodel::Mongo_StoreModel_Diagram(widt
         nameVisible=true,
         lineStyle=SIMPLE)
 
-    PropertyView pview_2(
-        property=meta::external::store::mongodb::metamodel::Collection.schema,
-        source=cview_2,
-        target=cview_3,
-        points=[(1313.69800,543.00000),(1316.08032,406.00000)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
 
     PropertyView pview_3(
         property=meta::external::store::mongodb::metamodel::ArrayType.items,
@@ -579,17 +566,4 @@ Diagram meta::external::store::mongodb::metamodel::Mongo_StoreModel_Diagram(widt
         nameVisible=true,
         lineStyle=SIMPLE)
 
-    PropertyView pview_6(
-        property=meta::external::store::mongodb::metamodel::MongoDatabase.authenticationMethod,
-        source=cview_1,
-        target=cview_27,
-        points=[(815.75806,544.00000),(150.24663,542.37021)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
 }
