@@ -77,8 +77,12 @@ public class IngestModeTest
     protected Field name = Field.builder().name("name").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).primaryKey(true).build();
     protected Field nameModified = Field.builder().name("name").type(FieldType.of(DataType.VARCHAR, 64, null)).primaryKey(true).build();
     protected Field amount = Field.builder().name("amount").type(FieldType.of(DataType.DOUBLE, Optional.empty(), Optional.empty())).build();
+    protected Field nonNullableAmount = Field.builder().name("amount").type(FieldType.of(DataType.DOUBLE, Optional.empty(), Optional.empty())).nullable(false).build();
     protected Field floatAmount = Field.builder().name("amount").type(FieldType.of(DataType.FLOAT, Optional.empty(), Optional.empty())).build();
     protected Field bizDate = Field.builder().name("biz_date").type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).build();
+    protected Field nonNullableBizDate = Field.builder().name("biz_date").type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).nullable(false).build();
+
+
 
     // Bitemporal Columns:
     protected Field validityFromReference = Field.builder().name(validityFromReferenceField).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).build();
@@ -116,6 +120,13 @@ public class IngestModeTest
         .addFields(name)
         .addFields(amount)
         .addFields(bizDate)
+        .build();
+
+    protected SchemaDefinition baseTableSchemaWithNonNullableColumn = SchemaDefinition.builder()
+        .addFields(id)
+        .addFields(name)
+        .addFields(nonNullableAmount)
+        .addFields(nonNullableBizDate)
         .build();
 
     protected SchemaDefinition baseTableShortenedSchema = SchemaDefinition.builder()
@@ -343,6 +354,8 @@ public class IngestModeTest
     protected String expectedSchemaEvolutionModifySizeWithUpperCase = "ALTER TABLE \"MYDB\".\"MAIN\" ALTER COLUMN \"NAME\" VARCHAR(64) PRIMARY KEY";
 
     protected String expectedSchemaNonBreakingChange = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"id\" TINYINT PRIMARY KEY";
+    protected String expectedSchemaImplicitNullabilityChange = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"amount\" SET NULL";
+    protected String expectedSchemaNullabilityChange = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"biz_date\" SET NULL";
 
     protected String expectedBitemporalMainTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
         "(\"id\" INTEGER," +

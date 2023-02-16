@@ -37,6 +37,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Alter;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.AlterAbstract;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
 import org.finos.legend.engine.persistence.components.sink.Sink;
 import org.finos.legend.engine.persistence.components.util.Capability;
@@ -131,7 +132,7 @@ public class SchemaEvolution
                 }
                 else
                 {
-                    throw new IllegalStateException(String.format("Field \"%s\" in staging dataset does not exist in main dataset", stagingFieldName));
+                    throw new IllegalStateException(String.format("Field \"%s\" in staging dataset does not exist in main dataset. Couldn't add column since sink/user capabilities do not permit operation.", stagingFieldName));
                 }
             }
             else
@@ -144,21 +145,29 @@ public class SchemaEvolution
                         // If the datatype is an implicit change, we let the database handle the change.
                         // We only alter the length if required (pick the maximum length)
                         if (sink.capabilities().contains(Capability.IMPLICIT_DATA_TYPE_CONVERSION)
-                                && (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.IMPLICIT_DATA_TYPE_CONVERSION) || schemaEvolutionCapabilitySet.isEmpty())
                                 && sink.supportsImplicitMapping(matchedMainField.type().dataType(), stagingFieldType.dataType()))
                         {
-                            Field newField = evolveFieldLength(stagingField, matchedMainField);
-                            evolveDataType(newField, matchedMainField, mainDataset, operations, modifiedFields);
+                            if (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.IMPLICIT_DATA_TYPE_CONVERSION) || schemaEvolutionCapabilitySet.isEmpty())
+                            {
+                                Field newField = createNewField(matchedMainField, stagingField, matchedMainField.type().length().orElse(0), matchedMainField.type().scale().orElse(0));
+                                evolveDataType(newField, matchedMainField, mainDataset, operations, modifiedFields);
+                            }
                         }
                         // If the datatype is a non-breaking change, we alter the datatype.
                         // We also alter the length if required (pick the maximum length)
                         else if (sink.capabilities().contains(Capability.EXPLICIT_DATA_TYPE_CONVERSION)
-                                && (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.EXPLICIT_DATA_TYPE_CONVERSION) || schemaEvolutionCapabilitySet.isEmpty())
                                 && sink.supportsExplicitMapping(matchedMainField.type().dataType(), stagingFieldType.dataType()))
                         {
-                            //Modify the column in main table
-                            Field newField = evolveFieldLength(matchedMainField, stagingField);
-                            evolveDataType(newField, matchedMainField, mainDataset, operations, modifiedFields);
+                            if (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.EXPLICIT_DATA_TYPE_CONVERSION) || schemaEvolutionCapabilitySet.isEmpty())
+                            {
+                                //Modify the column in main table
+                                Field newField = createNewField(stagingField, matchedMainField, stagingField.type().length().orElse(0), stagingField.type().scale().orElse(0));
+                                evolveDataType(newField, matchedMainField, mainDataset, operations, modifiedFields);
+                            }
+                            else
+                            {
+                                throw new IncompatibleSchemaChangeException(String.format("Explicit data type conversion from \"%s\" to \"%s\" couldn't be performed since user capability does not allow it", matchedMainField.type().dataType(), stagingFieldType.dataType()));
+                            }
                         }
 
                         //Else, it is a breaking change. We throw an exception
@@ -173,6 +182,14 @@ public class SchemaEvolution
                         evolveDataType(newField, matchedMainField, mainDataset, operations, modifiedFields);
                     }
                 }
+                else
+                {
+                    if (matchedMainField.nullable() != stagingField.nullable())
+                    {
+                        Field newField = createNewField(matchedMainField, stagingField, matchedMainField.type().length().orElse(0), matchedMainField.type().scale().orElse(0));
+                        evolveDataType(newField, matchedMainField, mainDataset, operations, modifiedFields);
+                    }
+                }
             }
         }
         return operations;
@@ -183,8 +200,16 @@ public class SchemaEvolution
     {
         if (!mainDataField.equals(newField))
         {
-            operations.add(Alter.of(mainDataset, Alter.AlterOperation.CHANGE_DATATYPE, newField, Optional.empty()));
-            modifiedFields.add(newField);
+            if (!mainDataField.type().equals(newField.type()))
+            {
+                operations.add(Alter.of(mainDataset, Alter.AlterOperation.CHANGE_DATATYPE, newField, Optional.empty()));
+                modifiedFields.add(newField);
+            }
+            else if (mainDataField.nullable() != newField.nullable())
+            {
+                operations.add(Alter.of(mainDataset, Alter.AlterOperation.NULLABLE_COLUMN, newField, Optional.empty()));
+                modifiedFields.add(newField);
+            }
         }
     }
 
@@ -216,7 +241,6 @@ public class SchemaEvolution
     {
         int length = 0;
         int scale = 0;
-        FieldType modifiedFieldType;
         if (sink.capabilities().contains(Capability.DATA_SIZING_CHANGES)
                 && (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_SIZING_CHANGES) || schemaEvolutionCapabilitySet.isEmpty()))
         {
@@ -247,18 +271,26 @@ public class SchemaEvolution
             {
                 scale = oldField.type().scale().get();
             }
+            return createNewField(newField, oldField, length, scale);
         }
+        else
+        {
+            throw new IncompatibleSchemaChangeException("Data sizing changes couldn't be performed since user capability does not allow it");
+        }
+    }
 
-        modifiedFieldType = FieldType.of(newField.type().dataType(), Optional.ofNullable(length == 0 ? null : length), Optional.ofNullable(scale == 0 ? null : scale));
+    private Field createNewField(Field newField, Field oldField, int length, int scale)
+    {
+        FieldType modifiedFieldType = FieldType.of(newField.type().dataType(), Optional.ofNullable(length == 0 ? null : length), Optional.ofNullable(scale == 0 ? null : scale));
 
         boolean nullability = newField.nullable() || oldField.nullable();
         //boolean uniqueness = !newField.isUnique() || !oldField.isUnique();
 
         //todo : how to handle default value, identity, uniqueness ?
         return Field.builder().name(newField.name()).primaryKey(newField.primaryKey())
-            .fieldAlias(newField.fieldAlias()).nullable(nullability)
-            .identity(newField.identity()).unique(newField.unique())
-            .defaultValue(newField.defaultValue()).type(modifiedFieldType).build();
+                .fieldAlias(newField.fieldAlias()).nullable(nullability)
+                .identity(newField.identity()).unique(newField.unique())
+                .defaultValue(newField.defaultValue()).type(modifiedFieldType).build();
     }
 
     private SchemaDefinition evolveSchemaDefinition(SchemaDefinition schema, List<Field> modifiedFields)
