@@ -39,7 +39,8 @@ public class JSONSchemaConfig extends GenerationConfiguration
     public String schemaSpecification;
     @JsonProperty(value = "createSchemaCollection")
     public Boolean createSchemaCollection;
-
+    @JsonProperty(value = "generateAnyOfSubType")
+    public Boolean generateAnyOfSubType;
 
     public Root_meta_json_schema_generation_JSONSchemaConfig process(PureModel pureModel)
     {
@@ -81,6 +82,11 @@ public class JSONSchemaConfig extends GenerationConfiguration
         if (createSchemaCollection != null)
         {
             generationConfiguration._createSchemaCollection(createSchemaCollection);
+        }
+
+        if (generateAnyOfSubType != null)
+        {
+            generationConfiguration._generateAnyOfSubType(generateAnyOfSubType);
         }
 
         return generationConfiguration;
