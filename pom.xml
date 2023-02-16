@@ -1,5 +1,5 @@
 <!--
- Copyright 2023 Goldman Sachs
+ Copyright 2020 Goldman Sachs
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -250,6 +250,7 @@
         <module>legend-engine-xt-sql-grammar-integration</module>
         <module>legend-engine-xt-sql-query</module>
         <module>legend-engine-xt-sql-pure</module>
+        <module>legend-engine-xt-sql-postgres-server</module>
         <module>legend-engine-xt-nonrelationalStore-mongodb-pure</module>
         <module>legend-engine-xt-nonrelationalStore-mongodb-grammar</module>
         <module>legend-engine-xt-nonrelationalStore-mongodb-protocol</module>
@@ -289,13 +290,13 @@
         <hikaricp.version>4.0.3</hikaricp.version>
         <h2.version>1.4.200</h2.version>
         <snowflake.version>3.13.5</snowflake.version>
-        <databricks.version>2.6.25</databricks.version>
+        <databricks.version>2.6.27</databricks.version>
         <redshiftJDBC.version>2.0.0.3</redshiftJDBC.version>
         <postgres.version>9.4.1208.jre7</postgres.version>
 
         <!-- Dependency versions -->
         <junit.version>4.13.1</junit.version>
-        <mockito-core.version>2.28.2</mockito-core.version>
+        <mockito-core.version>4.4.0</mockito-core.version>
         <eclipsecollections.version>10.2.0</eclipsecollections.version>
         <jackson.version>2.10.5</jackson.version>
         <jackson.databind.version>2.10.5.1</jackson.databind.version>
@@ -1704,6 +1705,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-sql-grammar-integration</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-sql-postgres-server</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

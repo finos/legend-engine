@@ -198,6 +198,8 @@ public class TestSemiStructuredFlattening extends AbstractTestSemiStructured
                 "  connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 ")\n";
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
+
+        Assert.assertEquals("[PERSON_TABLE.FIRM_DETAILS <TableAliasColumn>, PERSON_TABLE.FIRSTNAME <TableAliasColumn>]", this.scanColumns("flatten::semiStructuredMultiFlatten__TabularDataSet_1_", snowflakeMapping));
     }
 
 

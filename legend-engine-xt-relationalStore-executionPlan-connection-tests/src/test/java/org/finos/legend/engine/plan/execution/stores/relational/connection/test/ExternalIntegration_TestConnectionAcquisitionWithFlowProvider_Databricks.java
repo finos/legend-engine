@@ -33,14 +33,12 @@ import javax.security.auth.Subject;
 import java.sql.Connection;
 import java.util.Collections;
 import java.util.Optional;
-import java.util.ResourceBundle;
 
 import static org.junit.Assert.assertTrue;
 
 public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Databricks extends org.finos.legend.engine.plan.execution.stores.relational.connection.test.DbSpecificTests
 {
     private ConnectionManagerSelector connectionManagerSelector;
-    private static final ResourceBundle env = ResourceBundle.getBundle("environment");
 
     // To make test work, please enable environment variable DATABRICKS_API_TOKEN with a valid API token
 
@@ -88,7 +86,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Datab
         dsSpecs.hostname = "dbc-f0687849-717f.cloud.databricks.com";
         dsSpecs.port = "443";
         dsSpecs.protocol = "https";
-        dsSpecs.httpPath = "sql/protocolv1/o/448477574000404/0228-234110-ve0xbrtk";
+        dsSpecs.httpPath = "/sql/1.0/warehouses/c56852187940e5a3";
         ApiTokenAuthenticationStrategy authSpec = new ApiTokenAuthenticationStrategy();
         authSpec.apiToken = "DATABRICKS_API_TOKEN";
         return new RelationalDatabaseConnection(dsSpecs, authSpec, DatabaseType.Databricks);

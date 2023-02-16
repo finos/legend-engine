@@ -116,6 +116,8 @@ public class TestSemiStructuredInheritanceMapping extends AbstractTestSemiStruct
                 "Fabrice,1,s2,c2,\n" +
                 "Oliver,1,s3,,\n" +
                 "David,1,s3,,\n", h2Result.replace("\r\n", "\n"));
+
+        Assert.assertEquals("[PERSON_TABLE.FIRM_DETAILS <TableAliasColumn>, PERSON_TABLE.FIRSTNAME <TableAliasColumn>]", this.scanColumns("inheritance::semiStructuredPropertyAccessAtSubClassNestedUsingProjectWithFunctions__TabularDataSet_1_", h2Mapping));
     }
 
     public String modelResourcePath()

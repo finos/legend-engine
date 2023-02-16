@@ -61,26 +61,28 @@ public class SQLExecutionResult extends Result
     private final List<String> columnNames = FastList.newList();
     private final List<ResultColumn> resultColumns = FastList.newList();
     private final List<SQLResultColumn> sqlResultColumns;
-
+    private String sessionID;
     public Span topSpan;
 
     public SQLExecutionResult(List<ExecutionActivity> activities, SQLExecutionNode SQLExecutionNode, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan)
     {
-        super("success", activities);
+        this(activities, SQLExecutionNode, databaseType, databaseTimeZone, connection, profiles, temporaryTables, topSpan, null);
+    }
 
+    public SQLExecutionResult(List<ExecutionActivity> activities, SQLExecutionNode SQLExecutionNode, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan, String sessionID)
+    {
+        super("success", activities);
         this.SQLExecutionNode = SQLExecutionNode;
         this.databaseType = databaseType;
         this.databaseTimeZone = databaseTimeZone;
         this.calendar = new GregorianCalendar(TimeZone.getTimeZone(databaseTimeZone));
         this.temporaryTables = temporaryTables;
-
         this.topSpan = topSpan;
-
+        this.sessionID = sessionID;
         try
         {
             this.connection = connection;
             this.statement = connection.createStatement();
-
             if (DatabaseType.MemSQL.name().equals(databaseType))
             {
                 this.statement.setFetchSize(100);
@@ -203,6 +205,11 @@ public class SQLExecutionResult extends Result
         return resultColumn.getTransformedValue(this.getResultSet(), calendar);
     }
 
+    public String getSessionID()
+    {
+        return this.sessionID;
+    }
+
     @Override
     public void close()
     {
@@ -237,4 +244,5 @@ public class SQLExecutionResult extends Result
 
         FastList.newListWith(this.resultSet, this.statement, this.connection).forEach((Procedure<AutoCloseable>) closingFunction::accept);
     }
+
 }
