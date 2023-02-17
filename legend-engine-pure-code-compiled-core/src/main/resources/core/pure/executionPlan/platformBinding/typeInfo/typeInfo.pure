@@ -452,6 +452,10 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo
       {none:Property<Nil,Any|*>[0] | 
          $class->getGeneralizations()->fold({c, tis| $tis->addPropertyForClassIfDefined($c, $propertyName, $isNewInstanceAllowed)}, $info);
       }
+      {multiple:Property<Nil,Any|*>[*] |
+         fail('Multiple properties found with name - ' + $propertyName);
+         $info;
+      }
    ]);
 }
 
