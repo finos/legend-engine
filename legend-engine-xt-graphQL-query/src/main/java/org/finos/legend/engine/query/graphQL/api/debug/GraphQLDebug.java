@@ -127,12 +127,12 @@ public class GraphQLDebug extends GraphQL
     @Produces(MediaType.APPLICATION_JSON)
     public Response generateGraphFetchDev(@Context HttpServletRequest request, @PathParam("workspaceId") String workspaceId, @PathParam("projectId") String projectId, @PathParam("queryClassPath") String queryClassPath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        return this.generateGraphFetchDevImpl(request, workspaceId, false, queryClassPath, queryClassPath, query, pm);
+        return this.generateGraphFetchDevWithUserWorkspace(request, workspaceId, projectId, queryClassPath, query, pm);
     }
 
     @POST
     @ApiOperation(value = "Generate Pure graphFetch(s) from a graphQL query using metadata from SDLC project (user workspace)")
-    @Path("generateGraphFetch/dev/{projectId}/{workspaceId}/query/{queryClassPath}")
+    @Path("generateGraphFetch/dev/{projectId}/workspace/{workspaceId}/query/{queryClassPath}")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
     public Response generateGraphFetchDevWithUserWorkspace(@Context HttpServletRequest request, @PathParam("workspaceId") String workspaceId, @PathParam("projectId") String projectId, @PathParam("queryClassPath") String queryClassPath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)

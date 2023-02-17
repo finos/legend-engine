@@ -155,7 +155,7 @@ public class GraphQLExecute extends GraphQL
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response generatePlansDev(@Context HttpServletRequest request, @PathParam("projectId") String projectId, @PathParam("workspaceId") String workspaceId, @PathParam("queryClassPath") String queryClassPath, @PathParam("mappingPath") String mappingPath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        return this.generatePlansDevWithWorkspaceImpl(request, projectId, workspaceId, false, queryClassPath, mappingPath, query, pm);
+        return this.generatePlansDevWithUserWorkspace(request, projectId, workspaceId, queryClassPath, mappingPath, query, pm);
     }
 
     @POST
@@ -275,7 +275,7 @@ public class GraphQLExecute extends GraphQL
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response executeDev(@Context HttpServletRequest request, @PathParam("projectId") String projectId, @PathParam("workspaceId") String workspaceId, @PathParam("queryClassPath") String queryClassPath, @PathParam("mappingPath") String mappingPath, @PathParam("runtimePath") String runtimePath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        return this.executeDevImpl(request, projectId, workspaceId, false, queryClassPath, mappingPath, runtimePath, query, pm);
+        return this.executeDevWithUserWorkspace(request, projectId, workspaceId, queryClassPath, mappingPath, runtimePath, query, pm);
     }
 
     @POST
