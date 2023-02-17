@@ -5,76 +5,72 @@
       {
         "options": {
           "validator": {
-            "$ref": "https://github.com/finos/legend/employee.schema"
-          },
-          "validationLevel": "strict",
-          "validationAction": "error"
-        },
-        "collectionName": "firm",
-        "type": "collection"
-      }
-    ],
-    "schemas": [
-      {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "https://github.com/finos/legend/employee.schema",
-        "bsonType": "object",
-        "title": "Record of Firm",
-        "description": "This document records the details of an employee",
-        "properties": {
-          "name": {
-            "bsonType": "string",
-            "description": "name of the firm",
-            "minLength": 2
-          },
-          "yearOfIncorporation": {
-            "bsonType": "int",
-            "description": "year of incorporation",
-            "minimum": 2000
-          },
-          "marketCap": {
-            "bsonType": "decimal",
-            "description": "market cap at end of last year",
-            "minimum": 1000.01,
-            "maximum": 100000.001
-          },
-          "regulated": {
-            "bsonType": "bool",
-            "description": "Regulated industry in US"
-          },
-          "location": {
-            "bsonType": "object",
-            "description": "Location of firm",
-            "properties": {
-              "country": {
-                "bsonType": "string",
-                "description": "country"
+            "$jsonSchema": {
+              "bsonType": "object",
+              "title": "Record of Firm",
+              "description": "This document records the details of an employee",
+              "properties": {
+                "name": {
+                  "bsonType": "string",
+                  "description": "name of the firm",
+                  "minLength": 2
+                },
+                "yearOfIncorporation": {
+                  "bsonType": "int",
+                  "description": "year of incorporation",
+                  "minimum": 2000
+                },
+                "marketCap": {
+                  "bsonType": "decimal",
+                  "description": "market cap at end of last year",
+                  "minimum": 1000.01,
+                  "maximum": 100000.001
+                },
+                "regulated": {
+                  "bsonType": "bool",
+                  "description": "Regulated industry in US"
+                },
+                "location": {
+                  "bsonType": "object",
+                  "description": "Location of firm",
+                  "properties": {
+                    "country": {
+                      "bsonType": "string",
+                      "description": "country"
+                    },
+                    "region": {
+                      "bsonType": "string",
+                      "description": "region of city",
+                      "minLength": 2
+                    }
+                  },
+                  "required": [
+                    "country"
+                  ],
+                  "additionalProperties": true
+                },
+                "otherNames": {
+                  "bsonType": "array",
+                  "description": "Alternative Names",
+                  "items": {
+                    "bsonType": "string"
+                  },
+                  "uniqueItems": true
+                }
               },
-              "region": {
-                "bsonType": "string",
-                "description": "region of city",
-                "minLength": 2
-              }
+              "required": [
+                "name",
+                "yearOfIncorporation"
+              ],
+              "additionalProperties": true
             },
-            "required": [
-              "country"
-            ],
-            "additionalProperties": true
-          },
-          "otherNames": {
-            "bsonType": "array",
-            "description": "Alternative Names",
-            "items": {
-              "bsonType": "string"
-            },
-            "uniqueItems": true
+            "validationLevel": "strict",
+            "validationAction": "error"
           }
         },
-        "required": [
-          "name",
-          "yearOfIncorporation"
-        ],
-        "additionalProperties": true
+        "uuid": "d69afaf3f1a94430a42f3dc7ecb66adb",
+        "collectionName": "firm",
+        "type": "collection"
       }
     ]
   }

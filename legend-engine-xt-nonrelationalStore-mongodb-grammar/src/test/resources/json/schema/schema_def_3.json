@@ -1,99 +1,90 @@
 {
   "database": {
-    "databaseName": "my_database",
-    "type": "clustered",
+    "databaseName": "my_database_3",
     "collections": [
       {
         "options": {
           "validator": {
-            "$ref": "https://github.com/finos/legend/employee.schema"
-          },
-          "validationLevel": "strict",
-          "validationAction": "error"
+            "$jsonSchema": {
+              "title": "Record of employee",
+              "description": "This document records the details of an employee",
+              "bsonType": "object",
+              "properties": {
+                "name": {
+                  "description": "name of the employee",
+                  "bsonType": "string",
+                  "minLength": 2
+                },
+                "location": {
+                  "title": "Record of City to Region",
+                  "description": "This document records the details of an city->country->region hierarchy",
+                  "bsonType": "object",
+                  "properties": {
+                    "country": {
+                      "description": "country of city",
+                      "bsonType": "string"
+                    },
+                    "region": {
+                      "description": "region of city",
+                      "bsonType": "string",
+                      "minLength": 2
+                    },
+                    "city": {
+                      "description": "city",
+                      "bsonType": "string"
+                    }
+                  },
+                  "additionalProperties": true
+                },
+                "age": {
+                  "description": "age of the employee",
+                  "bsonType": "int",
+                  "minimum": 16
+                },
+                "hobbies": {
+                  "description": "hobbies of the employee",
+                  "bsonType": "object",
+                  "properties": {
+                    "indoor": {
+                      "items": {
+                        "description": "List of hobbies",
+                        "bsonType": "string"
+                      },
+                      "minItems": 1,
+                      "uniqueItems": true,
+                      "bsonType": "array"
+                    },
+                    "outdoor": {
+                      "items": {
+                        "description": "List of hobbies",
+                        "bsonType": "string"
+                      },
+                      "minItems": 1,
+                      "uniqueItems": true,
+                      "bsonType": "array"
+                    }
+                  },
+                  "required": [
+                    "indoor",
+                    "outdoor"
+                  ],
+                  "additionalProperties": true
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "age",
+                "hobbies"
+              ],
+              "additionalProperties": true
+            },
+            "validationLevel": "strict",
+            "validationAction": "error"
+          }
         },
         "collectionName": "firm",
         "type": "collection"
-      }
-    ],
-    "schemas": [
-      {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "https://github.com/finos/legend/employee.schema",
-        "title": "Record of employee",
-        "description": "This document records the details of an employee",
-        "type": "object",
-        "properties": {
-          "name": {
-            "description": "name of the employee",
-            "type": "string",
-            "minLength": 2
-          },
-          "location": {
-            "$ref": "https://github.com/finos/legend/geography.schema"
-          },
-          "age": {
-            "description": "age of the employee",
-            "type": "number",
-            "minimum": 16
-          },
-          "hobbies": {
-            "description": "hobbies of the employee",
-            "type": "object",
-            "properties": {
-              "indoor": {
-                "items": {
-                  "description": "List of hobbies",
-                  "type": "string"
-                },
-                "minItems": 1,
-                "uniqueItems": true,
-                "type": "array"
-              },
-              "outdoor": {
-                "items": {
-                  "description": "List of hobbies",
-                  "type": "string"
-                },
-                "minItems": 1,
-                "uniqueItems": true,
-                "type": "array"
-              }
-            },
-            "required": [
-              "indoor",
-              "outdoor"
-            ]
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "age",
-          "hobbies"
-        ],
-        "additionalProperties": true
-      },
-      {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "https://github.com/finos/legend/geography.schema",
-        "title": "Record of City to Region",
-        "description": "This document records the details of an city->country->region hierarchy",
-        "bsonType": "object",
-        "properties": {
-          "country": {
-            "description": "country of city",
-            "bsonType": "string"
-          },
-          "region": {
-            "description": "region of city",
-            "bsontType": "string",
-            "minLength": 2
-          },
-          "city": {
-            "description": "city",
-            "bsonType": "string"
-          }
-        }
       }
     ]
   }
