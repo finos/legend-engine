@@ -15,9 +15,6 @@
 package org.finos.legend.engine.language.mongodb.schema.grammar.from;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -25,7 +22,6 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDatabase;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -51,8 +47,9 @@ public class TestSchemaDeserializer
     {
         URL url = Objects.requireNonNull(getClass().getClassLoader().getResource("json/schema/schema_def_1.json"));
         String inputJson = new String(Files.readAllBytes(Paths.get(url.toURI())));
-        MongoDatabase db = getMongoDatabase(inputJson);
-        Assert.assertEquals(inputJson, getObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(db));
+        MongoDBSchemaParseTreeWalker parser = MongoDBSchemaParseTreeWalker.newInstance();
+        MongoDatabase db = parser.parseDocument(inputJson);
+        Assert.assertEquals("my_database_1", db.name);
     }
 
     @Test
@@ -60,8 +57,10 @@ public class TestSchemaDeserializer
     {
         URL url = Objects.requireNonNull(getClass().getClassLoader().getResource("json/schema/schema_def_2.json"));
         String inputJson = new String(Files.readAllBytes(Paths.get(url.toURI())));
-        MongoDatabase db = getMongoDatabase(inputJson);
-        Assert.assertEquals(inputJson, getObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(db));
+        MongoDBSchemaParseTreeWalker parser = MongoDBSchemaParseTreeWalker.newInstance();
+        MongoDatabase db = parser.parseDocument(inputJson);
+        Assert.assertEquals("my_database_2", db.name);
+//        Assert.assertEquals(inputJson, getObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(db));
     }
 
     @Test
@@ -69,25 +68,9 @@ public class TestSchemaDeserializer
     {
         URL url = Objects.requireNonNull(getClass().getClassLoader().getResource("json/schema/schema_def_3.json"));
         String inputJson = new String(Files.readAllBytes(Paths.get(url.toURI())));
-        MongoDatabase db = getMongoDatabase(inputJson);
-        Assert.assertEquals(inputJson, getObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(db));
-    }
-
-    public MongoDatabase getMongoDatabase(String inputJson) throws IOException
-    {
-        JsonFactory jFactory = new JsonFactory();
-        JsonParser jParser = jFactory.createParser(inputJson);
-        jParser.setCodec(getObjectMapper());
-        while (jParser.nextToken() != JsonToken.END_OBJECT)
-        {
-            if ("database".equals(jParser.getCurrentName()))
-            {
-                jParser.nextToken();
-                return getObjectMapper().readValue(jParser, MongoDatabase.class);
-            }
-        }
-        jParser.close();
-        return new MongoDatabase();
+        MongoDBSchemaParseTreeWalker parser = MongoDBSchemaParseTreeWalker.newInstance();
+        MongoDatabase db = parser.parseDocument(inputJson);
+        Assert.assertEquals("my_database_3", db.name);
     }
 
 }

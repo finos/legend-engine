@@ -338,8 +338,10 @@ public class MongoDBSchemaDeserializer extends StdDeserializer<MongoDatabase>
                     return dtType;
                 case "null":
                     LOGGER.info("Null Type not supported");
+                    break;
                 case "regex":
                     LOGGER.info("Regex Type not supported");
+                    break;
                 case "int":
                     IntType intType = new IntType();
                     processIntTypeFields(objectNode, intType);
