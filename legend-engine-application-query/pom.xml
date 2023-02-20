@@ -26,7 +26,7 @@
     <name>Legend Engine - Application - Query</name>
 
     <dependencies>
-        <!-- ENGINE -->
+        <!-- ENGINE   no chnge test to see if deps are slow too -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-protocol-pure</artifactId>
