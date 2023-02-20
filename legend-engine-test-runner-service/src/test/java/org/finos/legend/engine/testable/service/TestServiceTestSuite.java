@@ -2866,7 +2866,7 @@ public class TestServiceTestSuite
     public void testServiceTestKeysWithParametersWithOnlyOneKey()
     {
         List<TestResult> MultiKeyTestResult = executeServiceTest("testable/service/","serviceGrammarModel.pure","serviceGrammarWithTestKeys3.pure", "testModelStoreTestSuites::service::DocM2MService3");
-        Assert.assertEquals(1, MultiKeyTestResult.size());
+        Assert.assertEquals(2, MultiKeyTestResult.size());
         Assert.assertTrue(MultiKeyTestResult.get(0) instanceof MultiExecutionServiceTestResult);
         Assert.assertEquals("testModelStoreTestSuites::service::DocM2MService3", MultiKeyTestResult.get(0).testable);
         Assert.assertEquals("testSuite1", MultiKeyTestResult.get(0).testSuiteId);
