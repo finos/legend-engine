@@ -20,7 +20,6 @@ import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtens
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_ExternalFormatToPureDescriptor;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaDetail;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaSet;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_transformation_toPure_SchemaToModelConfiguration;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationParameter;
@@ -37,7 +36,7 @@ import java.util.List;
  * is also necessary to define the translation from schema set to pure model (via externalFormatToPureDescriptor)
  * in externalFormatContract modelled in pure.
  */
-public interface ExternalFormatModelGenerationExtension<Metamodel extends Root_meta_external_shared_format_metamodel_SchemaDetail, ModelGenConfig extends SchemaToModelConfiguration> extends ExternalFormatExtension<Metamodel>
+public interface ExternalFormatModelGenerationExtension<Metamodel, ModelGenConfig extends SchemaToModelConfiguration> extends ExternalFormatExtension<Metamodel>
 {
     /**
      * Called to compile an external format SchemaToModelConfiguration.

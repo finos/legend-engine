@@ -1650,6 +1650,16 @@ function meta::external::language::java::factory::j_double(literal:String[1]):Co
    ^Literal(literal=$literal, type=javaDouble());
 }
 
+function meta::external::language::java::factory::j_bigDecimal(literal:String[1]):Code[1]
+{
+   ^Literal(literal=$literal, type=javaBigDecimal());
+}
+
+function meta::external::language::java::factory::j_bigDecimal(d:Decimal[1]):Code[1]
+{
+   ^Literal(literal=$d->toString(), type=javaBigDecimal());
+}
+
 function meta::external::language::java::factory::j_box(expression:Code[1]):Code[1]
 {
    if($expression.type == javaBoolean(),

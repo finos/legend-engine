@@ -24,7 +24,6 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_ExternalFormatContract;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_validation_BindingDetail;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaDetail;
 
 import java.util.List;
 
@@ -36,7 +35,7 @@ import java.util.List;
  * will represent the semantically checked and canonicalized data model (for example inclusions maybe
  * inlined and references reconciled).
  */
-public interface ExternalFormatExtension<Metamodel extends Root_meta_external_shared_format_metamodel_SchemaDetail>
+public interface ExternalFormatExtension<Metamodel>
 {
     /**
      * Returns the contract for this external format written in PURE

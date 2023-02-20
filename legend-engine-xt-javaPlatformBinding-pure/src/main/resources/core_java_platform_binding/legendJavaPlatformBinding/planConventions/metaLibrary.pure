@@ -27,7 +27,9 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::meta::
                                                                                                       | j_string('@')->j_plus(javaInt()->toBoxed()->j_invoke('toHexString', javaSystem()->j_invoke('identityHashCode', $obj, javaInt()), javaString())))}),
          fc2(instanceOf_Any_1__Type_1__Boolean_1_,                     {ctx,candidate,type       | $candidate->j_cast(javaObject())->j_instanceof($type->cast(@Cast).expression.type->toBoxed());}),
          fc(extractEnumValue_Enumeration_1__String_1__T_1_,            extractEnumValue_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_),
-         fc(enumValues_Enumeration_1__T_MANY_,                         enumValues_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_)         
+         fc(enumValues_Enumeration_1__T_MANY_,                         enumValues_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_),
+         fc1(typeName_Any_1__String_1_,                              { ctx,obj | j_string($ctx.params->at(0).genericType.rawType.name->toOne()) }),         
+         fc1(typePath_Any_1__String_1_,                              { ctx,obj | j_string($ctx.params->at(0).genericType.rawType->toOne()->elementToPath())})
       ]);
    
     $conventions->registerClassCoder(
@@ -41,9 +43,13 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::meta::
    let params    = $fe.parametersValues->evaluateAndDeactivate();
    let type      = $params->at(0).genericType.typeArguments->at(0).rawType->toOne();
    let enumType  = $conventions->className($type);
-   let enumValue = $conventions->identifier($params->at(1)->cast(@InstanceValue).values->cast(@String)->toOne());
-                 
-   $enumType->j_field($enumValue, $enumType)->dependsOn(enumTypeDependency($type, $conventions, $debug));
+ 
+   $params->at(1)->match([
+      iv:InstanceValue[1] | let enumValue = $conventions->identifier($iv.values->cast(@String)->toOne());
+                            $enumType->j_field($enumValue, $enumType)->dependsOn(enumTypeDependency($type, $conventions, $debug));,
+      sfe:SimpleFunctionExpression[1] | let srcPropValue = $sfe->generateJava($conventions, $debug->indent());
+                                        ^StaticMethodCall(class=$enumType, methodName='valueOf', arguments=$srcPropValue, type=$enumType);
+	]);
 }
 
 function meta::pure::executionPlan::platformBinding::legendJava::library::meta::enumValues(fe:FunctionExpression[1], conventions:Conventions[1], debug:DebugContext[1]): Code[1]

@@ -582,6 +582,9 @@ public class Handlers
         register("meta::pure::functions::collection::containsAll_Any_MANY__Any_MANY__Boolean_1_", false, ps -> res("Boolean", "one"));
 
         register("meta::pure::functions::meta::id_Any_1__String_1_", true, ps -> res("String", "one"));
+        register("meta::pure::functions::meta::typePath_Any_1__String_1_", false, ps -> res("String", "one"));
+        register("meta::pure::functions::meta::typeName_Any_1__String_1_", false, ps -> res("String", "one"));
+
         register("meta::pure::functions::meta::type_Any_MANY__Type_1_", false, ps -> res("meta::pure::metamodel::type::Type", "one"));
         register("meta::pure::functions::lang::compare_T_1__T_1__Integer_1_", true, ps -> res("Integer", "one"));
         // meta::pure::functions::collection::fold<T,V|m>(value:T[*], func:Function<{T[1],V[m]->V[m]}>[1], accumulator:V[m]):V[m], note return type is V and not T
@@ -1877,6 +1880,8 @@ public class Handlers
         map.put("meta::pure::functions::meta::instanceOf_Any_1__Type_1__Boolean_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && isOne(ps.get(1)._multiplicity()) && Sets.immutable.with("Nil", "Type", "Class", "DataType", "Measure", "FunctionType", "MappingClass", "ClassProjection", "PrimitiveType", "Unit", "Enumeration").contains(ps.get(1)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::meta::newUnit_Unit_1__Number_1__Any_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "Unit".equals(ps.get(0)._genericType()._rawType()._name())) && isOne(ps.get(1)._multiplicity()) && Sets.immutable.with("Nil", "Number", "Integer", "Float", "Decimal").contains(ps.get(1)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::meta::type_Any_MANY__Type_1_", (List<ValueSpecification> ps) -> ps.size() == 1);
+        map.put("meta::pure::functions::meta::typeName_Any_1__String_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()));
+        map.put("meta::pure::functions::meta::typePath_Any_1__String_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()));
         map.put("meta::pure::functions::multiplicity::toOneMany_T_MANY__T_$1_MANY$_", (List<ValueSpecification> ps) -> ps.size() == 1);
         map.put("meta::pure::functions::multiplicity::toOne_T_MANY__T_1_", (List<ValueSpecification> ps) -> ps.size() == 1);
         map.put("meta::pure::functions::string::chunk_String_1__Integer_1__String_MANY_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "String".equals(ps.get(0)._genericType()._rawType()._name())) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "Integer".equals(ps.get(1)._genericType()._rawType()._name())));

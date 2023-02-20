@@ -423,3 +423,23 @@ Mapping meta::pure::mapping::modelToModel::test::crossStore::crossStoreModelMapp
       firm[person_Set, firm_set]            : $that.name == $this.fullName
    }
 )
+
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::shared::src::*;
+import meta::pure::mapping::modelToModel::test::shared::dest::*;
+import meta::pure::mapping::modelToModel::test::*;
+
+Mapping meta::pure::mapping::modelToModel::test::simple::mappingWithTypeName
+(
+   Person : Pure
+            {
+               ~src _S_Person
+               firstName     : $src.fullName->substring(0, $src.fullName->indexOf(' ')),
+               lastName      : $src.fullName->substring($src.fullName->indexOf(' ')+1, $src.fullName->length()),
+               type          : $src->typeName(),
+               description : $src->typePath()
+               
+            }
+
+)

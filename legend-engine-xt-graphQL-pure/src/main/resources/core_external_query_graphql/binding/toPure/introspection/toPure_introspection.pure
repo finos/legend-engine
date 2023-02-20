@@ -10,7 +10,7 @@ import meta::external::shared::format::binding::toPure::*;
 import meta::external::shared::format::transformation::toPure::*;
 import meta::pure::model::unit::*;
 
-Class meta::external::query::graphQL::binding::toPure::introspection::GraphQLIntrospectionContainer extends meta::external::shared::format::metamodel::SchemaDetail
+Class meta::external::query::graphQL::binding::toPure::introspection::GraphQLIntrospectionContainer
 {
   schema : meta::external::query::graphQL::metamodel::introspection::__Schema[1];
 }
