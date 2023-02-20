@@ -89,9 +89,9 @@ function <<access.private>> meta::pure::graphFetch::addSubTypeTree(onto:GraphFet
    assert($existingSubTrees->size() < 2, 'Too many existing');
 
    let treeWithSubTypeTrees= $existingSubTrees->match([
-      stree0: SubTypeGraphFetchTree[0] | ^$onto(subTypeTrees=$onto.subTypeTrees->concatenate($subTree)),
-      stree : SubTypeGraphFetchTree[1] | ^$onto(subTrees=   $onto.subTypeTrees->cast(@SubTypeGraphFetchTree)->filter(st|!$st->forSameSubTypeClass($stree))                      
-                                                                    ->concatenate($stree->addSubTypeTrees($subTree.subTypeTrees->cast(@SubTypeGraphFetchTree))))        // recursively add subtype trees if already existing subtype tree found 
+      stree0: SubTypeGraphFetchTree[0] | ^$onto(subTypeTrees = $onto.subTypeTrees->concatenate($subTree)),
+      stree : SubTypeGraphFetchTree[1] | ^$onto(subTrees = $onto.subTypeTrees->cast(@SubTypeGraphFetchTree)->filter(st|!$st->forSameSubTypeClass($stree))                      
+                                                              ->concatenate($stree->addSubTypeTrees($subTree.subTypeTrees->cast(@SubTypeGraphFetchTree))))        // recursively add subtype trees if already existing subtype tree found 
 
    ]);
    let treeWithBasePropertiesCopiedToSubTypeTrees = $treeWithSubTypeTrees->meta::pure::graphFetch::copyPropertiesFromBaseTreeToSubTypeTrees();
@@ -99,21 +99,18 @@ function <<access.private>> meta::pure::graphFetch::addSubTypeTree(onto:GraphFet
 
 function <<access.private>> meta::pure::graphFetch::copyPropertiesFromBaseTreeToSubTypeTrees(subTypeTrees:SubTypeGraphFetchTree[*], baseTree:GraphFetchTree[1]): SubTypeGraphFetchTree[*]
 {
-   $subTypeTrees->map(st|$st->addSubTrees($baseTree.subTrees->cast(@PropertyGraphFetchTree))) ->cast(@SubTypeGraphFetchTree);
-  //  $subTypeTrees->map(st|^$st(subTrees = $st.subTrees->concatenate($baseTree.subTrees->cast(@PropertyGraphFetchTree))));
+   $subTypeTrees->map(st|$st->addSubTrees($baseTree.subTrees->cast(@PropertyGraphFetchTree)))->cast(@SubTypeGraphFetchTree);
 }
 
 function <<access.private>> meta::pure::graphFetch::copyPropertiesFromBaseTreeToSubTypeTrees(baseTree:GraphFetchTree[1]): GraphFetchTree[1]
 {
-  ^$baseTree(subTypeTrees =  meta::pure::graphFetch::copyPropertiesFromBaseTreeToSubTypeTrees($baseTree.subTypeTrees , $baseTree));
+  ^$baseTree(subTypeTrees = meta::pure::graphFetch::copyPropertiesFromBaseTreeToSubTypeTrees($baseTree.subTypeTrees, $baseTree));
 }
-
 
 function <<access.private>> meta::pure::graphFetch::forSameSubTypeClass(t1:SubTypeGraphFetchTree[1], t2:SubTypeGraphFetchTree[1]): Boolean[1]
 {
-   $t1.subTypeClass== $t2.subTypeClass;
+   $t1.subTypeClass == $t2.subTypeClass;
 }
-
 
 function meta::pure::graphFetch::allClasses(root:GraphFetchTree[1]): Class<Any>[*]
 {
@@ -152,7 +149,7 @@ function meta::pure::graphFetch::treeToString(root:GraphFetchTree[1], debug:Debu
 
 function <<access.private>> meta::pure::graphFetch::nodeToString(node:GraphFetchTree[1], indent: String[1]): String[1]
 {
-  let indentSep='  ';
+   let indentSep = '  ';
 
    let requiredQP = $node->match([
       r: ExtendedRootGraphFetchTree<Any>[1] | $r.requiredQualifiedProperties,
@@ -184,22 +181,22 @@ function <<access.private>> meta::pure::graphFetch::nodeToString(node:GraphFetch
   $nodeText +
     if($node.subTypeTrees->isEmpty() && $node.subTrees->isEmpty(),
       | '',
-      |      '\n' + $indent + '(' +
-                      if($node.subTrees->isEmpty(),       |'', | '\n' + $node.subTrees->map(st|$st->nodeToString($indent+$indentSep))->joinStrings( '\n')) + 
-                      if($node.subTypeTrees->isEmpty(),   |'', | '\n'+ $node.subTypeTrees->map(rst|$rst->subTypeNodeToString($indent+$indentSep))->joinStrings('\n')) + 
-              '\n'+  $indent + ')'
+      | '\n' + $indent + '(' +
+           if($node.subTrees->isEmpty(),       |'', | '\n' + $node.subTrees->map(st|$st->nodeToString($indent+$indentSep))->joinStrings( '\n')) + 
+           if($node.subTypeTrees->isEmpty(),   |'', | '\n'+ $node.subTypeTrees->map(rst|$rst->subTypeNodeToString($indent+$indentSep))->joinStrings('\n')) + 
+        '\n'+  $indent + ')'
     );
 }
 
 function <<access.private>> meta::pure::graphFetch::subTypeNodeToString(stgft:SubTypeGraphFetchTree[1], indent: String[1]): String[1]
 {
-  let indentSep='  ';
+  let indentSep = '  ';
 
-     $indent + '->SubType(' + $stgft.subTypeClass->toOne().name->toOne() + ')'
-             + if($stgft.subTrees->isEmpty(),
-                   |'',
-                   |'\n' + $indent + '(' + $stgft.subTrees->map(st|$st->nodeToString( $indent + $indentSep))->joinStrings('\n', '\n', '\n') + $indent + ')';
-                  ); 
+  $indent + '->SubType(' + $stgft.subTypeClass->toOne().name->toOne() + ')'
+          + if($stgft.subTrees->isEmpty(),
+               |'',
+               |'\n' + $indent + '(' + $stgft.subTrees->map(st|$st->nodeToString( $indent + $indentSep))->joinStrings('\n', '\n', '\n') + $indent + ')';
+            ); 
 } 
 
 function meta::pure::graphFetch::getNodesOrdered(tree: GraphFetchTree[1]):GraphFetchTree[*]
@@ -270,17 +267,17 @@ function <<access.private>> meta::pure::graphFetch::isUnitFunctionReturnType(tre
 
 function meta::pure::graphFetch::sortTree(tree:GraphFetchTree[1]): GraphFetchTree[1]
 {
-  let sortedPropertyTrees= $tree.subTrees->cast(@PropertyGraphFetchTree)
-                             ->sortBy(pgft| $pgft->getSubTreeName())
-                             ->map(pgft| $pgft->sortTree());
+   let sortedPropertyTrees = $tree.subTrees->cast(@PropertyGraphFetchTree)
+                                ->sortBy(pgft| $pgft->getSubTreeName())
+                                ->map(pgft| $pgft->sortTree());
 
-  let sortedSubTypeTrees =$tree.subTypeTrees
-                             ->sortBy(stgft| $stgft->getSubTreeName())
-                             ->map(stgft| $stgft->sortTree());
+   let sortedSubTypeTrees = $tree.subTypeTrees
+                               ->sortBy(stgft| $stgft->getSubTreeName())
+                               ->map(stgft| $stgft->sortTree());
 
    ^$tree
    (
-      subTrees= $sortedPropertyTrees,
+      subTrees = $sortedPropertyTrees,
       subTypeTrees = $sortedSubTypeTrees->cast(@SubTypeGraphFetchTree)
    );
 }
@@ -465,11 +462,11 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
 
          let inlinedPropertyTree = $propertyPaths.result->buildPropertyTree()->inlineQualifiedPropertyNodes();
          
-         let inlinedGraphTree          = $inlinedPropertyTree->propertyTreeToGraphFetchTree($owner)->removeDummyProperties();
+         let inlinedGraphTree = $inlinedPropertyTree->propertyTreeToGraphFetchTree($owner)->removeDummyProperties();
 
 
          // copy common properties from base type tree to subtype trees at property level
-         //TODO - remove when propertySubTypes are embedded in propertyTrees
+         // TODO - remove when propertySubTypes are embedded in propertyTrees
          let setClasses = $childSetImpls->map(s | $s.srcClass);
          let inlinedPropertyGraphTrees = $inlinedGraphTree.subTrees->cast(@PropertyGraphFetchTree);
 
@@ -486,9 +483,9 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
 
 
          // copy common properties from base type tree to subtype trees at root level
-         let withRootSubTypes= if($srcNode->instanceOf(RootGraphFetchTree),                                                                                    //TODO : will be handled properly when property subtype gfts are moved within property access gfts
+         let withRootSubTypes= if($srcNode->instanceOf(RootGraphFetchTree), //TODO : will be handled properly when property subtype gfts are moved within property access gfts
                                    | let sourceNodeWithSubTypes = $srcNode->addSubTypeTrees($inlinedGraphTree.subTypeTrees);
-                                     ^$withFoundProperties(subTypeTrees=$sourceNodeWithSubTypes.subTypeTrees);,      // copy properties except current one
+                                     ^$withFoundProperties(subTypeTrees=$sourceNodeWithSubTypes.subTypeTrees);, // copy properties except current one
                                    | $withFoundProperties
                                   );
 
@@ -592,31 +589,30 @@ function meta::pure::graphFetch::propertyGraphFetchTreeToRootGraphFetchTree(pTre
 function <<access.private>> meta::pure::graphFetch::addPropertyGraphFetchTrees(onto:GraphFetchTree[1], pTree:PropertyPathTree[1], ownerClass:Class<Any>[1]): GraphFetchTree[1]
 {
    $pTree.value->match([
-      node: PropertyPathNode[1] | if($ownerClass == $node.class  || $node.class->isStrictSubType($ownerClass) , 
+      node: PropertyPathNode[1] | if($ownerClass == $node.class  || $node.class->isStrictSubType($ownerClass), 
                                      | $onto->addPropertyGraphFetchTrees($pTree, $ownerClass, $node),
                                      | $onto
                                   ),
       clz: Class<Any>[1]        |  if($clz->isStrictSubType($ownerClass),
                                       |
                                         let pTreesInBaseType=$pTree.children->map(c|$c.value->match([
-                                                   node: PropertyPathNode[1] |  if($ownerClass->allProperties()->contains($node.property), |$c, |[] ),
+                                                   node: PropertyPathNode[1] | if($ownerClass->allProperties()->contains($node.property), |$c, |[]),
                                                    a:Any[1] | []
                                         ]));
                                         let processedBaseTree= $pTreesInBaseType->fold({child, gft|$gft->addPropertyGraphFetchTrees($child, $ownerClass)}, $onto);
                                        
-                                       // add subtype trees also 
+                                        // add subtype trees also 
                                         let rootSubTypeTree= ^SubTypeGraphFetchTree(subTypeClass=$clz);
                                         let rootSubTypeTreeWithProperties= $pTree.children->fold({child, gft|
                                                                                                         $gft->addPropertyGraphFetchTrees($child, $clz)->cast(@SubTypeGraphFetchTree)
                                                                                                 }, $rootSubTypeTree);
                                         
-                                        let withSubTypeTree = $processedBaseTree->addSubTypeTrees($rootSubTypeTreeWithProperties);
-                                        ,
+                                        let withSubTypeTree = $processedBaseTree->addSubTypeTrees($rootSubTypeTreeWithProperties);,
                                       
                                       | if($clz == $ownerClass ||  $ownerClass->isStrictSubType($clz),                               // get properties from superclass also ,
                                            | $pTree.children->fold({child, gft|$gft->addPropertyGraphFetchTrees($child, $clz) }, $onto),
-                                           | $onto                                                         // dont process further 
-                                           )
+                                           | $onto // dont process further 
+                                        )
                                     );,
       any: Any[1]               | $pTree.children->fold({child, gft| $gft->addPropertyGraphFetchTrees($child, $ownerClass)}, $onto)
    ]);
@@ -625,9 +621,9 @@ function <<access.private>> meta::pure::graphFetch::addPropertyGraphFetchTrees(o
 function meta::pure::functions::meta::isStrictSubType(subType:Type[1], superType:Type[1]):Boolean[1]
 {
     if($subType == Nil,
-        |true,
-         |$subType->getAllTypeGeneralisations()->map(st|$st->elementToPath())->contains($superType->elementToPath())   && $subType->elementToPath()!=$superType->elementToPath()   // object comparison might not work due to lazy evalution of some duplicate objects 
-     ) ;  
+       |true,
+       |$subType->getAllTypeGeneralisations()->map(st|$st->elementToPath())->contains($superType->elementToPath())   && $subType->elementToPath()!=$superType->elementToPath()   // object comparison might not work due to lazy evalution of some duplicate objects 
+    );  
 }
 
 function <<access.private>> meta::pure::graphFetch::addPropertyGraphFetchTrees(onto:GraphFetchTree[1], pTree:PropertyPathTree[1], ownerClass:Class<Any>[1], node: PropertyPathNode[1]): GraphFetchTree[1]
@@ -736,7 +732,7 @@ function <<access.private>> meta::pure::graphFetch::removeDummyProperties(tree:G
          if($pgft.property == getDummyProperty(),
             | [],
             | $pgft
-          ) ;,
+          );,
     t:GraphFetchTree[1] |  ^$t(subTrees= $t.subTrees->map(st|$st->removeDummyProperties()),
                                subTypeTrees = $t.subTypeTrees->map(st|$st->removeDummyProperties())->cast(@SubTypeGraphFetchTree)  
                                );
