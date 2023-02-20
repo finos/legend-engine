@@ -23,7 +23,6 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.dsl.service.generation.ServicePlanGenerator;
@@ -76,6 +75,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.ServiceLoader;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -166,9 +166,8 @@ public class ServiceTestRunner implements TestRunner
                 pureSingleExecution.runtime = param.runtime;
                 pureSingleExecution.executionOptions = param.executionOptions;
 
-                List<TestResult> testResultsForKey = executeSingleExecutionTestSuite(pureSingleExecution, suite, atomicTestIds, pureModel, data, routerExtensions, planTransformers);
-                Map<String, TestResult> testResultsForKeyById = Iterate.groupByUniqueKey(testResultsForKey, e -> e.atomicTestId);
-                testResultsForKeyById.forEach((key, value) -> testResultsByTestId.get(key).addTestResult(param.key, value));
+                List<TestResult> testResultsForKey = executeSingleExecutionTestSuite(pureSingleExecution, suite, Collections.singletonList(test.id), pureModel, data, routerExtensions, planTransformers);
+                testResultsByTestId.get(test.id).addTestResult(param.key, testResultsForKey.get(0));
             });
         }
         return new ArrayList<>(testResultsByTestId.values());
