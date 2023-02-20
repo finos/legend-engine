@@ -218,7 +218,7 @@ public class TestM2MGrammarCompileAndExecute
     @Test
     public void testM2MGraph_RootSubtypes_singleSubtype() throws IOException
     {
-        runM2MGraphSubtypes(" test::withSubType::rootLevel::sourceRoot::testMappingWithSingleSubType");
+        runM2MGraphSubtypes("test::withSubType::rootLevel::sourceRoot::testMappingWithSingleSubType");
     }
 
     @Test
