@@ -1,24 +1,21 @@
 {
   "database": {
-    "databaseName": "my_database_1",
+    "databaseName": "my_database_4",
     "collections": [
       {
         "options": {
           "validator": {
-            "$ref": "https://github.com/finos/legend/employee.schema"
+            "$jsonSchema": {
+              "bsonType": "object",
+              "title": "Record of Firm"
+            },
+            "validationLevel": "strict",
+            "validationAction": "error"
           },
-          "validationLevel": "strict",
-          "validationAction": "error"
-        },
-        "collectionName": "firm",
-        "type": "collection"
+          "collectionName": "firm",
+          "type": "collection"
+        }
       }
-    ],
-    "schemas": {
-      "$schema": "https://json-schema.org/draft/2020-12/schema",
-      "$id": "https://github.com/finos/legend/employee.schema",
-      "bsonType": "object",
-      "title": "Record of Firm"
-    }
+    ]
   }
 }

@@ -29,7 +29,14 @@ import org.junit.Ignore;
 import org.junit.Test;
 import utils.CustomJSONPrettyPrinter;
 
-import static utils.TestUtils.resourceAsString;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Objects;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
@@ -166,8 +173,18 @@ public class TestQueryParseTreeWalker
     @Test
     public void testProjectShouldThrowException()
     {
-        String input = resourceAsString("json/query/project_with_wrong_number_should_throw_input.json");
-        Exception exception = assertThrows(RuntimeException.class, () -> parseAndWalkDatabaseCommand(input));
+        String input = "";
+        try
+        {
+            URL url1 = Objects.requireNonNull(getClass().getClassLoader().getResource("json/query/project_with_wrong_number_should_throw_input.json"));
+            input = new String(Files.readAllBytes(Paths.get(url1.toURI())), StandardCharsets.UTF_8);
+        }
+        catch (IOException | URISyntaxException e)
+        {
+            throw new RuntimeException(e);
+        }
+        final String inputJson = input;
+        Exception exception = assertThrows(RuntimeException.class, () -> parseAndWalkDatabaseCommand(inputJson));
         assertEquals(exception.getMessage(), "visitProjectFilterValue error");
     }
 
@@ -202,9 +219,20 @@ public class TestQueryParseTreeWalker
 
     private void testRoundtrip(String inputMongoQueryFileLoc, String expectedParsedMongoQueryFileLoc)
     {
+        String inputMongoQuery = null;
+        String expectedParsedMongoQuery = null;
+        try
+        {
+            URL url1 = Objects.requireNonNull(getClass().getClassLoader().getResource(inputMongoQueryFileLoc));
+            inputMongoQuery = new String(Files.readAllBytes(Paths.get(url1.toURI())), StandardCharsets.UTF_8);
 
-        String inputMongoQuery = resourceAsString(inputMongoQueryFileLoc);
-        String expectedParsedMongoQuery = resourceAsString(expectedParsedMongoQueryFileLoc);
+            URL url2 = Objects.requireNonNull(getClass().getClassLoader().getResource(expectedParsedMongoQueryFileLoc));
+            expectedParsedMongoQuery = new String(Files.readAllBytes(Paths.get(url2.toURI())), StandardCharsets.UTF_8);
+        }
+        catch (IOException | URISyntaxException e)
+        {
+            throw new RuntimeException(e);
+        }
 
         // Test if input mongo query string can be walked into a java model representation and if we can compose this model back
         // into the exact initial input mongo query string

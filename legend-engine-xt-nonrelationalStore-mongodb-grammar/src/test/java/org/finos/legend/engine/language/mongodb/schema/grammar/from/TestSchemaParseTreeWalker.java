@@ -23,11 +23,12 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Objects;
 
-public class TestSchemaDeserializer
+public class TestSchemaParseTreeWalker
 {
 
     public ObjectMapper getObjectMapper()
@@ -46,7 +47,7 @@ public class TestSchemaDeserializer
     public void testSingleNestedObjectSchema() throws Exception
     {
         URL url = Objects.requireNonNull(getClass().getClassLoader().getResource("json/schema/schema_def_1.json"));
-        String inputJson = new String(Files.readAllBytes(Paths.get(url.toURI())));
+        String inputJson = new String(Files.readAllBytes(Paths.get(url.toURI())), StandardCharsets.UTF_8);
         MongoDBSchemaParseTreeWalker parser = MongoDBSchemaParseTreeWalker.newInstance();
         MongoDatabase db = parser.parseDocument(inputJson);
         Assert.assertEquals("my_database_1", db.name);
