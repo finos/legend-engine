@@ -41,6 +41,7 @@ import java.util.Set;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.stream.Collectors;
 
 public class TestUtils
 {
@@ -302,22 +303,6 @@ public class TestUtils
             .alias(alias)
             .schema(getStagingSchema())
             .csvDataPath(dataPath)
-            .build();
-    }
-
-    public static DatasetDefinition getStagingTableForImplicitSchemaEvolution()
-    {
-        return DatasetDefinition.builder()
-            .group(testSchemaName)
-            .name(stagingTableName)
-            .schema(SchemaDefinition.builder()
-                .addFields(id)
-                .addFields(nameWithMoreLength)
-                .addFields(incomeInteger)
-                .addFields(startTime)
-                .addFields(expiryDate)
-                .addFields(digest)
-                .build())
             .build();
     }
 
@@ -766,7 +751,9 @@ public class TestUtils
             )
             .build();
     }
-    public static DatasetDefinition getSchemaEvolutionBeforeAddMainTable() {
+
+    public static DatasetDefinition getSchemaEvolutionBeforeAddMainTable()
+    {
         return DatasetDefinition.builder()
             .group(testSchemaName)
             .name(mainTableName)
@@ -780,12 +767,29 @@ public class TestUtils
             .build();
     }
 
-    public static DatasetDefinition getSchemaEvolutionBeforeAddStagingTable() {
+    public static DatasetDefinition getSchemaEvolutionImplicitChangeStagingTable()
+    {
         return DatasetDefinition.builder()
             .group(testSchemaName)
             .name(stagingTableName)
             .schema(SchemaDefinition.builder()
                 .addFields(id)
+                .addFields(nameWithMoreLength)
+                .addFields(incomeInteger)
+                .addFields(startTime)
+                .addFields(expiryDate)
+                .addFields(digest)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getSchemaEvolutionPKTypeDifferentMainTable()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(tinyIntId)
                 .addFields(name)
                 .addFields(income)
                 .addFields(startTime)
@@ -818,6 +822,45 @@ public class TestUtils
         }
     }
 
+    // This is to check the Dataset objects - whether everything has been updated properly
+    public static void assertUpdatedDataset(Dataset expectedDataset, Dataset actualDataset)
+    {
+        List<Field> actualFields = actualDataset.schema().fields();
+        List<Field> expectedFields = expectedDataset.schema().fields();
+        for (Field expectedField : expectedFields)
+        {
+            String expectedFieldName = expectedField.name();
+            Field matchedActualField = actualFields.stream().filter(mainField -> mainField.name().equals(expectedFieldName)).findFirst().orElse(null);
+            if (matchedActualField == null)
+            {
+                Assertions.fail("Unable to find expected column in actual dataset");
+            }
+            else
+            {
+                FieldType expectedFieldType = expectedField.type();
+                if (!matchedActualField.type().equals(expectedFieldType))
+                {
+                    if (!matchedActualField.type().dataType().equals(expectedFieldType.dataType()))
+                    {
+                        Assertions.fail("Data type of actual dataset column does not match that of expected");
+                    }
+                    else
+                    {
+                        Assertions.fail("Data type length of actual dataset column does not match that of expected");
+                    }
+                }
+                else
+                {
+                    if (matchedActualField.nullable() != expectedField.nullable())
+                    {
+                        Assertions.fail("Nullability of actual dataset column does not match that of expected");
+                    }
+                }
+            }
+        }
+    }
+
+    // This is to check the actual database table - whether columns have been added properly
     public static void assertTableColumnsEquals(List<String> expectedSchema, List<Map<String, Object>> actualData)
     {
         for (Map<String, Object> actualTableRow : actualData)
@@ -839,11 +882,13 @@ public class TestUtils
         }
     }
 
+    // This is to check the actual database table - whether columns have the right nullability
     public static String getCheckIsNullableFromTableSql(String tableName, String columnName)
     {
         return "SELECT IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='" + tableName + "' and COLUMN_NAME ='" + columnName + "'";
     }
 
+    // This is to check the actual database table - whether data types are correct
     public static String getCheckDataTypeFromTableSql(Connection connection, String database, String schema, String tableName, String columnName) throws SQLException
     {
         ResultSet result = connection.getMetaData().getColumns(database, schema, tableName, columnName);
@@ -853,6 +898,18 @@ public class TestUtils
             dataType = JDBCType.valueOf(result.getInt("DATA_TYPE")).name();
         }
         return dataType;
+    }
+
+    public static Dataset createDatasetWithUpdatedField(Dataset dataset, Field field)
+    {
+        List<Field> newFields = dataset.schema().fields()
+            .stream()
+            .filter(f -> f.name() != field.name())
+            .collect(Collectors.toList());
+
+        newFields.add(field);
+
+        return dataset.withSchema(dataset.schema().withFields(newFields));
     }
 
     private static List<String[]> readCsvData(String path) throws IOException

@@ -23,20 +23,33 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditin
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
+import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
+import org.finos.legend.engine.persistence.components.schemaevolution.IncompatibleSchemaChangeException;
+import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapability;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.finos.legend.engine.persistence.components.TestUtils.assertTableColumnsEquals;
+import static org.finos.legend.engine.persistence.components.TestUtils.assertUpdatedDataset;
+import static org.finos.legend.engine.persistence.components.TestUtils.createDatasetWithUpdatedField;
 import static org.finos.legend.engine.persistence.components.TestUtils.digestName;
 import static org.finos.legend.engine.persistence.components.TestUtils.expiryDateName;
+import static org.finos.legend.engine.persistence.components.TestUtils.getCheckDataTypeFromTableSql;
 import static org.finos.legend.engine.persistence.components.TestUtils.idName;
 import static org.finos.legend.engine.persistence.components.TestUtils.incomeName;
+import static org.finos.legend.engine.persistence.components.TestUtils.mainTableName;
 import static org.finos.legend.engine.persistence.components.TestUtils.nameName;
+import static org.finos.legend.engine.persistence.components.TestUtils.nameWithMoreLength;
 import static org.finos.legend.engine.persistence.components.TestUtils.startTimeName;
+import static org.finos.legend.engine.persistence.components.TestUtils.testDatabaseName;
+import static org.finos.legend.engine.persistence.components.TestUtils.testSchemaName;
 
 class SchemaEvolutionTest extends BaseTest
 {
@@ -47,9 +60,7 @@ class SchemaEvolutionTest extends BaseTest
     void testAddColumn() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getSchemaEvolutionBeforeAddMainTable();
-        DatasetDefinition stagingTable = TestUtils.getSchemaEvolutionBeforeAddStagingTable();
-
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+        DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -61,7 +72,11 @@ class SchemaEvolutionTest extends BaseTest
             .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).enableSchemaEvolution(true).build();
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.ADD_COLUMN);
         Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
 
         // ------------ Perform Pass1 ------------------------
         String dataPass1 = basePathForInput + "add_data_pass.csv";
@@ -74,18 +89,19 @@ class SchemaEvolutionTest extends BaseTest
         expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
         expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
         expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
-        // 3. Verify schema related changes
+        IngestorResult result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, schemaEvolutionCapabilitySet);
+        // 3. Verify schema changes in database
         List<Map<String, Object>> actualTableData = h2Sink.executeQuery("select * from \"TEST\".\"main\"");
         assertTableColumnsEquals(Arrays.asList(schema), actualTableData);
+        // 4. Verify schema changes in model objects
+        assertUpdatedDataset(stagingTable, result.updatedDatasets().mainDataset());
     }
 
-    /*
     @Test
-    void testAppendOnlyWithImplicitDataTypeChange() throws Exception
+    void testImplicitDataTypeChange() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicMainTable();
-        DatasetDefinition stagingTable = TestUtils.getStagingTableForImplicitSchemaEvolution();
+        DatasetDefinition stagingTable = TestUtils.getSchemaEvolutionImplicitChangeStagingTable();
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -98,13 +114,59 @@ class SchemaEvolutionTest extends BaseTest
             .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).enableSchemaEvolution(true).build();
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE);
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
         String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
 
-        // ------------ Perform incremental (append) milestoning Pass1 ------------------------
-        String dataPass1 = basePath + "input/vanilla_case/data_pass1.csv";
-        String expectedDataPass1 = basePath + "expected/vanilla_case/expected_pass1.csv";
+        // ------------ Perform Pass1 ------------------------
+        String dataPass1 = basePathForInput + "implicit_data_type_change_data_pass.csv";
+        String expectedDataPass1 = basePathForExpected + "implicit_data_type_change_expected_pass.csv";
+        // 1. Load staging table
+        loadStagingDataForImplicitTypeChange(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = new HashMap<>();
+        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
+        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        IngestorResult result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, schemaEvolutionCapabilitySet);
+        // 3. Verify schema changes in database
+        List<Map<String, Object>> actualTableData = h2Sink.executeQuery("select * from \"TEST\".\"main\"");
+        assertTableColumnsEquals(Arrays.asList(schema), actualTableData);
+        Assertions.assertEquals("BIGINT", getCheckDataTypeFromTableSql(h2Sink.connection(), testDatabaseName, testSchemaName, mainTableName, incomeName));
+        Assertions.assertEquals("VARCHAR", getCheckDataTypeFromTableSql(h2Sink.connection(), testDatabaseName, testSchemaName, mainTableName, nameName));
+        // 4. Verify schema changes in model objects
+        assertUpdatedDataset(createDatasetWithUpdatedField(mainTable, nameWithMoreLength), result.updatedDatasets().mainDataset());
+    }
+
+    @Test
+    void testSchemaEvolutionFailPKTypeDifferent() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getSchemaEvolutionPKTypeDifferentMainTable();
+        DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+        // Generate the milestoning object
+        AppendOnly ingestMode = AppendOnly.builder()
+            .digestField(digestName)
+            .deduplicationStrategy(FilterDuplicates.builder().build())
+            .auditing(NoAuditing.builder().build())
+            .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).enableSchemaEvolution(true).build();
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_CONVERSION);
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+
+        // ------------ Perform Pass1 ------------------------
+        String dataPass1 = basePathForInput + "explicit_data_type_change_data_pass.csv";
+        String expectedDataPass1 = basePathForExpected + "explicit_data_type_change_expected_pass.csv";
         // 1. Load staging table
         loadBasicStagingData(dataPass1);
         // 2. Execute plans and verify results
@@ -114,19 +176,14 @@ class SchemaEvolutionTest extends BaseTest
         expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
         expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
 
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
-        // 3. Assert that the staging table is NOT truncated
-        List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
-        Assertions.assertEquals(stagingTableList.size(), 3);
-
-        // ------------ Perform incremental (append) milestoning Pass2 ------------------------
-        String dataPass2 = basePath + "input/vanilla_case/data_pass2.csv";
-        String expectedDataPass2 = basePath + "expected/vanilla_case/expected_pass2.csv";
-        // 1. Load staging table
-        loadBasicStagingData(dataPass2);
-        // 2. Execute plans and verify results
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
+        try
+        {
+            IngestorResult result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, schemaEvolutionCapabilitySet);
+            Assertions.fail("Exception was not thrown");
+        }
+        catch (IncompatibleSchemaChangeException e)
+        {
+            Assertions.assertEquals("Primary keys for main table has changed which is not allowed ", e.getMessage());
+        }
     }
-
-     */
 }
