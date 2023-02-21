@@ -329,10 +329,6 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-xml-model</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-xml-protocol</artifactId>
-        </dependency>
         <!-- ENGINE XT -->
 
         <!-- ECLIPSE COLLECTIONS -->

@@ -81,7 +81,6 @@
         <module>legend-engine-xt-xml-runtime</module>
         <module>legend-engine-xt-xml-shared</module>
         <module>legend-engine-xt-xml-pure</module>
-        <module>legend-engine-xt-xml-protocol</module>
 
         <module>legend-engine-xt-flatdata-model</module>
         <module>legend-engine-xt-flatdata-shared</module>
@@ -1067,11 +1066,6 @@
                 <version>${project.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-xml-protocol</artifactId>
-                <version>${project.version}</version>
-            </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-xml-model</artifactId>

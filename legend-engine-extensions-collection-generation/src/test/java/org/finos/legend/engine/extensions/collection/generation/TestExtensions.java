@@ -14,8 +14,6 @@
 
 package org.finos.legend.engine.extensions.collection.generation;
 
-import java.util.Set;
-
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
@@ -218,8 +216,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.protocol.pure.v1.TextProtocolExtension.class)
                 .with(org.finos.legend.engine.external.format.flatdata.FlatDataProtocolExtension.class)
                 .with(org.finos.legend.engine.external.format.json.JsonProtocolExtension.class)
-                .with(org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLPureProtocolExtension.class)
-                .with(org.finos.legend.engine.external.format.xml.XmlProtocolExtension.class);
+                .with(org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLPureProtocolExtension.class);
     }
 
     protected Iterable<? extends Class<? extends GenerationExtension>> getExpectedGenerationExtensions()
