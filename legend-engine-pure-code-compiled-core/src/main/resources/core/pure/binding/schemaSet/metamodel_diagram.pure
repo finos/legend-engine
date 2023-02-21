@@ -24,30 +24,4 @@ Diagram meta::external::shared::format::metamodel::MetamodelDiagram(width=0.0, h
         attributeTypesVisible=true,
         color=#FFFFCC,
         lineWidth=1.0)
-
-    TypeView cview_3(
-        type=meta::external::shared::format::metamodel::SchemaDetail,
-        position=(1297.00000, 528.00000),
-        width=98.70313,
-        height=30.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    PropertyView pview_0(
-        property=meta::external::shared::format::metamodel::Schema.detail,
-        source=cview_2,
-        target=cview_3
-,        points=[(1342.43994,417.00000),(1346.35156,543.00000)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
 }

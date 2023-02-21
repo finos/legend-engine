@@ -277,7 +277,7 @@ Class meta::external::format::xml::metamodel::xsd::XsdRestriction extends meta::
   particle       : meta::external::format::xml::metamodel::xsd::XsdParticle[0..1];
 }
 
-Class meta::external::format::xml::metamodel::xsd::XsdSchema extends meta::external::format::xml::metamodel::xsd::XsdAnnotated, meta::external::shared::format::metamodel::SchemaDetail
+Class meta::external::format::xml::metamodel::xsd::XsdSchema extends meta::external::format::xml::metamodel::xsd::XsdAnnotated
 {
   targetNamespace      : String[0..1];
   items                : meta::external::format::xml::metamodel::xsd::XsdObject[*];

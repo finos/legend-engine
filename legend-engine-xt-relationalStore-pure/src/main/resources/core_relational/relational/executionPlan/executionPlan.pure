@@ -46,6 +46,7 @@ Class meta::relational::mapping::TempTableColumnMetaData
 
 Class meta::relational::mapping::SQLExecutionNode extends ExecutionNode
 {
+   sqlComment : String[0..1];
    sqlQuery : String[1];
    onConnectionCloseCommitQuery : String[0..1];
    onConnectionCloseRollbackQuery : String[0..1];

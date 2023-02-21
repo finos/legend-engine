@@ -15,7 +15,6 @@
 package org.finos.legend.engine.language.pure.compiler.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
@@ -74,12 +73,12 @@ public class TestCompilationFromGrammar
 
                 if (expectedWarnings == null)
                 {
-                    Assert.assertTrue("expected no warnings but found " + pureModel.getWarnings().stream().map(w -> w.buildPrettyWarningMessage()).collect(Collectors.toList()), pureModel.getWarnings().isEmpty());
+                    Assert.assertTrue("expected no warnings but found " + pureModel.getWarnings().stream().map(Warning::buildPrettyWarningMessage).collect(Collectors.toList()), pureModel.getWarnings().isEmpty());
                 }
 
                 if (expectedWarnings != null)
                 {
-                    List<String> warnings = pureModel.getWarnings().stream().map(w -> w.buildPrettyWarningMessage()).collect(Collectors.toList());
+                    List<String> warnings = pureModel.getWarnings().stream().map(Warning::buildPrettyWarningMessage).collect(Collectors.toList());
                     Collections.sort(warnings);
                     Collections.sort(expectedWarnings);
                     Assert.assertEquals(expectedWarnings, warnings);
@@ -133,6 +132,16 @@ public class TestCompilationFromGrammar
                 "  let path = #/test::Person/firstName#;\n" +
                 "  test::Person.all()->project($path)->filter(r|$r.getInteger('age') > 30 && $r.isNotNull('age'))->isNotEmpty();\n" +
                 "}", null);
+    }
+
+    @Test
+    public void testCompileWithDefaultValue()
+    {
+        TestCompilationFromGrammarTestSuite.test("Class test::Person\n" +
+                "{\n" +
+                "  firstName:String[1];\n" +
+                "  age: Integer[1] = 5;\n" +
+                "}\n", null);
     }
 
     @Test

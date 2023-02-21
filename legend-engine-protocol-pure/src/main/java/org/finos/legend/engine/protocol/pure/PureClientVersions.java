@@ -20,7 +20,7 @@ import org.eclipse.collections.impl.utility.ArrayIterate;
 
 public class PureClientVersions
 {
-    public static ImmutableList<String> versions = Lists.immutable.with("v1_0_0", "v1_1_0", "v1_2_0", "v1_3_0", "v1_4_0", "v1_5_0", "v1_6_0", "v1_7_0", "v1_8_0", "v1_9_0", "v1_10_0", "v1_11_0", "v1_12_0", "v1_13_0", "v1_14_0", "v1_15_0", "v1_16_0", "v1_17_0", "v1_18_0", "v1_19_0", "v1_20_0", "v1_21_0", "v1_22_0", "v1_23_0", "v1_24_0", "v1_25_0", "v1_26_0", "v1_27_0", "v1_28_0", "vX_X_X");
+    public static ImmutableList<String> versions = Lists.immutable.with("v1_0_0", "v1_1_0", "v1_2_0", "v1_3_0", "v1_4_0", "v1_5_0", "v1_6_0", "v1_7_0", "v1_8_0", "v1_9_0", "v1_10_0", "v1_11_0", "v1_12_0", "v1_13_0", "v1_14_0", "v1_15_0", "v1_16_0", "v1_17_0", "v1_18_0", "v1_19_0", "v1_20_0", "v1_21_0", "v1_22_0", "v1_23_0", "v1_24_0", "v1_25_0", "v1_26_0", "v1_27_0", "v1_28_0", "v1_29_0", "vX_X_X");
     public static ImmutableList<String> versionsSameCase = versions.collect(String::toLowerCase);
 
     static
@@ -28,7 +28,7 @@ public class PureClientVersions
         assert !hasRepeatedVersions(versions) : "Repeated version id :" + versions.toBag().selectByOccurrences(i -> i > 1).toSet().makeString("[", ", ", "]");
     }
 
-    public static String production = "v1_28_0";
+    public static String production = "v1_29_0";
 
     static boolean hasRepeatedVersions(ImmutableList<String> versions)
     {

@@ -171,11 +171,11 @@ public class HelperMappingGrammarComposer
                 getTabString(4) + "~modelOperation" + ":" + " {\n" +
                 getTabString(5) + "~canAggregate " + (agg.aggregateSpecification.canAggregate ? "true" : "false") + ",\n" +
                 getTabString(5) + "~groupByFunctions (\n" +
-                LazyIterate.collect(agg.aggregateSpecification.groupByFunctions, groupByFunction -> getTabString(6) + groupByFunction.groupByFn.accept(transformer).replaceFirst("\\|", "")).makeString(",\n") +
+                LazyIterate.collect(agg.aggregateSpecification.groupByFunctions, groupByFunction -> getTabString(6) + groupByFunction.groupByFn.body.get(0).accept(transformer)).makeString(",\n") +
                 "\n" + getTabString(5) + "),\n" +
                 getTabString(5) + "~aggregateValues (\n" +
-                LazyIterate.collect(agg.aggregateSpecification.aggregateValues, aggregateFunction -> getTabString(6) + "( " + "~mapFn:" + aggregateFunction.mapFn.accept(transformer).replaceFirst("\\|", "")
-                        + " ," + " ~aggregateFn: " + aggregateFunction.aggregateFn.accept(transformer).replaceFirst("\\|", "") + " )").makeString(",\n") +
+                LazyIterate.collect(agg.aggregateSpecification.aggregateValues, aggregateFunction -> getTabString(6) + "( " + "~mapFn:" + aggregateFunction.mapFn.body.get(0).accept(transformer)
+                        + " ," + " ~aggregateFn: " + aggregateFunction.aggregateFn.body.get(0).accept(transformer) + " )").makeString(",\n") +
                 "\n" + getTabString(5) + ")\n" +
                 getTabString(4) + "},\n" +
                 getTabString(4) + aggregateMapping +
