@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,10 +11,14 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::*;
 
-Class meta::protocols::pure::vX_X_X::metamodel::connection::store::service::ServiceStoreConnection extends meta::protocols::pure::vX_X_X::metamodel::runtime::Connection
+package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes;
+
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecurityScheme;
+
+public class SingleAuthenticationSchemeRequirement extends AuthenticationSchemeRequirement
 {
-   baseUrl                      : String[1];
-   authenticationSpecifications : Map<String,AuthenticationSpecification>[1];
+    public SecurityScheme securityScheme;
+    public AuthenticationSpecification authenticationSpecification;
 }
