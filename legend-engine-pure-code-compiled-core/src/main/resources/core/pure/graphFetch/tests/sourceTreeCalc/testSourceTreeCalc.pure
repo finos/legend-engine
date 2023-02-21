@@ -850,10 +850,32 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testWithCo
    assertEquals($expected->asString(true), $sourceTree->asString(true));
 }
 
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testWithConstraintProperty_fromSubTypeSource():Boolean[1]
+{
+   let tree = #{
+      A {
+         a1,
+         b1
+      }
+   }#;
+   
+   let sourceTree = calculateSourceTree($tree, testMapping_fromSubTypeSource, meta::pure::extension::defaultExtensions())->ensureConstraintsRequirements()->sortTree();
+   let expected = #{
+      _B {
+         a1,
+         b1,
+         a2
+      }
+   }#;
+   assertEquals($expected->sortTree()->asString(true), $sourceTree->sortTree()->asString(true));
+}
+
+
 Class meta::pure::graphFetch::tests::sourceTreeCalc::withConstraintProperty::A
 {
    a1: String[1];
    a2: String[1];
+   b1: String[1];
 }
 
 Class meta::pure::graphFetch::tests::sourceTreeCalc::withConstraintProperty::_A
@@ -865,6 +887,12 @@ Class meta::pure::graphFetch::tests::sourceTreeCalc::withConstraintProperty::_A
    a2: String[0..1];
 }
 
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withConstraintProperty::_B extends _A
+{
+  b1:String[1];
+}
+
 ###Mapping 
 import meta::pure::graphFetch::tests::sourceTreeCalc::withConstraintProperty::*;
 
@@ -874,6 +902,16 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withConstraintProperty::t
       {
          ~src _A
          a1: $src.a1
+      }
+)
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withConstraintProperty::testMapping_fromSubTypeSource
+(
+   A: Pure
+      {
+         ~src _B
+         a1: $src.a1,
+         b1: $src.b1
       }
 )
 
@@ -1010,6 +1048,14 @@ Class meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Target
 {
    targetZipCode: String[1];
    targetAddress: String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Target2
+{
+   targetZipCode: String[1];
+   isLocation : Boolean[1];
+   isRoad : Boolean[1];
+   isStreet: Boolean[1];
 }
  
 Class meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Person
@@ -1224,6 +1270,9 @@ function meta::pure::lineage::scanProperties::test::getStreetNames(s:Street[*]):
    $s->map(x|$x.street);
 }
 
+//======  SubTypes on Property Level   ======================
+
+//Subtypes via Pure mapping expression
 ###Mapping
 Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::testMappingWithSingleSubType
 (
@@ -1329,6 +1378,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testNested
                         '  (\n' +
                         '    b\n' +
                         '    (\n' +
+                        '      cid\n' +
                         '      id\n' +
                         '      id2\n' +
                         '    )\n' +
@@ -1355,6 +1405,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testNested
                         '  (\n' +
                         '    b\n' +
                         '    (\n' +
+                        '      cid\n' +
                         '      id\n' +
                         '      id2\n' +
                         '    )\n' +
@@ -1397,6 +1448,102 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::SourceToTarg
     id : if($src.a->size()==1, | $src.a->filter(a|$a.b.id->isNotEmpty() && $a->meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::f()).b.id, | $src.accessClassBProperties())
   }
 )
+
+//Subtypes via Sets
+
+###Pure
+
+import meta::pure::graphFetch::*;
+import meta::json::*;
+import meta::pure::dataQuality::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::*;
+import meta::pure::mapping::modelToModel::test::alloy::simple::objects::dest::*;
+import meta::pure::mapping::modelToModel::test::alloy::simple::*;
+import meta::pure::mapping::modelToModel::test::alloy::utils::*;
+import meta::pure::mapping::modelToModel::test::shared::src::*;
+import meta::pure::mapping::modelToModel::test::shared::dest::*;
+import meta::pure::mapping::modelToModel::test::simple::*;
+import meta::pure::runtime::*;
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::test::alloy::simple::sourceTreeCalc::simpleObjectWithSingleSubTypeOnRoot() : Boolean[1]
+{
+   let tree = #{ Person {firstName,lastName} }#;
+   let expectedSourceTree = #{ meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA {aName,fullName} }#;
+   let mapping= simpleModelMappingWithSubType;
+
+  let sourceTree = calculateSourceTree($tree, $mapping, meta::pure::extension::defaultExtensions());
+  assertEquals($expectedSourceTree->sortTree()->meta::pure::graphFetch::treeToString(), $sourceTree->sortTree()->meta::pure::graphFetch::treeToString()); 
+}
+
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::test::alloy::simple::sourceTreeCalc::simpleObjectWithSubType() : Boolean[1]
+{
+   let tree = #{Firm {legalName, employees{firstName}} }#;
+   let expectedSourceTree = #{ meta::pure::mapping::modelToModel::test::shared::src::_S_Firm { employees { fullName },  employees->subType(@meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA) {  aName, fullName },  name} }#;
+   let mapping= simpleModelMappingWithSubType;
+
+  let sourceTree = calculateSourceTree($tree, $mapping, meta::pure::extension::defaultExtensions());
+  assertEquals($expectedSourceTree->sortTree()->meta::pure::graphFetch::treeToString(), $sourceTree->sortTree()->meta::pure::graphFetch::treeToString()); 
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::test::alloy::simple::sourceTreeCalc::simpleObjectWithSubTypeWithNestedAssosiation() : Boolean[1]
+{
+   let tree = #{Firm {legalName, employees{firstName, lastName, description}} }#;
+   let expectedSourceTree =#{ meta::pure::mapping::modelToModel::test::shared::src::_S_Firm { employees { address{ street },  fullName },  employees->subType(@meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA) {  aName, address{ street }, fullName , vehicle{ wheelCount} },  name} }#;
+  let mapping= simpleModelMappingWithSubTypeWithNestedAssociation;
+
+  let sourceTree = calculateSourceTree($tree, $mapping, meta::pure::extension::defaultExtensions());
+  assertEquals($expectedSourceTree->sortTree()->meta::pure::graphFetch::treeToString(), $sourceTree->sortTree()->meta::pure::graphFetch::treeToString()); 
+}
+
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::test::alloy::simple::sourceTreeCalc::simpleObjectWithSubTypesSameNameInDifferentModules(): Boolean[1]
+{
+   let tree = #{Friendship {friendA {firstName}, friendB {firstName} }}#;
+   let expectedSourceTree =#{  meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::_S_Friendship 
+                                       { 
+                                         friendA { fullName },
+                                         friendA->subType(@meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA) {aName, fullName },
+                                         friendA->subType(@meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::_S_PersonA) {aName, fullName }, 
+                                         friendB { fullName },
+                                         friendB->subType(@meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA) {aName, fullName },
+                                         friendB->subType(@meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::_S_PersonA) {aName, fullName }
+                                     } }#;
+   let mapping= meta::pure::mapping::modelToModel::test::alloy::simpleModelMappingWithMultipleSubType;
+
+  let sourceTree = calculateSourceTree($tree, $mapping, meta::pure::extension::defaultExtensions());
+  assertEquals($expectedSourceTree->sortTree()->meta::pure::graphFetch::treeToString(), $sourceTree->sortTree()->meta::pure::graphFetch::treeToString()); 
+}
+
+
+
+function <<meta::pure::profiles::test.Test>>  meta::pure::mapping::modelToModel::test::alloy::simple::sourceTreeCalc::simpleObjectWithMultiLevelInheritance() : Boolean[1]
+{
+   let tree = #{Friendship {friendA {firstName}, friendB {firstName}, friendC {firstName} }}#;
+    let expectedSourceTree =#{  meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::_S_Friendship 
+                                       { 
+                                         friendA { fullName },
+                                         friendA->subType(@meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA) {aName, fullName },
+                                         friendA->subType(@meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::_S_PersonA) {aName, fullName }, 
+                                         friendB { fullName },
+                                         friendB->subType(@meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA) {aName, fullName },
+                                         friendB->subType(@meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::_S_PersonA) {aName, fullName },
+                                         friendC {
+                                                    friendC { fullName },
+                                                    friendC->subType(@meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA) {aName, fullName },
+                                                    friendC->subType(@meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::_S_PersonA) {aName, fullName }
+                                                 }
+                                     } }#;
+   let mapping= meta::pure::mapping::modelToModel::test::alloy::simpleModelMappingWithMultipleSubType;
+
+  let sourceTree = calculateSourceTree($tree, $mapping, meta::pure::extension::defaultExtensions());
+  assertEquals($expectedSourceTree->sortTree()->meta::pure::graphFetch::treeToString(), $sourceTree->sortTree()->meta::pure::graphFetch::treeToString()); 
+ }
+
+
 
 ###Pure
 import meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::*;
