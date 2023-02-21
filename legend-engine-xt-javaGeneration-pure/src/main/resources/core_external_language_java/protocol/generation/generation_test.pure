@@ -79,7 +79,7 @@ Class meta::protocols::generation::java::tests::model::Field
 }
 
 
-Class meta::protocols::generation::java::tests::model::ProtoBufType
+Class <<typemodifiers.abstract>> meta::protocols::generation::java::tests::model::ProtoBufType
 {
 }
 
@@ -105,7 +105,7 @@ Class meta::protocols::generation::java::tests::model::Enum
    constantNumber : Integer[1];
 }
 
-Class meta::protocols::generation::java::tests::model::ScalarType extends meta::protocols::generation::java::tests::model::ProtoBufType
+Class <<typemodifiers.abstract>> meta::protocols::generation::java::tests::model::ScalarType extends meta::protocols::generation::java::tests::model::ProtoBufType
 {
 }
 
@@ -484,17 +484,26 @@ function <<test.Test>> meta::protocols::generation::java::tests::testTranslatorJ
                 '}', $sources->at(0));
 }
 
-function meta::protocols::generation::java::tests::configureConventionsForTest(conventions: meta::external::language::java::transform::Conventions[1]): meta::external::language::java::transform::Conventions[1]
+function meta::protocols::generation::java::tests::configureConventionsForTest(p: Package[1], javaPkg: String[1], ge: meta::protocols::generation::java::JavaProtocolGenerator[1]): meta::external::language::java::transform::Conventions[1]
 {
-    $conventions
-      ->meta::external::language::java::transform::addProvidedType(meta::protocols::generation::java::tests::provided::model::pojo::ProvidedPojo, 'org.finos.legend.engine.protocol.pure.v1.model.packageableElement.ProvidedPojo');
+  meta::protocols::generation::java::defaultConfigureConventions($p, $javaPkg, $ge)
+    ->meta::protocols::generation::java::configureConventionsWithCoreProtocolClasses()
+    ->meta::external::language::java::transform::addProvidedType(meta::protocols::generation::java::tests::provided::model::pojo::ProvidedPojo, 'org.finos.legend.engine.protocol.pure.v1.model.packageableElement.ProvidedPojo');
+}
+
+function meta::protocols::generation::java::tests::protocolJavaGenerationExtensionForTest():meta::protocols::generation::java::JavaProtocolGenerator[1]
+{
+  let ext = meta::protocols::generation::java::basicGeneratorForProtocolWithJacksonAnnotationsAndVisitorClasses();
+
+  ^$ext(
+    configureConventions = meta::protocols::generation::java::tests::configureConventionsForTest_Package_1__String_1__JavaProtocolGenerator_1__Conventions_1_
+  );
 }
 
 function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJavaGeneration():Boolean[1]
 {
-  let sources = meta::protocols::generation::java::generateProtocolClasses('meta::protocols::generation::java::tests::model', 'org.finos', [], ['meta::protocols::generation::java::configureConventionsWithCoreProtocolClasses_Conventions_1__Conventions_1_', 'meta::protocols::generation::java::tests::configureConventionsForTest_Conventions_1__Conventions_1_'])
-        ->map(p | $p->meta::external::language::java::metamodel::project::allClasses()->map(cl | meta::external::language::java::serialization::newStringifier($p)->meta::external::language::java::serialization::ofClass($cl->meta::external::language::java::factory::inferImports())))
-        ->sort();
+  let sources = meta::protocols::generation::java::generateProtocolClasses('meta::protocols::generation::java::tests::model', 'org.finos', [], 'meta::protocols::generation::java::tests::protocolJavaGenerationExtensionForTest__JavaProtocolGenerator_1_')
+        ->map(p | $p->meta::external::language::java::metamodel::project::allClasses()->sortBy(c | $c.simpleName)->map(cl | meta::external::language::java::serialization::newStringifier($p)->meta::external::language::java::serialization::ofClass($cl->meta::external::language::java::factory::inferImports())));
 
   assertEquals(22, $sources->size());
 
@@ -513,7 +522,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'    public List<V> v = Collections.<V>emptyList();\n' +
     '\n' +
 		'    public abstract <T> T accept(PojoWithGenericsVisitor<T> visitor);\n' +
-		'}', $sources->at(0));
+		'}', $sources->at(9));
 
 	assertEquals('package org.finos.pojo;\n' +
     '\n' +
@@ -530,7 +539,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'    public List<V> v = Collections.<V>emptyList();\n' +
     '\n' +   
 		'    public abstract <T> T accept(PojoWithGenericsAndMultVisitor<T> visitor);\n' +
-		'}', $sources->at(1));
+		'}', $sources->at(12));
 
 	assertEquals('package org.finos.pojo;\n' +
     '\n' +
@@ -542,7 +551,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'    public List<T> t2 = Collections.<T>emptyList();\n' +
     '\n' + 
 		'    public abstract <T> T accept(PojoWithGenericsVisitor<T> visitor);\n' +
-		'}', $sources->at(2));
+		'}', $sources->at(10));
 
 	assertEquals('package org.finos.pojo;\n' +
     '\n' +
@@ -554,7 +563,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'    {\n' +
 		'        return visitor.visit(this);\n' +
 		'    }\n' +
-		'}', $sources->at(3));
+		'}', $sources->at(13));
 
 	assertEquals('package org.finos.pojo;\n' +
     '\n' +
@@ -564,7 +573,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'{\n' +
 		'    public Number reqFactor;\n' +
 		'    public Number optionalFactor;\n' +
-		'}', $sources->at(4));
+		'}', $sources->at(16));
 
 	assertEquals('package org.finos.pojo;\n' +
     '\n' +
@@ -574,14 +583,14 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'    {\n' +
 		'        return visitor.visit(this);\n' +
 		'    }\n' +
-		'}', $sources->at(5));
+		'}', $sources->at(11));
 
 	assertEquals('package org.finos.pojo;\n' +
     '\n' +
 		'public interface PojoWithGenericsAndMultVisitor<T>\n' +
 		'{\n' +
 		'    T visit(PojoWithGenericsAndMult2 val);\n' +
-		'}', $sources->at(6));
+		'}', $sources->at(14));
 
 	assertEquals('package org.finos.pojo;\n' +
     '\n' +
@@ -589,7 +598,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'{\n' +
 		'    T visit(PojoWithGenerics2 val);\n' +
 		'    T visit(PojoWithGenerics3 val);\n' +
-		'}', $sources->at(7));
+		'}', $sources->at(15));
 
 	assertEquals('package org.finos.scalar;\n' +
     '\n' +
@@ -602,7 +611,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'    {\n' +
 		'        return visitor.visit(this);\n' +
 		'    }\n' +
-		'}', $sources->at(8));
+		'}', $sources->at(0));
 
 	assertEquals('package org.finos.scalar;\n' +
     '\n' +
@@ -615,7 +624,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'    {\n' +
 		'        return visitor.visit(this);\n' +
 		'    }\n' +
-		'}', $sources->at(9));
+		'}', $sources->at(6));
 
 	assertEquals('package org.finos.scalar;\n' +
     '\n' +
@@ -628,13 +637,13 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'    {\n' +
 		'        return visitor.visit(this);\n' +
 		'    }\n' +
-		'}', $sources->at(10));
+		'}', $sources->at(21));
 
 	assertEquals('package org.finos.store;\n' +
     '\n' +
 		'public class Store extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store\n' +
 		'{\n' +
-		'}', $sources->at(11));
+		'}', $sources->at(20));
 
 	assertEquals('package org.finos;\n' +
     '\n' +
@@ -642,11 +651,11 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'import com.fasterxml.jackson.annotation.JsonTypeInfo;\n' +
     '\n' +
 		'@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, property="_type")\n' +
-		'@JsonSubTypes({@JsonSubTypes.Type(value=org.finos.Message.class, name="message"), @JsonSubTypes.Type(value=org.finos.MessagePtr.class, name="messagePtr"), @JsonSubTypes.Type(value=org.finos.EnumPtr.class, name="enumPtr"), @JsonSubTypes.Type(value=org.finos.Enumeration.class, name="enumeration"), @JsonSubTypes.Type(value=org.finos.ScalarType.class, name="scalarType"), @JsonSubTypes.Type(value=org.finos.scalar.Int32.class, name="int32"), @JsonSubTypes.Type(value=org.finos.scalar.Bool.class, name="bool"), @JsonSubTypes.Type(value=org.finos.scalar.String.class, name="string")})\n' +
+		'@JsonSubTypes({@JsonSubTypes.Type(value=org.finos.scalar.Bool.class, name="bool"), @JsonSubTypes.Type(value=org.finos.EnumPtr.class, name="enumPtr"), @JsonSubTypes.Type(value=org.finos.Enumeration.class, name="enumeration"), @JsonSubTypes.Type(value=org.finos.scalar.Int32.class, name="int32"), @JsonSubTypes.Type(value=org.finos.Message.class, name="message"), @JsonSubTypes.Type(value=org.finos.MessagePtr.class, name="messagePtr"), @JsonSubTypes.Type(value=org.finos.ScalarType.class, name="scalarType"), @JsonSubTypes.Type(value=org.finos.scalar.String.class, name="string")})\n' +
   	'public abstract class ProtoBufType\n' +
 		'{\n' +
 		'    public abstract <T> T accept(ProtoBufTypeVisitor<T> visitor);\n' +
-		'}', $sources->at(12));
+		'}', $sources->at(17));
 
 	assertEquals('package org.finos;\n' +
     '\n' +
@@ -662,7 +671,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'    {\n' +
 		'        return visitor.visit(this);\n' +
 		'    }\n' +
-		'}', $sources->at(13));
+		'}', $sources->at(3));
 
 	assertEquals('package org.finos;\n' +
     '\n' +
@@ -680,7 +689,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'    {\n' +
 		'        return visitor.visit(this);\n' +
 		'    }\n' +
-		'}', $sources->at(14));
+		'}', $sources->at(7));
 
 	assertEquals('package org.finos;\n' +
     '\n' +
@@ -698,14 +707,14 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'    T visit(MessagePtr val);\n' +
 		'    T visit(ScalarType val);\n' +
 		'    T visit(String val);\n' +
-		'}', $sources->at(15));
+		'}', $sources->at(18));
 
 	assertEquals('package org.finos;\n' +
     '\n' +
 		'public abstract class ScalarType extends ProtoBufType\n' +
 		'{\n' +
 		'    public abstract <T> T accept(ProtoBufTypeVisitor<T> visitor);\n' +
-		'}', $sources->at(16));
+		'}', $sources->at(19));
 
 	assertEquals('package org.finos;\n' +
     '\n' +
@@ -713,7 +722,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'{\n' +
 		'    public String constant;\n' +
 		'    public long constantNumber;\n' +
-		'}', $sources->at(17));
+		'}', $sources->at(1));
 
 	assertEquals('package org.finos;\n' +
     '\n' +
@@ -725,7 +734,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'    {\n' +
 		'        return visitor.visit(this);\n' +
 		'    }\n' +
-		'}', $sources->at(18));
+		'}', $sources->at(2));
 
 	assertEquals('package org.finos;\n' +
     '\n' +
@@ -736,7 +745,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'    public String name;\n' +
 		'    public ProtoBufType type;\n' +
 		'    public boolean repeated;\n' +
-		'}', $sources->at(19));
+		'}', $sources->at(4));
 
 	assertEquals('package org.finos;\n' +
     '\n' +
@@ -748,7 +757,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'    {\n' +
 		'        return visitor.visit(this);\n' +
 		'    }\n' +
-		'}', $sources->at(20));
+		'}', $sources->at(8));
 
 	assertEquals('package org.finos;\n' +
     '\n' +
@@ -756,5 +765,5 @@ function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJav
 		'{\n' +
 		'    ON,\n' +
 		'    OFF\n' +
-		'}', $sources->at(21));
+		'}', $sources->at(5));
 }
