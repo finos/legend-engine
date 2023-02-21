@@ -72,15 +72,16 @@ public class IngestModeTest
 
     // Base Columns: Primary keys : id, name
     protected Field id = Field.builder().name("id").type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).primaryKey(true).build();
-    protected Field tinyIntId = Field.builder().name("id").type(FieldType.of(DataType.TINYINT, Optional.empty(), Optional.empty())).primaryKey(true).build();
-    protected Field tinyIntString = Field.builder().name("id").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).primaryKey(true).build();
     protected Field name = Field.builder().name("name").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).primaryKey(true).build();
-    protected Field nameModified = Field.builder().name("name").type(FieldType.of(DataType.VARCHAR, 64, null)).primaryKey(true).build();
     protected Field amount = Field.builder().name("amount").type(FieldType.of(DataType.DOUBLE, Optional.empty(), Optional.empty())).build();
+    protected Field amountDecimal = Field.builder().name("amount").type(FieldType.of(DataType.DECIMAL, 10, 0)).build();
+    protected Field amountVarchar = Field.builder().name("amount").type(FieldType.of(DataType.VARCHAR, 32, null)).build();
     protected Field nonNullableAmount = Field.builder().name("amount").type(FieldType.of(DataType.DOUBLE, Optional.empty(), Optional.empty())).nullable(false).build();
     protected Field floatAmount = Field.builder().name("amount").type(FieldType.of(DataType.FLOAT, Optional.empty(), Optional.empty())).build();
     protected Field bizDate = Field.builder().name("biz_date").type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).build();
     protected Field nonNullableBizDate = Field.builder().name("biz_date").type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).nullable(false).build();
+    protected Field description = Field.builder().name("description").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).build();
+    protected Field descriptionModified = Field.builder().name("description").type(FieldType.of(DataType.VARCHAR, 64, null)).build();
 
 
 
@@ -122,6 +123,21 @@ public class IngestModeTest
         .addFields(bizDate)
         .build();
 
+    protected SchemaDefinition baseTableExplicitDatatypeChangeSchema = SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(floatAmount)
+            .addFields(bizDate)
+            .build();
+
+    protected SchemaDefinition baseTableSchemaWithDataSizingChange = SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(amount)
+            .addFields(bizDate)
+            .addFields(description)
+            .build();
+
     protected SchemaDefinition baseTableSchemaWithNonNullableColumn = SchemaDefinition.builder()
         .addFields(id)
         .addFields(name)
@@ -137,9 +153,10 @@ public class IngestModeTest
 
     protected SchemaDefinition stagingTableEvolvedSize = SchemaDefinition.builder()
         .addFields(id)
-        .addFields(nameModified)
+        .addFields(name)
         .addFields(amount)
         .addFields(bizDate)
+        .addFields(descriptionModified)
         .build();
 
     protected SchemaDefinition stagingTableImplicitDatatypeChange = SchemaDefinition.builder()
@@ -150,16 +167,16 @@ public class IngestModeTest
         .build();
 
     protected SchemaDefinition stagingTableNonBreakingDatatypeChange = SchemaDefinition.builder()
-        .addFields(tinyIntId)
+        .addFields(id)
         .addFields(name)
         .addFields(amount)
         .addFields(bizDate)
         .build();
 
     protected SchemaDefinition stagingTableBreakingDatatypeChange = SchemaDefinition.builder()
-        .addFields(tinyIntString)
+        .addFields(id)
         .addFields(name)
-        .addFields(amount)
+        .addFields(amountVarchar)
         .addFields(bizDate)
         .build();
 
@@ -349,11 +366,11 @@ public class IngestModeTest
 
     protected String expectedSchemaEvolutionAddColumnWithUpperCase = "ALTER TABLE \"MYDB\".\"MAIN\" ADD COLUMN \"BIZ_DATE\" DATE";
 
-    protected String expectedSchemaEvolutionModifySize = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"name\" VARCHAR(64) PRIMARY KEY";
+    protected String expectedSchemaEvolutionModifySize = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"description\" VARCHAR(64)";
 
-    protected String expectedSchemaEvolutionModifySizeWithUpperCase = "ALTER TABLE \"MYDB\".\"MAIN\" ALTER COLUMN \"NAME\" VARCHAR(64) PRIMARY KEY";
+    protected String expectedSchemaEvolutionModifySizeWithUpperCase = "ALTER TABLE \"MYDB\".\"MAIN\" ALTER COLUMN \"DESCRIPTION\" VARCHAR(64)";
 
-    protected String expectedSchemaNonBreakingChange = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"id\" TINYINT PRIMARY KEY";
+    protected String expectedSchemaNonBreakingChange = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"amount\" DOUBLE";
     protected String expectedSchemaImplicitNullabilityChange = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"amount\" SET NULL";
     protected String expectedSchemaNullabilityChange = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"biz_date\" SET NULL";
 

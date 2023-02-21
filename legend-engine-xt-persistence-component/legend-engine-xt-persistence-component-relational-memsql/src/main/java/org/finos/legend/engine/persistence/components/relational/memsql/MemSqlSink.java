@@ -81,7 +81,7 @@ public class MemSqlSink extends AnsiSqlSink
         capabilities.add(Capability.ADD_COLUMN);
         capabilities.add(Capability.IMPLICIT_DATA_TYPE_CONVERSION);
         capabilities.add(Capability.EXPLICIT_DATA_TYPE_CONVERSION);
-        capabilities.add(Capability.DATA_SIZING_CHANGES);
+        capabilities.add(Capability.DATA_TYPE_SIZE_CHANGE);
         CAPABILITIES = Collections.unmodifiableSet(capabilities);
 
         Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass = new HashMap<>();
