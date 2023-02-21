@@ -152,21 +152,6 @@ public class TestUtils
             .build();
     }
 
-    public static DatasetDefinition getSchemaEvolMainTableWithMissingColumn()
-    {
-        return DatasetDefinition.builder()
-            .group(testSchemaName)
-            .name(mainTableName)
-            .schema(SchemaDefinition.builder()
-                .addFields(id)
-                .addFields(name)
-                .addFields(income)
-                .addFields(startTime)
-                .addFields(digest)
-                .build())
-            .build();
-    }
-
     public static DatasetDefinition getMainTableWithBatchUpdateTimeField()
     {
         return DatasetDefinition.builder()
@@ -778,6 +763,34 @@ public class TestUtils
                 .addFields(dataSplit)
                 .build()
             )
+            .build();
+    }
+    public static DatasetDefinition getSchemaEvolutionBeforeAddMainTable() {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(startTime)
+                .addFields(expiryDate)
+                .addFields(digest)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getSchemaEvolutionBeforeAddStagingTable() {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(income)
+                .addFields(startTime)
+                .addFields(expiryDate)
+                .addFields(digest)
+                .build())
             .build();
     }
 
