@@ -84,7 +84,6 @@ public class IngestModeTest
     protected Field descriptionModified = Field.builder().name("description").type(FieldType.of(DataType.VARCHAR, 64, null)).build();
 
 
-
     // Bitemporal Columns:
     protected Field validityFromReference = Field.builder().name(validityFromReferenceField).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).build();
     protected Field validityThroughReference = Field.builder().name(validityThroughReferenceField).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).build();
@@ -117,11 +116,11 @@ public class IngestModeTest
     }};
 
     protected SchemaDefinition baseTableSchema = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(amount)
-        .addFields(bizDate)
-        .build();
+            .addFields(id)
+            .addFields(name)
+            .addFields(amount)
+            .addFields(bizDate)
+            .build();
 
     protected SchemaDefinition baseTableExplicitDatatypeChangeSchema = SchemaDefinition.builder()
             .addFields(id)
@@ -139,228 +138,235 @@ public class IngestModeTest
             .build();
 
     protected SchemaDefinition baseTableSchemaWithNonNullableColumn = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(nonNullableAmount)
-        .addFields(nonNullableBizDate)
-        .build();
+            .addFields(id)
+            .addFields(name)
+            .addFields(nonNullableAmount)
+            .addFields(nonNullableBizDate)
+            .build();
 
     protected SchemaDefinition baseTableShortenedSchema = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(amount)
-        .build();
+            .addFields(id)
+            .addFields(name)
+            .addFields(amount)
+            .build();
 
     protected SchemaDefinition stagingTableEvolvedSize = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(amount)
-        .addFields(bizDate)
-        .addFields(descriptionModified)
-        .build();
+            .addFields(id)
+            .addFields(name)
+            .addFields(amount)
+            .addFields(bizDate)
+            .addFields(descriptionModified)
+            .build();
 
     protected SchemaDefinition stagingTableImplicitDatatypeChange = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(floatAmount)
-        .addFields(bizDate)
-        .build();
+            .addFields(id)
+            .addFields(name)
+            .addFields(floatAmount)
+            .addFields(bizDate)
+            .build();
+
+    protected SchemaDefinition stagingTableNullableChange = SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(amount)
+            .addFields(bizDate)
+            .build();
 
     protected SchemaDefinition stagingTableNonBreakingDatatypeChange = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(amount)
-        .addFields(bizDate)
-        .build();
+            .addFields(id)
+            .addFields(name)
+            .addFields(amount)
+            .addFields(bizDate)
+            .build();
 
     protected SchemaDefinition stagingTableBreakingDatatypeChange = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(amountVarchar)
-        .addFields(bizDate)
-        .build();
+            .addFields(id)
+            .addFields(name)
+            .addFields(amountVarchar)
+            .addFields(bizDate)
+            .build();
 
     protected SchemaDefinition mainTableSchema = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(amount)
-        .addFields(bizDate)
-        .addFields(digest)
-        .addFields(batchIdIn)
-        .addFields(batchIdOut)
-        .addFields(batchTimeIn)
-        .addFields(batchTimeOut)
-        .build();
+            .addFields(id)
+            .addFields(name)
+            .addFields(amount)
+            .addFields(bizDate)
+            .addFields(digest)
+            .addFields(batchIdIn)
+            .addFields(batchIdOut)
+            .addFields(batchTimeIn)
+            .addFields(batchTimeOut)
+            .build();
 
     protected SchemaDefinition mainTableSchemaWithBatchIdInNotPrimary = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(amount)
-        .addFields(bizDate)
-        .addFields(digest)
-        .addFields(batchIdInNonPrimary)
-        .addFields(batchIdOut)
-        .addFields(batchTimeIn)
-        .addFields(batchTimeOut)
-        .build();
+            .addFields(id)
+            .addFields(name)
+            .addFields(amount)
+            .addFields(bizDate)
+            .addFields(digest)
+            .addFields(batchIdInNonPrimary)
+            .addFields(batchIdOut)
+            .addFields(batchTimeIn)
+            .addFields(batchTimeOut)
+            .build();
 
     protected SchemaDefinition mainTableBatchIdBasedSchema = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(amount)
-        .addFields(bizDate)
-        .addFields(digest)
-        .addFields(batchIdIn)
-        .addFields(batchIdOut)
-        .build();
+            .addFields(id)
+            .addFields(name)
+            .addFields(amount)
+            .addFields(bizDate)
+            .addFields(digest)
+            .addFields(batchIdIn)
+            .addFields(batchIdOut)
+            .build();
 
     protected SchemaDefinition mainTableBatchIdBasedSchemaWithBatchIdInNotPrimary = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(amount)
-        .addFields(bizDate)
-        .addFields(digest)
-        .addFields(batchIdInNonPrimary)
-        .addFields(batchIdOut)
-        .build();
+            .addFields(id)
+            .addFields(name)
+            .addFields(amount)
+            .addFields(bizDate)
+            .addFields(digest)
+            .addFields(batchIdInNonPrimary)
+            .addFields(batchIdOut)
+            .build();
 
     protected SchemaDefinition mainTableTimeBasedSchema = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(amount)
-        .addFields(bizDate)
-        .addFields(digest)
-        .addFields(batchTimeIn)
-        .addFields(batchTimeOut)
-        .build();
+            .addFields(id)
+            .addFields(name)
+            .addFields(amount)
+            .addFields(bizDate)
+            .addFields(digest)
+            .addFields(batchTimeIn)
+            .addFields(batchTimeOut)
+            .build();
 
     protected SchemaDefinition mainTableTimeBasedSchemaWithBatchTimeInNotPrimary = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(amount)
-        .addFields(bizDate)
-        .addFields(digest)
-        .addFields(batchTimeInNonPrimary)
-        .addFields(batchTimeOut)
-        .build();
+            .addFields(id)
+            .addFields(name)
+            .addFields(amount)
+            .addFields(bizDate)
+            .addFields(digest)
+            .addFields(batchTimeInNonPrimary)
+            .addFields(batchTimeOut)
+            .build();
 
     protected SchemaDefinition baseTableSchemaWithDigest = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(amount)
-        .addFields(bizDate)
-        .addFields(digest)
-        .build();
+            .addFields(id)
+            .addFields(name)
+            .addFields(amount)
+            .addFields(bizDate)
+            .addFields(digest)
+            .build();
 
     protected SchemaDefinition stagingTableSchemaWithLimitedColumns = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(amount)
-        .addFields(digest)
-        .build();
+            .addFields(id)
+            .addFields(name)
+            .addFields(amount)
+            .addFields(digest)
+            .build();
 
     protected SchemaDefinition bitemporalMainTableSchema = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(amount)
-        .addFields(validityFromTarget)
-        .addFields(validityThroughTarget)
-        .addFields(digest)
-        .addFields(batchIdIn)
-        .addFields(batchIdOut)
-        .build();
+            .addFields(id)
+            .addFields(name)
+            .addFields(amount)
+            .addFields(validityFromTarget)
+            .addFields(validityThroughTarget)
+            .addFields(digest)
+            .addFields(batchIdIn)
+            .addFields(batchIdOut)
+            .build();
 
     protected SchemaDefinition bitemporalFromOnlyMainTableSchema = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(amount)
-        .addFields(digest)
-        .addFields(batchIdIn)
-        .addFields(batchIdOut)
-        .addFields(validityFromTarget)
-        .addFields(validityThroughTarget)
-        .build();
+            .addFields(id)
+            .addFields(name)
+            .addFields(amount)
+            .addFields(digest)
+            .addFields(batchIdIn)
+            .addFields(batchIdOut)
+            .addFields(validityFromTarget)
+            .addFields(validityThroughTarget)
+            .build();
 
     protected SchemaDefinition bitemporalStagingTableSchema = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(amount)
-        .addFields(validityFromReference)
-        .addFields(validityThroughReference)
-        .addFields(digest)
-        .build();
+            .addFields(id)
+            .addFields(name)
+            .addFields(amount)
+            .addFields(validityFromReference)
+            .addFields(validityThroughReference)
+            .addFields(digest)
+            .build();
 
     protected SchemaDefinition bitemporalFromOnlyStagingTableSchema = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(amount)
-        .addFields(validityFromReference)
-        .addFields(digest)
-        .build();
+            .addFields(id)
+            .addFields(name)
+            .addFields(amount)
+            .addFields(validityFromReference)
+            .addFields(digest)
+            .build();
 
     protected String expectedMetadataTableCreateQuery = "CREATE TABLE IF NOT EXISTS batch_metadata" +
-        "(\"table_name\" VARCHAR(255)," +
-        "\"batch_start_ts_utc\" DATETIME," +
-        "\"batch_end_ts_utc\" DATETIME," +
-        "\"batch_status\" VARCHAR(32)," +
-        "\"table_batch_id\" INTEGER)";
+            "(\"table_name\" VARCHAR(255)," +
+            "\"batch_start_ts_utc\" DATETIME," +
+            "\"batch_end_ts_utc\" DATETIME," +
+            "\"batch_status\" VARCHAR(32)," +
+            "\"table_batch_id\" INTEGER)";
 
     protected String expectedMetadataTableCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS BATCH_METADATA" +
-        "(\"TABLE_NAME\" VARCHAR(255)," +
-        "\"BATCH_START_TS_UTC\" DATETIME," +
-        "\"BATCH_END_TS_UTC\" DATETIME," +
-        "\"BATCH_STATUS\" VARCHAR(32)," +
-        "\"TABLE_BATCH_ID\" INTEGER)";
+            "(\"TABLE_NAME\" VARCHAR(255)," +
+            "\"BATCH_START_TS_UTC\" DATETIME," +
+            "\"BATCH_END_TS_UTC\" DATETIME," +
+            "\"BATCH_STATUS\" VARCHAR(32)," +
+            "\"TABLE_BATCH_ID\" INTEGER)";
 
     protected String expectedMetadataTableIngestQuery = "INSERT INTO batch_metadata (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\")" +
-        " (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),'2000-01-01 00:00:00',CURRENT_TIMESTAMP(),'DONE')";
+            " (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),'2000-01-01 00:00:00',CURRENT_TIMESTAMP(),'DONE')";
 
     protected String expectedMetadataTableIngestQueryWithUpperCase = "INSERT INTO BATCH_METADATA (\"TABLE_NAME\", \"TABLE_BATCH_ID\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\")" +
-        " (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as batch_metadata WHERE batch_metadata.\"TABLE_NAME\" = 'main'),'2000-01-01 00:00:00',CURRENT_TIMESTAMP(),'DONE')";
+            " (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as batch_metadata WHERE batch_metadata.\"TABLE_NAME\" = 'main'),'2000-01-01 00:00:00',CURRENT_TIMESTAMP(),'DONE')";
 
     protected String expectedMetadataTableIngestQueryWithPlaceHolders = "INSERT INTO batch_metadata (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\") (SELECT 'main',{BATCH_ID_PATTERN},'{BATCH_START_TS_PATTERN}','{BATCH_END_TS_PATTERN}','DONE')";
 
     protected String expectedStagingCleanupQuery = "DELETE FROM \"mydb\".\"staging\" as stage";
 
     protected String expectedMainTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
-        "(\"id\" INTEGER," +
-        "\"name\" VARCHAR," +
-        "\"amount\" DOUBLE," +
-        "\"biz_date\" DATE," +
-        "\"digest\" VARCHAR," +
-        "\"batch_id_in\" INTEGER," +
-        "\"batch_id_out\" INTEGER," +
-        "\"batch_time_in\" DATETIME," +
-        "\"batch_time_out\" DATETIME," +
-        "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"batch_time_in\"))";
+            "(\"id\" INTEGER," +
+            "\"name\" VARCHAR," +
+            "\"amount\" DOUBLE," +
+            "\"biz_date\" DATE," +
+            "\"digest\" VARCHAR," +
+            "\"batch_id_in\" INTEGER," +
+            "\"batch_id_out\" INTEGER," +
+            "\"batch_time_in\" DATETIME," +
+            "\"batch_time_out\" DATETIME," +
+            "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"batch_time_in\"))";
 
     protected String expectedMainTableCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN\"" +
-        "(\"ID\" INTEGER," +
-        "\"NAME\" VARCHAR," +
-        "\"AMOUNT\" DOUBLE," +
-        "\"BIZ_DATE\" DATE," +
-        "\"DIGEST\" VARCHAR," +
-        "\"BATCH_ID_IN\" INTEGER," +
-        "\"BATCH_ID_OUT\" INTEGER," +
-        "\"BATCH_TIME_IN\" DATETIME," +
-        "\"BATCH_TIME_OUT\" DATETIME," +
-        "PRIMARY KEY (\"ID\", \"NAME\", \"BATCH_ID_IN\", \"BATCH_TIME_IN\"))";
+            "(\"ID\" INTEGER," +
+            "\"NAME\" VARCHAR," +
+            "\"AMOUNT\" DOUBLE," +
+            "\"BIZ_DATE\" DATE," +
+            "\"DIGEST\" VARCHAR," +
+            "\"BATCH_ID_IN\" INTEGER," +
+            "\"BATCH_ID_OUT\" INTEGER," +
+            "\"BATCH_TIME_IN\" DATETIME," +
+            "\"BATCH_TIME_OUT\" DATETIME," +
+            "PRIMARY KEY (\"ID\", \"NAME\", \"BATCH_ID_IN\", \"BATCH_TIME_IN\"))";
 
     protected String expectedMainTableBatchIdBasedCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
-        "\"id\" INTEGER,\"name\" VARCHAR,\"amount\" DOUBLE,\"biz_date\" DATE,\"digest\" VARCHAR," +
-        "\"batch_id_in\" INTEGER,\"batch_id_out\" INTEGER,PRIMARY KEY (\"id\", \"name\", \"batch_id_in\"))";
+            "\"id\" INTEGER,\"name\" VARCHAR,\"amount\" DOUBLE,\"biz_date\" DATE,\"digest\" VARCHAR," +
+            "\"batch_id_in\" INTEGER,\"batch_id_out\" INTEGER,PRIMARY KEY (\"id\", \"name\", \"batch_id_in\"))";
 
     protected String expectedMainTableBatchIdBasedCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN\"" +
-        "(\"ID\" INTEGER,\"NAME\" VARCHAR,\"AMOUNT\" DOUBLE,\"BIZ_DATE\" DATE,\"DIGEST\" VARCHAR," +
-        "\"BATCH_ID_IN\" INTEGER,\"BATCH_ID_OUT\" INTEGER,PRIMARY KEY (\"ID\", \"NAME\", \"BATCH_ID_IN\"))";
+            "(\"ID\" INTEGER,\"NAME\" VARCHAR,\"AMOUNT\" DOUBLE,\"BIZ_DATE\" DATE,\"DIGEST\" VARCHAR," +
+            "\"BATCH_ID_IN\" INTEGER,\"BATCH_ID_OUT\" INTEGER,PRIMARY KEY (\"ID\", \"NAME\", \"BATCH_ID_IN\"))";
 
     protected String expectedMainTableTimeBasedCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
-        "\"id\" INTEGER,\"name\" VARCHAR,\"amount\" DOUBLE,\"biz_date\" DATE,\"digest\" VARCHAR," +
-        "\"batch_time_in\" DATETIME,\"batch_time_out\" DATETIME,PRIMARY KEY (\"id\", \"name\", \"batch_time_in\"))";
+            "\"id\" INTEGER,\"name\" VARCHAR,\"amount\" DOUBLE,\"biz_date\" DATE,\"digest\" VARCHAR," +
+            "\"batch_time_in\" DATETIME,\"batch_time_out\" DATETIME,PRIMARY KEY (\"id\", \"name\", \"batch_time_in\"))";
 
     protected String expectedMainTableTimeBasedCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN\"" +
-        "(\"ID\" INTEGER,\"NAME\" VARCHAR,\"AMOUNT\" DOUBLE,\"BIZ_DATE\" DATE,\"DIGEST\" VARCHAR," +
-        "\"BATCH_TIME_IN\" DATETIME,\"BATCH_TIME_OUT\" DATETIME,PRIMARY KEY (\"ID\", \"NAME\", \"BATCH_TIME_IN\"))";
+            "(\"ID\" INTEGER,\"NAME\" VARCHAR,\"AMOUNT\" DOUBLE,\"BIZ_DATE\" DATE,\"DIGEST\" VARCHAR," +
+            "\"BATCH_TIME_IN\" DATETIME,\"BATCH_TIME_OUT\" DATETIME,PRIMARY KEY (\"ID\", \"NAME\", \"BATCH_TIME_IN\"))";
 
     protected String expectedSchemaEvolutionAddColumn = "ALTER TABLE \"mydb\".\"main\" ADD COLUMN \"biz_date\" DATE";
 
@@ -375,42 +381,42 @@ public class IngestModeTest
     protected String expectedSchemaNullabilityChange = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"biz_date\" SET NULL";
 
     protected String expectedBitemporalMainTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
-        "(\"id\" INTEGER," +
-        "\"name\" VARCHAR," +
-        "\"amount\" DOUBLE," +
-        "\"validity_from_target\" DATETIME," +
-        "\"validity_through_target\" DATETIME," +
-        "\"digest\" VARCHAR," +
-        "\"batch_id_in\" INTEGER," +
-        "\"batch_id_out\" INTEGER," +
-        "PRIMARY KEY (\"id\", \"name\", \"validity_from_target\", \"batch_id_in\"))";
+            "(\"id\" INTEGER," +
+            "\"name\" VARCHAR," +
+            "\"amount\" DOUBLE," +
+            "\"validity_from_target\" DATETIME," +
+            "\"validity_through_target\" DATETIME," +
+            "\"digest\" VARCHAR," +
+            "\"batch_id_in\" INTEGER," +
+            "\"batch_id_out\" INTEGER," +
+            "PRIMARY KEY (\"id\", \"name\", \"validity_from_target\", \"batch_id_in\"))";
 
     protected String expectedBitemporalFromOnlyMainTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
-        "(\"id\" INTEGER," +
-        "\"name\" VARCHAR," +
-        "\"amount\" DOUBLE," +
-        "\"digest\" VARCHAR," +
-        "\"batch_id_in\" INTEGER," +
-        "\"batch_id_out\" INTEGER," +
-        "\"validity_from_target\" DATETIME," +
-        "\"validity_through_target\" DATETIME," +
-        "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"validity_from_target\"))";
+            "(\"id\" INTEGER," +
+            "\"name\" VARCHAR," +
+            "\"amount\" DOUBLE," +
+            "\"digest\" VARCHAR," +
+            "\"batch_id_in\" INTEGER," +
+            "\"batch_id_out\" INTEGER," +
+            "\"validity_from_target\" DATETIME," +
+            "\"validity_through_target\" DATETIME," +
+            "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"validity_from_target\"))";
 
     protected String expectedBitemporalFromOnlyMainTableCreateQueryUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN\"" +
-        "(\"ID\" INTEGER," +
-        "\"NAME\" VARCHAR," +
-        "\"AMOUNT\" DOUBLE," +
-        "\"DIGEST\" VARCHAR," +
-        "\"BATCH_ID_IN\" INTEGER," +
-        "\"BATCH_ID_OUT\" INTEGER," +
-        "\"VALIDITY_FROM_TARGET\" DATETIME," +
-        "\"VALIDITY_THROUGH_TARGET\" DATETIME," +
-        "PRIMARY KEY (\"ID\", \"NAME\", \"BATCH_ID_IN\", \"VALIDITY_FROM_TARGET\"))";
+            "(\"ID\" INTEGER," +
+            "\"NAME\" VARCHAR," +
+            "\"AMOUNT\" DOUBLE," +
+            "\"DIGEST\" VARCHAR," +
+            "\"BATCH_ID_IN\" INTEGER," +
+            "\"BATCH_ID_OUT\" INTEGER," +
+            "\"VALIDITY_FROM_TARGET\" DATETIME," +
+            "\"VALIDITY_THROUGH_TARGET\" DATETIME," +
+            "PRIMARY KEY (\"ID\", \"NAME\", \"BATCH_ID_IN\", \"VALIDITY_FROM_TARGET\"))";
 
     public void assertIfListsAreSameIgnoringOrder(List<String> first, List<String> second)
     {
         assertTrue(first.size() == second.size() &&
-            first.stream().sorted().collect(Collectors.toList())
-                .equals(second.stream().sorted().collect(Collectors.toList())));
+                first.stream().sorted().collect(Collectors.toList())
+                        .equals(second.stream().sorted().collect(Collectors.toList())));
     }
 }

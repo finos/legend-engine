@@ -48,23 +48,23 @@ public class SchemaEvolutionTest extends IngestModeTest
         TestSink()
         {
             super(
-                new HashSet<>(Arrays.asList(
-                    Capability.ADD_COLUMN,
-                    Capability.DATA_TYPE_SIZE_CHANGE,
-                    Capability.IMPLICIT_DATA_TYPE_CONVERSION,
-                    Capability.EXPLICIT_DATA_TYPE_CONVERSION)),
-                Collections.singletonMap(DataType.DOUBLE, EnumSet.of(DataType.TINYINT, DataType.SMALLINT, DataType.INTEGER, DataType.INT, DataType.FLOAT, DataType.REAL)),
-                Collections.singletonMap(DataType.FLOAT, EnumSet.of(DataType.DOUBLE)),
-                SqlGenUtils.QUOTE_IDENTIFIER,
-                AnsiSqlSink.LOGICAL_PLAN_VISITOR_BY_CLASS,
-                (x, y, z) ->
-                {
-                    throw new UnsupportedOperationException();
-                },
-                (x, y, z) ->
-                {
-                    throw new UnsupportedOperationException();
-                });
+                    new HashSet<>(Arrays.asList(
+                            Capability.ADD_COLUMN,
+                            Capability.DATA_TYPE_SIZE_CHANGE,
+                            Capability.IMPLICIT_DATA_TYPE_CONVERSION,
+                            Capability.EXPLICIT_DATA_TYPE_CONVERSION)),
+                    Collections.singletonMap(DataType.DOUBLE, EnumSet.of(DataType.TINYINT, DataType.SMALLINT, DataType.INTEGER, DataType.INT, DataType.FLOAT, DataType.REAL)),
+                    Collections.singletonMap(DataType.FLOAT, EnumSet.of(DataType.DOUBLE)),
+                    SqlGenUtils.QUOTE_IDENTIFIER,
+                    AnsiSqlSink.LOGICAL_PLAN_VISITOR_BY_CLASS,
+                    (x, y, z) ->
+                    {
+                        throw new UnsupportedOperationException();
+                    },
+                    (x, y, z) ->
+                    {
+                        throw new UnsupportedOperationException();
+                    });
         }
     }
 
@@ -88,7 +88,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
         Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.ADD_COLUMN);
-        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode,schemaEvolutionCapabilitySet);
+        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet);
 
         SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
         SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
@@ -105,14 +105,14 @@ public class SchemaEvolutionTest extends IngestModeTest
         RelationalTransformer transformer = new RelationalTransformer(relationalSink, TransformOptions.builder().addOptimizers(new UpperCaseOptimizer()).build());
 
         Dataset mainTable = DatasetDefinition.builder()
-            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableShortenedSchema)
-            .build();
+                .database(mainDbName).name(mainTableName).alias(mainTableAlias)
+                .schema(baseTableShortenedSchema)
+                .build();
 
         Dataset stagingTable = DatasetDefinition.builder()
-            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchema)
-            .build();
+                .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
+                .schema(baseTableSchema)
+                .build();
 
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
         Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
@@ -153,10 +153,9 @@ public class SchemaEvolutionTest extends IngestModeTest
 
             // Use the planner utils to return the sql
             List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
-        }
-        catch (IncompatibleSchemaChangeException e)
+        } catch (IncompatibleSchemaChangeException e)
         {
-            Assertions.assertEquals(e.getMessage(), "Field \"biz_date\" in staging dataset does not exist in main dataset. Couldn't add column since sink/user capabilities do not permit operation.");
+            Assertions.assertEquals("Field \"biz_date\" in staging dataset does not exist in main dataset. Couldn't add column since sink/user capabilities do not permit operation.", e.getMessage());
         }
     }
 
@@ -164,14 +163,14 @@ public class SchemaEvolutionTest extends IngestModeTest
     void testSnapshotMilestoningWithSizeChangeEvolution()
     {
         Dataset mainTable = DatasetDefinition.builder()
-            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithDataSizingChange)
-            .build();
+                .database(mainDbName).name(mainTableName).alias(mainTableAlias)
+                .schema(baseTableSchemaWithDataSizingChange)
+                .build();
 
         Dataset stagingTable = DatasetDefinition.builder()
-            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(stagingTableEvolvedSize)
-            .build();
+                .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
+                .schema(stagingTableEvolvedSize)
+                .build();
 
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
         Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
@@ -193,14 +192,14 @@ public class SchemaEvolutionTest extends IngestModeTest
         RelationalTransformer transformer = new RelationalTransformer(relationalSink, TransformOptions.builder().addOptimizers(new UpperCaseOptimizer()).build());
 
         Dataset mainTable = DatasetDefinition.builder()
-            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithDataSizingChange)
-            .build();
+                .database(mainDbName).name(mainTableName).alias(mainTableAlias)
+                .schema(baseTableSchemaWithDataSizingChange)
+                .build();
 
         Dataset stagingTable = DatasetDefinition.builder()
-            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(stagingTableEvolvedSize)
-            .build();
+                .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
+                .schema(stagingTableEvolvedSize)
+                .build();
 
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
         Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
@@ -232,7 +231,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
         Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.ADD_COLUMN);
-        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode,schemaEvolutionCapabilitySet);
+        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet);
 
         try
         {
@@ -242,10 +241,9 @@ public class SchemaEvolutionTest extends IngestModeTest
 
             List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
 
-        }
-        catch (IncompatibleSchemaChangeException e)
+        } catch (IncompatibleSchemaChangeException e)
         {
-            Assertions.assertEquals(e.getMessage(), "Data sizing changes couldn't be performed since user capability does not allow it");
+            Assertions.assertEquals("Data sizing changes couldn't be performed since user capability does not allow it", e.getMessage());
         }
     }
 
@@ -253,17 +251,17 @@ public class SchemaEvolutionTest extends IngestModeTest
     void testSnapshotMilestoningWithImplicitDataTypeEvolution()
     {
         Dataset mainTable = DatasetDefinition.builder()
-            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchema)
-            .build();
+                .database(mainDbName).name(mainTableName).alias(mainTableAlias)
+                .schema(baseTableSchema)
+                .build();
 
         Dataset stagingTable = DatasetDefinition.builder()
-            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(stagingTableImplicitDatatypeChange)
-            .build();
+                .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
+                .schema(stagingTableImplicitDatatypeChange)
+                .build();
 
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
-        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode,Collections.emptySet());
+        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, Collections.emptySet());
 
         SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
         RelationalTransformer transformer = new RelationalTransformer(relationalSink);
@@ -331,6 +329,63 @@ public class SchemaEvolutionTest extends IngestModeTest
         Assertions.assertEquals(expectedSchemaNullabilityChange, sqlsForSchemaEvolution.get(1));
     }
 
+    @Test
+    void testSnapshotMilestoningWithAlterNullabilityWithoutUserCapability()
+    {
+        Dataset mainTable = DatasetDefinition.builder()
+                .database(mainDbName).name(mainTableName).alias(mainTableAlias)
+                .schema(baseTableSchemaWithNonNullableColumn)
+                .build();
+
+        Dataset stagingTable = DatasetDefinition.builder()
+                .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
+                .schema(stagingTableNullableChange)
+                .build();
+
+        NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet);
+        try
+        {
+            SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
+            RelationalTransformer transformer = new RelationalTransformer(relationalSink);
+            SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
+
+            List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
+        } catch (IncompatibleSchemaChangeException e)
+        {
+            Assertions.assertEquals("Column \"amount\" couldn't be made non-nullable since user capability does not allow it", e.getMessage());
+        }
+    }
+
+    @Test
+    void testSnapshotMilestoningWithAlterNullabilityAndUserCapability()
+    {
+        Dataset mainTable = DatasetDefinition.builder()
+                .database(mainDbName).name(mainTableName).alias(mainTableAlias)
+                .schema(baseTableSchemaWithNonNullableColumn)
+                .build();
+
+        Dataset stagingTable = DatasetDefinition.builder()
+                .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
+                .schema(stagingTableNullableChange)
+                .build();
+
+        NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.COLUMN_NULLABILITY_CHANGE);
+        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet);
+        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
+        RelationalTransformer transformer = new RelationalTransformer(relationalSink);
+        SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
+
+        List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
+
+        Assertions.assertEquals(2, sqlsForSchemaEvolution.size());
+        Assertions.assertEquals(expectedSchemaImplicitNullabilityChange, sqlsForSchemaEvolution.get(0));
+        Assertions.assertEquals(expectedSchemaNullabilityChange, sqlsForSchemaEvolution.get(1));
+    }
+
 
     //int --> tinyInt
     @Test
@@ -386,10 +441,9 @@ public class SchemaEvolutionTest extends IngestModeTest
             SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
 
             List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
-        }
-        catch (IncompatibleSchemaChangeException e)
+        } catch (IncompatibleSchemaChangeException e)
         {
-            Assertions.assertEquals(e.getMessage(), "Explicit data type conversion from \"INT\" to \"TINYINT\" couldn't be performed since user capability does not allow it");
+            Assertions.assertEquals("Explicit data type conversion from \"INT\" to \"TINYINT\" couldn't be performed since user capability does not allow it", e.getMessage());
         }
     }
 
@@ -397,24 +451,23 @@ public class SchemaEvolutionTest extends IngestModeTest
     void testSnapshotMilestoningWithBreakingDataTypeEvolution()
     {
         Dataset mainTable = DatasetDefinition.builder()
-            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchema)
-            .build();
+                .database(mainDbName).name(mainTableName).alias(mainTableAlias)
+                .schema(baseTableSchema)
+                .build();
 
         Dataset stagingTable = DatasetDefinition.builder()
-            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(stagingTableBreakingDatatypeChange)
-            .build();
+                .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
+                .schema(stagingTableBreakingDatatypeChange)
+                .build();
 
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
-        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode,Collections.emptySet());
+        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, Collections.emptySet());
 
         try
         {
             schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
             Assertions.fail("Exception was not thrown");
-        }
-        catch (IncompatibleSchemaChangeException e)
+        } catch (IncompatibleSchemaChangeException e)
         {
             assertEquals("Breaking schema change from datatype DOUBLE to VARCHAR", e.getMessage());
         }

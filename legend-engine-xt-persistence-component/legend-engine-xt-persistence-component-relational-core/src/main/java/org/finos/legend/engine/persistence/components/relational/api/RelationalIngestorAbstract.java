@@ -246,7 +246,7 @@ public abstract class RelationalIngestorAbstract
                     .updatedDatasets(datasets)
                     .batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN)) : null))
                     .dataSplitRange(dataSplitRange)
-                    .schemaEvolutionSqlPlan(generatorResult.schemaEvolutionSql())
+                    .schemaEvolutionSql(generatorResult.schemaEvolutionSql())
                     .build();
                 results.add(result);
                 dataSplitIndex++;
