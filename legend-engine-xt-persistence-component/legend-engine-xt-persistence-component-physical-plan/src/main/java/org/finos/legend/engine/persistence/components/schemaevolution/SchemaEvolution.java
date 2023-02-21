@@ -37,18 +37,12 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Alter;
-import org.finos.legend.engine.persistence.components.logicalplan.operations.AlterAbstract;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
 import org.finos.legend.engine.persistence.components.sink.Sink;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapability;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.immutables.value.Value.Immutable;
@@ -97,6 +91,8 @@ public class SchemaEvolution
     {
         List<Operation> operations = new ArrayList<>();
         List<Field> modifiedFields = new ArrayList<>();
+        validatePrimaryKeys(mainDataset, stagingDataset);
+        //todo : fieldToIgnore
         operations.addAll(stagingToMainTableColumnMatch(mainDataset, stagingDataset, ingestMode.accept(MAIN_TABLE_FIELDS_TO_IGNORE), modifiedFields));
         operations.addAll(mainToStagingTableColumnMatch(mainDataset, stagingDataset, ingestMode.accept(STAGING_TABLE_FIELDS_TO_IGNORE), modifiedFields));
 
@@ -104,6 +100,21 @@ public class SchemaEvolution
 
         return SchemaEvolutionResult.of(LogicalPlan.of(operations), mainDataset.withSchema(evolvedSchema));
     }
+
+    private void validatePrimaryKeys(Dataset mainDataset, Dataset stagingDataset)
+    {
+        List<Field> stagingFilteredFields = stagingDataset.schema().fields().stream().filter(field -> !(ingestMode.accept(MAIN_TABLE_FIELDS_TO_IGNORE).contains(field.name()))).collect(Collectors.toList());
+        Set<Field> stagingPkKeys = stagingFilteredFields.stream().filter(field -> field.primaryKey()).collect(Collectors.toSet());
+        List<Field> mainFilteredFields = mainDataset.schema().fields().stream().filter(field -> !(ingestMode.accept(STAGING_TABLE_FIELDS_TO_IGNORE).contains(field.name()))).collect(Collectors.toList());
+        Set<Field> mainPkKeys = mainFilteredFields.stream().filter(field -> field.primaryKey()).collect(Collectors.toSet());
+        if (stagingPkKeys.size() != mainPkKeys.size() || !Objects.equals(stagingPkKeys, mainPkKeys))
+        {
+            System.out.println(stagingPkKeys);
+            System.out.println(mainPkKeys);
+            throw new IncompatibleSchemaChangeException("Primary keys for main table has changed which is not allowed ");
+        }
+    }
+
 
     //todo : validate primary keys b/w the two tables and throw a ValidationException if discrepancy
     //Validate all columns (allowing exceptions) in staging dataset must have a matching column in main dataset
@@ -125,14 +136,14 @@ public class SchemaEvolution
                 // Add the new column in the main table if database supports ADD_COLUMN capability and
                 // if user capability supports ADD_COLUMN or is empty (since empty means no overriden preference)
                 if (sink.capabilities().contains(Capability.ADD_COLUMN)
-                        && (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.ADD_COLUMN) || schemaEvolutionCapabilitySet.isEmpty()))
+                        && (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.ADD_COLUMN)))
                 {
                     operations.add(Alter.of(mainDataset, Alter.AlterOperation.ADD, stagingField, Optional.empty()));
                     modifiedFields.add(stagingField);
                 }
                 else
                 {
-                    throw new IllegalStateException(String.format("Field \"%s\" in staging dataset does not exist in main dataset. Couldn't add column since sink/user capabilities do not permit operation.", stagingFieldName));
+                    throw new IncompatibleSchemaChangeException(String.format("Field \"%s\" in staging dataset does not exist in main dataset. Couldn't add column since sink/user capabilities do not permit operation.", stagingFieldName));
                 }
             }
             else
@@ -147,21 +158,18 @@ public class SchemaEvolution
                         if (sink.capabilities().contains(Capability.IMPLICIT_DATA_TYPE_CONVERSION)
                                 && sink.supportsImplicitMapping(matchedMainField.type().dataType(), stagingFieldType.dataType()))
                         {
-                            if (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.IMPLICIT_DATA_TYPE_CONVERSION) || schemaEvolutionCapabilitySet.isEmpty())
-                            {
-                                Field newField = createNewField(matchedMainField, stagingField, matchedMainField.type().length().orElse(0), matchedMainField.type().scale().orElse(0));
-                                evolveDataType(newField, matchedMainField, mainDataset, operations, modifiedFields);
-                            }
+                            Field newField = evolveFieldLength(stagingField, matchedMainField);
+                            evolveDataType(newField, matchedMainField, mainDataset, operations, modifiedFields);
                         }
                         // If the datatype is a non-breaking change, we alter the datatype.
                         // We also alter the length if required (pick the maximum length)
                         else if (sink.capabilities().contains(Capability.EXPLICIT_DATA_TYPE_CONVERSION)
                                 && sink.supportsExplicitMapping(matchedMainField.type().dataType(), stagingFieldType.dataType()))
                         {
-                            if (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.EXPLICIT_DATA_TYPE_CONVERSION) || schemaEvolutionCapabilitySet.isEmpty())
+                            if (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_CONVERSION))
                             {
                                 //Modify the column in main table
-                                Field newField = createNewField(stagingField, matchedMainField, stagingField.type().length().orElse(0), stagingField.type().scale().orElse(0));
+                                Field newField = evolveFieldLength(matchedMainField, stagingField);
                                 evolveDataType(newField, matchedMainField, mainDataset, operations, modifiedFields);
                             }
                             else
@@ -184,6 +192,8 @@ public class SchemaEvolution
                 }
                 else
                 {
+                    //todo : check if a capability is required
+                    //todo : check if this can be independent of data type changes
                     if (matchedMainField.nullable() != stagingField.nullable())
                     {
                         Field newField = createNewField(matchedMainField, stagingField, matchedMainField.type().length().orElse(0), matchedMainField.type().scale().orElse(0));
@@ -205,12 +215,19 @@ public class SchemaEvolution
                 operations.add(Alter.of(mainDataset, Alter.AlterOperation.CHANGE_DATATYPE, newField, Optional.empty()));
                 modifiedFields.add(newField);
             }
+            // todo : tinyint(16) -> int (8) and nullability changes. does above statement handle both ?
             else if (mainDataField.nullable() != newField.nullable())
             {
-                operations.add(Alter.of(mainDataset, Alter.AlterOperation.NULLABLE_COLUMN, newField, Optional.empty()));
-                modifiedFields.add(newField);
+                alterColumnWithNullable(newField, mainDataset, operations, modifiedFields);
             }
         }
+    }
+
+    private void alterColumnWithNullable(Field newField, Dataset mainDataset, List<Operation> operations, List<Field> modifiedFields)
+    {
+        operations.add(Alter.of(mainDataset, Alter.AlterOperation.NULLABLE_COLUMN, newField, Optional.empty()));
+        newField.withNullable(true);
+        modifiedFields.add(newField);
     }
 
     private List<Operation> mainToStagingTableColumnMatch(Dataset mainDataset, Dataset stagingDataset, Set<String> fieldsToIgnore, List<Field> modifiedFields)
@@ -223,15 +240,10 @@ public class SchemaEvolution
             String mainFieldName = mainField.name();
             if (!stagingFieldNames.contains(mainFieldName))
             {
-                if (mainField.primaryKey())
-                {
-                    throw new IllegalStateException(String.format("Non-nullable field \"%s\" does not exist in staging dataset", mainFieldName));
-                }
                 //todo : capability for nullable check?
                 //Modify the column to nullable in main table
-                operations.add(Alter.of(mainDataset, Alter.AlterOperation.NULLABLE_COLUMN, mainField, Optional.empty()));
-                mainField = mainField.withNullable(true);
-                modifiedFields.add(mainField);
+
+                alterColumnWithNullable(mainField, mainDataset, operations, modifiedFields);
             }
         }
         return operations;
@@ -241,49 +253,76 @@ public class SchemaEvolution
     {
         int length = 0;
         int scale = 0;
-        if (sink.capabilities().contains(Capability.DATA_SIZING_CHANGES)
-                && (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_SIZING_CHANGES) || schemaEvolutionCapabilitySet.isEmpty()))
+        if (isSizingChangesRequired(oldField, newField))
         {
-            //If the oldField and newField have a length associated, pick the greater length
-            if (oldField.type().length().isPresent() && newField.type().length().isPresent())
+            if (sink.capabilities().contains(Capability.DATA_TYPE_SIZE_CHANGE)
+                    && (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE)))
             {
-                length = newField.type().length().get() >= oldField.type().length().get()
-                    ? newField.type().length().get()
-                    : oldField.type().length().get();
-            }
-            //Allow length evolution from unspecified length only when data types are same. This is to avoid evolution like SMALLINT(6) -> INT(6) or INT -> DOUBLE(6) and allow for DATETIME -> DATETIME(6)
-            else if (oldField.type().dataType().equals(newField.type().dataType())
-                && oldField.type().length().isPresent() && !newField.type().length().isPresent())
-            {
-                length = oldField.type().length().get();
-            }
+                //If the oldField and newField have a length associated, pick the greater length
+                if (oldField.type().length().isPresent() && newField.type().length().isPresent())
+                {
+                    length = newField.type().length().get() >= oldField.type().length().get()
+                            ? newField.type().length().get()
+                            : oldField.type().length().get();
+                }
+                //Allow length evolution from unspecified length only when data types are same. This is to avoid evolution like SMALLINT(6) -> INT(6) or INT -> DOUBLE(6) and allow for DATETIME -> DATETIME(6)
+                else if (oldField.type().dataType().equals(newField.type().dataType())
+                        && oldField.type().length().isPresent() && !newField.type().length().isPresent())
+                {
+                    length = oldField.type().length().get();
+                }
 
-            //If the oldField and newField have a scale associated, pick the greater scale
-            if (oldField.type().scale().isPresent() && newField.type().scale().isPresent())
-            {
-                scale = newField.type().scale().get() >= oldField.type().scale().get()
-                    ? newField.type().scale().get()
-                    : oldField.type().scale().get();
+                //If the oldField and newField have a scale associated, pick the greater scale
+                if (oldField.type().scale().isPresent() && newField.type().scale().isPresent())
+                {
+                    scale = newField.type().scale().get() >= oldField.type().scale().get()
+                            ? newField.type().scale().get()
+                            : oldField.type().scale().get();
+                }
+                //Allow scale evolution from unspecified scale only when data types are same. This is to avoid evolution like SMALLINT(6) -> INT(6) or INT -> DOUBLE(6) and allow for DATETIME -> DATETIME(6)
+                else if (oldField.type().dataType().equals(newField.type().dataType())
+                        && oldField.type().scale().isPresent() && !newField.type().scale().isPresent())
+                {
+                    scale = oldField.type().scale().get();
+                }
             }
-            //Allow scale evolution from unspecified scale only when data types are same. This is to avoid evolution like SMALLINT(6) -> INT(6) or INT -> DOUBLE(6) and allow for DATETIME -> DATETIME(6)
-            else if (oldField.type().dataType().equals(newField.type().dataType())
-                && oldField.type().scale().isPresent() && !newField.type().scale().isPresent())
+            else
             {
-                scale = oldField.type().scale().get();
+                throw new IncompatibleSchemaChangeException("Data sizing changes couldn't be performed since user capability does not allow it");
             }
-            return createNewField(newField, oldField, length, scale);
         }
-        else
-        {
-            throw new IncompatibleSchemaChangeException("Data sizing changes couldn't be performed since user capability does not allow it");
-        }
+        return createNewField(newField, oldField, length, scale);
     }
+
+    private boolean isSizingChangesRequired(Field oldField, Field newField)
+    {
+        if (oldField.type().length().isPresent() && newField.type().length().isPresent() && oldField.type().length() != newField.type().length())
+        {
+            return true;
+        }
+        if ((oldField.type().dataType().equals(newField.type().dataType())
+                && oldField.type().length().isPresent() && !newField.type().length().isPresent()))
+        {
+            return true;
+        }
+        if (oldField.type().scale().isPresent() && newField.type().scale().isPresent() && oldField.type().scale() != newField.type().scale())
+        {
+            return true;
+        }
+        return oldField.type().dataType().equals(newField.type().dataType())
+                && oldField.type().scale().isPresent() && !newField.type().scale().isPresent();
+    }
+
 
     private Field createNewField(Field newField, Field oldField, int length, int scale)
     {
+        //todo : pick length and scale from first field
         FieldType modifiedFieldType = FieldType.of(newField.type().dataType(), Optional.ofNullable(length == 0 ? null : length), Optional.ofNullable(scale == 0 ? null : scale));
-
-        boolean nullability = newField.nullable() || oldField.nullable();
+        boolean nullability = newField.nullable();
+        if (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.COLUMN_NULLABILITY_CHANGE))
+        {
+            nullability = newField.nullable() || oldField.nullable();
+        }
         //boolean uniqueness = !newField.isUnique() || !oldField.isUnique();
 
         //todo : how to handle default value, identity, uniqueness ?

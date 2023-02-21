@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package org.finos.legend.engine.persistence.components.util;
 public enum SchemaEvolutionCapability
 {
     ADD_COLUMN,
-    IMPLICIT_DATA_TYPE_CONVERSION,
-    EXPLICIT_DATA_TYPE_CONVERSION,
-    DATA_SIZING_CHANGES
+    DATA_TYPE_CONVERSION,
+    DATA_TYPE_SIZE_CHANGE,
+    COLUMN_NULLABILITY_CHANGE
 }

@@ -29,6 +29,7 @@ import org.finos.legend.engine.persistence.components.relational.executor.Relati
 import org.finos.legend.engine.persistence.components.relational.h2.H2Sink;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
+import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapability;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -39,9 +40,7 @@ import java.io.File;
 import java.time.Clock;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class BaseTest
 {
@@ -115,17 +114,23 @@ public class BaseTest
         return executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, Clock.systemUTC());
     }
 
-    protected IngestorResult executePlansAndVerifyResults(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats, Clock executionTimestampClock) throws Exception
+    protected IngestorResult executePlansAndVerifyResults(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats, Set<SchemaEvolutionCapability> userCapabilitySet) throws Exception
+    {
+        return executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, Clock.systemUTC(), userCapabilitySet);
+    }
+
+    protected IngestorResult executePlansAndVerifyResults(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats, Clock executionTimestampClock, Set<SchemaEvolutionCapability> userCapabilitySet) throws Exception
     {
         // Execute physical plans
         RelationalIngestor ingestor = RelationalIngestor.builder()
-            .ingestMode(ingestMode)
-            .relationalSink(H2Sink.get())
-            .executionTimestampClock(executionTimestampClock)
-            .cleanupStagingData(options.cleanupStagingData())
-            .collectStatistics(options.collectStatistics())
-            .enableSchemaEvolution(options.enableSchemaEvolution())
-            .build();
+                .ingestMode(ingestMode)
+                .relationalSink(H2Sink.get())
+                .executionTimestampClock(executionTimestampClock)
+                .cleanupStagingData(options.cleanupStagingData())
+                .collectStatistics(options.collectStatistics())
+                .enableSchemaEvolution(options.enableSchemaEvolution())
+                .schemaEvolutionCapabilitySet(userCapabilitySet)
+                .build();
         IngestorResult result = ingestor.ingest(h2Sink.connection(), datasets);
 
         Map<StatisticName, Object> actualStats = result.statisticByName();
@@ -143,6 +148,11 @@ public class BaseTest
 
         // Return result (including updated datasets)
         return result;
+    }
+
+    protected IngestorResult executePlansAndVerifyResults(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats, Clock executionTimestampClock) throws Exception
+    {
+        return executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, executionTimestampClock, Collections.emptySet());
     }
 
     protected List<IngestorResult> executePlansAndVerifyResultsWithDataSplits(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, List<Map<String, Object>> expectedStats, List<DataSplitRange> dataSplitRanges) throws Exception

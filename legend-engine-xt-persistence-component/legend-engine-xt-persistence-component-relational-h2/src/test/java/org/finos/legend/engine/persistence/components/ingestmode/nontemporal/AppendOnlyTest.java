@@ -28,14 +28,12 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
 import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
+import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapability;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.finos.legend.engine.persistence.components.TestUtils.batchUpdateTimeName;
 import static org.finos.legend.engine.persistence.components.TestUtils.digestName;
@@ -300,7 +298,9 @@ class AppendOnlyTest extends BaseTest
         expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
         expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
         expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
-        IngestorResult result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.ADD_COLUMN);
+        IngestorResult result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, schemaEvolutionCapabilitySet);
         // 3. Assert that the staging table is NOT truncated
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
         Assertions.assertEquals(stagingTableList.size(), 3);
@@ -349,8 +349,9 @@ class AppendOnlyTest extends BaseTest
         expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
         expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
         expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
-
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE);
+        IngestorResult result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, schemaEvolutionCapabilitySet);
         // 3. Assert that the staging table is NOT truncated
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
         Assertions.assertEquals(stagingTableList.size(), 3);
@@ -361,7 +362,7 @@ class AppendOnlyTest extends BaseTest
         // 1. Load staging table
         loadBasicStagingData(dataPass2);
         // 2. Execute plans and verify results
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
+        executePlansAndVerifyResults(ingestMode, options, result.updatedDatasets(), schema, expectedDataPass2, expectedStats);
     }
 
 
