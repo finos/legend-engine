@@ -75,9 +75,30 @@ meta::pure::mapping::modelToModel::test::alloy::simple::testDefaultIfEmptyFuncti
    assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));   
 }
 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  serverVersion.start='v1_19_0'}
+meta::pure::mapping::modelToModel::test::alloy::simple::testConflictVariableInMapping(): Boolean[1]
+{
+   let tree = #{FirstEmployee {name} }#;
+
+   let result = execute(
+      |FirstEmployee.all()->graphFetch($tree)->serialize($tree),
+      meta::pure::mapping::modelToModel::test::alloy::simple::function::employeeMapping,
+      testJsonRuntime(Firm, '[' +
+         '{"name":"FirmX","employees":[{"role":"developer","firstName":"Smith"},'+
+         '{"role":"productOwner","firstName":"Johnson"}]}' +
+      ']'),
+      meta::pure::extension::defaultExtensions()
+   );
+
+   let json = $result.values->toOne();
+   let expected = '{"name":"Smith"}';
+   assertEquals($expected, $json);   
+}
+
 Class meta::pure::mapping::modelToModel::test::alloy::simple::function::Firm
 {
-  name: String[1];
+  name: String[0..1];
   employees: Person[*];
 }
 
@@ -85,11 +106,19 @@ Class meta::pure::mapping::modelToModel::test::alloy::simple::function::Person
 {
   firstName: String[1];
   lastName: String[1];
+  role: meta::pure::mapping::modelToModel::test::alloy::simple::function::EmployeeRole[0..1];
 }
 
 Class meta::pure::mapping::modelToModel::test::alloy::simple::function::FirstEmployee
 {
-  name: String[1];
+  name: String[0..1];
+}
+
+Enum meta::pure::mapping::modelToModel::test::alloy::simple::function::EmployeeRole
+{
+  developer,
+  productOwner,
+  projectManager
 }
 
 ###Mapping
@@ -113,3 +142,14 @@ Mapping meta::pure::mapping::modelToModel::test::alloy::simple::function::defaul
     name: $src.employees->filter(e | $e.firstName == 'John').lastName->defaultIfEmpty('Unknown')->at(0)
   }
 )
+
+###Mapping
+   
+ Mapping meta::pure::mapping::modelToModel::test::alloy::simple::function::employeeMapping
+ (
+   *meta::pure::mapping::modelToModel::test::alloy::simple::function::FirstEmployee: Pure
+   {
+     ~src meta::pure::mapping::modelToModel::test::alloy::simple::function::Firm
+     name: $src.employees->filter(x|$x.role.name == 'developer')->first().firstName
+   }
+ )
