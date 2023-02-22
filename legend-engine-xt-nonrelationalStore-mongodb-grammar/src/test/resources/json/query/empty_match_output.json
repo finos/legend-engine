@@ -5,8 +5,7 @@
     "_type": "viewPipeline",
     "stages": [
       {
-        "_type": "matchStage",
-        "expression": null
+        "_type": "matchStage"
       }
     ]
   }

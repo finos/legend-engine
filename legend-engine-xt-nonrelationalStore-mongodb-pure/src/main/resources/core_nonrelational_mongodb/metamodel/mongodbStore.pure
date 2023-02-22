@@ -21,6 +21,12 @@ Enum meta::external::store::mongodb::metamodel::aggregation::Operator
     EQ, GT, GTE, IN, LT, LTE, NE, NIN, AND, NOT, NOR, OR
 }
 
+Enum meta::external::store::mongodb::metamodel::aggregation::ReadConcernValue
+{
+    LOCAL, AVAILABLE, MAJORITY, LINEARIZABLE
+}
+
+
 Class meta::external::store::mongodb::metamodel::BaseType
 {
   allOf: BaseType[*];
@@ -201,11 +207,25 @@ Class meta::external::store::mongodb::metamodel::Collation
   locale: String[1];
 }
 
-Class meta::external::store::mongodb::metamodel::aggregation::DatabaseCommand
+
+
+Class  {doc.doc = 'https://www.mongodb.com/docs/manual/reference/command/aggregate/#mongodb-dbcommand-dbcmd.aggregate'}
+meta::external::store::mongodb::metamodel::aggregation::DatabaseCommand
 {
     type: String[1];
     collectionName: String[1];
     aggregationPipeline: AggregationPipeline[1];
+    cursor: Cursor[0..1];
+    explain: Boolean[0..1];
+    allowDiskUse: Boolean[0..1];
+    maxTimeMS: Integer[0..1];
+    byPassDocumentValidation: Boolean[0..1]; // Applicable only commands with $out or $merge stages
+    readConcern: ReadConcern[0..1];
+    collation: Collation[0..1];
+    hint: String[0..1];  //Not supporting Hint as document yet
+    comment: String[0..1]; // Used in logs & other dashboards to view current activity
+    writeConcern: WriteConcern[0..1];
+    let: ObjectTypeValue[0..1];
 }
 
 Class meta::external::store::mongodb::metamodel::aggregation::ViewPipeline extends AggregationPipeline
@@ -249,10 +269,27 @@ Class meta::external::store::mongodb::metamodel::aggregation::ArgumentExpression
 {
 }
 
+Class meta::external::store::mongodb::metamodel::aggregation::Cursor 
+{
+  batchSize: Integer[1];
+}
 
-Class {doc.doc = 'Expression that starts with $ with format $fieldName.path.to.element'} 
+Class meta::external::store::mongodb::metamodel::aggregation::ReadConcern 
+{
+  level: ReadConcernValue[1];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::WriteConcern 
+{
+  w: String[0..1];  // Can take values "majority", numbers upto number of replicas - 1, custom tag
+  j: Boolean[0..1];   //Written to disk ack.
+  wtimeout: Integer[0..1];  // in millis
+}
+
+Class {doc.doc = 'Expression for fieldName.path.to.element'} 
 meta::external::store::mongodb::metamodel::aggregation::FieldPathExpression extends ArgumentExpression
 {
+  // Do we need to diffentiate between $xxx vs xxxx fields
   fieldPath: String[1];
 }
 
@@ -276,7 +313,7 @@ Class meta::external::store::mongodb::metamodel::aggregation::GTOperatorExpressi
 {
 }
 
-Class meta::external::store::mongodb::metamodel::aggregation::GreaterThanEqualsOperatorExpression extends ComparisonOperatorExpression
+Class meta::external::store::mongodb::metamodel::aggregation::GTEOperatorExpression extends ComparisonOperatorExpression
 {
 }
 
@@ -328,16 +365,28 @@ Class meta::external::store::mongodb::metamodel::aggregation::KeyValueExpression
   argument: ArgumentExpression[1];
 }
 
+Class meta::external::store::mongodb::metamodel::aggregation::QueryExprKeyValue
+{
+  key: ArgumentExpression[1];
+  value: ArgumentExpression[1];
+}
+
 Class {doc.doc = 'Computed field for Project expressions with format $fieldName'}
 meta::external::store::mongodb::metamodel::aggregation::ComputedFieldValue extends ArgumentExpression
 {
   value: String[1];
 }
 
-Class meta::external::store::mongodb::metamodel::aggregation::ObjectExpression extends ArgumentExpression
+Class <<doc.deprecated>> meta::external::store::mongodb::metamodel::aggregation::ObjectExpression extends ArgumentExpression
 {
   keyValues: KeyValueExpressionPair[*];
 }
+
+Class meta::external::store::mongodb::metamodel::aggregation::ObjectQueryExpression extends ArgumentExpression
+{
+  keyValues: QueryExprKeyValue[*];
+}
+
 
 Class meta::external::store::mongodb::metamodel::aggregation::BaseTypeValue
 {
@@ -364,11 +413,12 @@ Class meta::external::store::mongodb::metamodel::aggregation::NullTypeValue exte
 
 Class meta::external::store::mongodb::metamodel::aggregation::LongTypeValue extends BaseTypeValue
 {
+  value: Integer[1];
 }
 
 Class meta::external::store::mongodb::metamodel::aggregation::DecimalTypeValue extends BaseTypeValue
 {
-  value: Float[1];
+  value: Decimal[1];
 }
 
 Class meta::external::store::mongodb::metamodel::aggregation::ObjectTypeValue extends BaseTypeValue

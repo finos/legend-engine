@@ -14,10 +14,14 @@
 
 package org.finos.legend.engine.language.mongodb.schema.grammar.from;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoDBQueryParser;
 import org.finos.legend.engine.language.mongodb.schema.grammar.to.ComposerUtility;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.AndOperatorExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Operator;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArgumentExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArrayTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.BaseTypeValue;
@@ -28,7 +32,7 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Dat
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DecimalTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.EqOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.GTOperatorExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.GreaterThanEqualsOperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.GTEOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.InOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.IntTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.KeyValueExpressionPair;
@@ -45,12 +49,16 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Not
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NullTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ObjectExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ObjectTypeValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Operator;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.OrOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ProjectStage;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Stage;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.StringTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ViewPipeline;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
+import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -60,7 +68,32 @@ import static java.lang.Boolean.parseBoolean;
 
 public class MongoDBQueryParseTreeWalker
 {
+
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+
     public DatabaseCommand databaseCommand;
+
+    private MongoDBQueryParseTreeWalker()
+    {
+    }
+
+    public static MongoDBQueryParseTreeWalker newInstance()
+    {
+        return new MongoDBQueryParseTreeWalker();
+    }
+
+    private static boolean checkIfNumberIsInteger(String number)
+    {
+        try
+        {
+            Integer.parseInt(number);
+            return true;
+        }
+        catch (NumberFormatException e)
+        {
+            return false;
+        }
+    }
 
     public DatabaseCommand getCommand()
     {
@@ -162,7 +195,6 @@ public class MongoDBQueryParseTreeWalker
         return keyValueExpressionPair;
     }
 
-
     private ArgumentExpression visitProjectFilterValue(MongoDBQueryParser.ProjectFilterValueContext ctx)
     {
 
@@ -202,7 +234,6 @@ public class MongoDBQueryParseTreeWalker
 
         return val;
     }
-
 
     private KeyValueExpressionPair visitExpression(MongoDBQueryParser.ExpressionContext ctx)
     {
@@ -302,7 +333,7 @@ public class MongoDBQueryParseTreeWalker
         }
         else if (operator.equals(ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.GTE)))
         {
-            comparisonOpEx = new GreaterThanEqualsOperatorExpression();
+            comparisonOpEx = new GTEOperatorExpression();
             comparisonOpEx.expression = value;
         }
         else if (operator.equals(ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.IN)))
@@ -420,7 +451,7 @@ public class MongoDBQueryParseTreeWalker
             else
             {
                 DecimalTypeValue decimalTypeValue = new DecimalTypeValue();
-                decimalTypeValue.value = Double.parseDouble(ctx.NUMBER().getText());
+                decimalTypeValue.value = new BigDecimal(ctx.NUMBER().getText());
                 return decimalTypeValue;
             }
         }
@@ -444,16 +475,43 @@ public class MongoDBQueryParseTreeWalker
         return new StringTypeValue();
     }
 
-    private static boolean checkIfNumberIsInteger(String number)
+    public DatabaseCommand parseQueryDocument(String inputQry)
     {
         try
         {
-            Integer.parseInt(number);
-            return true;
+            JsonFactory jFactory = new JsonFactory();
+            JsonParser jParser = jFactory.createParser(inputQry);
+            jParser.setCodec(getObjectMapper());
+            DatabaseCommand dbCommand = getObjectMapper().readValue(jParser, DatabaseCommand.class);
+            jParser.close();
+            return dbCommand;
         }
-        catch (NumberFormatException e)
+        catch (JsonParseException jpException)
         {
-            return false;
+            String msg = jpException.getMessage();
+            int line = jpException.getLocation().getLineNr();
+            int charPositionInLine = jpException.getLocation().getColumnNr();
+            SourceInformation sourceInformation = new SourceInformation("", line, charPositionInLine + 1, line, charPositionInLine + 1);
+            throw new MongoDBSchemaParserException(msg, sourceInformation);
         }
+        catch (IOException e)
+        {
+            String msg = "Unexpected IOException: " + e.getMessage();
+            SourceInformation sourceInformation = new SourceInformation("", -1, -1, -1, -1);
+            throw new MongoDBSchemaParserException(msg, sourceInformation);
+        }
+
+    }
+
+    private ObjectMapper getObjectMapper()
+    {
+        ObjectMapper mapper = new ObjectMapper();
+        SimpleModule module = new SimpleModule();
+        module.addDeserializer(DatabaseCommand.class, new MongoDBQueryDeserializer());
+        mapper.registerModule(module);
+        //mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        //mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+        //mapper.setDefaultPrettyPrinter(new DefaultPrettyPrinter());
+        return mapper;
     }
 }

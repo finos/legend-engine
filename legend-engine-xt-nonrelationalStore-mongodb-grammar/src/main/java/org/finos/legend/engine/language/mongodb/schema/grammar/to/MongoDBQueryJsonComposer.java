@@ -27,8 +27,8 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Dat
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DecimalTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.EqOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.FieldPathExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.GTOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.GTEOperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.GTOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.InOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.IntTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.JsonSchemaExpression;
@@ -47,23 +47,25 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Not
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NullTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ObjectExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ObjectTypeValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Operator;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.OrOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ProjectStage;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Stage;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.StageVisitor;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.StringTypeValue;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Operator;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MongoDBQueryComposer
+import static org.finos.legend.engine.language.mongodb.schema.grammar.to.ComposerUtility.convertToStringWithQuotes;
+
+public class MongoDBQueryJsonComposer
 {
 
     public String parseDatabaseCommand(DatabaseCommand databaseCommand)
     {
         String collectionName = databaseCommand.collectionName;
-        return "{ \"aggregate\": " + collectionName + " , " + visitDatabaseCommand(databaseCommand) +
+        return "{ \"aggregate\": \"" + collectionName + "\" , " + visitDatabaseCommand(databaseCommand) +
                 ", \"cursor\": {} }";
     }
 
@@ -126,7 +128,7 @@ public class MongoDBQueryComposer
             @Override
             public String visit(ComputedFieldValue val)
             {
-                return val.value;
+                return convertToStringWithQuotes(val.value);
             }
 
             @Override
@@ -297,21 +299,21 @@ public class MongoDBQueryComposer
             @Override
             public String visit(StringTypeValue val)
             {
-                return String.valueOf(val.value);
+                return convertToStringWithQuotes(String.valueOf(val.value));
             }
         });
     }
 
     private String visitKeyValuePair(KeyValuePair pair)
     {
-        String field = pair.key;
+        String field = convertToStringWithQuotes(pair.key);
         String value = visitBaseTypeValue(pair.value);
         return field + " : " + value;
     }
 
     public String visitKeyValueExpressionPair(KeyValueExpressionPair pair)
     {
-        String field = pair.field;
+        String field = convertToStringWithQuotes(pair.field);
         String value = visitArgumentExpression(pair.argument);
         return field + " : " + value;
     }

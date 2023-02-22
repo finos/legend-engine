@@ -39,11 +39,11 @@ public class MongoDBSchemaParseTreeWalker
         return new MongoDBSchemaParseTreeWalker();
     }
 
-    private static MongoDBSchemaParserException raiseException(int line, int startColumn, String errMessage)
-    {
-        SourceInformation sourceInformation = new SourceInformation("", line, startColumn, line, startColumn);
-        return new MongoDBSchemaParserException(errMessage, sourceInformation);
-    }
+//    private static MongoDBSchemaParserException raiseException(int line, int startColumn, String errMessage)
+//    {
+//        SourceInformation sourceInformation = new SourceInformation("", line, startColumn, line, startColumn);
+//        return new MongoDBSchemaParserException(errMessage, sourceInformation);
+//    }
 
     private ObjectMapper getObjectMapper()
     {

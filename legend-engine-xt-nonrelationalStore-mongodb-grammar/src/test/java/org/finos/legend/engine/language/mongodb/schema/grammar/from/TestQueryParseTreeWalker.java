@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.mongodb.schema.grammar.from;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -44,6 +45,8 @@ public class TestQueryParseTreeWalker
 {
     private final ObjectMapper mapper = new ObjectMapper().setDefaultPrettyPrinter(new CustomJSONPrettyPrinter())
             .enable(SerializationFeature.INDENT_OUTPUT)
+            .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+            //.setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
             .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 
 
@@ -262,7 +265,7 @@ public class TestQueryParseTreeWalker
 
         MongoDBQueryParser.DatabaseCommandContext commandContext = parser.databaseCommand();
 
-        MongoDBQueryParseTreeWalker walker = new MongoDBQueryParseTreeWalker();
+        MongoDBQueryParseTreeWalker walker = MongoDBQueryParseTreeWalker.newInstance();
         walker.visit(commandContext);
 
         return walker.getCommand();
