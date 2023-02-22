@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
@@ -29,7 +30,9 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelToModel.PureInstanceSetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
+import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -105,6 +108,9 @@ public class HelperRuntimeBuilder
         List<Mapping> mappings = engineRuntime.mappings.stream().map(mappingPointer -> context.resolveMapping(mappingPointer.path, mappingPointer.sourceInformation)).collect(Collectors.toList());
         // build connections
         List<Connection> connections = new ArrayList<>();
+        List<CoreInstance> visitedSourceClasses = new ArrayList<>();
+        List<CoreInstance> visitedConnectionTypes = new ArrayList<>();
+        List<String> visitedStores = new ArrayList<>();
         Set<String> ids = new HashSet<>();
         ListIterate.forEach(engineRuntime.connections, storeConnections ->
         {
@@ -157,6 +163,38 @@ public class HelperRuntimeBuilder
         {
             final Root_meta_pure_runtime_Connection pureConnection = connection.accept(new ConnectionFirstPassBuilder(context));
             connection.accept(new ConnectionSecondPassBuilder(context, pureConnection));
+
+            if (pureConnection instanceof Root_meta_pure_mapping_modelToModel_JsonModelConnection || pureConnection instanceof Root_meta_pure_mapping_modelToModel_XmlModelConnection)
+            {
+                if (visitedSourceClasses.contains(pureConnection.getValueForMetaPropertyToOne("class")) && visitedStores.contains(HelperModelBuilder.getElementFullPath((PackageableElement) pureConnection._element(),context.pureModel.getExecutionSupport())))
+                {
+                    context.pureModel.addWarnings(Lists.mutable.with(new Warning(connection.sourceInformation, "Multiples Connections available for Source Class - " + pureConnection.getValueForMetaPropertyToOne("class"))));
+                }
+                else
+                {
+                    visitedSourceClasses.add(pureConnection.getValueForMetaPropertyToOne("class"));
+                }
+            }
+            else
+            {
+                if (visitedConnectionTypes.contains(pureConnection.getClassifier()) && visitedStores.contains(HelperModelBuilder.getElementFullPath((PackageableElement) pureConnection._element(),context.pureModel.getExecutionSupport())))
+                {
+                    if (pureConnection instanceof Root_meta_pure_mapping_modelToModel_ModelChainConnection)
+                    {
+                        context.pureModel.addWarnings(Lists.mutable.with(new Warning(connection.sourceInformation, "Multiple " + pureConnection.getClassifier() + "s are Not Supported for the same Runtime.")));
+                    }
+                    else
+                    {
+                        context.pureModel.addWarnings(Lists.mutable.with(new Warning(connection.sourceInformation, "Multiple " + pureConnection.getClassifier() + "s are Not Supported for the same Store - " + HelperModelBuilder.getElementFullPath((PackageableElement) pureConnection._element(),context.pureModel.getExecutionSupport()))));
+                    }
+                }
+                else
+                {
+                    visitedConnectionTypes.add(pureConnection.getClassifier());
+                }
+            }
+
+            visitedStores.add(HelperModelBuilder.getElementFullPath((PackageableElement) pureConnection._element(),context.pureModel.getExecutionSupport()));
             pureRuntime._connectionsAdd(pureConnection);
         });
         // verify runtime mapping coverage

@@ -822,6 +822,10 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "  name: String[1];\n" +
                 "}\n" +
                 "\n\n" +
+                "Class meta::mySimpleClass2\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n\n" +
                 "###Mapping\n" +
                 "Mapping meta::mySimpleMapping\n" +
                 "(\n" +
@@ -920,7 +924,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "            JsonModelConnection\n" +
                 "            {\n" +
                 // embedded connection value
-                "              class: mySimpleClass;\n" +
+                "              class: mySimpleClass2;\n" +
                 "              url: 'my_url';\n" +
                 "            }\n" +
                 "          }#\n" +
