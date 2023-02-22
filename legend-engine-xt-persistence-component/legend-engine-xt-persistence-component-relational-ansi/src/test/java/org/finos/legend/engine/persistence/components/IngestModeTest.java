@@ -15,13 +15,10 @@
 package org.finos.legend.engine.persistence.components;
 
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
-import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 
 import java.time.Clock;
 import java.time.ZoneOffset;
@@ -82,6 +79,8 @@ public class IngestModeTest
     protected Field nonNullableBizDate = Field.builder().name("biz_date").type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).nullable(false).build();
     protected Field description = Field.builder().name("description").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).build();
     protected Field descriptionModified = Field.builder().name("description").type(FieldType.of(DataType.VARCHAR, 64, null)).build();
+    protected Field decimalCol = Field.builder().name("decimal_col").type(FieldType.of(DataType.DECIMAL, 10, 0)).build();
+    protected Field decimalColModified = Field.builder().name("decimal_col").type(FieldType.of(DataType.DECIMAL, 10, 2)).build();
 
 
     // Bitemporal Columns:
@@ -129,12 +128,20 @@ public class IngestModeTest
             .addFields(bizDate)
             .build();
 
-    protected SchemaDefinition baseTableSchemaWithDataSizingChange = SchemaDefinition.builder()
+    protected SchemaDefinition baseTableSchemaWithDataLengthChange = SchemaDefinition.builder()
             .addFields(id)
             .addFields(name)
             .addFields(amount)
             .addFields(bizDate)
             .addFields(description)
+            .build();
+
+    protected SchemaDefinition baseTableSchemaWithDataScaleChange = SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(amount)
+            .addFields(bizDate)
+            .addFields(decimalCol)
             .build();
 
     protected SchemaDefinition baseTableSchemaWithNonNullableColumn = SchemaDefinition.builder()
@@ -150,12 +157,26 @@ public class IngestModeTest
             .addFields(amount)
             .build();
 
-    protected SchemaDefinition stagingTableEvolvedSize = SchemaDefinition.builder()
+    protected SchemaDefinition stagingTableEvolvedLength = SchemaDefinition.builder()
             .addFields(id)
             .addFields(name)
             .addFields(amount)
             .addFields(bizDate)
             .addFields(descriptionModified)
+            .build();
+
+    protected SchemaDefinition stagingTableEvolvedScale = SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(amount)
+            .addFields(bizDate)
+            .addFields(decimalColModified)
+            .build();
+
+    protected SchemaDefinition stagingTableShortenedSchema = SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(amount)
             .build();
 
     protected SchemaDefinition stagingTableImplicitDatatypeChange = SchemaDefinition.builder()
@@ -373,6 +394,7 @@ public class IngestModeTest
     protected String expectedSchemaEvolutionAddColumnWithUpperCase = "ALTER TABLE \"MYDB\".\"MAIN\" ADD COLUMN \"BIZ_DATE\" DATE";
 
     protected String expectedSchemaEvolutionModifySize = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"description\" VARCHAR(64)";
+    protected String expectedSchemaEvolutionModifyScale = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"decimal_col\" DECIMAL(10,2)";
 
     protected String expectedSchemaEvolutionModifySizeWithUpperCase = "ALTER TABLE \"MYDB\".\"MAIN\" ALTER COLUMN \"DESCRIPTION\" VARCHAR(64)";
 

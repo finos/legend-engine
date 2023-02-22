@@ -135,11 +135,13 @@ public class SchemaEvolution
                 {
                     operations.add(Alter.of(mainDataset, Alter.AlterOperation.ADD, stagingField, Optional.empty()));
                     modifiedFields.add(stagingField);
-                } else
+                }
+                else
                 {
                     throw new IncompatibleSchemaChangeException(String.format("Field \"%s\" in staging dataset does not exist in main dataset. Couldn't add column since sink/user capabilities do not permit operation.", stagingFieldName));
                 }
-            } else
+            }
+            else
             {
                 FieldType stagingFieldType = stagingField.type();
                 if (!matchedMainField.type().equals(stagingFieldType))
@@ -164,7 +166,8 @@ public class SchemaEvolution
                                 //Modify the column in main table
                                 Field newField = evolveFieldLength(matchedMainField, stagingField);
                                 evolveDataType(newField, matchedMainField, mainDataset, operations, modifiedFields);
-                            } else
+                            }
+                            else
                             {
                                 throw new IncompatibleSchemaChangeException(String.format("Explicit data type conversion from \"%s\" to \"%s\" couldn't be performed since user capability does not allow it", matchedMainField.type().dataType(), stagingFieldType.dataType()));
                             }
@@ -173,14 +176,18 @@ public class SchemaEvolution
                         //Else, it is a breaking change. We throw an exception
                         else
                         {
-                            throw new IncompatibleSchemaChangeException("Breaking schema change from datatype " + matchedMainField.type().dataType() + " to " + stagingFieldType.dataType());
+                            throw new IncompatibleSchemaChangeException(String.format("Breaking schema change from datatype \"%s\" to \"%s\"", matchedMainField.type().dataType(), stagingFieldType.dataType()));
                         }
-                    } else
+                    }
+                    //If data types are same, we check if length requires any evolution
+                    else
                     {
                         Field newField = evolveFieldLength(stagingField, matchedMainField);
                         evolveDataType(newField, matchedMainField, mainDataset, operations, modifiedFields);
                     }
-                } else
+                }
+                //If Field types are same, we check to see if nullability needs any evolution
+                else
                 {
                     if (matchedMainField.nullable() != stagingField.nullable())
                     {
@@ -218,7 +225,8 @@ public class SchemaEvolution
             operations.add(Alter.of(mainDataset, Alter.AlterOperation.NULLABLE_COLUMN, newField, Optional.empty()));
             newField.withNullable(true);
             modifiedFields.add(newField);
-        } else
+        }
+        else
         {
             throw new IncompatibleSchemaChangeException(String.format("Column \"%s\" couldn't be made non-nullable since user capability does not allow it", newField.name()));
         }
@@ -250,6 +258,7 @@ public class SchemaEvolution
             if (sink.capabilities().contains(Capability.DATA_TYPE_SIZE_CHANGE)
                     && (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE)))
             {
+                //todo : double -> decimal(10,0) doesn't go thru due to below conditions
                 //If the oldField and newField have a length associated, pick the greater length
                 if (oldField.type().length().isPresent() && newField.type().length().isPresent())
                 {
@@ -277,9 +286,10 @@ public class SchemaEvolution
                 {
                     scale = oldField.type().scale().get();
                 }
-            } else
+            }
+            else
             {
-                throw new IncompatibleSchemaChangeException("Data sizing changes couldn't be performed since user capability does not allow it");
+                throw new IncompatibleSchemaChangeException(String.format("Data sizing changes couldn't be performed on column \"%s\" since user capability does not allow it", newField.name()));
             }
         }
         return createNewField(newField, oldField, length, scale);
