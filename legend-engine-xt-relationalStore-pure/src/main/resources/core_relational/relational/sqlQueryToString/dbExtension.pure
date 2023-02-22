@@ -574,6 +574,56 @@ function meta::relational::functions::sqlQueryToString::isBooleanOperation(relat
    )
 }
 
+function <<access.private>> meta::relational::functions::sqlQueryToString::extractSemiStructuredDotPathAccess(jsonPath: String[1], startIndex: Integer[1]): String[1]
+{
+   let nextDotIndex = if($jsonPath->indexOf('.', $startIndex+1) == -1, | $jsonPath->length(), | $jsonPath->indexOf('.', $startIndex+1));
+   let nextBracketIndex = if($jsonPath->indexOf('[', $startIndex+1) == -1, | $jsonPath->length(), | $jsonPath->indexOf('[', $startIndex+1));
+   let field = $jsonPath->substring($startIndex+1, min($nextDotIndex, $nextBracketIndex));
+   '"' + $field + '"';   // wrap around quotes
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::extractSemiStructuredBracketPathAccess(jsonPath: String[1], startIndex: Integer[1]): String[1]
+{
+   let quoted = $jsonPath->substring($startIndex+1, $startIndex+2) == '"';
+   if($quoted, 
+      | let quoteEnd = $jsonPath->indexOf('"', $startIndex+2);
+        assert($quoteEnd != $jsonPath->length(), 'unmatched " at ' + toString($startIndex+1));
+        $jsonPath->substring($startIndex+1, $quoteEnd+1);, // include quotes too
+      | let bracketEnd = $jsonPath->indexOf(']', $startIndex+1);
+        assert($bracketEnd != $jsonPath->length(), 'unmatched [ at ' + $startIndex->toString());
+        let property = $jsonPath->substring($startIndex+1, $bracketEnd);
+        assert($property->isDigit(), 'expected ' + $property + ' to be numeric');
+        $property;         
+   );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::parseSemiStructuredPathNavigationHelper(jsonPath: String[1], startIndex: Integer[1]): String[*]
+{
+   if($startIndex < $jsonPath->length(), 
+      |
+         let char = $jsonPath->substring($startIndex, $startIndex+1);
+         assert($char->in(['.', '[']), 'invalid token ' + $char);
+         if($char == '.', 
+            | let field = $jsonPath->extractSemiStructuredDotPathAccess($startIndex);
+              $field->concatenate($jsonPath->parseSemiStructuredPathNavigationHelper($startIndex+$field->length()-1));, 
+            | let field = $jsonPath->extractSemiStructuredBracketPathAccess($startIndex);
+              $field->concatenate($jsonPath->parseSemiStructuredPathNavigationHelper($startIndex+$field->length()+2));       
+         );,
+      | []         
+   );
+}
+
+function meta::relational::functions::sqlQueryToString::parseSemiStructuredPathNavigation(jsonPath: String[1]): String[*]
+{
+   let dotIndex = if($jsonPath->indexOf('.') == -1, | $jsonPath->length(), | $jsonPath->indexOf('.'));
+   let bracketIndex = if($jsonPath->indexOf('[') == -1, | $jsonPath->length(), | $jsonPath->indexOf('['));
+   let prefix = $jsonPath->substring(0, min($dotIndex, $bracketIndex));
+   if($prefix->length() > 0, 
+      | concatenate('"' + $prefix + '"', $jsonPath->parseSemiStructuredPathNavigationHelper(min($dotIndex, $bracketIndex)));,
+      | $jsonPath->parseSemiStructuredPathNavigationHelper(0);
+   );
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::processDynaFunction(func:DynaFunction[1], sgc:SqlGenerationContext[1]):String[1]
 {
    if ($func->isEqualsFromFilter($sgc.config),
@@ -584,6 +634,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
       |
    if ($func.name == 'not',
       | processNot($func,$sgc),
+      |
+    if($func.name == 'extractFromSemiStructured',
+      | processExtractFromSemiStructured($func, $sgc),
       | let result = $sgc.dbConfig.dynaFuncDispatch($func, $sgc);
 
         let params = if ($func.name->in(['and', 'or']),
@@ -598,7 +651,29 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
         let newSgc = if($func.name->in(['and', 'or']), | $sgc, | ^$sgc(config = ^$config(callingFromFilter = [])));
         let paramWiseSgcs = if($result.toSql.parametersWithinWhenClause->isEmpty(),|range(0,$params->size(),1)->map(i|$newSgc),|$result.toSql.parametersWithinWhenClause->map(b|^$newSgc(generationState = ^$generationState(withinWhenClause=$b))));
         $result->toOne().toSql($params, $paramWiseSgcs);
-   )));
+   ))));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processExtractFromSemiStructured(func:DynaFunction[1], sgc:SqlGenerationContext[1]):String[1]
+{
+  let params = $func.parameters;
+  assertSize($params, 3, $func.name + ' takes 3 arguments, was called with ' + $params->size()->toString() + ' instead');
+  let config = $sgc.config;
+  let newSgc = ^$sgc(config = ^$config(callingFromFilter = []));
+  let result = $sgc.dbConfig.dynaFuncDispatch($func, $sgc)->toOne();
+  let p0 = $params->at(0)->processOperation($newSgc);
+  let p1 = $params->at(1)->cast(@Literal).value->cast(@String);
+  assert($p1->matches(extractFromSemiStructuredPathRegex()), 'path specfication must follow regex: ' + extractFromSemiStructuredPathRegex());
+  let p2 = $params->at(2)->cast(@Literal).value->cast(@String);
+  let supportedTypes = ['BOOLEAN', 'CHAR', 'VARCHAR', 'STRING', 'INTEGER', 'DECIMAL', 'FLOAT', 'DATE', 'DATETIME', 'TIMESTAMP'];
+  assertContains($supportedTypes, $p2, $p2 + ' must be one of ' + $supportedTypes->joinStrings(', '));  
+  let processedParams = $result.toSql.transform->toOne()->eval([$p0, $p1, $p2]);
+  format($result.toSql.format, $processedParams);  
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::extractFromSemiStructuredPathRegex(): String[1]
+{
+  '([a-zA-Z_][a-zA-Z_0-9]*|\\[[0-9]+\]|\\["[^"]+"\])(\\.[a-zA-Z_][a-zA-Z_0-9]*|\\[[0-9]+\]|\\["[^"]+"\])*$';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::processCase(func:DynaFunction[1], sgc:SqlGenerationContext[1]):String[1]
@@ -804,6 +879,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   firstDayOfWeek,
   firstDayOfYear,
   floor,
+  extractFromSemiStructured,
   greaterThan,
   greaterThanEqual,
   group,

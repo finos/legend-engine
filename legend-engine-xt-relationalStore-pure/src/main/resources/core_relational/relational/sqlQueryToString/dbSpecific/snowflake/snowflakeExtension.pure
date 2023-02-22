@@ -51,13 +51,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='datediff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->processDateDiffDurationUnitForSnowflake(),$p->at(0),$p->at(1)]})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='Date(%s)')),
     dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='DAYOFWEEKISO(%s)')),
+    dynaFnToSql('extractFromSemiStructured', $allStates,         ^ToSql(format='%s', transform={p:String[3]|$p->processExtractFromSemiStructuredParamsForSnowflake()})),
     dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='DATE_TRUNC(\'MONTH\', %s)')),
     dynaFnToSql('firstDayOfQuarter',      $allStates,            ^ToSql(format='DATE_TRUNC(\'QUARTER\', %s)')),
     dynaFnToSql('firstDayOfThisMonth',    $allStates,            ^ToSql(format='DATE_TRUNC(\'MONTH\', CURRENT_DATE)%s', transform={p:String[*] | ''})),
     dynaFnToSql('firstDayOfThisQuarter',  $allStates,            ^ToSql(format='DATE_TRUNC(\'QUARTER\', CURRENT_DATE)%s', transform={p:String[*] | ''})),
     dynaFnToSql('firstDayOfThisYear',     $allStates,            ^ToSql(format='DATE_TRUNC(\'YEAR\', CURRENT_DATE)%s', transform={p:String[*] | ''})),
     dynaFnToSql('firstDayOfWeek',         $allStates,            ^ToSql(format='DATE_TRUNC(\'WEEK\', %s)')),
-    dynaFnToSql('firstDayOfYear',         $allStates,            ^ToSql(format='DATE_TRUNC(\'YEAR\', %s)')),
+    dynaFnToSql('firstDayOfYear',         $allStates,            ^ToSql(format='DATE_TRUNC(\'YEAR\', %s)')),    
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='date_part(\'hour\', %s)')),
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='CHARINDEX(%s)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('isAlphaNumeric',         $allStates,            ^ToSql(format=regexpPattern('%s'), transform={p:String[1]|$p->transformAlphaNumericParamsDefault()})),
@@ -93,6 +94,27 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='WEEKOFYEAR(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))
   ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processExtractFromSemiStructuredParamsForSnowflake(params:String[3]):String[1]
+{
+  let baseRelationalOp = $params->at(0);
+  let pathNavigation = $params->at(1);
+  let returnType = $params->at(2);
+
+  // let parsedPathNavigation = $pathNavigation->parseSemiStructuredPathNavigation();
+  // let processedPathNavigation = $parsedPathNavigation->fold({element, currPath|$currPath + '[' + $element + ']'}, '');
+
+  // https://docs.snowflake.com/en/sql-reference/functions/get_path
+  let elementAccess = format('get_path(%s, \'%s\')', [$baseRelationalOp, $pathNavigation]);    
+
+  if ($returnType->in(['CHAR', 'VARCHAR', 'STRING']), | 'to_varchar(' + $elementAccess + ')', |
+  if ($returnType->in(['DATETIME', 'TIMESTAMP']), | 'to_timestamp(' + $elementAccess + ')', |
+  if ($returnType == 'DATE', | 'to_date(' + $elementAccess + ')', |   
+  if ($returnType == 'BOOLEAN', | 'to_boolean(' + $elementAccess + ')', |
+  if ($returnType == 'FLOAT', | 'to_double(' + $elementAccess + ')', |
+  if ($returnType == 'INTEGER', | 'to_number(' + $elementAccess + ')', |  
+  $elementAccess))))));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::convertToDateSnowflake(params:String[*]):String[1]
