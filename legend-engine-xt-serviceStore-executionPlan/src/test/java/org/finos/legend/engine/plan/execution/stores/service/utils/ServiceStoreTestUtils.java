@@ -18,6 +18,14 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
+import org.finos.legend.authentication.credentialprovider.impl.ApikeyCredentialProvider;
+import org.finos.legend.authentication.credentialprovider.impl.UserPasswordCredentialProvider;
+import org.finos.legend.authentication.intermediationrule.IntermediationRuleProvider;
+import org.finos.legend.authentication.intermediationrule.impl.ApiKeyFromVaultRule;
+import org.finos.legend.authentication.intermediationrule.impl.UserPasswordFromVaultRule;
+import org.finos.legend.authentication.vault.CredentialVaultProvider;
+import org.finos.legend.authentication.vault.impl.SystemPropertiesCredentialVault;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -126,7 +134,22 @@ public class ServiceStoreTestUtils
         Map<String, Result> vars = org.eclipse.collections.impl.factory.Maps.mutable.ofInitialCapacity(params.size());
         params.forEach((key, value) -> vars.put(key, new ConstantResult(value)));
 
-        JsonStreamingResult result = (JsonStreamingResult) planExecutor.execute(singleExecutionPlan, vars, (String) null, Lists.mutable.with(new KerberosProfile(LocalCredentials.INSTANCE)), null);
+        CredentialVaultProvider credentialVaultProvider = CredentialVaultProvider.builder()
+                .with(new SystemPropertiesCredentialVault())
+                .build();
+
+        IntermediationRuleProvider intermediationRuleProvider = IntermediationRuleProvider.builder()
+                .with(new ApiKeyFromVaultRule(credentialVaultProvider))
+                .with(new UserPasswordFromVaultRule(credentialVaultProvider))
+                .build();
+
+        CredentialProviderProvider credentialProviderProvider = CredentialProviderProvider.builder()
+                .with(new UserPasswordCredentialProvider())
+                .with(new ApikeyCredentialProvider())
+                .with(intermediationRuleProvider)
+                .build();
+
+        JsonStreamingResult result = (JsonStreamingResult) planExecutor.execute(singleExecutionPlan, vars, (String) null, Lists.mutable.with(new KerberosProfile(LocalCredentials.INSTANCE)),credentialProviderProvider);
         return result.flush(new JsonStreamToJsonDefaultSerializer(result));
     }
 }
