@@ -23,14 +23,18 @@ Class simple::model::Query
 Class simple::model::Firm
 {
   legalName: String[1];
-  employees: Person[*];
 }
 
 Class simple::model::Person
 {
   firstName: String[1];
   lastName: String[1];
-  employer: Firm[0..1];
+}
+
+Association simple::model::Firm_Employees
+{
+    employees: Person[*];
+    employer: Firm[0..1];
 }
 
 ###Relational
