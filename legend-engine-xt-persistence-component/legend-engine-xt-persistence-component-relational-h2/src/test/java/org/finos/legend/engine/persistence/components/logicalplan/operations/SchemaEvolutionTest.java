@@ -78,9 +78,9 @@ class SchemaEvolutionTest extends BaseTest
 
         String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
 
-        // ------------ Perform Pass1 ------------------------
-        String dataPass1 = basePathForInput + "add_data_pass.csv";
-        String expectedDataPass1 = basePathForExpected + "add_expected_pass.csv";
+        // ------------ Perform Pass1 (Schema Evolution) ------------------------
+        String dataPass1 = basePathForInput + "add_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "add_expected_pass1.csv";
         // 1. Load staging table
         loadBasicStagingData(dataPass1);
         // 2. Execute plans and verify results
@@ -95,6 +95,21 @@ class SchemaEvolutionTest extends BaseTest
         assertTableColumnsEquals(Arrays.asList(schema), actualTableData);
         // 4. Verify schema changes in model objects
         assertUpdatedDataset(stagingTable, result.updatedDatasets().mainDataset());
+
+        // ------------ Perform Pass2 ------------------------
+        String dataPass2 = basePathForInput + "add_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "add_expected_pass2.csv";
+        // 1. Update datasets
+        datasets = result.updatedDatasets();
+        // 2. Load staging table
+        loadBasicStagingData(dataPass2);
+        // 3. Execute plans and verify results
+        expectedStats = new HashMap<>();
+        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 1);
+        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, schemaEvolutionCapabilitySet);
     }
 
     @Test
@@ -120,9 +135,9 @@ class SchemaEvolutionTest extends BaseTest
 
         String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
 
-        // ------------ Perform Pass1 ------------------------
-        String dataPass1 = basePathForInput + "implicit_data_type_change_data_pass.csv";
-        String expectedDataPass1 = basePathForExpected + "implicit_data_type_change_expected_pass.csv";
+        // ------------ Perform Pass1 (Schema Evolution) ------------------------
+        String dataPass1 = basePathForInput + "implicit_data_type_change_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "implicit_data_type_change_expected_pass1.csv";
         // 1. Load staging table
         loadStagingDataForImplicitTypeChange(dataPass1);
         // 2. Execute plans and verify results
@@ -139,6 +154,21 @@ class SchemaEvolutionTest extends BaseTest
         Assertions.assertEquals("VARCHAR", getCheckDataTypeFromTableSql(h2Sink.connection(), testDatabaseName, testSchemaName, mainTableName, nameName));
         // 4. Verify schema changes in model objects
         assertUpdatedDataset(createDatasetWithUpdatedField(mainTable, nameWithMoreLength), result.updatedDatasets().mainDataset());
+
+        // ------------ Perform Pass2 ------------------------
+        String dataPass2 = basePathForInput + "implicit_data_type_change_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "implicit_data_type_change_expected_pass2.csv";
+        // 1. Update datasets
+        datasets = result.updatedDatasets();
+        // 2. Load staging table
+        loadBasicStagingData(dataPass2);
+        // 3. Execute plans and verify results
+        expectedStats = new HashMap<>();
+        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 1);
+        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, schemaEvolutionCapabilitySet);
     }
 
     @Test
