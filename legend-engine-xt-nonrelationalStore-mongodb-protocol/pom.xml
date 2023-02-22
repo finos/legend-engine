@@ -21,7 +21,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.0.1-SNAPSHOT</version>
+        <version>4.1.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-xt-nonrelationalStore-mongodb-protocol</artifactId>
@@ -48,7 +48,7 @@
                                 <argument>org.finos.legend.engine.protocol.mongodb.schema.metamodel</argument>
                                 <argument>${project.build.directory}/generated-sources/</argument>
                                 <argument>meta::external::store::mongodb::mapping</argument>
-                                <argument>meta::external::store::mongodb::metamodel::configureConventions_Conventions_1__Conventions_1_</argument>
+                                <argument>meta::external::store::mongodb::metamodel::MongoDBProtocolGenerator__JavaProtocolGenerator_1_</argument>
                             </arguments>
                             <classpathScope>test</classpathScope>
                         </configuration>

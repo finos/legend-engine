@@ -365,7 +365,7 @@ Class meta::external::store::mongodb::metamodel::aggregation::KeyValueExpression
   argument: ArgumentExpression[1];
 }
 
-Class meta::external::store::mongodb::metamodel::aggregation::QueryExprKeyValue
+Class meta::external::store::mongodb::metamodel::aggregation::QueryExprKeyValue extends ArgumentExpression
 {
   key: ArgumentExpression[1];
   value: ArgumentExpression[1];
@@ -384,7 +384,7 @@ Class <<doc.deprecated>> meta::external::store::mongodb::metamodel::aggregation:
 
 Class meta::external::store::mongodb::metamodel::aggregation::ObjectQueryExpression extends ArgumentExpression
 {
-  keyValues: QueryExprKeyValue[*];
+  keyValues: ArgumentExpression[*];
 }
 
 

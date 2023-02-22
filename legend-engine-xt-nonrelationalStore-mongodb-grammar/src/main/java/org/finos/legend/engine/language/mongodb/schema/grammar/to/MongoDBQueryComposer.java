@@ -46,9 +46,11 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Nor
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NotOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NullTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ObjectExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ObjectQueryExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ObjectTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.OrOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ProjectStage;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.QueryExprKeyValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Stage;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.StageVisitor;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.StringTypeValue;
@@ -234,11 +236,23 @@ public class MongoDBQueryComposer
             }
 
             @Override
+            public String visit(ObjectQueryExpression val)
+            {
+                return null;
+            }
+
+            @Override
             public String visit(OrOperatorExpression val)
             {
                 List<String> expressionsString = val.expressions.stream()
                         .map(x -> visitArgumentExpression(x)).collect(Collectors.toList());
                 return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.OR) + "\" : [" + String.join(",", expressionsString) + "] }";
+            }
+
+            @Override
+            public String visit(QueryExprKeyValue val)
+            {
+                return null;
             }
         });
     }

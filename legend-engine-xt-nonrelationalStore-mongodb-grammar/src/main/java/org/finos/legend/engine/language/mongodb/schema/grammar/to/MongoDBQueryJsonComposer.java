@@ -32,7 +32,6 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.GTO
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.InOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.IntTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.JsonSchemaExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.KeyValueExpressionPair;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.KeyValuePair;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LTEOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LTOperatorExpression;
@@ -46,10 +45,12 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Nor
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NotOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NullTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ObjectExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ObjectQueryExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ObjectTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Operator;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.OrOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ProjectStage;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.QueryExprKeyValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Stage;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.StageVisitor;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.StringTypeValue;
@@ -116,7 +117,8 @@ public class MongoDBQueryJsonComposer
             {
                 List<String> expressionsString = val.expressions.stream()
                         .map(x -> visitArgumentExpression(x)).collect(Collectors.toList());
-                return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.AND) + "\" : [" + String.join(",", expressionsString) + "] }";
+                return "\"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.AND) + "\" : [" + String.join(",", expressionsString) + "]";
+                //return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.AND) + "\" : [" + String.join(",", expressionsString) + "] }";
             }
 
             @Override
@@ -141,7 +143,7 @@ public class MongoDBQueryJsonComposer
             @Override
             public String visit(FieldPathExpression val)
             {
-                return null;
+                return convertToStringWithQuotes(val.fieldPath);
             }
 
             @Override
@@ -230,9 +232,16 @@ public class MongoDBQueryJsonComposer
             @Override
             public String visit(ObjectExpression val)
             {
+                return null;
+            }
+
+            @Override
+            public String visit(ObjectQueryExpression val)
+            {
                 List<String> objPairString = val.keyValues.stream()
-                        .map(x -> visitKeyValueExpressionPair(x)).collect(Collectors.toList());
+                        .map(x -> visitArgumentExpression(x)).collect(Collectors.toList());
                 return "{" + String.join(",", objPairString) + "}";
+                //return String.join(",", objPairString);
             }
 
             @Override
@@ -241,6 +250,14 @@ public class MongoDBQueryJsonComposer
                 List<String> expressionsString = val.expressions.stream()
                         .map(x -> visitArgumentExpression(x)).collect(Collectors.toList());
                 return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.OR) + "\" : [" + String.join(",", expressionsString) + "] }";
+            }
+
+            @Override
+            public String visit(QueryExprKeyValue pair)
+            {
+                String field = visitArgumentExpression(pair.key);
+                String value = visitArgumentExpression(pair.value);
+                return field + " : " + value;
             }
         });
     }
@@ -308,13 +325,6 @@ public class MongoDBQueryJsonComposer
     {
         String field = convertToStringWithQuotes(pair.key);
         String value = visitBaseTypeValue(pair.value);
-        return field + " : " + value;
-    }
-
-    public String visitKeyValueExpressionPair(KeyValueExpressionPair pair)
-    {
-        String field = convertToStringWithQuotes(pair.field);
-        String value = visitArgumentExpression(pair.argument);
         return field + " : " + value;
     }
 

@@ -25,16 +25,17 @@ import org.eclipse.collections.api.factory.Sets;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.AggregationPipeline;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.AndOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArgumentExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArgumentExpressionVisitor;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArrayTypeValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.BaseTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.BoolTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DatabaseCommand;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DecimalTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.EqOperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.FieldPathExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.GTEOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.GTOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.InOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.IntTypeValue;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.KeyValueExpressionPair;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.KeyValuePair;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LTEOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LTOperatorExpression;
@@ -44,9 +45,10 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Mat
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NEOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NinOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NullTypeValue;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ObjectExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ObjectQueryExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ObjectTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ProjectStage;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.QueryExprKeyValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Stage;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.StringTypeValue;
 
@@ -79,67 +81,89 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
         super(vc);
     }
 
-    private static LiteralValue getLiteralValue(Map.Entry<String, JsonNode> entry)
+    private static LiteralValue getLiteralValueFromEntry(Map.Entry<String, JsonNode> entry)
+    {
+
+        return getLiteralValueFromNode(entry.getValue());
+
+    }
+
+    private static LiteralValue getLiteralValueFromNode(JsonNode jsonNode)
     {
         LiteralValue literalValue = new LiteralValue();
-        if (entry.getValue().isValueNode())
+
+        if (jsonNode.isValueNode())
         {
-            if (entry.getValue().isTextual())
+            if (jsonNode.isTextual())
             {
                 StringTypeValue typeValue = new StringTypeValue();
-                typeValue.value = entry.getValue().textValue();
+                typeValue.value = jsonNode.textValue();
                 literalValue.value = typeValue;
             }
-            else if (entry.getValue().isBoolean())
+            else if (jsonNode.isBoolean())
             {
                 BoolTypeValue typeValue = new BoolTypeValue();
-                typeValue.value = entry.getValue().booleanValue();
+                typeValue.value = jsonNode.booleanValue();
                 literalValue.value = typeValue;
             }
-            else if (entry.getValue().isInt())
+            else if (jsonNode.isInt())
             {
                 IntTypeValue typeValue = new IntTypeValue();
-                typeValue.value = entry.getValue().intValue();
+                typeValue.value = jsonNode.intValue();
                 literalValue.value = typeValue;
             }
-            else if (entry.getValue().isLong())
+            else if (jsonNode.isLong())
             {
                 LongTypeValue typeValue = new LongTypeValue();
-                typeValue.value = entry.getValue().longValue();
+                typeValue.value = jsonNode.longValue();
                 literalValue.value = typeValue;
             }
-            else if (entry.getValue().isDouble() || entry.getValue().isFloat() || entry.getValue().isBigDecimal())
+            else if (jsonNode.isDouble() || jsonNode.isFloat() || jsonNode.isBigDecimal())
             {
                 DecimalTypeValue typeValue = new DecimalTypeValue();
-                typeValue.value = new BigDecimal(entry.getValue().asText());
+                typeValue.value = new BigDecimal(jsonNode.asText());
                 literalValue.value = typeValue;
             }
-            else if (entry.getValue().isNull())
+            else if (jsonNode.isNull())
             {
                 NullTypeValue typeValue = new NullTypeValue();
                 literalValue.value = typeValue;
             }
         }
-        else if (entry.getValue().isObject())
+        else if (jsonNode.isObject())
         {
             ObjectTypeValue objTypeValue = new ObjectTypeValue();
-            List<KeyValuePair> kvPairs = getKeyValuePairs(entry);
+            List<KeyValuePair> kvPairs = getKeyValuePairs(jsonNode);
             objTypeValue.keyValues = kvPairs;
             literalValue.value = objTypeValue;
         }
+        else if (jsonNode.isArray())
+        {
+            ArrayTypeValue arrayTypeValue = new ArrayTypeValue();
+            List<BaseTypeValue> items = Lists.mutable.of();
+            for (JsonNode item : jsonNode)
+            {
+                BaseTypeValue itemValue = getLiteralValueFromNode(item).value;
+                items.add(itemValue);
+            }
+            arrayTypeValue.items = items;
+            literalValue.value = arrayTypeValue;
+        }
         return literalValue;
+
+
     }
 
-    private static List<KeyValuePair> getKeyValuePairs(Map.Entry<String, JsonNode> entry)
+    private static List<KeyValuePair> getKeyValuePairs(JsonNode jsonNode)
     {
-        Iterator<Map.Entry<String, JsonNode>> literalObjFields = entry.getValue().fields();
+        Iterator<Map.Entry<String, JsonNode>> literalObjFields = jsonNode.fields();
         List<KeyValuePair> kvPairs = Lists.mutable.empty();
         while (literalObjFields.hasNext())
         {
             Map.Entry<String, JsonNode> literalObjEntry = literalObjFields.next();
             KeyValuePair kvPair = new KeyValuePair();
             kvPair.key = literalObjEntry.getKey();
-            kvPair.value = getLiteralValue(literalObjEntry).value;
+            kvPair.value = getLiteralValueFromEntry(literalObjEntry).value;
             kvPairs.add(kvPair);
         }
         return kvPairs;
@@ -257,6 +281,9 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
     private ArgumentExpression getMatchExpression(JsonNode matchNode)
     {
         Iterator<Map.Entry<String, JsonNode>> matchNodeFields = matchNode.fields();
+
+        ObjectQueryExpression objQueryExpr = new ObjectQueryExpression();
+        List<ArgumentExpression> argumentExpressions = Lists.mutable.empty();
         while (matchNodeFields.hasNext())
         {
             Map.Entry<String, JsonNode> entry = matchNodeFields.next();
@@ -265,41 +292,37 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
             {
                 case FIELD_NAME:
                     // Match stage defined with a field name as starting point "name" : {....
-                    //objExprValues.add(getFieldBasedOperation(entry));
+                    argumentExpressions.add(getFieldBasedOperation(entry));
                     break;
                 case OPERATOR_EXPRESSION:
                     // Match stage defined with operator as starting point "$eq" : {....
-                    //objExprValues.add(getOperatorBasedOperation(entry));
+                    argumentExpressions.add(getOperatorBasedOperation(entry));
                     break;
                 case EXPR:
                     // Match stage defined with expr as starting point "$expr" : { "$eq"....
                     break;
             }
         }
-
-        //return objExpression;
-        return null;
-
+        objQueryExpr.keyValues = argumentExpressions;
+        return objQueryExpr;
     }
 
-    private KeyValueExpressionPair getOperatorBasedOperation(Map.Entry<String, JsonNode> entry)
+    private ArgumentExpression getOperatorBasedOperation(Map.Entry<String, JsonNode> entry)
     {
-        KeyValueExpressionPair kvExpr = new KeyValueExpressionPair();
-        kvExpr.field = entry.getKey();
-        switch (kvExpr.field)
+        String operatorOp = entry.getKey();
+        switch (operatorOp)
         {
             case "$and":
                 //List<ObjectExpression> expr = getObjectExpressions(entry.getValue());
                 AndOperatorExpression andOpExpression = new AndOperatorExpression();
                 andOpExpression.expressions = getObjectExpressions(entry.getValue());
-                kvExpr.argument = andOpExpression;
-                break;
+                return andOpExpression;
             case "$or":
                 break;
             case "$not":
                 break;
         }
-        return kvExpr;
+        throw new IllegalStateException("Unknown operatorOp: " + operatorOp);
     }
 
     private List<ArgumentExpression> getObjectExpressions(JsonNode value)
@@ -309,7 +332,7 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
         {
             for (JsonNode item : value)
             {
-                ArgumentExpression objExpression = getMatchExpression(value);
+                ArgumentExpression objExpression = getMatchExpression(item);
                 objExpressions.add(objExpression);
             }
         }
@@ -321,32 +344,46 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
         return objExpressions;
     }
 
-    private ArgumentExpression getObjectExpression(Map.Entry<String, JsonNode> entry)
-    {
-        ObjectExpression objExpression = new ObjectExpression();
-        List<KeyValueExpressionPair> objExprValues = Lists.mutable.empty();
-        objExprValues.add(getFieldBasedOperation(entry));
-        objExpression.keyValues = objExprValues;
-        return objExpression;
-    }
+//    private ArgumentExpression getObjectExpression(Map.Entry<String, JsonNode> entry)
+//    {
+//        ObjectExpression objExpression = new ObjectExpression();
+//        List<KeyValueExpressionPair> objExprValues = Lists.mutable.empty();
+//        objExprValues.add(getFieldBasedOperation(entry));
+//        objExpression.keyValues = objExprValues;
+//        return objExpression;
+//    }
 
-    private KeyValueExpressionPair getFieldBasedOperation(Map.Entry<String, JsonNode> entry)
+    private QueryExprKeyValue getFieldBasedOperation(Map.Entry<String, JsonNode> entry)
     {
-        KeyValueExpressionPair kvExpr = new KeyValueExpressionPair();
-        kvExpr.field = entry.getKey();
+        QueryExprKeyValue qryExprKeyValue = new QueryExprKeyValue();
+        FieldPathExpression fieldPathExpr = new FieldPathExpression();
+        fieldPathExpr.fieldPath = entry.getKey();
+        qryExprKeyValue.key = fieldPathExpr;
         if (entry.getValue().isValueNode())
         {
             //something like { "name" : "joe"  }
-            LiteralValue literalValue = getLiteralValue(entry);
-            kvExpr.argument = literalValue;
+            LiteralValue literalValue = getLiteralValueFromEntry(entry);
+            qryExprKeyValue.value = literalValue;
         }
         else if (entry.getValue().isObject())
         {
             // something like: { "name" : {$eq : "joe" } }
             ArgumentExpression singleOpExpression = getSingleOperatorExpression(entry);
-            kvExpr.argument = singleOpExpression;
+            qryExprKeyValue.value = singleOpExpression;
         }
-        return kvExpr;
+        else if (entry.getValue().isArray())
+        {
+            LiteralValue arrayLiteral = new LiteralValue();
+            ArrayTypeValue arrayTypeValue = new ArrayTypeValue();
+            for (JsonNode item : entry.getValue())
+            {
+                LiteralValue itemValue = getLiteralValueFromEntry(entry);
+                arrayTypeValue.items.add(itemValue.value);
+            }
+            arrayLiteral.value = arrayTypeValue;
+            qryExprKeyValue.value = arrayLiteral;
+        }
+        return qryExprKeyValue;
     }
 
     private ArgumentExpression getSingleOperatorExpression(Map.Entry<String, JsonNode> entry)
@@ -361,49 +398,49 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
                     EqOperatorExpression eqOpExpression = new EqOperatorExpression();
                     if (opExprEntry.getValue().isValueNode())
                     {
-                        LiteralValue eqOpliteralValue = getLiteralValue(opExprEntry);
+                        LiteralValue eqOpliteralValue = getLiteralValueFromEntry(opExprEntry);
                         eqOpExpression.expression = eqOpliteralValue;
                     }
                     else if (opExprEntry.getValue().isObject())
                     {
                         // Todo : Is there difference between value node vs object here?
-                        LiteralValue eqOpliteralValue = getLiteralValue(opExprEntry);
+                        LiteralValue eqOpliteralValue = getLiteralValueFromEntry(opExprEntry);
                         eqOpExpression.expression = eqOpliteralValue;
                     }
                     return eqOpExpression;
                 case "$ne":
                     NEOperatorExpression neOpExpression = new NEOperatorExpression();
-                    LiteralValue neOpliteralValue = getLiteralValue(opExprEntry);
+                    LiteralValue neOpliteralValue = getLiteralValueFromEntry(opExprEntry);
                     neOpExpression.expression = neOpliteralValue;
                     return neOpExpression;
                 case "$gt":
                     GTOperatorExpression gtOpExpression = new GTOperatorExpression();
-                    LiteralValue gtOpliteralValue = getLiteralValue(opExprEntry);
+                    LiteralValue gtOpliteralValue = getLiteralValueFromEntry(opExprEntry);
                     gtOpExpression.expression = gtOpliteralValue;
                     return gtOpExpression;
                 case "$gte":
                     GTEOperatorExpression gteOpExpression = new GTEOperatorExpression();
-                    LiteralValue gteliteralValue = getLiteralValue(opExprEntry);
+                    LiteralValue gteliteralValue = getLiteralValueFromEntry(opExprEntry);
                     gteOpExpression.expression = gteliteralValue;
                     return gteOpExpression;
                 case "$lt":
                     LTOperatorExpression ltOpExpression = new LTOperatorExpression();
-                    LiteralValue ltliteralValue = getLiteralValue(opExprEntry);
+                    LiteralValue ltliteralValue = getLiteralValueFromEntry(opExprEntry);
                     ltOpExpression.expression = ltliteralValue;
                     return ltOpExpression;
                 case "$lte":
                     LTEOperatorExpression lteOpExpression = new LTEOperatorExpression();
-                    LiteralValue lteliteralValue = getLiteralValue(opExprEntry);
+                    LiteralValue lteliteralValue = getLiteralValueFromEntry(opExprEntry);
                     lteOpExpression.expression = lteliteralValue;
                     return lteOpExpression;
                 case "$in":
                     InOperatorExpression inOpExpression = new InOperatorExpression();
-                    LiteralValue inliteralValue = getLiteralValue(opExprEntry);
+                    LiteralValue inliteralValue = getLiteralValueFromEntry(opExprEntry);
                     inOpExpression.expression = inliteralValue;
                     return inOpExpression;
                 case "$nin":
                     NinOperatorExpression ninOpExpression = new NinOperatorExpression();
-                    LiteralValue ninliteralValue = getLiteralValue(opExprEntry);
+                    LiteralValue ninliteralValue = getLiteralValueFromEntry(opExprEntry);
                     ninOpExpression.expression = ninliteralValue;
                     return ninOpExpression;
             }

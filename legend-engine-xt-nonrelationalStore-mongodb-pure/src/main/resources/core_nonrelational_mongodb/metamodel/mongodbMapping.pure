@@ -16,13 +16,6 @@ import meta::external::store::mongodb::metamodel::mapping::*;
 import meta::external::store::mongodb::metamodel::aggregation::*;
 
 
-function meta::external::store::mongodb::metamodel::configureConventions(conventions: meta::external::language::java::transform::Conventions[1]): meta::external::language::java::transform::Conventions[1]
-{
-    $conventions
-      ->meta::external::language::java::transform::addProvidedType(meta::pure::mapping::PropertyMapping, 'org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping')
-      ->meta::external::language::java::transform::addProvidedType(meta::pure::mapping::InstanceSetImplementation, 'org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.InstanceSetImplementation');
-}
-
 
 //
 // meta::external::store::mongodb::metamodel::mapping classes are used for parsing & protocol stuff.  For pure processing, we use the meta::external::store::mongodb::mapping::classes

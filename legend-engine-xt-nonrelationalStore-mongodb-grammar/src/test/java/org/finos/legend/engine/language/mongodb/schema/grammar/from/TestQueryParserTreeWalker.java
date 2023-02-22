@@ -45,16 +45,17 @@ public class TestQueryParserTreeWalker
         inputJsonFile = inputQueryFile;
     }
 
-    @Parameterized.Parameters
+    @Parameterized.Parameters(name = "{index}: {0}")
     public static Collection<Object[]> data()
     {
         return Arrays.asList(new Object[][]{
-                // {"json/query/empty_match_input.json"},
-                // {"json/query/empty_pipeline_input.json"},
-                // {"json/query/match_many_types_input.json"},
-                // {"json/query/match_simple_expression_input.json"},
-                {"json/query/match_with_and_operator_input.json"}
-                // {"json/query/match_with_operator_input.json"}
+//                {"json/query/empty_match_input.json"},
+//                {"json/query/empty_pipeline_input.json"},
+//                {"json/query/match_many_types_input.json"},
+//                {"json/query/match_simple_expression_input.json"},
+//                {"json/query/match_with_and_operator_input.json"},
+//                {"json/query/match_with_empty_array_input.json"},
+//                 {"json/query/match_with_operator_input.json"}
         });
     }
 
@@ -73,6 +74,7 @@ public class TestQueryParserTreeWalker
     @Test
     public void testSimpleMatchOperator() throws Exception
     {
+        LOGGER.debug("Processing file: {}", this.inputJsonFile);
         URL url = Objects.requireNonNull(getClass().getClassLoader().getResource(this.inputJsonFile));
         String inputQry = new String(Files.readAllBytes(Paths.get(url.toURI())), StandardCharsets.UTF_8);
         // Pretty print input to canonical json format for test assertions
