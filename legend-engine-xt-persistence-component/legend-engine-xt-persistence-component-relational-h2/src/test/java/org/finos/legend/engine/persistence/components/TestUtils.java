@@ -752,7 +752,7 @@ public class TestUtils
             .build();
     }
 
-    public static DatasetDefinition getSchemaEvolutionBeforeAddMainTable()
+    public static DatasetDefinition getSchemaEvolutionAddColumnMainTable()
     {
         return DatasetDefinition.builder()
             .group(testSchemaName)
@@ -767,7 +767,23 @@ public class TestUtils
             .build();
     }
 
-    public static DatasetDefinition getSchemaEvolutionImplicitChangeStagingTable()
+    public static DatasetDefinition getSchemaEvolutionDataTypeConversionMainTable()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(incomeInteger)
+                .addFields(startTime)
+                .addFields(expiryDate)
+                .addFields(digest)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getSchemaEvolutionDataTypeSizeChangeStagingTable()
     {
         return DatasetDefinition.builder()
             .group(testSchemaName)
