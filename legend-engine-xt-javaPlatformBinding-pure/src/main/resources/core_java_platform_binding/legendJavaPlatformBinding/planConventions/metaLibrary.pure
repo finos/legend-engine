@@ -43,9 +43,13 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::meta::
    let params    = $fe.parametersValues->evaluateAndDeactivate();
    let type      = $params->at(0).genericType.typeArguments->at(0).rawType->toOne();
    let enumType  = $conventions->className($type);
-   let enumValue = $conventions->identifier($params->at(1)->cast(@InstanceValue).values->cast(@String)->toOne());
-                 
-   $enumType->j_field($enumValue, $enumType)->dependsOn(enumTypeDependency($type, $conventions, $debug));
+ 
+   $params->at(1)->match([
+      iv:InstanceValue[1] | let enumValue = $conventions->identifier($iv.values->cast(@String)->toOne());
+                            $enumType->j_field($enumValue, $enumType)->dependsOn(enumTypeDependency($type, $conventions, $debug));,
+      sfe:SimpleFunctionExpression[1] | let srcPropValue = $sfe->generateJava($conventions, $debug->indent());
+                                        ^StaticMethodCall(class=$enumType, methodName='valueOf', arguments=$srcPropValue, type=$enumType);
+	]);
 }
 
 function meta::pure::executionPlan::platformBinding::legendJava::library::meta::enumValues(fe:FunctionExpression[1], conventions:Conventions[1], debug:DebugContext[1]): Code[1]

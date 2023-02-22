@@ -244,8 +244,10 @@ public class RelationalExecutor
     private void prepareForSQLExecution(ExecutionNode node, Connection connection, String databaseTimeZone, String databaseTypeName, List<String> tempTableList, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
         String sqlQuery;
+        String sqlComment;
 
         sqlQuery = node instanceof RelationalExecutionNode ? ((RelationalExecutionNode) node).sqlQuery() : ((SQLExecutionNode) node).sqlQuery();
+        sqlComment = node instanceof RelationalExecutionNode ? ((RelationalExecutionNode) node).sqlComment() : ((SQLExecutionNode) node).sqlComment();
 
         DatabaseManager databaseManager = DatabaseManager.fromString(databaseTypeName);
         for (Map.Entry<String, Result> var : executionState.getResults().entrySet())
@@ -279,6 +281,7 @@ public class RelationalExecutor
 
         try
         {
+            sqlComment = sqlComment != null ? FreeMarkerExecutor.process(sqlComment, executionState, databaseTypeName, databaseTimeZone) : null;
             sqlQuery = FreeMarkerExecutor.process(sqlQuery, executionState, databaseTypeName, databaseTimeZone);
             Span span = GlobalTracer.get().activeSpan();
             if (span != null)
@@ -293,7 +296,7 @@ public class RelationalExecutor
 
         LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_REPROCESS_SQL, "Reprocessing sql with vars " + executionState.getResults().keySet() + ": " + sqlQuery).toString());
 
-        executionState.activities.add(new RelationalExecutionActivity(sqlQuery));
+        executionState.activities.add(new RelationalExecutionActivity(sqlQuery, sqlComment));
     }
 
     private void prepareTempTable(Connection connectionManagerConnection, StreamingResult res, String tempTableName, String databaseTypeName, String databaseTimeZone, List<String> tempTableList)

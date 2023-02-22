@@ -242,7 +242,7 @@ function meta::protocols::pure::vX_X_X::invocation::execution::execute::transfor
 {
    $activities->map(activity|$activity->match([
       a:meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::AggregationAwareActivity[1]    | ^AggregationAwareActivity(rewrittenQuery = $a.rewrittenQuery),
-      r:meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalExecutionActivity[1] | ^RelationalActivity(sql=$r.sql)
+      r:meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalExecutionActivity[1] | ^RelationalActivity(sql=$r.sql, comment=$r.comment)
    ]->concatenate($extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).transfers_execute_transformActivity)->toOneMany()))
 }
 

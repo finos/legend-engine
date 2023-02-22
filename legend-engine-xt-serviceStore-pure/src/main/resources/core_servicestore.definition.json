@@ -8,6 +8,7 @@
     "platform_dsl_path",
     "platform_dsl_mapping",
     "core",
-    "core_external_format_json"
+    "core_external_format_json",
+    "core_authentication"
   ]
 }

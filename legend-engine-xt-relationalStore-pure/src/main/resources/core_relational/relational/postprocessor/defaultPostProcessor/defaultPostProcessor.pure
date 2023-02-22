@@ -58,8 +58,14 @@ function meta::relational::mapping::sqlQueryDefaultPostProcessors():meta::pure::
 {
    [
       meta::relational::postProcessor::filterPushDown::pushFiltersDownToJoins_SelectSQLQuery_1__Extension_MANY__Result_1_,
-      meta::relational::postProcessor::reAlias::replaceAliasName_SelectSQLQuery_1__Extension_MANY__Result_1_
+      meta::relational::postProcessor::reAlias::replaceAliasName_SelectSQLQuery_1__Extension_MANY__Result_1_,
+      meta::relational::postProcessor::comments::prependSQLComments_SelectSQLQuery_1__Extension_MANY__Result_1_
    ]
+}
+
+function meta::relational::postProcessor::comments::prependSQLComments(selectSQLQuery:SelectSQLQuery[1], extensions:Extension[*]):Result<SelectSQLQuery|1>[1]
+{
+   ^Result<SelectSQLQuery|1>(values= ^$selectSQLQuery(comment= '-- executionTraceID : ${execID}'));
 }
 
 function meta::relational::postProcessor::generateTempTableSelectSQLQuery(tempTableSchemaName:String[1], tempTableName:String[1], tempTableColumnName: String[1], tempTableColumnType:meta::relational::metamodel::datatype::DataType[1]):SelectSQLQuery[1]
