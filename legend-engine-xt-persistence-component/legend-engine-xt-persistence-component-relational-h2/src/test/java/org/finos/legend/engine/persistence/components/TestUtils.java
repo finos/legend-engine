@@ -23,6 +23,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.JsonExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
+import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.junit.jupiter.api.Assertions;
 
@@ -104,6 +105,7 @@ public class TestUtils
     public static Field id = Field.builder().name(idName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(idName).build();
     public static Field tinyIntId = Field.builder().name(idName).type(FieldType.of(DataType.TINYINT, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(idName).build();
     public static Field name = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 64, null)).nullable(false).fieldAlias(nameName).build();
+    public static Field nullableName = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 64, null)).nullable(true).fieldAlias(nameName).build();
     public static Field nameWithMoreLength = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 256, null)).nullable(false).fieldAlias(nameName).build();
     public static Field income = Field.builder().name(incomeName).type(FieldType.of(DataType.BIGINT, Optional.empty(), Optional.empty())).fieldAlias(incomeName).build();
     public static Field incomeInteger = Field.builder().name(incomeName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(incomeName).build();
@@ -799,6 +801,22 @@ public class TestUtils
             .build();
     }
 
+    public static DatasetDefinition getSchemaEvolutionColumnNullabilityChangeStagingTable()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(nullableName)
+                .addFields(income)
+                .addFields(startTime)
+                .addFields(expiryDate)
+                .addFields(digest)
+                .build())
+            .build();
+    }
+
     public static DatasetDefinition getSchemaEvolutionPKTypeDifferentMainTable()
     {
         return DatasetDefinition.builder()
@@ -899,13 +917,14 @@ public class TestUtils
     }
 
     // This is to check the actual database table - whether columns have the right nullability
-    public static String getCheckIsNullableFromTableSql(String tableName, String columnName)
+    public static String getIsColumnNullableFromTable(JdbcHelper sink, String tableName, String columnName)
     {
-        return "SELECT IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='" + tableName + "' and COLUMN_NAME ='" + columnName + "'";
+        List<Map<String, Object>> result = sink.executeQuery("SELECT IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='" + tableName + "' and COLUMN_NAME ='" + columnName + "'");
+        return result.get(0).get("IS_NULLABLE").toString();
     }
 
     // This is to check the actual database table - whether data types are correct
-    public static String getCheckDataTypeFromTableSql(Connection connection, String database, String schema, String tableName, String columnName) throws SQLException
+    public static String getColumnDataTypeFromTable(Connection connection, String database, String schema, String tableName, String columnName) throws SQLException
     {
         ResultSet result = connection.getMetaData().getColumns(database, schema, tableName, columnName);
         String dataType = "";
