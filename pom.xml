@@ -40,7 +40,7 @@
         <module>legend-engine-xt-authentication-implementation-core</module>
         <module>legend-engine-xt-authentication-implementation-vault-aws</module>
         <module>legend-engine-xt-authentication-implementation-gcp-federation</module>
-        <module>legend-engine-xt-authentication-example</module>
+        <module>legend-engine-xt-authentication-experimental</module>
 
         <module>legend-engine-test-reports</module>
 
@@ -730,7 +730,7 @@
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-authentication-example</artifactId>
+                <artifactId>legend-engine-xt-authentication-experimental</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
