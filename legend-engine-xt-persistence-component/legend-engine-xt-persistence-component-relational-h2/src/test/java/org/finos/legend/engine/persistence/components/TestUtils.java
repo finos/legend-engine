@@ -834,6 +834,21 @@ public class TestUtils
             .build();
     }
 
+    public static DatasetDefinition getSchemaEvolutionMakeMainColumnNullableStagingTable()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(income)
+                .addFields(startTime)
+                .addFields(expiryDate)
+                .addFields(digest)
+                .build())
+            .build();
+    }
+
     public static DatasetDefinition getSchemaEvolutionPKTypeDifferentMainTable()
     {
         return DatasetDefinition.builder()

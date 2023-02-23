@@ -46,6 +46,7 @@ import static org.finos.legend.engine.persistence.components.TestUtils.getIsColu
 import static org.finos.legend.engine.persistence.components.TestUtils.idName;
 import static org.finos.legend.engine.persistence.components.TestUtils.incomeName;
 import static org.finos.legend.engine.persistence.components.TestUtils.mainTableName;
+import static org.finos.legend.engine.persistence.components.TestUtils.name;
 import static org.finos.legend.engine.persistence.components.TestUtils.nameName;
 import static org.finos.legend.engine.persistence.components.TestUtils.nameWithMoreLength;
 import static org.finos.legend.engine.persistence.components.TestUtils.startTimeName;
@@ -339,6 +340,63 @@ class SchemaEvolutionTest extends BaseTest
         datasets = result.updatedDatasets();
         // 2. Load staging table
         loadBasicStagingData(dataPass2);
+        // 3. Execute plans and verify results
+        expectedStats = new HashMap<>();
+        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 1);
+        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, schemaEvolutionCapabilitySet);
+    }
+
+    @Test
+    void testMakeMainColumnNullable() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getBasicMainTable();
+        DatasetDefinition stagingTable = TestUtils.getSchemaEvolutionMakeMainColumnNullableStagingTable();
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+        AppendOnly ingestMode = AppendOnly.builder()
+            .digestField(digestName)
+            .deduplicationStrategy(FilterDuplicates.builder().build())
+            .auditing(NoAuditing.builder().build())
+            .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).enableSchemaEvolution(true).build();
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.COLUMN_NULLABILITY_CHANGE);
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+
+        // ------------ Perform Pass1 (Schema Evolution) ------------------------
+        String dataPass1 = basePathForInput + "make_main_column_nullable_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "make_main_column_nullable_expected_pass1.csv";
+        // 1. Load staging table
+        loadStagingDataForWithoutName(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = new HashMap<>();
+        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
+        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        IngestorResult result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, schemaEvolutionCapabilitySet);
+        // 3. Verify schema changes in database
+        List<Map<String, Object>> actualTableData = h2Sink.executeQuery("select * from \"TEST\".\"main\"");
+        assertTableColumnsEquals(Arrays.asList(schema), actualTableData);
+        Assertions.assertEquals("YES", getIsColumnNullableFromTable(h2Sink, mainTableName, nameName));
+        // 4. Verify schema changes in model objects
+        assertUpdatedDataset(createDatasetWithUpdatedField(mainTable, name.withNullable(true)), result.updatedDatasets().mainDataset());
+
+        // ------------ Perform Pass2 ------------------------
+        String dataPass2 = basePathForInput + "make_main_column_nullable_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "make_main_column_nullable_expected_pass2.csv";
+        // 1. Update datasets
+        datasets = result.updatedDatasets();
+        // 2. Load staging table
+        loadStagingDataForWithoutName(dataPass2);
         // 3. Execute plans and verify results
         expectedStats = new HashMap<>();
         expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 1);
