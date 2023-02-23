@@ -15,6 +15,7 @@
 package org.finos.legend.pure.code.core;
 
 import junit.framework.TestSuite;
+import org.finos.legend.pure.m3.execution.test.PureTestBuilder;
 import org.finos.legend.pure.runtime.java.compiled.testHelper.IgnoreUnsupportedApiPureTestSuiteRunner;
 import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
