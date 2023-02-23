@@ -406,7 +406,7 @@ function <<access.private>> meta::pure::router::preeval::prevalGenericSimpleFunc
                                     genericType = $sfe.genericType->resolveGenericType($state).value),
                             | $sfe);
 
-  let canPrevalFunc    = !$state.stopPreeval->eval($newSfe);
+  let canPrevalFunc    = !($newSfe.func->hasStereotype('SideEffectFunction', functionType) || $state.stopPreeval->eval($newSfe));
 
   if(!$canPrevalFunc,
     | $state->printDebugWithDepth(|'Unable to perform preval: ' + $newSfe.func->elementToPath() + ' (' + $newSfe.func->instanceOf(NativeFunction)->makeString() + ')');
@@ -742,22 +742,7 @@ function <<access.private>> meta::pure::router::preeval::stopPreeval(value : Any
             p : meta::pure::tds::TDSColumn[*]| true,
             p : TdsOlapRank<Any>[*]| true,
             p : TdsOlapAggregation<Any>[*]| true,
-            // TODO: As of now we are merging 2 concepts here to stop Preeval.
-            // 1. Known types where we need to stop because those are know simple types.
-            // 2. Functions that are not idempotent (sideeffect functions like getAll/internalize) which should not be preevaled because those are sideefect fucntions
-            f : SimpleFunctionExpression[1]| $f.func->in([getAll_Class_1__T_MANY_,
-                                                          getAllVersions_Class_1__T_MANY_,
-                                                          getAll_Class_1__Date_1__T_MANY_,
-                                                          getAll_Class_1__Date_1__Date_1__T_MANY_,
-                                                          getAllVersionsInRange_Class_1__Date_1__Date_1__T_MANY_,
-                                                          letFunction_String_1__T_m__T_m_,
-                                                          meta::pure::functions::date::today__StrictDate_1_,
-                                                          meta::pure::functions::date::now__DateTime_1_,
-                                                          meta::pure::runtime::currentUserId__String_1_,
-                                                          meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_,
-                                                          meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_,
-                                                          meta::pure::mapping::from_T_m__Mapping_1__Runtime_1__T_m_
-                                                      ]),
+            f : SimpleFunctionExpression[1]| $f.func->in([letFunction_String_1__T_m__T_m_]),
             a : Any[*]| $a->type()
                           ->match([
                               c:Class<Any>[1]|$c->isSimpleType(),

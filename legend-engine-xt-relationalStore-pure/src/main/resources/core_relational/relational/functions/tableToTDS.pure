@@ -19,7 +19,7 @@ Class meta::relational::mapping::TableTDS extends TabularDataSetImplementation
   table : meta::relational::metamodel::relation::NamedRelation[1];
 }
 
-function meta::pure::tds::tableToTDS(table:meta::relational::metamodel::relation::Table[1]):meta::relational::mapping::TableTDS[1]
+function <<functionType.SideEffectFunction>> meta::pure::tds::tableToTDS(table:meta::relational::metamodel::relation::Table[1]):meta::relational::mapping::TableTDS[1]
 {
    ^meta::relational::mapping::TableTDS(
       store = $table.schema.database,
