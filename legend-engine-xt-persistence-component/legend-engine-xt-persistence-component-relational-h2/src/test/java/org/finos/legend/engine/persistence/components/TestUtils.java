@@ -105,10 +105,11 @@ public class TestUtils
     public static Field id = Field.builder().name(idName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(idName).build();
     public static Field tinyIntId = Field.builder().name(idName).type(FieldType.of(DataType.TINYINT, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(idName).build();
     public static Field name = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 64, null)).nullable(false).fieldAlias(nameName).build();
-    public static Field nullableName = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 64, null)).nullable(true).fieldAlias(nameName).build();
+    public static Field nullableName = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 64, null)).fieldAlias(nameName).build();
     public static Field nameWithMoreLength = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 256, null)).nullable(false).fieldAlias(nameName).build();
     public static Field income = Field.builder().name(incomeName).type(FieldType.of(DataType.BIGINT, Optional.empty(), Optional.empty())).fieldAlias(incomeName).build();
-    public static Field incomeInteger = Field.builder().name(incomeName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(incomeName).build();
+    public static Field notNullableIntIncome = Field.builder().name(incomeName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).nullable(false).fieldAlias(incomeName).build();
+    public static Field nullableIntIncome = Field.builder().name(incomeName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(incomeName).build();
     public static Field startTime = Field.builder().name(startTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(startTimeName).build();
     public static Field expiryDate = Field.builder().name(expiryDateName).type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).fieldAlias(expiryDateName).build();
     public static Field date = Field.builder().name(dateName).type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(dateName).build();
@@ -777,7 +778,7 @@ public class TestUtils
             .schema(SchemaDefinition.builder()
                 .addFields(id)
                 .addFields(name)
-                .addFields(incomeInteger)
+                .addFields(nullableIntIncome)
                 .addFields(startTime)
                 .addFields(expiryDate)
                 .addFields(digest)
@@ -793,7 +794,7 @@ public class TestUtils
             .schema(SchemaDefinition.builder()
                 .addFields(id)
                 .addFields(nameWithMoreLength)
-                .addFields(incomeInteger)
+                .addFields(nullableIntIncome)
                 .addFields(startTime)
                 .addFields(expiryDate)
                 .addFields(digest)
@@ -810,6 +811,22 @@ public class TestUtils
                 .addFields(id)
                 .addFields(nullableName)
                 .addFields(income)
+                .addFields(startTime)
+                .addFields(expiryDate)
+                .addFields(digest)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getSchemaEvolutionDataTypeConversionAndColumnNullabilityChangeMainTable()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(notNullableIntIncome)
                 .addFields(startTime)
                 .addFields(expiryDate)
                 .addFields(digest)

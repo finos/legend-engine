@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -140,7 +140,7 @@ class SchemaEvolutionTest extends BaseTest
         String dataPass1 = basePathForInput + "data_type_conversion_data_pass1.csv";
         String expectedDataPass1 = basePathForExpected + "data_type_conversion_expected_pass1.csv";
         // 1. Load staging table
-        loadStagingDataForImplicitTypeChange(dataPass1);
+        loadBasicStagingData(dataPass1);
         // 2. Execute plans and verify results
         Map<String, Object> expectedStats = new HashMap<>();
         expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
@@ -198,7 +198,7 @@ class SchemaEvolutionTest extends BaseTest
         String dataPass1 = basePathForInput + "datatype_type_size_change_data_pass1.csv";
         String expectedDataPass1 = basePathForExpected + "datatype_type_size_change_expected_pass1.csv";
         // 1. Load staging table
-        loadStagingDataForImplicitTypeChange(dataPass1);
+        loadStagingDataForIntIncome(dataPass1);
         // 2. Execute plans and verify results
         Map<String, Object> expectedStats = new HashMap<>();
         expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
@@ -220,7 +220,7 @@ class SchemaEvolutionTest extends BaseTest
         // 1. Update datasets
         datasets = result.updatedDatasets();
         // 2. Load staging table
-        loadBasicStagingData(dataPass2);
+        loadStagingDataForIntIncome(dataPass2);
         // 3. Execute plans and verify results
         expectedStats = new HashMap<>();
         expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 1);
@@ -275,6 +275,66 @@ class SchemaEvolutionTest extends BaseTest
         // ------------ Perform Pass2 ------------------------
         String dataPass2 = basePathForInput + "column_nullability_change_data_pass2.csv";
         String expectedDataPass2 = basePathForExpected + "column_nullability_change_expected_pass2.csv";
+        // 1. Update datasets
+        datasets = result.updatedDatasets();
+        // 2. Load staging table
+        loadBasicStagingData(dataPass2);
+        // 3. Execute plans and verify results
+        expectedStats = new HashMap<>();
+        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 1);
+        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, schemaEvolutionCapabilitySet);
+    }
+
+    @Test
+    void testDataTypeConversionAndColumnNullabilityChange() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getSchemaEvolutionDataTypeConversionAndColumnNullabilityChangeMainTable();
+        DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+        // Generate the milestoning object
+        AppendOnly ingestMode = AppendOnly.builder()
+            .digestField(digestName)
+            .deduplicationStrategy(FilterDuplicates.builder().build())
+            .auditing(NoAuditing.builder().build())
+            .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).enableSchemaEvolution(true).build();
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_CONVERSION);
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.COLUMN_NULLABILITY_CHANGE);
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+
+        // ------------ Perform Pass1 (Schema Evolution) ------------------------
+        String dataPass1 = basePathForInput + "data_type_conversion_and_column_nullability_change_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "data_type_conversion_and_column_nullability_change_expected_pass1.csv";
+        // 1. Load staging table
+        loadBasicStagingData(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = new HashMap<>();
+        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
+        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        IngestorResult result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, schemaEvolutionCapabilitySet);
+        // 3. Verify schema changes in database
+        List<Map<String, Object>> actualTableData = h2Sink.executeQuery("select * from \"TEST\".\"main\"");
+        assertTableColumnsEquals(Arrays.asList(schema), actualTableData);
+        Assertions.assertEquals("BIGINT", getColumnDataTypeFromTable(h2Sink.connection(), testDatabaseName, testSchemaName, mainTableName, incomeName));
+        Assertions.assertEquals("YES", getIsColumnNullableFromTable(h2Sink, mainTableName, incomeName));
+        // 4. Verify schema changes in model objects
+        assertUpdatedDataset(stagingTable, result.updatedDatasets().mainDataset());
+
+        // ------------ Perform Pass2 ------------------------
+        String dataPass2 = basePathForInput + "data_type_conversion_and_column_nullability_change_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "data_type_conversion_and_column_nullability_change_expected_pass2.csv";
         // 1. Update datasets
         datasets = result.updatedDatasets();
         // 2. Load staging table

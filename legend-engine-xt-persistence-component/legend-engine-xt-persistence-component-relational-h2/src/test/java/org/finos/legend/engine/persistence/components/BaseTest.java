@@ -299,7 +299,7 @@ public class BaseTest
         h2Sink.executeStatement(loadSql);
     }
 
-    protected void loadStagingDataForImplicitTypeChange(String path) throws Exception
+    protected void loadStagingDataForIntIncome(String path) throws Exception
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
