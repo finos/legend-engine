@@ -89,7 +89,8 @@ public class SQLExecutionResult extends Result
             }
 
             long start = System.currentTimeMillis();
-            String sql = ((RelationalExecutionActivity) activities.get(activities.size() - 1)).sql;
+            RelationalExecutionActivity activity = ((RelationalExecutionActivity) activities.get(activities.size() - 1));
+            String sql = activity.comment != null ? activity.comment.concat("\n").concat(activity.sql) : activity.sql;
             LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, sql).toString());
             this.resultSet = this.statement.executeQuery(sql);
             LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_STOP, (double) System.currentTimeMillis() - start).toString());

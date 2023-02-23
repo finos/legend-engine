@@ -64,6 +64,11 @@ public class JsonStreamingResult extends StreamingResult
         return jsonStream::writeTo;
     }
 
+    public Result getChildResult()
+    {
+        return this.childResult;
+    }
+
     @Override
     public void close()
     {

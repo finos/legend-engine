@@ -54,11 +54,11 @@ public class SchemaEvolution
 
     @Immutable
     @Style(
-        typeAbstract = "*Abstract",
-        typeImmutable = "*",
-        jdkOnly = true,
-        optionalAcceptNullable = true,
-        strictBuilder = true
+            typeAbstract = "*Abstract",
+            typeImmutable = "*",
+            jdkOnly = true,
+            optionalAcceptNullable = true,
+            strictBuilder = true
     )
     public interface SchemaEvolutionResultAbstract
     {
@@ -92,9 +92,8 @@ public class SchemaEvolution
         List<Operation> operations = new ArrayList<>();
         List<Field> modifiedFields = new ArrayList<>();
         validatePrimaryKeys(mainDataset, stagingDataset);
-        //todo : fieldToIgnore
-        operations.addAll(stagingToMainTableColumnMatch(mainDataset, stagingDataset, ingestMode.accept(MAIN_TABLE_FIELDS_TO_IGNORE), modifiedFields));
-        operations.addAll(mainToStagingTableColumnMatch(mainDataset, stagingDataset, ingestMode.accept(STAGING_TABLE_FIELDS_TO_IGNORE), modifiedFields));
+        operations.addAll(stagingToMainTableColumnMatch(mainDataset, stagingDataset, ingestMode.accept(STAGING_TABLE_FIELDS_TO_IGNORE), modifiedFields));
+        operations.addAll(mainToStagingTableColumnMatch(mainDataset, stagingDataset, ingestMode.accept(MAIN_TABLE_FIELDS_TO_IGNORE), modifiedFields));
 
         SchemaDefinition evolvedSchema = evolveSchemaDefinition(mainDataset.schema(), modifiedFields);
 
@@ -103,20 +102,16 @@ public class SchemaEvolution
 
     private void validatePrimaryKeys(Dataset mainDataset, Dataset stagingDataset)
     {
-        List<Field> stagingFilteredFields = stagingDataset.schema().fields().stream().filter(field -> !(ingestMode.accept(MAIN_TABLE_FIELDS_TO_IGNORE).contains(field.name()))).collect(Collectors.toList());
+        List<Field> stagingFilteredFields = stagingDataset.schema().fields().stream().filter(field -> !(ingestMode.accept(STAGING_TABLE_FIELDS_TO_IGNORE).contains(field.name()))).collect(Collectors.toList());
         Set<Field> stagingPkKeys = stagingFilteredFields.stream().filter(field -> field.primaryKey()).collect(Collectors.toSet());
-        List<Field> mainFilteredFields = mainDataset.schema().fields().stream().filter(field -> !(ingestMode.accept(STAGING_TABLE_FIELDS_TO_IGNORE).contains(field.name()))).collect(Collectors.toList());
+        List<Field> mainFilteredFields = mainDataset.schema().fields().stream().filter(field -> !(ingestMode.accept(MAIN_TABLE_FIELDS_TO_IGNORE).contains(field.name()))).collect(Collectors.toList());
         Set<Field> mainPkKeys = mainFilteredFields.stream().filter(field -> field.primaryKey()).collect(Collectors.toSet());
         if (stagingPkKeys.size() != mainPkKeys.size() || !Objects.equals(stagingPkKeys, mainPkKeys))
         {
-            System.out.println(stagingPkKeys);
-            System.out.println(mainPkKeys);
             throw new IncompatibleSchemaChangeException("Primary keys for main table has changed which is not allowed ");
         }
     }
 
-
-    //todo : validate primary keys b/w the two tables and throw a ValidationException if discrepancy
     //Validate all columns (allowing exceptions) in staging dataset must have a matching column in main dataset
     private List<Operation> stagingToMainTableColumnMatch(Dataset mainDataset,
                                                           Dataset stagingDataset,
@@ -181,19 +176,19 @@ public class SchemaEvolution
                         //Else, it is a breaking change. We throw an exception
                         else
                         {
-                            throw new IncompatibleSchemaChangeException("Breaking schema change from datatype " + matchedMainField.type().dataType() + " to " + stagingFieldType.dataType());
+                            throw new IncompatibleSchemaChangeException(String.format("Breaking schema change from datatype \"%s\" to \"%s\"", matchedMainField.type().dataType(), stagingFieldType.dataType()));
                         }
                     }
+                    //If data types are same, we check if length requires any evolution
                     else
                     {
                         Field newField = evolveFieldLength(stagingField, matchedMainField);
                         evolveDataType(newField, matchedMainField, mainDataset, operations, modifiedFields);
                     }
                 }
+                //If Field types are same, we check to see if nullability needs any evolution
                 else
                 {
-                    //todo : check if a capability is required
-                    //todo : check if this can be independent of data type changes
                     if (matchedMainField.nullable() != stagingField.nullable())
                     {
                         Field newField = createNewField(matchedMainField, stagingField, matchedMainField.type().length().orElse(0), matchedMainField.type().scale().orElse(0));
@@ -225,9 +220,16 @@ public class SchemaEvolution
 
     private void alterColumnWithNullable(Field newField, Dataset mainDataset, List<Operation> operations, List<Field> modifiedFields)
     {
-        operations.add(Alter.of(mainDataset, Alter.AlterOperation.NULLABLE_COLUMN, newField, Optional.empty()));
-        newField.withNullable(true);
-        modifiedFields.add(newField);
+        if (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.COLUMN_NULLABILITY_CHANGE))
+        {
+            operations.add(Alter.of(mainDataset, Alter.AlterOperation.NULLABLE_COLUMN, newField, Optional.empty()));
+            newField.withNullable(true);
+            modifiedFields.add(newField);
+        }
+        else
+        {
+            throw new IncompatibleSchemaChangeException(String.format("Column \"%s\" couldn't be made non-nullable since user capability does not allow it", newField.name()));
+        }
     }
 
     private List<Operation> mainToStagingTableColumnMatch(Dataset mainDataset, Dataset stagingDataset, Set<String> fieldsToIgnore, List<Field> modifiedFields)
@@ -240,9 +242,7 @@ public class SchemaEvolution
             String mainFieldName = mainField.name();
             if (!stagingFieldNames.contains(mainFieldName))
             {
-                //todo : capability for nullable check?
                 //Modify the column to nullable in main table
-
                 alterColumnWithNullable(mainField, mainDataset, operations, modifiedFields);
             }
         }
@@ -258,6 +258,7 @@ public class SchemaEvolution
             if (sink.capabilities().contains(Capability.DATA_TYPE_SIZE_CHANGE)
                     && (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE)))
             {
+                //todo : double -> decimal(10,0) doesn't go thru due to below conditions
                 //If the oldField and newField have a length associated, pick the greater length
                 if (oldField.type().length().isPresent() && newField.type().length().isPresent())
                 {
@@ -288,7 +289,7 @@ public class SchemaEvolution
             }
             else
             {
-                throw new IncompatibleSchemaChangeException("Data sizing changes couldn't be performed since user capability does not allow it");
+                throw new IncompatibleSchemaChangeException(String.format("Data sizing changes couldn't be performed on column \"%s\" since user capability does not allow it", newField.name()));
             }
         }
         return createNewField(newField, oldField, length, scale);
@@ -316,13 +317,8 @@ public class SchemaEvolution
 
     private Field createNewField(Field newField, Field oldField, int length, int scale)
     {
-        //todo : pick length and scale from first field
         FieldType modifiedFieldType = FieldType.of(newField.type().dataType(), Optional.ofNullable(length == 0 ? null : length), Optional.ofNullable(scale == 0 ? null : scale));
-        boolean nullability = newField.nullable();
-        if (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.COLUMN_NULLABILITY_CHANGE))
-        {
-            nullability = newField.nullable() || oldField.nullable();
-        }
+        boolean nullability = newField.nullable() || oldField.nullable();
         //boolean uniqueness = !newField.isUnique() || !oldField.isUnique();
 
         //todo : how to handle default value, identity, uniqueness ?
@@ -337,9 +333,9 @@ public class SchemaEvolution
         final Set<String> modifiedFieldNames = modifiedFields.stream().map(Field::name).collect(Collectors.toSet());
 
         List<Field> evolvedFields = schema.fields()
-            .stream()
-            .filter(f -> !modifiedFieldNames.contains(f.name()))
-            .collect(Collectors.toList());
+                .stream()
+                .filter(f -> !modifiedFieldNames.contains(f.name()))
+                .collect(Collectors.toList());
 
         evolvedFields.addAll(modifiedFields);
 
@@ -348,7 +344,7 @@ public class SchemaEvolution
 
     // ingest mode visitors
 
-    private static final IngestModeVisitor<Set<String>> MAIN_TABLE_FIELDS_TO_IGNORE = new IngestModeVisitor<Set<String>>()
+    private static final IngestModeVisitor<Set<String>> STAGING_TABLE_FIELDS_TO_IGNORE = new IngestModeVisitor<Set<String>>()
     {
         @Override
         public Set<String> visitAppendOnly(AppendOnlyAbstract appendOnly)
@@ -378,8 +374,8 @@ public class SchemaEvolution
         public Set<String> visitUnitemporalDelta(UnitemporalDeltaAbstract unitemporalDelta)
         {
             return unitemporalDelta.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD)
-                .map(Collections::singleton)
-                .orElse(Collections.emptySet());
+                    .map(Collections::singleton)
+                    .orElse(Collections.emptySet());
         }
 
         @Override
@@ -392,35 +388,35 @@ public class SchemaEvolution
         public Set<String> visitBitemporalDelta(BitemporalDeltaAbstract bitemporalDelta)
         {
             return bitemporalDelta.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD)
-                .map(Collections::singleton)
-                .orElse(Collections.emptySet());
+                    .map(Collections::singleton)
+                    .orElse(Collections.emptySet());
         }
     };
 
-    private static final IngestModeVisitor<Set<String>> STAGING_TABLE_FIELDS_TO_IGNORE = new IngestModeVisitor<Set<String>>()
+    private static final IngestModeVisitor<Set<String>> MAIN_TABLE_FIELDS_TO_IGNORE = new IngestModeVisitor<Set<String>>()
     {
         @Override
         public Set<String> visitAppendOnly(AppendOnlyAbstract appendOnly)
         {
             return appendOnly.auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD)
-                .map(Collections::singleton)
-                .orElse(Collections.emptySet());
+                    .map(Collections::singleton)
+                    .orElse(Collections.emptySet());
         }
 
         @Override
         public Set<String> visitNontemporalSnapshot(NontemporalSnapshotAbstract nontemporalSnapshot)
         {
             return nontemporalSnapshot.auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD)
-                .map(Collections::singleton)
-                .orElse(Collections.emptySet());
+                    .map(Collections::singleton)
+                    .orElse(Collections.emptySet());
         }
 
         @Override
         public Set<String> visitNontemporalDelta(NontemporalDeltaAbstract nontemporalDelta)
         {
             return nontemporalDelta.auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD)
-                .map(Collections::singleton)
-                .orElse(Collections.emptySet());
+                    .map(Collections::singleton)
+                    .orElse(Collections.emptySet());
         }
 
         @Override

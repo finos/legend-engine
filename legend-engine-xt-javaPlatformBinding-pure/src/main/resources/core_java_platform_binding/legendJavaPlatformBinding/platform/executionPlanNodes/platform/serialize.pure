@@ -126,6 +126,7 @@ Class meta::pure::executionPlan::platformBinding::legendJava::platform::serializ
 {
 }
 
+//TODO: remove after moving propertySubTypeTrees inside propertyTrees in GraphFetchTree Model
 Class meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::SerializePropertyGraphFetchTree extends PropertyGraphFetchTree
 {
    fieldName : String[1];
@@ -144,10 +145,11 @@ Class meta::pure::executionPlan::platformBinding::legendJava::platform::serializ
          | $this.fieldSet->filter(t| $t.subType->isEmpty())->first()
       );
    }: GraphFetchTree[0..1];
+  
 
-   subTypeTrees() { 
+   propertySubTypeTrees() { 
       if($this.property == checkedProperty('value') || $this.property == checkedProperty('source'), 
-         | [], 
+         | $this.fieldSet->tail(), 
          | $this.fieldSet->filter(t| $t.subType->isNotEmpty());
       );
    }: GraphFetchTree[*];
@@ -163,14 +165,14 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
          let valueTree   = prepareTree($data, $chk.checkedOf)->toPropertyTree(checkedProperty('value'));
 
          if($chk.source->isEmpty(),
-            | ^RootGraphFetchTree<Any>(class=Checked, subTrees=[$defectsTree, $valueTree]),
+            | ^RootGraphFetchTree<Any>(class=Checked, subTrees=$defectsTree->concatenate($valueTree)),
             | let sourceTree  = prepareTree($data, $chk.source->toOne())->toPropertyTree(checkedProperty('source'));
-               ^RootGraphFetchTree<Any>(class=Checked, subTrees=[$defectsTree, $sourceTree, $valueTree]);
+               ^RootGraphFetchTree<Any>(class=Checked, subTrees=$defectsTree->concatenate($sourceTree)->concatenate( $valueTree));
             );
       },
       {simp:SimpleJavaType[1] | 
          let tree = $data->treeForClass($simp.pureType->cast(@meta::pure::metamodel::type::Class<Any>));
-         ^SerializeTopRootGraphFetchTree<Any>(class=$tree.class, subTrees=$tree.subTrees);
+         ^SerializeTopRootGraphFetchTree<Any>(class=$tree.class, subTrees=$tree.subTrees, subTypeTrees= $tree.subTypeTrees);
       }
    ]);
 
@@ -187,12 +189,18 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
    ));               
 }
 
-function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::toPropertyTree(root:RootGraphFetchTree<Any>[1], property:AbstractProperty<Any>[1]): PropertyGraphFetchTree[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::toPropertyTree(root:RootGraphFetchTree<Any>[1], property:AbstractProperty<Any>[1]): PropertyGraphFetchTree[*]
 {
-   $root->match([
+  let propertyTreesForRootSubTypeTrees = $root.subTypeTrees->map(s|
+          $root->match([
+            st: SerializeTopRootGraphFetchTree<Any>[1] | ^SerializeTopPropertyGraphFetchTree(property=$property, subType=$s.subTypeClass, subTrees=$s.subTrees) ,
+            r : RootGraphFetchTree<Any>[1]             | ^PropertyGraphFetchTree            (property=$property, subType=$s.subTypeClass, subTrees=$s.subTrees)
+        ]));
+
+  $root->match([
       st: SerializeTopRootGraphFetchTree<Any>[1] | ^SerializeTopPropertyGraphFetchTree(property=$property, subType=$root.class, subTrees=$root.subTrees),
       r : RootGraphFetchTree<Any>[1]             | ^PropertyGraphFetchTree            (property=$property, subType=$root.class, subTrees=$root.subTrees)
-   ]);
+  ])->concatenate($propertyTreesForRootSubTypeTrees);
 }
 
 function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::groupByFields(tree:GraphFetchTree[1]): GraphFetchTree[1]
@@ -255,9 +263,9 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
    print(if($debug.debug,|$debug.space+'treeSerialiseMethods '+$name+'\n', |''));
 
    let defaultTree  = $tree->match([spgft:SerializePropertyGraphFetchTree[1] | $spgft.defaultTree,  other:GraphFetchTree[1] | $tree ]);
-   let subTypeTrees = $tree->match([spgft:SerializePropertyGraphFetchTree[1] | $spgft.subTypeTrees, other:GraphFetchTree[1] | []    ])->cast(@PropertyGraphFetchTree);
+   let propertySubTypeTrees = $tree->match([spgft:SerializePropertyGraphFetchTree[1] | $spgft.propertySubTypeTrees(), other:GraphFetchTree[1] | []    ])->cast(@PropertyGraphFetchTree);
 
-   if($defaultTree->isNotEmpty() && $subTypeTrees->isEmpty(),
+   if($defaultTree->isNotEmpty() && $propertySubTypeTrees->isEmpty(),
       {|
          let method         = treeSerialiseMethod($jClass, $path, $class, $defaultTree->toOne(), $conventions, $debug);
          let subTreeMethods = $defaultTree.subTrees->cast(@SerializePropertyGraphFetchTree)
@@ -267,9 +275,9 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
       }
       ,
       {|
-         let indexed            = $subTypeTrees->toIndexed();
+         let indexed            = $propertySubTypeTrees->toIndexed();
          let subTypeMethods     = $indexed->map(ist| list(treeSerialiseMethods($jClass, $path->add('subType'+$ist.first->toString()), $ist.second.subType->toOne(), $ist.second, $conventions, $debug)));
-         let subTypesAndMethods = $subTypeTrees.subType->zip($subTypeMethods->map(l| $l.values->at(0).first));
+         let subTypesAndMethods = $propertySubTypeTrees.subType->zip($subTypeMethods->map(l| $l.values->at(0).first));
          
          let name          = treeSerialiseMethodName($path, $class, false, $conventions);
          let value         = j_parameter($conventions->className($class), 'value');

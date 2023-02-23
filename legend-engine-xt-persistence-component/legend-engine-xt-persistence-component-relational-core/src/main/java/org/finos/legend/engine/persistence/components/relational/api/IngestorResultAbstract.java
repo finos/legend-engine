@@ -41,5 +41,5 @@ public abstract class IngestorResultAbstract
 
     public abstract Datasets updatedDatasets();
 
-    public abstract Optional<List<String>> schemaEvolutionSqlPlan();
+    public abstract Optional<List<String>> schemaEvolutionSql();
 }
