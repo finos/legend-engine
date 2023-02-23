@@ -139,7 +139,8 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             }
 
             long start = System.currentTimeMillis();
-            String sql = ((RelationalExecutionActivity) activities.getLast()).sql;
+            RelationalExecutionActivity activity = ((RelationalExecutionActivity) activities.getLast());
+            String sql = activity.comment != null ? activity.comment.concat("\n").concat(activity.sql) : activity.sql;
             LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, sql).toString());
             this.resultSet = this.statement.executeQuery(sql);
             this.executedSQl = sql;

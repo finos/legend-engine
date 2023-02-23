@@ -16,6 +16,7 @@ package org.finos.legend.engine.query.pure.api.test.inMemory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutableManager;
+import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToJsonDefaultSerializer;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.model.ExecuteInput;
 import org.junit.Assert;
@@ -44,7 +45,7 @@ public class TestRelationalManagerOnExecution
         String json = TestExecutionUtility.responseAsString(response);
         response.close();
         Assert.assertTrue(StoreExecutableManager.INSTANCE.getExecutables(mockRequest.getSession().getId()).isEmpty());
-        assertEquals("{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"Inc Type\",\"type\":\"model::IncType\",\"relationalType\":\"VARCHAR(200)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select top 1000 \\\"root\\\".Inc as \\\"Inc Type\\\" from FirmTable as \\\"root\\\" where (\\\"root\\\".Inc = 'LLC')\"}], \"result\" : {\"columns\" : [\"Inc Type\"], \"rows\" : [{\"values\": [\"LLC\"]}]}}", json);
+        assertEquals("{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"Inc Type\",\"type\":\"model::IncType\",\"relationalType\":\"VARCHAR(200)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select top 1000 \\\"root\\\".Inc as \\\"Inc Type\\\" from FirmTable as \\\"root\\\" where (\\\"root\\\".Inc = 'LLC')\"}],\"result\":{\"columns\":[\"Inc Type\"],\"rows\":[{\"values\":[\"LLC\"]}]}}", RelationalResultToJsonDefaultSerializer.removeComment(json));
         StoreExecutableManager.INSTANCE.reset();
 
     }

@@ -19,9 +19,12 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.factory.Sets;
 import org.finos.legend.engine.external.format.flatdata.FlatDataExecutionExtension;
+import org.finos.legend.engine.external.format.flatdata.FlatDataRuntimeExtension;
 import org.finos.legend.engine.external.format.json.JsonExecutionExtension;
-import org.finos.legend.engine.external.format.xml.XmlExecutionExtension;
+import org.finos.legend.engine.external.format.json.JsonSchemaRuntimeExtension;
+import org.finos.legend.engine.external.format.xml.XsdRuntimeExtension;
 import org.finos.legend.engine.external.shared.runtime.ExternalFormatExecutionExtension;
+import org.finos.legend.engine.external.shared.runtime.ExternalFormatRuntimeExtension;
 import org.finos.legend.engine.language.pure.dsl.service.execution.AbstractServicePlanExecutor;
 import org.finos.legend.engine.plan.execution.extension.ExecutionExtension;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorBuilder;
@@ -46,9 +49,18 @@ public class TestExtensions
                 .with(ExternalFormatExecutionExtension.class)
                 .with(FlatDataExecutionExtension.class)
                 .with(JsonExecutionExtension.class)
-                .with(XmlExecutionExtension.class)
                 .with(ServiceStoreExecutionExtension.class);
         assertHasExtensions(expectedExtensions, ExecutionExtension.class);
+    }
+
+    @Test
+    public void testExternalFormatRuntimeExtensions()
+    {
+        MutableList<Class<? extends ExternalFormatRuntimeExtension>> expectedExtensions = Lists.mutable.<Class<? extends ExternalFormatRuntimeExtension>>empty()
+                .with(FlatDataRuntimeExtension.class)
+                .with(JsonSchemaRuntimeExtension.class)
+                .with(XsdRuntimeExtension.class);
+        assertHasExtensions(expectedExtensions, ExternalFormatRuntimeExtension.class);
     }
 
     @Test
