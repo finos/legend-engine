@@ -309,6 +309,16 @@ public class BaseTest
         h2Sink.executeStatement(loadSql);
     }
 
+    protected void loadStagingDataForDecimalIncome(String path) throws Exception
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+            "INSERT INTO \"TEST\".\"staging\"(id, name, income, start_time ,expiry_date, digest) " +
+            "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", DECIMAL), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE), digest" +
+            " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, digest', NULL )";
+        h2Sink.executeStatement(loadSql);
+    }
+
     protected void loadStagingDataForWithoutName(String path) throws Exception
     {
         validateFileExists(path);

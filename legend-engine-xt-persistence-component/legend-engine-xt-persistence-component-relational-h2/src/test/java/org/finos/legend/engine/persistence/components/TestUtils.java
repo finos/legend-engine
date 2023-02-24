@@ -110,6 +110,7 @@ public class TestUtils
     public static Field income = Field.builder().name(incomeName).type(FieldType.of(DataType.BIGINT, Optional.empty(), Optional.empty())).fieldAlias(incomeName).build();
     public static Field notNullableIntIncome = Field.builder().name(incomeName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).nullable(false).fieldAlias(incomeName).build();
     public static Field nullableIntIncome = Field.builder().name(incomeName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(incomeName).build();
+    public static Field decimalIncome = Field.builder().name(incomeName).type(FieldType.of(DataType.DECIMAL, 10, 2)).fieldAlias(incomeName).build();
     public static Field startTime = Field.builder().name(startTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(startTimeName).build();
     public static Field expiryDate = Field.builder().name(expiryDateName).type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).fieldAlias(expiryDateName).build();
     public static Field date = Field.builder().name(dateName).type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(dateName).build();
@@ -834,6 +835,22 @@ public class TestUtils
             .build();
     }
 
+    public static DatasetDefinition getSchemaEvolutionDataTypeConversionAndDataTypeSizeChangeStagingTable()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(decimalIncome)
+                .addFields(startTime)
+                .addFields(expiryDate)
+                .addFields(digest)
+                .build())
+            .build();
+    }
+
     public static DatasetDefinition getSchemaEvolutionMakeMainColumnNullableStagingTable()
     {
         return DatasetDefinition.builder()
@@ -928,6 +945,20 @@ public class TestUtils
     {
         List<Map<String, Object>> result = sink.executeQuery("SELECT IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='" + tableName + "' and COLUMN_NAME ='" + columnName + "'");
         return result.get(0).get("IS_NULLABLE").toString();
+    }
+
+    // This is to check the actual database table - the length (precision) of the column data type
+    public static int getColumnDataTypeLengthFromTable(JdbcHelper sink, String tableName, String columnName)
+    {
+        List<Map<String, Object>> result = sink.executeQuery("SELECT NUMERIC_PRECISION FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='" + tableName + "' and COLUMN_NAME ='" + columnName + "'");
+        return Integer.parseInt(result.get(0).get("NUMERIC_PRECISION").toString());
+    }
+
+    // This is to check the actual database table - the scale of the column data type
+    public static int getColumnDataTypeScaleFromTable(JdbcHelper sink, String tableName, String columnName)
+    {
+        List<Map<String, Object>> result = sink.executeQuery("SELECT NUMERIC_SCALE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='" + tableName + "' and COLUMN_NAME ='" + columnName + "'");
+        return Integer.parseInt(result.get(0).get("NUMERIC_SCALE").toString());
     }
 
     // This is to check the actual database table - whether data types are correct

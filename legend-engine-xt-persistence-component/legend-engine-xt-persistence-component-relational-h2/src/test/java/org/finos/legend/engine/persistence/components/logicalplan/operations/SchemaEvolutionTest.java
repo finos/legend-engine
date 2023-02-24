@@ -42,6 +42,8 @@ import static org.finos.legend.engine.persistence.components.TestUtils.createDat
 import static org.finos.legend.engine.persistence.components.TestUtils.digestName;
 import static org.finos.legend.engine.persistence.components.TestUtils.expiryDateName;
 import static org.finos.legend.engine.persistence.components.TestUtils.getColumnDataTypeFromTable;
+import static org.finos.legend.engine.persistence.components.TestUtils.getColumnDataTypeLengthFromTable;
+import static org.finos.legend.engine.persistence.components.TestUtils.getColumnDataTypeScaleFromTable;
 import static org.finos.legend.engine.persistence.components.TestUtils.getIsColumnNullableFromTable;
 import static org.finos.legend.engine.persistence.components.TestUtils.idName;
 import static org.finos.legend.engine.persistence.components.TestUtils.incomeName;
@@ -212,6 +214,7 @@ class SchemaEvolutionTest extends BaseTest
         assertTableColumnsEquals(Arrays.asList(schema), actualTableData);
         Assertions.assertEquals("BIGINT", getColumnDataTypeFromTable(h2Sink.connection(), testDatabaseName, testSchemaName, mainTableName, incomeName));
         Assertions.assertEquals("VARCHAR", getColumnDataTypeFromTable(h2Sink.connection(), testDatabaseName, testSchemaName, mainTableName, nameName));
+        Assertions.assertEquals(256, getColumnDataTypeLengthFromTable(h2Sink, mainTableName, nameName));
         // 4. Verify schema changes in model objects
         assertUpdatedDataset(createDatasetWithUpdatedField(mainTable, nameWithMoreLength), result.updatedDatasets().mainDataset());
 
@@ -340,6 +343,67 @@ class SchemaEvolutionTest extends BaseTest
         datasets = result.updatedDatasets();
         // 2. Load staging table
         loadBasicStagingData(dataPass2);
+        // 3. Execute plans and verify results
+        expectedStats = new HashMap<>();
+        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 1);
+        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, schemaEvolutionCapabilitySet);
+    }
+
+    @Test
+    void testDataTypeConversionAndDataTypeSizeChange() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getBasicMainTable();
+        DatasetDefinition stagingTable = TestUtils.getSchemaEvolutionDataTypeConversionAndDataTypeSizeChangeStagingTable();
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+        // Generate the milestoning object
+        AppendOnly ingestMode = AppendOnly.builder()
+            .digestField(digestName)
+            .deduplicationStrategy(FilterDuplicates.builder().build())
+            .auditing(NoAuditing.builder().build())
+            .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).enableSchemaEvolution(true).build();
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_CONVERSION);
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE);
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+
+        // ------------ Perform Pass1 (Schema Evolution) ------------------------
+        String dataPass1 = basePathForInput + "data_type_conversion_and_data_type_size_change_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "data_type_conversion_and_data_type_size_change_expected_pass1.csv";
+        // 1. Load staging table
+        loadStagingDataForDecimalIncome(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = new HashMap<>();
+        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
+        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        IngestorResult result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, schemaEvolutionCapabilitySet);
+        // 3. Verify schema changes in database
+        List<Map<String, Object>> actualTableData = h2Sink.executeQuery("select * from \"TEST\".\"main\"");
+        assertTableColumnsEquals(Arrays.asList(schema), actualTableData);
+        Assertions.assertEquals("DECIMAL", getColumnDataTypeFromTable(h2Sink.connection(), testDatabaseName, testSchemaName, mainTableName, incomeName));
+        Assertions.assertEquals(10, getColumnDataTypeLengthFromTable(h2Sink, mainTableName, incomeName));
+        Assertions.assertEquals(2, getColumnDataTypeScaleFromTable(h2Sink, mainTableName, incomeName));
+        // 4. Verify schema changes in model objects
+        assertUpdatedDataset(stagingTable, result.updatedDatasets().mainDataset());
+
+        // ------------ Perform Pass2 ------------------------
+        String dataPass2 = basePathForInput + "data_type_conversion_and_data_type_size_change_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "data_type_conversion_and_data_type_size_change_expected_pass2.csv";
+        // 1. Update datasets
+        datasets = result.updatedDatasets();
+        // 2. Load staging table
+        loadStagingDataForDecimalIncome(dataPass2);
         // 3. Execute plans and verify results
         expectedStats = new HashMap<>();
         expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 1);
