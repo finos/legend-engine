@@ -191,7 +191,7 @@ public class SchemaEvolution
                 {
                     if (matchedMainField.nullable() != stagingField.nullable())
                     {
-                        Field newField = createNewField(matchedMainField, stagingField, matchedMainField.type().length().orElse(0), matchedMainField.type().scale().orElse(0));
+                        Field newField = createNewField(matchedMainField, stagingField, matchedMainField.type().length().orElse(-1), matchedMainField.type().scale().orElse(-1));
                         evolveDataType(newField, matchedMainField, mainDataset, operations, modifiedFields);
                     }
                 }
@@ -210,8 +210,7 @@ public class SchemaEvolution
                 operations.add(Alter.of(mainDataset, Alter.AlterOperation.CHANGE_DATATYPE, newField, Optional.empty()));
                 modifiedFields.add(newField);
             }
-            // todo : tinyint(16) -> int (8) and nullability changes. does above statement handle both ?
-            else if (mainDataField.nullable() != newField.nullable())
+            if (mainDataField.nullable() != newField.nullable())
             {
                 alterColumnWithNullable(newField, mainDataset, operations, modifiedFields);
             }
@@ -223,7 +222,6 @@ public class SchemaEvolution
         if (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.COLUMN_NULLABILITY_CHANGE))
         {
             operations.add(Alter.of(mainDataset, Alter.AlterOperation.NULLABLE_COLUMN, newField, Optional.empty()));
-            newField.withNullable(true);
             modifiedFields.add(newField);
         }
         else
@@ -243,22 +241,27 @@ public class SchemaEvolution
             if (!stagingFieldNames.contains(mainFieldName))
             {
                 //Modify the column to nullable in main table
-                alterColumnWithNullable(mainField, mainDataset, operations, modifiedFields);
+                if (!mainField.nullable())
+                {
+                    mainField = mainField.withNullable(true);
+                    alterColumnWithNullable(mainField, mainDataset, operations, modifiedFields);
+                }
             }
         }
         return operations;
     }
 
+    //new field = field to replace main column (datatype)
+    //old field = reference field to compare sizing/nullability requirements
     private Field evolveFieldLength(Field oldField, Field newField)
     {
-        int length = 0;
-        int scale = 0;
+        int length = newField.type().length().orElse(-1);
+        int scale = newField.type().scale().orElse(-1);
         if (isSizingChangesRequired(oldField, newField))
         {
             if (sink.capabilities().contains(Capability.DATA_TYPE_SIZE_CHANGE)
                     && (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE)))
             {
-                //todo : double -> decimal(10,0) doesn't go thru due to below conditions
                 //If the oldField and newField have a length associated, pick the greater length
                 if (oldField.type().length().isPresent() && newField.type().length().isPresent())
                 {
@@ -295,9 +298,9 @@ public class SchemaEvolution
         return createNewField(newField, oldField, length, scale);
     }
 
-    private boolean isSizingChangesRequired(Field oldField, Field newField)
+    protected boolean isSizingChangesRequired(Field oldField, Field newField)
     {
-        if (oldField.type().length().isPresent() && newField.type().length().isPresent() && oldField.type().length() != newField.type().length())
+        if (oldField.type().length().isPresent() && newField.type().length().isPresent() && oldField.type().length().get() > newField.type().length().get())
         {
             return true;
         }
@@ -306,7 +309,7 @@ public class SchemaEvolution
         {
             return true;
         }
-        if (oldField.type().scale().isPresent() && newField.type().scale().isPresent() && oldField.type().scale() != newField.type().scale())
+        if (oldField.type().scale().isPresent() && newField.type().scale().isPresent() && oldField.type().scale().get() > newField.type().scale().get())
         {
             return true;
         }
@@ -317,9 +320,9 @@ public class SchemaEvolution
 
     private Field createNewField(Field newField, Field oldField, int length, int scale)
     {
-        FieldType modifiedFieldType = FieldType.of(newField.type().dataType(), Optional.ofNullable(length == 0 ? null : length), Optional.ofNullable(scale == 0 ? null : scale));
+        FieldType modifiedFieldType = FieldType.of(newField.type().dataType(), Optional.ofNullable(length == -1 ? null : length), Optional.ofNullable(scale == -1 ? null : scale));
+        //todo : capability check
         boolean nullability = newField.nullable() || oldField.nullable();
-        //boolean uniqueness = !newField.isUnique() || !oldField.isUnique();
 
         //todo : how to handle default value, identity, uniqueness ?
         return Field.builder().name(newField.name()).primaryKey(newField.primaryKey())
