@@ -90,7 +90,7 @@ public class SchemaEvolution
     public SchemaEvolutionResult buildLogicalPlanForSchemaEvolution(Dataset mainDataset, Dataset stagingDataset)
     {
         List<Operation> operations = new ArrayList<>();
-        List<Field> modifiedFields = new ArrayList<>();
+        Set<Field> modifiedFields = new HashSet<>();
         validatePrimaryKeys(mainDataset, stagingDataset);
         operations.addAll(stagingToMainTableColumnMatch(mainDataset, stagingDataset, ingestMode.accept(STAGING_TABLE_FIELDS_TO_IGNORE), modifiedFields));
         operations.addAll(mainToStagingTableColumnMatch(mainDataset, stagingDataset, ingestMode.accept(MAIN_TABLE_FIELDS_TO_IGNORE), modifiedFields));
@@ -116,7 +116,7 @@ public class SchemaEvolution
     private List<Operation> stagingToMainTableColumnMatch(Dataset mainDataset,
                                                           Dataset stagingDataset,
                                                           Set<String> fieldsToIgnore,
-                                                          List<Field> modifiedFields)
+                                                          Set<Field> modifiedFields)
     {
         List<Operation> operations = new ArrayList<>();
         List<Field> mainFields = mainDataset.schema().fields();
@@ -189,7 +189,7 @@ public class SchemaEvolution
                 //If Field types are same, we check to see if nullability needs any evolution
                 else
                 {
-                    if (matchedMainField.nullable() != stagingField.nullable())
+                    if (!matchedMainField.nullable() && stagingField.nullable())
                     {
                         Field newField = createNewField(matchedMainField, stagingField, matchedMainField.type().length().orElse(-1), matchedMainField.type().scale().orElse(-1));
                         evolveDataType(newField, matchedMainField, mainDataset, operations, modifiedFields);
@@ -201,7 +201,7 @@ public class SchemaEvolution
     }
 
     //Create alter statements if newField is different from mainDataField
-    private void evolveDataType(Field newField, Field mainDataField, Dataset mainDataset, List<Operation> operations, List<Field> modifiedFields)
+    private void evolveDataType(Field newField, Field mainDataField, Dataset mainDataset, List<Operation> operations, Set<Field> modifiedFields)
     {
         if (!mainDataField.equals(newField))
         {
@@ -217,7 +217,7 @@ public class SchemaEvolution
         }
     }
 
-    private void alterColumnWithNullable(Field newField, Dataset mainDataset, List<Operation> operations, List<Field> modifiedFields)
+    private void alterColumnWithNullable(Field newField, Dataset mainDataset, List<Operation> operations, Set<Field> modifiedFields)
     {
         if (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.COLUMN_NULLABILITY_CHANGE))
         {
@@ -230,7 +230,7 @@ public class SchemaEvolution
         }
     }
 
-    private List<Operation> mainToStagingTableColumnMatch(Dataset mainDataset, Dataset stagingDataset, Set<String> fieldsToIgnore, List<Field> modifiedFields)
+    private List<Operation> mainToStagingTableColumnMatch(Dataset mainDataset, Dataset stagingDataset, Set<String> fieldsToIgnore, Set<Field> modifiedFields)
     {
         List<Operation> operations = new ArrayList<>();
         List<Field> mainFields = mainDataset.schema().fields();
@@ -331,7 +331,7 @@ public class SchemaEvolution
                 .defaultValue(newField.defaultValue()).type(modifiedFieldType).build();
     }
 
-    private SchemaDefinition evolveSchemaDefinition(SchemaDefinition schema, List<Field> modifiedFields)
+    private SchemaDefinition evolveSchemaDefinition(SchemaDefinition schema, Set<Field> modifiedFields)
     {
         final Set<String> modifiedFieldNames = modifiedFields.stream().map(Field::name).collect(Collectors.toSet());
 
