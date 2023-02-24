@@ -30,8 +30,8 @@ public abstract class TestSQLEmbedded
         test("assertEquals('foo', meta::legend::compileVS('#SQL{SELECT * FROM foo}#')" +
                 "->cast(@meta::external::query::sql::metamodel::Query).queryBody" +
                 "->cast(@meta::external::query::sql::metamodel::QuerySpecification).from" +
-                "->cast(@meta::external::query::sql::metamodel::Table).name" +
-                "->at(0).value)");
+                "->cast(@meta::external::query::sql::metamodel::Table).name.parts" +
+                "->at(0))");
     }
 
     private void test(String code)
