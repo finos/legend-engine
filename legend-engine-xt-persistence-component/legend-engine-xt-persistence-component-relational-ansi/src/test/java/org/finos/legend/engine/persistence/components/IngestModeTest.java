@@ -81,6 +81,10 @@ public class IngestModeTest
     protected Field descriptionModified = Field.builder().name("description").type(FieldType.of(DataType.VARCHAR, 64, null)).build();
     protected Field decimalCol = Field.builder().name("decimal_col").type(FieldType.of(DataType.DECIMAL, 10, 0)).build();
     protected Field decimalColModified = Field.builder().name("decimal_col").type(FieldType.of(DataType.DECIMAL, 10, 2)).build();
+    protected Field countInt = Field.builder().name("count").type(FieldType.of(DataType.INT, 4, null)).build();
+    protected Field countIntModified = Field.builder().name("count").type(FieldType.of(DataType.INT, 2, null)).build();
+    protected Field countTinyInt = Field.builder().name("count").type(FieldType.of(DataType.TINYINT, 2, null)).build();
+    protected Field countTinyIntModified = Field.builder().name("count").type(FieldType.of(DataType.TINYINT, 4, null)).build();
 
 
     // Bitemporal Columns:
@@ -120,7 +124,6 @@ public class IngestModeTest
             .addFields(amount)
             .addFields(bizDate)
             .build();
-
     protected SchemaDefinition baseTableExplicitDatatypeChangeSchema = SchemaDefinition.builder()
             .addFields(id)
             .addFields(name)
@@ -151,6 +154,13 @@ public class IngestModeTest
             .addFields(nonNullableBizDate)
             .build();
 
+    protected SchemaDefinition baseTableSchemaWithSingleNonNullableColumn = SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(amount)
+            .addFields(nonNullableBizDate)
+            .build();
+
     protected SchemaDefinition baseTableShortenedSchema = SchemaDefinition.builder()
             .addFields(id)
             .addFields(name)
@@ -163,6 +173,13 @@ public class IngestModeTest
             .addFields(amount)
             .addFields(bizDate)
             .addFields(descriptionModified)
+            .build();
+
+    protected SchemaDefinition stagingTableDecimalLength = SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(amountDecimal)
+            .addFields(bizDate)
             .build();
 
     protected SchemaDefinition stagingTableEvolvedScale = SchemaDefinition.builder()
@@ -394,6 +411,7 @@ public class IngestModeTest
     protected String expectedSchemaEvolutionAddColumnWithUpperCase = "ALTER TABLE \"MYDB\".\"MAIN\" ADD COLUMN \"BIZ_DATE\" DATE";
 
     protected String expectedSchemaEvolutionModifySize = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"description\" VARCHAR(64)";
+    protected String expectedSchemaEvolutionModifyDecimal = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"amount\" DECIMAL(10,0)";
     protected String expectedSchemaEvolutionModifyScale = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"decimal_col\" DECIMAL(10,2)";
 
     protected String expectedSchemaEvolutionModifySizeWithUpperCase = "ALTER TABLE \"MYDB\".\"MAIN\" ALTER COLUMN \"DESCRIPTION\" VARCHAR(64)";

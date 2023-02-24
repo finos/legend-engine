@@ -32,12 +32,7 @@ import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapabi
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -526,7 +521,7 @@ public class SchemaEvolutionTest extends IngestModeTest
     {
         Dataset mainTable = DatasetDefinition.builder()
                 .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-                .schema(baseTableSchema)
+                .schema(baseTableSchemaWithSingleNonNullableColumn)
                 .build();
 
         Dataset stagingTable = DatasetDefinition.builder()
@@ -555,7 +550,7 @@ public class SchemaEvolutionTest extends IngestModeTest
     {
         Dataset mainTable = DatasetDefinition.builder()
                 .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-                .schema(baseTableSchema)
+                .schema(baseTableSchemaWithSingleNonNullableColumn)
                 .build();
 
         Dataset stagingTable = DatasetDefinition.builder()
@@ -577,5 +572,47 @@ public class SchemaEvolutionTest extends IngestModeTest
         {
             Assertions.assertEquals("Column \"biz_date\" couldn't be made non-nullable since user capability does not allow it", e.getMessage());
         }
+    }
+
+    //Column missing in staging table is already nullable column in main table --> no change require
+    @Test
+    void testSnapshotMilestoningWithNullableColumnMissingInStagingTable()
+    {
+        Dataset mainTable = DatasetDefinition.builder()
+                .database(mainDbName).name(mainTableName).alias(mainTableAlias)
+                .schema(baseTableSchema)
+                .build();
+
+        Dataset stagingTable = DatasetDefinition.builder()
+                .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
+                .schema(stagingTableShortenedSchema)
+                .build();
+
+        NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet);
+        SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
+        RelationalTransformer transformer = new RelationalTransformer(relationalSink);
+        SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
+        List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
+        Assertions.assertEquals(0, sqlsForSchemaEvolution.size());
+    }
+
+    @Test
+    public void testIsSizingChangesRequired()
+    {
+        NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
+        SchemaEvolution evolution = new SchemaEvolution(relationalSink, ingestMode, Collections.emptySet());
+        // needs no sizing change
+        //old field TINYINT(2)
+        //main field INT (4)
+        //new field INT(4)
+        Assertions.assertEquals(false, evolution.isSizingChangesRequired(countTinyInt, countInt));
+
+        // needs sizing change
+        //old field (main) TINYINT (4)
+        //staging field INT(2)
+        //new field INT (2) --> INT (4)
+        Assertions.assertEquals(true, evolution.isSizingChangesRequired(countTinyIntModified, countIntModified));
     }
 }
