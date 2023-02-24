@@ -205,6 +205,7 @@ public class SchemaEvolution
     {
         if (!mainDataField.equals(newField))
         {
+            // If there are any sizing changes, make sure user capability allows it before creating the alter statement
             if (!mainDataField.type().length().orElse(-1).equals(newField.type().length().orElse(-1)) ||
                     !mainDataField.type().scale().orElse(-1).equals(newField.type().scale().orElse(-1)))
             {
@@ -214,11 +215,13 @@ public class SchemaEvolution
                     throw new IncompatibleSchemaChangeException(String.format("Data sizing changes couldn't be performed on column \"%s\" since user capability does not allow it", newField.name()));
                 }
             }
+            // Create the alter statement for changing the data type and sizing as required
             if (!mainDataField.type().equals(newField.type()))
             {
                 operations.add(Alter.of(mainDataset, Alter.AlterOperation.CHANGE_DATATYPE, newField, Optional.empty()));
                 modifiedFields.add(newField);
             }
+            // Create the alter statement for changing the column nullability
             if (mainDataField.nullable() != newField.nullable())
             {
                 alterColumnWithNullable(newField, mainDataset, operations, modifiedFields);
