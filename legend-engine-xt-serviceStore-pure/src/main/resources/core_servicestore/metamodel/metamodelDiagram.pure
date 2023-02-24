@@ -17,7 +17,7 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
 {
     TypeView ServiceStore_$_0(
         type=meta::external::store::service::metamodel::ServiceStore,
-        position=(309.00000, 117.00000),
+        position=(310.00000, -12.00000),
         width=308.56201,
         height=72.00000,
         stereotypesVisible=true,
@@ -27,11 +27,11 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView Service_$_3(
-        type=meta::external::store::service::metamodel::Service,
-        position=(481.00000, 372.00000),
-        width=235.19287,
-        height=58.00000,
+    TypeView ServiceStoreElement_$_1(
+        type=meta::external::store::service::metamodel::ServiceStoreElement,
+        position=(353.00000, 155.00000),
+        width=223.56982,
+        height=100.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
@@ -39,11 +39,23 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView ComplexTypeReference_$_10(
-        type=meta::external::store::service::metamodel::ComplexTypeReference,
-        position=(113.00000, 759.00000),
-        width=155.82617,
-        height=58.00000,
+    TypeView cview_5(
+        type=meta::external::store::service::metamodel::ServiceGroup,
+        position=(115.24883, 336.50000),
+        width=308.56201,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_6(
+        type=meta::external::store::service::metamodel::Service,
+        position=(533.24883, 333.50000),
+        width=149.54541,
+        height=44.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
@@ -53,7 +65,7 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
 
     TypeView RootServiceInstanceSetImplementation_$_13(
         type=meta::external::store::service::metamodel::mapping::RootServiceInstanceSetImplementation,
-        position=(1658.00000, 163.00000),
+        position=(1668.00000, -6.00000),
         width=246.06055,
         height=58.00000,
         stereotypesVisible=true,
@@ -63,46 +75,22 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
         color=#FFFFCC,
         lineWidth=1.0)
 
-     TypeView ServiceParameter_$_4(
-        type=meta::external::store::service::metamodel::ServiceParameter,
-        position=(620.00000, 476.00000),
-        width=174.66602,
-        height=100.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView SerializationFormat_$_12(
-        type=meta::external::store::service::metamodel::SerializationFormat,
-        position=(775.00000, 628.00000),
-        width=139.19531,
-        height=60.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView ServiceMapping_$_14(
-        type=meta::external::store::service::metamodel::mapping::ServiceMapping,
-        position=(1726.00000, 379.00000),
-        width=133.07227,
-        height=44.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
     TypeView ServiceRequestBuildInfo_$_15(
         type=meta::external::store::service::metamodel::mapping::ServiceRequestBuildInfo,
-        position=(1704.03028, 491.00000),
+        position=(1717.03028, 453.00000),
         width=162.03125,
+        height=36.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView ServiceRequestParametersBuildInfo_$_17(
+        type=meta::external::store::service::metamodel::mapping::ServiceRequestParametersBuildInfo,
+        position=(1924.03028, 564.00000),
+        width=227.41016,
         height=36.00000,
         stereotypesVisible=true,
         attributesVisible=true,
@@ -113,7 +101,7 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
 
     TypeView ServiceRequestBodyBuildInfo_$_16(
         type=meta::external::store::service::metamodel::mapping::ServiceRequestBodyBuildInfo,
-        position=(1480.03028, 591.00000),
+        position=(1548.03028, 556.00000),
         width=192.03125,
         height=44.00000,
         stereotypesVisible=true,
@@ -123,22 +111,22 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView ServiceRequestParametersBuildInfo_$_17(
-        type=meta::external::store::service::metamodel::mapping::ServiceRequestParametersBuildInfo,
-        position=(1791.03028, 589.00000),
-        width=227.41016,
-        height=36.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
     TypeView ServiceRequestParameterBuildInfo_$_18(
         type=meta::external::store::service::metamodel::mapping::ServiceRequestParameterBuildInfo,
-        position=(1799.03028, 713.00000),
-        width=220.73633,
+        position=(1928.03028, 691.00000),
+        width=226.70117,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView ServiceMapping_$_14(
+        type=meta::external::store::service::metamodel::mapping::ServiceMapping,
+        position=(1729.00000, 338.00000),
+        width=133.07227,
         height=44.00000,
         stereotypesVisible=true,
         attributesVisible=true,
@@ -147,70 +135,10 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_3(
-        type=meta::external::store::service::metamodel::SecuritySchemeRequirement,
-        position=(959.24883, 430.50000),
-        width=186.72852,
-        height=44.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_4(
-        type=meta::external::store::service::metamodel::SingleSecuritySchemeRequirement,
-        position=(1063.24883, 513.50000),
-        width=222.73438,
-        height=44.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView SecurityScheme_$_11(
-        type=meta::external::store::service::metamodel::SecurityScheme,
-        position=(1132.00000, 675.00000),
-        width=113.38086,
-        height=44.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_2(
-         type=meta::external::store::service::metamodel::HttpSecurityScheme,
-         position=(1035.24883, 750.50000),
-         width=156.92529,
-         height=58.00000,
-         stereotypesVisible=true,
-         attributesVisible=true,
-         attributeStereotypesVisible=true,
-         attributeTypesVisible=true,
-         color=#FFFFCC,
-         lineWidth=1.0)
-
-    TypeView cview_1(
-         type=meta::external::store::service::metamodel::ApiKeySecurityScheme,
-         position=(1206.24883, 746.50000),
-         width=167.90381,
-         height=58.00000,
-         stereotypesVisible=true,
-         attributesVisible=true,
-         attributeStereotypesVisible=true,
-         attributeTypesVisible=true,
-         color=#FFFFCC,
-         lineWidth=1.0)
-
-   TypeView TypeReference_$_5(
-        type=meta::external::store::service::metamodel::TypeReference,
-        position=(416.00000, 616.00000),
-        width=105.14844,
+    TypeView ComplexTypeReference_$_10(
+        type=meta::external::store::service::metamodel::ComplexTypeReference,
+        position=(18.00000, 638.00000),
+        width=155.82617,
         height=58.00000,
         stereotypesVisible=true,
         attributesVisible=true,
@@ -221,7 +149,7 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
 
     TypeView BooleanTypeReference_$_6(
         type=meta::external::store::service::metamodel::BooleanTypeReference,
-        position=(296.00000, 767.00000),
+        position=(85.00000, 792.00000),
         width=152.48633,
         height=36.00000,
         stereotypesVisible=true,
@@ -233,7 +161,7 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
 
     TypeView FloatTypeReference_$_7(
         type=meta::external::store::service::metamodel::FloatTypeReference,
-        position=(463.00000, 768.00000),
+        position=(258.00000, 790.00000),
         width=133.81250,
         height=36.00000,
         stereotypesVisible=true,
@@ -243,11 +171,35 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView IntegerTypeReference_$_8(
+    TypeView TypeReference_$_5(
+        type=meta::external::store::service::metamodel::TypeReference,
+        position=(360.00000, 624.00000),
+        width=105.14844,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView ServiceParameter_$_4(
+        type=meta::external::store::service::metamodel::ServiceParameter,
+        position=(608.00000, 481.00000),
+        width=174.66602,
+        height=100.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_7(
         type=meta::external::store::service::metamodel::IntegerTypeReference,
-        position=(623.00000, 765.00000),
+        position=(402.24883, 792.50000),
         width=145.15625,
-        height=36.00000,
+        height=30.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
@@ -257,7 +209,7 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
 
     TypeView StringTypeReference_$_9(
         type=meta::external::store::service::metamodel::StringTypeReference,
-        position=(782.00000, 768.00000),
+        position=(564.00000, 791.00000),
         width=139.81250,
         height=36.00000,
         stereotypesVisible=true,
@@ -267,11 +219,11 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
         color=#FFFFCC,
         lineWidth=1.0)
 
-   TypeView ServiceStoreElement_$_1(
-        type=meta::external::store::service::metamodel::ServiceStoreElement,
-        position=(264.00000, 234.00000),
-        width=223.56982,
-        height=86.00000,
+    TypeView SerializationFormat_$_12(
+        type=meta::external::store::service::metamodel::SerializationFormat,
+        position=(623.00000, 628.00000),
+        width=139.19531,
+        height=60.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
@@ -279,10 +231,10 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
         color=#FFFFCC,
         lineWidth=1.0)
 
-  TypeView ServiceGroup_$_2(
-        type=meta::external::store::service::metamodel::ServiceGroup,
-        position=(139.00000, 404.00000),
-        width=308.56201,
+    TypeView cview_8(
+        type=meta::external::store::service::metamodel::SingleSecuritySchemeRequirement,
+        position=(860.24883, 546.50000),
+        width=222.73438,
         height=44.00000,
         stereotypesVisible=true,
         attributesVisible=true,
@@ -291,91 +243,160 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
         color=#FFFFCC,
         lineWidth=1.0)
 
+    TypeView cview_9(
+        type=meta::external::store::service::metamodel::MultiSecuritySchemeRequirement,
+        position=(1224.24883, 553.50000),
+        width=214.71875,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_3(
+        type=meta::external::store::service::metamodel::SecuritySchemeRequirement,
+        position=(1046.24883, 419.50000),
+        width=186.72852,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView SecurityScheme_$_11(
+        type=meta::external::store::service::metamodel::SecurityScheme,
+        position=(916.00000, 659.00000),
+        width=113.38086,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_1(
+        type=meta::external::store::service::metamodel::ApiKeySecurityScheme,
+        position=(816.24883, 781.50000),
+        width=167.90381,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_10(
+        type=meta::external::store::service::metamodel::HttpSecurityScheme,
+        position=(1006.24883, 781.50000),
+        width=156.92529,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
     GeneralizationView gview_0(
-        source=ServiceGroup_$_2,
-        target=ServiceStoreElement_$_1,
-        points=[(293.28101,426.00000),(378.02930,277.00000),(216.34863,400.00000),(375.78491,277.00000)],
+        source=BooleanTypeReference_$_6,
+        target=TypeReference_$_5,
+        points=[(161.24316,810.00000),(412.87442,655.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
     GeneralizationView gview_1(
-        source=Service_$_3,
-        target=ServiceStoreElement_$_1,
-        points=[(598.59644,401.00000),(515.74883,371.00000),(378.02930,277.00000),(554.27686,396.00000),(375.78491,277.00000)],
+        source=FloatTypeReference_$_7,
+        target=TypeReference_$_5,
+        points=[(324.15508,807.00000),(412.57422,653.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
     GeneralizationView gview_2(
-        source=BooleanTypeReference_$_6,
+        source=StringTypeReference_$_9,
         target=TypeReference_$_5,
-        points=[(372.24316,785.00000),(468.87442,647.00000)],
+        points=[(633.90625,809.00000),(412.87442,655.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
     GeneralizationView gview_3(
-        source=FloatTypeReference_$_7,
+        source=ComplexTypeReference_$_10,
         target=TypeReference_$_5,
-        points=[(529.15508,785.00000),(468.57422,645.00000)],
+        points=[(95.91309,656.00000),(412.87422,655.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
     GeneralizationView gview_4(
-        source=IntegerTypeReference_$_8,
-        target=TypeReference_$_5,
-        points=[(695.57813,783.00000),(508.74883,688.00000),(511.54903,673.00000)],
+        source=cview_1,
+        target=SecurityScheme_$_11,
+        points=[(900.20074,810.50000),(972.69043,681.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
     GeneralizationView gview_5(
-        source=StringTypeReference_$_9,
-        target=TypeReference_$_5,
-        points=[(851.90625,786.00000),(468.87442,647.00000)],
+        source=cview_5,
+        target=ServiceStoreElement_$_1,
+        points=[(269.52984,358.50000),(464.78491,205.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
     GeneralizationView gview_6(
-        source=ComplexTypeReference_$_10,
-        target=TypeReference_$_5,
-        points=[(190.91309,777.00000),(468.87422,647.00000)],
+        source=cview_6,
+        target=ServiceStoreElement_$_1,
+        points=[(608.02154,355.50000),(464.78491,205.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-     GeneralizationView gview_7(
-        source=cview_1,
-        target=SecurityScheme_$_11,
-        points=[(1290.20074,775.50000),(1188.69043,697.00000)],
+    GeneralizationView gview_7(
+        source=cview_7,
+        target=TypeReference_$_5,
+        points=[(474.82696,807.50000),(412.57422,653.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
     GeneralizationView gview_8(
-        source=cview_2,
-        target=SecurityScheme_$_11,
-        points=[(1096.71148,760.50000),(1150.91550,720.00000),(1188.69043,697.00000)],
+        source=cview_8,
+        target=cview_3,
+        points=[(971.61602,568.50000),(1139.61309,441.50000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
     GeneralizationView gview_9(
-        source=cview_4,
+        source=cview_9,
         target=cview_3,
-        points=[(1107.24883,517.50000),(1052.61309,452.50000)],
+        points=[(1331.60821,568.50000),(1139.61309,441.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_10(
+        source=cview_10,
+        target=SecurityScheme_$_11,
+        points=[(1084.71148,810.50000),(972.69043,681.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -385,7 +406,7 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
         property=meta::external::store::service::metamodel::ServiceStoreElement.owner,
         source=ServiceStoreElement_$_1,
         target=ServiceStore_$_0,
-        points=[(375.78492,277.00000),(463.28101,153.00000)],
+        points=[(464.78492,205.00000),(464.28101,24.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -399,7 +420,7 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
         property=meta::external::store::service::metamodel::ServiceStore.elements,
         source=ServiceStore_$_0,
         target=ServiceStoreElement_$_1,
-        points=[(463.28101,153.00000),(375.78492,277.00000)],
+        points=[(464.28101,24.00000),(464.78492,205.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -410,10 +431,10 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
         lineStyle=SIMPLE)
 
     PropertyView pview_2(
-        property=meta::external::store::service::metamodel::ServiceGroup.elements,
-        source=ServiceGroup_$_2,
-        target=ServiceStoreElement_$_1,
-        points=[(293.28100,426.00000),(375.78492,277.00000)],
+        property=meta::external::store::service::metamodel::ServiceParameter.type,
+        source=ServiceParameter_$_4,
+        target=TypeReference_$_5,
+        points=[(695.33301,531.00000),(412.87422,655.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -424,10 +445,10 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
         lineStyle=SIMPLE)
 
     PropertyView pview_3(
-        property=meta::external::store::service::metamodel::ServiceStoreElement.parent,
-        source=ServiceStoreElement_$_1,
-        target=ServiceGroup_$_2,
-        points=[(375.78492,277.00000),(293.28100,426.00000)],
+        property=meta::external::store::service::metamodel::ServiceParameter.serializationFormat,
+        source=ServiceParameter_$_4,
+        target=SerializationFormat_$_12,
+        points=[(695.33301,531.00000),(692.59766,658.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -438,10 +459,10 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
         lineStyle=SIMPLE)
 
     PropertyView pview_4(
-        property=meta::external::store::service::metamodel::Service.parameters,
-        source=Service_$_3,
-        target=ServiceParameter_$_4,
-        points=[(598.59644,401.00000),(707.33301,526.00000)],
+        property=meta::external::store::service::metamodel::mapping::ServiceMapping.owner,
+        source=ServiceMapping_$_14,
+        target=RootServiceInstanceSetImplementation_$_13,
+        points=[(1795.53613,360.00000),(1791.03027,23.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -452,10 +473,10 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
         lineStyle=SIMPLE)
 
     PropertyView pview_5(
-        property=meta::external::store::service::metamodel::Service.requestBody,
-        source=Service_$_3,
-        target=TypeReference_$_5,
-        points=[(598.59644,401.00000),(468.57422,647.00000)],
+        property=meta::external::store::service::metamodel::mapping::RootServiceInstanceSetImplementation.servicesMapping,
+        source=RootServiceInstanceSetImplementation_$_13,
+        target=ServiceMapping_$_14,
+        points=[(1791.03027,23.00000),(1795.53613,360.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -466,10 +487,10 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
         lineStyle=SIMPLE)
 
     PropertyView pview_6(
-        property=meta::external::store::service::metamodel::ServiceParameter.type,
-        source=ServiceParameter_$_4,
-        target=TypeReference_$_5,
-        points=[(707.33301,526.00000),(468.87422,647.00000)],
+        property=meta::external::store::service::metamodel::mapping::ServiceRequestBuildInfo.requestBodyBuildInfo,
+        source=ServiceRequestBuildInfo_$_15,
+        target=ServiceRequestBodyBuildInfo_$_16,
+        points=[(1798.04590,471.00000),(1644.04590,578.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -480,10 +501,10 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
         lineStyle=SIMPLE)
 
     PropertyView pview_7(
-        property=meta::external::store::service::metamodel::Service.response,
-        source=Service_$_3,
-        target=ComplexTypeReference_$_10,
-        points=[(598.59644,401.00000),(190.91309,788.00000)],
+        property=meta::external::store::service::metamodel::mapping::ServiceMapping.requestBuildInfo,
+        source=ServiceMapping_$_14,
+        target=ServiceRequestBuildInfo_$_15,
+        points=[(1795.53613,360.00000),(1798.04590,471.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -494,10 +515,10 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
         lineStyle=SIMPLE)
 
     PropertyView pview_8(
-        property=meta::external::store::service::metamodel::ServiceParameter.serializationFormat,
-        source=ServiceParameter_$_4,
-        target=SerializationFormat_$_12,
-        points=[(707.33301,526.00000),(844.59766,658.00000)],
+        property=meta::external::store::service::metamodel::mapping::ServiceRequestBuildInfo.requestParametersBuildInfo,
+        source=ServiceRequestBuildInfo_$_15,
+        target=ServiceRequestParametersBuildInfo_$_17,
+        points=[(1798.04590,471.00000),(2037.73535,582.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -508,10 +529,10 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
         lineStyle=SIMPLE)
 
     PropertyView pview_9(
-        property=meta::external::store::service::metamodel::mapping::ServiceMapping.owner,
-        source=ServiceMapping_$_14,
-        target=RootServiceInstanceSetImplementation_$_13,
-        points=[(1792.53613,401.00000),(1781.03027,192.00000)],
+        property=meta::external::store::service::metamodel::mapping::ServiceRequestParametersBuildInfo.parameterBuildInfoList,
+        source=ServiceRequestParametersBuildInfo_$_17,
+        target=ServiceRequestParameterBuildInfo_$_18,
+        points=[(2037.73535,582.00000),(2041.38086,720.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -522,10 +543,10 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
         lineStyle=SIMPLE)
 
     PropertyView pview_10(
-        property=meta::external::store::service::metamodel::mapping::ServiceMapping.service,
-        source=ServiceMapping_$_14,
-        target=Service_$_3,
-        points=[(1792.53613,401.00000),(598.59644,401.00000)],
+        property=meta::external::store::service::metamodel::ServiceGroup.elements,
+        source=cview_5,
+        target=ServiceStoreElement_$_1,
+        points=[(158.24883,339.50000),(158.24883,208.50000),(464.78491,205.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -536,10 +557,10 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
         lineStyle=SIMPLE)
 
     PropertyView pview_11(
-        property=meta::external::store::service::metamodel::mapping::RootServiceInstanceSetImplementation.servicesMapping,
-        source=RootServiceInstanceSetImplementation_$_13,
-        target=ServiceMapping_$_14,
-        points=[(1781.03027,192.00000),(1792.53613,401.00000)],
+        property=meta::external::store::service::metamodel::Service.response,
+        source=cview_6,
+        target=ComplexTypeReference_$_10,
+        points=[(608.02154,355.50000),(95.91309,667.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -550,10 +571,10 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
         lineStyle=SIMPLE)
 
     PropertyView pview_12(
-        property=meta::external::store::service::metamodel::mapping::ServiceRequestBuildInfo.requestBodyBuildInfo,
-        source=ServiceRequestBuildInfo_$_15,
-        target=ServiceRequestBodyBuildInfo_$_16,
-        points=[(1785.04590,509.00000),(1576.04590,613.00000)],
+        property=meta::external::store::service::metamodel::Service.parameters,
+        source=cview_6,
+        target=ServiceParameter_$_4,
+        points=[(608.02154,355.50000),(695.33301,531.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -564,10 +585,10 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
         lineStyle=SIMPLE)
 
     PropertyView pview_13(
-        property=meta::external::store::service::metamodel::mapping::ServiceMapping.requestBuildInfo,
+        property=meta::external::store::service::metamodel::mapping::ServiceMapping.service,
         source=ServiceMapping_$_14,
-        target=ServiceRequestBuildInfo_$_15,
-        points=[(1792.53613,401.00000),(1785.04590,509.00000)],
+        target=cview_6,
+        points=[(1795.53614,360.00000),(608.02154,355.50000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -578,10 +599,10 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
         lineStyle=SIMPLE)
 
     PropertyView pview_14(
-        property=meta::external::store::service::metamodel::mapping::ServiceRequestBuildInfo.requestParametersBuildInfo,
-        source=ServiceRequestBuildInfo_$_15,
-        target=ServiceRequestParametersBuildInfo_$_17,
-        points=[(1785.04590,509.00000),(1904.73535,607.00000)],
+        property=meta::external::store::service::metamodel::Service.security,
+        source=cview_6,
+        target=cview_3,
+        points=[(608.02154,355.50000),(1139.61309,441.50000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -592,10 +613,10 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
         lineStyle=SIMPLE)
 
     PropertyView pview_15(
-        property=meta::external::store::service::metamodel::mapping::ServiceRequestParameterBuildInfo.serviceParameter,
-        source=ServiceRequestParameterBuildInfo_$_18,
-        target=ServiceParameter_$_4,
-        points=[(1909.39844,735.00000),(707.33301,526.00000)],
+        property=meta::external::store::service::metamodel::Service.requestBody,
+        source=cview_6,
+        target=TypeReference_$_5,
+        points=[(608.02154,355.50000),(412.57422,653.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -606,10 +627,10 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
         lineStyle=SIMPLE)
 
     PropertyView pview_16(
-        property=meta::external::store::service::metamodel::mapping::ServiceRequestParametersBuildInfo.parameterBuildInfoList,
-        source=ServiceRequestParametersBuildInfo_$_17,
-        target=ServiceRequestParameterBuildInfo_$_18,
-        points=[(1904.73535,607.00000),(1909.39844,735.00000)],
+        property=meta::external::store::service::metamodel::SingleSecuritySchemeRequirement.securityScheme,
+        source=cview_8,
+        target=SecurityScheme_$_11,
+        points=[(971.61602,568.50000),(972.69043,681.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -620,24 +641,10 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
         lineStyle=SIMPLE)
 
     PropertyView pview_17(
-        property=meta::external::store::service::metamodel::Service.security,
-        source=Service_$_3,
-        target=cview_3,
-        points=[(598.59644,401.00000),(1052.61309,452.50000)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
-
-    PropertyView pview_18(
-        property=meta::external::store::service::metamodel::SingleSecuritySchemeRequirement.securityScheme,
-        source=cview_4,
-        target=SecurityScheme_$_11,
-        points=[(1234.61602,535.50000),(1188.69043,697.00000)],
+        property=meta::external::store::service::metamodel::MultiSecuritySchemeRequirement.securitySchemes,
+        source=cview_9,
+        target=cview_8,
+        points=[(1331.60821,568.50000),(971.61602,568.50000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
