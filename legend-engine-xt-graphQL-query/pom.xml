@@ -195,6 +195,12 @@
             <artifactId>httpcore</artifactId>
         </dependency>
 
+        <!-- CACHING -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+        <!-- CACHING -->
 
         <!-- LOG -->
         <dependency>
