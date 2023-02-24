@@ -40,6 +40,7 @@ final class TimestampType extends BaseTimestampType
     private static final int OID = 1114;
     private static final String NAME = "timestamp without time zone";
 
+
     private static final DateTimeFormatter PARSER_WITH_OPTIONAL_ERA = new DateTimeFormatterBuilder()
             .parseCaseInsensitive()
             .append(ISO_LOCAL_DATE)
@@ -96,12 +97,7 @@ final class TimestampType extends BaseTimestampType
     Object decodeUTF8Text(byte[] bytes)
     {
         String s = new String(bytes, StandardCharsets.UTF_8);
-
-        //try {
         LocalDateTime dt = LocalDateTime.parse(s, PARSER_WITH_OPTIONAL_ERA);
         return dt.toInstant(ZoneOffset.UTC).toEpochMilli();
-      /*  } catch (Exception e) {
-            return io.crate.types.TimestampType.parseTimestampIgnoreTimeZone(s);
-        }*/
     }
 }
