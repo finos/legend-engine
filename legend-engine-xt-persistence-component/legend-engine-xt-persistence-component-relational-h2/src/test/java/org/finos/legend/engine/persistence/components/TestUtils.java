@@ -893,36 +893,11 @@ public class TestUtils
     {
         List<Field> actualFields = actualDataset.schema().fields();
         List<Field> expectedFields = expectedDataset.schema().fields();
-        for (Field expectedField : expectedFields)
+        Set<Field> actualFieldsSet = actualFields.stream().collect(Collectors.toSet());
+        Set<Field> expectedFieldsSet = expectedFields.stream().collect(Collectors.toSet());
+        if (!actualFieldsSet.equals(expectedFieldsSet))
         {
-            String expectedFieldName = expectedField.name();
-            Field matchedActualField = actualFields.stream().filter(mainField -> mainField.name().equals(expectedFieldName)).findFirst().orElse(null);
-            if (matchedActualField == null)
-            {
-                Assertions.fail("Unable to find expected column in actual dataset");
-            }
-            else
-            {
-                FieldType expectedFieldType = expectedField.type();
-                if (!matchedActualField.type().equals(expectedFieldType))
-                {
-                    if (!matchedActualField.type().dataType().equals(expectedFieldType.dataType()))
-                    {
-                        Assertions.fail("Data type of actual dataset column does not match that of expected");
-                    }
-                    else
-                    {
-                        Assertions.fail("Data type length of actual dataset column does not match that of expected");
-                    }
-                }
-                else
-                {
-                    if (matchedActualField.nullable() != expectedField.nullable())
-                    {
-                        Assertions.fail("Nullability of actual dataset column does not match that of expected");
-                    }
-                }
-            }
+            Assertions.fail("Updated dataset object does not match that of the expected dataset");
         }
     }
 
