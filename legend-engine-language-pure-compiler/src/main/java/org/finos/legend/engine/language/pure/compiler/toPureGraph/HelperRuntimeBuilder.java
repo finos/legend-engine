@@ -168,7 +168,7 @@ public class HelperRuntimeBuilder
             {
                 if (visitedSourceClasses.contains(pureConnection.getValueForMetaPropertyToOne("class")) && visitedStores.contains(HelperModelBuilder.getElementFullPath((PackageableElement) pureConnection._element(),context.pureModel.getExecutionSupport())))
                 {
-                    context.pureModel.addWarnings(Lists.mutable.with(new Warning(connection.sourceInformation, "Multiples Connections available for Source Class - " + pureConnection.getValueForMetaPropertyToOne("class"))));
+                    context.pureModel.addWarnings(Lists.mutable.with(new Warning(connection.sourceInformation, "Multiple Connections available for Source Class - " + pureConnection.getValueForMetaPropertyToOne("class"))));
                 }
                 else
                 {
