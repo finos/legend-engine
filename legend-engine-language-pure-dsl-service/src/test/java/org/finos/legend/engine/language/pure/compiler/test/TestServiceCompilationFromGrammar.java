@@ -3122,6 +3122,33 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    }\n" +
                 "  ]\n" +
                 "}");
+        // check duplicate assertion IDs
+        test(resource + "###Service \n" +
+                "Service test::Service \n" +
+                "{ \n" +
+                "  pattern: 'url/myUrl/'; \n" +
+                "  owners: ['ownerName']; \n" +
+                "  documentation: 'test'; \n" +
+                "  autoActivateUpdates: true; \n" +
+                "  execution: Single \n" +
+                "  { \n" +
+                "    query: test::class.all()->project([col(p|$p.prop1, 'prop1')]); \n" +
+                "    mapping: test::mapping; \n" +
+                "    runtime: test::runtime; \n" +
+                "  }\n" +
+                "  postValidations:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      description: 'A good description of the validation';\n" +
+                "      params: [];\n" +
+                "      assertions: [\n" +
+                "          testAssert: tds: TabularDataSet[1]|$tds->filter(row|$row.getString('prop1')->startsWith('X'))->meta::legend::service::validation::assertTabularDataSetEmpty('Expected no prop1 values to begin with the letter X');,\n" +
+                "          testAssert: tds: TabularDataSet[1]|true;,\n" +
+                "          testAssert2: tds: TabularDataSet[1]|false;\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}", "COMPILATION error at [20:1-44:1]: Multiple post validation assertions found with ids : 'testAssert'");
 
         // check matching query and assertion types
         test(resource + "###Service \n" +
