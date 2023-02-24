@@ -71,6 +71,7 @@ public class IngestModeTest
     protected Field id = Field.builder().name("id").type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).primaryKey(true).build();
     protected Field name = Field.builder().name("name").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).primaryKey(true).build();
     protected Field amount = Field.builder().name("amount").type(FieldType.of(DataType.DOUBLE, Optional.empty(), Optional.empty())).build();
+    protected Field amountWithSize = Field.builder().name("amount").type(FieldType.of(DataType.DOUBLE, 8, null)).build();
     protected Field amountDecimal = Field.builder().name("amount").type(FieldType.of(DataType.DECIMAL, 10, 0)).build();
     protected Field amountVarchar = Field.builder().name("amount").type(FieldType.of(DataType.VARCHAR, 32, null)).build();
     protected Field nonNullableAmount = Field.builder().name("amount").type(FieldType.of(DataType.DOUBLE, Optional.empty(), Optional.empty())).nullable(false).build();
@@ -214,6 +215,13 @@ public class IngestModeTest
             .addFields(id)
             .addFields(name)
             .addFields(amount)
+            .addFields(bizDate)
+            .build();
+
+    protected SchemaDefinition stagingTableNonBreakingDatatypeAndSizingChange = SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(amountWithSize)
             .addFields(bizDate)
             .build();
 
@@ -417,6 +425,7 @@ public class IngestModeTest
     protected String expectedSchemaEvolutionModifySizeWithUpperCase = "ALTER TABLE \"MYDB\".\"MAIN\" ALTER COLUMN \"DESCRIPTION\" VARCHAR(64)";
 
     protected String expectedSchemaNonBreakingChange = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"amount\" DOUBLE";
+    protected String expectedSchemaNonBreakingChangeWithSizing = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"amount\" DOUBLE(8)";
     protected String expectedSchemaImplicitNullabilityChange = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"amount\" SET NULL";
     protected String expectedSchemaNullabilityChange = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"biz_date\" SET NULL";
 

@@ -205,6 +205,15 @@ public class SchemaEvolution
     {
         if (!mainDataField.equals(newField))
         {
+            if (!mainDataField.type().length().orElse(-1).equals(newField.type().length().orElse(-1)) ||
+                    !mainDataField.type().scale().orElse(-1).equals(newField.type().scale().orElse(-1)))
+            {
+                if (!sink.capabilities().contains(Capability.DATA_TYPE_SIZE_CHANGE)
+                        || (!schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE)))
+                {
+                    throw new IncompatibleSchemaChangeException(String.format("Data sizing changes couldn't be performed on column \"%s\" since user capability does not allow it", newField.name()));
+                }
+            }
             if (!mainDataField.type().equals(newField.type()))
             {
                 operations.add(Alter.of(mainDataset, Alter.AlterOperation.CHANGE_DATATYPE, newField, Optional.empty()));
@@ -259,40 +268,32 @@ public class SchemaEvolution
         int scale = newField.type().scale().orElse(-1);
         if (isSizingChangesRequired(oldField, newField))
         {
-            if (sink.capabilities().contains(Capability.DATA_TYPE_SIZE_CHANGE)
-                    && (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE)))
+            //If the oldField and newField have a length associated, pick the greater length
+            if (oldField.type().length().isPresent() && newField.type().length().isPresent())
             {
-                //If the oldField and newField have a length associated, pick the greater length
-                if (oldField.type().length().isPresent() && newField.type().length().isPresent())
-                {
-                    length = newField.type().length().get() >= oldField.type().length().get()
-                            ? newField.type().length().get()
-                            : oldField.type().length().get();
-                }
-                //Allow length evolution from unspecified length only when data types are same. This is to avoid evolution like SMALLINT(6) -> INT(6) or INT -> DOUBLE(6) and allow for DATETIME -> DATETIME(6)
-                else if (oldField.type().dataType().equals(newField.type().dataType())
-                        && oldField.type().length().isPresent() && !newField.type().length().isPresent())
-                {
-                    length = oldField.type().length().get();
-                }
-
-                //If the oldField and newField have a scale associated, pick the greater scale
-                if (oldField.type().scale().isPresent() && newField.type().scale().isPresent())
-                {
-                    scale = newField.type().scale().get() >= oldField.type().scale().get()
-                            ? newField.type().scale().get()
-                            : oldField.type().scale().get();
-                }
-                //Allow scale evolution from unspecified scale only when data types are same. This is to avoid evolution like SMALLINT(6) -> INT(6) or INT -> DOUBLE(6) and allow for DATETIME -> DATETIME(6)
-                else if (oldField.type().dataType().equals(newField.type().dataType())
-                        && oldField.type().scale().isPresent() && !newField.type().scale().isPresent())
-                {
-                    scale = oldField.type().scale().get();
-                }
+                length = newField.type().length().get() >= oldField.type().length().get()
+                        ? newField.type().length().get()
+                        : oldField.type().length().get();
             }
-            else
+            //Allow length evolution from unspecified length only when data types are same. This is to avoid evolution like SMALLINT(6) -> INT(6) or INT -> DOUBLE(6) and allow for DATETIME -> DATETIME(6)
+            else if (oldField.type().dataType().equals(newField.type().dataType())
+                    && oldField.type().length().isPresent() && !newField.type().length().isPresent())
             {
-                throw new IncompatibleSchemaChangeException(String.format("Data sizing changes couldn't be performed on column \"%s\" since user capability does not allow it", newField.name()));
+                length = oldField.type().length().get();
+            }
+
+            //If the oldField and newField have a scale associated, pick the greater scale
+            if (oldField.type().scale().isPresent() && newField.type().scale().isPresent())
+            {
+                scale = newField.type().scale().get() >= oldField.type().scale().get()
+                        ? newField.type().scale().get()
+                        : oldField.type().scale().get();
+            }
+            //Allow scale evolution from unspecified scale only when data types are same. This is to avoid evolution like SMALLINT(6) -> INT(6) or INT -> DOUBLE(6) and allow for DATETIME -> DATETIME(6)
+            else if (oldField.type().dataType().equals(newField.type().dataType())
+                    && oldField.type().scale().isPresent() && !newField.type().scale().isPresent())
+            {
+                scale = oldField.type().scale().get();
             }
         }
         return createNewField(newField, oldField, length, scale);
@@ -321,7 +322,6 @@ public class SchemaEvolution
     private Field createNewField(Field newField, Field oldField, int length, int scale)
     {
         FieldType modifiedFieldType = FieldType.of(newField.type().dataType(), Optional.ofNullable(length == -1 ? null : length), Optional.ofNullable(scale == -1 ? null : scale));
-        //todo : capability check
         boolean nullability = newField.nullable() || oldField.nullable();
 
         //todo : how to handle default value, identity, uniqueness ?

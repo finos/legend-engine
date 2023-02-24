@@ -150,6 +150,7 @@ public class SchemaEvolutionTest extends IngestModeTest
 
             // Use the planner utils to return the sql
             List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
+            Assertions.assertEquals(expectedSchemaEvolutionAddColumnWithUpperCase, sqlsForSchemaEvolution.get(0));
         }
         catch (IncompatibleSchemaChangeException e)
         {
@@ -240,6 +241,7 @@ public class SchemaEvolutionTest extends IngestModeTest
             SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
 
             List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
+            Assertions.assertEquals(expectedSchemaEvolutionModifySize, sqlsForSchemaEvolution.get(0));
 
         }
         catch (IncompatibleSchemaChangeException e)
@@ -302,7 +304,7 @@ public class SchemaEvolutionTest extends IngestModeTest
             SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
 
             List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
-
+            Assertions.assertEquals(expectedSchemaEvolutionModifyScale, sqlsForSchemaEvolution.get(0));
         }
         catch (IncompatibleSchemaChangeException e)
         {
@@ -389,6 +391,7 @@ public class SchemaEvolutionTest extends IngestModeTest
             RelationalTransformer transformer = new RelationalTransformer(relationalSink);
             SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
             List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
+            Assertions.assertEquals(2, sqlsForSchemaEvolution.size());
         }
         catch (IncompatibleSchemaChangeException e)
         {
@@ -426,7 +429,7 @@ public class SchemaEvolutionTest extends IngestModeTest
     }
 
 
-    // Data type change required in main table column (int --> tinyInt) and data_type_conversion capability allowed
+    // Data type change required in main table column (float --> double) and data_type_conversion capability allowed
     @Test
     void testSnapshotMilestoningWithNonBreakingDataTypeEvolution()
     {
@@ -454,13 +457,13 @@ public class SchemaEvolutionTest extends IngestModeTest
         Assertions.assertEquals(expectedSchemaNonBreakingChange, sqlsForSchemaEvolution.get(0));
     }
 
-    // Data type change required in main table column (int --> tinyInt) and data_type_conversion capability not allowed--> throws exception
+    // Data type change required in main table column (float --> double) and data_type_conversion capability not allowed--> throws exception
     @Test
     void testSnapshotMilestoningWithNonBreakingDataTypeEvolutionAndUserProvidedSchemaEvolutionCapability()
     {
         Dataset mainTable = DatasetDefinition.builder()
                 .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-                .schema(baseTableSchema)
+                .schema(baseTableExplicitDatatypeChangeSchema)
                 .build();
 
         Dataset stagingTable = DatasetDefinition.builder()
@@ -480,10 +483,84 @@ public class SchemaEvolutionTest extends IngestModeTest
             SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
 
             List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
+            Assertions.assertEquals(expectedSchemaNonBreakingChange, sqlsForSchemaEvolution.get(0));
         }
         catch (IncompatibleSchemaChangeException e)
         {
-            Assertions.assertEquals("Explicit data type conversion from \"INT\" to \"TINYINT\" couldn't be performed since user capability does not allow it", e.getMessage());
+            Assertions.assertEquals("Explicit data type conversion from \"FLOAT\" to \"DOUBLE\" couldn't be performed since user capability does not allow it", e.getMessage());
+        }
+    }
+
+    // Data type & sizing change required in main table column (float --> double(8))
+    // and data_type_conversion capability allowed but sizing not allowed --> throws exception
+    @Test
+    void testSnapshotMilestoningWithNonBreakingDataTypeEvolutionAndSizingChange()
+    {
+        Dataset mainTable = DatasetDefinition.builder()
+                .database(mainDbName).name(mainTableName).alias(mainTableAlias)
+                .schema(baseTableExplicitDatatypeChangeSchema)
+                .build();
+
+        Dataset stagingTable = DatasetDefinition.builder()
+                .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
+                .schema(stagingTableNonBreakingDatatypeAndSizingChange)
+                .build();
+
+        NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_CONVERSION);
+        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet);
+
+        try
+        {
+            SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
+            RelationalTransformer transformer = new RelationalTransformer(relationalSink);
+            SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
+
+            List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
+
+            Assertions.assertEquals(expectedSchemaNonBreakingChangeWithSizing, sqlsForSchemaEvolution.get(0));
+        }
+        catch (IncompatibleSchemaChangeException e)
+        {
+            Assertions.assertEquals("Data sizing changes couldn't be performed on column \"amount\" since user capability does not allow it", e.getMessage());
+        }
+    }
+
+    // Data type & sizing change required in main table column (float --> double(8))
+    // and data_type_conversion capability and sizing  allowed
+    @Test
+    void testSnapshotMilestoningWithNonBreakingDataTypeEvolutionAndSizingChangeAllowed()
+    {
+        Dataset mainTable = DatasetDefinition.builder()
+                .database(mainDbName).name(mainTableName).alias(mainTableAlias)
+                .schema(baseTableExplicitDatatypeChangeSchema)
+                .build();
+
+        Dataset stagingTable = DatasetDefinition.builder()
+                .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
+                .schema(stagingTableNonBreakingDatatypeAndSizingChange)
+                .build();
+
+        NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
+        Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet = new HashSet<>();
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_CONVERSION);
+        schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE);
+        SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink, ingestMode, schemaEvolutionCapabilitySet);
+
+        try
+        {
+            SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
+            RelationalTransformer transformer = new RelationalTransformer(relationalSink);
+            SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
+
+            List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
+
+            Assertions.assertEquals(expectedSchemaNonBreakingChangeWithSizing, sqlsForSchemaEvolution.get(0));
+        }
+        catch (IncompatibleSchemaChangeException e)
+        {
+            Assertions.assertEquals("Data sizing changes couldn't be performed on column \"amount\" since user capability does not allow it", e.getMessage());
         }
     }
 
