@@ -95,7 +95,7 @@ public class MongoDBQueryComposer
             @Override
             public String visit(ProjectStage val)
             {
-                return "{ \"$project\" : " + visitArgumentExpression(((ProjectStage) stage).filters) + " }";
+                return "{ \"$project\" : " + visitArgumentExpression(((ProjectStage) stage).projections) + " }";
             }
         });
     }

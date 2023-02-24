@@ -764,7 +764,7 @@ Diagram meta::external::store::mongodb::metamodel::Mongo_QueryModel_Diagram(widt
         lineStyle=SIMPLE)
 
     PropertyView pview_3(
-        property=meta::external::store::mongodb::metamodel::aggregation::ProjectStage.filters,
+        property=meta::external::store::mongodb::metamodel::aggregation::ProjectStage.projections,
         source=cview_5,
         target=cview_17,
         points=[(1285.56510,351.79085),(1082.93457,352.93669),(1083.88182,447.07269)],

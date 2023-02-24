@@ -96,7 +96,7 @@ public class MongoDBQueryJsonComposer
             @Override
             public String visit(ProjectStage val)
             {
-                return "{ \"$project\" : " + visitArgumentExpression(((ProjectStage) stage).filters) + " }";
+                return "{ \"$project\" : " + visitArgumentExpression(((ProjectStage) stage).projections) + " }";
             }
         });
     }
@@ -137,7 +137,7 @@ public class MongoDBQueryJsonComposer
             public String visit(EqOperatorExpression val)
             {
                 String expString = visit(val.expression);
-                return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.EQ) + "\" : " + expString + " }";
+                return "\"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.EQ) + "\" : " + expString;
             }
 
             @Override
@@ -150,7 +150,7 @@ public class MongoDBQueryJsonComposer
             public String visit(GTOperatorExpression val)
             {
                 String expString = visit(val.expression);
-                return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.GT) + "\" : " + expString + " }";
+                return "\"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.GT) + "\" : " + expString;
             }
 
             @Override
@@ -177,14 +177,14 @@ public class MongoDBQueryJsonComposer
             public String visit(LTEOperatorExpression val)
             {
                 String expString = visit(val.expression);
-                return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.LTE) + "\" : " + expString + " }";
+                return "\"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.LTE) + "\" : " + expString;
             }
 
             @Override
             public String visit(LTOperatorExpression val)
             {
                 String expString = visit(val.expression);
-                return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.LT) + "\" : " + expString + " }";
+                return "\"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.LT) + "\" : " + expString;
             }
 
             @Override
@@ -241,7 +241,7 @@ public class MongoDBQueryJsonComposer
                 List<String> objPairString = val.keyValues.stream()
                         .map(x -> visitArgumentExpression(x)).collect(Collectors.toList());
                 return "{" + String.join(",", objPairString) + "}";
-                //return String.join(",", objPairString);
+                // return String.join(",", objPairString);
             }
 
             @Override
@@ -249,7 +249,7 @@ public class MongoDBQueryJsonComposer
             {
                 List<String> expressionsString = val.expressions.stream()
                         .map(x -> visitArgumentExpression(x)).collect(Collectors.toList());
-                return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.OR) + "\" : [" + String.join(",", expressionsString) + "] }";
+                return "\"" +  ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.OR) + "\" : [" + String.join(",", expressionsString) + "] ";
             }
 
             @Override

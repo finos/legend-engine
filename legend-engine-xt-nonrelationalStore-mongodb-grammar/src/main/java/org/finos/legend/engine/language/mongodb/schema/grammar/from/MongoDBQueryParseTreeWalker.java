@@ -165,7 +165,7 @@ public class MongoDBQueryParseTreeWalker
         ProjectStage stage = new ProjectStage();
         if (ctx.projectFilterExpression() != null)
         {
-            stage.filters = visitProjectFilterExpression(ctx.projectFilterExpression());
+            stage.projections = visitProjectFilterExpression(ctx.projectFilterExpression());
         }
         return stage;
     }

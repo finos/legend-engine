@@ -34,13 +34,13 @@ import java.util.Collection;
 import java.util.Objects;
 
 @RunWith(Parameterized.class)
-public class TestQueryParserTreeWalker
+public class TestValidQueryParser
 {
 
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
     private final String inputJsonFile;
 
-    public TestQueryParserTreeWalker(String inputQueryFile)
+    public TestValidQueryParser(String inputQueryFile)
     {
         inputJsonFile = inputQueryFile;
     }
@@ -55,7 +55,19 @@ public class TestQueryParserTreeWalker
 //                {"json/query/match_simple_expression_input.json"},
 //                {"json/query/match_with_and_operator_input.json"},
 //                {"json/query/match_with_empty_array_input.json"},
-//                 {"json/query/match_with_operator_input.json"}
+//                {"json/query/match_with_nested_object_input.json"},
+//                {"json/query/match_with_operator_input.json"},
+//                {"json/query/match_with_or_operator_input.json"},
+////                {"json/query/match_with_various_comparison_expression_formats_input.json"},
+//                {"json/query/multi_match_non_empty_array_input.json"},
+//                {"json/query/multi_match_with_gt_with_without_operator_input.json"},
+//                {"json/query/two_match_with_operators_input.json"},
+//                {"json/query/project_with_multiple_complex_filters_input.json"},
+//                {"json/query/project_with_multiple_filters_input.json"},
+//                {"json/query/project_with_single_computed_field_input.json"},
+//                {"json/query/project_with_single_inclusion_filter_input.json"},
+                // The next test file - conforms to JSON, but the last match wins!
+                {"json/query/multi_match_stage_input.json"},
         });
     }
 
@@ -93,6 +105,7 @@ public class TestQueryParserTreeWalker
         Assert.assertEquals(expected, actual);
 
     }
+
 
 
 }

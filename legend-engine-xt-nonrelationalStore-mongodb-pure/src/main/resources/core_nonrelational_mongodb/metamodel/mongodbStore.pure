@@ -252,7 +252,7 @@ meta::external::store::mongodb::metamodel::aggregation::MatchStage extends Stage
 Class {doc.doc = 'Maps to { $project { $fieldName { <specification> } } }'}
 meta::external::store::mongodb::metamodel::aggregation::ProjectStage extends Stage
 {
-  filters: ArgumentExpression[1];
+  projections: ArgumentExpression[1];
 }
 
 Class meta::external::store::mongodb::metamodel::aggregation::LiteralValue extends ArgumentExpression
