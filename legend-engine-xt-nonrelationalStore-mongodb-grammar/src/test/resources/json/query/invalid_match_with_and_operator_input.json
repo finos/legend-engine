@@ -1,0 +1,12 @@
+{
+  "aggregate": "firm",
+  "pipeline": [
+    {
+      "$match": {
+        "$and": {  "sector": "Finance Companies" }
+      }
+    }
+  ],
+  "cursor": {}
+}
+
