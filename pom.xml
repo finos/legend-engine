@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.0.1-SNAPSHOT</version>
+    <version>4.1.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -81,7 +81,6 @@
         <module>legend-engine-xt-xml-runtime</module>
         <module>legend-engine-xt-xml-shared</module>
         <module>legend-engine-xt-xml-pure</module>
-        <module>legend-engine-xt-xml-protocol</module>
 
         <module>legend-engine-xt-flatdata-model</module>
         <module>legend-engine-xt-flatdata-shared</module>
@@ -256,7 +255,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>4.0.0</legend.pure.version>
+        <legend.pure.version>4.1.0</legend.pure.version>
         <legend.shared.version>0.22.5</legend.shared.version>
 
         <!-- SONAR -->
@@ -1070,11 +1069,6 @@
                 <version>${project.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-xml-protocol</artifactId>
-                <version>${project.version}</version>
-            </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-xml-model</artifactId>

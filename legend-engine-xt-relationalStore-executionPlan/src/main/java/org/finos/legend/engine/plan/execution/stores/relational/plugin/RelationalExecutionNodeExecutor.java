@@ -233,6 +233,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             try (Scope scope = GlobalTracer.get().buildSpan("Relational DB Execution").startActive(true))
             {
                 scope.span().setTag("databaseType", SQLExecutionNode.getDatabaseTypeName());
+                scope.span().setTag("executionTraceID", this.executionState.execID);
                 scope.span().setTag("sql", SQLExecutionNode.sqlQuery());
                 Result result = ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().execute(SQLExecutionNode, profiles, executionState);
                 if (result instanceof SQLExecutionResult)

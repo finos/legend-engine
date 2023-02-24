@@ -25,6 +25,7 @@ import java.util.List;
 @Deprecated
 public class RelationalExecutionNode extends ExecutionNode
 {
+    public String sqlComment;
     public String sqlQuery;
     public String onConnectionCloseCommitQuery;
     public String onConnectionCloseRollbackQuery;
@@ -38,6 +39,11 @@ public class RelationalExecutionNode extends ExecutionNode
     }
 
     /* SQL/Database APIs */
+    public String sqlComment()
+    {
+        return this.sqlComment;
+    }
+
     public String sqlQuery()
     {
         return this.sqlQuery;

@@ -34,7 +34,7 @@ function meta::external::store::service::executionPlan::toString::serviceStoreEx
    $space+'  mimeType = '+$s.mimeType +'\n'+
    $space+'  params = '+$s.params->map(p | $p->serviceParamToString())->joinStrings('[', ', ' ,']') +'\n'+
    if($s.requestBodyDescription->isNotEmpty(), |$space+'  requestBodyDescription = ' + $s.requestBodyDescription->toOne().resultKey + '(' + $s.requestBodyDescription->toOne().mimeType +')\n', |'') +
-   $space+'  securitySchemes = '+$s.securitySchemes->map(sec | $sec->securitySchemeToString($extensions))->joinStrings('[', ', ' ,']') +'\n'+
+   $space+'  authenticationSchemes = '+$s.authenticationSchemes->map(sec | $sec->authenticationSchemeToString($space,$extensions))->joinStrings('[', ', ' ,']') +'\n'+
    $s.implementation->printImplementation('implementation', $space+'  ', $extensions) +'\n'+
    $space+')\n'
 }
@@ -65,10 +65,19 @@ function meta::external::store::service::executionPlan::toString::serviceStoreCo
    [$store, $baseUrl]->joinStrings(', ');
 }
 
+function meta::external::store::service::executionPlan::toString::authenticationSchemeToString(s:AuthenticationSchemeRequirement[1], space:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
+{
+   'Authentication Scheme(\n'+
+   $space + 'securityScheme='+$s->cast(@SingleAuthenticationSchemeRequirement).securityScheme->securitySchemeToString($extensions)+
+   $space + 'AuthenticationScheme=[cannot be rendered]'+
+   ')\n';
+}
+
 function meta::external::store::service::executionPlan::toString::securitySchemeToString(sec:SecurityScheme[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
    $sec->match($extensions->map(e|$e.moduleExtension('serviceStore')->cast(@ServiceStoreExtension).executionPlan_print_securitySchemeToString)->concatenate([
-      sec:SecurityScheme[1] | fail('Security Scheme to String translator not found for ' + $sec->toString()); '';
+      http: HttpSecurityScheme[1]   | 'HttpSecurityScheme\n(scheme="'+$http.scheme->toString()+'")\n',
+      api:  ApiKeySecurityScheme[1] | 'ApiKeySecurityScheme\n(key="'+$api.keyName+'",location="'+$api.location->toString()+'")\n'
    ])->toOneMany())
 }
 
