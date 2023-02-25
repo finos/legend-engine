@@ -105,5 +105,5 @@ jobs:
           workflow_conclusion: ''
       - name: Print Summary
         run: |
-          mvn -pl legend-engine-test-reports compile exec:java -Dexec.mainClass=org.finos.legend.engine.test.LegendDatabaseTestingReportGenerator -Dexec.arguments=/tmp/,/tmp/out.md
+          mvn -pl legend-engine-test-reports compile exec:java -Dexec.mainClass=org.finos.legend.engine.test.LegendDatabaseTestingReportGenerator -Dexec.arguments=./summaries,/tmp/out.md
          
