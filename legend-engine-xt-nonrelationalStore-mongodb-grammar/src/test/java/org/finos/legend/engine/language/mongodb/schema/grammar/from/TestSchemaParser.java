@@ -18,18 +18,41 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import org.finos.legend.engine.language.mongodb.schema.grammar.to.MongoDBSchemaJsonComposer;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDatabase;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Objects;
 
+@RunWith(Parameterized.class)
 public class TestSchemaParser
 {
+
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private final String inputJsonFile;
+
+    public TestSchemaParser(String inputQueryFile)
+    {
+        inputJsonFile = inputQueryFile;
+    }
+
+    @Parameterized.Parameters(name = "{index}: {0}")
+    public static Collection<Object[]> data()
+    {
+        return Arrays.asList(new Object[][]{
+                {"json/schema/schema_def_1.json"},
+                {"json/schema/schema_def_2.json"},
+        });
+    }
 
     public ObjectMapper getObjectMapper()
     {
@@ -43,6 +66,29 @@ public class TestSchemaParser
         return mapper;
     }
 
+
+    @Test
+    public void testValidSchemaFile() throws Exception
+    {
+        URL url = Objects.requireNonNull(getClass().getClassLoader().getResource(this.inputJsonFile));
+        String inputSchema = new String(Files.readAllBytes(Paths.get(url.toURI())), StandardCharsets.UTF_8);
+
+        MongoDBSchemaParseTreeWalker parser = MongoDBSchemaParseTreeWalker.newInstance();
+        MongoDatabase dbSchema = parser.parseDocument(inputSchema);
+        // Pretty print input to canonical json format for test assertions
+        String expected = getObjectMapper().readTree(inputSchema).toPrettyString();
+
+        //Compose back to String
+        MongoDBSchemaJsonComposer schemaComposer = MongoDBSchemaJsonComposer.newInstance();
+        String schemaComposerOutput = schemaComposer.renderDocument(dbSchema);
+
+        // Pretty print output from composoer for test assertions
+        String actual = getObjectMapper().readTree(schemaComposerOutput).toPrettyString();
+
+        Assert.assertEquals(expected, actual);
+    }
+
+    /*
     @Test
     public void testSingleNestedObjectSchema() throws Exception
     {
@@ -73,5 +119,5 @@ public class TestSchemaParser
         MongoDatabase db = parser.parseDocument(inputJson);
         Assert.assertEquals("my_database_3", db.name);
     }
-
+ */
 }

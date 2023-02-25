@@ -11,66 +11,52 @@
               "description": "This document records the details of an employee",
               "properties": {
                 "hobbies": {
+                  "bsonType": "object",
                   "description": "Two lists of indoor & outdoor hobbies",
                   "properties": {
                     "indoor": {
-                      "items": {
-                        "description": "indoor hobby",
-                        "bsonType": "string"
-                      },
-                      "minItems": {
-                        "$numberInt": "2"
-                      },
-                      "maxItems": {
-                        "$numberInt": "10"
-                      },
-                      "uniqueItems": true,
                       "bsonType": "array",
-                      "description": "List of indoor hobbies"
+                      "description": "List of indoor hobbies",
+                      "items": {
+                        "bsonType": "string",
+                        "description": "indoor hobby"
+                      },
+                      "minItems": 2,
+                      "maxItems": 10,
+                      "uniqueItems": true
                     },
                     "outdoor": {
-                      "maxItems": {
-                        "$numberInt": "5"
-                      },
-                      "uniqueItems": true,
                       "bsonType": "array",
                       "description": "List of outdoor hobbies",
                       "items": {
                         "bsonType": "string",
                         "description": "outdoor hobby"
                       },
-                      "minItems": {
-                        "$numberInt": "1"
-                      }
+                      "minItems": 1,
+                      "maxItems": 5,
+                      "uniqueItems": true
                     }
                   },
                   "required": [
                     "indoor",
                     "outdoor"
                   ],
-                  "additionalProperties": false,
-                  "bsonType": "object"
+                  "additionalProperties": false
                 },
                 "id": {
+                  "bsonType": "long",
                   "description": "employee ID",
-                  "minimum": {
-                    "$numberInt": "100000"
-                  },
-                  "bsonType": "long"
+                  "minimum": 100000
                 },
                 "name": {
                   "bsonType": "string",
                   "description": "name of the employee",
-                  "minLength": {
-                    "$numberInt": "2"
-                  }
+                  "minLength": 2
                 },
                 "age": {
                   "bsonType": "int",
                   "description": "age of the employee",
-                  "minimum": {
-                    "$numberInt": "16"
-                  }
+                  "minimum": 16
                 }
               },
               "required": [
@@ -85,19 +71,6 @@
             "validationAction": "error"
           }
         },
-        "indexes": [
-          {
-            "v": {
-              "$numberInt": "2"
-            },
-            "key": {
-              "_id": {
-                "$numberInt": "1"
-              }
-            },
-            "name": "_id_"
-          }
-        ],
         "uuid": "d69afaf3f1a94430a42f3dc7ecb66ada",
         "collectionName": "employees",
         "type": "collection"

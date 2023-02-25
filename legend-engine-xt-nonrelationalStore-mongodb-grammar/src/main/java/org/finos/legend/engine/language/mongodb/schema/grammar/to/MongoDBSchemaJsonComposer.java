@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.mongodb.schema.grammar.to;
 
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.Collection;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDatabase;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArgumentExpression;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,17 +25,17 @@ import static org.finos.legend.engine.language.mongodb.schema.grammar.to.Compose
 import static org.finos.legend.engine.language.mongodb.schema.grammar.to.ComposerUtility.appendStringWithQuotes;
 import static org.finos.legend.engine.language.mongodb.schema.grammar.to.ComposerUtility.appendTabString;
 
-public class MongoDBSchemaGrammarComposer
+public class MongoDBSchemaJsonComposer
 {
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
 
-    private MongoDBSchemaGrammarComposer()
+    private MongoDBSchemaJsonComposer()
     {
     }
 
-    public static MongoDBSchemaGrammarComposer newInstance()
+    public static MongoDBSchemaJsonComposer newInstance()
     {
-        return new MongoDBSchemaGrammarComposer();
+        return new MongoDBSchemaJsonComposer();
     }
 
     public String renderDocument(MongoDatabase database)
@@ -43,14 +44,30 @@ public class MongoDBSchemaGrammarComposer
     }
 
     /*
-    {
-    "database": {
-    "databaseName": "my_database_1",
-    "collections": [
-    ],
-    "schemas": [
-    ]
-  }
+{
+	"database": {
+		"databaseName": "my_database_1",
+		"collections": [{
+			"options": {
+				"validator": {
+					"$jsonSchema": {
+						"bsonType": "object",
+						"title": "Record of Firm",
+						"description": "This document records the details of an employee",
+						"properties": {
+							"name": {
+								"bsonType": "string",
+								"description": "name of the firm",
+								"minLength": 2
+							}
+						}
+					},
+					"validationLevel": "strict",
+					"validationAction": "error"
+				}
+			}
+		}]
+	}
 }
      */
     private String visit(MongoDatabase database)
@@ -76,15 +93,15 @@ public class MongoDBSchemaGrammarComposer
         builder.append(": [\n");
         builder.append(renderCollection(database.collections, dbKeysTabIndex));
         appendTabString(builder, dbKeysTabIndex);
-        builder.append("],\n");
-
-        appendTabString(builder, dbKeysTabIndex);
-        appendStringWithQuotes(builder, "schemas");
-        builder.append(": [\n");
-        visitSchemas(database.collections, builder, dbKeysTabIndex);
-        builder.append("\n");
-        appendTabString(builder, dbKeysTabIndex);
         builder.append("]\n");
+
+//        appendTabString(builder, dbKeysTabIndex);
+//        appendStringWithQuotes(builder, "schemas");
+//        builder.append(": [\n");
+//        visitSchemas(database.collections, builder, dbKeysTabIndex);
+//        builder.append("\n");
+//        appendTabString(builder, dbKeysTabIndex);
+//        builder.append("]\n");
 
         appendTabString(builder, dbNodeTabIndex);
         builder.append("}\n");
@@ -93,14 +110,9 @@ public class MongoDBSchemaGrammarComposer
         return builder.toString();
     }
 
-    private void visitSchemas(List<Collection> collections, StringBuilder builder, int tabIndex)
+    private void visitSchemas(ArgumentExpression jsonSchemaExpr, StringBuilder builder, int tabIndex)
     {
-        collections.stream().forEach(col ->
-        {
-            int schemaNodeTabIndex = tabIndex + 1;
-            //builder.append(col.schema.accept(new BaseTypeVisitorImpl(schemaNodeTabIndex)));
-        });
-        //removeLastChar(builder);
+        builder.append(jsonSchemaExpr.accept(new ArgumentExpressionVisitorImpl(tabIndex)));
     }
 
 
@@ -119,37 +131,47 @@ public class MongoDBSchemaGrammarComposer
             int optionValuesIndex = collectionValuesIndex + 1;
             appendTabString(builder, optionValuesIndex);
             appendJsonKey(builder, "validator");
+            // Start the validator node
             builder.append("{\n");
             int validatorValuesIndex = optionValuesIndex + 1;
             appendTabString(builder, validatorValuesIndex);
-            appendJsonKey(builder, "$ref");
+            appendJsonKey(builder, "$jsonSchema");
+            visitSchemas(col.validator.validatorExpression, builder, validatorValuesIndex);
             //appendStringWithQuotes(builder, col.schema.id);
+
+            if (col.validator.validationLevel != null)
+            {
+                builder.append(",\n");
+                appendTabString(builder, optionValuesIndex);
+                appendJsonKey(builder, "validationLevel");
+                appendStringWithQuotes(builder, col.validator.validationLevel.name());
+            }
+
+            if (col.validator.validationAction != null)
+            {
+                builder.append(",\n");
+                appendTabString(builder, optionValuesIndex);
+                appendJsonKey(builder, "validationAction");
+                appendStringWithQuotes(builder, col.validator.validationAction.name());
+            }
             builder.append("\n");
             appendTabString(builder, optionValuesIndex);
+            // Close the validator node
             builder.append("}");
-//            if (col.schema.validationLevel != null)
-//            {
-//                builder.append(",\n");
-//                appendTabString(builder, optionValuesIndex);
-//                appendJsonKey(builder, "validationLevel");
-//                appendStringWithQuotes(builder, col.schema.validationLevel.name());
-//            }
-//
-//            if (col.schema.validationAction != null)
-//            {
-//                builder.append(",\n");
-//                appendTabString(builder, optionValuesIndex);
-//                appendJsonKey(builder, "validationAction");
-//                appendStringWithQuotes(builder, col.schema.validationAction.name());
-//            }
             builder.append("\n");
             appendTabString(builder, collectionValuesIndex);
             builder.append("},\n");
 
             appendTabString(builder, collectionValuesIndex);
+            appendJsonKey(builder, "uuid");
+            appendStringWithQuotes(builder, col.uuid);
+            builder.append(",\n");
+
+            appendTabString(builder, collectionValuesIndex);
             appendJsonKey(builder, "collectionName");
             appendStringWithQuotes(builder, col.name);
             builder.append(",\n");
+
             appendTabString(builder, collectionValuesIndex);
             appendJsonKey(builder, "type");
             appendStringWithQuotes(builder, "collection");

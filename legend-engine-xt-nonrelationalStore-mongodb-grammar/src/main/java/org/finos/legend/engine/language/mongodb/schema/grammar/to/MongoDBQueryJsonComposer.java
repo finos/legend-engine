@@ -14,46 +14,14 @@
 
 package org.finos.legend.engine.language.mongodb.schema.grammar.to;
 
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.AndOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArgumentExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArgumentExpressionVisitor;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArrayTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.BaseTypeValue;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.BaseTypeValueVisitor;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.BoolTypeValue;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ComparisonOperatorExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ComputedFieldValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DatabaseCommand;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DecimalTypeValue;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.EqOperatorExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.FieldPathExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.GTEOperatorExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.GTOperatorExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.InOperatorExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.IntTypeValue;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.JsonSchemaExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.KeyValuePair;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LTEOperatorExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LTOperatorExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LiteralValue;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LogicalOperatorExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LongTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.MatchStage;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NEOperatorExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NinOperatorExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NorOperatorExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NotOperatorExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NullTypeValue;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ObjectExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ObjectQueryExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ObjectTypeValue;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Operator;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.OrOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ProjectStage;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.QueryExprKeyValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Stage;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.StageVisitor;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.StringTypeValue;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -90,13 +58,19 @@ public class MongoDBQueryJsonComposer
             @Override
             public String visit(MatchStage val)
             {
-                return "{ \"$match\" : " + visitArgumentExpression(((MatchStage) stage).expression) + " }";
+                //  return "{ \"$match\" : " + visitArgumentExpression(((MatchStage) stage).expression) + " }";
+                return "{ \"$match\" : " +
+                        val.expression.accept(new ArgumentExpressionVisitorImpl()) +
+                        " }";
             }
 
             @Override
             public String visit(ProjectStage val)
             {
-                return "{ \"$project\" : " + visitArgumentExpression(((ProjectStage) stage).projections) + " }";
+                //return "{ \"$project\" : " + visitArgumentExpression(((ProjectStage) stage).projections) + " }";
+                return "{ \"$project\" : " +
+                        val.projections.accept(new ArgumentExpressionVisitorImpl()) +
+                        " }";
             }
         });
     }
@@ -109,223 +83,10 @@ public class MongoDBQueryJsonComposer
             return "{}";
         }
 
-        return argumentExpression.accept(new ArgumentExpressionVisitor<String>()
-        {
-
-            @Override
-            public String visit(AndOperatorExpression val)
-            {
-                List<String> expressionsString = val.expressions.stream()
-                        .map(x -> visitArgumentExpression(x)).collect(Collectors.toList());
-                return "\"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.AND) + "\" : [" + String.join(",", expressionsString) + "]";
-                //return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.AND) + "\" : [" + String.join(",", expressionsString) + "] }";
-            }
-
-            @Override
-            public String visit(ComparisonOperatorExpression val)
-            {
-                return null;
-            }
-
-            @Override
-            public String visit(ComputedFieldValue val)
-            {
-                return convertToStringWithQuotes(val.value);
-            }
-
-            @Override
-            public String visit(EqOperatorExpression val)
-            {
-                String expString = visit(val.expression);
-                return "\"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.EQ) + "\" : " + expString;
-            }
-
-            @Override
-            public String visit(FieldPathExpression val)
-            {
-                return convertToStringWithQuotes(val.fieldPath);
-            }
-
-            @Override
-            public String visit(GTOperatorExpression val)
-            {
-                String expString = visit(val.expression);
-                return "\"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.GT) + "\" : " + expString;
-            }
-
-            @Override
-            public String visit(GTEOperatorExpression val)
-            {
-                String expString = visit(val.expression);
-                return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.GTE) + "\" : " + expString + " }";
-            }
-
-            @Override
-            public String visit(InOperatorExpression val)
-            {
-                String expString = visit(val.expression);
-                return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.IN) + "\" : " + expString + " }";
-            }
-
-            @Override
-            public String visit(JsonSchemaExpression val)
-            {
-                return null;
-            }
-
-            @Override
-            public String visit(LTEOperatorExpression val)
-            {
-                String expString = visit(val.expression);
-                return "\"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.LTE) + "\" : " + expString;
-            }
-
-            @Override
-            public String visit(LTOperatorExpression val)
-            {
-                String expString = visit(val.expression);
-                return "\"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.LT) + "\" : " + expString;
-            }
-
-            @Override
-            public String visit(LiteralValue val)
-            {
-                return visitBaseTypeValue(val.value);
-            }
-
-            @Override
-            public String visit(LogicalOperatorExpression val)
-            {
-                return null;
-            }
-
-            @Override
-            public String visit(NEOperatorExpression val)
-            {
-                String expString = visit(val.expression);
-                return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.NE) + "\" : " + expString + " }";
-            }
-
-            @Override
-            public String visit(NinOperatorExpression val)
-            {
-                String expString = visit(val.expression);
-                return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.NIN) + "\" : " + expString + " }";
-            }
-
-            @Override
-            public String visit(NorOperatorExpression val)
-            {
-                List<String> expressionsString = val.expressions.stream()
-                        .map(x -> visitArgumentExpression(x)).collect(Collectors.toList());
-                return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.NOR) + "\" : [" + String.join(",", expressionsString) + "] }";
-            }
-
-            @Override
-            public String visit(NotOperatorExpression val)
-            {
-                List<String> expressionsString = val.expressions.stream()
-                        .map(x -> visitArgumentExpression(x)).collect(Collectors.toList());
-                return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.NOT) + "\" : [" + String.join(",", expressionsString) + "] }";
-            }
-
-            @Override
-            public String visit(ObjectExpression val)
-            {
-                return null;
-            }
-
-            @Override
-            public String visit(ObjectQueryExpression val)
-            {
-                List<String> objPairString = val.keyValues.stream()
-                        .map(x -> visitArgumentExpression(x)).collect(Collectors.toList());
-                return "{" + String.join(",", objPairString) + "}";
-                // return String.join(",", objPairString);
-            }
-
-            @Override
-            public String visit(OrOperatorExpression val)
-            {
-                List<String> expressionsString = val.expressions.stream()
-                        .map(x -> visitArgumentExpression(x)).collect(Collectors.toList());
-                return "\"" +  ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.OR) + "\" : [" + String.join(",", expressionsString) + "] ";
-            }
-
-            @Override
-            public String visit(QueryExprKeyValue pair)
-            {
-                String field = visitArgumentExpression(pair.key);
-                String value = visitArgumentExpression(pair.value);
-                return field + " : " + value;
-            }
-        });
+        return argumentExpression.accept(new ArgumentExpressionVisitorImpl());
     }
 
-    public String visitBaseTypeValue(BaseTypeValue value)
-    {
-        return value.accept(new BaseTypeValueVisitor<String>()
-        {
-            @Override
-            public String visit(ArrayTypeValue val)
-            {
-                List<String> arrayItemString = ((ArrayTypeValue) value).items.stream().map(x -> visitBaseTypeValue(x)).collect(Collectors.toList());
 
-                return "[" + String.join(",", arrayItemString) + "]";
-            }
 
-            @Override
-            public String visit(BoolTypeValue val)
-            {
-                return String.valueOf(val.value);
-            }
-
-            @Override
-            public String visit(DecimalTypeValue val)
-            {
-                return String.valueOf(val.value);
-            }
-
-            @Override
-            public String visit(IntTypeValue val)
-            {
-                return String.valueOf(val.value);
-            }
-
-            @Override
-            public String visit(LongTypeValue val)
-            {
-                // not used
-                return String.valueOf(val);
-            }
-
-            @Override
-            public String visit(NullTypeValue val)
-            {
-                return null;
-            }
-
-            @Override
-            public String visit(ObjectTypeValue val)
-            {
-                List<String> objPairString = val.keyValues.stream()
-                        .map(x -> visitKeyValuePair(x)).collect(Collectors.toList());
-                return "{" + String.join(",", objPairString) + "}";
-            }
-
-            @Override
-            public String visit(StringTypeValue val)
-            {
-                return convertToStringWithQuotes(String.valueOf(val.value));
-            }
-        });
-    }
-
-    private String visitKeyValuePair(KeyValuePair pair)
-    {
-        String field = convertToStringWithQuotes(pair.key);
-        String value = visitBaseTypeValue(pair.value);
-        return field + " : " + value;
-    }
 
 }

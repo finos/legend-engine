@@ -247,9 +247,13 @@ public class MongoDBSchemaDeserializer extends StdDeserializer<MongoDatabase>
         }
         if (schemaNode.get("additionalProperties") != null)
         {
-            schemaObject.additionalPropertiesAllowed = true;
-            if (schemaNode.get("additionalProperties").isObject())
+            if (schemaNode.get("additionalProperties").isBoolean())
             {
+                schemaObject.additionalPropertiesAllowed = schemaNode.get("additionalProperties").booleanValue();
+            }
+            else if (schemaNode.get("additionalProperties").isObject())
+            {
+                schemaObject.additionalPropertiesAllowed = true;
                 // else we expect a schema that needs to be comply
                 ObjectType additionalPropertySchema = new ObjectTypeImpl();
                 processObjectTypeFields(schemaNode.get("additionalProperties"), additionalPropertySchema);

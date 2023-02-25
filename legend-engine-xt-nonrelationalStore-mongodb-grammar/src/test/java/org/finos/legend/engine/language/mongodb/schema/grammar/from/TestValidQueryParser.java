@@ -58,7 +58,6 @@ public class TestValidQueryParser
                 {"json/query/match_with_nested_object_input.json"},
                 {"json/query/match_with_operator_input.json"},
                 {"json/query/match_with_or_operator_input.json"},
-//                {"json/query/match_with_various_comparison_expression_formats_input.json"},
                 {"json/query/multi_match_non_empty_array_input.json"},
                 {"json/query/multi_match_with_gt_with_without_operator_input.json"},
                 {"json/query/two_match_with_operators_input.json"},

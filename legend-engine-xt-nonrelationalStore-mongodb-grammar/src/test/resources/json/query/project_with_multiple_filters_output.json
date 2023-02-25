@@ -6,7 +6,7 @@
     "stages": [
       {
         "_type": "projectStage",
-        "filters": {
+        "projections": {
           "_type": "objectExpression",
           "keyValues": [
             {
