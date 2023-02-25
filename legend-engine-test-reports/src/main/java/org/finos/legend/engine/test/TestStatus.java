@@ -19,7 +19,7 @@ public enum TestStatus
     SUCCESS("Success", "Test passed", ":green_circle:"),
     ERROR("Error", "Test failed", ":red_circle:"),
     UNSUPPORTED_IN_LEGEND("Unsupported", "Feature has not been implemented in Legend. (The feature very well might be supported in the target database)", ":black_circle:"),
-    DEVIATION("Deviation from standard", "Deviation in behavior. (TODO : The semantics of this status are not clear and needs to be refined)", ":orange_circle:"),
+    DEVIATION("Deviation from standard", "Deviation in behavior. (TODO : The semantics of this status are not clear and needs to be refined)", ":diamond_shape_with_a_dot_inside:"),
     MISSING("Missing", "Test result not available. Most likely because of a systemic failure (e.g Github workflow for the database failed) or omission (e.g We have not implemented any tests for a database).", ":purple_circle:"),
     REPORT_GENERATION_ERROR("Report Generation Error", "An error/bug in the generation of this report", ":confused:");
 

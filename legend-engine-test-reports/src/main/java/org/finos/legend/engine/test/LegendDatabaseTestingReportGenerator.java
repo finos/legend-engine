@@ -77,7 +77,7 @@ public class LegendDatabaseTestingReportGenerator
 
         LegendDatabaseSQLTestingReport databaseSQLTestingReport = new LegendDatabaseSQLTestingReport(reportVisitor.sqlTestSummaries);
         String markdown = databaseSQLTestingReport.renderAsMarkdown();
-        Files.write(Paths.get(outputFilePath), markdown.getBytes(StandardCharsets.UTF_8), StandardOpenOption.TRUNCATE_EXISTING);
+        Files.write(Paths.get(outputFilePath), markdown.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE_NEW);
     }
 
     private void processTestReports(ReportVisitor reportVisitor, File reportsWorkDir) throws IOException
@@ -109,9 +109,11 @@ public class LegendDatabaseTestingReportGenerator
         {
             if (!path.toAbsolutePath().toString().endsWith(".xml"))
             {
+                System.out.println("Skipping file .. "+  path.toAbsolutePath().toString());
                 return FileVisitResult.CONTINUE;
             }
 
+            System.out.println("Processing file .. "+  path.toAbsolutePath().toString());
             Pattern pattern = Pattern.compile(".*DbSpecific_(.*)_Using.*");
             String fileName = path.getFileName().toString();
             Matcher matcher = pattern.matcher(fileName);
