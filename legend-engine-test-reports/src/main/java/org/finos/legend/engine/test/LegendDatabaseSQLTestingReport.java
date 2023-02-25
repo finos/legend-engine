@@ -62,9 +62,9 @@ public class LegendDatabaseSQLTestingReport
         stringBuilder.append(Markdown.heading("Legend SQL Compatibility Report", 1)).append("\n");
         stringBuilder.append("\n");
         stringBuilder.append(Markdown.heading("Overview", 2)).append("\n");
-        stringBuilder.append(Markdown.text("This is a summary report of SQL tests against various databases supported by Legend.")).append("\n\n");
-        stringBuilder.append(Markdown.text("The report summarizes the raw JUnit database integration test result from the Github actions.")).append("\n\n");
-        stringBuilder.append(Markdown.text("The left most 'Test' column refers to a Pure test function in the database (Maven) module in the legend-engine repository.")).append("\n\n");
+        stringBuilder.append(Markdown.text("This is a summary report of SQL tests for databases supported by Legend.")).append("\n\n");
+        stringBuilder.append(Markdown.text("The report summarizes the output of each database's Junit integration test results.")).append("\n\n");
+        stringBuilder.append(Markdown.text("The 'Test Name' column refers to a Pure test function.")).append("\n\n");
         stringBuilder.append("\n");
     }
 
@@ -108,7 +108,7 @@ public class LegendDatabaseSQLTestingReport
     private Table buildTestDetailsTable(MutableMap<String, MutableMap<TestStatus, Integer>> statusesByDatabase)
     {
         ImmutableList<String> allDatabases = this.allDatabasesInSpecificOrder();
-        MutableList<String> headers = Lists.mutable.with("Test").withAll(allDatabases);
+        MutableList<String> headers = Lists.mutable.with("Test Name").withAll(allDatabases);
 
         Table.Builder tableBuilder = new Table.Builder();
         tableBuilder.withAlignment(Table.ALIGN_LEFT);
@@ -173,12 +173,14 @@ public class LegendDatabaseSQLTestingReport
     {
         ImmutableList<DatabaseType> allDatabaseTypes = Lists.immutable.with(DatabaseType.values());
 
-        // databases that we have tests for
+        // databases that we have tests for OR databases that are actively being used by Legend users OR databases that have convenient test doubles
         ImmutableList<DatabaseType> databaseSet1 = Lists.immutable.of(
                 DatabaseType.H2, DatabaseType.Postgres,
                 DatabaseType.SqlServer,
                 DatabaseType.Snowflake, DatabaseType.Databricks,
-                DatabaseType.BigQuery, DatabaseType.Redshift);
+                DatabaseType.BigQuery, DatabaseType.Spanner,
+                DatabaseType.MemSQL, DatabaseType.Presto,
+                DatabaseType.Redshift);
 
         // everything else
         ImmutableList<DatabaseType> databaseSet2 = allDatabaseTypes.reject(d -> databaseSet1.contains(d));
