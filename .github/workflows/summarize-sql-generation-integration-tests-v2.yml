@@ -106,5 +106,5 @@ jobs:
       - name: Print Summary
         run: |
           echo "Temp Dir " ${{ runner.temp }}
-          mvn -pl legend-engine-test-reports compile exec:java -Dexec.mainClass=org.finos.legend.engine.test.LegendDatabaseTestingReportGenerator -Dexec.arguments=./summaries,${{ runner.temp }}/out.md
+          mvn -pl legend-engine-test-reports compile exec:java -Dexec.mainClass=org.finos.legend.engine.test.LegendDatabaseTestingReportGenerator -Dexec.arguments=./summaries,./out.md
          
