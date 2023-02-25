@@ -173,14 +173,14 @@ public class LegendDatabaseSQLTestingReport
     {
         ImmutableList<DatabaseType> allDatabaseTypes = Lists.immutable.with(DatabaseType.values());
 
-        // databases that we have tests for OR databases that are actively being used by Legend users OR databases that have convenient test doubles
+        // databases that we have tests for OR databases that are actively being used by Legend users OR databases that have convenient test doubles or test infrastructure
         ImmutableList<DatabaseType> databaseSet1 = Lists.immutable.of(
                 DatabaseType.H2, DatabaseType.Postgres,
                 DatabaseType.SqlServer,
                 DatabaseType.Snowflake, DatabaseType.Databricks,
                 DatabaseType.BigQuery, DatabaseType.Spanner,
                 DatabaseType.MemSQL, DatabaseType.Presto,
-                DatabaseType.Redshift);
+                DatabaseType.Redshift, DatabaseType.Athena);
 
         // everything else
         ImmutableList<DatabaseType> databaseSet2 = allDatabaseTypes.reject(d -> databaseSet1.contains(d));
