@@ -58,7 +58,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('firstDayOfThisQuarter',  $allStates,            ^ToSql(format='DATE_TRUNC(\'QUARTER\', CURRENT_DATE)%s', transform={p:String[*] | ''})),
     dynaFnToSql('firstDayOfThisYear',     $allStates,            ^ToSql(format='DATE_TRUNC(\'YEAR\', CURRENT_DATE)%s', transform={p:String[*] | ''})),
     dynaFnToSql('firstDayOfWeek',         $allStates,            ^ToSql(format='DATE_TRUNC(\'WEEK\', %s)')),
-    dynaFnToSql('firstDayOfYear',         $allStates,            ^ToSql(format='DATE_TRUNC(\'YEAR\', %s)')),    
+    dynaFnToSql('firstDayOfYear',         $allStates,            ^ToSql(format='DATE_TRUNC(\'YEAR\', %s)')),
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='date_part(\'hour\', %s)')),
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='CHARINDEX(%s)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('isAlphaNumeric',         $allStates,            ^ToSql(format=regexpPattern('%s'), transform={p:String[1]|$p->transformAlphaNumericParamsDefault()})),
@@ -101,9 +101,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
   let baseRelationalOp = $params->at(0);
   let pathNavigation = $params->at(1);
   let returnType = $params->at(2);
-
-  // let parsedPathNavigation = $pathNavigation->parseSemiStructuredPathNavigation();
-  // let processedPathNavigation = $parsedPathNavigation->fold({element, currPath|$currPath + '[' + $element + ']'}, '');
 
   // https://docs.snowflake.com/en/sql-reference/functions/get_path
   let elementAccess = format('get_path(%s, \'%s\')', [$baseRelationalOp, $pathNavigation]);    
