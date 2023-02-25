@@ -109,11 +109,11 @@ public class LegendDatabaseTestingReportGenerator
         {
             if (!path.toAbsolutePath().toString().endsWith(".xml"))
             {
-                System.out.println("Skipping file .. "+  path.toAbsolutePath().toString());
+                System.out.println("Skipping file .. " +  path.toAbsolutePath().toString());
                 return FileVisitResult.CONTINUE;
             }
 
-            System.out.println("Processing file .. "+  path.toAbsolutePath().toString());
+            System.out.println("Processing file .. " +  path.toAbsolutePath().toString());
             Pattern pattern = Pattern.compile(".*DbSpecific_(.*)_Using.*");
             String fileName = path.getFileName().toString();
             Matcher matcher = pattern.matcher(fileName);
