@@ -26,6 +26,7 @@ import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 public class LegendDatabaseSQLTestingReport
@@ -116,12 +117,12 @@ public class LegendDatabaseSQLTestingReport
 
         MutableSet<String> testNames = this.summaries.flatCollect(s -> s.testNames()).toSet();
 
-        MutableMap<String, LegendDatabaseTestingReportGenerator.SQLTestSummary> summariesByDatabase = summaries.toMap(s -> normalizeDatabaseName(s.database), s -> s);
+        MutableMap<String, LegendDatabaseTestingReportGenerator.SQLTestSummary> summariesByDatabase = summaries.toMap(s -> resolveDatabaseName(s.database), s -> s);
         for (String testName : testNames)
         {
             ImmutableList<TestStatus> testResults = allDatabases.collect(db ->
                     {
-                        LegendDatabaseTestingReportGenerator.SQLTestSummary emptySummary = new LegendDatabaseTestingReportGenerator.SQLTestSummary(db);
+                        LegendDatabaseTestingReportGenerator.SQLTestSummary emptySummary = new LegendDatabaseTestingReportGenerator.SQLTestSummary();
                         TestStatus testStatus = summariesByDatabase.getOrDefault(db, emptySummary).getTestResult(testName);
 
                         statusesByDatabase.putIfAbsent(db, Maps.mutable.empty());
@@ -151,6 +152,19 @@ public class LegendDatabaseSQLTestingReport
         return tableBuilder.build();
     }
 
+    private static String UNKNOWN_DATABASE = "UNKNOWN_DATABASE";
+
+    private String resolveDatabaseName(String database)
+    {
+        Optional<DatabaseType> databaseType = ArrayIterate.detectOptional(DatabaseType.values(), type -> type.name().equals(database));
+        if (!databaseType.isPresent())
+        {
+            System.out.println("Report processing error. Unknown database type '" + database + "'");
+            return UNKNOWN_DATABASE;
+        }
+        return databaseType.get().name();
+    }
+
     private String normalizeDatabaseName(String database)
     {
         Function<String, String> normalizer = db ->
@@ -162,6 +176,7 @@ public class LegendDatabaseSQLTestingReport
                 case "mssqlserver":
                     return DatabaseType.SqlServer.name().toLowerCase();
                 default:
+                    System.out.println("Report processing error. Unknown database type '" + db + "'");
                     return db;
             }
         };
@@ -188,6 +203,7 @@ public class LegendDatabaseSQLTestingReport
         MutableList<DatabaseType> rearranged = Lists.mutable.withAll(databaseSet1);
         rearranged.addAllIterable(databaseSet2);
 
-        return rearranged.collect(Enum::name).collect(String::toLowerCase).toImmutable();
+        //return rearranged.collect(Enum::name).collect(String::toLowerCase).toImmutable();
+        return rearranged.collect(Enum::name).toImmutable();
     }
 }
