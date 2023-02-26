@@ -224,6 +224,7 @@ public class MongoDBQueryComposer
             {
                 List<String> expressionsString = val.expressions.stream()
                         .map(x -> visitArgumentExpression(x)).collect(Collectors.toList());
+//                String expressionsString = visitArgumentExpression(val.expression);
                 return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.NOT) + "\" : [" + String.join(",", expressionsString) + "] }";
             }
 

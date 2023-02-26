@@ -1,0 +1,12 @@
+{
+  "aggregate": "firm",
+  "pipeline": [
+    {
+      "$match": {
+        "sector": {  "ind": "Finance Companies", "source": "BBG" }
+      }
+    }
+  ],
+  "cursor": {}
+}
+

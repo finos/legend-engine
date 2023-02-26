@@ -70,8 +70,8 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
     public static final String FIELD_NAME = "fieldName";
     public static final String EXPR = "$expr";
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
-    Set<String> comparisonOperators = Sets.mutable.of("$eq", "$gt", "$gte", "$lt", "$lte", "$ne", "$in", "$nin");
-    Set<String> logicalOperators = Sets.mutable.of("$and", "$or", "$nor", "$not");
+    static Set<String> comparisonOperators = Sets.mutable.of("$eq", "$gt", "$gte", "$lt", "$lte", "$ne", "$in", "$nin");
+    static Set<String> logicalOperators = Sets.mutable.of("$and", "$or", "$nor", "$not");
 
     public MongoDBQueryDeserializer()
     {
@@ -164,6 +164,10 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
         {
             Map.Entry<String, JsonNode> literalObjEntry = literalObjFields.next();
             KeyValuePair kvPair = new KeyValuePair();
+            if (isSupportedOperation(literalObjEntry.getKey()))
+            {
+                throw new IllegalStateException("Literal Object value has key that is a operator key word " + literalObjEntry.getKey());
+            }
             kvPair.key = literalObjEntry.getKey();
             kvPair.value = getLiteralValueFromEntry(literalObjEntry).value;
             kvPairs.add(kvPair);
@@ -171,6 +175,10 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
         return kvPairs;
     }
 
+    private static boolean isSupportedOperation(String key)
+    {
+        return comparisonOperators.contains(key) || logicalOperators.contains(key);
+    }
 
     @Override
     public DatabaseCommand deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException
@@ -245,7 +253,6 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
         else
         {
             LOGGER.error("Ignoring stage - at {}", jsonParser.getCurrentLocation().getLineNr());
-
         }
         throw new IllegalStateException("Unsupported stages provided in pipeline, refer above");
     }
@@ -258,11 +265,11 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
         {
             throw new IllegalStateException("Expected match node to be an object");
         }
+        //Initial set to false
         matchStage.expression = getMatchExpression(matchNode);
 
         return matchStage;
     }
-
 
     private ArgumentExpression getProjectExpression(JsonNode matchNode)
     {
@@ -278,21 +285,19 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
             {
                 case FIELD_NAME:
                     // Match stage defined with a field name as starting point "name" : {....
-                    argumentExpressions.add(getFieldBasedOperation(entry));
+                    argumentExpressions.add(getFieldBasedProjectOperation(entry));
                     break;
                 case OPERATOR_EXPRESSION:
-                    // Match stage defined with operator as starting point "$eq" : {.... or "$and" : {
-                    // argumentExpressions.add(getOperatorBasedOperation(entry));
-                    Optional<ArgumentExpression> operatorExpression = getOperatorExpression(entry);
-                    if (operatorExpression.isPresent())
-                    {
-                        argumentExpressions.add(operatorExpression.get());
-                    }
-                    else
-                    {
-                        argumentExpressions = Lists.fixedSize.empty();
-                    }
-                    break;
+                    throw new IllegalStateException("Project syntax does not support Operator Expression");
+//                    Optional<ArgumentExpression> operatorExpression = getOperatorExpression(entry, false);
+//                    if (operatorExpression.isPresent())
+//                    {
+//                        argumentExpressions.add(operatorExpression.get());
+//                    }
+//                    else
+//                    {
+//                        argumentExpressions = Lists.fixedSize.empty();
+//                    }
                 case EXPR:
                     // Match stage defined with expr as starting point "$expr" : { "$eq"....
                     break;
@@ -304,11 +309,9 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
 
     private ArgumentExpression getMatchExpression(JsonNode matchNode)
     {
-        Iterator<Map.Entry<String, JsonNode>> matchNodeFields = matchNode.fields();
-
         ObjectQueryExpression objQueryExpr = new ObjectQueryExpression();
-
         List<ArgumentExpression> argumentExpressions = Lists.mutable.empty();
+        Iterator<Map.Entry<String, JsonNode>> matchNodeFields = matchNode.fields();
         while (matchNodeFields.hasNext())
         {
             Map.Entry<String, JsonNode> entry = matchNodeFields.next();
@@ -317,12 +320,11 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
             {
                 case FIELD_NAME:
                     // Match stage defined with a field name as starting point "name" : {....
-                    argumentExpressions.add(getFieldBasedOperation(entry));
+                    argumentExpressions.add(getFieldBasedMatchOperation(entry));
                     break;
                 case OPERATOR_EXPRESSION:
                     // Match stage defined with operator as starting point "$eq" : {.... or "$and" : {
-                    // argumentExpressions.add(getOperatorBasedOperation(entry));
-                    Optional<ArgumentExpression> operatorExpression = getOperatorExpression(entry);
+                    Optional<ArgumentExpression> operatorExpression = getOperatorExpression(entry, false);
                     if (operatorExpression.isPresent())
                     {
                         argumentExpressions.add(operatorExpression.get());
@@ -341,11 +343,11 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
         return objQueryExpr;
     }
 
-
     private NotOperatorExpression getNotOperatorExpression(Map.Entry<String, JsonNode> entry)
     {
         NotOperatorExpression notOpExpression = new NotOperatorExpression();
-        notOpExpression.expressions = getObjectExpressions(entry.getValue());
+        // TODO: $not should be a single operation
+        notOpExpression.expressions = Lists.fixedSize.of(getObjectExpression(entry.getValue()));
         return notOpExpression;
     }
 
@@ -365,10 +367,10 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
 
     private List<ArgumentExpression> getObjectExpressions(JsonNode value)
     {
-        List<ArgumentExpression> objExpressions = Lists.mutable.of();
-
-        if (value.isArray())
+        if (value.isArray() && value.size() > 0)
         {
+            List<ArgumentExpression> objExpressions = Lists.mutable.of();
+
             for (JsonNode item : value)
             {
                 if (item.isValueNode())
@@ -378,21 +380,26 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
                 ArgumentExpression objExpression = getMatchExpression(item);
                 objExpressions.add(objExpression);
             }
+            return objExpressions;
         }
-        else if (value.isObject())
+        throw new IllegalStateException("Logical Operators need non-zero array of Object Expressions ($and, $or, $nor)");
+    }
+
+    private ArgumentExpression getObjectExpression(JsonNode value)
+    {
+        if (value.isObject())
         {
             ArgumentExpression objExpression = getMatchExpression(value);
-            objExpressions.add(objExpression);
+            return objExpression;
         }
-        else if (value.isValueNode())
+        else
         {
-            throw new IllegalStateException("Logical Operators need object node or pattern as argument");
+            throw new IllegalStateException("Operator need object node (eg., $not)");
         }
-        return objExpressions;
     }
 
 
-    private QueryExprKeyValue getFieldBasedOperation(Map.Entry<String, JsonNode> entry)
+    private QueryExprKeyValue getFieldBasedProjectOperation(Map.Entry<String, JsonNode> entry)
     {
         QueryExprKeyValue qryExprKeyValue = new QueryExprKeyValue();
         FieldPathExpression fieldPathExpr = new FieldPathExpression();
@@ -400,17 +407,81 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
         qryExprKeyValue.key = fieldPathExpr;
         if (entry.getValue().isValueNode())
         {
-            //something like { "name" : "joe"  }
+            // We are looking at something like { "name" : 1 } or {"name" : true }
+            LiteralValue literalValue = getLiteralValueFromEntry(entry);
+            qryExprKeyValue.value = literalValue;
+        }
+        else
+        {
+            throw new IllegalStateException("Project syntax supports only field: 1 / bool");
+        }
+        return qryExprKeyValue;
+    }
+
+    private QueryExprKeyValue getFieldBasedMatchOperation(Map.Entry<String, JsonNode> entry)
+    {
+        QueryExprKeyValue qryExprKeyValue = new QueryExprKeyValue();
+        FieldPathExpression fieldPathExpr = new FieldPathExpression();
+        fieldPathExpr.fieldPath = entry.getKey();
+        qryExprKeyValue.key = fieldPathExpr;
+        if (entry.getValue().isValueNode())
+        {
+            // We are looking at something like { "name" : "joe"  }
+            // TODO: convert this to canonical { "name" : { "$eq" : "joe" }
             LiteralValue literalValue = getLiteralValueFromEntry(entry);
             qryExprKeyValue.value = literalValue;
         }
         else if (entry.getValue().isObject())
         {
-            // something like: { "name" : {$eq : "joe" } }
-            qryExprKeyValue.value = getMatchExpression(entry.getValue());
+            // something like: { "name" : {$eq : "joe" } } - operator based rhs
+            // or "nameObj": {"fName":"xxx", "lName": "yyy"} - or literal object
+            // TODO: If it is literal value, convert this to canonical  {"name" : "$eq" : {...}}
+            // Iterate through all keys here
+            JsonNode fieldOpValueNode = entry.getValue();
+            // We can end up with a Object Query Expression or Literal value (object type)
+            ObjectQueryExpression objQueryExpr = new ObjectQueryExpression();
+            LiteralValue objValue = new LiteralValue();
+            List<ArgumentExpression> argumentExpressions = Lists.mutable.empty();
+            Iterator<Map.Entry<String, JsonNode>> matchNodeFields = fieldOpValueNode.fields();
+            boolean isObjectExpression = false;
+            while (matchNodeFields.hasNext())
+            {
+                Map.Entry<String, JsonNode> objEntry = matchNodeFields.next();
+                String keyType = objEntry.getKey();
+                if (!isSupportedOperation(keyType) && !isObjectExpression)
+                {
+                    // Assume the whole object as Object Literal - no need to iterate
+                    objValue = getLiteralValueFromEntry(entry);
+                    break;
+                }
+                else if (isSupportedOperation(keyType))
+                {
+                    // create Object Query Expression
+                    isObjectExpression = true;
+                    Optional<ArgumentExpression> operExpression = getOperatorExpression(objEntry, true);
+                    if (operExpression.isPresent())
+                    {
+                        argumentExpressions.add(operExpression.get());
+                    }
+                }
+                else
+                {
+                    throw new IllegalStateException("Field Based operation cannot mix  exprOperation & {field : value} syntax");
+                }
+            }
+            if (isObjectExpression)
+            {
+                objQueryExpr.keyValues = argumentExpressions;
+                qryExprKeyValue.value = objQueryExpr;
+            }
+            else
+            {
+                qryExprKeyValue.value = objValue;
+            }
         }
         else if (entry.getValue().isArray())
         {
+            // TODO: convert this to canonical { "name" : { "$eq" : ["joe",..] }
             LiteralValue arrayLiteral = new LiteralValue();
             ArrayTypeValue arrayTypeValue = new ArrayTypeValue();
             List<BaseTypeValue> items = Lists.mutable.of();
@@ -426,7 +497,8 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
         return qryExprKeyValue;
     }
 
-    private Optional<ArgumentExpression> getOperatorExpression(Map.Entry<String, JsonNode> opExprEntry)
+
+    private Optional<ArgumentExpression> getOperatorExpression(Map.Entry<String, JsonNode> opExprEntry, boolean fieldBasedOp)
     {
         // This has to be an object node - as all Operations are object nodes for us
         JsonNode valueNode = opExprEntry.getValue();
@@ -503,9 +575,17 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
             case "$not":
                 return Optional.of(getNotOperatorExpression(opExprEntry));
             default:
-                return Optional.of(getFieldBasedOperation(opExprEntry));
+                if (fieldBasedOp)
+                {
+                    // in Field based Operation - if we are handling an object key that is not
+                    // an operator then assume it is an object & handle as such
+                    return Optional.of(getLiteralValueFromNode(opExprEntry.getValue()));
+                }
+                else
+                {
+                    return Optional.of(getFieldBasedMatchOperation(opExprEntry));
+                }
         }
-
     }
 
     private String getOperatorType(String key)
@@ -522,11 +602,6 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
         {
             return FIELD_NAME;
         }
-    }
-
-    private boolean isSupportedOperation(String key)
-    {
-        return comparisonOperators.contains(key) || logicalOperators.contains(key);
     }
 
     private Stage getProjectStage(JsonNode projectNode) throws IOException

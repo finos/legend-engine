@@ -153,7 +153,7 @@ public class ArgumentExpressionVisitorImpl implements ArgumentExpressionVisitor<
     public String visit(NEOperatorExpression val)
     {
         String expString = visit(val.expression);
-        return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.NE) + "\" : " + expString + " }";
+        return "\"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.NE) + "\" : " + expString;
     }
 
     @Override

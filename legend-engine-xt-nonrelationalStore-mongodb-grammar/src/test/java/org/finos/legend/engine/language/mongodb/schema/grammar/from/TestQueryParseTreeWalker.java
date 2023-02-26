@@ -83,7 +83,7 @@ public class TestQueryParseTreeWalker
     @Ignore
     public void testAggregateWithMatchWithVariousComparisonOperatorFormats()
     {
-        testRoundtrip("json/query/match_with_various_comparison_expression_formats_input.json",
+        testRoundtrip("json/query/invalid_not_operator_expression_formats_input.json",
                 "json/query/match_with_various_comparison_expression_formats_output.json");
     }
 
@@ -115,6 +115,17 @@ public class TestQueryParseTreeWalker
     {
         testRoundtrip("json/query/multi_match_with_gt_with_without_operator_input.json",
                 "json/query/multi_match_with_gt_with_without_operator_output.json");
+    }
+
+    @Test
+    public void testInconsistFieldBasedMatchOperator() throws Exception
+    {
+        String invalidQueryFile = "json/query/invalid_match_with_eq_operator_input.json";
+        // String invalidQueryFile = "json/query/valid_match_with_eq_operator_input_as_object.json";
+        URL url1 = Objects.requireNonNull(getClass().getClassLoader().getResource(invalidQueryFile));
+        String invalidQuery = new String(Files.readAllBytes(Paths.get(url1.toURI())), StandardCharsets.UTF_8);
+
+        DatabaseCommand invalidDBCommand = parseAndWalkDatabaseCommand(invalidQuery);
     }
 
     @Test

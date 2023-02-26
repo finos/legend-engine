@@ -43,33 +43,6 @@ public class MongoDBSchemaJsonComposer
         return this.visit(database);
     }
 
-    /*
-{
-	"database": {
-		"databaseName": "my_database_1",
-		"collections": [{
-			"options": {
-				"validator": {
-					"$jsonSchema": {
-						"bsonType": "object",
-						"title": "Record of Firm",
-						"description": "This document records the details of an employee",
-						"properties": {
-							"name": {
-								"bsonType": "string",
-								"description": "name of the firm",
-								"minLength": 2
-							}
-						}
-					},
-					"validationLevel": "strict",
-					"validationAction": "error"
-				}
-			}
-		}]
-	}
-}
-     */
     private String visit(MongoDatabase database)
     {
         int dbNodeTabIndex = 1;

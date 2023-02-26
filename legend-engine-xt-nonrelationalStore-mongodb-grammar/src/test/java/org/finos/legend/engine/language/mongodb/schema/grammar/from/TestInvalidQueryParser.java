@@ -53,12 +53,11 @@ public class TestInvalidQueryParser
         return Arrays.asList(new Object[][]{
 //                {"json/query/project_with_incl_and_excl_should_throw_input.json"},
                 {"json/query/stage_should_have_1_field.json", "Expected Stage command node to be an object, with just 1 key(stage)"},
-                {"json/query/match_with_various_comparison_expression_formats_input.json", "Logical Operators need object node or pattern as argument"},
-                {"json/query/match_with_various_comparison_expression_formats_input.json", "Logical Operators need object node or pattern as argument"},
-                {"json/query/invalid_match_with_and_operator_input.json", "some error "},
-                {"json/query/invalid_project_with_single_inclusion_filter_input.json", "some error "},
-                {"json/query/invalid_match_with_and_operator_input_empty_array", "some error "},
-                {"json/query/invalid_match_with_eq_operator_input.json", "some error "},
+                {"json/query/invalid_not_operator_expression_formats_input.json", "Operator need object node (eg., $not)"},
+                {"json/query/invalid_match_with_and_operator_input.json", "Logical Operators need non-zero array of Object Expressions ($and, $or, $nor)"},
+                {"json/query/invalid_match_with_and_operator_input_empty_array.json", "Logical Operators need non-zero array of Object Expressions ($and, $or, $nor)"},
+                {"json/query/invalid_match_with_eq_operator_input.json", "Field Based operation cannot mix  exprOperation & {field : value} syntax"},
+                {"json/query/invalid_project_with_single_inclusion_filter_input.json", "Project syntax supports only field: 1 / bool"},
         });
     }
 

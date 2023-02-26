@@ -658,14 +658,6 @@ Diagram meta::external::store::mongodb::metamodel::Mongo_QueryModel_Diagram(widt
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_21(
-        source=cview_47,
-        target=cview_57,
-        points=[(328.84651,793.47989),(328.93457,692.93669)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
 
     GeneralizationView gview_22(
         source=cview_31,

@@ -65,6 +65,8 @@ public class TestValidQueryParser
                 {"json/query/project_with_multiple_filters_input.json"},
                 {"json/query/project_with_single_computed_field_input.json"},
                 {"json/query/project_with_single_inclusion_filter_input.json"},
+                {"json/query/valid_match_with_two_operator_input.json"},
+                {"json/query/valid_match_with_object_value_input.json"},
                 // The next test file - conforms to JSON, but the last match wins!
                 {"json/query/multi_match_stage_input.json"},
         });

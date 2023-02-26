@@ -340,7 +340,7 @@ Class meta::external::store::mongodb::metamodel::aggregation::NinOperatorExpress
 Class {doc.doc = 'Logical Operator Expressions https://www.mongodb.com/docs/manual/reference/operator/query-logical/'}
 meta::external::store::mongodb::metamodel::aggregation::LogicalOperatorExpression extends ArgumentExpression
 {
-  expressions: ArgumentExpression[*];
+  expressions: ArgumentExpression[1..*];
 }
 
 Class meta::external::store::mongodb::metamodel::aggregation::AndOperatorExpression extends LogicalOperatorExpression
@@ -353,6 +353,8 @@ Class meta::external::store::mongodb::metamodel::aggregation::OrOperatorExpressi
 
 Class meta::external::store::mongodb::metamodel::aggregation::NotOperatorExpression extends LogicalOperatorExpression
 {
+  // TODO: Strip out Not from other logical operator as it has only 1 expression
+  // expression: ArgumentExpression[1];
 }
 
 Class meta::external::store::mongodb::metamodel::aggregation::NorOperatorExpression extends LogicalOperatorExpression
