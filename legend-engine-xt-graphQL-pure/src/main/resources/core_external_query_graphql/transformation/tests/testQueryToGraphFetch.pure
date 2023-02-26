@@ -267,6 +267,18 @@ Class meta::external::query::graphQL::transformation::queryToPure::tests::model:
   isSeniorCitizen() {$this.age > 60}: Boolean[1];
 }
 
+Class meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm
+{
+  legalName: String[1];
+  id: String[1];
+}
+
+Association meta::external::query::graphQL::transformation::queryToPure::tests::model::FIrm_Employee
+{
+  firm: meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm[1];
+  employees: meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1];
+}
+
 Class meta::external::query::graphQL::transformation::queryToPure::tests::model::Query
 {
   personByVariousProps(names:String[*], phone: Integer[1], isSeniorCitizen: Boolean[1], zipcode: String[1], minBalance: Float[1], maxBalance: Float[1])
@@ -305,4 +317,19 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
               '        fullName()\n'+
               '    }\n' +
               '}}#', $pureGraphFetch->meta::pure::graphFetch::routing::asString(true));
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::tests::testConvertQueryWithAssociationProperties():Boolean[1]
+{
+  let graphQLDocument = meta::legend::compileVS('#GQL{ query { employees: personByName(name:"John Doe") { firstName lastName firm { id } } } }#')->cast(@meta::external::query::graphQL::metamodel::sdl::Document);
+  let pureGraphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($graphQLDocument, Query);
+  assertEquals('#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Query {\n' +
+               '    personByName(\'John Doe\') {\n' +
+               '        firstName, \n'+
+               '        lastName, \n'+
+               '        firm {\n'+
+               '            id\n'+
+               '        }\n'+
+               '    }\n' +
+               '}}#', $pureGraphFetch->meta::pure::graphFetch::routing::asString(true));
 }
