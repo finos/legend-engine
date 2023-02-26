@@ -22,8 +22,7 @@ import org.finos.legend.pure.runtime.java.compiled.testHelper.IgnoreUnsupportedA
 import org.junit.runner.RunWith;
 
 @RunWith(IgnoreUnsupportedApiPureTestSuiteRunner.class)
-public class Test_Relational_DbSpecific_Snowflake_UsingPureClientTestSuite
-        extends Relational_DbSpecific_UsingPureClientTestSuite
+public class Test_Relational_DbSpecific_Snowflake_UsingPureClientTestSuite extends Relational_DbSpecific_UsingPureClientTestSuite
 {
     public static Test suite() throws Exception
     {

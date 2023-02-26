@@ -114,17 +114,15 @@ public class LegendDatabaseTestingReportGenerator
             }
 
             System.out.println("Processing file .. " +  path.toAbsolutePath().toString());
-            Pattern pattern = Pattern.compile(".*DbSpecific_(.*)_Using.*");
+            Pattern pattern = Pattern.compile(".*DbSpecific_.*");
             String fileName = path.getFileName().toString();
             Matcher matcher = pattern.matcher(fileName);
             if (!matcher.matches())
             {
+                System.out.println("Skipping file .. " +  path.toAbsolutePath().toString());
                 return FileVisitResult.CONTINUE;
             }
-            String databaseName = matcher.group(1).toLowerCase();
-            //int nameCount = path.getParent().toAbsolutePath().getNameCount();
-            //String databaseName = path.getName(nameCount -1).toString();
-            SQLTestSummary sqlTestSummary = processJunitXmlReport(this.builder, databaseName, path.toFile().getAbsolutePath());
+            SQLTestSummary sqlTestSummary = processJunitXmlReport(this.builder, path.toFile().getAbsolutePath());
             sqlTestSummaries.add(sqlTestSummary);
             return FileVisitResult.CONTINUE;
         }
@@ -170,7 +168,7 @@ public class LegendDatabaseTestingReportGenerator
         return TestStatus.SUCCESS;
     }
 
-    private static SQLTestSummary processJunitXmlReport(DocumentBuilder builder, String database, String file) throws IOException
+    private static SQLTestSummary processJunitXmlReport(DocumentBuilder builder, String file) throws IOException
     {
         try
         {
@@ -179,13 +177,27 @@ public class LegendDatabaseTestingReportGenerator
             XPath xPath = XPathFactory.newInstance().newXPath();
             NodeList testCasesList = (NodeList) xPath.compile("/testsuite/testcase").evaluate(xmlDocument, XPathConstants.NODESET);
 
-            SQLTestSummary sqlTestSummary = new SQLTestSummary(database);
+            SQLTestSummary sqlTestSummary = new SQLTestSummary();
             for (int i = 0; i < testCasesList.getLength(); i++)
             {
                 Node testCase = testCasesList.item(i);
                 NamedNodeMap attributes = testCase.getAttributes();
-                String testCaseName = attributes.getNamedItem("name").getNodeValue();
-                testCaseName = testCaseName.substring(0, testCaseName.indexOf("["));
+                String testCaseNameAttribute = attributes.getNamedItem("name").getNodeValue();
+                String testCaseName = testCaseNameAttribute.substring(0, testCaseNameAttribute.indexOf("["));
+                String testCaseDatabaseName = testCaseNameAttribute.substring(testCaseNameAttribute.indexOf("[")+1, testCaseNameAttribute.indexOf("]"));
+
+                if (sqlTestSummary.database == null)
+                {
+                    sqlTestSummary.database = testCaseDatabaseName;
+                }
+                else
+                {
+                    if (!sqlTestSummary.database.equals(testCaseDatabaseName))
+                    {
+                        String message = "Report processing error. Report's database name has already been set to '%s' while the current test's database name is '%s'";
+                        System.out.println(String.format(message, sqlTestSummary.database, testCaseDatabaseName));
+                    }
+                }
 
                 Node skipped = (Node) xPath.compile("skipped").evaluate(testCase, XPathConstants.NODE);
                 Node error = (Node) xPath.compile("error").evaluate(testCase, XPathConstants.NODE);
@@ -230,9 +242,8 @@ public class LegendDatabaseTestingReportGenerator
 
         public String database;
 
-        public SQLTestSummary(String database)
+        public SQLTestSummary()
         {
-            this.database = database;
         }
 
         public void add(String test, TestStatus status)
