@@ -184,7 +184,7 @@ public class LegendDatabaseTestingReportGenerator
                 NamedNodeMap attributes = testCase.getAttributes();
                 String testCaseNameAttribute = attributes.getNamedItem("name").getNodeValue();
                 String testCaseName = testCaseNameAttribute.substring(0, testCaseNameAttribute.indexOf("["));
-                String testCaseDatabaseName = testCaseNameAttribute.substring(testCaseNameAttribute.indexOf("[")+1, testCaseNameAttribute.indexOf("]"));
+                String testCaseDatabaseName = testCaseNameAttribute.substring(testCaseNameAttribute.indexOf("[") + 1, testCaseNameAttribute.indexOf("]"));
 
                 if (sqlTestSummary.database == null)
                 {
