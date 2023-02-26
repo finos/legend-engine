@@ -27,7 +27,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 
 public class LegendDatabaseSQLTestingReport
 {
@@ -163,25 +162,6 @@ public class LegendDatabaseSQLTestingReport
             return UNKNOWN_DATABASE;
         }
         return databaseType.get().name();
-    }
-
-    private String normalizeDatabaseName(String database)
-    {
-        Function<String, String> normalizer = db ->
-        {
-            switch (db)
-            {
-                case "postgresql":
-                    return DatabaseType.Postgres.name().toLowerCase();
-                case "mssqlserver":
-                    return DatabaseType.SqlServer.name().toLowerCase();
-                default:
-                    System.out.println("Report processing error. Unknown database type '" + db + "'");
-                    return db;
-            }
-        };
-
-        return normalizer.apply(database);
     }
 
     private ImmutableList<String> allDatabasesInSpecificOrder()

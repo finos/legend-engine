@@ -58,7 +58,7 @@ public class LegendDatabaseTestingReportGenerator
     public static void main(String[] args) throws Exception
     {
         LegendDatabaseTestingReportGenerator generator = new LegendDatabaseTestingReportGenerator();
-        generator.generate("D:\\scratch\\reports\\tmp.y6wULC0zbb-2", "D:\\scratch\\reports\\tmp.y6wULC0zbb-2\\out.md2");
+        generator.generate(args[0], args[1]);
     }
     
     private void generate(String reportsDirPath, String outputFilePath) throws Exception
@@ -77,7 +77,6 @@ public class LegendDatabaseTestingReportGenerator
 
         LegendDatabaseSQLTestingReport databaseSQLTestingReport = new LegendDatabaseSQLTestingReport(reportVisitor.sqlTestSummaries);
         String markdown = databaseSQLTestingReport.renderAsMarkdown();
-        System.out.println(markdown);
         Files.write(Paths.get(outputFilePath), markdown.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE_NEW);
     }
 
