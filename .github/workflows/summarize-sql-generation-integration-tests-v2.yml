@@ -47,6 +47,13 @@ jobs:
           git config --global committer.name "FINOS Admin"
           git config --global author.email "${GITHUB_ACTOR}@users.noreply.github.com"
           git config --global author.name "${GITHUB_ACTOR}"	
+      - name: Download Summary For H2
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: database-h2-sql-generation-integration-test.yml
+          path: summaries
+          if_no_artifact_found: warn
+          workflow_conclusion: ''          
       - name: Download Summary For BigQuery
         uses: dawidd6/action-download-artifact@v2
         with:
