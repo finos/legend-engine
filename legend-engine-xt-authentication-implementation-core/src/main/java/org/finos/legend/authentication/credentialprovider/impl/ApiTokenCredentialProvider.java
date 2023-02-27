@@ -16,26 +16,26 @@ package org.finos.legend.authentication.credentialprovider.impl;
 
 import org.finos.legend.authentication.credentialprovider.CredentialProvider;
 import org.finos.legend.authentication.intermediationrule.IntermediationRule;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiKeyAuthenticationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiTokenAuthenticationSpecification;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.ApiTokenCredential;
 
 import java.util.List;
 
-public class ApikeyCredentialProvider extends CredentialProvider<ApiKeyAuthenticationSpecification, ApiTokenCredential>
+public class ApiTokenCredentialProvider extends CredentialProvider<ApiTokenAuthenticationSpecification, ApiTokenCredential>
 {
-    public ApikeyCredentialProvider()
+    public ApiTokenCredentialProvider()
     {
 
     }
 
-    public ApikeyCredentialProvider(List<IntermediationRule> intermediationRules)
+    public ApiTokenCredentialProvider(List<IntermediationRule> intermediationRules)
     {
         super(intermediationRules);
     }
 
     @Override
-    public ApiTokenCredential makeCredential(ApiKeyAuthenticationSpecification AuthenticationSpecification, Identity identity) throws Exception
+    public ApiTokenCredential makeCredential(ApiTokenAuthenticationSpecification AuthenticationSpecification, Identity identity) throws Exception
     {
         return (ApiTokenCredential) super.makeCredential(AuthenticationSpecification, identity, ApiTokenCredential.class);
     }

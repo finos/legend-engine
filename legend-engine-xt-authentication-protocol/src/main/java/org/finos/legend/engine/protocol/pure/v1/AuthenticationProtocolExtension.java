@@ -20,8 +20,8 @@ import org.eclipse.collections.api.factory.Maps;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiTokenAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiKeyAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.EncryptedPrivateKeyPairAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.demo.AuthenticationDemo;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.GCPWIFWithAWSIdPAuthenticationSpecification;
@@ -53,7 +53,7 @@ public class AuthenticationProtocolExtension implements PureProtocolExtension
                         .build(),
                 // Authentication
                 ProtocolSubTypeInfo.newBuilder(AuthenticationSpecification.class)
-                        .withSubtype(ApiKeyAuthenticationSpecification.class, "apiKey")
+                        .withSubtype(ApiTokenAuthenticationSpecification.class, "apiToken")
                         .withSubtype(UserPasswordAuthenticationSpecification.class, "userPassword")
                         .withSubtype(EncryptedPrivateKeyPairAuthenticationSpecification.class, "encryptedPrivateKey")
                         .withSubtype(GCPWIFWithAWSIdPAuthenticationSpecification.class, "gcpWithAWSIdP")

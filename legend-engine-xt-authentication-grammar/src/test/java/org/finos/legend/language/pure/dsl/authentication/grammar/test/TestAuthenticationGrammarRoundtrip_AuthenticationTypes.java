@@ -44,10 +44,8 @@ public class TestAuthenticationGrammarRoundtrip_AuthenticationTypes extends Test
                 "import test::*;\n" +
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
-                "  authentication: ApiKey\n" +
+                "  authentication: ApiToken\n" +
                 "  {\n" +
-                "    location: 'header';\n" +
-                "    keyName: 'key1';\n" +
                 "    value: PropertiesFileSecret\n" +
                 "    {\n" +
                 "      propertyName: 'property1';\n" +

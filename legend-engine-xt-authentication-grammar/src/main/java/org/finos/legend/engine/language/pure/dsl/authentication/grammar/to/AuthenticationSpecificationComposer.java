@@ -15,7 +15,7 @@
 package org.finos.legend.engine.language.pure.dsl.authentication.grammar.to;
 
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiKeyAuthenticationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiTokenAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecificationVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.EncryptedPrivateKeyPairAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.GCPWIFWithAWSIdPAuthenticationSpecification;
@@ -46,12 +46,10 @@ public class AuthenticationSpecificationComposer implements AuthenticationSpecif
     }
 
     @Override
-    public String visit(ApiKeyAuthenticationSpecification authenticationSpecification)
+    public String visit(ApiTokenAuthenticationSpecification authenticationSpecification)
     {
-        return getTabString(indentLevel) + "authentication: ApiKey\n" +
+        return getTabString(indentLevel) + "authentication: ApiToken\n" +
                 getTabString(indentLevel) + "{\n" +
-                getTabString(indentLevel + 1) + "location: '" + authenticationSpecification.location.name().toLowerCase() + "';\n" +
-                getTabString(indentLevel + 1) + "keyName: '" + authenticationSpecification.keyName + "';\n" +
                 getTabString(indentLevel + 1) + "value: " + renderCredentialVaultSecret(authenticationSpecification.value, indentLevel + 1, context) + "\n" +
                 getTabString(indentLevel) + "}\n";
     }

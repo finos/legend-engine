@@ -15,11 +15,11 @@
 package org.finos.legend.authentication;
 
 import org.eclipse.collections.impl.list.mutable.FastList;
-import org.finos.legend.authentication.credentialprovider.impl.ApikeyCredentialProvider;
-import org.finos.legend.authentication.intermediationrule.impl.ApiKeyFromVaultRule;
+import org.finos.legend.authentication.credentialprovider.impl.ApiTokenCredentialProvider;
+import org.finos.legend.authentication.intermediationrule.impl.ApiTokenFromVaultRule;
 import org.finos.legend.authentication.vault.CredentialVaultProvider;
 import org.finos.legend.authentication.vault.impl.CredentialVaultProviderForTest;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiKeyAuthenticationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiTokenAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.PropertiesFileSecret;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential;
@@ -46,10 +46,10 @@ public class TestCredentialCreation_ApiKey
     @Test
     public void makeCredentialFromPropertiesVault() throws Exception
     {
-        ApikeyCredentialProvider credentialProvider = new ApikeyCredentialProvider();
-        credentialProvider.configureWithRules(FastList.newListWith(new ApiKeyFromVaultRule(credentialVaultProvider)));
+        ApiTokenCredentialProvider credentialProvider = new ApiTokenCredentialProvider();
+        credentialProvider.configureWithRules(FastList.newListWith(new ApiTokenFromVaultRule(credentialVaultProvider)));
 
-        ApiKeyAuthenticationSpecification authenticationSpecification = new ApiKeyAuthenticationSpecification("header", "key", new PropertiesFileSecret("property1"));
+        ApiTokenAuthenticationSpecification authenticationSpecification = new ApiTokenAuthenticationSpecification(new PropertiesFileSecret("property1"));
         ApiTokenCredential credential = credentialProvider.makeCredential(authenticationSpecification, identity);
 
         assertEquals("key1", credential.getApiToken());

@@ -18,7 +18,7 @@ import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiKeyAuthenticationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiTokenAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.UserPasswordAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.CredentialVaultSecret;
@@ -39,14 +39,12 @@ public class AuthenticationGrammarComposerExtension implements IAuthenticationGr
     {
         return Lists.mutable.with((authenticationSpec, indentLevel) ->
         {
-            if (authenticationSpec instanceof ApiKeyAuthenticationSpecification)
+            if (authenticationSpec instanceof ApiTokenAuthenticationSpecification)
             {
-                ApiKeyAuthenticationSpecification apiKeyAuthenticationSpecification = (ApiKeyAuthenticationSpecification) authenticationSpec;
-                return "ApiKey\n" +
+                ApiTokenAuthenticationSpecification apiTokenAuthenticationSpecification = (ApiTokenAuthenticationSpecification) authenticationSpec;
+                return "ApiToken\n" +
                         getTabString(indentLevel) + "{\n" +
-                        getTabString(indentLevel + 1) + "location: '" + apiKeyAuthenticationSpecification.location.name().toLowerCase() + "';\n" +
-                        getTabString(indentLevel + 1) + "keyName: '" + apiKeyAuthenticationSpecification.keyName + "';\n" +
-                        getTabString(indentLevel + 1) + "value: " + renderCredentialVaultSecret(apiKeyAuthenticationSpecification.value, indentLevel + 1) + "\n" +
+                        getTabString(indentLevel + 1) + "value: " + renderCredentialVaultSecret(apiTokenAuthenticationSpecification.value, indentLevel + 1) + "\n" +
                         getTabString(indentLevel) + "}";
             }
             else if (authenticationSpec instanceof UserPasswordAuthenticationSpecification)

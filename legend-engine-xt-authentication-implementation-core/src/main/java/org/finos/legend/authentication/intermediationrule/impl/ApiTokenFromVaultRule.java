@@ -16,21 +16,21 @@ package org.finos.legend.authentication.intermediationrule.impl;
 
 import org.finos.legend.authentication.intermediationrule.IntermediationRule;
 import org.finos.legend.authentication.vault.CredentialVaultProvider;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiKeyAuthenticationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiTokenAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.CredentialVaultSecret;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.ApiTokenCredential;
 
-public class ApiKeyFromVaultRule extends IntermediationRule<ApiKeyAuthenticationSpecification, Credential, ApiTokenCredential>
+public class ApiTokenFromVaultRule extends IntermediationRule<ApiTokenAuthenticationSpecification, Credential, ApiTokenCredential>
 {
-    public ApiKeyFromVaultRule(CredentialVaultProvider credentialVaultProvider)
+    public ApiTokenFromVaultRule(CredentialVaultProvider credentialVaultProvider)
     {
         super(credentialVaultProvider);
     }
 
     @Override
-    public ApiTokenCredential makeCredential(ApiKeyAuthenticationSpecification specification, Credential credential, Identity identity) throws Exception
+    public ApiTokenCredential makeCredential(ApiTokenAuthenticationSpecification specification, Credential credential, Identity identity) throws Exception
     {
         CredentialVaultSecret credentialVaultSecret = specification.value;
         String apiKey = super.lookupSecret(credentialVaultSecret);

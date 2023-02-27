@@ -39,7 +39,7 @@ authenticationDemo:     AUTHENTICATION_DEMO qualifiedName
 
 authentication:     AUTHENTICATION_DEMO_AUTHENTICATION COLON (
                         userPasswordAuthentication |
-                        apiKeyAuthentication |
+                        apiTokenAuthentication |
                         encryptedPrivateKeyAuthentication |
                         gcpWIFWithAWSIdPAuthentication
                     )
@@ -63,26 +63,17 @@ userPasswordAuthentication_username:    USER_PASSWORD_AUTHENTICATION_USERNAME CO
 userPasswordAuthentication_password:    USER_PASSWORD_AUTHENTICATION_PASSWORD COLON secret_value
 ;
 
-// -------------------------------------- APIKeyAuthentication --------------------------------------
+// -------------------------------------- APITokenAuthentication --------------------------------------
 
-apiKeyAuthentication :     API_KEY_AUTHENTICATION
+apiTokenAuthentication :     API_TOKEN_AUTHENTICATION
                                 BRACE_OPEN
                                 (
-                                    apiKeyAuthentication_keyName |
-                                    apiKeyAuthentication_location |
-                                    apiKeyAuthentication_value
+                                    apiTokenAuthentication_value
                                 )*
                                 BRACE_CLOSE
 ;
 
-
-apiKeyAuthentication_keyName:    API_KEY_AUTHENTICATION_KEY_NAME COLON STRING SEMI_COLON
-;
-
-apiKeyAuthentication_location:    API_KEY_AUTHENTICATION_LOCATION COLON STRING SEMI_COLON
-;
-
-apiKeyAuthentication_value:    API_KEY_AUTHENTICATION_VALUE COLON secret_value
+apiTokenAuthentication_value:    API_TOKEN_AUTHENTICATION_VALUE COLON secret_value
 ;
 
 // -------------------------------------- Encrypted Private Key Authentication --------------------------------------

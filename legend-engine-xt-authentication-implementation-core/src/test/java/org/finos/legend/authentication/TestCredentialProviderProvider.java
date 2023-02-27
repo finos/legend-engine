@@ -19,13 +19,13 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.authentication.credentialprovider.CredentialProvider;
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
-import org.finos.legend.authentication.credentialprovider.impl.ApikeyCredentialProvider;
+import org.finos.legend.authentication.credentialprovider.impl.ApiTokenCredentialProvider;
 import org.finos.legend.authentication.credentialprovider.impl.UserPasswordCredentialProvider;
 import org.finos.legend.authentication.intermediationrule.IntermediationRule;
 import org.finos.legend.authentication.intermediationrule.IntermediationRuleProvider;
 import org.finos.legend.authentication.testrules.CannedApiKeyRuleForTesting;
 import org.finos.legend.authentication.testrules.CannedUserPasswordRuleForTesting;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiKeyAuthenticationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiTokenAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.UserPasswordAuthenticationSpecification;
 import org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential;
 import org.junit.Test;
@@ -39,17 +39,17 @@ public class TestCredentialProviderProvider
 {
     /*
     Setup
-         CredentialProviderProvider is given two unconfigured providers :  ApikeyCredentialProvider, UserPasswordCredentialProvider
-         IntermediationRuleProvider provides a rule that matches only ApikeyCredentialProvider
+         CredentialProviderProvider is given two unconfigured providers :  ApiTokenCredentialProvider, UserPasswordCredentialProvider
+         IntermediationRuleProvider provides a rule that matches only ApiTokenCredentialProvider
     Behavior
-         CredentialProviderProvider is configured only with the ApikeyCredentialProvider that has a matching rule
+         CredentialProviderProvider is configured only with the ApiTokenCredentialProvider that has a matching rule
      */
     @Test
     public void providerWiring_testcase1()
     {
-        ApikeyCredentialProvider apikeyCredentialProvider = new ApikeyCredentialProvider();
+        ApiTokenCredentialProvider apiTokenCredentialProvider = new ApiTokenCredentialProvider();
         UserPasswordCredentialProvider userPasswordCredentialProvider = new UserPasswordCredentialProvider();
-        FastList<CredentialProvider> credentialProviders = FastList.newListWith(apikeyCredentialProvider, userPasswordCredentialProvider);
+        FastList<CredentialProvider> credentialProviders = FastList.newListWith(apiTokenCredentialProvider, userPasswordCredentialProvider);
 
         CannedApiKeyRuleForTesting apiKeyRule = new CannedApiKeyRuleForTesting(null);
         IntermediationRuleProvider intermediationRuleProvider = new IntermediationRuleProvider(FastList.newListWith(apiKeyRule));
@@ -58,23 +58,23 @@ public class TestCredentialProviderProvider
 
         FastList<CredentialProvider> configuredCredentialProviders = credentialProviderProvider.getConfiguredCredentialProviders();
         assertEquals(1, configuredCredentialProviders.size());
-        assertTrue(configuredCredentialProviders.contains(apikeyCredentialProvider));
-        assertTrue(apikeyCredentialProvider.getIntermediationRules().contains(apiKeyRule));
+        assertTrue(configuredCredentialProviders.contains(apiTokenCredentialProvider));
+        assertTrue(apiTokenCredentialProvider.getIntermediationRules().contains(apiKeyRule));
     }
 
     /*
     Setup
-         CredentialProviderProvider is given two unconfigured providers :  ApikeyCredentialProvider, UserPasswordCredentialProvider
-         IntermediationRuleProvider provides a rule that matches  ApikeyCredentialProvider and UserPasswordCredentialProvider
+         CredentialProviderProvider is given two unconfigured providers :  ApiTokenCredentialProvider, UserPasswordCredentialProvider
+         IntermediationRuleProvider provides a rule that matches  ApiTokenCredentialProvider and UserPasswordCredentialProvider
     Behavior
          CredentialProviderProvider is configured with both the providers and the appropriate matching rules
      */
     @Test
     public void providerWiring_testcase2()
     {
-        ApikeyCredentialProvider apikeyCredentialProvider = new ApikeyCredentialProvider();
+        ApiTokenCredentialProvider apiTokenCredentialProvider = new ApiTokenCredentialProvider();
         UserPasswordCredentialProvider userPasswordCredentialProvider = new UserPasswordCredentialProvider();
-        FastList<CredentialProvider> credentialProviders = FastList.newListWith(apikeyCredentialProvider, userPasswordCredentialProvider);
+        FastList<CredentialProvider> credentialProviders = FastList.newListWith(apiTokenCredentialProvider, userPasswordCredentialProvider);
 
         CannedApiKeyRuleForTesting apiKeyRule = new CannedApiKeyRuleForTesting(null);
         CannedUserPasswordRuleForTesting userPasswordRule = new CannedUserPasswordRuleForTesting(null);
@@ -85,8 +85,8 @@ public class TestCredentialProviderProvider
         FastList<CredentialProvider> configuredCredentialProviders = credentialProviderProvider.getConfiguredCredentialProviders();
         assertEquals(2, configuredCredentialProviders.size());
 
-        assertTrue(configuredCredentialProviders.contains(apikeyCredentialProvider));
-        assertTrue(apikeyCredentialProvider.getIntermediationRules().contains(apiKeyRule));
+        assertTrue(configuredCredentialProviders.contains(apiTokenCredentialProvider));
+        assertTrue(apiTokenCredentialProvider.getIntermediationRules().contains(apiKeyRule));
 
         assertTrue(configuredCredentialProviders.contains(userPasswordCredentialProvider));
         assertTrue(userPasswordCredentialProvider.getIntermediationRules().contains(userPasswordRule));
@@ -95,9 +95,9 @@ public class TestCredentialProviderProvider
     @Test
     public void explain()
     {
-        ApikeyCredentialProvider apikeyCredentialProvider = new ApikeyCredentialProvider();
+        ApiTokenCredentialProvider apiTokenCredentialProvider = new ApiTokenCredentialProvider();
         UserPasswordCredentialProvider userPasswordCredentialProvider = new UserPasswordCredentialProvider();
-        FastList<CredentialProvider> credentialProviders = FastList.newListWith(apikeyCredentialProvider, userPasswordCredentialProvider);
+        FastList<CredentialProvider> credentialProviders = FastList.newListWith(apiTokenCredentialProvider, userPasswordCredentialProvider);
 
         CannedApiKeyRuleForTesting apiKeyRule = new CannedApiKeyRuleForTesting(null);
         CannedUserPasswordRuleForTesting userPasswordRule = new CannedUserPasswordRuleForTesting(null);
@@ -107,9 +107,9 @@ public class TestCredentialProviderProvider
         String explain = credentialProviderProvider.explain();
 
         String expected =
-                "CredentialProvider : org.finos.legend.authentication.credentialprovider.impl.ApikeyCredentialProvider\n" +
+                "CredentialProvider : org.finos.legend.authentication.credentialprovider.impl.ApiTokenCredentialProvider\n" +
                 "\tRule   : org.finos.legend.authentication.testrules.CannedApiKeyRuleForTesting\n" +
-                "\t\tSpec   : org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiKeyAuthenticationSpecification\n" +
+                "\t\tSpec   : org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiTokenAuthenticationSpecification\n" +
                 "\t\tInput  : org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential\n" +
                 "\t\tOutput : org.finos.legend.engine.shared.core.identity.credential.ApiTokenCredential\n" +
                 "CredentialProvider : org.finos.legend.authentication.credentialprovider.impl.UserPasswordCredentialProvider\n" +
@@ -124,7 +124,7 @@ public class TestCredentialProviderProvider
     @Test
     public void testMatching()
     {
-        ApikeyCredentialProvider apikeyCredentialProvider = new ApikeyCredentialProvider();
+        ApiTokenCredentialProvider apikeyCredentialProvider = new ApiTokenCredentialProvider();
         UserPasswordCredentialProvider userPasswordCredentialProvider = new UserPasswordCredentialProvider();
         FastList<CredentialProvider> credentialProviders = FastList.newListWith(apikeyCredentialProvider, userPasswordCredentialProvider);
 
@@ -134,7 +134,7 @@ public class TestCredentialProviderProvider
 
         CredentialProviderProvider credentialProviderProvider = new CredentialProviderProvider(credentialProviders, intermediationRuleProvider);
 
-        Optional<CredentialProvider> matchingApiKeyCredentialProvider = credentialProviderProvider.findMatchingCredentialProvider(ApiKeyAuthenticationSpecification.class, Sets.immutable.of(AnonymousCredential.class));
+        Optional<CredentialProvider> matchingApiKeyCredentialProvider = credentialProviderProvider.findMatchingCredentialProvider(ApiTokenAuthenticationSpecification.class, Sets.immutable.of(AnonymousCredential.class));
         assertTrue(apikeyCredentialProvider.equals(matchingApiKeyCredentialProvider.get()));
 
         Optional<CredentialProvider> matchingUserPasswordCredentialProvider = credentialProviderProvider.findMatchingCredentialProvider(UserPasswordAuthenticationSpecification.class, Sets.immutable.of(AnonymousCredential.class));
@@ -144,7 +144,7 @@ public class TestCredentialProviderProvider
     @Test
     public void testWithoutIntermediationRuleProvider()
     {
-        ApikeyCredentialProvider apikeyCredentialProvider = new ApikeyCredentialProvider(
+        ApiTokenCredentialProvider apiTokenCredentialProvider = new ApiTokenCredentialProvider(
                 Lists.immutable.<IntermediationRule>of(
                         new CannedApiKeyRuleForTesting(null)
                 ).castToList());
@@ -156,7 +156,7 @@ public class TestCredentialProviderProvider
 
         CredentialProviderProvider credentialProviderProvider = CredentialProviderProvider.builder()
                 .with(userPasswordCredentialProvider)
-                .with(apikeyCredentialProvider)
+                .with(apiTokenCredentialProvider)
                 .build();
 
         String explain = credentialProviderProvider.explain();
@@ -165,15 +165,15 @@ public class TestCredentialProviderProvider
                 "\t\tSpec   : org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.UserPasswordAuthenticationSpecification\n" +
                 "\t\tInput  : org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential\n" +
                 "\t\tOutput : org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential\n" +
-                "CredentialProvider : org.finos.legend.authentication.credentialprovider.impl.ApikeyCredentialProvider\n" +
+                "CredentialProvider : org.finos.legend.authentication.credentialprovider.impl.ApiTokenCredentialProvider\n" +
                 "\tRule   : org.finos.legend.authentication.testrules.CannedApiKeyRuleForTesting\n" +
-                "\t\tSpec   : org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiKeyAuthenticationSpecification\n" +
+                "\t\tSpec   : org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiTokenAuthenticationSpecification\n" +
                 "\t\tInput  : org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential\n" +
                 "\t\tOutput : org.finos.legend.engine.shared.core.identity.credential.ApiTokenCredential\n";
         assertEquals(expected, explain);
 
-        Optional<CredentialProvider> matchingApiKeyCredentialProvider = credentialProviderProvider.findMatchingCredentialProvider(ApiKeyAuthenticationSpecification.class, Sets.immutable.of(AnonymousCredential.class));
-        assertTrue(apikeyCredentialProvider.equals(matchingApiKeyCredentialProvider.get()));
+        Optional<CredentialProvider> matchingApiKeyCredentialProvider = credentialProviderProvider.findMatchingCredentialProvider(ApiTokenAuthenticationSpecification.class, Sets.immutable.of(AnonymousCredential.class));
+        assertTrue(apiTokenCredentialProvider.equals(matchingApiKeyCredentialProvider.get()));
 
         Optional<CredentialProvider> matchingUserPasswordCredentialProvider = credentialProviderProvider.findMatchingCredentialProvider(UserPasswordAuthenticationSpecification.class, Sets.immutable.of(AnonymousCredential.class));
         assertTrue(userPasswordCredentialProvider.equals(matchingUserPasswordCredentialProvider.get()));

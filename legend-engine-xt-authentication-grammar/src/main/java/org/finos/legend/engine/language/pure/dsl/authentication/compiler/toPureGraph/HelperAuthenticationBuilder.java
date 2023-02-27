@@ -15,7 +15,7 @@
 package org.finos.legend.engine.language.pure.dsl.authentication.compiler.toPureGraph;
 
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiKeyAuthenticationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiTokenAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecificationVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.EncryptedPrivateKeyPairAuthenticationSpecification;
@@ -27,7 +27,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authent
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.PropertiesFileSecret;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.SystemPropertiesSecret;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSSecretsManagerSecret;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_connection_authentication_ApiKeyAuthenticationSpecification_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_connection_authentication_ApiTokenAuthenticationSpecification_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_connection_authentication_AuthenticationSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_connection_authentication_CredentialVaultSecret;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_connection_authentication_EnvironmentSecret_Impl;
@@ -52,13 +52,11 @@ public class HelperAuthenticationBuilder
         }
 
         @Override
-        public Root_meta_pure_runtime_connection_authentication_AuthenticationSpecification visit(ApiKeyAuthenticationSpecification apiKeyAuthenticationSpecification)
+        public Root_meta_pure_runtime_connection_authentication_AuthenticationSpecification visit(ApiTokenAuthenticationSpecification apiTokenAuthenticationSpecification)
         {
             String ENUM_PATH = "meta::pure::runtime::connection::authentication::Location";
-            return new Root_meta_pure_runtime_connection_authentication_ApiKeyAuthenticationSpecification_Impl("", null, context.pureModel.getClass("meta::pure::runtime::connection::authentication::ApiKeyAuthenticationSpecification"))
-                    ._location(context.resolveEnumValue(ENUM_PATH, apiKeyAuthenticationSpecification.location.name()))
-                    ._keyName(apiKeyAuthenticationSpecification.keyName)
-                    ._value(buildSecret(apiKeyAuthenticationSpecification.value, context));
+            return new Root_meta_pure_runtime_connection_authentication_ApiTokenAuthenticationSpecification_Impl("", null, context.pureModel.getClass("meta::pure::runtime::connection::authentication::ApiTokenAuthenticationSpecification"))
+                    ._value(buildSecret(apiTokenAuthenticationSpecification.value, context));
         }
 
         @Override

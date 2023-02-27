@@ -15,11 +15,11 @@
 package org.finos.legend.authentication;
 
 import org.eclipse.collections.impl.list.mutable.FastList;
-import org.finos.legend.authentication.credentialprovider.impl.ApikeyCredentialProvider;
+import org.finos.legend.authentication.credentialprovider.impl.ApiTokenCredentialProvider;
 import org.finos.legend.authentication.credentialprovider.impl.UserPasswordCredentialProvider;
 import org.finos.legend.authentication.testrules.CannedUserPasswordRuleForTesting;
 import org.finos.legend.authentication.testrules.CannedUserPasswordRuleWithKerberosForTesting;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiKeyAuthenticationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiTokenAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.UserPasswordAuthenticationSpecification;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential;
@@ -43,15 +43,15 @@ public class TestCredentialProviderEdgeCases
     @Test
     public void testProviderWithoutAnyRules() throws Exception
     {
-        ApikeyCredentialProvider credentialProvider = new ApikeyCredentialProvider();
+        ApiTokenCredentialProvider credentialProvider = new ApiTokenCredentialProvider();
         try
         {
-            credentialProvider.makeCredential(new ApiKeyAuthenticationSpecification(), identity);
+            credentialProvider.makeCredential(new ApiTokenAuthenticationSpecification(), identity);
             fail("failed to produce exception");
         }
         catch (UnsupportedOperationException e)
         {
-            String expected = "Cannot make credential for configuration of type 'class org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiKeyAuthenticationSpecification'. No intermediation rules have been configured";
+            String expected = "Cannot make credential for configuration of type 'class org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiTokenAuthenticationSpecification'. No intermediation rules have been configured";
             assertEquals(expected, e.getMessage());
         }
     }
@@ -59,16 +59,16 @@ public class TestCredentialProviderEdgeCases
     @Test
     public void testProviderWithRuleThatDoesNotMatchSpecificationType() throws Exception
     {
-        ApikeyCredentialProvider credentialProvider = new ApikeyCredentialProvider();
+        ApiTokenCredentialProvider credentialProvider = new ApiTokenCredentialProvider();
         credentialProvider.configureWithRules(FastList.newListWith(new CannedUserPasswordRuleForTesting(null)));
         try
         {
-            credentialProvider.makeCredential(new ApiKeyAuthenticationSpecification(), identity);
+            credentialProvider.makeCredential(new ApiTokenAuthenticationSpecification(), identity);
             fail("failed to produce exception");
         }
         catch (UnsupportedOperationException e)
         {
-            String expected = "Cannot make credential. No intermediation rule that matches configuration type 'class org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiKeyAuthenticationSpecification' and one of these input credential types : [class org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential]";
+            String expected = "Cannot make credential. No intermediation rule that matches configuration type 'class org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiTokenAuthenticationSpecification' and one of these input credential types : [class org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential]";
             assertEquals(expected, e.getMessage());
         }
     }

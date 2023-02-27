@@ -34,11 +34,9 @@ function meta::protocols::pure::v1_29_0::transformation::fromPureGraph::authenti
                     privateKey = $e.privateKey->meta::protocols::pure::v1_29_0::transformation::fromPureGraph::authentication::transformSecretSpecification(),
                     passphrase = $e.passphrase->meta::protocols::pure::v1_29_0::transformation::fromPureGraph::authentication::transformSecretSpecification()
                 ),
-      a:meta::pure::runtime::connection::authentication::ApiKeyAuthenticationSpecification [1] |
-                ^meta::protocols::pure::v1_29_0::metamodel::runtime::connection::authentication::ApiKeyAuthenticationSpecification(
-                      _type = 'apiKey',
-                      location = $a.location->toString(),
-                      keyName = $a.keyName,
+      a:meta::pure::runtime::connection::authentication::ApiTokenAuthenticationSpecification [1] |
+                ^meta::protocols::pure::v1_29_0::metamodel::runtime::connection::authentication::ApiTokenAuthenticationSpecification(
+                      _type = 'apiToken',
                       value = $a.value->meta::protocols::pure::v1_29_0::transformation::fromPureGraph::authentication::transformSecretSpecification()
                 ),
       other: meta::pure::runtime::connection::authentication::AuthenticationSpecification[1] |

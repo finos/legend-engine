@@ -14,9 +14,7 @@
 
 import meta::protocols::pure::v1_29_0::metamodel::runtime::connection::authentication::*;
 
-Class meta::protocols::pure::v1_29_0::metamodel::runtime::connection::authentication::ApiKeyAuthenticationSpecification extends meta::protocols::pure::v1_29_0::metamodel::runtime::connection::authentication::AuthenticationSpecification
+Class meta::protocols::pure::v1_29_0::metamodel::runtime::connection::authentication::ApiTokenAuthenticationSpecification extends meta::protocols::pure::v1_29_0::metamodel::runtime::connection::authentication::AuthenticationSpecification
 {
-   location: String[1];
-   keyName: String[1];
    value: CredentialVaultSecret[1];
 }

@@ -14,7 +14,7 @@ Diagram meta::pure::runtime::connection::authentication::AuthenticationMetamodel
         lineWidth=1.0)
 
     TypeView cview_2(
-        type=meta::pure::runtime::connection::authentication::ApiKeyAuthenticationSpecification,
+        type=meta::pure::runtime::connection::authentication::ApiTokenAuthenticationSpecification,
         position=(609.00000, 73.00000),
         width=228.47656,
         height=86.00000,

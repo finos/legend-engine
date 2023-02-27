@@ -20,7 +20,7 @@ import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtili
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.authentication.AuthenticationParserGrammar;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiKeyAuthenticationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiTokenAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.EncryptedPrivateKeyPairAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.GCPWIFWithAWSIdPAuthenticationSpecification;
@@ -54,10 +54,10 @@ public class AuthenticationParseTreeWalker
         {
             return this.visitUserPasswordAuthentication(userPasswordAuthenticationContext);
         }
-        AuthenticationParserGrammar.ApiKeyAuthenticationContext apiKeyAuthenticationContext = ctx.apiKeyAuthentication();
-        if (apiKeyAuthenticationContext != null)
+        AuthenticationParserGrammar.ApiTokenAuthenticationContext apiTokenAuthenticationContext = ctx.apiTokenAuthentication();
+        if (apiTokenAuthenticationContext != null)
         {
-            return this.visitApiKeyAuthentication(apiKeyAuthenticationContext);
+            return this.visitApiTokenAuthentication(apiTokenAuthenticationContext);
         }
         AuthenticationParserGrammar.EncryptedPrivateKeyAuthenticationContext encryptedPrivateKeyAuthenticationContext = ctx.encryptedPrivateKeyAuthentication();
         if (encryptedPrivateKeyAuthenticationContext != null)
@@ -133,20 +133,12 @@ public class AuthenticationParseTreeWalker
         return workloadConfiguration;
     }
 
-    public AuthenticationSpecification visitApiKeyAuthentication(AuthenticationParserGrammar.ApiKeyAuthenticationContext ctx)
+    public AuthenticationSpecification visitApiTokenAuthentication(AuthenticationParserGrammar.ApiTokenAuthenticationContext ctx)
     {
-        ApiKeyAuthenticationSpecification authenticationSpecification = new ApiKeyAuthenticationSpecification();
+        ApiTokenAuthenticationSpecification authenticationSpecification = new ApiTokenAuthenticationSpecification();
         authenticationSpecification.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
-        AuthenticationParserGrammar.ApiKeyAuthentication_locationContext locationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.apiKeyAuthentication_location(), "location", authenticationSpecification.getSourceInformation());
-        String location = PureGrammarParserUtility.fromGrammarString(locationContext.STRING().getText(), true);
-        authenticationSpecification.location = ApiKeyAuthenticationSpecification.Location.valueOf(location.toUpperCase());
-
-        AuthenticationParserGrammar.ApiKeyAuthentication_keyNameContext keyNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.apiKeyAuthentication_keyName(), "keyName", authenticationSpecification.getSourceInformation());
-        String keyName = PureGrammarParserUtility.fromGrammarString(keyNameContext.STRING().getText(), true);
-        authenticationSpecification.keyName = keyName;
-
-        AuthenticationParserGrammar.ApiKeyAuthentication_valueContext valueContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.apiKeyAuthentication_value(), "value", authenticationSpecification.getSourceInformation());
+        AuthenticationParserGrammar.ApiTokenAuthentication_valueContext valueContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.apiTokenAuthentication_value(), "value", authenticationSpecification.getSourceInformation());
         authenticationSpecification.value = visitCredentialVaultSecret(valueContext.secret_value());
 
         return authenticationSpecification;

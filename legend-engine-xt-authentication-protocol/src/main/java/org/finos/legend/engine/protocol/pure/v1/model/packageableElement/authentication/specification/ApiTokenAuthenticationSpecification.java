@@ -16,21 +16,17 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authen
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.CredentialVaultSecret;
 
-public class ApiKeyAuthenticationSpecification extends AuthenticationSpecification
+public class ApiTokenAuthenticationSpecification extends AuthenticationSpecification
 {
-    public Location location;
-    public String keyName;
     public CredentialVaultSecret value;
 
-    public ApiKeyAuthenticationSpecification()
+    public ApiTokenAuthenticationSpecification()
     {
         // Jackson
     }
 
-    public ApiKeyAuthenticationSpecification(String location, String keyName, CredentialVaultSecret value)
+    public ApiTokenAuthenticationSpecification(CredentialVaultSecret value)
     {
-        this.location = Location.valueOf(location.toUpperCase());
-        this.keyName = keyName;
         this.value = value;
     }
 
@@ -40,9 +36,4 @@ public class ApiKeyAuthenticationSpecification extends AuthenticationSpecificati
         return visitor.visit(this);
     }
 
-    public enum Location
-    {
-        HEADER,
-        COOKIE
-    }
 }

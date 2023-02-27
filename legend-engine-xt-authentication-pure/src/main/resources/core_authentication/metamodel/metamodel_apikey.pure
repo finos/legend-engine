@@ -14,15 +14,8 @@
 
 import meta::pure::runtime::connection::authentication::*;
 
-Enum meta::pure::runtime::connection::authentication::Location
-{
-  HEADER,
-  COOKIE
-}
 
-Class {doc.doc = 'Authentication using an API key'}  meta::pure::runtime::connection::authentication::ApiKeyAuthenticationSpecification extends meta::pure::runtime::connection::authentication::AuthenticationSpecification
+Class {doc.doc = 'Authentication using an API token'}  meta::pure::runtime::connection::authentication::ApiTokenAuthenticationSpecification extends meta::pure::runtime::connection::authentication::AuthenticationSpecification
 {
-   location: Location[1];
-   keyName: String[1];
    value: CredentialVaultSecret[1];
 }
