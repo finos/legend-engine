@@ -20,8 +20,8 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.ParserErrorListener;
 import org.finos.legend.engine.language.pure.grammar.from.SourceCodeParserInfo;
-import org.finos.legend.engine.language.pure.grammar.from.antlr4.test.assertion.activeRowsEquivalentToJson.ActiveRowsEquivalentToJsonAssertionLexerGrammar;
-import org.finos.legend.engine.language.pure.grammar.from.antlr4.test.assertion.activeRowsEquivalentToJson.ActiveRowsEquivalentToJsonAssertionParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.test.assertion.equalToJson.EqualToJsonAssertionLexerGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.test.assertion.equalToJson.EqualToJsonAssertionParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.data.embedded.HelperEmbeddedDataGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.language.pure.grammar.from.extension.test.assertion.TestAssertionParser;
@@ -45,8 +45,8 @@ public class ActiveRowsEquivalentToJsonGrammarParser implements TestAssertionPar
     {
         SourceCodeParserInfo parserInfo = getActiveRowsEquivalentToJsonAssertionParserInfo(code, walkerSourceInformation, sourceInformation);
 
-        ActiveRowsEquivalentToJsonAssertionParserGrammar.DefinitionContext ctx = (ActiveRowsEquivalentToJsonAssertionParserGrammar.DefinitionContext) parserInfo.rootContext;
-        ActiveRowsEquivalentToJsonAssertionParserGrammar.ExpectedDefinitionContext expectedDefinitionContext = ctx.expectedDefinition();
+        EqualToJsonAssertionParserGrammar.DefinitionContext ctx = (EqualToJsonAssertionParserGrammar.DefinitionContext) parserInfo.rootContext;
+        EqualToJsonAssertionParserGrammar.ExpectedDefinitionContext expectedDefinitionContext = ctx.expectedDefinition();
 
         ActiveRowsEquivalentToJson result = new ActiveRowsEquivalentToJson();
         result.sourceInformation = sourceInformation;
@@ -59,10 +59,10 @@ public class ActiveRowsEquivalentToJsonGrammarParser implements TestAssertionPar
     {
         CharStream input = CharStreams.fromString(code);
         ParserErrorListener errorListener = new ParserErrorListener(walkerSourceInformation);
-        ActiveRowsEquivalentToJsonAssertionLexerGrammar lexer = new ActiveRowsEquivalentToJsonAssertionLexerGrammar(input);
+        EqualToJsonAssertionLexerGrammar lexer = new EqualToJsonAssertionLexerGrammar(input);
         lexer.removeErrorListeners();
         lexer.addErrorListener(errorListener);
-        ActiveRowsEquivalentToJsonAssertionParserGrammar parser = new ActiveRowsEquivalentToJsonAssertionParserGrammar(new CommonTokenStream(lexer));
+        EqualToJsonAssertionParserGrammar parser = new EqualToJsonAssertionParserGrammar(new CommonTokenStream(lexer));
         parser.removeErrorListeners();
         parser.addErrorListener(errorListener);
         return new SourceCodeParserInfo(code, input, sourceInformation, walkerSourceInformation, lexer, parser, parser.definition());
