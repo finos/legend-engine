@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.JsonModelConnection;
@@ -90,6 +91,10 @@ public class ConnectionFirstPassBuilder implements ConnectionVisitor<Root_meta_p
     public Root_meta_pure_runtime_Connection visit(ModelChainConnection modelChainConnection)
     {
         HelperConnectionBuilder.verifyModelConnectionStore(modelChainConnection.element, modelChainConnection.elementSourceInformation);
+        if (modelChainConnection.mappings.size() > 1)
+        {
+            context.pureModel.addWarnings(Lists.mutable.with(new Warning(modelChainConnection.sourceInformation,"Multiple Mappings within the same Model Chain Connection are Not Supported")));
+        }
         return new Root_meta_pure_mapping_modelToModel_ModelChainConnection_Impl("", null, context.pureModel.getClass("meta::pure::mapping::modelToModel::ModelChainConnection"))
                 ._element(Lists.immutable.with(new Root_meta_pure_mapping_modelToModel_ModelStore_Impl("", null, context.pureModel.getClass("meta::pure::mapping::modelToModel::ModelStore"))))
                 ._mappings(ListIterate.collect(modelChainConnection.mappings, m -> this.context.resolveMapping(m, modelChainConnection.mappingsSourceInformation)));

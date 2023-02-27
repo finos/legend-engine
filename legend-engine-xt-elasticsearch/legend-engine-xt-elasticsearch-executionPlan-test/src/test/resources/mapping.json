@@ -1,0 +1,25 @@
+{
+  "mappings": {
+    "properties": {
+		"Title":{ "type": "keyword"  },
+		"Year":{ "type": "keyword"  },
+		"Rated":{ "type": "keyword"  },
+		"Released":{ "type": "date", "format":"dd MMM yyyy" },
+		"Genre":{ "type": "text"  },
+		"Director":{ "type": "keyword"  },
+		"Writer":{ "type": "text"  },
+		"Actors":{ "type": "text"  },
+		"Plot":{ "type": "text"  },
+		"Language":{ "type": "keyword"  },
+		"Country":{ "type": "keyword"  },
+		"Awards":{ "type": "text"  },
+		"Metascore":{ "type": "keyword"  },
+		"imdbRating":{ "type": "double" },
+		"imdbVotes":{ "type": "long" },
+		"imdbID":{ "type": "keyword"  },
+		"Type":{ "type": "keyword"  },
+		"Response":{ "type": "boolean" },
+		"totalSeasons":{ "type": "integer" }
+    }
+  }
+}

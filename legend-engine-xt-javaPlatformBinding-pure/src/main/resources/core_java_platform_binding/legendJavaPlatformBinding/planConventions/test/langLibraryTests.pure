@@ -182,10 +182,10 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::testLet() : Boolean[1]
 {
    let expectedForLambda = 
-      'java.util.Arrays.asList("a", "aa", "aaa").stream().map((String s) -> { long l = (long) s.length(); return java.util.Arrays.asList(s, org.finos.legend.engine.plan.dependencies.util.Library.pureToString(l)).stream().collect(java.util.stream.Collectors.joining("")); }).filter((String x) -> x != null).collect(java.util.stream.Collectors.toList())';
+      'java.util.Arrays.asList("a", "aa", "aaa").stream().map((String s) -> { long l = (long) s.length(); return java.util.Arrays.asList(s, org.finos.legend.engine.plan.dependencies.util.Library.pureToString(l)).stream().collect(java.util.stream.Collectors.joining("")); }).filter((String $x) -> $x != null).collect(java.util.stream.Collectors.toList())';
 
    let expectedForLambdaWithLastLineAsLet = 
-      'java.util.Arrays.asList("a", "aa", "aaa").stream().map((String s) -> { long l = (long) s.length(); String x = java.util.Arrays.asList(s, org.finos.legend.engine.plan.dependencies.util.Library.pureToString(l)).stream().collect(java.util.stream.Collectors.joining("")); return x; }).filter((String x) -> x != null).collect(java.util.stream.Collectors.toList())';
+      'java.util.Arrays.asList("a", "aa", "aaa").stream().map((String s) -> { long l = (long) s.length(); String x = java.util.Arrays.asList(s, org.finos.legend.engine.plan.dependencies.util.Library.pureToString(l)).stream().collect(java.util.stream.Collectors.joining("")); return x; }).filter((String $x) -> $x != null).collect(java.util.stream.Collectors.toList())';
 
    javaExpressionTests(engineConventions([]))
       ->addTest('let as expression', {|let x = 1;}, '1L', javaLong())

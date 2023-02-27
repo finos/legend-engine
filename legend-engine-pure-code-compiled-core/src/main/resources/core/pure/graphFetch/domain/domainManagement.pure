@@ -40,10 +40,11 @@ function meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTre
             );
 
             let stringType = ^GenericType(rawType=String);
-           
+            let expressionSequenceLengthLess1 = $x.second.property->cast(@QualifiedProperty<Any>).expressionSequence->size() - 1;
             let func = ^LambdaFunction<{->Any[*]}>
             (
               expressionSequence =
+                  $x.second.property->cast(@QualifiedProperty<Any>).expressionSequence->slice(0,$expressionSequenceLengthLess1)->map(x|$x->reprocessVariables($parametersValueByName))->concatenate(
                   ^$newFunc(
                     func = meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__String_1_,
                     functionName = 'serialize',
@@ -64,7 +65,7 @@ function meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTre
                       $newTree
                     ],
                     usageContext = []
-                  )
+                  ))->toOneMany()
             );
             pair($x.second.property.name->toOne(), $func);
 
@@ -78,7 +79,7 @@ function <<access.private>> meta::pure::graphFetch::domain::findGetAllInQualifie
 {
   $properties->map(
     p | if ($p->instanceOf(QualifiedProperty),
-          | let exp =  $p->cast(@QualifiedProperty<Any>).expressionSequence->evaluateAndDeactivate()->toOne();
+          | let exp =  $p->cast(@QualifiedProperty<Any>).expressionSequence->evaluateAndDeactivate()->last()->toOne();
             let val = $exp->lookForGetAll();
             if ($val->instanceOf(SimpleFunctionExpression) && $val->cast(@SimpleFunctionExpression).func == getAll_Class_1__T_MANY_,
               |$exp->cast(@SimpleFunctionExpression),

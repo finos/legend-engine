@@ -59,7 +59,7 @@ public class TestRelationStoreExecutableManager
         Mockito.when(mockResultSet.getMetaData()).thenReturn(mockMetadata);
         Mockito.when(mockDatabaseConnection.accept(any())).thenReturn(false);
         StoreExecutableManager.INSTANCE.registerManager();
-        RelationalResult result = new RelationalResult(FastList.newListWith(new RelationalExecutionActivity("TEST")), mockExecutionNode, FastList.newListWith(new SQLResultColumn("test", "INTEGER")), null, null, mockConnection, null, null, null, session);
+        RelationalResult result = new RelationalResult(FastList.newListWith(new RelationalExecutionActivity("TEST", "comment")), mockExecutionNode, FastList.newListWith(new SQLResultColumn("test", "INTEGER")), null, null, mockConnection, null, null, null, session);
         Assert.assertEquals(1, StoreExecutableManager.INSTANCE.getExecutables(session).size());
         result.close();
         Assert.assertTrue(StoreExecutableManager.INSTANCE.getExecutables(session).isEmpty());
