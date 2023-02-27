@@ -170,6 +170,15 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     }
 
     @Test
+    public void testDerivedPropertyWithMultipleStatements()
+    {
+        test("Class Firm\n" +
+                "{\n" +
+                "  prop() {let x = 0; $x;}: Integer[1];\n" +
+                "}\n");
+    }
+
+    @Test
     public void testUnNamedConstraintsAndEmptyProfile()
     {
         test("Class A\n" +

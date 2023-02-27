@@ -114,7 +114,9 @@ public class HelperDomainGrammarComposer
                 + PureGrammarComposerUtility.convertIdentifier(qualifiedProperty.name) + "("
                 + LazyIterate.collect(functionParameters, p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(transformer).withVariableInFunctionSignature().build())).makeString(",")
                 + ") {"
-                + LazyIterate.collect(qualifiedProperty.body, b -> b.accept(transformer)).makeString("\n")
+                + (qualifiedProperty.body.size() <= 1
+                    ? LazyIterate.collect(qualifiedProperty.body, b -> b.accept(transformer)).makeString("\n")
+                    : LazyIterate.collect(qualifiedProperty.body, b -> b.accept(transformer)).makeString("","; ",";"))
                 + "}: "
                 + qualifiedProperty.returnType + "[" + renderMultiplicity(qualifiedProperty.returnMultiplicity) + "]";
     }
