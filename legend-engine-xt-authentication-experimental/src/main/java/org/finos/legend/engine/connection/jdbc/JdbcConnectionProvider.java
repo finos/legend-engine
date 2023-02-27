@@ -15,8 +15,8 @@
 package org.finos.legend.engine.connection.jdbc;
 
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
-import org.finos.legend.engine.connection.ConnectionProvider;
-import org.finos.legend.engine.connection.ConnectionSpecification;
+import org.finos.legend.connection.ConnectionProvider;
+import org.finos.legend.connection.ConnectionSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
