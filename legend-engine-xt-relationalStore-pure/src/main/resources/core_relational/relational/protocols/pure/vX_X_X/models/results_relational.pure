@@ -29,5 +29,6 @@ Class meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::
 
 Class meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalExecutionActivity extends meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::ExecutionActivity
 {
+   comment : String[0..1];
    sql : String[1];
 }

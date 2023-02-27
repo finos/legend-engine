@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.0.1-SNAPSHOT</version>
+        <version>4.1.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -132,6 +132,11 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-language-pure-dsl-service</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-executionPlan-generation</artifactId>
+        </dependency>
+
         <!-- ENGINE -->
 
         <!-- ANTLR -->
@@ -161,6 +166,11 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-configuration</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

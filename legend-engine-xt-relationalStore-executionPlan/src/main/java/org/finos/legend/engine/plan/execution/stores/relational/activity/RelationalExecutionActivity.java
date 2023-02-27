@@ -18,10 +18,12 @@ import org.finos.legend.engine.plan.execution.result.ExecutionActivity;
 
 public class RelationalExecutionActivity extends ExecutionActivity
 {
+    public String comment;
     public String sql;
 
-    public RelationalExecutionActivity(String sqlQuery)
+    public RelationalExecutionActivity(String sqlQuery, String sqlComment)
     {
+        this.comment = sqlComment;
         this.sql = sqlQuery;
     }
 }

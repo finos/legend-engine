@@ -19,7 +19,7 @@
     <parent>
         <artifactId>legend-engine</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.0.1-SNAPSHOT</version>
+        <version>4.1.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -327,11 +327,16 @@
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-xml-model</artifactId>
+            <artifactId>legend-engine-xt-authentication-grammar</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-xml-protocol</artifactId>
+            <artifactId>legend-engine-xt-authentication-protocol</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-xml-model</artifactId>
         </dependency>
         <!-- ENGINE XT -->
 

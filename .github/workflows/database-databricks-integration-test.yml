@@ -21,8 +21,6 @@ env:
   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   DATABRICKS_API_TOKEN: ${{ secrets.DATABRICKS_API_TOKEN }}
   DATABRICKS_WORKSPACE: https://dbc-f0687849-717f.cloud.databricks.com
-  DATABRICKS_CLUSTERID: 0228-234110-ve0xbrtk
-
 on:
   schedule:
     - cron: "0 0 * * *" # every day at 00:00 on default/base branch

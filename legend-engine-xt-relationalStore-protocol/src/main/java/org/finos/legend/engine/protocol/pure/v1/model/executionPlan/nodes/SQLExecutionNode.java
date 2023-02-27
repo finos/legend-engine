@@ -24,6 +24,7 @@ import java.util.List;
 
 public class SQLExecutionNode extends ExecutionNode
 {
+    public String sqlComment;
     public String sqlQuery;
     public String onConnectionCloseCommitQuery;
     public String onConnectionCloseRollbackQuery;
@@ -37,6 +38,11 @@ public class SQLExecutionNode extends ExecutionNode
     }
 
     /* SQL/Database APIs */
+    public String sqlComment()
+    {
+        return this.sqlComment;
+    }
+
     public String sqlQuery()
     {
         return this.sqlQuery;

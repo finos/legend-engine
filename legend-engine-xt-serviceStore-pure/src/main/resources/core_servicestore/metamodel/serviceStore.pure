@@ -18,8 +18,9 @@ import meta::external::store::service::metamodel::*;
 
 Class meta::external::store::service::metamodel::ServiceStore extends meta::pure::store::set::SetBasedStore
 {
-   description : String[0..1];
-   elements    : ServiceStoreElement[*];
+   description     : String[0..1];
+   securitySchemes : Map<String,SecurityScheme>[1];
+   elements        : ServiceStoreElement[*];
 
    getServiceStoreElementById(id:String[1]) {
       $this.elements->filter(e | $e.id == $id)->toOne()
@@ -64,7 +65,7 @@ Class meta::external::store::service::metamodel::Service extends ServiceStoreEle
    method      : HTTPMethod[1];
    parameters  : ServiceParameter[*];
    response    : ComplexTypeReference[1];
-   security    : SecurityScheme[*];
+   security    : SecuritySchemeRequirement[*];
 }
 
 function meta::external::store::service::metamodel::supportedServiceMethods():HTTPMethod[*]
@@ -122,8 +123,48 @@ Class <<typemodifiers.abstract>> meta::external::store::service::metamodel::Secu
 {
 }
 
+Class meta::external::store::service::metamodel::HttpSecurityScheme extends meta::external::store::service::metamodel::SecurityScheme
+{
+  scheme       : Scheme[1];
+  bearerFormat : String[0..1];
+}
+
+Enum meta::external::store::service::metamodel::Scheme
+{
+    BASIC,
+    BEARER
+}
+
+Class meta::external::store::service::metamodel::ApiKeySecurityScheme extends meta::external::store::service::metamodel::SecurityScheme
+{
+  location : ApiKeyLocation[1];
+  keyName  : String[1];
+}
+
+Enum meta::external::store::service::metamodel::ApiKeyLocation
+{
+   COOKIE,
+   HEADER,
+   QUERY
+}
+
 Class meta::external::store::service::metamodel::SerializationFormat
 {
    style   : String[0..1];
    explode : Boolean[0..1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::store::service::metamodel::SecuritySchemeRequirement
+{
+}
+
+Class meta::external::store::service::metamodel::SingleSecuritySchemeRequirement extends meta::external::store::service::metamodel::SecuritySchemeRequirement
+{
+    id               : String[1];
+    securityScheme   : SecurityScheme[1];
+}
+
+Class meta::external::store::service::metamodel::MultiSecuritySchemeRequirement extends meta::external::store::service::metamodel::SecuritySchemeRequirement
+{
+    securitySchemes  : SingleSecuritySchemeRequirement[*];
 }

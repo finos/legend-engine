@@ -125,6 +125,35 @@ public class TestGraphQLAPI
     }
 
     @Test
+    public void testGraphQLExecuteDevAPIWithLetStatements_Relational() throws Exception
+    {
+        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
+        PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
+        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
+        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> generatorExtensions.flatCollect(g -> g.getExtraExtensions(pm)), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
+        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
+        Query query = new Query();
+        query.query = "query Query {\n" +
+                "  selectEmployees(offset: 1,limit: 2) {\n" +
+                "    firstName,\n" +
+                "    lastName\n" +
+                "  }\n" +
+            "}";
+        Response response = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
+
+        String expected = "{" +
+                "\"data\":{" +
+                    "\"selectEmployees\":[" +
+                        "{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}," +
+                        "{\"firstName\":\"John\",\"lastName\":\"Johnson\"}" +
+                    "]" +
+                "}" +
+            "}";
+        Assert.assertEquals(expected, responseAsString(response));
+    }
+
+    @Test
     public void testGraphQLExecuteDevAPI_InMemory() throws Exception
     {
         ModelManager modelManager = new ModelManager(DeploymentMode.TEST);

@@ -57,6 +57,7 @@ public class PlanExecutor
 {
     public static final long DEFAULT_GRAPH_FETCH_BATCH_MEMORY_LIMIT = 52_428_800L; /* 50MB - 50 * 1024 * 1024 */
     public static final String USER_ID = "userId";
+    public static final String EXEC_ID = "execID";
 
     private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
     private static final boolean DEFAULT_IS_JAVA_COMPILATION_ALLOWED = true;
@@ -230,18 +231,7 @@ public class PlanExecutor
         try (JavaHelper.ThreadContextClassLoaderScope scope = (engineJavaCompiler == null) ? null : JavaHelper.withCurrentThreadContextClassLoader(engineJavaCompiler.getClassLoader()))
         {
             // set up the state
-            if (singleExecutionPlan.authDependent)
-            {
-                state.setAuthUser((singleExecutionPlan.kerberos == null) ? user : singleExecutionPlan.kerberos);
-            }
-            if (state.authId == null)
-            {
-                state.setAuthUser(IdentityFactoryProvider.getInstance().makeIdentity(profiles).getName(), false);
-            }
-            if ((state.getResult(USER_ID) == null))
-            {
-                state.addResult(USER_ID, new ConstantResult(state.authId));
-            }
+            setUpState(singleExecutionPlan, state, profiles, user);
             singleExecutionPlan.getExecutionStateParams(org.eclipse.collections.api.factory.Maps.mutable.empty()).forEach(state::addParameterValue);
 
             // execute
@@ -273,18 +263,7 @@ public class PlanExecutor
             try (JavaHelper.ThreadContextClassLoaderScope scope = (engineJavaCompiler == null) ? null : JavaHelper.withCurrentThreadContextClassLoader(engineJavaCompiler.getClassLoader()))
             {
                 // set up the state
-                if (singleExecutionPlan.authDependent)
-                {
-                    state.setAuthUser((singleExecutionPlan.kerberos == null) ? executeArgs.user : singleExecutionPlan.kerberos);
-                }
-                if (state.authId == null)
-                {
-                    state.setAuthUser(IdentityFactoryProvider.getInstance().makeIdentity(executeArgs.profiles).getName(), false);
-                }
-                if ((state.getResult(USER_ID) == null))
-                {
-                    state.addResult(USER_ID, new ConstantResult(state.authId));
-                }
+                setUpState(singleExecutionPlan, state, executeArgs.profiles, executeArgs.user);
                 if (executeArgs.sessionID != null)
                 {
                     state.setSessionID(executeArgs.sessionID);
@@ -299,6 +278,26 @@ public class PlanExecutor
         finally
         {
             StreamProviderHolder.streamProviderThreadLocal.remove();
+        }
+    }
+
+    private void setUpState(SingleExecutionPlan singleExecutionPlan, ExecutionState state, MutableList<CommonProfile> profiles, String user)
+    {
+        if (singleExecutionPlan.authDependent)
+        {
+            state.setAuthUser((singleExecutionPlan.kerberos == null) ? user : singleExecutionPlan.kerberos);
+        }
+        if (state.authId == null)
+        {
+            state.setAuthUser(IdentityFactoryProvider.getInstance().makeIdentity(profiles).getName(), false);
+        }
+        if ((state.getResult(USER_ID) == null))
+        {
+            state.addResult(USER_ID, new ConstantResult(state.authId));
+        }
+        if (state.getResult(EXEC_ID) == null)
+        {
+            state.addResult(EXEC_ID, new ConstantResult(state.execID));
         }
     }
 
