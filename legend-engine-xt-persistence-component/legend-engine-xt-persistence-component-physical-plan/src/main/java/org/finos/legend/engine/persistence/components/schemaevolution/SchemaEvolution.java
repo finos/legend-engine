@@ -74,10 +74,9 @@ public class SchemaEvolution
     private final Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet;
 
     /*
-        1.
-        2. Check if Schema of main table and staging table is different
-        2. Check executor capabilities to check if operation is permitted
-        3. If the change is a datatype change, check if it is a implicit, breaking or non-breaking change
+        1. Validate that nothing has changed with the primary keys of the main table.
+        2. Check if Schema of main table and staging table is different and accordingly modify schema.
+        3. Check executor capabilities to check if operation is permitted, else throw an exception.
         4. Generate the logical operation and modify the milestoning object of main table
      */
 
