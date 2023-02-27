@@ -22,13 +22,14 @@ import org.finos.legend.engine.persistence.components.ingestmode.transactionmile
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
-import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
-import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapability;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.finos.legend.engine.persistence.components.TestUtils.batchIdInName;
 import static org.finos.legend.engine.persistence.components.TestUtils.batchIdOutName;

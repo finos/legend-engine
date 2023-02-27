@@ -28,12 +28,14 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
 import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
-import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapability;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.finos.legend.engine.persistence.components.TestUtils.batchUpdateTimeName;
 import static org.finos.legend.engine.persistence.components.TestUtils.digestName;
