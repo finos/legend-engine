@@ -207,8 +207,8 @@ public class SchemaEvolution
         if (!mainDataField.equals(newField))
         {
             // If there are any sizing changes, make sure user capability allows it before creating the alter statement
-            if (!mainDataField.type().length().orElse(-1).equals(newField.type().length().orElse(-1)) ||
-                    !mainDataField.type().scale().orElse(-1).equals(newField.type().scale().orElse(-1)))
+            if (!Objects.equals(mainDataField.type().length(), newField.type().length()) ||
+                    !Objects.equals(mainDataField.type().scale(), newField.type().scale()))
             {
                 if (!sink.capabilities().contains(Capability.DATA_TYPE_SIZE_CHANGE)
                         || (!schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE)))
