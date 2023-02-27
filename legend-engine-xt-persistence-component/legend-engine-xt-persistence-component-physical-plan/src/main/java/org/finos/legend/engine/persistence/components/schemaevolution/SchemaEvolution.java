@@ -192,7 +192,7 @@ public class SchemaEvolution
                 {
                     if (!matchedMainField.nullable() && stagingField.nullable())
                     {
-                        Field newField = createNewField(matchedMainField, stagingField, matchedMainField.type().length().orElse(-1), matchedMainField.type().scale().orElse(-1));
+                        Field newField = createNewField(matchedMainField, stagingField, matchedMainField.type().length(), matchedMainField.type().scale());
                         evolveDataType(newField, matchedMainField, mainDataset, operations, modifiedFields);
                     }
                 }
@@ -268,42 +268,43 @@ public class SchemaEvolution
     //old field = reference field to compare sizing/nullability requirements
     private Field evolveFieldLength(Field oldField, Field newField)
     {
-        int length = newField.type().length().orElse(-1);
-        int scale = newField.type().scale().orElse(-1);
-            //If the oldField and newField have a length associated, pick the greater length
+        Optional<Integer> length = newField.type().length();
+        Optional<Integer> scale = newField.type().scale();
+
+        //If the oldField and newField have a length associated, pick the greater length
         if (oldField.type().length().isPresent() && newField.type().length().isPresent())
         {
             length = newField.type().length().get() >= oldField.type().length().get()
-                    ? newField.type().length().get()
-                    : oldField.type().length().get();
+                    ? newField.type().length()
+                    : oldField.type().length();
         }
         //Allow length evolution from unspecified length only when data types are same. This is to avoid evolution like SMALLINT(6) -> INT(6) or INT -> DOUBLE(6) and allow for DATETIME -> DATETIME(6)
         else if (oldField.type().dataType().equals(newField.type().dataType())
                 && oldField.type().length().isPresent() && !newField.type().length().isPresent())
         {
-            length = oldField.type().length().get();
+            length = oldField.type().length();
         }
 
         //If the oldField and newField have a scale associated, pick the greater scale
         if (oldField.type().scale().isPresent() && newField.type().scale().isPresent())
         {
             scale = newField.type().scale().get() >= oldField.type().scale().get()
-                    ? newField.type().scale().get()
-                    : oldField.type().scale().get();
+                    ? newField.type().scale()
+                    : oldField.type().scale();
         }
         //Allow scale evolution from unspecified scale only when data types are same. This is to avoid evolution like SMALLINT(6) -> INT(6) or INT -> DOUBLE(6) and allow for DATETIME -> DATETIME(6)
         else if (oldField.type().dataType().equals(newField.type().dataType())
                 && oldField.type().scale().isPresent() && !newField.type().scale().isPresent())
         {
-            scale = oldField.type().scale().get();
+            scale = oldField.type().scale();
         }
         return createNewField(newField, oldField, length, scale);
     }
 
 
-    private Field createNewField(Field newField, Field oldField, int length, int scale)
+    private Field createNewField(Field newField, Field oldField, Optional<Integer> length, Optional<Integer> scale)
     {
-        FieldType modifiedFieldType = FieldType.of(newField.type().dataType(), Optional.ofNullable(length == -1 ? null : length), Optional.ofNullable(scale == -1 ? null : scale));
+        FieldType modifiedFieldType = FieldType.of(newField.type().dataType(), length, scale);
         boolean nullability = newField.nullable() || oldField.nullable();
 
         //todo : how to handle default value, identity, uniqueness ?
