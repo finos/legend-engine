@@ -34,6 +34,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 public class TestRelationalCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
 {
@@ -2065,6 +2066,115 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  }\n" +
                 ")", null, Arrays.asList("COMPILATION error at [98:9-54]: Error 'model_Firm' can't be found in the mapping model::myRelationalMapping"));
 
+    }
+
+    @Test
+    public void testForMultipleRelationalConnections()
+    {
+        test("###Relational\n" +
+                "Database relational::graphFetch::dbInc\n" +
+                "(\n" +
+                "  Table firmTable\n" +
+                "  (\n" +
+                "    FirmCode INTEGER PRIMARY KEY,\n" +
+                "    FirmName VARCHAR(200)\n" +
+                "  )\n" +
+                ")\n" +
+                "\n" +
+                "###Pure\n" +
+                "Class relational::graphFetch::Target_Firm\n" +
+                "{\n" +
+                "  firmName: String[1];\n" +
+                "  firmCode: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class relational::graphFetch::Firm\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "  id: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping relational::graphFetch::Relational_Mapping\n" +
+                "(\n" +
+                "  *relational::graphFetch::Firm: Relational\n" +
+                "  {\n" +
+                "    ~primaryKey\n" +
+                "    (\n" +
+                "      [relational::graphFetch::dbInc]firmTable.FirmCode\n" +
+                "    )\n" +
+                "    ~mainTable [relational::graphFetch::dbInc]firmTable\n" +
+                "    name: [relational::graphFetch::dbInc]firmTable.FirmName,\n" +
+                "    id: [relational::graphFetch::dbInc]firmTable.FirmCode\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "Mapping relational::graphFetch::M2M_Mapping\n" +
+                "(\n" +
+                "  relational::graphFetch::Target_Firm: Pure\n" +
+                "  {\n" +
+                "    ~src relational::graphFetch::Firm\n" +
+                "    firmName: $src.name->toUpper(),\n" +
+                "    firmCode: $src.id\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "###Connection\n" +
+                "RelationalDatabaseConnection relational::graphFetch::RelationalConnection\n" +
+                "{\n" +
+                "  store: relational::graphFetch::dbInc;\n" +
+                "  type: H2;\n" +
+                "  specification: LocalH2\n" +
+                "  {\n" +
+                "    testDataSetupSqls: [\n" +
+                "      'Drop table if exists firmTable;\\nCreate Table firmTable(FirmCode INT, FirmName VARCHAR(200));\\nInsert into firmTable (FirmCode, FirmName) values (101,\\'finos\\');\\nInsert into firmTable (FirmCode, FirmName) values (200,\\'goldman_Sachs\\');'\n" +
+                "      ];\n" +
+                "  };\n" +
+                "  auth: DefaultH2;\n" +
+                "}\n" +
+                "\n" +
+                "RelationalDatabaseConnection relational::graphFetch::SecondRelationalConnection\n" +
+                "{\n" +
+                "  store: relational::graphFetch::dbInc;\n" +
+                "  type: H2;\n" +
+                "  specification: LocalH2\n" +
+                "  {\n" +
+                "    testDataSetupSqls: [\n" +
+                "      'Drop table if exists firmTable;\\nCreate Table firmTable(FirmCode INT, FirmName VARCHAR(200));\\nInsert into firmTable (FirmCode, FirmName) values (001,\\'Alloy_Engineering\\');\\nInsert into firmTable (FirmCode, FirmName) values (102,\\'legend-engine\\');\\n'\n" +
+                "      ];\n" +
+                "  };\n" +
+                "  auth: DefaultH2;\n" +
+                "}\n" +
+                "\n" +
+                "ModelChainConnection relational::graphFetch::OneMappingConnection\n" +
+                "{\n" +
+                "  mappings: [\n" +
+                "    relational::graphFetch::Relational_Mapping\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime relational::graphFetch::ModelChainConnectionRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    relational::graphFetch::M2M_Mapping\n" +
+                "  ];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    relational::graphFetch::dbInc:\n" +
+                "    [\n" +
+                "      connection_2: relational::graphFetch::RelationalConnection,\n" +
+                "      connection_3: relational::graphFetch::SecondRelationalConnection\n" +
+                "    ],\n" +
+                "    ModelStore:\n" +
+                "    [\n" +
+                "      connection_1: relational::graphFetch::OneMappingConnection\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n",null, Collections.singletonList("COMPILATION error at [97:21-70]: Multiple RelationalDatabaseConnections are Not Supported for the same Store - relational::graphFetch::dbInc"));
     }
 
 }
