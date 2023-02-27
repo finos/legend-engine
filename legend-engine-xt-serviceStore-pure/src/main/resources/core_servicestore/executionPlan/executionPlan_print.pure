@@ -76,8 +76,9 @@ function meta::external::store::service::executionPlan::toString::authentication
 function meta::external::store::service::executionPlan::toString::securitySchemeToString(sec:SecurityScheme[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
    $sec->match($extensions->map(e|$e.moduleExtension('serviceStore')->cast(@ServiceStoreExtension).executionPlan_print_securitySchemeToString)->concatenate([
-      http: HttpSecurityScheme[1]   | 'HttpSecurityScheme\n(scheme="'+$http.scheme->toString()+'")\n',
-      api:  ApiKeySecurityScheme[1] | 'ApiKeySecurityScheme\n(key="'+$api.keyName+'",location="'+$api.location->toString()+'")\n'
+      http:HttpSecurityScheme[1]  | 'HttpSecurityScheme\n(scheme="'+$http.scheme->toString()+'")\n',
+      api:ApiKeySecurityScheme[1] | 'ApiKeySecurityScheme\n(key="'+$api.keyName+'",location="'+$api.location->toString()+'")\n',
+      s:SecurityScheme[1]         | fail('Security Scheme to string translation not found for Security Scheme - ' + $s->type().name->toOne()); '';
    ])->toOneMany())
 }
 

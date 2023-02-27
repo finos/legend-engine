@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
