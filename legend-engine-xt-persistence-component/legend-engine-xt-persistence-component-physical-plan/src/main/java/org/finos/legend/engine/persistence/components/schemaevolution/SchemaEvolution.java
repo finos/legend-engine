@@ -74,7 +74,8 @@ public class SchemaEvolution
     private final Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet;
 
     /*
-        1. Check if Schema of main table and staging table is different
+        1.
+        2. Check if Schema of main table and staging table is different
         2. Check executor capabilities to check if operation is permitted
         3. If the change is a datatype change, check if it is a implicit, breaking or non-breaking change
         4. Generate the logical operation and modify the milestoning object of main table
@@ -269,56 +270,34 @@ public class SchemaEvolution
     {
         int length = newField.type().length().orElse(-1);
         int scale = newField.type().scale().orElse(-1);
-        if (isSizingChangesRequired(oldField, newField))
-        {
             //If the oldField and newField have a length associated, pick the greater length
-            if (oldField.type().length().isPresent() && newField.type().length().isPresent())
-            {
-                length = newField.type().length().get() >= oldField.type().length().get()
-                        ? newField.type().length().get()
-                        : oldField.type().length().get();
-            }
-            //Allow length evolution from unspecified length only when data types are same. This is to avoid evolution like SMALLINT(6) -> INT(6) or INT -> DOUBLE(6) and allow for DATETIME -> DATETIME(6)
-            else if (oldField.type().dataType().equals(newField.type().dataType())
-                    && oldField.type().length().isPresent() && !newField.type().length().isPresent())
-            {
-                length = oldField.type().length().get();
-            }
+        if (oldField.type().length().isPresent() && newField.type().length().isPresent())
+        {
+            length = newField.type().length().get() >= oldField.type().length().get()
+                    ? newField.type().length().get()
+                    : oldField.type().length().get();
+        }
+        //Allow length evolution from unspecified length only when data types are same. This is to avoid evolution like SMALLINT(6) -> INT(6) or INT -> DOUBLE(6) and allow for DATETIME -> DATETIME(6)
+        else if (oldField.type().dataType().equals(newField.type().dataType())
+                && oldField.type().length().isPresent() && !newField.type().length().isPresent())
+        {
+            length = oldField.type().length().get();
+        }
 
-            //If the oldField and newField have a scale associated, pick the greater scale
-            if (oldField.type().scale().isPresent() && newField.type().scale().isPresent())
-            {
-                scale = newField.type().scale().get() >= oldField.type().scale().get()
-                        ? newField.type().scale().get()
-                        : oldField.type().scale().get();
-            }
-            //Allow scale evolution from unspecified scale only when data types are same. This is to avoid evolution like SMALLINT(6) -> INT(6) or INT -> DOUBLE(6) and allow for DATETIME -> DATETIME(6)
-            else if (oldField.type().dataType().equals(newField.type().dataType())
-                    && oldField.type().scale().isPresent() && !newField.type().scale().isPresent())
-            {
-                scale = oldField.type().scale().get();
-            }
+        //If the oldField and newField have a scale associated, pick the greater scale
+        if (oldField.type().scale().isPresent() && newField.type().scale().isPresent())
+        {
+            scale = newField.type().scale().get() >= oldField.type().scale().get()
+                    ? newField.type().scale().get()
+                    : oldField.type().scale().get();
+        }
+        //Allow scale evolution from unspecified scale only when data types are same. This is to avoid evolution like SMALLINT(6) -> INT(6) or INT -> DOUBLE(6) and allow for DATETIME -> DATETIME(6)
+        else if (oldField.type().dataType().equals(newField.type().dataType())
+                && oldField.type().scale().isPresent() && !newField.type().scale().isPresent())
+        {
+            scale = oldField.type().scale().get();
         }
         return createNewField(newField, oldField, length, scale);
-    }
-
-    protected boolean isSizingChangesRequired(Field oldField, Field newField)
-    {
-        if (oldField.type().length().isPresent() && newField.type().length().isPresent() && oldField.type().length().get() > newField.type().length().get())
-        {
-            return true;
-        }
-        if ((oldField.type().dataType().equals(newField.type().dataType())
-                && oldField.type().length().isPresent() && !newField.type().length().isPresent()))
-        {
-            return true;
-        }
-        if (oldField.type().scale().isPresent() && newField.type().scale().isPresent() && oldField.type().scale().get() > newField.type().scale().get())
-        {
-            return true;
-        }
-        return oldField.type().dataType().equals(newField.type().dataType())
-                && oldField.type().scale().isPresent() && !newField.type().scale().isPresent();
     }
 
 

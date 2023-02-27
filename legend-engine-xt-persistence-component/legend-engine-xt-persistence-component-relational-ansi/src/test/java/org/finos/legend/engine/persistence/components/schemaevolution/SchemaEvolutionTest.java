@@ -674,22 +674,4 @@ public class SchemaEvolutionTest extends IngestModeTest
         List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
         Assertions.assertEquals(0, sqlsForSchemaEvolution.size());
     }
-
-    @Test
-    public void testIsSizingChangesRequired()
-    {
-        NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
-        SchemaEvolution evolution = new SchemaEvolution(relationalSink, ingestMode, Collections.emptySet());
-        // needs no sizing change
-        //old field TINYINT(2)
-        //main field INT (4)
-        //new field INT(4)
-        Assertions.assertEquals(false, evolution.isSizingChangesRequired(countTinyInt, countInt));
-
-        // needs sizing change
-        //old field (main) TINYINT (4)
-        //staging field INT(2)
-        //new field INT (2) --> INT (4)
-        Assertions.assertEquals(true, evolution.isSizingChangesRequired(countTinyIntModified, countIntModified));
-    }
 }
