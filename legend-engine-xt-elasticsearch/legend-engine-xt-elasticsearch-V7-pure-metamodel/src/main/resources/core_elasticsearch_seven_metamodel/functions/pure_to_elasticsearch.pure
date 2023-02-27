@@ -1,0 +1,271 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::elasticsearch::v7::metamodel::property::*;
+import meta::pure::router::metamodel::*;
+import meta::pure::extension::*;
+import meta::pure::runtime::*;
+import meta::pure::mapping::*;
+import meta::pure::metamodel::serialization::grammar::*;
+
+import meta::external::store::elasticsearch::v7::metamodel::specification::*;
+import meta::external::store::elasticsearch::v7::metamodel::specification::types::querydsl::*;
+import meta::external::store::elasticsearch::v7::metamodel::specification::global::search::*;
+import meta::external::store::elasticsearch::v7::metamodel::specification::global::search::types::*;
+import meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::*;
+import meta::external::store::elasticsearch::v7::metamodel::specification::types::*;
+import meta::external::store::elasticsearch::v7::metamodel::store::*;
+import meta::external::store::elasticsearch::v7::tds::*;
+import meta::external::store::elasticsearch::v7::metamodel::tds::*;
+import meta::external::store::elasticsearch::v7::pureToEs::mappping::*;
+import meta::external::store::elasticsearch::v7::pureToEs::*;
+import meta::external::store::elasticsearch::v7::specification::utils::property::*;
+import meta::external::store::elasticsearch::v7::metamodel::executionPlan::context::*;
+
+// ----------------------------
+
+Class meta::external::store::elasticsearch::v7::pureToEs::State
+{
+  search: SearchRequestBody[1];
+  inFilter: Boolean[1];
+  inProject: Boolean[1];
+  aggregationQuery: Boolean[1];
+  sq: StoreQuery[1];
+  ext: RoutedValueSpecification[0..1];
+  lazyIndex: Elasticsearch7StoreIndexMapping[0..1];
+  index()
+  {
+    $this.lazyIndex->toOne('index have not been found yet');
+  }:Elasticsearch7StoreIndexMapping[1];  
+  debug: DebugContext[1];
+  debug(s : Function<{->String[1]}>[1])
+  {
+    println(if($this.debug.debug, |$this.debug.space + $s->eval(), |''));
+  }:Any[0];
+
+  tdsESDetails: TDSESDetail[*];
+}
+
+Class meta::external::store::elasticsearch::v7::pureToEs::TDSESDetail
+{ 
+  <<equality.Key>> name: String[1..*];
+  property: PropertyBase[1];
+  resultPath: ResultPath[1];
+  path(){
+    $this.name->joinStrings('.')
+  }:String[1];
+}
+
+function meta::external::store::elasticsearch::v7::pureToEs::processProject(vs : FunctionExpression[1], initReq: State[1]): State[1] 
+{
+  $initReq.debug(|'Processing ->project');
+  let currReq = process($vs.parametersValues->at(0), ^$initReq(inProject = true));
+  let cols = $vs->instanceValuesAtParameter(1, $currReq.sq.inScopeVars);
+  let fields = $cols->match([
+    tdsCols: ColumnSpecification<TDSRow>[*] | $tdsCols.name->map(x | $currReq.tdsESDetails->filter(f | $f.name == $x)->toOne('Projection %s not found on existing fields: %s'->format([$x, $currReq.tdsESDetails.name->joinStrings(', ')])))
+  ]);
+  let search = $currReq.search;
+  let source = $search._source->toOne();
+  ^$currReq(
+    search = ^$search(_source = ^$source(filter = ^SourceFilter(includes = $fields.path()))),
+    tdsESDetails = $currReq.tdsESDetails->filter(x | $x->in($fields)),
+    inProject = false
+  );
+}
+
+function meta::external::store::elasticsearch::v7::pureToEs::processLimit(vs : FunctionExpression[1], initReq: State[1]): State[1] 
+{
+  $initReq.debug(|'Processing ->limit');
+  let currReq = process($vs.parametersValues->at(0), ^$initReq(inProject = true));
+  let limit = $vs->instanceValuesAtParameter(1, $currReq.sq.inScopeVars)->cast(@Integer)->toOne();
+  let search = $currReq.search;
+  assertFalse($currReq.aggregationQuery, |'Limit not supported in aggreagtion queries');
+  ^$currReq(search = ^$search(size = $limit));
+}
+
+
+function meta::external::store::elasticsearch::v7::pureToEs::processDrop(vs : FunctionExpression[1], initReq: State[1]): State[1] 
+{
+  $initReq.debug(|'Processing ->drop');
+  let currReq = process($vs.parametersValues->at(0), ^$initReq(inProject = true));
+  let drop = $vs->instanceValuesAtParameter(1, $currReq.sq.inScopeVars)->cast(@Integer)->toOne();
+  let search = $currReq.search;
+  assertFalse($currReq.aggregationQuery, |'Drop not supported in aggreagtion queries');
+  ^$currReq(search = ^$search(from = $drop));
+}
+
+
+function meta::external::store::elasticsearch::v7::pureToEs::processSelectAllTds(vs : FunctionExpression[1], req: State[1]): State[1] 
+{
+  $req.debug(|'Processing ->indexToTds');
+  let indexTds = $vs->reactivate($req.sq.inScopeVars)->cast(@IndexTDS)->toOne();
+  let fields = $indexTds.columns.name;
+  let search = $req.search;
+  let source = $search._source->toOne();
+  ^$req(
+    search = ^$search(_source = ^$source(filter = ^SourceFilter(includes = $fields))), 
+    lazyIndex = $indexTds.index, 
+    tdsESDetails = $indexTds.index.properties->collectPrimitiveTypeProperties()->map(x | ^TDSESDetail(name = $x.first.values->toOneMany(), property = $x.second, resultPath = ^SourceFieldResultPath(fieldPath = $x.first.values->toOneMany())))
+  );
+}
+
+function meta::external::store::elasticsearch::v7::pureToEs::processFilter(vs : FunctionExpression[1], initReq: State[1]): State[1]
+{
+  $initReq.debug(|'Processing ->filter');
+  let req = ^$initReq(inFilter = true);
+  let debug = $req.debug;
+  let currReq = process($vs.parametersValues->at(0), ^$req(debug = ^$debug(space = $debug.space + '\t')));
+  let withFilterReq = processFilterLambda($vs.parametersValues->at(1), $currReq);
+  ^$withFilterReq(inFilter = false, debug = $debug);
+}
+
+function meta::external::store::elasticsearch::v7::pureToEs::processFilterLambda(vs : ValueSpecification[1], req: State[1]): State[1] 
+{
+  $req.debug(|'-- processing filter lambda ' + $vs->type()->toString() + ': ' + $vs->printValueSpecification('\n'));
+  
+  $vs->match([
+    fr: FunctionRoutedValueSpecification[1] | $fr.value->processFilterLambda($req), 
+    iv: InstanceValue[1] | 
+        $iv.values->match([
+          f: FunctionDefinition<Any>[1 ] | $f.expressionSequence->at(0)->processFilterLambda($req),
+          any: Any[1] |   fail('not supported: ' + $iv.values->type()->toString());$req;  
+        ]),   
+    fe: FunctionExpression[1] |  supportedFilterFunctions()->findAndEvalSupportedFunction($fe, $req),
+    any: Any[1] | fail('not supported: ' + $any->type()->toString());$req;  
+  ]);
+}
+
+function meta::external::store::elasticsearch::v7::pureToEs::process(vs : ValueSpecification[1], req: State[1]): State[1]
+{
+  $req.debug(|'-- processing VS ' + $vs->type()->toString() + ': ' + $vs->printValueSpecification('\n'));
+  $vs->match([
+    fe: FunctionExpression[1] | supportedRoutingFunctions()->findAndEvalSupportedFunction($fe, $req),
+    tds: TDSRoutedValueSpecification[1] | $tds.value->process($req),
+    ervs: ExtendedRoutedValueSpecification[1] | $ervs.value->process($req),
+    any: Any[1] | fail('not supported: ' + $any->type()->toString());$req;  
+  ]);
+}
+
+function meta::external::store::elasticsearch::v7::pureToEs::findAndEvalSupportedFunction(funcs: Pair<Function<Any>, Function<{FunctionExpression[1], State[1]->State[1]}>>[*], fe : FunctionExpression[1], req: State[1]): State[1] 
+{
+  eval($funcs->filter(x|$x.first == $fe.func)->toOne('function not supported yet: ' + $fe.func->toString()).second, $fe, $req);
+}
+
+function meta::external::store::elasticsearch::v7::pureToEs::process(sq:StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[0..1], exeCtx:Elasticsearch7ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]): State[1] 
+{
+  let req = ^State(    
+    search = ^SearchRequestBody(_source = ^SourceConfig(filter = ^SourceFilter())),
+    inFilter = false,
+    inProject = false,
+    aggregationQuery = false,
+    sq = $sq,
+    ext = $ext,
+    debug = $debug
+  );
+  
+  let processedReq = $sq.fe->process($req);  
+}
+
+function meta::external::store::elasticsearch::v7::pureToEs::supportedRoutingFunctions():Pair<Function<Any>, Function<{FunctionExpression[1], State[1]->State[1]}>>[*]
+{
+  let supported = [
+    pair(indexToTDS_Elasticsearch7Store_1__String_1__TabularDataSet_1_,                          processSelectAllTds_FunctionExpression_1__State_1__State_1_),
+    pair(meta::pure::tds::filter_TabularDataSet_1__Function_1__TabularDataSet_1_,                processFilter_FunctionExpression_1__State_1__State_1_),
+    pair(meta::pure::tds::project_TabularDataSet_1__ColumnSpecification_MANY__TabularDataSet_1_, processProject_FunctionExpression_1__State_1__State_1_),
+    pair(meta::pure::tds::limit_TabularDataSet_1__Integer_1__TabularDataSet_1_,                  processLimit_FunctionExpression_1__State_1__State_1_),
+    pair(meta::pure::tds::take_TabularDataSet_1__Integer_1__TabularDataSet_1_,                   processLimit_FunctionExpression_1__State_1__State_1_),
+    pair(meta::pure::tds::drop_TabularDataSet_1__Integer_1__TabularDataSet_1_,                   processDrop_FunctionExpression_1__State_1__State_1_)
+  ];
+}
+
+function meta::external::store::elasticsearch::v7::pureToEs::processEqual(vs : FunctionExpression[1], req: State[1]): State[1] 
+{
+  assert($req.inFilter, 'equal only supporter on filter context');
+  let leftSide = $vs.parametersValues->at(0)->extractSimpleValue($req);
+  let rightSide = $vs.parametersValues->at(1)->extractSimpleValue($req);
+  
+  let eqInputs = if($leftSide->size() == 1 && $leftSide->toOne()->instanceOf(TDSESDetail),
+    |pair($leftSide->toOne()->cast(@TDSESDetail), list($rightSide)),
+    |
+      assert($rightSide->size() == 1 && $rightSide->toOne()->instanceOf(TDSESDetail), 'Equality should include an index property');
+      pair($rightSide->toOne()->cast(@TDSESDetail), list($leftSide));
+  );
+
+  let tdsESDetail = $eqInputs.first;
+  let query = $eqInputs.second.values->match([
+    string: String[1] | 
+      // todo validate field supports equality... ie TextProperty does not support equality
+      ^QueryContainer(
+        term = newMap(pair(
+          $tdsESDetail.path(),
+          ^TermQuery(value = ^FieldValue(string = $string))
+        ))
+      );
+    ,
+    any: Any[*] | fail('not supported equality type: ' + $any->type()->toString() + '.  Only support simple data types')->cast(@QueryContainer);
+  ]);
+  
+  let search = $req.search;
+  ^$req(search = ^$search(query = $query));
+}
+
+function meta::external::store::elasticsearch::v7::pureToEs::extractSimpleValue(vs : ValueSpecification[1], req: State[1]): Any[*] 
+{
+  $req.debug(|'-- processing simple value ' + $vs->type()->toString() + ': ' + $vs->printValueSpecification('\n'));
+  $vs->match([   
+    fe: FunctionExpression[1] | 
+      if($fe.func->instanceOf(QualifiedProperty),
+        | 
+          $fe.func->cast(@QualifiedProperty<Any>)->extractSimpleValue($fe.parametersValues, $req);
+          ,
+        | supportedSimpleValueFunctions()->filter(x|$x.first == $fe.func)->toOne($fe->printFunctionExpression('\n') + ' not supported').second->eval($fe, $req)
+      );,
+    iv: InstanceValue[1] | $iv.values,
+    any: Any[1] | 
+      fail('not supported: ' + $any->type()->toString());
+      false;  
+  ]);
+}
+
+function meta::external::store::elasticsearch::v7::pureToEs::extractSimpleValue(qp : QualifiedProperty<Any>[1], params: ValueSpecification[*], req: State[1]): Any[1] 
+{
+  assert($params->at(0)->byPassRouterInfo().genericType.rawType->toOne() == TDSRow, 'Only TDSRow operations supported');
+  let tdsProperties = ['getNumber', 'getInteger', 'getString', 'getFloat', 'getDate', 'getBoolean', 'getEnum', 'getDateTime', 'getStrictDate'];
+
+  let funcName = $qp.functionName->toOne();
+  let valid = $tdsProperties->contains($funcName);
+  assert($tdsProperties->contains($funcName), | 'Unsupported TDSRow function:' + $qp.functionName->toOne());
+
+  let propertyName =  $params->at(1)->match([
+    iv:InstanceValue[1]|$iv.values,
+    any: Any[1] | fail($any->printValueSpecification('\n') + ' not supported');
+  ])->toOne()->toString();
+
+  $req.tdsESDetails->filter(f | $f.name == $propertyName)
+                    ->toOne('Property \'%s\' not found on query project'->format($propertyName));
+}
+
+function meta::external::store::elasticsearch::v7::pureToEs::supportedFilterFunctions():Pair<Function<Any>, Function<{FunctionExpression[1],  State[1]->State[1]}>>[*]
+{
+  let supported = [
+    pair(meta::pure::functions::boolean::equal_Any_MANY__Any_MANY__Boolean_1_, meta::external::store::elasticsearch::v7::pureToEs::processEqual_FunctionExpression_1__State_1__State_1_)
+  ];
+}
+
+function meta::external::store::elasticsearch::v7::pureToEs::supportedSimpleValueFunctions():Pair<Function<Any>, Function<{FunctionExpression[1], State[1]->Any[1]}>>[*]
+{
+  let supported = [
+    // pair(meta::pure::functions::boolean::equal_Any_MANY__Any_MANY__Boolean_1_, meta::external::store::elasticsearch::v7::pureToEs::extractAbc_FunctionExpression_1__Map_1__Any_1_)
+  ];
+}

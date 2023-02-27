@@ -16,5 +16,5 @@ package org.finos.legend.engine.plan.execution.stores;
 
 public enum StoreType
 {
-    Relational, Service, InMemory
+    Relational, Service, InMemory, ESv7
 }

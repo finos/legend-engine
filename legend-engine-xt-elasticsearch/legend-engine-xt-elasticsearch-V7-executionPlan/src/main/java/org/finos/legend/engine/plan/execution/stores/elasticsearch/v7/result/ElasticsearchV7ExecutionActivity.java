@@ -11,17 +11,23 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
 
-package org.finos.legend.engine.plan.execution.stores.elasticsearch.test;
+package org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.result;
 
-import org.junit.Assume;
-import org.testcontainers.DockerClientFactory;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.net.URI;
+import org.finos.legend.engine.plan.execution.result.ExecutionActivity;
 
-public class ElasticsearchTestServerInvoker
+public class ElasticsearchV7ExecutionActivity extends ExecutionActivity
 {
-    public static void main(String... args) throws Exception
+    public final String esRequest;
+    public final URI uri;
+
+    public ElasticsearchV7ExecutionActivity(@JsonProperty("uri") URI uri, @JsonProperty("esRequest") String esRequest)
     {
-        String tag = args.length > 0 ? args[0] : "7.8.0";
-        new ElasticsearchTestServer(tag).run();
+        this._type = "es7_activity";
+        this.uri = uri;
+        this.esRequest = esRequest;
     }
 }
