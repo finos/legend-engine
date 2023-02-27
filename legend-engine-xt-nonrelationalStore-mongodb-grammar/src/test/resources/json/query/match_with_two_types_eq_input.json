@@ -1,0 +1,25 @@
+{
+  "aggregate": "firm",
+  "pipeline": [
+    {
+      "$match": {
+        "$and": [
+          {
+            "country": {
+              "$eq": "Indonesia"
+            }
+          },
+          {
+            "$eq": {
+              "sector": "Finance Companies"
+            }
+          },
+          {
+            "city": "Jakarta"
+          }
+        ]
+      }
+    }
+  ],
+  "cursor": {}
+}

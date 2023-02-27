@@ -191,7 +191,6 @@ public class ArgumentExpressionVisitorImpl implements ArgumentExpressionVisitor<
         List<String> objPairString = val.keyValues.stream()
                 .map(x -> visitArgumentExpression(x)).collect(Collectors.toList());
         return "{" + String.join(",", objPairString) + "}";
-        // return String.join(",", objPairString);
     }
 
     @Override

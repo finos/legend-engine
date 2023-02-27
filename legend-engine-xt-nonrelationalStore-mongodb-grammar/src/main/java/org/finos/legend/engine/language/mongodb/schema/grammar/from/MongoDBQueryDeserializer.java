@@ -296,6 +296,7 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
         return objQueryExpr;
     }
 
+    // Returns ObjectQueryExpression
     private ArgumentExpression getMatchExpression(JsonNode matchNode)
     {
         ObjectQueryExpression objQueryExpr = new ObjectQueryExpression();
@@ -336,25 +337,25 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
     {
         NotOperatorExpression notOpExpression = new NotOperatorExpression();
         // TODO: $not should be a single operation
-        notOpExpression.expressions = Lists.fixedSize.of(getObjectExpression(entry.getValue()));
+        notOpExpression.expressions = Lists.fixedSize.of(getObjectQueryExpression(entry.getValue()));
         return notOpExpression;
     }
 
     private OrOperatorExpression getOrOperatorExpression(Map.Entry<String, JsonNode> entry)
     {
         OrOperatorExpression orOpExpression = new OrOperatorExpression();
-        orOpExpression.expressions = getObjectExpressions(entry.getValue());
+        orOpExpression.expressions = getObjectQueryExpressions(entry.getValue());
         return orOpExpression;
     }
 
     private AndOperatorExpression getAndOperatorExpression(Map.Entry<String, JsonNode> entry)
     {
         AndOperatorExpression andOpExpression = new AndOperatorExpression();
-        andOpExpression.expressions = getObjectExpressions(entry.getValue());
+        andOpExpression.expressions = getObjectQueryExpressions(entry.getValue());
         return andOpExpression;
     }
 
-    private List<ArgumentExpression> getObjectExpressions(JsonNode value)
+    private List<ArgumentExpression> getObjectQueryExpressions(JsonNode value)
     {
         if (value.isArray() && value.size() > 0)
         {
@@ -374,7 +375,7 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
         throw new IllegalStateException("Logical Operators need non-zero array of Object Expressions ($and, $or, $nor)");
     }
 
-    private ArgumentExpression getObjectExpression(JsonNode value)
+    private ArgumentExpression getObjectQueryExpression(JsonNode value)
     {
         if (value.isObject())
         {
@@ -432,12 +433,12 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
             LiteralValue objValue = new LiteralValue();
             List<ArgumentExpression> argumentExpressions = Lists.mutable.empty();
             Iterator<Map.Entry<String, JsonNode>> matchNodeFields = fieldOpValueNode.fields();
-            boolean isObjectExpression = false;
+            boolean isObjectQueryExpression = false;
             while (matchNodeFields.hasNext())
             {
                 Map.Entry<String, JsonNode> objEntry = matchNodeFields.next();
                 String keyType = objEntry.getKey();
-                if (!isSupportedOperation(keyType) && !isObjectExpression)
+                if (!isSupportedOperation(keyType) && !isObjectQueryExpression)
                 {
                     // Assume the whole object as Object Literal - no need to iterate
                     objValue = getLiteralValueFromEntry(entry);
@@ -446,7 +447,7 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
                 else if (isSupportedOperation(keyType))
                 {
                     // create Object Query Expression
-                    isObjectExpression = true;
+                    isObjectQueryExpression = true;
                     Optional<ArgumentExpression> opExpression = getOperatorExpression(objEntry);
                     opExpression.ifPresent(argumentExpressions::add);
                 }
@@ -455,7 +456,7 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
                     throw new IllegalStateException("Field Based operation cannot mix  exprOperation & {field : value} syntax");
                 }
             }
-            if (isObjectExpression)
+            if (isObjectQueryExpression)
             {
                 objQueryExpr.keyValues = argumentExpressions;
                 qryExprKeyValue.value = objQueryExpr;
