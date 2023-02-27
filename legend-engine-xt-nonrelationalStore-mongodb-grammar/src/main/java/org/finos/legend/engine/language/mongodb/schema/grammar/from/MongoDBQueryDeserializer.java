@@ -15,7 +15,6 @@
 package org.finos.legend.engine.language.mongodb.schema.grammar.from;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -128,8 +127,7 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
             }
             else if (jsonNode.isNull())
             {
-                NullTypeValue typeValue = new NullTypeValue();
-                literalValue.value = typeValue;
+                literalValue.value = new NullTypeValue();
             }
         }
         else if (jsonNode.isObject())
@@ -181,7 +179,7 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
     }
 
     @Override
-    public DatabaseCommand deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException
+    public DatabaseCommand deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException
     {
 
         DatabaseCommand dbCommand = new DatabaseCommand();
@@ -257,7 +255,7 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
         throw new IllegalStateException("Unsupported stages provided in pipeline, refer above");
     }
 
-    private Stage getMatchStage(JsonNode matchNode) throws IOException
+    private Stage getMatchStage(JsonNode matchNode)
     {
         MatchStage matchStage = new MatchStage();
 
@@ -289,15 +287,6 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
                     break;
                 case OPERATOR_EXPRESSION:
                     throw new IllegalStateException("Project syntax does not support Operator Expression");
-//                    Optional<ArgumentExpression> operatorExpression = getOperatorExpression(entry, false);
-//                    if (operatorExpression.isPresent())
-//                    {
-//                        argumentExpressions.add(operatorExpression.get());
-//                    }
-//                    else
-//                    {
-//                        argumentExpressions = Lists.fixedSize.empty();
-//                    }
                 case EXPR:
                     // Match stage defined with expr as starting point "$expr" : { "$eq"....
                     break;
@@ -324,7 +313,7 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
                     break;
                 case OPERATOR_EXPRESSION:
                     // Match stage defined with operator as starting point "$eq" : {.... or "$and" : {
-                    Optional<ArgumentExpression> operatorExpression = getOperatorExpression(entry, false);
+                    Optional<ArgumentExpression> operatorExpression = getOperatorExpression(entry);
                     if (operatorExpression.isPresent())
                     {
                         argumentExpressions.add(operatorExpression.get());
@@ -438,7 +427,7 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
             // TODO: If it is literal value, convert this to canonical  {"name" : "$eq" : {...}}
             // Iterate through all keys here
             JsonNode fieldOpValueNode = entry.getValue();
-            // We can end up with a Object Query Expression or Literal value (object type)
+            // We can end up with an Object Query Expression or Literal value (object type)
             ObjectQueryExpression objQueryExpr = new ObjectQueryExpression();
             LiteralValue objValue = new LiteralValue();
             List<ArgumentExpression> argumentExpressions = Lists.mutable.empty();
@@ -458,11 +447,8 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
                 {
                     // create Object Query Expression
                     isObjectExpression = true;
-                    Optional<ArgumentExpression> operExpression = getOperatorExpression(objEntry, true);
-                    if (operExpression.isPresent())
-                    {
-                        argumentExpressions.add(operExpression.get());
-                    }
+                    Optional<ArgumentExpression> opExpression = getOperatorExpression(objEntry);
+                    opExpression.ifPresent(argumentExpressions::add);
                 }
                 else
                 {
@@ -498,10 +484,8 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
     }
 
 
-    private Optional<ArgumentExpression> getOperatorExpression(Map.Entry<String, JsonNode> opExprEntry, boolean fieldBasedOp)
+    private Optional<ArgumentExpression> getOperatorExpression(Map.Entry<String, JsonNode> opExprEntry)
     {
-        // This has to be an object node - as all Operations are object nodes for us
-        JsonNode valueNode = opExprEntry.getValue();
         switch (opExprEntry.getKey())
         {
             case "$eq":
@@ -575,16 +559,7 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
             case "$not":
                 return Optional.of(getNotOperatorExpression(opExprEntry));
             default:
-                if (fieldBasedOp)
-                {
-                    // in Field based Operation - if we are handling an object key that is not
-                    // an operator then assume it is an object & handle as such
-                    return Optional.of(getLiteralValueFromNode(opExprEntry.getValue()));
-                }
-                else
-                {
-                    return Optional.of(getFieldBasedMatchOperation(opExprEntry));
-                }
+                return Optional.of(getFieldBasedMatchOperation(opExprEntry));
         }
     }
 
@@ -604,7 +579,7 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
         }
     }
 
-    private Stage getProjectStage(JsonNode projectNode) throws IOException
+    private Stage getProjectStage(JsonNode projectNode)
     {
         ProjectStage projectStage = new ProjectStage();
 

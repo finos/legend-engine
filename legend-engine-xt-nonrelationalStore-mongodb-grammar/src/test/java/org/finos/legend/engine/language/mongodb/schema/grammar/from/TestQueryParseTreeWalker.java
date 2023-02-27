@@ -120,12 +120,27 @@ public class TestQueryParseTreeWalker
     @Test
     public void testInconsistFieldBasedMatchOperator() throws Exception
     {
-        String invalidQueryFile = "json/query/invalid_match_with_eq_operator_input.json";
         // String invalidQueryFile = "json/query/valid_match_with_eq_operator_input_as_object.json";
-        URL url1 = Objects.requireNonNull(getClass().getClassLoader().getResource(invalidQueryFile));
-        String invalidQuery = new String(Files.readAllBytes(Paths.get(url1.toURI())), StandardCharsets.UTF_8);
 
-        DatabaseCommand invalidDBCommand = parseAndWalkDatabaseCommand(invalidQuery);
+        String input = "";
+        try
+        {
+            URL url1 = Objects.requireNonNull(getClass().getClassLoader().getResource("json/query/invalid_match_with_eq_operator_input.json"));
+            input = new String(Files.readAllBytes(Paths.get(url1.toURI())), StandardCharsets.UTF_8);
+        }
+        catch (IOException | URISyntaxException e)
+        {
+            throw new RuntimeException(e);
+        }
+        final String inputJson = input;
+        Exception exception = assertThrows(RuntimeException.class, () -> parseAndWalkDatabaseCommand(inputJson));
+        assertEquals(exception.getMessage(), "line 6:47 missing '}' at ','");
+
+
+//        URL url1 = Objects.requireNonNull(getClass().getClassLoader().getResource(invalidQueryFile));
+//        String invalidQuery = new String(Files.readAllBytes(Paths.get(url1.toURI())), StandardCharsets.UTF_8);
+//
+//        DatabaseCommand invalidDBCommand = parseAndWalkDatabaseCommand(invalidQuery);
     }
 
     @Test
