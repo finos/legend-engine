@@ -16,14 +16,15 @@ package org.finos.legend.engine.language.pure.dsl.persistence.compiler.toPureGra
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function2;
+import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion.TestAssertionFirstPassBuilder;
 import org.finos.legend.engine.language.pure.dsl.persistence.compiler.validation.ValidationResult;
 import org.finos.legend.engine.language.pure.dsl.persistence.compiler.validation.ValidationRuleSet;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
@@ -35,19 +36,21 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.DefaultPersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTestBatch;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.assertion.AllRowsEquivalentToJson;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.assertion.ActiveRowsEquivalentToJson;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.CronTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_ActiveRowsEquivalentToJson_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_AllRowsEquivalentToJson_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceContext;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceContext_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceTestBatch;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceTestBatch_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_context_PersistencePlatform;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_context_PersistencePlatform_Impl;
@@ -56,6 +59,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trig
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_Trigger;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_validation_ValidationResult;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_validation_ValidationRuleSet;
+import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_TestAssertion;
 
 import java.util.Collections;
 import java.util.List;
@@ -180,27 +184,29 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
         });
     }
 
-    private static Root_meta_pure_persistence_metamodel_PersistenceTestBatch persistenceTestBatch(PersistenceTestBatch batch, CompileContext context, ProcessingContext processingContext)
+    @Override
+    public List<Function3<TestAssertion, CompileContext, ProcessingContext, Root_meta_pure_test_assertion_TestAssertion>> getExtraTestAssertionProcessors()
     {
-        if (batch == null)
+        return Collections.singletonList((testAssertion, context, processingContext) ->
         {
-            return null;
-        }
+            if (testAssertion instanceof AllRowsEquivalentToJson)
+            {
+                AllRowsEquivalentToJson allRowsEquivalentToJson = (AllRowsEquivalentToJson) testAssertion;
 
-        Root_meta_pure_persistence_metamodel_PersistenceTestBatch pureTestBatch = new Root_meta_pure_persistence_metamodel_PersistenceTestBatch_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::PersistenceTestBatch"));
+                return new Root_meta_pure_persistence_metamodel_AllRowsEquivalentToJson_Impl("")
+                    ._expected(allRowsEquivalentToJson.expected.accept(new EmbeddedDataFirstPassBuilder(context, processingContext)));
+            }
+            else if (testAssertion instanceof ActiveRowsEquivalentToJson)
+            {
+                ActiveRowsEquivalentToJson activeRowsEquivalentToJson = (ActiveRowsEquivalentToJson) testAssertion;
 
-        if (batch.assertions.isEmpty())
-        {
-            throw new EngineException("Persistence TestBatch must include asserts", batch.sourceInformation, EngineErrorType.COMPILATION);
-        }
-        pureTestBatch._assertions(ListIterate.collect(batch.assertions, assertion -> assertion.accept(new TestAssertionFirstPassBuilder(context, processingContext))));
-
-        if (batch.testData == null)
-        {
-            throw new EngineException("Persistence TestBatch must include test data", batch.sourceInformation, EngineErrorType.COMPILATION);
-        }
-        pureTestBatch._testData(HelperPersistenceBuilder.processPersistenceTestBatchData(batch.testData, context, processingContext));
-
-        return pureTestBatch;
+                return new Root_meta_pure_persistence_metamodel_ActiveRowsEquivalentToJson_Impl("")
+                    ._expected(activeRowsEquivalentToJson.expected.accept(new EmbeddedDataFirstPassBuilder(context, processingContext)));
+            }
+            else
+            {
+                return null;
+            }
+        });
     }
 }
