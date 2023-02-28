@@ -73,10 +73,7 @@ function meta::pure::router::externalFormat::routing::specializedFunctionExpress
         {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
             let processedFirstParam  = processCollection($state, $fe.parametersValues->at(0), $executionContext, $vars, $inScopeVars, {x:Any[1] | true}, $extensions, $debug)->toOne();
             let processedExternalize = ^$fe(parametersValues = $processedFirstParam.value->cast(@ValueSpecification)->concatenate($fe.parametersValues->tail()));
-            let binding              = $fe.parametersValues->at(1)->match([
-                                                                      i:InstanceValue[1] | $i.values->at(0),
-                                                                      v:VariableExpression[1] | $inScopeVars->get($v.name).values->toOne()
-                                                                    ])->cast(@meta::external::shared::format::binding::Binding);
+            let binding              = $fe.parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@meta::external::shared::format::binding::Binding);
             let routedExternalize    = ^ExternalFormatRoutedValueSpecification
                                         (
                                           multiplicity    = $f->functionReturnMultiplicity(),
@@ -93,10 +90,7 @@ function meta::pure::router::externalFormat::routing::specializedFunctionExpress
     ),
     pair(fe:FunctionExpression[1] | $fe.func->in(meta::external::shared::format::functions::internalizeFunctions()),
         {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
-            let binding              = $fe.parametersValues->at(1)->match([
-                                                                      i:InstanceValue[1] | $i.values->at(0),
-                                                                      v:VariableExpression[1] | $inScopeVars->get($v.name).values->toOne()
-                                                                    ])->cast(@meta::external::shared::format::binding::Binding);
+            let binding              = $fe.parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@meta::external::shared::format::binding::Binding);
             let routingStrategy      = getExternalFormatRoutingStrategy($binding);
             let processedFirstParam  = processCollection(^$state(routingStrategy = $routingStrategy), $fe.parametersValues->at(0), $executionContext, $vars, $inScopeVars, {x:Any[1] | true}, $extensions, $debug)->toOne();
             let processedExternalize = ^$fe(parametersValues = $processedFirstParam.value->cast(@ValueSpecification)->concatenate($fe.parametersValues->tail()));

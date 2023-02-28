@@ -230,7 +230,7 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
         // NOTE: the whole point of this processing is to put the Pure Runtime in an index
         final Root_meta_pure_runtime_Runtime runtime = HelperRuntimeBuilder.buildEngineRuntime(packageableRuntime.runtimeValue, this.context);
         this.context.pureModel.runtimesIndex.put(this.context.pureModel.buildPackageString(packageableRuntime._package, packageableRuntime.name), runtime);
-        metamodel._runtimeValue(new Root_meta_pure_runtime_EngineRuntime_Impl("", null, context.pureModel.getClass("meta::pure::runtime::EngineRuntime"))._mappings(ListIterate.collect(packageableRuntime.runtimeValue.mappings, mappingPointer -> context.resolveMapping(mappingPointer.path, mappingPointer.sourceInformation))));
+        metamodel._runtimeValue(new Root_meta_pure_runtime_EngineRuntime_Impl("", null, context.pureModel.getClass("meta::pure::runtime::EngineRuntime"))._mappings(ListIterate.collect(packageableRuntime.runtimeValue.mappings, mappingPointer -> context.resolveMapping(mappingPointer.path, mappingPointer.sourceInformation)))._connections(runtime._connections()));
         return metamodel;
     }
 

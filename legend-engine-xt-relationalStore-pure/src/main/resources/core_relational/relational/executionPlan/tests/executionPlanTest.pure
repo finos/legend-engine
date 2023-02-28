@@ -2105,22 +2105,13 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPLanGenera
       | let var = _Firm.all()->from(meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connections=meta::pure::mapping::modelToModel::test::shared::getConnection()));, meta::relational::extension::relationalExtensions()
    );
    let expected =
-      'Allocation\n'+
+      'Relational\n'+
       '(\n'+
       '  type = Class[impls=(meta::pure::mapping::modelToModel::test::shared::src::_Firm | relationalMapping.meta_pure_mapping_modelToModel_test_shared_src__Firm)]\n'+
       '  resultSizeRange = *\n'+
-      '  name = var\n'+
-      '  value = \n'+
-      '    (\n'+
-      '      Relational\n'+
-      '      (\n'+
-      '        type = Class[impls=(meta::pure::mapping::modelToModel::test::shared::src::_Firm | relationalMapping.meta_pure_mapping_modelToModel_test_shared_src__Firm)]\n'+
-      '        resultSizeRange = *\n'+
-      '        resultColumns = [("pk_0", VARCHAR(200)), ("name", VARCHAR(200))]\n'+
-      '        sql = select "root".name as "pk_0", "root".name as "name" from Firm as "root"\n'+
-      '        connection = TestDatabaseConnection(type = "H2")\n'+
-      '      )\n'+
-      '    )\n'+
+      '  resultColumns = [("pk_0", VARCHAR(200)), ("name", VARCHAR(200))]\n'+
+      '  sql = select "root".name as "pk_0", "root".name as "name" from Firm as "root"\n'+
+      '  connection = TestDatabaseConnection(type = "H2")\n'+
       ')\n';
    assertEquals($expected, $res->planToString(meta::relational::extension::relationalExtensions()));
 }
@@ -2462,16 +2453,16 @@ function <<test.Test>> meta::pure::executionPlan::tests::testSupportStreamFlagGr
 
 function <<test.Test>> meta::pure::executionPlan::tests::testSupportStreamFlagWithGraphFetchAndFrom():Boolean[1]
 {
-   let runtime = ^Runtime(connections = getConnection());
-   let query = {firmName:String[*]|
-                 let targetGraph = #{meta::pure::mapping::modelToModel::test::shared::dest::Firm{legalName,
+   let targetGraph = #{meta::pure::mapping::modelToModel::test::shared::dest::Firm{legalName,
                                           employees{
                                              firstName,
                                              lastName,
                                              addresses { street }
                                           }
                                        }}#;
-                 let sourceGraph = meta::pure::graphFetch::calculateSourceTree($targetGraph, meta::relational::tests::functions::objectReferenceIn::simpleModelMapping, relationalExtensions());
+   let sourceGraph = meta::pure::graphFetch::calculateSourceTree($targetGraph, meta::relational::tests::functions::objectReferenceIn::simpleModelMapping, relationalExtensions());                 
+   let runtime = ^Runtime(connections = getConnection());
+   let query = {firmName:String[*]|
                  let sourceFirms = _Firm.all()->filter(f | $f.name->in($firmName))
                                               ->graphFetch($sourceGraph)->from(meta::pure::mapping::modelToModel::test::shared::relationalMapping, $runtime);
                  Firm.all()->graphFetch($targetGraph)->serialize($targetGraph)->from(meta::relational::tests::functions::objectReferenceIn::simpleModelMapping, getRuntimeWithModelConnection(_Firm, $sourceFirms));

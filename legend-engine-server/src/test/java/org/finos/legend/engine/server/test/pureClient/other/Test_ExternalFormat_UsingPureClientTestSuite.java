@@ -21,7 +21,7 @@ import org.finos.legend.engine.server.test.shared.PureWithEngineHelper;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 
-public class Test_ExternalFormat_UsingPureClient
+public class Test_ExternalFormat_UsingPureClientTestSuite
 {
     public static Test suite()
     {

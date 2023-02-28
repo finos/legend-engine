@@ -37,8 +37,9 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], extensi
    $f->routeFunction(^ExecutionContext(), $extensions, noDebug());
 }
 
-function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], exeCtx: ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):FunctionDefinition<Any>[1]
+function meta::pure::router::routeFunction(orgFunction:FunctionDefinition<Any>[1], exeCtx: ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):FunctionDefinition<Any>[1]
 {
+   let f           = $orgFunction->meta::pure::router::preeval::preval($extensions, $debug);
    let expressions = $f.expressionSequence->evaluateAndDeactivate();
    assert($expressions->init()->forAll(vs| $vs->isLetFunction()), 'In FunctionDefinition with many expressions, all except last should be let expressions');  //validate ::execute(..) not present
 
