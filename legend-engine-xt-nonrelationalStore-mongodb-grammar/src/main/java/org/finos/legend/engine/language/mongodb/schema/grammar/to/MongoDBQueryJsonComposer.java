@@ -14,19 +14,11 @@
 
 package org.finos.legend.engine.language.mongodb.schema.grammar.to;
 
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArgumentExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.BaseTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DatabaseCommand;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.KeyValuePair;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.MatchStage;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ProjectStage;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Stage;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.StageVisitor;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static org.finos.legend.engine.language.mongodb.schema.grammar.to.ComposerUtility.convertToStringWithQuotes;
 
 public class MongoDBQueryJsonComposer
 {
@@ -52,41 +44,19 @@ public class MongoDBQueryJsonComposer
 
     private String visitPipelineStage(Stage stage)
     {
-        return stage.accept(new StageVisitor<String>()
-        {
-
-            @Override
-            public String visit(MatchStage val)
-            {
-                //  return "{ \"$match\" : " + visitArgumentExpression(((MatchStage) stage).expression) + " }";
-                return "{ \"$match\" : " +
-                        val.expression.accept(new ArgumentExpressionVisitorImpl()) +
-                        " }";
-            }
-
-            @Override
-            public String visit(ProjectStage val)
-            {
-                //return "{ \"$project\" : " + visitArgumentExpression(((ProjectStage) stage).projections) + " }";
-                return "{ \"$project\" : " +
-                        val.projections.accept(new ArgumentExpressionVisitorImpl()) +
-                        " }";
-            }
-        });
+        return stage.accept(new MongoDBOperationElementVisitorImpl());
     }
 
-    private String visitArgumentExpression(ArgumentExpression argumentExpression)
-    {
-
-        if (argumentExpression == null)
-        {
-            return "{}";
-        }
-
-        return argumentExpression.accept(new ArgumentExpressionVisitorImpl());
-    }
-
-
+//    private String visitArgumentExpression(MongoDBOperaionElement argumentExpression)
+//    {
+//
+//        if (argumentExpression == null)
+//        {
+//            return "{}";
+//        }
+//
+//        return argumentExpression.accept(new ArgumentExpressionVisitorImpl());
+//    }
 
 
 }

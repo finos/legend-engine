@@ -179,8 +179,12 @@ Class meta::external::store::mongodb::metamodel::Collection
   name: String[1];
   uuid: String[1];
   collation: Collation[0..1];
-  validator: Validator[0..1];
+  validator: Validator[1];
   indexes:  MongoIndex[0..1];
+  field(fieldName: String[1])
+  {
+    $this.validator.validatorExpression->cast(@JsonSchemaExpression).schemaExpression->cast(@Schema).properties->filter(c | $c.key == $fieldName)->first();
+  }: meta::external::store::mongodb::metamodel::PropertyType[0..1];
 }
 
 
@@ -194,9 +198,8 @@ Class meta::external::store::mongodb::metamodel::CollectionView
   pipeLine: ViewPipeline[1..*];
 } 
 
-Class meta::external::store::mongodb::metamodel::MongoDatabase
+Class meta::external::store::mongodb::metamodel::MongoDatabase extends meta::pure::store::Store
 {
-  name: String[1];
   collections: Collection[*];
   views: CollectionView[*];
   authenticationStrategy: AuthenticationStrategy[0..1];
@@ -207,10 +210,14 @@ Class meta::external::store::mongodb::metamodel::Collation
   locale: String[1];
 }
 
+Class meta::external::store::mongodb::metamodel::MongoDBOperationElement
+{
+}
+
 
 
 Class  {doc.doc = 'https://www.mongodb.com/docs/manual/reference/command/aggregate/#mongodb-dbcommand-dbcmd.aggregate'}
-meta::external::store::mongodb::metamodel::aggregation::DatabaseCommand
+meta::external::store::mongodb::metamodel::aggregation::DatabaseCommand extends MongoDBOperationElement
 {
     type: String[1];
     collectionName: String[1];
@@ -232,13 +239,13 @@ Class meta::external::store::mongodb::metamodel::aggregation::ViewPipeline exten
 {
 }
 
-Class meta::external::store::mongodb::metamodel::aggregation::AggregationPipeline
+Class meta::external::store::mongodb::metamodel::aggregation::AggregationPipeline extends MongoDBOperationElement
 {
     stages: Stage[*];
 }
 
 
-Class meta::external::store::mongodb::metamodel::aggregation::Stage
+Class meta::external::store::mongodb::metamodel::aggregation::Stage extends MongoDBOperationElement
 {
 }
 
@@ -255,17 +262,13 @@ meta::external::store::mongodb::metamodel::aggregation::ProjectStage extends Sta
   projections: ArgumentExpression[1];
 }
 
-Class meta::external::store::mongodb::metamodel::aggregation::LiteralValue extends ArgumentExpression
-{
-  value: BaseTypeValue[1];
-}
-
-Class meta::external::store::mongodb::metamodel::aggregation::AggregateExpression
+Class meta::external::store::mongodb::metamodel::aggregation::AggregateExpression extends MongoDBOperationElement
 {
   arguments: ArgumentExpression[*];
 }
 
-Class meta::external::store::mongodb::metamodel::aggregation::ArgumentExpression
+Class meta::external::store::mongodb::metamodel::aggregation::ArgumentExpression extends MongoDBOperationElement
+
 {
 }
 
@@ -284,6 +287,11 @@ Class meta::external::store::mongodb::metamodel::aggregation::WriteConcern
   w: String[0..1];  // Can take values "majority", numbers upto number of replicas - 1, custom tag
   j: Boolean[0..1];   //Written to disk ack.
   wtimeout: Integer[0..1];  // in millis
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::LiteralValue extends ArgumentExpression
+{
+  value: BaseTypeValue[1];
 }
 
 Class {doc.doc = 'Expression for fieldName.path.to.element'} 
@@ -438,6 +446,8 @@ Class meta::external::store::mongodb::metamodel::aggregation::KeyValuePair
   key: String[1];
   value: BaseTypeValue[1];
 }
+
+
 
 
 Enum meta::external::store::mongodb::metamodel::authentication::AuthenticationMechanism

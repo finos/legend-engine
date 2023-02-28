@@ -44,7 +44,7 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.SchemaValidatio
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.StringType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.TimeStampType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.Validator;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArgumentExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.MongoDBOperaionElement;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.JsonSchemaExpression;
 
 import java.io.IOException;
@@ -197,7 +197,7 @@ public class MongoDBSchemaDeserializer extends StdDeserializer<MongoDatabase>
         return validator;
     }
 
-    private ArgumentExpression getSchemaExpression(JsonParser jsonParser) throws IOException
+    private MongoDBOperaionElement getSchemaExpression(JsonParser jsonParser) throws IOException
     {
         JsonSchemaExpression argumentExpression = new JsonSchemaExpression();
 

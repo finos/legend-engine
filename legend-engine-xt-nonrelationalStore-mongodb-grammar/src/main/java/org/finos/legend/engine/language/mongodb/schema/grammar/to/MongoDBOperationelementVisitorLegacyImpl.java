@@ -1,0 +1,226 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package org.finos.legend.engine.language.mongodb.schema.grammar.to;
+
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDBOperationElement;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDBOperationElementVisitor;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.AndOperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ComparisonOperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ComputedFieldValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.EqOperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.FieldPathExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.GTEOperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.GTOperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.InOperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.JsonSchemaExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.KeyValueExpressionPair;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LTEOperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LTOperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LiteralValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LogicalOperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.MatchStage;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.MongoDBOperaionElement;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NEOperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NinOperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NorOperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NotOperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ObjectExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ObjectQueryExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Operator;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.OrOperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ProjectStage;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.QueryExprKeyValue;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class MongoDBOperationelementVisitorLegacyImpl implements MongoDBOperationElementVisitor<String>
+{
+
+    @Override
+    public String visit(AndOperatorExpression val)
+    {
+        List<String> expressionsString = val.expressions.stream()
+                .map(x -> visitMongoDBOperationElement(x)).collect(Collectors.toList());
+        return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.AND) + "\" : [" + String.join(",", expressionsString) + "] }";
+    }
+
+    @Override
+    public String visit(ComparisonOperatorExpression val)
+    {
+        return null;
+    }
+
+    @Override
+    public String visit(ComputedFieldValue val)
+    {
+        return val.value;
+    }
+
+    @Override
+    public String visit(EqOperatorExpression val)
+    {
+        String expString = visit(val.expression);
+        return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.EQ) + "\" : " + expString + " }";
+    }
+
+    @Override
+    public String visit(FieldPathExpression val)
+    {
+        return null;
+    }
+
+    @Override
+    public String visit(GTOperatorExpression val)
+    {
+        String expString = visit(val.expression);
+        return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.GT) + "\" : " + expString + " }";
+    }
+
+    @Override
+    public String visit(GTEOperatorExpression val)
+    {
+        String expString = visit(val.expression);
+        return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.GTE) + "\" : " + expString + " }";
+    }
+
+    @Override
+    public String visit(InOperatorExpression val)
+    {
+        String expString = visit(val.expression);
+        return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.IN) + "\" : " + expString + " }";
+    }
+
+    @Override
+    public String visit(JsonSchemaExpression val)
+    {
+        return null;
+    }
+
+    @Override
+    public String visit(LTEOperatorExpression val)
+    {
+        String expString = visit(val.expression);
+        return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.LTE) + "\" : " + expString + " }";
+    }
+
+    @Override
+    public String visit(LTOperatorExpression val)
+    {
+        String expString = visit(val.expression);
+        return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.LT) + "\" : " + expString + " }";
+    }
+
+    @Override
+    public String visit(LiteralValue val)
+    {
+        return visitBaseTypeValue(val.value);
+    }
+
+    @Override
+    public String visit(LogicalOperatorExpression val)
+    {
+        return null;
+    }
+
+    @Override
+    public String visit(NEOperatorExpression val)
+    {
+        String expString = visit(val.expression);
+        return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.NE) + "\" : " + expString + " }";
+    }
+
+    @Override
+    public String visit(NinOperatorExpression val)
+    {
+        String expString = visit(val.expression);
+        return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.NIN) + "\" : " + expString + " }";
+    }
+
+    @Override
+    public String visit(NorOperatorExpression val)
+    {
+        List<String> expressionsString = val.expressions.stream()
+                .map(x -> visitMongoDBOperationElement(x)).collect(Collectors.toList());
+        return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.NOR) + "\" : [" + String.join(",", expressionsString) + "] }";
+    }
+
+    @Override
+    public String visit(NotOperatorExpression val)
+    {
+        List<String> expressionsString = val.expressions.stream()
+                .map(x -> visitMongoDBOperationElement(x)).collect(Collectors.toList());
+//                String expressionsString = visitMongoDBOperationElement(val.expression);
+        return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.NOT) + "\" : [" + String.join(",", expressionsString) + "] }";
+    }
+
+    @Override
+    public String visit(ObjectExpression val)
+    {
+        List<String> objPairString = val.keyValues.stream()
+                .map(x -> visitKeyValueExpressionPair(x)).collect(Collectors.toList());
+        return "{" + String.join(",", objPairString) + "}";
+    }
+
+    @Override
+    public String visit(ObjectQueryExpression val)
+    {
+        return null;
+    }
+
+    @Override
+    public String visit(OrOperatorExpression val)
+    {
+        List<String> expressionsString = val.expressions.stream()
+                .map(x -> visitMongoDBOperationElement(x)).collect(Collectors.toList());
+        return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.OR) + "\" : [" + String.join(",", expressionsString) + "] }";
+    }
+
+    @Override
+    public String visit(QueryExprKeyValue val)
+    {
+        return null;
+    }
+
+    private String visitMongoDBOperationElement(MongoDBOperationElement mongoDBOperationElement)
+    {
+
+        if (mongoDBOperationElement == null)
+        {
+            return "{}";
+        }
+
+        return mongoDBOperationElement.accept(new MongoDBOperationelementVisitorLegacyImpl());
+    }
+
+    @Override
+    public String visit(MatchStage val)
+    {
+        return "{ \"$match\" : " + visitMongoDBOperationElement(val.expression) + " }";
+    }
+
+    @Override
+    public String visit(ProjectStage val)
+    {
+        return "{ \"$project\" : " + visitMongoDBOperationElement(val.projections) + " }";
+    }
+
+    public String visitKeyValueExpressionPair(KeyValueExpressionPair pair)
+    {
+        String field = pair.field;
+        String value = visitMongoDBOperationElement(pair.argument);
+        return field + " : " + value;
+    }
+}

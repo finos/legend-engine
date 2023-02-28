@@ -23,7 +23,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Sets;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.AggregationPipeline;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.AndOperatorExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArgumentExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.MongoDBOperaionElement;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArrayTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.BaseTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.BoolTypeValue;
@@ -269,12 +269,12 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
         return matchStage;
     }
 
-    private ArgumentExpression getProjectExpression(JsonNode matchNode)
+    private MongoDBOperaionElement getProjectExpression(JsonNode matchNode)
     {
         Iterator<Map.Entry<String, JsonNode>> matchNodeFields = matchNode.fields();
         ObjectQueryExpression objQueryExpr = new ObjectQueryExpression();
 
-        List<ArgumentExpression> argumentExpressions = Lists.mutable.empty();
+        List<MongoDBOperaionElement> argumentExpressions = Lists.mutable.empty();
         while (matchNodeFields.hasNext())
         {
             Map.Entry<String, JsonNode> entry = matchNodeFields.next();
@@ -297,10 +297,10 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
     }
 
     // Returns ObjectQueryExpression
-    private ArgumentExpression getMatchExpression(JsonNode matchNode)
+    private MongoDBOperaionElement getMatchExpression(JsonNode matchNode)
     {
         ObjectQueryExpression objQueryExpr = new ObjectQueryExpression();
-        List<ArgumentExpression> argumentExpressions = Lists.mutable.empty();
+        List<MongoDBOperaionElement> argumentExpressions = Lists.mutable.empty();
         Iterator<Map.Entry<String, JsonNode>> matchNodeFields = matchNode.fields();
         while (matchNodeFields.hasNext())
         {
@@ -314,7 +314,7 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
                     break;
                 case OPERATOR_EXPRESSION:
                     // Match stage defined with operator as starting point "$eq" : {.... or "$and" : {
-                    Optional<ArgumentExpression> operatorExpression = getOperatorExpression(entry);
+                    Optional<MongoDBOperaionElement> operatorExpression = getOperatorExpression(entry);
                     if (operatorExpression.isPresent())
                     {
                         argumentExpressions.add(operatorExpression.get());
@@ -355,11 +355,11 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
         return andOpExpression;
     }
 
-    private List<ArgumentExpression> getObjectQueryExpressions(JsonNode value)
+    private List<MongoDBOperaionElement> getObjectQueryExpressions(JsonNode value)
     {
         if (value.isArray() && value.size() > 0)
         {
-            List<ArgumentExpression> objExpressions = Lists.mutable.of();
+            List<MongoDBOperaionElement> objExpressions = Lists.mutable.of();
 
             for (JsonNode item : value)
             {
@@ -367,7 +367,7 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
                 {
                     throw new IllegalStateException("Logical Operators need object node or pattern as argument");
                 }
-                ArgumentExpression objExpression = getMatchExpression(item);
+                MongoDBOperaionElement objExpression = getMatchExpression(item);
                 objExpressions.add(objExpression);
             }
             return objExpressions;
@@ -375,11 +375,11 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
         throw new IllegalStateException("Logical Operators need non-zero array of Object Expressions ($and, $or, $nor)");
     }
 
-    private ArgumentExpression getObjectQueryExpression(JsonNode value)
+    private MongoDBOperaionElement getObjectQueryExpression(JsonNode value)
     {
         if (value.isObject())
         {
-            ArgumentExpression objExpression = getMatchExpression(value);
+            MongoDBOperaionElement objExpression = getMatchExpression(value);
             return objExpression;
         }
         else
@@ -431,7 +431,7 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
             // We can end up with an Object Query Expression or Literal value (object type)
             ObjectQueryExpression objQueryExpr = new ObjectQueryExpression();
             LiteralValue objValue = new LiteralValue();
-            List<ArgumentExpression> argumentExpressions = Lists.mutable.empty();
+            List<MongoDBOperaionElement> argumentExpressions = Lists.mutable.empty();
             Iterator<Map.Entry<String, JsonNode>> matchNodeFields = fieldOpValueNode.fields();
             boolean isObjectQueryExpression = false;
             while (matchNodeFields.hasNext())
@@ -448,7 +448,7 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
                 {
                     // create Object Query Expression
                     isObjectQueryExpression = true;
-                    Optional<ArgumentExpression> opExpression = getOperatorExpression(objEntry);
+                    Optional<MongoDBOperaionElement> opExpression = getOperatorExpression(objEntry);
                     opExpression.ifPresent(argumentExpressions::add);
                 }
                 else
@@ -485,7 +485,7 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
     }
 
 
-    private Optional<ArgumentExpression> getOperatorExpression(Map.Entry<String, JsonNode> opExprEntry)
+    private Optional<MongoDBOperaionElement> getOperatorExpression(Map.Entry<String, JsonNode> opExprEntry)
     {
         switch (opExprEntry.getKey())
         {

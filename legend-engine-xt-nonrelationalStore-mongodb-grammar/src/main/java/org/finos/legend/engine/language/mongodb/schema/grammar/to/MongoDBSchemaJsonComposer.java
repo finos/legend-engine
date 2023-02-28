@@ -16,7 +16,7 @@ package org.finos.legend.engine.language.mongodb.schema.grammar.to;
 
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.Collection;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDatabase;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArgumentExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.MongoDBOperaionElement;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -83,9 +83,9 @@ public class MongoDBSchemaJsonComposer
         return builder.toString();
     }
 
-    private void visitSchemas(ArgumentExpression jsonSchemaExpr, StringBuilder builder, int tabIndex)
+    private void visitSchemas(MongoDBOperaionElement jsonSchemaExpr, StringBuilder builder, int tabIndex)
     {
-        builder.append(jsonSchemaExpr.accept(new ArgumentExpressionVisitorImpl(tabIndex)));
+        builder.append(jsonSchemaExpr.accept(new MongoDBOperationElementVisitorImpl(tabIndex)));
     }
 
 

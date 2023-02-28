@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoDBQueryParser;
 import org.finos.legend.engine.language.mongodb.schema.grammar.to.ComposerUtility;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.AndOperatorExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArgumentExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.MongoDBOperaionElement;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArrayTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.BaseTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.BoolTypeValue;
@@ -170,7 +170,7 @@ public class MongoDBQueryParseTreeWalker
         return stage;
     }
 
-    private ArgumentExpression visitProjectFilterExpression(MongoDBQueryParser.ProjectFilterExpressionContext ctx)
+    private MongoDBOperaionElement visitProjectFilterExpression(MongoDBQueryParser.ProjectFilterExpressionContext ctx)
     {
         List<KeyValueExpressionPair> expressions = new ArrayList<>();
         if (ctx.projectFilter().size() > 0)
@@ -184,7 +184,7 @@ public class MongoDBQueryParseTreeWalker
 
     private KeyValueExpressionPair visitProjectFilter(MongoDBQueryParser.ProjectFilterContext ctx)
     {
-        ArgumentExpression argument = visitProjectFilterValue(ctx.projectFilterValue());
+        MongoDBOperaionElement argument = visitProjectFilterValue(ctx.projectFilterValue());
         KeyValueExpressionPair keyValueExpressionPair = new KeyValueExpressionPair();
         keyValueExpressionPair.field = ctx.STRING().getText();
         keyValueExpressionPair.argument = argument;
@@ -195,10 +195,10 @@ public class MongoDBQueryParseTreeWalker
         return keyValueExpressionPair;
     }
 
-    private ArgumentExpression visitProjectFilterValue(MongoDBQueryParser.ProjectFilterValueContext ctx)
+    private MongoDBOperaionElement visitProjectFilterValue(MongoDBQueryParser.ProjectFilterValueContext ctx)
     {
 
-        ArgumentExpression val;
+        MongoDBOperaionElement val;
         if (ctx.projectComputedFieldValue() != null)
         {
             ComputedFieldValue computedFieldValue = new ComputedFieldValue();
@@ -243,7 +243,7 @@ public class MongoDBQueryParseTreeWalker
         return keyValueExpressionPair;
     }
 
-    private ArgumentExpression visitQueryExpression(MongoDBQueryParser.QueryExpressionContext ctx)
+    private MongoDBOperaionElement visitQueryExpression(MongoDBQueryParser.QueryExpressionContext ctx)
     {
         List<KeyValueExpressionPair> pairs = new ArrayList<>();
         if (ctx.expression().size() > 0)
@@ -255,7 +255,7 @@ public class MongoDBQueryParseTreeWalker
         return expression;
     }
 
-    private ArgumentExpression visitExpressionValue(MongoDBQueryParser.ExpressionValueContext ctx)
+    private MongoDBOperaionElement visitExpressionValue(MongoDBQueryParser.ExpressionValueContext ctx)
     {
         if (ctx.comparisonOperatorExpression() != null)
         {
@@ -305,12 +305,12 @@ public class MongoDBQueryParseTreeWalker
         return array;
     }
 
-    private ArgumentExpression visitComparisonOperatorExpression(MongoDBQueryParser.ComparisonOperatorExpressionContext ctx)
+    private MongoDBOperaionElement visitComparisonOperatorExpression(MongoDBQueryParser.ComparisonOperatorExpressionContext ctx)
     {
         String operator = ctx.COMPARISON_QUERY_OPERATOR().getText().substring(1,
                 ctx.COMPARISON_QUERY_OPERATOR().getText().length() - 1);
 
-        ArgumentExpression expression = buildComparisonOperatorExpression(operator, ctx.value());
+        MongoDBOperaionElement expression = buildComparisonOperatorExpression(operator, ctx.value());
 
         return expression;
     }
@@ -370,7 +370,7 @@ public class MongoDBQueryParseTreeWalker
         String operator = ctx.LOGICAL_QUERY_OPERATOR().getText().substring(1, ctx.LOGICAL_QUERY_OPERATOR().getText().length() - 1);
         LogicalOperatorExpression logicalOpEx = null;
 
-        List<ArgumentExpression> expressions = visitLogicalOperatorExpressionValueArray(ctx.logicalOperatorExpressionValueArray());
+        List<MongoDBOperaionElement> expressions = visitLogicalOperatorExpressionValueArray(ctx.logicalOperatorExpressionValueArray());
 
         if (operator.equals(ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.AND)))
         {
@@ -393,12 +393,12 @@ public class MongoDBQueryParseTreeWalker
         return logicalOpEx;
     }
 
-    private List<ArgumentExpression> visitLogicalOperatorExpressionValueArray(MongoDBQueryParser.LogicalOperatorExpressionValueArrayContext ctx)
+    private List<MongoDBOperaionElement> visitLogicalOperatorExpressionValueArray(MongoDBQueryParser.LogicalOperatorExpressionValueArrayContext ctx)
     {
         return ctx.logicalOperatorExpressionValue().stream().map(this::visitLogicalOperatorExpressionValue).collect(Collectors.toList());
     }
 
-    private ArgumentExpression visitLogicalOperatorExpressionValue(MongoDBQueryParser.LogicalOperatorExpressionValueContext ctx)
+    private MongoDBOperaionElement visitLogicalOperatorExpressionValue(MongoDBQueryParser.LogicalOperatorExpressionValueContext ctx)
     {
         if (ctx.queryExpression() != null)
         {
