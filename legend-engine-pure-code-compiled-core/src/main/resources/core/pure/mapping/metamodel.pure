@@ -18,10 +18,10 @@ import meta::pure::test::*;
 //Mapping Test Model
 Class meta::pure::mapping::metamodel::MappingTestSuite extends meta::pure::test::TestSuite
 {
-  storeTestDatas: meta::pure::mapping::metamodel::StoreTestData[*];
+  mappingStoreTestDatas: meta::pure::mapping::metamodel::MappingStoreTestData[*];
 }
 
-Class meta::pure::mapping::metamodel::StoreTestData
+Class meta::pure::mapping::metamodel::MappingStoreTestData
 {
   data: meta::pure::data::EmbeddedData[1];
   store: meta::pure::store::Store[1];
@@ -107,17 +107,6 @@ Diagram meta::pure::mapping::metamodel::diagram::MappingMetamodel(width=0.0, hei
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_8(
-        type=meta::pure::mapping::metamodel::StoreTestData,
-        position=(1849.00000, 594.00000),
-        width=144.69531,
-        height=58.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
 
     TypeView cview_10(
         type=meta::pure::store::Store,
@@ -214,45 +203,6 @@ Diagram meta::pure::mapping::metamodel::diagram::MappingMetamodel(width=0.0, hei
         nameVisible=true,
         lineStyle=SIMPLE)
 
-    PropertyView pview_2(
-        property=meta::pure::mapping::metamodel::MappingTestSuite.storeTestDatas,
-        source=cview_6,
-        target=cview_8,
-        points=[(1625.29468,623.00000),(1921.34766,623.00000)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
 
-    PropertyView pview_3(
-        property=meta::pure::mapping::metamodel::StoreTestData.data,
-        source=cview_8,
-        target=cview_9,
-        points=[(1921.34766,623.00000),(2077.67578,738.00000)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
 
-    PropertyView pview_4(
-        property=meta::pure::mapping::metamodel::StoreTestData.store,
-        source=cview_8,
-        target=cview_10,
-        points=[(1921.34766,623.00000),(1821.45459,739.00000)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
 }

@@ -42,7 +42,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTestSuite;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.StoreTestData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingStoreTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.ModelStore;
 import org.finos.legend.engine.protocol.pure.v1.model.test.Test;
@@ -104,7 +104,7 @@ public class MappingTestRunner implements TestRunner
         ConnectionVisitor<Root_meta_pure_runtime_Connection> connectionVisitor = new ConnectionFirstPassBuilder(pureModel.getContext());
         org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping mapping = ListIterate.detect(pmcd.getElementsOfType(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping.class), ele -> ele.getPath().equals(getElementFullPath(this.pureMapping, pureModel.getExecutionSupport())));
         MappingTestSuite suite = ListIterate.detect(mapping.testSuites, ts -> ts.id.equals(testSuite._id()));
-        List<Pair<Connection, List<Closeable>>> connections = buildTestConnections(pmcd, suite.storeTestDatas);
+        List<Pair<Connection, List<Closeable>>> connections = buildTestConnections(pmcd, suite.mappingStoreTestDatas);
         connections.stream().forEach(conn -> this.runtime._connectionsAdd(conn.getOne().accept(connectionVisitor)));
         try
         {
@@ -144,9 +144,9 @@ public class MappingTestRunner implements TestRunner
         return results;
     }
 
-    private List<Pair<Connection, List<Closeable>>> buildTestConnections(PureModelContextData pmcd, List<StoreTestData> storeTestData)
+    private List<Pair<Connection, List<Closeable>>> buildTestConnections(PureModelContextData pmcd, List<MappingStoreTestData> mappingStoreTestData)
     {
-        List<Pair<String, EmbeddedData>> connectionInfo = storeTestData.stream().map(testData ->
+        List<Pair<String, EmbeddedData>> connectionInfo = mappingStoreTestData.stream().map(testData ->
         {
             EmbeddedData embeddedData = null;
             if (testData.data instanceof DataElementReference)
