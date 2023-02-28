@@ -59,6 +59,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::g
     dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='%s',transform={p:String[1..2]| if($p->size()==1,| 'DAY_OF_WEEK('+$p->at(0)+')',|$p->dayOfWeekNumberH2());})),
     dynaFnToSql('decodeBase64',           $allStates,            ^ToSql(format='legend_h2_extension_base64_decode(%s)')),
     dynaFnToSql('encodeBase64',           $allStates,            ^ToSql(format='legend_h2_extension_base64_encode(%s)')),
+    dynaFnToSql('extractFromSemiStructured', $allStates,         ^ToSql(format='%s', transform={p:String[3]|$p->processExtractFromSemiStructuredParamsForH2()})),    
     dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='dateadd(DAY, -(dayofmonth(%s) - 1), %s)', transform={p:String[1] | $p->repeat(2)})),
     dynaFnToSql('firstDayOfQuarter',      $allStates,            ^ToSql(format='dateadd(MONTH, 3 * quarter(%s) - 3, dateadd(DAY, -(dayofyear(%s) - 1), %s))', transform={p:String[1] | $p->repeat(3)})),
     dynaFnToSql('firstDayOfThisMonth',    $allStates,            ^ToSql(format='dateadd(DAY, -(dayofmonth(current_date()) - 1), current_date())')),
@@ -107,6 +108,41 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::g
   ];
 }
 
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::processExtractFromSemiStructuredParamsForH2(params:String[3]):String[1]
+{
+  let baseRelationalOp = $params->at(0);
+  let pathNavigation = $params->at(1);
+  let returnType = $params->at(2);
+
+  let parsedPathNavigation = $pathNavigation->parseSemiStructuredPathNavigation();
+  let relationalPropertyAccess = $parsedPathNavigation->fold({property,relational | $relational->semiStructuredPathAccessForH2($property)}, $baseRelationalOp);
+
+  let castTo = if ($returnType->in(['CHAR', 'VARCHAR', 'STRING']), | 'varchar', |
+  if ($returnType->in(['DATETIME', 'TIMESTAMP']), | 'timestamp', |
+  if ($returnType == 'DATE', | 'date', |   
+  if ($returnType == 'BOOLEAN', | 'boolean', |
+  if ($returnType == 'FLOAT', | 'float', |
+  if ($returnType == 'INTEGER', | 'integer', |  
+  $returnType)))))); 
+
+  format('cast(%s as %s)', [$relationalPropertyAccess, $castTo]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::semiStructuredPathAccessForH2(elementAccess: String[1], property: String[1]): String[1]
+{
+  if($property->isDigit(), | $elementAccess->semiStructuredArrayElementAccessForH2($property), | $elementAccess->semiStructuredPropertyAccessForH2($property->substring(1, $property->length()-1))); // remove double quotes
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::semiStructuredPropertyAccessForH2(elementAccess: String[1], property: String[1]): String[1]
+{
+  format('legend_h2_extension_json_navigate(%s, \'%s\', null)', [$elementAccess, $property]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::semiStructuredArrayElementAccessForH2(elementAccess: String[1], index: String[1]): String[1]
+{
+  format('legend_h2_extension_json_navigate(%s, null, %s)', [$elementAccess, $index]);
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::processSemiStructuredElementForH2(s:RelationalOperationElement[1], sgc:SqlGenerationContext[1]): String[1]
 {
    $s->match([
@@ -124,13 +160,13 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::p
 
    let elementAccess = $s->match([
       p: SemiStructuredPropertyAccess[1] |
-         let propertyAccess = $udfName + '(' + $processedOperand + ', \'' + $p.property->cast(@Literal).value->cast(@String) + '\', null)';
+         let propertyAccess = semiStructuredPropertyAccessForH2($processedOperand,  $p.property->cast(@Literal).value->cast(@String));
          if ($p.index->isNotEmpty(),
-             | $udfName + '(' + $propertyAccess + ', null, ' + $p.index->toOne()->cast(@Literal).value->toString() + ')',
+             | semiStructuredArrayElementAccessForH2($propertyAccess, $p.index->toOne()->cast(@Literal).value->toString()),
              | $propertyAccess
          );,
 
-      a: SemiStructuredArrayElementAccess[1] | $udfName + '(' + $processedOperand + ', null, ' + $a.index->cast(@Literal).value->toString() + ')'
+      a: SemiStructuredArrayElementAccess[1] | semiStructuredArrayElementAccessForH2($processedOperand, $a.index->cast(@Literal).value->toString())
    ]);
 
    if ($s.returnType == String, | 'cast(' + $elementAccess + ' as varchar)', |

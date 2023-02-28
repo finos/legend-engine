@@ -1,6 +1,12 @@
 import meta::pure::graphFetch::domain::*;
-
 function meta::pure::graphFetch::domain::extractDomainTypeClassFromFunction<T>(func:FunctionDefinition<{->T[*]}>[1]):Pair<String, FunctionDefinition<{->Any[*]}>>[*]
+{
+   meta::pure::graphFetch::domain::extractDomainTypeClassFromFunction($func,false)->map(r| pair($r.propertyName,$r.functionDef->cast(@FunctionDefinition<{->Any[*]}>)));
+
+}
+
+
+function meta::pure::graphFetch::domain::extractDomainTypeClassFromFunction<T>(func:FunctionDefinition<{->T[*]}>[1],extractVars:Boolean[1]):meta::pure::graphFetch::domain::ExtractedDomainClassWithParameters[*]
 {
   let main = $func.expressionSequence->evaluateAndDeactivate();
   if ($main->size() == 1 && $main->toOne()->instanceOf(FunctionExpression),
@@ -12,12 +18,27 @@ function meta::pure::graphFetch::domain::extractDomainTypeClassFromFunction<T>(f
                             )
                           )->cast(@InstanceValue);
       let tree = $treeContainer.values->toOne()->cast(@meta::pure::graphFetch::RootGraphFetchTree<Any>);
-      $tree->extractDomainTypeClassFromGraphFetchTree();,
+      let domainWithVars = $tree->extractDomainTypeClassFromGraphFetchTree($extractVars);
+
+
+      ,
     | fail('GraphQL translation only supports graphFetch');
-  )->cast(@Pair<String,FunctionDefinition<{->Any[*]}>>);
+  )->cast(@meta::pure::graphFetch::domain::ExtractedDomainClassWithParameters);
+}
+
+Class meta::pure::graphFetch::domain::ExtractedDomainClassWithParameters
+{
+  functionDef: LambdaFunction<Any>[1];
+  propertyName:String[1];
+
 }
 
 function meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree(tree:meta::pure::graphFetch::RootGraphFetchTree<Any>[1]):Pair<String, FunctionDefinition<{->Any[*]}>>[*]
+{
+   meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree($tree,false)->map(r| pair($r.propertyName,$r.functionDef->cast(@FunctionDefinition<{->Any[*]}>)));
+}
+
+function meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree(tree:meta::pure::graphFetch::RootGraphFetchTree<Any>[1],extractVars:Boolean[1]):meta::pure::graphFetch::domain::ExtractedDomainClassWithParameters[*]
 {
     let subTrees = $tree.subTrees->cast(@meta::pure::graphFetch::PropertyGraphFetchTree)->evaluateAndDeactivate();
     let properties = $subTrees.property;
@@ -25,7 +46,9 @@ function meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTre
     if ($result->isEmpty(),
       |fail('The system can\'t find a \'set definition\' (i.e. .all()) in any property of the query type leveraged in the tree navigation.'),
       |if ($properties->size() == $result->size(),
-        | $result->zip($subTrees)->map(x|            
+           | $result->zip($subTrees)->map(x|
+
+
             let parametersValueByName = $x.second.property->functionType().parameters->tail().name->zip($x.second.parameters)->newMap();
             let newFunc = $x.first;
             let genType = ^GenericType(rawType=meta::pure::graphFetch::RootGraphFetchTree, typeArguments=$x.first.genericType);
@@ -39,11 +62,20 @@ function meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTre
                                      )
             );
 
-            let stringType = ^GenericType(rawType=String);
-           
+           let stringType = ^GenericType(rawType=String);
+           let paramValues= if($extractVars,|$x.first,|$x.first->reprocessVariables($parametersValueByName));
+           let expressionSequenceLengthLess1 = $x.second.property->cast(@QualifiedProperty<Any>).expressionSequence->size() - 1;
+
+           let lambdaWithParams = newLambdaFunction( ^FunctionType(returnMultiplicity = ZeroMany,
+                                                                        returnType = ^GenericType(rawType = Any),
+                                                                        parameters= $x.second.property.classifierGenericType.typeArguments.rawType->cast(@FunctionType).parameters->tail()->evaluateAndDeactivate()
+                                                                 ));
+
+
             let func = ^LambdaFunction<{->Any[*]}>
             (
               expressionSequence =
+                  $x.second.property->cast(@QualifiedProperty<Any>).expressionSequence->slice(0,$expressionSequenceLengthLess1)->map(x|$x->reprocessVariables($parametersValueByName))->concatenate(
                   ^$newFunc(
                     func = meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__String_1_,
                     functionName = 'serialize',
@@ -56,7 +88,7 @@ function meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTre
                           genericType = $x.first.genericType,
                           resolvedTypeParameters = $x.first.genericType,
                           parametersValues = [
-                            $x.first->reprocessVariables($parametersValueByName),
+                            $paramValues,
                             $newTree
                           ],
                           usageContext = []
@@ -64,21 +96,34 @@ function meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTre
                       $newTree
                     ],
                     usageContext = []
-                  )
+                  ))->toOneMany()
             );
-            pair($x.second.property.name->toOne(), $func);
+            let funcWithPossibleUpdatedParam =  if( $extractVars,
+                                                       |   let lambdaWithParams = newLambdaFunction( ^FunctionType(returnMultiplicity = ZeroMany,
+                                                                        returnType = ^GenericType(rawType = Any),
+                                                                        parameters= $x.second.property.classifierGenericType.typeArguments.rawType->cast(@FunctionType).parameters->tail()->evaluateAndDeactivate()
+                                                                                                 ));
+                                                          ^$func(classifierGenericType=$lambdaWithParams.classifierGenericType);,
+                                                       |$func
+                                                 );
+
+             ^ExtractedDomainClassWithParameters(propertyName =$x.second.property.name->toOne(),
+                                                 functionDef =$funcWithPossibleUpdatedParam
+                                                       );
 
           );,
         | fail('All properties need to be getAll');
       )
-    )->cast(@Pair<String, FunctionDefinition<{->Any[*]}>>);  
+    )->cast(@ExtractedDomainClassWithParameters);
 }
+
+
 
 function <<access.private>> meta::pure::graphFetch::domain::findGetAllInQualifiedProperties(properties:AbstractProperty<Any>[*]):SimpleFunctionExpression[*]
 {
   $properties->map(
     p | if ($p->instanceOf(QualifiedProperty),
-          | let exp =  $p->cast(@QualifiedProperty<Any>).expressionSequence->evaluateAndDeactivate()->toOne();
+          | let exp =  $p->cast(@QualifiedProperty<Any>).expressionSequence->evaluateAndDeactivate()->last()->toOne();
             let val = $exp->lookForGetAll();
             if ($val->instanceOf(SimpleFunctionExpression) && $val->cast(@SimpleFunctionExpression).func == getAll_Class_1__T_MANY_,
               |$exp->cast(@SimpleFunctionExpression),

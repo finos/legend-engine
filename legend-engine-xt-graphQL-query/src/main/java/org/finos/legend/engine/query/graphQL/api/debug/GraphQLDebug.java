@@ -174,7 +174,7 @@ public class GraphQLDebug extends GraphQL
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan("GraphQL: Generate Graph Fetch").startActive(true))
         {
-            return this.generateGraphFetch(queryClassPath, query, loadProjectModel(profiles, request, groupId, artifactId, versionId));
+            return this.generateGraphFetch(queryClassPath, query, loadProjectModel(profiles, groupId, artifactId, versionId));
         }
         catch (Exception ex)
         {

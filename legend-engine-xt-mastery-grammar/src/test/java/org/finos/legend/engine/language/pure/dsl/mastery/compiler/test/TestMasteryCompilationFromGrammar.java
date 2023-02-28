@@ -70,11 +70,10 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
             "      ];\n" +
             "    }#;\n" +
             "  }\n" +
-            "  test: Single\n" +
-            "  {\n" +
-            "    data: 'test';\n" +
-            "    asserts:\n    [\n    ];\n" +
-            "  }\n" +
+            "  testSuites:\n" +
+            "  [\n" +
+            "\n" +
+            "  ]\n" +
             "}\n";
     public static String COMPLETE_CORRECT_MASTERY_MODEL = "###Pure\n" +
             "Class org::dataeng::Widget\n" +
