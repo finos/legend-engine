@@ -1,4 +1,4 @@
-//  Copyright 2022 Goldman Sachs
+//  Copyright 2023 Goldman Sachs
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -12,16 +12,10 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes;
+package org.finos.legend.engine.plan.execution.configuration;
 
-public class PlatformUnionExecutionNode extends ExecutionNode
+public class PlanExecutorConfiguration
 {
-    public boolean isChildrenExecutionParallelizable = false;
-
-    @Override
-    public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)
-    {
-        return executionNodeVisitor.visit(this);
-    }
+    public Boolean supportConcurrentExecutionNodeExecution;
+    public Integer concurrentExecutionNodeExecutorPoolSize;
 }
-
