@@ -225,6 +225,7 @@
       },
       "response": {
         "status": 200,
+        "fixedDelayMilliseconds": 200,
         "jsonBody": [
           {
             "firstName": "FirstName ServiceStore",
