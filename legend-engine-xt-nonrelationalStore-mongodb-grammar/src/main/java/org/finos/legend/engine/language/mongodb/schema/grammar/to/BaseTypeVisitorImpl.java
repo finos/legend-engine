@@ -514,7 +514,6 @@ public class BaseTypeVisitorImpl implements BaseTypeVisitor<String>
 
     private String render(PropertyType p, int indentLevel)
     {
-        LOGGER.debug(p.key);
         StringBuilder builder = new StringBuilder();
         appendTabString(builder, indentLevel);
         appendJsonKey(builder, p.key);

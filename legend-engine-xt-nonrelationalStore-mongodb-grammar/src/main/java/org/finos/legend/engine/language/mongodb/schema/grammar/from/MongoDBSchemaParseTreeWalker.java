@@ -17,7 +17,6 @@ package org.finos.legend.engine.language.mongodb.schema.grammar.from;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDatabase;
@@ -39,11 +38,6 @@ public class MongoDBSchemaParseTreeWalker
         return new MongoDBSchemaParseTreeWalker();
     }
 
-//    private static MongoDBSchemaParserException raiseException(int line, int startColumn, String errMessage)
-//    {
-//        SourceInformation sourceInformation = new SourceInformation("", line, startColumn, line, startColumn);
-//        return new MongoDBSchemaParserException(errMessage, sourceInformation);
-//    }
 
     private ObjectMapper getObjectMapper()
     {
@@ -70,20 +64,7 @@ public class MongoDBSchemaParseTreeWalker
             JsonFactory jFactory = new JsonFactory();
             JsonParser jParser = jFactory.createParser(inputJson);
             jParser.setCodec(getObjectMapper());
-            while (jParser.nextToken() != JsonToken.END_OBJECT)
-            {
-                if ("database".equals(jParser.getCurrentName()))
-                {
-                    jParser.nextToken();
-                    return getObjectMapper().readValue(jParser, MongoDatabase.class);
-                }
-                else
-                {
-                    LOGGER.info("Skipping top-level element: {}, expected only database field", jParser.getCurrentName());
-                }
-            }
-            jParser.close();
-            return new MongoDatabase();
+            return getObjectMapper().readValue(jParser, MongoDatabase.class);
         }
         catch (JsonParseException jpException)
         {

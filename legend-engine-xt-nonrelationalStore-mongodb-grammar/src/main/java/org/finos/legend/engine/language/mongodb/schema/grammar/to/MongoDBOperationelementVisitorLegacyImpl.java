@@ -16,32 +16,48 @@ package org.finos.legend.engine.language.mongodb.schema.grammar.to;
 
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDBOperationElement;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDBOperationElementVisitor;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.AggregateExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.AggregationPipeline;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.AndOperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArgumentExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArrayTypeValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.BaseTypeValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.BaseTypeValueVisitor;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.BoolTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ComparisonOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ComputedFieldValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DatabaseCommand;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DecimalTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.EqOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.FieldPathExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.GTEOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.GTOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.InOperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.IntTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.JsonSchemaExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.KeyValueExpressionPair;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.KeyValuePair;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LTEOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LTOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LiteralValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LogicalOperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LongTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.MatchStage;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.MongoDBOperaionElement;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NEOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NinOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NorOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NotOperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NullTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ObjectExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ObjectQueryExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ObjectTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Operator;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.OrOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ProjectStage;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.QueryExprKeyValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Stage;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.StringTypeValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ViewPipeline;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -50,11 +66,29 @@ public class MongoDBOperationelementVisitorLegacyImpl implements MongoDBOperatio
 {
 
     @Override
+    public String visit(AggregateExpression val)
+    {
+        return null;
+    }
+
+    @Override
+    public String visit(AggregationPipeline val)
+    {
+        return null;
+    }
+
+    @Override
     public String visit(AndOperatorExpression val)
     {
         List<String> expressionsString = val.expressions.stream()
                 .map(x -> visitMongoDBOperationElement(x)).collect(Collectors.toList());
         return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.AND) + "\" : [" + String.join(",", expressionsString) + "] }";
+    }
+
+    @Override
+    public String visit(ArgumentExpression val)
+    {
+        return null;
     }
 
     @Override
@@ -67,6 +101,12 @@ public class MongoDBOperationelementVisitorLegacyImpl implements MongoDBOperatio
     public String visit(ComputedFieldValue val)
     {
         return val.value;
+    }
+
+    @Override
+    public String visit(DatabaseCommand val)
+    {
+        return null;
     }
 
     @Override
@@ -194,6 +234,18 @@ public class MongoDBOperationelementVisitorLegacyImpl implements MongoDBOperatio
         return null;
     }
 
+    @Override
+    public String visit(Stage val)
+    {
+        return null;
+    }
+
+    @Override
+    public String visit(ViewPipeline val)
+    {
+        return null;
+    }
+
     private String visitMongoDBOperationElement(MongoDBOperationElement mongoDBOperationElement)
     {
 
@@ -221,6 +273,72 @@ public class MongoDBOperationelementVisitorLegacyImpl implements MongoDBOperatio
     {
         String field = pair.field;
         String value = visitMongoDBOperationElement(pair.argument);
+        return field + " : " + value;
+    }
+
+    public String visitBaseTypeValue(BaseTypeValue value)
+    {
+        return value.accept(new BaseTypeValueVisitor<String>()
+        {
+            @Override
+            public String visit(ArrayTypeValue val)
+            {
+                List<String> arrayItemString = ((ArrayTypeValue) value).items.stream().map(x -> visitBaseTypeValue(x)).collect(Collectors.toList());
+
+                return "[" + String.join(",", arrayItemString) + "]";
+            }
+
+            @Override
+            public String visit(BoolTypeValue val)
+            {
+                return String.valueOf(val.value);
+            }
+
+            @Override
+            public String visit(DecimalTypeValue val)
+            {
+                return String.valueOf(val.value);
+            }
+
+            @Override
+            public String visit(IntTypeValue val)
+            {
+                return String.valueOf(val.value);
+            }
+
+            @Override
+            public String visit(LongTypeValue val)
+            {
+                // not used
+                return String.valueOf(val);
+            }
+
+            @Override
+            public String visit(NullTypeValue val)
+            {
+                return null;
+            }
+
+            @Override
+            public String visit(ObjectTypeValue val)
+            {
+                List<String> objPairString = val.keyValues.stream()
+                        .map(x -> visitKeyValuePair(x)).collect(Collectors.toList());
+                return "{" + String.join(",", objPairString) + "}";
+            }
+
+            @Override
+            public String visit(StringTypeValue val)
+            {
+                return String.valueOf(val.value);
+            }
+        });
+    }
+
+    private String visitKeyValuePair(KeyValuePair pair)
+    {
+        String field = pair.key;
+        String value = visitBaseTypeValue(pair.value);
         return field + " : " + value;
     }
 }

@@ -44,7 +44,6 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.SchemaValidatio
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.StringType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.TimeStampType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.Validator;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.MongoDBOperaionElement;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.JsonSchemaExpression;
 
 import java.io.IOException;
@@ -63,7 +62,7 @@ public class MongoDBSchemaDeserializer extends StdDeserializer<MongoDatabase>
         this(null);
     }
 
-    protected MongoDBSchemaDeserializer(Class<?> vc)
+    public MongoDBSchemaDeserializer(Class<?> vc)
     {
         super(vc);
     }
@@ -72,12 +71,39 @@ public class MongoDBSchemaDeserializer extends StdDeserializer<MongoDatabase>
     @Override
     public MongoDatabase deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException
     {
-        MongoDatabase db = new MongoDatabase();
         // Check the first token
-        if (jsonParser.currentToken() != JsonToken.START_OBJECT)
+        if (jsonParser.currentToken() == JsonToken.FIELD_NAME && jsonParser.getCurrentName().equals("database"))
         {
-            throw new IllegalStateException("Expected database node to be an object");
+            if (jsonParser.nextToken() != JsonToken.START_OBJECT)
+            {
+                throw new IllegalStateException("Expected database value to be an object type");
+            }
+            return getMongoDatabase(jsonParser);
         }
+        else
+        {
+            while (jsonParser.nextToken() != JsonToken.END_OBJECT)
+            {
+                if (jsonParser.currentToken() == JsonToken.FIELD_NAME && jsonParser.getCurrentName().equals("database"))
+                {
+                    if (jsonParser.nextToken() != JsonToken.START_OBJECT)
+                    {
+                        throw new IllegalStateException("Expected database value to be an object type");
+                    }
+                    return getMongoDatabase(jsonParser);
+                }
+                else
+                {
+                    LOGGER.debug("Skipping token in while parsing MongoDatabase type: {}", jsonParser.getText());
+                }
+            }
+            throw new IllegalStateException("Expected database node to be an object while parsing MongoDatabase type");
+        }
+    }
+
+    private MongoDatabase getMongoDatabase(JsonParser jsonParser) throws IOException
+    {
+        MongoDatabase db = new MongoDatabase();
         while (jsonParser.nextToken() != JsonToken.END_OBJECT)
         {
             String propertyName = jsonParser.getCurrentName();
@@ -197,9 +223,9 @@ public class MongoDBSchemaDeserializer extends StdDeserializer<MongoDatabase>
         return validator;
     }
 
-    private MongoDBOperaionElement getSchemaExpression(JsonParser jsonParser) throws IOException
+    private JsonSchemaExpression getSchemaExpression(JsonParser jsonParser) throws IOException
     {
-        JsonSchemaExpression argumentExpression = new JsonSchemaExpression();
+        JsonSchemaExpression schemaExpression = new JsonSchemaExpression();
 
         JsonNode schemaNode = jsonParser.getCodec().readTree(jsonParser);
 
@@ -207,10 +233,10 @@ public class MongoDBSchemaDeserializer extends StdDeserializer<MongoDatabase>
         {
             throw new IllegalStateException("Expected jsonSchema node to be an object");
         }
-        argumentExpression.schemaExpression = getSchema(schemaNode);
+        schemaExpression.schemaExpression = getSchema(schemaNode);
 
         //jsonParser.skipChildren();
-        return argumentExpression;
+        return schemaExpression;
     }
 
 

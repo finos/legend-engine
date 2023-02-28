@@ -23,7 +23,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Sets;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.AggregationPipeline;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.AndOperatorExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.MongoDBOperaionElement;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArgumentExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArrayTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.BaseTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.BoolTypeValue;
@@ -185,36 +185,41 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
         DatabaseCommand dbCommand = new DatabaseCommand();
 
         // Check the first token
-        if (jsonParser.currentToken() != JsonToken.START_OBJECT)
+//        if (jsonParser.currentToken() != JsonToken.START_OBJECT)
+//        {
+//            throw new IllegalStateException("Expected database command node to be an object");
+//        }
+        // while (jsonParser.currentToken() != JsonToken.END_OBJECT)
+        while (!jsonParser.isClosed())
         {
-            throw new IllegalStateException("Expected database command node to be an object");
-        }
-        while (jsonParser.nextToken() != JsonToken.END_OBJECT)
-        {
-            String propertyName = jsonParser.getCurrentName();
-            jsonParser.nextToken();
-            switch (propertyName)
+            if (jsonParser.currentToken() == JsonToken.FIELD_NAME)
             {
-                case "aggregate":
-                    dbCommand.type = "aggregate";
-                    dbCommand.collectionName = jsonParser.getText();
-                    break;
-                case "pipeline":
-                    dbCommand.aggregationPipeline = getAggPipeline(jsonParser);
-                    break;
-                case "cursor":
-                    LOGGER.info("Output = cursor, default format for output");
-                    break;
-                default:
-                    LOGGER.trace("Ignoring unknown property: {}", propertyName);
+                String propertyName = jsonParser.getCurrentName();
+                jsonParser.nextToken();
+                switch (propertyName)
+                {
+                    case "aggregate":
+                        dbCommand.type = "aggregate";
+                        dbCommand.collectionName = jsonParser.getText();
+                        break;
+                    case "pipeline":
+                        dbCommand.aggregationPipeline = getAggPipeline(jsonParser);
+                        break;
+                    case "cursor":
+                        LOGGER.info("Output = cursor, default format for output");
+                        break;
+                    default:
+                        LOGGER.trace("Ignoring unknown property: {}", propertyName);
+                }
             }
+            jsonParser.nextToken();
         }
         return dbCommand;
     }
 
     private AggregationPipeline getAggPipeline(JsonParser jsonParser) throws IOException
     {
-        AggregationPipeline aggPipeline = new AggregationPipelineImpl();
+        AggregationPipeline aggPipeline = new AggregationPipeline();
 
         if (jsonParser.currentToken() != JsonToken.START_ARRAY)
         {
@@ -269,12 +274,12 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
         return matchStage;
     }
 
-    private MongoDBOperaionElement getProjectExpression(JsonNode matchNode)
+    private ArgumentExpression getProjectExpression(JsonNode matchNode)
     {
         Iterator<Map.Entry<String, JsonNode>> matchNodeFields = matchNode.fields();
         ObjectQueryExpression objQueryExpr = new ObjectQueryExpression();
 
-        List<MongoDBOperaionElement> argumentExpressions = Lists.mutable.empty();
+        List<ArgumentExpression> argumentExpressions = Lists.mutable.empty();
         while (matchNodeFields.hasNext())
         {
             Map.Entry<String, JsonNode> entry = matchNodeFields.next();
@@ -297,10 +302,10 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
     }
 
     // Returns ObjectQueryExpression
-    private MongoDBOperaionElement getMatchExpression(JsonNode matchNode)
+    private ArgumentExpression getMatchExpression(JsonNode matchNode)
     {
         ObjectQueryExpression objQueryExpr = new ObjectQueryExpression();
-        List<MongoDBOperaionElement> argumentExpressions = Lists.mutable.empty();
+        List<ArgumentExpression> argumentExpressions = Lists.mutable.empty();
         Iterator<Map.Entry<String, JsonNode>> matchNodeFields = matchNode.fields();
         while (matchNodeFields.hasNext())
         {
@@ -314,7 +319,7 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
                     break;
                 case OPERATOR_EXPRESSION:
                     // Match stage defined with operator as starting point "$eq" : {.... or "$and" : {
-                    Optional<MongoDBOperaionElement> operatorExpression = getOperatorExpression(entry);
+                    Optional<ArgumentExpression> operatorExpression = getOperatorExpression(entry);
                     if (operatorExpression.isPresent())
                     {
                         argumentExpressions.add(operatorExpression.get());
@@ -355,11 +360,11 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
         return andOpExpression;
     }
 
-    private List<MongoDBOperaionElement> getObjectQueryExpressions(JsonNode value)
+    private List<ArgumentExpression> getObjectQueryExpressions(JsonNode value)
     {
         if (value.isArray() && value.size() > 0)
         {
-            List<MongoDBOperaionElement> objExpressions = Lists.mutable.of();
+            List<ArgumentExpression> objExpressions = Lists.mutable.of();
 
             for (JsonNode item : value)
             {
@@ -367,7 +372,7 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
                 {
                     throw new IllegalStateException("Logical Operators need object node or pattern as argument");
                 }
-                MongoDBOperaionElement objExpression = getMatchExpression(item);
+                ArgumentExpression objExpression = getMatchExpression(item);
                 objExpressions.add(objExpression);
             }
             return objExpressions;
@@ -375,11 +380,11 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
         throw new IllegalStateException("Logical Operators need non-zero array of Object Expressions ($and, $or, $nor)");
     }
 
-    private MongoDBOperaionElement getObjectQueryExpression(JsonNode value)
+    private ArgumentExpression getObjectQueryExpression(JsonNode value)
     {
         if (value.isObject())
         {
-            MongoDBOperaionElement objExpression = getMatchExpression(value);
+            ArgumentExpression objExpression = getMatchExpression(value);
             return objExpression;
         }
         else
@@ -431,7 +436,7 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
             // We can end up with an Object Query Expression or Literal value (object type)
             ObjectQueryExpression objQueryExpr = new ObjectQueryExpression();
             LiteralValue objValue = new LiteralValue();
-            List<MongoDBOperaionElement> argumentExpressions = Lists.mutable.empty();
+            List<ArgumentExpression> argumentExpressions = Lists.mutable.empty();
             Iterator<Map.Entry<String, JsonNode>> matchNodeFields = fieldOpValueNode.fields();
             boolean isObjectQueryExpression = false;
             while (matchNodeFields.hasNext())
@@ -448,7 +453,7 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
                 {
                     // create Object Query Expression
                     isObjectQueryExpression = true;
-                    Optional<MongoDBOperaionElement> opExpression = getOperatorExpression(objEntry);
+                    Optional<ArgumentExpression> opExpression = getOperatorExpression(objEntry);
                     opExpression.ifPresent(argumentExpressions::add);
                 }
                 else
@@ -485,7 +490,7 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
     }
 
 
-    private Optional<MongoDBOperaionElement> getOperatorExpression(Map.Entry<String, JsonNode> opExprEntry)
+    private Optional<ArgumentExpression> getOperatorExpression(Map.Entry<String, JsonNode> opExprEntry)
     {
         switch (opExprEntry.getKey())
         {

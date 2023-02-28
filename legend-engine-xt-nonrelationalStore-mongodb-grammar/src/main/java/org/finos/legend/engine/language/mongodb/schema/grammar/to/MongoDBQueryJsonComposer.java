@@ -23,10 +23,12 @@ import java.util.stream.Collectors;
 public class MongoDBQueryJsonComposer
 {
 
+    final String const_TypeValue = "\"_type\": \"databaseCommand\",";
+
     public String parseDatabaseCommand(DatabaseCommand databaseCommand)
     {
         String collectionName = databaseCommand.collectionName;
-        return "{ \"aggregate\": \"" + collectionName + "\" , " + visitDatabaseCommand(databaseCommand) +
+        return "{ " + const_TypeValue + "\"aggregate\": \"" + collectionName + "\" , " + visitDatabaseCommand(databaseCommand) +
                 ", \"cursor\": {} }";
     }
 
@@ -46,17 +48,6 @@ public class MongoDBQueryJsonComposer
     {
         return stage.accept(new MongoDBOperationElementVisitorImpl());
     }
-
-//    private String visitArgumentExpression(MongoDBOperaionElement argumentExpression)
-//    {
-//
-//        if (argumentExpression == null)
-//        {
-//            return "{}";
-//        }
-//
-//        return argumentExpression.accept(new ArgumentExpressionVisitorImpl());
-//    }
 
 
 }

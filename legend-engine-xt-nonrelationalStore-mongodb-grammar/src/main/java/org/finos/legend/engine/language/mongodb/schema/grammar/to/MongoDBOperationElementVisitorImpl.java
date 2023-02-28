@@ -19,6 +19,7 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDBOperatio
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.AggregateExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.AggregationPipeline;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.AndOperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArgumentExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ComparisonOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ComputedFieldValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DatabaseCommand;
@@ -33,7 +34,6 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LTO
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LiteralValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LogicalOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.MatchStage;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.MongoDBOperaionElement;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NEOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NinOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NorOperatorExpression;
@@ -52,7 +52,7 @@ import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.language.mongodb.schema.grammar.to.ComposerUtility.convertToStringWithQuotes;
 
-public class MongoDBOperationElementVisitorImpl  implements MongoDBOperationElementVisitor<String>
+public class MongoDBOperationElementVisitorImpl implements MongoDBOperationElementVisitor<String>
 {
     private final int indentLevel;
 
@@ -89,7 +89,7 @@ public class MongoDBOperationElementVisitorImpl  implements MongoDBOperationElem
     }
 
     @Override
-    public String visit(MongoDBOperaionElement val)
+    public String visit(ArgumentExpression val)
     {
         return null;
     }
@@ -262,7 +262,6 @@ public class MongoDBOperationElementVisitorImpl  implements MongoDBOperationElem
 
         return mongoDBOperationElement.accept(new MongoDBOperationElementVisitorImpl());
     }
-
 
 
     @Override

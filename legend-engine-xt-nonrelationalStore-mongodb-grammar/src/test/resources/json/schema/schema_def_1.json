@@ -1,4 +1,5 @@
 {
+  "_type" : "MongoDatabase",
   "database": {
     "databaseName": "my_database_1",
     "collections": [

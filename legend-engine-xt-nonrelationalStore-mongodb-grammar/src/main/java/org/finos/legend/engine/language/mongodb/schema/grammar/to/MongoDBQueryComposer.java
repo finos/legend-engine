@@ -59,71 +59,9 @@ public class MongoDBQueryComposer
     }
 
 
-    public String visitBaseTypeValue(BaseTypeValue value)
-    {
-        return value.accept(new BaseTypeValueVisitor<String>()
-        {
-            @Override
-            public String visit(ArrayTypeValue val)
-            {
-                List<String> arrayItemString = ((ArrayTypeValue) value).items.stream().map(x -> visitBaseTypeValue(x)).collect(Collectors.toList());
 
-                return "[" + String.join(",", arrayItemString) + "]";
-            }
 
-            @Override
-            public String visit(BoolTypeValue val)
-            {
-                return String.valueOf(val.value);
-            }
 
-            @Override
-            public String visit(DecimalTypeValue val)
-            {
-                return String.valueOf(val.value);
-            }
-
-            @Override
-            public String visit(IntTypeValue val)
-            {
-                return String.valueOf(val.value);
-            }
-
-            @Override
-            public String visit(LongTypeValue val)
-            {
-                // not used
-                return String.valueOf(val);
-            }
-
-            @Override
-            public String visit(NullTypeValue val)
-            {
-                return null;
-            }
-
-            @Override
-            public String visit(ObjectTypeValue val)
-            {
-                List<String> objPairString = val.keyValues.stream()
-                        .map(x -> visitKeyValuePair(x)).collect(Collectors.toList());
-                return "{" + String.join(",", objPairString) + "}";
-            }
-
-            @Override
-            public String visit(StringTypeValue val)
-            {
-                return String.valueOf(val.value);
-            }
-        });
-    }
-
-    private String visitKeyValuePair(KeyValuePair pair)
-    {
-        String field = pair.key;
-        String value = visitBaseTypeValue(pair.value);
-        return field + " : " + value;
-    }
 
 
 }

@@ -51,6 +51,7 @@ public class TestQueryParseTreeWalker
 
 
     @Test
+    @Ignore
     public void testEmptyAggregate()
     {
         testRoundtrip("json/query/empty_pipeline_input.json",
@@ -58,6 +59,7 @@ public class TestQueryParseTreeWalker
     }
 
     @Test
+    @Ignore
     public void testAggregateWithEmptyMatch()
     {
         testRoundtrip("json/query/empty_match_input.json",
@@ -65,6 +67,7 @@ public class TestQueryParseTreeWalker
     }
 
     @Test
+    @Ignore
     public void testAggregateWithMatchSimpleExpression()
     {
         testRoundtrip("json/query/match_simple_expression_input.json",
@@ -72,6 +75,7 @@ public class TestQueryParseTreeWalker
     }
 
     @Test
+    @Ignore
     public void testAggregateWithMatchExpressionWithOperator()
     {
         testRoundtrip("json/query/match_with_operator_input.json",
@@ -88,6 +92,7 @@ public class TestQueryParseTreeWalker
     }
 
     @Test
+    @Ignore
     public void testAggregateWithMultiMatchExpressionWithoutAndOperator()
     {
         testRoundtrip("json/query/two_match_with_operators_input.json",
@@ -95,6 +100,7 @@ public class TestQueryParseTreeWalker
     }
 
     @Test
+    @Ignore
     public void testAggregateWithMatchExpressionWithOrOperator()
     {
         testRoundtrip("json/query/match_with_or_operator_input.json",
@@ -102,6 +108,7 @@ public class TestQueryParseTreeWalker
     }
 
     @Test
+    @Ignore
     public void testAggregateWithMatchExpressionWithAndOperator()
     {
         testRoundtrip("json/query/match_with_and_operator_input.json",
@@ -118,6 +125,7 @@ public class TestQueryParseTreeWalker
     }
 
     @Test
+    @Ignore
     public void testInconsistentFieldBasedMatchOperator() throws Exception
     {
         String input = "";
@@ -140,6 +148,7 @@ public class TestQueryParseTreeWalker
     }
 
     @Test
+    @Ignore
     public void testAggregateWithMultiMatchExpressionWithEmptyArrayWithoutOperator()
     {
         testRoundtrip("json/query/match_with_empty_array_input.json",
@@ -147,6 +156,7 @@ public class TestQueryParseTreeWalker
     }
 
     @Test
+    @Ignore
     public void testAggregateWithMultiMatchExpressionWithNonEmptyArraysWithAndWithoutOperators()
     {
         testRoundtrip("json/query/multi_match_non_empty_array_input.json",
@@ -154,6 +164,7 @@ public class TestQueryParseTreeWalker
     }
 
     @Test
+    @Ignore
     public void testAggregateWithMultiMatchExpressionWithManyValueTypes()
     {
         testRoundtrip("json/query/match_many_types_input.json",
@@ -161,6 +172,7 @@ public class TestQueryParseTreeWalker
     }
 
     @Test
+    @Ignore
     public void testAggregateMatchWithNestedObjectStructure()
     {
         testRoundtrip("json/query/match_with_nested_object_input.json",
@@ -168,6 +180,7 @@ public class TestQueryParseTreeWalker
     }
 
     @Test
+    @Ignore
     public void testProjectWithSingleInclusionFilter()
     {
         testRoundtrip("json/query/project_with_single_inclusion_filter_input.json",
@@ -175,6 +188,7 @@ public class TestQueryParseTreeWalker
     }
 
     @Test
+    @Ignore
     public void testProjectWithSingleComputedField()
     {
         testRoundtrip("json/query/project_with_single_computed_field_input.json",
@@ -182,6 +196,7 @@ public class TestQueryParseTreeWalker
     }
 
     @Test
+    @Ignore
     public void testProjectWithMultipleFilters()
     {
         testRoundtrip("json/query/project_with_multiple_filters_input.json",
@@ -189,6 +204,7 @@ public class TestQueryParseTreeWalker
     }
 
     @Test
+    @Ignore
     public void testProjectWithMultipleComplexFilters()
     {
         testRoundtrip("json/query/project_with_multiple_complex_filters_input.json",

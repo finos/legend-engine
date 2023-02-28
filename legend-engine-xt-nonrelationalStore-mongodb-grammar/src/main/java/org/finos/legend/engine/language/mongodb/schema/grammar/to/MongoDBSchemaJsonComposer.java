@@ -16,7 +16,7 @@ package org.finos.legend.engine.language.mongodb.schema.grammar.to;
 
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.Collection;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDatabase;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.MongoDBOperaionElement;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDBOperationElement;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -49,6 +49,10 @@ public class MongoDBSchemaJsonComposer
         StringBuilder builder = new StringBuilder();
 
         builder.append("{").append("\n");
+        appendJsonKey(builder, "_type");
+        appendStringWithQuotes(builder, "MongoDatabase");
+        builder.append(",\n");
+
 
         appendTabString(builder, dbNodeTabIndex);
         appendStringWithQuotes(builder, "database");
@@ -68,14 +72,6 @@ public class MongoDBSchemaJsonComposer
         appendTabString(builder, dbKeysTabIndex);
         builder.append("]\n");
 
-//        appendTabString(builder, dbKeysTabIndex);
-//        appendStringWithQuotes(builder, "schemas");
-//        builder.append(": [\n");
-//        visitSchemas(database.collections, builder, dbKeysTabIndex);
-//        builder.append("\n");
-//        appendTabString(builder, dbKeysTabIndex);
-//        builder.append("]\n");
-
         appendTabString(builder, dbNodeTabIndex);
         builder.append("}\n");
 
@@ -83,7 +79,7 @@ public class MongoDBSchemaJsonComposer
         return builder.toString();
     }
 
-    private void visitSchemas(MongoDBOperaionElement jsonSchemaExpr, StringBuilder builder, int tabIndex)
+    private void visitSchemas(MongoDBOperationElement jsonSchemaExpr, StringBuilder builder, int tabIndex)
     {
         builder.append(jsonSchemaExpr.accept(new MongoDBOperationElementVisitorImpl(tabIndex)));
     }
