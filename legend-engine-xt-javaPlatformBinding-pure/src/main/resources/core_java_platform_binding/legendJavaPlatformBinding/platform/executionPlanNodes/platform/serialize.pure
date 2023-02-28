@@ -348,7 +348,7 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
                                 );
                              }
                           );
-         
+
          if($type == Any,
             {|               
                let methodRef = $jThis->j_methodReference(treeSerialiseMethodName($path->concatenate($propertyName), $type->cast(@meta::pure::metamodel::type::Class<Any>), false, $conventions), javaFunctionType($conventions->pureTypeToJavaType($type, PureOne), javaVoid()));
@@ -375,9 +375,9 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
                let names = if($getterCall.type->isJavaList(),
                               {| 
                                  let x = j_parameter($getterCall.type->elementType(), 'x');
-                                 $getterCall->j_streamOf()->js_map(j_lambda($x, $x->j_invoke('name', [], javaString())))->js_resolve(javaList(javaString()));
+                                 $getterCall->j_streamOf()->js_map(j_lambda($x, $x->j_invoke('getName', [], javaString())))->js_resolve(javaList(javaString()));
                               },
-                              | j_conditional($getterCall->j_eq(j_null()), j_null(), $getterCall->j_invoke('name', [], javaString()))
+                              | j_conditional($getterCall->j_eq(j_null()), j_null(), $getterCall->j_invoke('getName', [], javaString()))
                            );
                $fWriter->j_invoke('writeEnumProperty', [j_string($spgft.fieldName), j_string($type->elementToPath()), $names]);
             },
