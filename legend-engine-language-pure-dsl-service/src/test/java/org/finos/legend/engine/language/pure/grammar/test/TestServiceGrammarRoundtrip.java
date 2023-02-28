@@ -14,6 +14,11 @@
 
 package org.finos.legend.engine.language.pure.grammar.test;
 
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
@@ -111,13 +116,10 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  {\n" +
                 "    query: src: meta::transform::tests::Address[1]|$src.a->from(meta::myMapping, meta::myRuntime);\n" +
                 "  }\n" +
-                "  test: Single\n" +
-                "  {\n" +
-                "    data: 'moreThanData';\n" +
-                "    asserts:\n" +
-                "    [\n" +
-                "    ];\n" +
-                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "\n" +
+                "  ]\n" +
                 "}\n");
     }
 
@@ -1648,5 +1650,117 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "    }\n" +
                 "  ]\n" +
                 "}\n");
+    }
+
+    @Test
+    public void testDeletionOfEmptyTests()
+    {
+        testComposedGrammar("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: false;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: meta::transform::tests::Address[1]|$src.a->from(meta::myMapping, meta::myRuntime);\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'moreThanData';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n",
+                "###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: false;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: meta::transform::tests::Address[1]|$src.a->from(meta::myMapping, meta::myRuntime);\n" +
+                "  }\n" +
+                "}\n");
+
+        testComposedGrammar("###Service\n" +
+                "Service meta::pure::myServiceMulti\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'ownerName'\n" +
+                "  ];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Multi\n" +
+                "  {\n" +
+                "    query: |model::pure::mapping::modelToModel::test::shared::dest::Product.all()->graphFetchChecked(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#)->serialize(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#);\n" +
+                "    key: 'env';\n" +
+                "    executions['QA']:\n" +
+                "    {\n" +
+                "      mapping: meta::myMapping1;\n" +
+                "      runtime: test::runtime;\n" +
+                "    }\n" +
+                "    executions['UAT']:\n" +
+                "    {\n" +
+                "      mapping: meta::myMapping2;\n" +
+                "      runtime: meta::myRuntime;\n" +
+                "    }\n" +
+                "  }\n" +
+                "  test: Multi\n" +
+                "  {\n" +
+                "    tests['QA']:\n" +
+                "    {\n" +
+                "      data: 'moreData';\n" +
+                "      asserts:\n" +
+                "      [\n" +
+                "      ];\n" +
+                "    }\n" +
+                "    tests['UAT']:\n" +
+                "    {\n" +
+                "      data: 'moreData';\n" +
+                "      asserts:\n" +
+                "      [\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n",
+                "###Service\n" +
+                "Service meta::pure::myServiceMulti\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'ownerName'\n" +
+                "  ];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Multi\n" +
+                "  {\n" +
+                "    query: |model::pure::mapping::modelToModel::test::shared::dest::Product.all()->graphFetchChecked(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#)->serialize(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#);\n" +
+                "    key: 'env';\n" +
+                "    executions['QA']:\n" +
+                "    {\n" +
+                "      mapping: meta::myMapping1;\n" +
+                "      runtime: test::runtime;\n" +
+                "    }\n" +
+                "    executions['UAT']:\n" +
+                "    {\n" +
+                "      mapping: meta::myMapping2;\n" +
+                "      runtime: meta::myRuntime;\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n");
+    }
+
+    private void testComposedGrammar(String input, String result)
+    {
+        PureModelContextData modelData = null;
+        modelData = PureGrammarParser.newInstance().parseModel(input, "", 0, 0, false);
+        PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());
+        Assert.assertEquals(result, grammarTransformer.renderPureModelContextData(modelData));
     }
 }

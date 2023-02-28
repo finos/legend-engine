@@ -45,7 +45,7 @@ public class PGTypes
             //.put(RowType.EMPTY, RecordType.EMPTY_RECORD)
             .put(Types.SMALLINT, SmallIntType.INSTANCE)
             .put(Types.INTEGER, IntegerType.INSTANCE)
-            .put(Types.BIGINT, BigIntType.INSTANCE)
+/*            .put(Types.BIGINT, BigIntType.INSTANCE)*/
             .put(Types.FLOAT, RealType.INSTANCE)
             .put(Types.DOUBLE, DoubleType.INSTANCE)
             .put(Types.NUMERIC, NumericType.INSTANCE)

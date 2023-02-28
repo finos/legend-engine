@@ -145,6 +145,14 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                     //post validation
                     if (service.postValidations != null)
                     {
+                        List<String> validationAssertionIds = ListIterate.flatCollect(service.postValidations, postValidation -> postValidation.assertions).collect(postValidationAssertion -> postValidationAssertion.id);
+                        List<String> duplicateValidationAssertionIds = validationAssertionIds.stream().filter(e -> Collections.frequency(validationAssertionIds, e) > 1).distinct().collect(Collectors.toList());
+
+                        if (!duplicateValidationAssertionIds.isEmpty())
+                        {
+                            throw new EngineException("Multiple post validation assertions found with ids : '" + String.join(",", duplicateValidationAssertionIds) + "'", service.sourceInformation, EngineErrorType.COMPILATION);
+                        }
+
                         pureService._postValidations(ListIterate.collect(service.postValidations, constraint ->
                                 new Root_meta_legend_service_metamodel_PostValidation_Impl<>("", null, context.pureModel.getClass("meta::legend::service::metamodel::PostValidation"))
                                         ._description(constraint.description)

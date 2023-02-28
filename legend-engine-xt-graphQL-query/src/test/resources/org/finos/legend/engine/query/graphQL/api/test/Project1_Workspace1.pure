@@ -18,19 +18,31 @@ import simple::model::*;
 Class simple::model::Query
 {
   allFirms() {Firm.all()}: Firm[*];
+  firmByLegalName(legalName: String[1]) {simple::model::Firm.all()->filter(f|$f.legalName == $legalName)->first()}: simple::model::Firm[0..1];
+  firmByEmployees(firstName: String[1],lastName: String[1]) {simple::model::Firm.all()->filter(f|$f.employees.firstName == $firstName &&  $f.employees.lastName == $lastName )->first()}: simple::model::Firm[0..1];
+  personByNames(firstName: String[0..1],lastName: String[0..1]) {simple::model::Person.all()->filter(f|$f.firstName == $firstName  || $f.lastName == $lastName    )}: simple::model::Person[*];
+  selectEmployees(offset: Integer[1],limit: Integer[1])  {
+                                                           let start = $offset - 1;
+                                                           let end = $start + $limit;
+                                                           Person.all()->slice($start, $end);
+                                                         }: simple::model::Person[*];
 }
 
 Class simple::model::Firm
 {
   legalName: String[1];
-  employees: Person[*];
 }
 
 Class simple::model::Person
 {
   firstName: String[1];
   lastName: String[1];
-  employer: Firm[0..1];
+}
+
+Association simple::model::Firm_Employees
+{
+    employees: Person[*];
+    employer: Firm[0..1];
 }
 
 ###Relational

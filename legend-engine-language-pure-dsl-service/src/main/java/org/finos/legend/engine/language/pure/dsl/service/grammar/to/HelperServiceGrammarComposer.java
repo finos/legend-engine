@@ -222,6 +222,19 @@ public class HelperServiceGrammarComposer
         return str.toString();
     }
 
+    public static boolean isServiceTestEmpty(ServiceTest_Legacy serviceTest)
+    {
+        if (serviceTest instanceof SingleExecutionTest)
+        {
+            return ((SingleExecutionTest) serviceTest).asserts == null || ((SingleExecutionTest) serviceTest).asserts.isEmpty();
+        }
+        else if (serviceTest instanceof MultiExecutionTest)
+        {
+            return ListIterate.allSatisfy(((MultiExecutionTest) serviceTest).tests, k -> k.asserts == null || k.asserts.isEmpty());
+        }
+        return false;
+    }
+
     public static String renderServiceTest(ServiceTest_Legacy serviceTest, PureGrammarComposerContext context)
     {
         int baseIndentation = 1;
