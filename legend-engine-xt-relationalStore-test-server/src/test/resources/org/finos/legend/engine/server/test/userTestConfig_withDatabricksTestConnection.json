@@ -49,7 +49,7 @@
         "hostname": "dbc-f0687849-717f.cloud.databricks.com",
         "port": "443",
         "protocol": "https",
-        "httpPath": "sql/protocolv1/o/448477574000404/0228-234110-ve0xbrtk"
+        "httpPath": "/sql/1.0/warehouses/c56852187940e5a3"
       },
       "authenticationStrategy": {
         "_type": "apiToken",
