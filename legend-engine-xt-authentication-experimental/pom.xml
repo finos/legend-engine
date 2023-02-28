@@ -23,9 +23,9 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>legend-engine-xt-authentication-example</artifactId>
+    <artifactId>legend-engine-xt-authentication-experimental</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Engine - XT - Authentication - Example</name>
+    <name>Legend Engine - XT - Authentication - Experimental</name>
 
     <build>
         <plugins>

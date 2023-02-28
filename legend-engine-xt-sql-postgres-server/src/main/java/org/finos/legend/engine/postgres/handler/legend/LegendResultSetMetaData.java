@@ -52,11 +52,9 @@ public class LegendResultSetMetaData implements PostgresResultSetMetaData
         String legendType = getColumnPrivate(i).getType();
         switch (legendType)
         {
-
             case "StrictDate":
                 return Types.DATE;
             case "Date":
-                return Types.DATE;
             case "DateTime":
                 return Types.TIMESTAMP;
             case "Integer":
@@ -69,7 +67,6 @@ public class LegendResultSetMetaData implements PostgresResultSetMetaData
                 return Types.BOOLEAN;
             default:
                 return Types.VARCHAR;
-
         }
 
     }

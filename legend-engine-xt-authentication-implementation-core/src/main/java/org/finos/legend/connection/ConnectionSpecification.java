@@ -12,30 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.connection.jdbc;
+package org.finos.legend.connection;
 
-import org.finos.legend.engine.connection.ConnectionSpecification;
-
-public class JdbcConnectionSpecification extends ConnectionSpecification
+public abstract class ConnectionSpecification
 {
-    public enum DbType
-    {
-        H2
-    }
-
-    public String dbHostname;
-    public int dbPort;
-    public DbType dbType;
-
-    public JdbcConnectionSpecification()
-    {
-
-    }
-
-    public JdbcConnectionSpecification(String dbHostname, int dbPort, DbType dbType)
-    {
-        this.dbHostname = dbHostname;
-        this.dbPort = dbPort;
-        this.dbType = dbType;
-    }
 }

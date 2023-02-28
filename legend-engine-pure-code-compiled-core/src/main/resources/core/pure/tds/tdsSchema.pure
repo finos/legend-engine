@@ -204,6 +204,10 @@ function <<access.private>> meta::pure::tds::schema::resolveSchemaImpl(fe : Func
             $fe.parametersValues->at(1)->reactivate($openVars)->cast(@ColumnSpecification<Any>)
                ->resolveProject($openVars).restrict($requiredCols);
          }),
+         pair(project_TabularDataSet_1__ColumnSpecification_MANY__TabularDataSet_1_->cast(@Function<Any>), {|
+            $fe.parametersValues->at(1)->reactivate($openVars)->cast(@ColumnSpecification<Any>)
+               ->resolveProject($openVars);
+         }),
          pair(project_K_MANY__Function_MANY__String_MANY__TabularDataSet_1_->cast(@Function<Any>), {|
             let colFuncs = $fe.parametersValues->at(1)->reactivate($openVars)->cast(@Function<Any>);
             let colNames = $fe.parametersValues->at(2)->reactivate($openVars)->cast(@String);
@@ -240,10 +244,9 @@ function <<access.private>> meta::pure::tds::schema::resolveSchemaImpl(fe : Func
             let tdsSchema = resolveSchemaImpl($fe.parametersValues->at(0), $openVars, $extensions);
             let colNamesToGroupBy = $fe.parametersValues->at(1)->reactivate($openVars)->cast(@String);
 
-
             let aggSpecifications = $fe.parametersValues->at(2)->reactivate($openVars)->cast(@meta::pure::tds::AggregateValue<Any,Any>)->toOneMany();
 
-            let aggColumns = $aggSpecifications->map(aggSpecification|
+            let aggColumns = $aggSpecifications->map(aggSpecification |
                ^TDSColumn(name=$aggSpecification.name, type=$aggSpecification.aggregateFn->functionReturnType().rawType->toOne()->cast(@DataType));
                );
 
@@ -259,7 +262,7 @@ function <<access.private>> meta::pure::tds::schema::resolveSchemaImpl(fe : Func
                | $tdsSchema.rename($renameMapping->toOneMany())
                );
 
-         })
+         }) 
       ])
       ->concatenate($extensions.tdsSchema_resolveSchemaImpl->map(e|$e->eval($fe, $openVars, $extensions)))
       ->concatenate([
