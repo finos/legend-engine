@@ -38,6 +38,7 @@ function meta::external::store::mongodb::metamodel::MongoDBProtocolGenerator(): 
 function meta::external::store::mongodb::metamodel::configureConventions(purePackage: Package[1], javaPackage: String[1], ge: JavaProtocolGenerator[1]): Conventions[1]
 {
     let defaultConventions = defaultConfigureConventions($purePackage, $javaPackage, $ge)
-                 ->configureConventionsWithCoreProtocolClasses();
+                 ->configureConventionsWithCoreProtocolClasses()
+                 ->addProvidedType(meta::pure::runtime::connection::authentication::AuthenticationSpecification, 'org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification');
     $defaultConventions;
 }
