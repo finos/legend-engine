@@ -340,6 +340,11 @@ public class PureModelContextData extends PureModelContext
             }
         }
 
+        public boolean findElement(String elementPath)
+        {
+            return this.elements.toList().select(element -> elementPath.equals(element.getPath())).size() != 0;
+        }
+
         public Builder sorted()
         {
             sort();

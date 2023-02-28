@@ -21,6 +21,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class SourceInformation
 {
     public String sourceId;
+    public String elementPath;
     public int startLine;
     public int startColumn;
     public int endLine;
@@ -41,6 +42,16 @@ public class SourceInformation
         this.startColumn = startColumn;
         this.endLine = endLine;
         this.endColumn = endColumn;
+    }
+
+    public SourceInformation(String sourceId, int startLine, int startColumn, int endLine, int endColumn, String elementPath)
+    {
+        this.sourceId = sourceId;
+        this.startLine = startLine;
+        this.startColumn = startColumn;
+        this.endLine = endLine;
+        this.endColumn = endColumn;
+        this.elementPath = elementPath;
     }
 
     @JsonIgnore

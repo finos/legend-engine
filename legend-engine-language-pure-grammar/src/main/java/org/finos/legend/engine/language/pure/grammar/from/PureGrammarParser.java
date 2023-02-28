@@ -83,7 +83,7 @@ public class PureGrammarParser
 
     public PureModelContextData parseElements(Map<String, String> code, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
     {
-        return this.parse(code, this.parsers, sourceId, lineOffset, columnOffset, returnSourceInfo);
+        return this.parseElements(code, this.parsers, sourceId, lineOffset, columnOffset, returnSourceInfo);
     }
 
     public PureModelContextData parseModel(String code, boolean returnSourceInformation)
@@ -136,7 +136,7 @@ public class PureGrammarParser
         return builder.withElement(sectionIndex).build();
     }
 
-    private PureModelContextData parse(Map<String, String> code, DEPRECATED_PureGrammarParserLibrary parserLibrary, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
+    private PureModelContextData parseElements(Map<String, String> code, DEPRECATED_PureGrammarParserLibrary parserLibrary, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
     {
         // create the PureModelContextData builder
         PureModelContextData.Builder builder = new PureModelContextData.Builder();
@@ -167,10 +167,14 @@ public class PureGrammarParser
                     Section currentSection =  this.visitSection(sectionCtx, parserLibrary, walkerSourceInformation, parserContext, builder::addElement, returnSourceInfo);
                     if (builder.noOfElements() - currentElements > 1)
                     {
-                        throw new EngineException("Cannot have more than one packageable element in one section",  walkerSourceInformation.getSourceInformation(sectionCtx), EngineErrorType.PARSER);
+                        throw new EngineException("Cannot have more than one packageable element in one section", walkerSourceInformation.getSourceInformation(sectionCtx), EngineErrorType.PARSER);
                     }
                     return currentSection;
                 }));
+                if(!builder.findElement(key))
+                {
+                    throw new EngineException("Element path mentioned in the grammar doesn't match with the grammar file name",  new ElementBasedSourceInformation("", 2, 1, 1, 1, key), EngineErrorType.PARSER);
+                }
             }
             catch (Exception e)
             {
