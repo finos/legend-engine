@@ -76,7 +76,9 @@ import org.finos.legend.engine.plan.execution.stores.relational.config.Relationa
 import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.SchemaExplorationApi;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relational;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
-import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStore;
+import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreExecutionConfiguration;
+import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreExecutor;
+import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreExecutorBuilder;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.query.graphQL.api.debug.GraphQLDebug;
@@ -224,11 +226,16 @@ public class Server<T extends ServerConfiguration> extends Application<T>
 
         ChainFixingFilterHandler.apply(environment.getApplicationContext(), serverConfiguration.filterPriorities);
 
-        RelationalExecutionConfiguration relationalExecution = serverConfiguration.relationalexecution;
-        relationalExecution.setCredentialProviderProvider(this.configureCredentialProviders(serverConfiguration.vaults));
+        CredentialProviderProvider credentialProviderProvider = this.configureCredentialProviders(serverConfiguration.vaults);
 
+        RelationalExecutionConfiguration relationalExecution = serverConfiguration.relationalexecution;
+        relationalExecution.setCredentialProviderProvider(credentialProviderProvider);
         relationalStoreExecutor = (RelationalStoreExecutor) Relational.build(serverConfiguration.relationalexecution);
-        PlanExecutor planExecutor = PlanExecutor.newPlanExecutor(relationalStoreExecutor, ServiceStore.build(), InMemory.build());
+
+        ServiceStoreExecutionConfiguration serviceStoreExecutionConfiguration = ServiceStoreExecutionConfiguration.builder().withCredentialProviderProvider(credentialProviderProvider).build();
+        ServiceStoreExecutor serviceStoreExecutor = (ServiceStoreExecutor) new ServiceStoreExecutorBuilder().build(serviceStoreExecutionConfiguration);
+
+        PlanExecutor planExecutor = PlanExecutor.newPlanExecutor(relationalStoreExecutor, serviceStoreExecutor, InMemory.build());
 
         // Session Management
         SessionTracker sessionTracker = new SessionTracker();
@@ -296,7 +303,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new SqlGrammar());
 
         // Service
-        environment.jersey().register(new ServiceModelingApi(modelManager, serverConfiguration.deployment.mode));
+        environment.jersey().register(new ServiceModelingApi(modelManager, serverConfiguration.deployment.mode,planExecutor));
 
         // Query
         environment.jersey().register(new ApplicationQuery(ApplicationQueryConfiguration.getMongoClient()));
