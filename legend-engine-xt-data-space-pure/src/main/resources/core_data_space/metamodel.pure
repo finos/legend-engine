@@ -47,3 +47,4 @@ Class meta::pure::metamodel::dataSpace::DataSpaceSupportEmail extends DataSpaceS
 {
   address: String[1];
 }
+

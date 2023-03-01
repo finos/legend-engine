@@ -40,6 +40,17 @@ public class DataSpace extends PackageableElement
     public List<PackageableElementPointer> featuredDiagrams;
     public DataSpaceSupportInfo supportInfo;
 
+
+    public List<PackageableElementPointer> filteredClasses;
+    public List<DataSpaceTestDataSpecification> testData;
+
+
+
+
+
+
+
+
     @Override
     public <T> T accept(PackageableElementVisitor<T> visitor)
     {
