@@ -44,7 +44,6 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], exeCtx:
 
    let funcParams  = $f.classifierGenericType.typeArguments.rawType->cast(@FunctionType).parameters->evaluateAndDeactivate().name;
    let l = {|[]};
-   // TODO: This logic would not be needed once we inline function expressions before routing
    let initStatements = $expressions->init()->fold(
     {vs, a |
       let varName         = $vs->extractLetVariableName();
