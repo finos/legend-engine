@@ -173,7 +173,7 @@
                             <!-- The dependency plugin analyzer raises these as false positives -->
                             <ignoredUnusedDeclaredDependencies>
                                 <dependency>org.finos.legend.engine:legend-engine-xt-authentication-pure</dependency>
-                                <dependency>org.finos.legend.engine:legend-engine-xt-authentication-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-platform-dsl-mapping-java</dependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
