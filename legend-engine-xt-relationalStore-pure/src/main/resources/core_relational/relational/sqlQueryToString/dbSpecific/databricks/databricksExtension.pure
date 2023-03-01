@@ -22,12 +22,13 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
      getDynaFunctionToSqlForDatabricks()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
 
    ^DbExtension(
-      isBooleanLiteralSupported = true,
+      isBooleanLiteralSupported = false,
       isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
       literalProcessor = $literalProcessor,
       windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
       joinStringsProcessor = processJoinStringsOperationWithConcatCall_JoinStrings_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForDatabricks_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
+      schemaNameToIdentifier = schemaNameToIdentifierForDatabricks_String_1__DbConfig_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
       identifierProcessor = processIdentifierWithBackTicks_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch
@@ -73,9 +74,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('left',                   $allStates,            ^ToSql(format='left(%s,%s)')),
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
     dynaFnToSql('ltrim',                  $allStates,            ^ToSql(format='ltrim(%s)')),
-    //TODO: Fix broken implementation before enabling matches
-    //dynaFnToSql('matches',                $allStates,            ^ToSql(format='rlike(%s)', transform={p:String[2]|$p->transformRegexpParams()})),
+    dynaFnToSql('matches',                $allStates,            ^ToSql(format='rlike(%s)', transform={p:String[2]|$p->transformRegexpParams()})),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='minute(%s)')),
+    dynaFnToSql('sqlTrue',                $allStates,            ^ToSql(format='case when %s then 1 else 0 end')),
+    dynaFnToSql('sqlFalse',               $allStates,            ^ToSql(format='case when %s then 0 else 1 end')),
     dynaFnToSql('mod',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
     dynaFnToSql('month',                  $allStates,            ^ToSql(format='month(%s)')),
     dynaFnToSql('monthNumber',            $allStates,            ^ToSql(format='month(%s)')),
@@ -130,6 +132,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    assert($params->size()==1 || dateFormatsDatabricks()->contains($params->at(1)->replace('\'', '')) , | $params->at(1) +' not supported ');
    let dateFormat = if( $params->size() == 1,|'\'%Y-%m-%d\'' ,| $params->at(1););
    'to_date('+$params->at(0)+','+$dateFormat +')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::schemaNameToIdentifierForDatabricks(schemaName: String[1], dbConfig: DbConfig[1]): String[1]
+{
+   $schemaName->replace('$', '.');
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::convertToDateTimeDatabricks(params:String[*]):String[1]

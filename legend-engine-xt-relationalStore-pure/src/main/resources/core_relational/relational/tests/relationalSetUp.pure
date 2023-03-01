@@ -221,6 +221,24 @@ Database meta::relational::tests::dbForPresto
 )
 
 ###Relational
+Database meta::relational::tests::dbForDatabricksCatalog
+(
+   Schema catalog$schema
+   (
+      Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT)
+   )
+)
+
+###Relational
+Database meta::relational::tests::dbForDatabricks
+(
+   Schema schema
+   (
+      Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT)
+   )
+)
+
+###Relational
 Database meta::relational::tests::dbForMemSQL
 (
    Table personTable (ID INT PRIMARY KEY, firstName VARCHAR(200), lastName VARCHAR(200), age INT, key INT)
@@ -440,6 +458,32 @@ Mapping meta::relational::tests::simpleRelationalMappingPersonForPresto
          firstName : catalog$schema.personTable.FIRSTNAME,
          lastName: catalog$schema.personTable.LASTNAME,
          age : catalog$schema.personTable.AGE
+      )
+   }
+)
+
+Mapping meta::relational::tests::simpleRelationalMappingPersonForDatabricksCatalog
+(
+   Person : Relational
+   {
+      scope([dbForDatabricksCatalog])
+      (
+         firstName : catalog$schema.personTable.FIRSTNAME,
+         lastName: catalog$schema.personTable.LASTNAME,
+         age : catalog$schema.personTable.AGE
+      )
+   }
+)
+
+Mapping meta::relational::tests::simpleRelationalMappingPersonForDatabricks
+(
+   Person : Relational
+   {
+      scope([dbForDatabricks])
+      (
+         firstName : schema.personTable.FIRSTNAME,
+         lastName: schema.personTable.LASTNAME,
+         age : schema.personTable.AGE
       )
    }
 )
