@@ -106,7 +106,7 @@ public class SqlExecute
         this.extensions = extensions;
         this.transformers = transformers;
         this.metadataServer = metadataServer;
-        this.serviceModeling = new ServiceModeling(modelManager, deploymentMode);
+        this.serviceModeling = new ServiceModeling(modelManager, deploymentMode,planExecutor);
     }
 
     @POST

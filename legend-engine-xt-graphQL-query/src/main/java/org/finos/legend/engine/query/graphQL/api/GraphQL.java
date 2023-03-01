@@ -92,7 +92,7 @@ public abstract class GraphQL
         }
     }
 
-    protected PureModel loadProjectModel(MutableList<CommonProfile> profiles, HttpServletRequest request, String groupId, String artifactId, String versionId) throws PrivilegedActionException
+    protected PureModel loadProjectModel(MutableList<CommonProfile> profiles, String groupId, String artifactId, String versionId) throws PrivilegedActionException
     {
         Subject subject = ProfileManagerHelper.extractSubject(profiles);
         PureModelContextPointer pointer = new PureModelContextPointer();

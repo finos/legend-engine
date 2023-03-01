@@ -45,8 +45,6 @@ function meta::protocols::pure::vX_X_X::extension::store::service::getServiceSto
                    url                      = $ser.url,
                    method                   = $ser.method,
                    mimeType                 = $ser.mimeType,
-                   //TODO: securitySchemes will be removed when we switch completely to authenticationSchemes
-                   securitySchemes          = $ser.authenticationSchemes->map(s | $s->cast(@meta::external::store::service::executionPlan::nodes::SingleAuthenticationSchemeRequirement).securityScheme->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformSecurityScheme($extensions)),
                    authenticationSchemes    = $ser.authenticationSchemes->map(s | ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::service::SingleAuthenticationSchemeRequirement(
                                                                 _type = 'singleAuthScheme',
                                                                 securityScheme = $s->cast(@meta::external::store::service::executionPlan::nodes::SingleAuthenticationSchemeRequirement).securityScheme->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformSecurityScheme($extensions),

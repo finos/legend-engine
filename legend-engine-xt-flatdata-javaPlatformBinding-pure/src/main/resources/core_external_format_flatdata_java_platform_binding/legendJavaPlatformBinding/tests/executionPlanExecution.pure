@@ -1,0 +1,53 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::flatdata::executionPlan::test::*;
+import meta::external::format::flatdata::executionPlan::platformBinding::legendJava::test::*;
+import meta::external::shared::format::functions::*;
+
+import meta::legend::*;
+
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::*;
+import meta::pure::runtime::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::test::testInternalizeExternalizeSimple(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let query   = {data:String[1] | Person->internalize($binding, $data)->externalize($binding, #{meta::external::format::flatdata::executionPlan::test::Person{firstName, lastName}}#)};
+  let vars    = pair('data', 'First Name,Last Name\nJohn,Doe');
+
+  let result  = executeFlatdataBindingQuery($query, $vars);
+
+  assertEquals('First Name,Last Name\nJohn,Doe', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::test::testBindingAndM2MChainedSimple(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let tree    = #{TargetPerson{fullName}}#;
+  let query   = {data:String[1]| TargetPerson.all()->graphFetch($tree)->from(M2MMapping, getRuntimeWithModelQueryConnection(Person, $binding, $data))->externalize(getTargetPersonTestBinding(), $tree);};
+  let vars    = pair('data', 'First Name,Last Name\nJohn,Doe');
+  
+  let result  = executeFlatdataBindingQuery($query, $vars);
+
+  assertEquals('Full Name\nJohn Doe', $result);
+}
+
+function meta::external::format::flatdata::executionPlan::platformBinding::legendJava::test::executeFlatdataBindingQuery(f: FunctionDefinition<Any>[1], vars: Pair<String, Any>[*]): String[1]
+{
+  let fStr = 'meta::legend::execute_FunctionDefinition_1__Pair_MANY__ExecutionContext_1__Extension_MANY__String_1_';
+  let func = $fStr->pathToElement()->cast(@Function<{FunctionDefinition<Any>[1], Pair<String, Any>[*], ExecutionContext[1], meta::pure::extension::Extension[*]->String[1]}>);
+  $func->eval($f, $vars, ^ExecutionContext(), getExtensions());
+}
