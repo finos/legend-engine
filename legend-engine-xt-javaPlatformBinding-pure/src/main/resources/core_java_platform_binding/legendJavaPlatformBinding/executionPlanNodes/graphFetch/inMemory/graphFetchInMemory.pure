@@ -631,13 +631,8 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
          let sourceProperty = $pureSetImpl->noMappingPassThruSourceProperty($property)->toOne();
          let sourceType     = $conventions->pureTypeToJavaType($sourceProperty);
          let callGetter     = $src->j_invoke($conventions->getterName($sourceProperty), [], $sourceType);
-         if($propertyJavaType == $sourceType,
-            | $callGetter,
-            |
-         if(isJavaList($propertyJavaType),
-            | $callGetter->j_listOf($propertyJavaType),
-            | $callGetter->j_cast($propertyJavaType)
-         ));
+
+         $callGetter->castExpressionToReturnType($propertyJavaType);
       },
       {|
          if($isNoMappingDefaultToEmpty || $isMergedUnMappedProperty,
@@ -658,16 +653,7 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
                     let code              = if ($valueTransformer->isEmpty(), | $javaExpression, | $javaExpression->applyTransformer($valueTransformer->toOne(), $conventions, $debug->indent()));
                     let returnType        = if ($valueTransformer->isEmpty(), | $transformType,  | if($transformType->isJavaList(), | $conventions->enumerationType($valueTransformer->toOne())->javaList(), | $conventions->enumerationType($valueTransformer->toOne())));
 
-                    if ($returnType == $code.type,
-                        |$code,
-                        |
-                    if ($returnType->isJavaList() && ($returnType->elementTypeOfJavaList() == $code.type->toBoxed()),
-                        |$code->j_listOf($returnType),
-                        |
-                    if ($returnType->isJavaList(),
-                        |$code->j_listOf($returnType),
-                        |$code->j_cast($returnType)
-                    )));
+                    $code->castExpressionToReturnType($returnType);
                   },
                   | []
                 )
