@@ -23,10 +23,15 @@ import java.util.List;
 
 public class FileGenerationSpecification extends AbstractGenerationSpecification
 {
+    @Deprecated
     public String type;
+    @Deprecated
     public List<String> scopeElements = Collections.emptyList();
+    @Deprecated
     public List<ConfigurationProperty> configurationProperties = Collections.emptyList();
+    @Deprecated
     public SourceInformation typeSourceInformation;
+    @Deprecated
     public String generationOutputPath;
 
     @Override

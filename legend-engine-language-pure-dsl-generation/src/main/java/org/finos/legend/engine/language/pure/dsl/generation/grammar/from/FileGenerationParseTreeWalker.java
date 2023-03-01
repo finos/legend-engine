@@ -14,43 +14,127 @@
 
 package org.finos.legend.engine.language.pure.dsl.generation.grammar.from;
 
-import org.antlr.v4.runtime.tree.TerminalNode;
-import org.eclipse.collections.impl.utility.LazyIterate;
-import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
-import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
-import org.finos.legend.engine.language.pure.grammar.from.antlr4.FileGenerationParserGrammar;
-import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.ConfigurationProperty;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
-import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.TerminalNode;
+import org.eclipse.collections.impl.utility.LazyIterate;
+import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
+import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtensionLoader;
+import org.finos.legend.engine.external.shared.format.model.transformation.fromModel.ExternalFormatSchemaGenerationExtension;
+import org.finos.legend.engine.external.shared.format.model.transformation.fromModel.ModelToSchemaConfiguration;
+import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.FileGenerationParserGrammar;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ModelUnit;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.ConfigurationProperty;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.schemaGeneration.SchemaGenerationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 public class FileGenerationParseTreeWalker
 {
+
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final Consumer<PackageableElement> elementConsumer;
     private final ImportAwareCodeSection section;
+    private final Map<String, ExternalFormatExtension<?>> extensions;
+
 
     public FileGenerationParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, ImportAwareCodeSection section)
     {
         this.walkerSourceInformation = walkerSourceInformation;
         this.elementConsumer = elementConsumer;
         this.section = section;
+        this.extensions = ExternalFormatExtensionLoader.extensions();
     }
 
     public void visit(FileGenerationParserGrammar.DefinitionContext ctx)
     {
         this.section.imports = ListIterate.collect(ctx.imports().importStatement(), importCtx -> PureGrammarParserUtility.fromPath(importCtx.packagePath().identifier()));
-        ctx.fileGeneration().stream().map(this::visitFileGeneration).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
+        ctx.elementDefinition().stream().map(this::visitAbstractFileGeneration).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
+    }
+
+    private FileGenerationSpecification visitAbstractFileGeneration(FileGenerationParserGrammar.ElementDefinitionContext ctx)
+    {
+        if (ctx.fileGeneration() != null)
+        {
+            return this.visitFileGeneration(ctx.fileGeneration());
+        }
+        if (ctx.schemaGeneration() != null)
+        {
+            return this.visitSchemaGeneration(ctx.schemaGeneration());
+        }
+        throw new EngineException("Unable to parse file generation");
+    }
+
+
+    private SchemaGenerationSpecification visitSchemaGeneration(FileGenerationParserGrammar.SchemaGenerationContext ctx)
+    {
+        SourceInformation sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+
+        SchemaGenerationSpecification schemaGenerationSpecification = new SchemaGenerationSpecification();
+        schemaGenerationSpecification.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
+        schemaGenerationSpecification._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
+        schemaGenerationSpecification.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // format type
+        FileGenerationParserGrammar.FormatTypeContext formatTypeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.formatType(), "format", schemaGenerationSpecification.sourceInformation);
+        schemaGenerationSpecification.format = PureGrammarParserUtility.fromGrammarString(formatTypeContext.STRING().getText(), true);
+        if (ctx.config() != null && !ctx.config().isEmpty())
+        {
+            FileGenerationParserGrammar.ConfigContext configContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.config(), "config", schemaGenerationSpecification.sourceInformation);
+            if (configContext.configValue() != null)
+            {
+                schemaGenerationSpecification.config = ListIterate.collect(configContext.configValue().configProperty(), this::visitSchemaConfigurationProperty);
+            }
+        }
+
+        // model unit
+        FileGenerationParserGrammar.ModelIncludesContext modelIncludesContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.modelIncludes(), "modelIncludes", sourceInformation);
+        FileGenerationParserGrammar.ModelExcludesContext modelExcludesContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.modelExcludes(), "modelExcludes", sourceInformation);
+        ModelUnit modelUnit = new ModelUnit();
+        if (modelIncludesContext != null)
+        {
+            modelUnit.packageableElementIncludes = modelIncludesContext.qualifiedName().stream().map(this::processQualifiedName).collect(Collectors.toList());
+        }
+        if (modelExcludesContext != null)
+        {
+            modelUnit.packageableElementExcludes = modelExcludesContext.qualifiedName().stream().map(this::processQualifiedName).collect(Collectors.toList());
+        }
+        schemaGenerationSpecification.modelUnit = modelUnit;
+        return schemaGenerationSpecification;
+    }
+
+    private ConfigurationProperty visitSchemaConfigurationProperty(FileGenerationParserGrammar.ConfigPropertyContext configPropertyContext)
+    {
+        ConfigurationProperty configurationProperty = new ConfigurationProperty();
+        configurationProperty.sourceInformation = walkerSourceInformation.getSourceInformation(configPropertyContext);
+        if (configPropertyContext.configPropertyValue() != null)
+        {
+            configurationProperty.name = configPropertyContext.configPropertyName().getText();
+            configurationProperty.value = this.visitConfigPropertyValue(configPropertyContext.configPropertyValue());
+        }
+        return configurationProperty;
+    }
+
+    private String processQualifiedName(FileGenerationParserGrammar.QualifiedNameContext ctx)
+    {
+        List<? extends ParserRuleContext> packagePath = ctx.packagePath() == null ? Collections.emptyList() : ctx.packagePath().identifier();
+        return PureGrammarParserUtility.fromQualifiedName(packagePath, ctx.identifier());
     }
 
     private FileGenerationSpecification visitFileGeneration(FileGenerationParserGrammar.FileGenerationContext ctx)

@@ -25,6 +25,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generat
 
 import java.util.List;
 import java.util.Map;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.schemaGeneration.SchemaGenerationSpecification;
 
 public class GenerationProtocolExtension implements PureProtocolExtension
 {
@@ -34,6 +35,7 @@ public class GenerationProtocolExtension implements PureProtocolExtension
         return Lists.fixedSize.with(() -> Lists.fixedSize.with(
                 ProtocolSubTypeInfo.newBuilder(PackageableElement.class)
                         .withSubtype(GenerationSpecification.class, "generationSpecification")
+                        .withSubtype(SchemaGenerationSpecification.class, "schemaGenerationElement")
                         .withSubtype(FileGenerationSpecification.class, "fileGeneration")
                         .build()
         ));
@@ -42,7 +44,7 @@ public class GenerationProtocolExtension implements PureProtocolExtension
     @Override
     public Map<Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathMap()
     {
-        return Maps.mutable.with(GenerationSpecification.class, "meta::pure::generation::metamodel::GenerationSpecification", FileGenerationSpecification.class, "meta::pure::generation::metamodel::GenerationConfiguration");
+        return Maps.mutable.with(GenerationSpecification.class, "meta::pure::generation::metamodel::GenerationSpecification", FileGenerationSpecification.class, "meta::pure::generation::metamodel::GenerationConfiguration",SchemaGenerationSpecification.class, "meta::pure::generation::metamodel::SchemaGenerationSpecification");
     }
 
 }

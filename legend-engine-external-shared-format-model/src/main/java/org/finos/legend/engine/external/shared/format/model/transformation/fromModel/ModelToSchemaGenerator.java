@@ -25,6 +25,8 @@ import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamode
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaSet;
 
 import java.util.Map;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_transformation_fromPure_ModelToSchemaConfiguration;
+import org.finos.legend.pure.generated.Root_meta_pure_model_unit_ModelUnit;
 
 public class ModelToSchemaGenerator extends Generator
 {
@@ -67,6 +69,33 @@ public class ModelToSchemaGenerator extends Generator
         }
 
         return builder.build();
+    }
+
+
+    public ExternalFormatSchemaSet generate(Root_meta_external_shared_format_transformation_fromPure_ModelToSchemaConfiguration configuration, Root_meta_pure_model_unit_ModelUnit sourceModelUnit, boolean generateBinding, String targetBindingPath)
+    {
+        if (generateBinding)
+        {
+            if (targetBindingPath == null || !targetBindingPath.matches("[A-Za-z0-9_]+(::[A-Za-z0-9_]+)+"))
+            {
+                throw new IllegalArgumentException("Invalid path provided for target binding");
+            }
+        }
+
+        ExternalFormatExtension<?> schemaExtension = schemaExtensions.get(configuration._format());
+        if (schemaExtension == null)
+        {
+            throw new IllegalArgumentException("Unknown schema format: " + configuration._format());
+        }
+        if (!(schemaExtension instanceof ExternalFormatSchemaGenerationExtension))
+        {
+            throw new UnsupportedOperationException("Schema generation not supported for " + schemaExtension.getFormat());
+        }
+
+        Root_meta_external_shared_format_metamodel_SchemaSet schemaSet = ((ExternalFormatSchemaGenerationExtension) schemaExtension).generateSchema(configuration, sourceModelUnit, pureModel);
+        ExternalFormatSchemaSet externalFormatSchemaSet = transformSchemaSet(schemaSet, schemaExtension);
+
+        return  externalFormatSchemaSet;
     }
 
     private ExternalFormatSchemaSet transformSchemaSet(Root_meta_external_shared_format_metamodel_SchemaSet schemaSet, ExternalFormatExtension schemaExtension)

@@ -22,9 +22,11 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Proc
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.AbstractGenerationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.GenerationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.schemaGeneration.SchemaGenerationSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationConfiguration;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationSpecification_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_SchemaGenerationSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_PackageableElement_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 
@@ -34,6 +36,7 @@ public class GenerationCompilerExtensionImpl implements GenerationCompilerExtens
 {
     final MutableMap<String, Root_meta_pure_generation_metamodel_GenerationSpecification> generationSpecificationsIndex = Maps.mutable.empty();
     final MutableMap<String, Root_meta_pure_generation_metamodel_GenerationConfiguration> fileConfigurationsIndex = Maps.mutable.empty();
+    final MutableMap<String, Root_meta_pure_generation_metamodel_SchemaGenerationSpecification> schemaGenerationElementsIndex = Maps.mutable.empty();
 
     @Override
     public CompilerExtension build()
@@ -45,6 +48,18 @@ public class GenerationCompilerExtensionImpl implements GenerationCompilerExtens
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
         return Lists.immutable.with(
+            Processor.newProcessor(
+                SchemaGenerationSpecification.class,
+                Collections.singletonList(AbstractGenerationSpecification.class),
+                (protocol, context) ->
+                {
+                    Root_meta_pure_generation_metamodel_SchemaGenerationSpecification schemaGenElement = new HelperSchemaGenerationElementBuilder().processSchemaGeneration(
+                        protocol,
+                        context
+                    );
+                    this.schemaGenerationElementsIndex.put(context.pureModel.buildPackageString(protocol._package, protocol.name), schemaGenElement);
+                    return schemaGenElement;
+                }),
                 Processor.newProcessor(
                         FileGenerationSpecification.class,
                         (fileGeneration, context) ->
@@ -65,6 +80,7 @@ public class GenerationCompilerExtensionImpl implements GenerationCompilerExtens
                             this.generationSpecificationsIndex.put(context.pureModel.buildPackageString(generationSpecification._package, generationSpecification.name), genTree);
                             return genTree;
                         })
+
         );
     }
 }

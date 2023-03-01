@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.external.shared.format.model.transformation.fromModel;
 
+import java.util.Map;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
@@ -38,8 +39,10 @@ import org.finos.legend.pure.generated.core_pure_generation_generations;
  * is also necessary to define the translation from pure model to schema set (via externalFormatFromPureDescriptor)
  * in externalFormatContract modelled in pure.
  */
+
 public interface ExternalFormatSchemaGenerationExtension<Metamodel, SchemaGenConfig extends ModelToSchemaConfiguration> extends ExternalFormatExtension<Metamodel>
 {
+
     /**
      * Called to compile an external format ModelToSchemaConfiguration.
      */
@@ -55,7 +58,8 @@ public interface ExternalFormatSchemaGenerationExtension<Metamodel, SchemaGenCon
         {
             throw new EngineException("Format - " + this.getFormat() + " does not support schema generation");
         }
-        return core_pure_generation_generations.Root_meta_pure_generation_describeConfiguration_Class_1__Any_1__String_MANY__GenerationParameter_MANY_(descriptor._configuration(), descriptor._defaultConfig(), Lists.immutable.empty(), pureModel.getExecutionSupport());
+        return core_pure_generation_generations.Root_meta_pure_generation_describeConfiguration_Class_1__Any_1__String_MANY__GenerationParameter_MANY_(descriptor._configuration(),
+            descriptor._defaultConfig(), Lists.immutable.empty(), pureModel.getExecutionSupport());
     }
 
     /**
@@ -70,11 +74,29 @@ public interface ExternalFormatSchemaGenerationExtension<Metamodel, SchemaGenCon
         }
         Root_meta_external_shared_format_transformation_fromPure_ModelToSchemaConfiguration configuration = compileModelToSchemaConfiguration(config, pureModel);
 
-        Root_meta_pure_model_unit_ModelUnit modelUnit = new Root_meta_pure_model_unit_ModelUnit_Impl("")
-                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(pureModel.getType("meta::pure::model::unit::ModelUnit")))
-                ._packageableElementIncludes(ListIterate.collect(sourceModelUnit.packageableElementIncludes, pureModel::getPackageableElement))
-                ._packageableElementExcludes(ListIterate.collect(sourceModelUnit.packageableElementExcludes, pureModel::getPackageableElement));
+        Root_meta_pure_model_unit_ModelUnit modelUnit = new Root_meta_pure_model_unit_ModelUnit_Impl("")._classifierGenericType(
+                new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(pureModel.getType("meta::pure::model::unit::ModelUnit")))
+            ._packageableElementIncludes(ListIterate.collect(sourceModelUnit.packageableElementIncludes, pureModel::getPackageableElement))
+            ._packageableElementExcludes(ListIterate.collect(sourceModelUnit.packageableElementExcludes, pureModel::getPackageableElement));
 
         return descriptor.generate(modelUnit, configuration, pureModel.getExecutionSupport());
     }
+
+    default Root_meta_external_shared_format_metamodel_SchemaSet generateSchema(Root_meta_external_shared_format_transformation_fromPure_ModelToSchemaConfiguration config,
+        Root_meta_pure_model_unit_ModelUnit modelUnit, PureModel pureModel)
+    {
+        Root_meta_external_shared_format_ExternalFormatFromPureDescriptor descriptor = getExternalFormatContract()._externalFormatFromPureDescriptor();
+        if (descriptor == null)
+        {
+            throw new EngineException("Format - " + this.getFormat() + " does not support schema generation");
+        }
+        return descriptor.generate(modelUnit, config, pureModel.getExecutionSupport());
+    }
+
+    default SchemaGenConfig rawConfigPropertiesToSchemaConfig(Map<String, Object> config)
+    {
+        return null;
+    }
+
+
 }

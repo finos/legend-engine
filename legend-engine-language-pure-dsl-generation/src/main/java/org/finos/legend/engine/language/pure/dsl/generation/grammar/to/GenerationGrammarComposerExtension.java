@@ -14,6 +14,11 @@
 
 package org.finos.legend.engine.language.pure.dsl.generation.grammar.to;
 
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
+
+import java.util.List;
+import java.util.stream.Collectors;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.LazyIterate;
@@ -23,13 +28,11 @@ import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerConte
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ModelUnit;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.ConfigurationProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.GenerationSpecification;
-
-import java.util.List;
-
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.schemaGeneration.SchemaGenerationSpecification;
 
 public class GenerationGrammarComposerExtension implements PureGrammarComposerExtension
 {
@@ -45,7 +48,11 @@ public class GenerationGrammarComposerExtension implements PureGrammarComposerEx
                     }
                     return ListIterate.collect(elements, element ->
                     {
-                        if (element instanceof FileGenerationSpecification)
+                        if (element instanceof SchemaGenerationSpecification)
+                        {
+                            return renderSchemaGenerationSpecification((SchemaGenerationSpecification) element);
+                        }
+                        else if (element instanceof FileGenerationSpecification)
                         {
                             return renderFileGenerationSpecification((FileGenerationSpecification) element);
                         }
@@ -74,11 +81,19 @@ public class GenerationGrammarComposerExtension implements PureGrammarComposerEx
     public List<Function3<List<PackageableElement>, PureGrammarComposerContext, List<String>, PureFreeSectionGrammarComposerResult>> getExtraFreeSectionComposers()
     {
         return Lists.mutable.with(
+            (elements, context, composedSections) ->
+            {
+                {
+                    List<SchemaGenerationSpecification> composableElements = ListIterate.selectInstancesOf(elements, SchemaGenerationSpecification.class);
+                    return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, GenerationGrammarComposerExtension::renderSchemaGenerationSpecification).makeString("###" + GenerationParserExtension.FILE_GENERATION_SECTION_NAME + "\n", "\n\n", ""), composableElements);
+                }
+            },
                 (elements, context, composedSections) ->
                 {
                     List<FileGenerationSpecification> composableElements = ListIterate.selectInstancesOf(elements, FileGenerationSpecification.class);
                     return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, GenerationGrammarComposerExtension::renderFileGenerationSpecification).makeString("###" + GenerationParserExtension.FILE_GENERATION_SECTION_NAME + "\n", "\n\n", ""), composableElements);
-                }, (elements, context, composedSections) ->
+                },
+                (elements, context, composedSections) ->
                 {
                     List<GenerationSpecification> composableElements = ListIterate.selectInstancesOf(elements, GenerationSpecification.class);
                     return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, GenerationGrammarComposerExtension::renderGenerationSpecification).makeString("###" + GenerationParserExtension.GENERATION_SPECIFICATION_SECTION_NAME + "\n", "\n\n", ""), composableElements);
@@ -97,6 +112,48 @@ public class GenerationGrammarComposerExtension implements PureGrammarComposerEx
                 ) +
                 HelperGenerationSpecificationGrammarComposer.renderFileGenerationNode(generationSpecification.fileGenerations) + (generationSpecification.fileGenerations.isEmpty() ? "" : "\n") +
                 "}";
+    }
+
+
+    private static String renderSchemaGenerationSpecification(SchemaGenerationSpecification schemaGenerationSpecification)
+    {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("SchemaGeneration " + PureGrammarComposerUtility.convertPath(schemaGenerationSpecification.getPath()));
+        stringBuilder.append("\n{\n");
+        if (schemaGenerationSpecification.format != null)
+        {
+            stringBuilder.append(getTabString()).append("format: '" + schemaGenerationSpecification.format + "';\n");
+        }
+        ModelUnit modelUnit = schemaGenerationSpecification.modelUnit;
+        if (modelUnit != null)
+        {
+            if (modelUnit.packageableElementIncludes != null && !modelUnit.packageableElementIncludes.isEmpty())
+            {
+                PureGrammarComposerUtility.appendTabString(stringBuilder).append("modelIncludes: [\n");
+                stringBuilder.append(modelUnit.packageableElementIncludes.stream().map(pe -> PureGrammarComposerUtility.getTabString(2) + PureGrammarComposerUtility.convertPath(pe)).collect(Collectors.joining(",\n"))).append("\n");
+                PureGrammarComposerUtility.appendTabString(stringBuilder).append("];\n");
+            }
+
+            if (modelUnit.packageableElementExcludes != null &&  !modelUnit.packageableElementExcludes.isEmpty())
+            {
+                PureGrammarComposerUtility.appendTabString(stringBuilder).append("modelExcludes: [\n");
+                stringBuilder.append(modelUnit.packageableElementExcludes.stream().map(pe -> PureGrammarComposerUtility.getTabString(2) + PureGrammarComposerUtility.convertPath(pe)).collect(Collectors.joining(",\n"))).append("\n");
+                PureGrammarComposerUtility.appendTabString(stringBuilder).append("];\n");
+            }
+        }
+        stringBuilder.append(renderSchemaGenerationConfig(schemaGenerationSpecification));
+        stringBuilder.append("}");
+        return stringBuilder.toString();
+    }
+
+    private static String renderSchemaGenerationConfig(SchemaGenerationSpecification schemaGenerationSpecification)
+    {
+        List<ConfigurationProperty> configuration = schemaGenerationSpecification.config;
+        if (configuration == null || configuration.isEmpty())
+        {
+            return "";
+        }
+        return "config: {\n" + LazyIterate.collect(configuration, c -> getTabString() + HelperFileGenerationGrammarComposer.renderFileGenerationPropertyValue(c)).makeString("\n") + "\n" + "};\n";
     }
 
     private static String renderFileGenerationSpecification(FileGenerationSpecification fileGeneration)
