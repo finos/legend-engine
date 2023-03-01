@@ -124,6 +124,21 @@
             <artifactId>legend-engine-xt-json-javaPlatformBinding-pure</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-json-runtime</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-flatdata-runtime</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-xml-runtime</artifactId>
+            <scope>runtime</scope>
+        </dependency>
         <!-- Access to Legend Execute in IDE Light -->
 
     </dependencies>
