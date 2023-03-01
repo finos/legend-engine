@@ -30,6 +30,7 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Boo
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DatabaseCommand;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DecimalTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.EqOperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ExprQueryExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.FieldPathExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.GTEOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.GTOperatorExpression;
@@ -178,19 +179,14 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
         return comparisonOperators.contains(key) || logicalOperators.contains(key);
     }
 
+
     @Override
     public DatabaseCommand deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException
     {
 
         DatabaseCommand dbCommand = new DatabaseCommand();
 
-        // Check the first token
-//        if (jsonParser.currentToken() != JsonToken.START_OBJECT)
-//        {
-//            throw new IllegalStateException("Expected database command node to be an object");
-//        }
-        // while (jsonParser.currentToken() != JsonToken.END_OBJECT)
-        while (!jsonParser.isClosed())
+        while (jsonParser.currentToken() != JsonToken.END_OBJECT)
         {
             if (jsonParser.currentToken() == JsonToken.FIELD_NAME)
             {
@@ -268,8 +264,22 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
         {
             throw new IllegalStateException("Expected match node to be an object");
         }
-        //Initial set to false
-        matchStage.expression = getMatchExpression(matchNode);
+        if (!matchNode.isEmpty())
+        {
+            // We support only $expr style syntax in match stage
+            if (matchNode.get(EXPR) != null)
+            {
+                matchStage.expression = getMatchExpression(matchNode);
+            }
+            else
+            {
+                throw new IllegalStateException("Match stage supports only  $expr style syntax");
+            }
+        }
+        else
+        {
+            matchStage.expression = new ArgumentExpression();
+        }
 
         return matchStage;
     }
@@ -293,49 +303,75 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
                 case OPERATOR_EXPRESSION:
                     throw new IllegalStateException("Project syntax does not support Operator Expression");
                 case EXPR:
-                    // Match stage defined with expr as starting point "$expr" : { "$eq"....
-                    break;
+                    throw new IllegalStateException("Project syntax does not support Expr Expression");
             }
         }
         objQueryExpr.keyValues = argumentExpressions;
         return objQueryExpr;
     }
 
-    // Returns ObjectQueryExpression
     private ArgumentExpression getMatchExpression(JsonNode matchNode)
     {
-        ObjectQueryExpression objQueryExpr = new ObjectQueryExpression();
-        List<ArgumentExpression> argumentExpressions = Lists.mutable.empty();
+        if (!matchNode.isObject() || matchNode.size() != 1)
+        {
+            throw new IllegalStateException("Match Expression should contain a single $expr key : Object");
+        }
+
         Iterator<Map.Entry<String, JsonNode>> matchNodeFields = matchNode.fields();
+        while (matchNodeFields.hasNext())
+        {
+            Map.Entry<String, JsonNode> entry = matchNodeFields.next();
+            String keyType = getOperatorType(entry.getKey());
+
+            switch (keyType)
+            {
+                case EXPR:
+                    // Match stage defined with expr as starting point EXPR : { "$eq"....
+                    // Needs to be single expression (or last one wins)
+                    ExprQueryExpression exprOperation = new ExprQueryExpression();
+                    ArgumentExpression operationExpression = getOperationExpression(entry.getValue());
+                    exprOperation.expression = operationExpression;
+                    return exprOperation;
+                case OPERATOR_EXPRESSION:
+                    return getOperationExpression(matchNode);
+            }
+        }
+        throw new IllegalStateException("Match Expression cannot be empty");
+    }
+
+
+    private ArgumentExpression getOperationExpression(JsonNode matchNode)
+    {
+        Iterator<Map.Entry<String, JsonNode>> matchNodeFields = matchNode.fields();
+        // Check for single key
+        boolean isFirstElementOperator = false;
+
         while (matchNodeFields.hasNext())
         {
             Map.Entry<String, JsonNode> entry = matchNodeFields.next();
             String keyType = getOperatorType(entry.getKey());
             switch (keyType)
             {
-                case FIELD_NAME:
-                    // Match stage defined with a field name as starting point "name" : {....
-                    argumentExpressions.add(getFieldBasedMatchOperation(entry));
-                    break;
                 case OPERATOR_EXPRESSION:
-                    // Match stage defined with operator as starting point "$eq" : {.... or "$and" : {
+                    isFirstElementOperator = true;
                     Optional<ArgumentExpression> operatorExpression = getOperatorExpression(entry);
                     if (operatorExpression.isPresent())
                     {
-                        argumentExpressions.add(operatorExpression.get());
+                        return operatorExpression.get();
                     }
-                    else
+                    break;
+                case FIELD_NAME:
+                    if (isFirstElementOperator)
                     {
-                        argumentExpressions = Lists.fixedSize.empty();
+                        throw new IllegalStateException("An object representing an expression must have exactly one field");
                     }
-                    break;
-                case EXPR:
-                    // Match stage defined with expr as starting point "$expr" : { "$eq"....
-                    break;
+                    return getLiteralValueFromNode(matchNode);
+                default:
+                    LOGGER.info("Get Operation invoked with a non-operator expression");
+
             }
         }
-        objQueryExpr.keyValues = argumentExpressions;
-        return objQueryExpr;
+        throw new IllegalStateException("No operator found within $expr");
     }
 
     private NotOperatorExpression getNotOperatorExpression(Map.Entry<String, JsonNode> entry)
@@ -349,18 +385,18 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
     private OrOperatorExpression getOrOperatorExpression(Map.Entry<String, JsonNode> entry)
     {
         OrOperatorExpression orOpExpression = new OrOperatorExpression();
-        orOpExpression.expressions = getObjectQueryExpressions(entry.getValue());
+        orOpExpression.expressions = getQueryExpressions(entry.getValue());
         return orOpExpression;
     }
 
     private AndOperatorExpression getAndOperatorExpression(Map.Entry<String, JsonNode> entry)
     {
         AndOperatorExpression andOpExpression = new AndOperatorExpression();
-        andOpExpression.expressions = getObjectQueryExpressions(entry.getValue());
+        andOpExpression.expressions = getQueryExpressions(entry.getValue());
         return andOpExpression;
     }
 
-    private List<ArgumentExpression> getObjectQueryExpressions(JsonNode value)
+    private List<ArgumentExpression> getQueryExpressions(JsonNode value)
     {
         if (value.isArray() && value.size() > 0)
         {
@@ -403,6 +439,7 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
         if (entry.getValue().isValueNode())
         {
             // We are looking at something like { "name" : 1 } or {"name" : true }
+            // TODO : Add support for computed values
             LiteralValue literalValue = getLiteralValueFromEntry(entry);
             qryExprKeyValue.value = literalValue;
         }
@@ -413,150 +450,101 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
         return qryExprKeyValue;
     }
 
-    private QueryExprKeyValue getFieldBasedMatchOperation(Map.Entry<String, JsonNode> entry)
-    {
-        QueryExprKeyValue qryExprKeyValue = new QueryExprKeyValue();
-        FieldPathExpression fieldPathExpr = new FieldPathExpression();
-        fieldPathExpr.fieldPath = entry.getKey();
-        qryExprKeyValue.key = fieldPathExpr;
-        if (entry.getValue().isValueNode())
-        {
-            // We are looking at something like { "name" : "joe"  }
-            // TODO: convert this to canonical { "name" : { "$eq" : "joe" }
-            LiteralValue literalValue = getLiteralValueFromEntry(entry);
-            qryExprKeyValue.value = literalValue;
-        }
-        else if (entry.getValue().isObject())
-        {
-            // something like: { "name" : {$eq : "joe" } } - operator based rhs
-            // or "nameObj": {"fName":"xxx", "lName": "yyy"} - or literal object
-            // TODO: If it is literal value, convert this to canonical  {"name" : "$eq" : {...}}
-            // Iterate through all keys here
-            JsonNode fieldOpValueNode = entry.getValue();
-            // We can end up with an Object Query Expression or Literal value (object type)
-            ObjectQueryExpression objQueryExpr = new ObjectQueryExpression();
-            LiteralValue objValue = new LiteralValue();
-            List<ArgumentExpression> argumentExpressions = Lists.mutable.empty();
-            Iterator<Map.Entry<String, JsonNode>> matchNodeFields = fieldOpValueNode.fields();
-            boolean isObjectQueryExpression = false;
-            while (matchNodeFields.hasNext())
-            {
-                Map.Entry<String, JsonNode> objEntry = matchNodeFields.next();
-                String keyType = objEntry.getKey();
-                if (!isSupportedOperation(keyType) && !isObjectQueryExpression)
-                {
-                    // Assume the whole object as Object Literal - no need to iterate
-                    objValue = getLiteralValueFromEntry(entry);
-                    break;
-                }
-                else if (isSupportedOperation(keyType))
-                {
-                    // create Object Query Expression
-                    isObjectQueryExpression = true;
-                    Optional<ArgumentExpression> opExpression = getOperatorExpression(objEntry);
-                    opExpression.ifPresent(argumentExpressions::add);
-                }
-                else
-                {
-                    throw new IllegalStateException("Field Based operation cannot mix  exprOperation & {field : value} syntax");
-                }
-            }
-            if (isObjectQueryExpression)
-            {
-                objQueryExpr.keyValues = argumentExpressions;
-                qryExprKeyValue.value = objQueryExpr;
-            }
-            else
-            {
-                qryExprKeyValue.value = objValue;
-            }
-        }
-        else if (entry.getValue().isArray())
-        {
-            // TODO: convert this to canonical { "name" : { "$eq" : ["joe",..] }
-            LiteralValue arrayLiteral = new LiteralValue();
-            ArrayTypeValue arrayTypeValue = new ArrayTypeValue();
-            List<BaseTypeValue> items = Lists.mutable.of();
-            for (JsonNode item : entry.getValue())
-            {
-                BaseTypeValue itemValue = getLiteralValueFromNode(item).value;
-                items.add(itemValue);
-            }
-            arrayTypeValue.items = items;
-            arrayLiteral.value = arrayTypeValue;
-            qryExprKeyValue.value = arrayLiteral;
-        }
-        return qryExprKeyValue;
-    }
-
 
     private Optional<ArgumentExpression> getOperatorExpression(Map.Entry<String, JsonNode> opExprEntry)
     {
         switch (opExprEntry.getKey())
         {
+            case EXPR:
+                return Optional.of(getMatchExpression(opExprEntry.getValue()));
             case "$eq":
                 EqOperatorExpression eqOpExpression = new EqOperatorExpression();
-                if (opExprEntry.getValue().isValueNode())
+                if (!opExprEntry.getValue().isArray() && opExprEntry.getValue().size() != 2)
                 {
-                    LiteralValue eqOpliteralValue = getLiteralValueFromEntry(opExprEntry);
-                    eqOpExpression.expression = eqOpliteralValue;
+                    throw new IllegalStateException("$eq operator accepts only array of 2 expressions");
                 }
-                else if (opExprEntry.getValue().isObject())
+                else
                 {
-                    // Todo : Is there difference between value node vs object here?
-                    LiteralValue eqOpliteralValue = getLiteralValueFromEntry(opExprEntry);
-                    eqOpExpression.expression = eqOpliteralValue;
-                }
-                else if (opExprEntry.getValue().isArray())
-                {
-                    LiteralValue arrayLiteral = new LiteralValue();
-                    ArrayTypeValue arrayTypeValue = new ArrayTypeValue();
-                    List<BaseTypeValue> arrayItems = Lists.mutable.of();
-                    for (JsonNode item : opExprEntry.getValue())
-                    {
-                        LiteralValue itemValue = getLiteralValueFromNode(item);
-                        arrayItems.add(itemValue.value);
-
-                    }
-                    arrayTypeValue.items = arrayItems;
-                    arrayLiteral.value = arrayTypeValue;
-                    eqOpExpression.expression = arrayLiteral;
+                    List<ArgumentExpression> argExprs = getExpressionParams(opExprEntry);
+                    eqOpExpression.expressions = argExprs;
                 }
                 return Optional.of(eqOpExpression);
             case "$ne":
                 NEOperatorExpression neOpExpression = new NEOperatorExpression();
-                LiteralValue neOpliteralValue = getLiteralValueFromEntry(opExprEntry);
-                neOpExpression.expression = neOpliteralValue;
+                if (!opExprEntry.getValue().isArray() && opExprEntry.getValue().size() != 2)
+                {
+                    throw new IllegalStateException("$ne operator accepts only array of 2 expressions");
+                }
+                else
+                {
+                    List<ArgumentExpression> argExprs = getExpressionParams(opExprEntry);
+                    neOpExpression.expressions = argExprs;
+                }
                 return Optional.of(neOpExpression);
             case "$gt":
                 GTOperatorExpression gtOpExpression = new GTOperatorExpression();
-                LiteralValue gtOpliteralValue = getLiteralValueFromEntry(opExprEntry);
-                gtOpExpression.expression = gtOpliteralValue;
+                if (!opExprEntry.getValue().isArray() && opExprEntry.getValue().size() != 2)
+                {
+                    throw new IllegalStateException("$ne operator accepts only array of 2 expressions");
+                }
+                else
+                {
+                    List<ArgumentExpression> argExprs = getExpressionParams(opExprEntry);
+                    gtOpExpression.expressions = argExprs;
+                }
                 return Optional.of(gtOpExpression);
             case "$gte":
                 GTEOperatorExpression gteOpExpression = new GTEOperatorExpression();
-                LiteralValue gteliteralValue = getLiteralValueFromEntry(opExprEntry);
-                gteOpExpression.expression = gteliteralValue;
+                if (!opExprEntry.getValue().isArray() && opExprEntry.getValue().size() != 2)
+                {
+                    throw new IllegalStateException("$ne operator accepts only array of 2 expressions");
+                }
+                else
+                {
+                    List<ArgumentExpression> argExprs = getExpressionParams(opExprEntry);
+                    gteOpExpression.expressions = argExprs;
+                }
                 return Optional.of(gteOpExpression);
             case "$lt":
                 LTOperatorExpression ltOpExpression = new LTOperatorExpression();
-                LiteralValue ltliteralValue = getLiteralValueFromEntry(opExprEntry);
-                ltOpExpression.expression = ltliteralValue;
+                if (!opExprEntry.getValue().isArray() && opExprEntry.getValue().size() != 2)
+                {
+                    throw new IllegalStateException("$ne operator accepts only array of 2 expressions");
+                }
+                else
+                {
+                    List<ArgumentExpression> argExprs = getExpressionParams(opExprEntry);
+                    ltOpExpression.expressions = argExprs;
+                }
                 return Optional.of(ltOpExpression);
             case "$lte":
                 LTEOperatorExpression lteOpExpression = new LTEOperatorExpression();
-                LiteralValue lteliteralValue = getLiteralValueFromEntry(opExprEntry);
-                lteOpExpression.expression = lteliteralValue;
+                if (!opExprEntry.getValue().isArray() && opExprEntry.getValue().size() != 2)
+                {
+                    throw new IllegalStateException("$ne operator accepts only array of 2 expressions");
+                }
+                else
+                {
+                    List<ArgumentExpression> argExprs = getExpressionParams(opExprEntry);
+                    lteOpExpression.expressions = argExprs;
+                }
                 return Optional.of(lteOpExpression);
             case "$in":
                 InOperatorExpression inOpExpression = new InOperatorExpression();
-                LiteralValue inliteralValue = getLiteralValueFromEntry(opExprEntry);
-                inOpExpression.expression = inliteralValue;
+                if (!opExprEntry.getValue().isArray() && opExprEntry.getValue().size() != 2)
+                {
+                    throw new IllegalStateException("$ne operator accepts only array of 2 expressions");
+                }
+                else
+                {
+                    List<ArgumentExpression> argExprs = getExpressionParams(opExprEntry);
+                    inOpExpression.expressions = argExprs;
+                }
                 return Optional.of(inOpExpression);
             case "$nin":
                 NinOperatorExpression ninOpExpression = new NinOperatorExpression();
                 LiteralValue ninliteralValue = getLiteralValueFromEntry(opExprEntry);
-                ninOpExpression.expression = ninliteralValue;
+                ninOpExpression.expressions = Lists.fixedSize.of(ninliteralValue);
                 return Optional.of(ninOpExpression);
             case "$and":
                 return Optional.of(getAndOperatorExpression(opExprEntry));
@@ -565,8 +553,50 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
             case "$not":
                 return Optional.of(getNotOperatorExpression(opExprEntry));
             default:
-                return Optional.of(getFieldBasedMatchOperation(opExprEntry));
+                throw new IllegalStateException("Operator not supported yet: " + opExprEntry.getKey());
         }
+    }
+
+    private List<ArgumentExpression> getExpressionParams(Map.Entry<String, JsonNode> opExprEntry)
+    {
+        List<ArgumentExpression> argExprs = Lists.mutable.of();
+        for (JsonNode item : opExprEntry.getValue())
+        {
+            if (item.isValueNode())
+            {
+                if (item.isTextual())
+                {
+                    if (item.asText().startsWith("$"))
+                    {
+                        FieldPathExpression fpExpression = new FieldPathExpression();
+                        fpExpression.fieldPath = item.asText();
+                        argExprs.add(fpExpression);
+                    }
+                    else
+                    {
+                        LiteralValue stringLiteral = new LiteralValue();
+                        StringTypeValue stringTypeValue = new StringTypeValue();
+                        stringTypeValue.value = item.asText();
+                        stringLiteral.value = stringTypeValue;
+                        argExprs.add(stringLiteral);
+                    }
+                }
+                else
+                {
+                    // This is a LiteralValue
+                    argExprs.add(getLiteralValueFromNode(item));
+                }
+            }
+            else if (item.isObject())
+            {
+                argExprs.add(getOperationExpression(item));
+            }
+            else if (item.isArray())
+            {
+                argExprs.add(getLiteralValueFromNode(item));
+            }
+        }
+        return argExprs;
     }
 
     private String getOperatorType(String key)

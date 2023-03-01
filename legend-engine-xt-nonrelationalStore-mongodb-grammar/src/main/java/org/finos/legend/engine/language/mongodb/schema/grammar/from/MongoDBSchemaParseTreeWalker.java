@@ -39,15 +39,12 @@ public class MongoDBSchemaParseTreeWalker
     }
 
 
-    private ObjectMapper getObjectMapper()
+    ObjectMapper getObjectMapper()
     {
         ObjectMapper mapper = new ObjectMapper();
         SimpleModule module = new SimpleModule();
         module.addDeserializer(MongoDatabase.class, new MongoDBSchemaDeserializer());
         mapper.registerModule(module);
-        //mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        //mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-        //mapper.setDefaultPrettyPrinter(new DefaultPrettyPrinter());
         return mapper;
     }
 

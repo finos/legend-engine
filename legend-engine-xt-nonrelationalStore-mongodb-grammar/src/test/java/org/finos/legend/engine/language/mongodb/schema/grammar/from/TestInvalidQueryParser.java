@@ -14,10 +14,8 @@
 
 package org.finos.legend.engine.language.mongodb.schema.grammar.from;
 
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DatabaseCommand;
-import org.junit.Rule;
+import org.junit.Assert;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -34,12 +32,9 @@ import java.util.Objects;
 @RunWith(Parameterized.class)
 public class TestInvalidQueryParser
 {
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
     private final String inputJsonFile;
 
     private final String expectedErrorMessage;
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     public TestInvalidQueryParser(String inputQueryFile, String errMessage)
     {
@@ -51,23 +46,18 @@ public class TestInvalidQueryParser
     public static Collection<Object[]> data()
     {
         return Arrays.asList(new Object[][]{
-//                {"json/query/project_with_incl_and_excl_should_throw_input.json"},
-                {"json/query/stage_should_have_1_field.json", "Expected Stage command node to be an object, with just 1 key(stage)"},
-                {"json/query/invalid_not_operator_expression_formats_input.json", "Operator need object node (eg., $not)"},
-                {"json/query/invalid_match_with_and_operator_input.json", "Logical Operators need non-zero array of Object Expressions ($and, $or, $nor)"},
-                {"json/query/invalid_match_with_and_operator_empty_array_input.json", "Logical Operators need non-zero array of Object Expressions ($and, $or, $nor)"},
-                {"json/query/invalid_match_with_eq_operator_input.json", "Field Based operation cannot mix  exprOperation & {field : value} syntax"},
-                {"json/query/invalid_project_with_single_inclusion_filter_input.json", "Project syntax supports only field: 1 / bool"},
+                //TODO:     {"json/query/invalid_project_mixed_selection.json"},
+                {"json/query/invalid_multi_stage.json", "Expected Stage command node to be an object, with just 1 key(stage)"},
+                {"json/query/invalid_match_non_expr.json", "Match stage supports only  $expr style syntax"},
+                {"json/query/invalid_project_syntax.json", "Project syntax supports only field: 1 / bool"},
         });
     }
 
     @Test
     public void testExceptionForInvalidQuery()
     {
-        exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage(this.expectedErrorMessage);
         URL url = Objects.requireNonNull(getClass().getClassLoader().getResource(this.inputJsonFile));
-        String inputQry = null;
+        String inputQry;
         try
         {
             inputQry = new String(Files.readAllBytes(Paths.get(url.toURI())), StandardCharsets.UTF_8);
@@ -78,7 +68,8 @@ public class TestInvalidQueryParser
         }
         // Parse
         MongoDBQueryParseTreeWalker parser = MongoDBQueryParseTreeWalker.newInstance();
-        DatabaseCommand dbCommand = parser.parseQueryDocument(inputQry);
+        IllegalStateException exception = Assert.assertThrows(IllegalStateException.class, () -> parser.parseQueryDocument(inputQry));
+        Assert.assertEquals(this.expectedErrorMessage, exception.getMessage());
 
     }
 }

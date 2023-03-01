@@ -1,10 +1,15 @@
 {
-  "_type" : "databaseCommand",
-  "aggregate": "firm",
+  "_type": "databaseCommand",
+  "aggregate": "person",
   "pipeline": [
     {
       "$match": {
-        "name": "Zemlak-Hegmann"
+        "$expr": {
+          "$eq": [
+            "$fName",
+            "Zemlak-Hegmann"
+          ]
+        }
       }
     }
   ],

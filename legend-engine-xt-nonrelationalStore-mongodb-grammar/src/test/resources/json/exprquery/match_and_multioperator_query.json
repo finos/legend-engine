@@ -1,0 +1,42 @@
+{
+  "_type": "databaseCommand",
+  "aggregate": "firm",
+  "pipeline": [
+    {
+      "$match": {
+        "$expr": {
+          "$and": [
+            {
+              "$gt": [
+                "$numEmployees",
+                5000
+              ]
+            },
+            {
+              "$lt": [
+                "$numEmployees",
+                1000
+              ]
+            },
+            {
+              "$eq": [
+                "$phone",
+                "639-239-2981"
+              ]
+            },
+            {
+              "$eq": [
+                "$location",
+                {
+                  "country": "Poland",
+                  "postCode": "46-090"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "cursor": {}
+}

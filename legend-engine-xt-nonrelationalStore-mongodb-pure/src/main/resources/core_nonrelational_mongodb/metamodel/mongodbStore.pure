@@ -270,13 +270,13 @@ meta::external::store::mongodb::metamodel::aggregation::ProjectStage extends Sta
   projections: ArgumentExpression[1];
 }
 
-Class meta::external::store::mongodb::metamodel::aggregation::AggregateExpression extends MongoDBOperationElement
+
+Class {doc.doc = 'Allows us to use aggregate expressions in query'} meta::external::store::mongodb::metamodel::aggregation::ExprQueryExpression extends ArgumentExpression
 {
-  arguments: ArgumentExpression[*];
+  expression: ArgumentExpression[1];
 }
 
 Class meta::external::store::mongodb::metamodel::aggregation::ArgumentExpression extends MongoDBOperationElement
-
 {
 }
 
@@ -318,7 +318,7 @@ Class meta::external::store::mongodb::metamodel::aggregation::JsonSchemaExpressi
 Class {doc.doc = 'Comparison Operator Expressions https://www.mongodb.com/docs/manual/reference/operator/query-comparison/'}
 meta::external::store::mongodb::metamodel::aggregation::ComparisonOperatorExpression extends ArgumentExpression
 {
-  expression: LiteralValue[1];
+  expressions: ArgumentExpression[2];
 }
 
 Class meta::external::store::mongodb::metamodel::aggregation::EqOperatorExpression extends ComparisonOperatorExpression

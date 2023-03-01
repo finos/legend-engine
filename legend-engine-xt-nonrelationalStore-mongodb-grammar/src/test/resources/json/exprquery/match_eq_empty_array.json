@@ -1,6 +1,6 @@
 {
   "_type": "databaseCommand",
-  "aggregate": "person",
+  "aggregate": "firm",
   "pipeline": [
     {
       "$match": {
@@ -8,14 +8,14 @@
           "$and": [
             {
               "$eq": [
-                "$fName",
-                "Zemlak-Hegmann"
+                "$location.country",
+                "Indonesia"
               ]
             },
             {
-              "$gt": [
-                "$age",
-                20
+              "$eq": [
+                "$tags",
+                []
               ]
             }
           ]

@@ -1,10 +1,11 @@
 {
   "_type" : "databaseCommand",
-  "aggregate": "firm",
+  "aggregate": "person",
   "pipeline": [
     {
       "$project": {
-        "firmName": "$name"
+        "fName": 1,
+        "names.firstName": false
       }
     }
   ],

@@ -16,7 +16,6 @@ package org.finos.legend.engine.language.mongodb.schema.grammar.to;
 
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDBOperationElement;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDBOperationElementVisitor;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.AggregateExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.AggregationPipeline;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.AndOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArgumentExpression;
@@ -24,6 +23,7 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Com
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ComputedFieldValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DatabaseCommand;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.EqOperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ExprQueryExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.FieldPathExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.GTEOperatorExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.GTOperatorExpression;
@@ -68,12 +68,6 @@ public class MongoDBOperationElementVisitorImpl implements MongoDBOperationEleme
 
 
     @Override
-    public String visit(AggregateExpression val)
-    {
-        return null;
-    }
-
-    @Override
     public String visit(AggregationPipeline val)
     {
         return null;
@@ -84,14 +78,20 @@ public class MongoDBOperationElementVisitorImpl implements MongoDBOperationEleme
     {
         List<String> expressionsString = val.expressions.stream()
                 .map(x -> visitMongoDBOperationElement(x)).collect(Collectors.toList());
-        return "\"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.AND) + "\" : [" + String.join(",", expressionsString) + "]";
-        //return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.AND) + "\" : [" + String.join(",", expressionsString) + "] }";
+        return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.AND) + "\" : [" + String.join(",", expressionsString) + "] }";
     }
 
     @Override
     public String visit(ArgumentExpression val)
     {
-        return null;
+        if (val != null)
+        {
+            return "{}";
+        }
+        else
+        {
+            return "null";
+        }
     }
 
 
@@ -116,8 +116,21 @@ public class MongoDBOperationElementVisitorImpl implements MongoDBOperationEleme
     @Override
     public String visit(EqOperatorExpression val)
     {
-        String expString = visit(val.expression);
-        return "\"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.EQ) + "\" : " + expString;
+        List<String> exprStrings = getExpressionStrings(val.expressions);
+        String expString = "[" + String.join(",", exprStrings) + "]";
+        return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.EQ) + "\" : " + expString + " }";
+    }
+
+    @Override
+    public String visit(ExprQueryExpression val)
+    {
+        return "{ \"$expr\" " + ": " + visitMongoDBOperationElement(val.expression) + " }";
+    }
+
+    private List<String> getExpressionStrings(List<ArgumentExpression> argumentExpressions)
+    {
+        List<String> exprStrings = argumentExpressions.stream().map(x -> visitMongoDBOperationElement(x)).collect(Collectors.toList());
+        return exprStrings;
     }
 
     @Override
@@ -129,21 +142,24 @@ public class MongoDBOperationElementVisitorImpl implements MongoDBOperationEleme
     @Override
     public String visit(GTOperatorExpression val)
     {
-        String expString = visit(val.expression);
-        return "\"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.GT) + "\" : " + expString;
+        List<String> exprStrings = getExpressionStrings(val.expressions);
+        String expString = "[" + String.join(",", exprStrings) + "]";
+        return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.GT) + "\" : " + expString + " }";
     }
 
     @Override
     public String visit(GTEOperatorExpression val)
     {
-        String expString = visit(val.expression);
+        List<String> exprStrings = getExpressionStrings(val.expressions);
+        String expString = "[" + String.join(",", exprStrings) + "]";
         return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.GTE) + "\" : " + expString + " }";
     }
 
     @Override
     public String visit(InOperatorExpression val)
     {
-        String expString = visit(val.expression);
+        List<String> exprStrings = getExpressionStrings(val.expressions);
+        String expString = "[" + String.join(",", exprStrings) + "]";
         return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.IN) + "\" : " + expString + " }";
     }
 
@@ -157,15 +173,17 @@ public class MongoDBOperationElementVisitorImpl implements MongoDBOperationEleme
     @Override
     public String visit(LTEOperatorExpression val)
     {
-        String expString = visit(val.expression);
-        return "\"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.LTE) + "\" : " + expString;
+        List<String> exprStrings = getExpressionStrings(val.expressions);
+        String expString = "[" + String.join(",", exprStrings) + "]";
+        return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.LTE) + "\" : " + expString + " }";
     }
 
     @Override
     public String visit(LTOperatorExpression val)
     {
-        String expString = visit(val.expression);
-        return "\"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.LT) + "\" : " + expString;
+        List<String> exprStrings = getExpressionStrings(val.expressions);
+        String expString = "[" + String.join(",", exprStrings) + "]";
+        return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.LT) + "\" : " + expString + " }";
     }
 
     @Override
@@ -183,14 +201,16 @@ public class MongoDBOperationElementVisitorImpl implements MongoDBOperationEleme
     @Override
     public String visit(NEOperatorExpression val)
     {
-        String expString = visit(val.expression);
-        return "\"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.NE) + "\" : " + expString;
+        List<String> exprStrings = getExpressionStrings(val.expressions);
+        String expString = "[" + String.join(",", exprStrings) + "]";
+        return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.NE) + "\" : " + expString + " }";
     }
 
     @Override
     public String visit(NinOperatorExpression val)
     {
-        String expString = visit(val.expression);
+        List<String> exprStrings = getExpressionStrings(val.expressions);
+        String expString = "[" + String.join(",", exprStrings) + "]";
         return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.NIN) + "\" : " + expString + " }";
     }
 
@@ -229,7 +249,7 @@ public class MongoDBOperationElementVisitorImpl implements MongoDBOperationEleme
     {
         List<String> expressionsString = val.expressions.stream()
                 .map(x -> visitMongoDBOperationElement(x)).collect(Collectors.toList());
-        return "\"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.OR) + "\" : [" + String.join(",", expressionsString) + "] ";
+        return "{ \"" + ComposerUtility.lowerCaseOperatorAndAddDollar(Operator.OR) + "\" : [" + String.join(",", expressionsString) + "] }";
     }
 
 
@@ -267,7 +287,6 @@ public class MongoDBOperationElementVisitorImpl implements MongoDBOperationEleme
     @Override
     public String visit(MatchStage val)
     {
-        //  return "{ \"$match\" : " + visitArgumentExpression(((MatchStage) stage).expression) + " }";
         return "{ \"$match\" : " +
                 val.expression.accept(new MongoDBOperationElementVisitorImpl()) +
                 " }";
@@ -276,7 +295,6 @@ public class MongoDBOperationElementVisitorImpl implements MongoDBOperationEleme
     @Override
     public String visit(ProjectStage val)
     {
-        //return "{ \"$project\" : " + visitArgumentExpression(((ProjectStage) stage).projections) + " }";
         return "{ \"$project\" : " +
                 val.projections.accept(new MongoDBOperationElementVisitorImpl()) +
                 " }";
