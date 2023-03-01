@@ -88,6 +88,29 @@ public class DataSpaceParseTreeWalker
             return pointer;
         }) : null;
 
+        // Filtered Classes (optional)
+        DataSpaceParserGrammar.FilteredClassesContext filteredClassesContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.filteredClasses(), "filteredClasses", dataSpace.sourceInformation);
+        dataSpace.filteredClasses = filteredClassesContext != null ? ListIterate.collect(filteredClassesContext.qualifiedName(), classContext ->
+        {
+            PackageableElementPointer pointer = new PackageableElementPointer(
+                    PackageableElementType.CLASS,
+                    PureGrammarParserUtility.fromQualifiedName(classContext.packagePath() == null ? Collections.emptyList() : classContext.packagePath().identifier(), classContext.identifier())
+            );
+            pointer.sourceInformation = walkerSourceInformation.getSourceInformation(classContext);
+            return pointer;
+        }) : null;
+
+        // Main Class (optional)
+        DataSpaceParserGrammar.MainClassContext mainClassContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.mainClass(), "mainClass", dataSpace.sourceInformation);
+        if (mainClassContext != null)
+        {
+            PackageableElementPointer pointer = new PackageableElementPointer(
+                    PackageableElementType.CLASS,
+                    PureGrammarParserUtility.fromQualifiedName(mainClassContext.qualifiedName().packagePath() == null ? Collections.emptyList() : mainClassContext.qualifiedName().packagePath().identifier(), mainClassContext.qualifiedName().identifier()));
+            pointer.sourceInformation = walkerSourceInformation.getSourceInformation(mainClassContext);
+            dataSpace.mainClass = pointer;
+        }
+
         // Support info (optional)
         DataSpaceParserGrammar.SupportInfoContext supportInfoContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.supportInfo(), "supportInfo", dataSpace.sourceInformation);
         dataSpace.supportInfo = supportInfoContext != null ? this.visitDataSpaceSupportInfo(supportInfoContext, dataSpace.sourceInformation) : null;

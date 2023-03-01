@@ -289,5 +289,35 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
                 "    address: 'someEmail@test.org';\n" +
                 "  };\n" +
                 "}\n", "PARSER error at [2:1-17:1]: Field 'address' should be specified only once");
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  mainClass: model::MyClass;\n" +
+                "  mainClass: model::MyClass2;\n" +
+                "}\n", "PARSER error at [2:1-15:1]: Field 'mainClass' should be specified only once");
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  filteredClasses: [model::MyClass];\n" +
+                "  filteredClasses: [model::MyClass2];\n" +
+                "}\n", "PARSER error at [2:1-15:1]: Field 'filteredClasses' should be specified only once");
     }
 }

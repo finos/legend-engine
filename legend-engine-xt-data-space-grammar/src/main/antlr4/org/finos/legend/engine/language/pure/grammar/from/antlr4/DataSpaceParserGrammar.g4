@@ -23,6 +23,8 @@ identifier:                 VALID_STRING | STRING
                             | DATA_SPACE_SUPPORT_INFO
                             | DATA_SPACE_SUPPORT_EMAIL
                             | DATA_SPACE_SUPPORT_EMAIL_ADDRESS
+                            | DATA_SPACE_FILTERED_CLASSES
+                            | DATA_SPACE_MAIN_CLASS
 
                             // deprecated
                             | DATA_SPACE_GROUP_ID
@@ -44,6 +46,8 @@ dataSpaceElement:           DATA_SPACE stereotypes? taggedValues? qualifiedName
                                         | description
                                         | featuredDiagrams
                                         | supportInfo
+                                        | filteredClasses
+                                        | mainClass
 
                                         // deprecated
                                         | groupId
@@ -79,9 +83,13 @@ mapping:                    DATA_SPACE_MAPPING COLON qualifiedName SEMI_COLON
 ;
 defaultRuntime:             DATA_SPACE_DEFAULT_RUNTIME COLON qualifiedName SEMI_COLON
 ;
-defaultExecutionContext:    DATA_SPACE_DEFAULT_EXECUTION_CONTEXT COLON STRING SEMI_COLON
+mainClass:                  DATA_SPACE_MAIN_CLASS COLON qualifiedName SEMI_COLON
+;
+filteredClasses:            DATA_SPACE_FILTERED_CLASSES COLON BRACKET_OPEN ( qualifiedName (COMMA qualifiedName)* )? BRACKET_CLOSE SEMI_COLON
 ;
 
+defaultExecutionContext:    DATA_SPACE_DEFAULT_EXECUTION_CONTEXT COLON STRING SEMI_COLON
+;
 title:                      DATA_SPACE_TITLE COLON STRING SEMI_COLON
 ;
 description:                DATA_SPACE_DESCRIPTION COLON STRING SEMI_COLON

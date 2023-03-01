@@ -201,6 +201,114 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
     }
 
     @Test
+    public void testFilteredAndMainClass()
+    {
+        test("Class model::A {}\n" +
+                " Class model::B {}\n" +
+                "###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  filteredClasses: [model::A, model::B];\n" +
+                "  mainClass: model::A;\n" +
+                "}\n");
+    }
+
+
+    @Test
+    public void testFaultyFilteredAndMainClass() {
+        test(
+                "###Mapping\n" +
+                        "Mapping model::dummyMapping\n" +
+                        "(\n" +
+                        ")\n" +
+                        "\n" +
+                        "\n" +
+                        "###Runtime\n" +
+                        "Runtime model::dummyRuntime\n" +
+                        "{\n" +
+                        "  mappings:\n" +
+                        "  [\n" +
+                        "    model::dummyMapping\n" +
+                        "  ];\n" +
+                        "}\n" +
+                        "\n" +
+                        "\n" +
+                        "###DataSpace\n" +
+                        "DataSpace model::dataSpace" +
+                        "{\n" +
+                        "  executionContexts:\n" +
+                        "  [\n" +
+                        "    {\n" +
+                        "      name: 'Context 1';\n" +
+                        "      description: 'some information about the context';\n" +
+                        "      mapping: model::dummyMapping;\n" +
+                        "      defaultRuntime: model::dummyRuntime;\n" +
+                        "    }\n" +
+                        "  ];\n" +
+                        "  defaultExecutionContext: 'Context 1';\n" +
+                        "  mainClass: model::A;\n" +
+                        "}\n", "COMPILATION error at [29:3-22]: Can't find class 'model::A'");
+        test(
+                "###Mapping\n" +
+                        "Mapping model::dummyMapping\n" +
+                        "(\n" +
+                        ")\n" +
+                        "\n" +
+                        "\n" +
+                        "###Runtime\n" +
+                        "Runtime model::dummyRuntime\n" +
+                        "{\n" +
+                        "  mappings:\n" +
+                        "  [\n" +
+                        "    model::dummyMapping\n" +
+                        "  ];\n" +
+                        "}\n" +
+                        "\n" +
+                        "\n" +
+                        "###DataSpace\n" +
+                        "DataSpace model::dataSpace" +
+                        "{\n" +
+                        "  executionContexts:\n" +
+                        "  [\n" +
+                        "    {\n" +
+                        "      name: 'Context 1';\n" +
+                        "      description: 'some information about the context';\n" +
+                        "      mapping: model::dummyMapping;\n" +
+                        "      defaultRuntime: model::dummyRuntime;\n" +
+                        "    }\n" +
+                        "  ];\n" +
+                        "  defaultExecutionContext: 'Context 1';\n" +
+                        "  filteredClasses: [model::A, model::B];\n" +
+                        "}\n", "COMPILATION error at [29:21-28]: Can't find class 'model::A'");
+    }
+
+    @Test
     public void testDiagramCompilation()
     {
         // no diagrams

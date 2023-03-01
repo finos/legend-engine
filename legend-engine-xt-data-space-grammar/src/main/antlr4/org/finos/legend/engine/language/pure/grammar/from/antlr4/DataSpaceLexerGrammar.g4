@@ -26,6 +26,8 @@ DATA_SPACE_SUPPORT_INFO:                'supportInfo';
 DATA_SPACE_SUPPORT_EMAIL:               'Email';
 DATA_SPACE_SUPPORT_EMAIL_ADDRESS:       'address';
 
+DATA_SPACE_FILTERED_CLASSES:            'filteredClasses';
+DATA_SPACE_MAIN_CLASS:                  'mainClass';
 
 // ------------------------------------ DEPRECATED --------------------------------------
 

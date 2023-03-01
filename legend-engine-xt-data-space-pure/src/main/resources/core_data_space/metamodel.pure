@@ -20,7 +20,7 @@ Class meta::pure::metamodel::dataSpace::DataSpace extends PackageableElement
   executionContexts: DataSpaceExecutionContext[1..*];
   defaultExecutionContext: DataSpaceExecutionContext[1];
 
-  featuredDiagrams: Diagram[*];
+  {doc.doc = 'Diagrams used to display/explain DataSpace'} featuredDiagrams: Diagram[*];
   title: String[0..1];
   description: String[0..1];
   supportInfo: DataSpaceSupportInfo[0..1];
@@ -31,6 +31,9 @@ Class meta::pure::metamodel::dataSpace::DataSpace extends PackageableElement
   // Test data is a good way to help users understand data better
   // and could do some trial with the data without any authentication
   // testData: String[*];
+  {doc.doc = 'Relevant classes tied to DataSpace.'} filteredClasses: Class<Any>[*];
+  {doc.doc = 'Main class associated with DataSpace. Used as the default class in any implementations using the DataSpace'} mainClass: Class<Any>[0..1];
+
 }
 
 Class meta::pure::metamodel::dataSpace::DataSpaceExecutionContext

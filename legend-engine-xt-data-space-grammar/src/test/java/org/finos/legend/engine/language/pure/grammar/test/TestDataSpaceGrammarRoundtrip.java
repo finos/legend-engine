@@ -48,6 +48,41 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
     }
 
     @Test
+    public void testDataSpaceWithClasses()
+    {
+        test("###DataSpace\n" +
+                "DataSpace <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'bla'} model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  title: 'some title';\n" +
+                "  description: 'some description';\n" +
+                "  featuredDiagrams:\n" +
+                "  [\n" +
+                "    model::Diagram,\n" +
+                "    model::Diagram2\n" +
+                "  ];\n" +
+                "  supportInfo: Email {\n" +
+                "    address: 'someEmail@test.org';\n" +
+                "  };\n" +
+                "  filteredClasses:\n" +
+                "  [\n" +
+                "    model::MyClass,\n" +
+                "    model::MyClass2\n" +
+                "  ];\n" +
+                "  mainClass: model::MyClass;\n" +
+                "}\n");
+    }
+
+    @Test
     public void testDataSpaceParserBackwardCompatibility()
     {
         testFormat("###DataSpace\n" +

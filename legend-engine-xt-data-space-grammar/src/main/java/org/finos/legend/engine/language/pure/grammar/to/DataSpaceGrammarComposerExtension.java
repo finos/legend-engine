@@ -97,6 +97,8 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
                 (dataSpace.description != null ? (getTabString() + "description: " + convertString(dataSpace.description, true) + ";\n") : "") +
                 (dataSpace.featuredDiagrams != null ? (getTabString() + "featuredDiagrams:" + (dataSpace.featuredDiagrams.isEmpty() ? " []" : "\n" + getTabString() + "[\n" + getTabString(2) + ListIterate.collect(dataSpace.featuredDiagrams, diagram -> diagram.path).makeString(",\n" + getTabString(2)) + "\n" + getTabString() + "]") + ";\n") : "") +
                 (dataSpace.supportInfo != null ? (getTabString() + "supportInfo: " + renderDataSpaceSupportInfo(dataSpace.supportInfo) + ";\n") : "") +
+                (dataSpace.filteredClasses != null ? (getTabString() + "filteredClasses:" + (dataSpace.filteredClasses.isEmpty() ? " []" : "\n" + getTabString() + "[\n" + getTabString(2) + ListIterate.collect(dataSpace.filteredClasses, _class -> _class.path).makeString(",\n" + getTabString(2)) + "\n" + getTabString() + "]") + ";\n") : "") +
+                (dataSpace.mainClass != null ? (getTabString() + "mainClass: " + (dataSpace.mainClass.path + ";\n")) : "") +
                 "}";
     }
 }

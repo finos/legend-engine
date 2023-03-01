@@ -108,6 +108,17 @@ public class DataSpaceCompilerExtension implements CompilerExtension
                         }
                         metamodel._supportInfo(supportInfo);
                     }
+
+                    // filtered/main class(s)
+                    if (dataSpace.filteredClasses != null && !dataSpace.filteredClasses.isEmpty())
+                    {
+                        metamodel._filteredClasses(ListIterate.collect(dataSpace.filteredClasses, _class -> context.resolveClass(_class.path, _class.sourceInformation)));
+                    }
+                    if (dataSpace.mainClass != null)
+                    {
+                        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> pureClass = context.resolveClass(dataSpace.mainClass.path, dataSpace.mainClass.sourceInformation);
+                        metamodel._mainClass(pureClass);
+                    }
                 }
         ));
     }
