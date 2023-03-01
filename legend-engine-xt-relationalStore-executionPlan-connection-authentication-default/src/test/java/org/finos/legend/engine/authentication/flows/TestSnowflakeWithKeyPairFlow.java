@@ -59,7 +59,6 @@ public class TestSnowflakeWithKeyPairFlow
         Vault.INSTANCE.registerImplementation(inMemoryVault);
     }
 
-    @Test
     @Ignore
     public void testFlow() throws Exception
     {
@@ -104,7 +103,6 @@ public class TestSnowflakeWithKeyPairFlow
         return credentialProviderProvider;
     }
 
-    @Test
     @Ignore
     public void testFlowWithCredentialProvider() throws Exception
     {
