@@ -1,13 +1,18 @@
 {
-  "_type" : "databaseCommand",
+  "_type": "databaseCommand",
   "aggregate": "firm",
   "pipeline": [
     {
       "$match": {
-        "tags": [
-          "Bank",
-          "Finance"
-        ]
+        "$expr": {
+          "$eq": [
+            "$tags",
+            [
+              "Bank",
+              "Finance"
+            ]
+          ]
+        }
       }
     }
   ],
