@@ -25,3 +25,8 @@ ACCOUNTADMIN	LEGEND_INTEGRATION_ROLE1    LEGEND_TEMP_DB      LEGEND_TEMP_SCHEMA 
 
 In a future release, the temp table behavior will be changed to allow temporary database names/schemas to be configured in the connection grammar (in the model). 
 
+# Temporary Stages
+
+Additionally, Legend may use temporary internal stages for ingesting data into the temp tables explained above.
+Snowflake integrates with cloud storages for internal staging (ex: AWS S3), which typically reside in Snowflake's managed account. 
+Legend's infrastructure may need additional configuration to access this storage layer depending on security settings. 
