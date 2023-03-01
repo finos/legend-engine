@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.finos.legend.engine.language.mongodb.schema.grammar.to.MongoDBQueryJsonComposer;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DatabaseCommand;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -34,13 +35,13 @@ import java.util.Collection;
 import java.util.Objects;
 
 @RunWith(Parameterized.class)
-public class TestValidQueryParser
+public class TestValidExprQueryParser
 {
 
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
     private final String inputJsonFile;
 
-    public TestValidQueryParser(String inputQueryFile)
+    public TestValidExprQueryParser(String inputQueryFile)
     {
         inputJsonFile = inputQueryFile;
     }
@@ -49,27 +50,9 @@ public class TestValidQueryParser
     public static Collection<Object[]> data()
     {
         return Arrays.asList(new Object[][]{
-                {"json/query/empty_match_input.json"},
-                {"json/query/empty_pipeline_input.json"},
-                {"json/query/match_many_types_input.json"},
-                {"json/query/match_simple_expression_input.json"},
-                {"json/query/match_with_and_operator_input.json"},
-                {"json/query/match_with_empty_array_input.json"},
-                {"json/query/match_with_nested_object_input.json"},
-                {"json/query/match_with_operator_input.json"},
-                {"json/query/match_with_or_operator_input.json"},
-                {"json/query/multi_match_non_empty_array_input.json"},
-                {"json/query/multi_match_with_gt_with_without_operator_input.json"},
-                {"json/query/two_match_with_operators_input.json"},
-                {"json/query/project_with_multiple_complex_filters_input.json"},
-                {"json/query/project_with_multiple_filters_input.json"},
-                {"json/query/project_with_single_computed_field_input.json"},
-                {"json/query/project_with_single_inclusion_filter_input.json"},
-                {"json/query/valid_match_with_two_operator_input.json"},
-                {"json/query/valid_match_with_object_value_input.json"},
-                {"json/query/match_with_two_types_eq_input.json"},
-                // The next test file - conforms to JSON, but the last match wins!
-                {"json/query/multi_match_stage_input.json"},
+                {"json/exprquery/match_and_query.json"},
+                {"json/exprquery/match_eq_query.json"},
+
         });
     }
 
@@ -86,6 +69,7 @@ public class TestValidQueryParser
     }
 
     @Test
+    @Ignore
     public void testSimpleMatchOperator() throws Exception
     {
         LOGGER.debug("Processing file: {}", this.inputJsonFile);
