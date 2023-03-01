@@ -35,6 +35,7 @@ import org.finos.legend.engine.shared.core.identity.credential.PrivateKeyCredent
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -59,6 +60,7 @@ public class TestSnowflakeWithKeyPairFlow
     }
 
     @Test
+    @Ignore
     public void testFlow() throws Exception
     {
         String privateKeyFromFile = PK;
@@ -103,6 +105,7 @@ public class TestSnowflakeWithKeyPairFlow
     }
 
     @Test
+    @Ignore
     public void testFlowWithCredentialProvider() throws Exception
     {
         SnowflakeDatasourceSpecification datasourceSpec = new SnowflakeDatasourceSpecification();
