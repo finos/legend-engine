@@ -28,7 +28,7 @@ import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamToJsonDefaultSerializer;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemory;
-import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStore;
+import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreExecutorBuilder;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
@@ -54,7 +54,7 @@ import java.util.stream.Collectors;
 
 public class ServiceStoreTestUtils
 {
-    private static PlanExecutor planExecutor = PlanExecutor.newPlanExecutor(ServiceStore.build(), InMemory.build());
+    private static PlanExecutor planExecutor = PlanExecutor.newPlanExecutor(new ServiceStoreExecutorBuilder().build(), InMemory.build());
 
     public static String readGrammarFromPureFile(String path)
     {

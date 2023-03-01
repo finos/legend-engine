@@ -22,7 +22,7 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 
 public abstract class ConnectionProvider<T>
 {
-    private CredentialProviderProvider credentialProviderProvider;
+    protected CredentialProviderProvider credentialProviderProvider;
 
     public ConnectionProvider(CredentialProviderProvider credentialProviderProvider)
     {

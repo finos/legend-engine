@@ -34,13 +34,9 @@ import org.finos.legend.engine.plan.execution.service.test.JavaCode;
 import org.finos.legend.engine.plan.execution.service.test.SingleTestRun;
 import org.finos.legend.engine.plan.execution.service.test.TestResult;
 import org.finos.legend.engine.plan.execution.service.test.TestRun;
-import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemory;
-import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relational;
-import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStore;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
-import org.finos.legend.engine.service.post.validation.runner.LegendServicePostValidationRunner;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -48,6 +44,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureMultiExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
+import org.finos.legend.engine.service.post.validation.runner.LegendServicePostValidationRunner;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -60,6 +57,7 @@ import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Servic
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.m3.coreinstance.Package;
 import org.pac4j.core.profile.CommonProfile;
+
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.List;
@@ -72,15 +70,15 @@ import static org.finos.legend.pure.generated.core_relational_relational_extensi
 public class ServiceModeling
 {
     public static ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
-    private static final PlanExecutor planExecutor = PlanExecutor.newPlanExecutor(Relational.build(), ServiceStore.build(), InMemory.build()); //dont add the serviceStore
-
+    private final PlanExecutor planExecutor;
     private final ModelManager modelManager;
     private final DeploymentMode deploymentMode;
 
-    public ServiceModeling(ModelManager modelManager, DeploymentMode deploymentMode)
+    public ServiceModeling(ModelManager modelManager, DeploymentMode deploymentMode,PlanExecutor planExecutor)
     {
         this.modelManager = modelManager;
         this.deploymentMode = deploymentMode;
+        this.planExecutor = planExecutor;
         MetricsHandler.createMetrics(this.getClass());
     }
 
@@ -137,7 +135,7 @@ public class ServiceModeling
         }
     }
 
-    private static TestRun executeTests(Service service, Root_meta_legend_service_metamodel_Service pureService, Pair<PureModelContextData, PureModel> pureModelPairs, String pureVersion, String metricsContext) throws IOException, JavaCompileException
+    private TestRun executeTests(Service service, Root_meta_legend_service_metamodel_Service pureService, Pair<PureModelContextData, PureModel> pureModelPairs, String pureVersion, String metricsContext) throws IOException, JavaCompileException
     {
         MutableList<PlanGeneratorExtension> extensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
         RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions = extensions.flatCollect(e -> e.getExtraExtensions(pureModelPairs.getTwo()));
@@ -170,7 +168,7 @@ public class ServiceModeling
         Root_meta_legend_service_metamodel_Service pureService = compileService(service, pureModel.getContext(service));
         List<Variable> rawParams = ((PureExecution) service.execution).func.parameters;
 
-        LegendServicePostValidationRunner postValidationRunner = new LegendServicePostValidationRunner(pureModel, pureService, rawParams, Root_meta_relational_extension_relationalExtensions__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers, PureClientVersions.production, profiles, format);
+        LegendServicePostValidationRunner postValidationRunner = new LegendServicePostValidationRunner(pureModel, pureService, rawParams, Root_meta_relational_extension_relationalExtensions__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers, PureClientVersions.production, profiles, format,planExecutor);
         return postValidationRunner.runValidationAssertion(assertionId);
     }
 }
