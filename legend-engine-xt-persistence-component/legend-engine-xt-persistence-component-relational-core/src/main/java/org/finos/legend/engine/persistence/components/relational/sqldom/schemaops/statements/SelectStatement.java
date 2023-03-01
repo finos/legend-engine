@@ -72,6 +72,7 @@ public class SelectStatement extends SelectExpression implements DMLStatement
     [ GROUP BY clause ]
     [ HAVING clause ]
     [ ORDER BY clause ]
+    [ limit clause ]
     [ result offset clause ]
     [ fetch first clause ]
      */

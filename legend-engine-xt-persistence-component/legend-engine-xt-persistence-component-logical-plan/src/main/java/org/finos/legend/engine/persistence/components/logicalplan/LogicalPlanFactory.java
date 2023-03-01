@@ -44,10 +44,10 @@ public class LogicalPlanFactory
 
     public static LogicalPlan getLogicalPlanForIsDatasetEmpty(Dataset dataset)
     {
-        Function count = FunctionImpl.builder().functionName(FunctionName.COUNT).addValue(All.INSTANCE).alias(IS_TABLE_NON_EMPTY).build();
+        Function countAllRows = FunctionImpl.builder().functionName(FunctionName.COUNT).addValue(All.INSTANCE).alias(IS_TABLE_NON_EMPTY).build();
         Selection selectWithLimit = Selection.builder().source(dataset).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).limit(1).alias(TABLE_ALIAS).build();
         return LogicalPlan.builder()
-            .addOps(Selection.builder().addFields(count).source(selectWithLimit).build())
+            .addOps(Selection.builder().addFields(countAllRows).source(selectWithLimit).build())
             .build();
     }
 
