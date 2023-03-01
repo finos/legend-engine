@@ -165,7 +165,8 @@ function meta::relational::contract::supports(f:FunctionExpression[1]):Boolean[1
       || [
             meta::pure::functions::math::sum_Float_MANY__Float_1_,
             meta::pure::functions::math::sum_Integer_MANY__Integer_1_,
-            meta::pure::functions::math::sum_Number_MANY__Number_1_
+            meta::pure::functions::math::sum_Number_MANY__Number_1_,
+            meta::pure::tds::func_String_1__FunctionDefinition_1__TdsOlapAggregation_1_
          ]->contains($f.func);
   );
 }
