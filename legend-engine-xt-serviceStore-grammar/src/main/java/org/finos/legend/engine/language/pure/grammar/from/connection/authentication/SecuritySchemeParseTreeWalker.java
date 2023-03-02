@@ -33,7 +33,10 @@ public class SecuritySchemeParseTreeWalker
         securityScheme.scheme = Scheme.valueOf(PureGrammarParserUtility.fromGrammarString(schemeContext.STRING().getText(), true).toUpperCase());
 
         SecuritySchemeParserGrammar.BearerFormatContext bearerFormatContext = PureGrammarParserUtility.validateAndExtractOptionalField(securitySchemeCtx.bearerFormat(),"bearerFormat",securityScheme.sourceInformation);
-        securityScheme.bearerFormat = PureGrammarParserUtility.fromGrammarString(bearerFormatContext.STRING().getText(), true);
+        if (bearerFormatContext != null)
+        {
+            securityScheme.bearerFormat = PureGrammarParserUtility.fromGrammarString(bearerFormatContext.STRING().getText(), true);
+        }
 
         return securityScheme;
     }
