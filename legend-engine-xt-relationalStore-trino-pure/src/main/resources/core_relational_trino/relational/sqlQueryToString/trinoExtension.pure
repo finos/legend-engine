@@ -1,0 +1,164 @@
+import meta::relational::functions::sqlQueryToString::trino::*;
+import meta::relational::functions::sqlQueryToString::default::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::metamodel::*;
+import meta::relational::runtime::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
+
+function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::trino::dbExtensionLoaderForTrino():DbExtensionLoader[1]
+{
+  ^DbExtensionLoader(dbType = DatabaseType.Trino, loader = createDbExtensionForTrino__DbExtension_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::createDbExtensionForTrino():DbExtension[1]
+{
+   let reservedWords = defaultReservedWords();
+   let literalProcessors = getDefaultLiteralProcessors()->putAll(getLiteralProcessorsForTrino());
+   let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()};
+   let dynaFuncDispatch = getDynaFunctionToSqlForTrino()->groupBy(d| $d.funcName)->getDynaFunctionDispatcher();
+
+   ^DbExtension(
+      isBooleanLiteralSupported = true,
+      isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
+      literalProcessor = $literalProcessor,
+      selectSQLQueryProcessor = processSelectSQLQueryForTrino_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
+      identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
+      dynaFuncDispatch = $dynaFuncDispatch,
+      ddlCommandsTranslator = getDDLCommandsTranslatorForTrino()
+   );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::processIdentifierForTrino(identifier:String[1], dbConfig: DbConfig[1]):String[1]
+{
+   assert($identifier->matches('[a-zA-Z0-9_"]*'), '[unsupported-api] special chars are not supported in table/column names');
+   $identifier->processIdentifierWithQuoteChar('"', $dbConfig);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::getLiteralProcessorsForTrino():Map<Type,LiteralProcessor>[1]
+{
+   newMap([
+   ]->cast(@Pair<Type,LiteralProcessor>))
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::getDynaFunctionToSqlForTrino(): DynaFunctionToSql[*]
+{
+  let allStates = allGenerationStates();
+
+  [
+    dynaFnToSql('and',                    $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->makeString(' and ')})),
+    dynaFnToSql('count',                  $allStates,            ^ToSql(format='count(%s)', transform={p:String[*]|if($p->isEmpty(),|'*',|$p)})),
+    dynaFnToSql('equal',                  $allStates,            ^ToSql(format='%s = %s')),
+    dynaFnToSql('greaterThan',            $allStates,            ^ToSql(format='%s > %s')),
+    dynaFnToSql('greaterThanEqual',       $allStates,            ^ToSql(format='%s >= %s')),
+    dynaFnToSql('if',                     $allStates,            ^ToSql(format='case when %s then %s else %s end', parametersWithinWhenClause = [true, false, false])),
+    dynaFnToSql('in',                     $allStates,            ^ToSql(format='%s in %s', transform={p:String[2] | if($p->at(1)->startsWith('(') && $p->at(1)->endsWith(')'), | $p, | [$p->at(0), ('(' + $p->at(1) + ')')])})),
+    dynaFnToSql('isEmpty',                $allStates,            ^ToSql(format='%s is null')),
+    dynaFnToSql('isNotEmpty',             $allStates,            ^ToSql(format='%s is not null')),
+    dynaFnToSql('isNotNull',              $allStates,            ^ToSql(format='%s is not null')),
+    dynaFnToSql('isNull',                 $allStates,            ^ToSql(format='%s is null')),
+    dynaFnToSql('lessThan',               $allStates,            ^ToSql(format='%s < %s')),
+    dynaFnToSql('lessThanEqual',          $allStates,            ^ToSql(format='%s <= %s')),
+    dynaFnToSql('notEqual',               $allStates,            ^ToSql(format='%s != %s')),
+    dynaFnToSql('or',                     $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->makeString(' or ')})),
+    dynaFnToSql('sqlNull',                $allStates,            ^ToSql(format='null'))
+  ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::processSelectSQLQueryForTrino(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
+{
+   $s->processSelectSQLQueryForTrino($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::processSelectSQLQueryForTrino(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
+{
+  // fail('[unsupported-api] select queries not supported'); '';
+  let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+ let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+ 
+ assert($s.fromRow == [] && $s.toRow == [], '[unsupported-api] slice/limit operations are not implemented');
+ assert($s.groupBy == [] && $havingStr == '', '[unsupported-api] groupBy/having operations are not implemented');
+ 
+ $format.separator + 'select ' + processTop($s, $format) + if($s.distinct == true,|'distinct ',|'') +
+ processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
+ if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
+ if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
+ if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::getDDLCommandsTranslatorForTrino(): RelationalDDLCommandsTranslator[1]
+{
+  ^RelationalDDLCommandsTranslator(
+                createSchema = translateCreateSchemaStatementForTrino_CreateSchemaSQL_1__String_MANY_,
+                dropSchema =  translateDropSchemaStatementForTrino_DropSchemaSQL_1__String_MANY_,
+                createTable =  translateCreateTableStatementForTrino_CreateTableSQL_1__DbConfig_1__String_MANY_,
+                dropTable = translateDropTableStatementForTrino_DropTableSQL_1__String_MANY_,
+                loadTable =  loadValuesToDbTableForTrino_LoadTableSQL_1__DbConfig_1__String_MANY_
+              );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::translateCreateSchemaStatementForTrino(createSchemaSQL:CreateSchemaSQL[1]) : String[*]
+{
+   // sql is enclosed in [] to signify that its failure due to schema already existing should not stop us from running other DDL commands
+   if($createSchemaSQL.schema.name == 'default', |[], |'[Create Schema ' + $createSchemaSQL.schema.name + ']');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::translateDropSchemaStatementForTrino(dropSchemaSQL:DropSchemaSQL[1]) : String[*]
+{
+   // dropping the schema is not needed for test setup
+   [];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::translateDropTableStatementForTrino(dropTableSQL:DropTableSQL[1]) : String[*]
+{
+  let t = $dropTableSQL.table;
+  'Drop table if exists '+if($t.schema.name == 'default',|'',|$t.schema.name+'.')+$t.name;
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::translateCreateTableStatementForTrino(createTableSQL:CreateTableSQL[1], dbConfig:DbConfig[1]) : String[*]
+{
+  let t = $createTableSQL.table;
+  let applyConstraints = $createTableSQL.applyConstraints;
+  'Create Table '+if($t.schema.name == 'default',|'',|$t.schema.name+'.')+$t.name+
+      + '('
+      + $t.columns->cast(@meta::relational::metamodel::Column)
+        ->map(c | $c.name->processColumnName($dbConfig) + ' ' +  getColumnTypeSqlTextForTrino($c.type) )
+        ->joinStrings(',')
+      +')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::getColumnTypeSqlTextForTrino(columnType:meta::relational::metamodel::datatype::DataType[1]):String[1]
+{
+   $columnType->match([
+      s : meta::relational::metamodel::datatype::Timestamp[1] | 'TIMESTAMP',
+      f : meta::relational::metamodel::datatype::Float[1] | 'DOUBLE',
+      a : Any[*] | meta::relational::metamodel::datatype::dataTypeToSqlText($columnType)
+   ])
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::loadValuesToDbTableForTrino(loadTableSQL:LoadTableSQL[1] , dbConfig: DbConfig[1]) : String[*]
+{
+    'insert into ' + if($loadTableSQL.table.schema.name=='default', |'' ,|$loadTableSQL.table.schema.name + '.') + $loadTableSQL.table.name + ' ('
+        + $loadTableSQL.columnsToLoad.name->map(colName | $colName->processColumnName($dbConfig))->joinStrings(',')
+        + ') values '
+        + $loadTableSQL.parsedData.values->map(row | '('
+            + $row.values->meta::relational::functions::sqlQueryToString::trino::convertValuesToCsv($loadTableSQL.columnsToLoad.type)
+            + ')')->makeString(',') ;
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::convertValuesToCsv(str : String[*], types : Any[*]):String[1]
+{
+   // the split function is not working properly: csv records of the form x,,x,,e are not split with empty Strings
+   // Therefor we insert ---null--- for now instead of empty set.
+   // $value == '---null---' needs to be removed when split is fixed
+   let stringToken = map(range($types->size()), {x |if($str->at($x) == '' || $str->at($x) == '---null---', |'null', |$types->at($x)->match([
+                 s:meta::relational::metamodel::datatype::Varchar[*] | '\'' + $str->at($x)->replace('\'', '\'\'') + '\'',
+                 s:meta::relational::metamodel::datatype::SemiStructured[*] | '\'' + $str->at($x)->replace('\'', '\'\'') + '\'',
+                 s:meta::relational::metamodel::datatype::Char[*] | '\'' + $str->at($x)->replace('\'', '\'\'') + '\'',
+                 d:meta::relational::metamodel::datatype::Date[*] |  'date \'' + $str->at($x) + '\'',
+                 t:meta::relational::metamodel::datatype::Timestamp[*] |  'timestamp \'' + if($str->at($x)->length() > 10, |$str->at($x), |$str->at($x)) + '\'',
+                 a:Any[*] | $str->at($x)
+                 ]))})->joinStrings(',');
+}

@@ -1,0 +1,13 @@
+Class meta::pure::alloy::connections::alloy::specification::TrinoDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
+{
+   host: String[1];
+   port: Integer[1];
+   catalog: String[1];
+   clientTags: String[1];
+   ssl: Boolean[1];
+   trustStorePathVaultReference: String[1];
+   trustStorePasswordVaultReference: String[1];
+   kerberosRemoteServiceName: String[1];
+   kerberosUseCanonicalHostname: Boolean[1];
+}
+
