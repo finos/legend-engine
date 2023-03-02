@@ -103,5 +103,6 @@ public class ExternalIntegration2_TestConnectionAcquisitionWithFlowProviderWithU
         RelationalDatabaseConnection systemUnderTest = this.trinoTestContainersWithUserAndPasswordAuth.getConnection();
         Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject) null, systemUnderTest);
         testConnection(connection, 1, "select 1");
+
     }
 }
