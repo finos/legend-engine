@@ -26,8 +26,6 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::service::R
    mimeType               : String[1];
    params                 : ServiceParameter[*];
    requestBodyDescription : RequestBodyDescription[0..1];
-   //TODO: securitySchemes will be removed when we switch completely to authenticationSchemes
-   securitySchemes        : SecurityScheme[*];
    authenticationSchemes  : AuthenticationSchemeRequirement[*];
 }
 

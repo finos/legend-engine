@@ -21,6 +21,7 @@ import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
+import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.execution.service.ServiceModeling;
 import org.finos.legend.engine.plan.execution.service.test.TestResult;
@@ -61,9 +62,9 @@ public class ServiceModelingApi
     public static ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
     private final ServiceModeling serviceModeling;
 
-    public ServiceModelingApi(ModelManager modelManager, DeploymentMode deploymentMode)
+    public ServiceModelingApi(ModelManager modelManager, DeploymentMode deploymentMode, PlanExecutor planExecutor)
     {
-        this(new ServiceModeling(modelManager, deploymentMode));
+        this(new ServiceModeling(modelManager, deploymentMode,planExecutor));
     }
 
     public ServiceModelingApi(ServiceModeling serviceModeling)

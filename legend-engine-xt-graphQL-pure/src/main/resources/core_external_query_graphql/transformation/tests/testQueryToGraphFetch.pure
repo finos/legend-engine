@@ -301,7 +301,7 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
   let graphQLDocument = meta::legend::compileVS('#GQL{ query { employees: personByName(name:"John Doe") { firstName lastName } } }#')->cast(@meta::external::query::graphQL::metamodel::sdl::Document);
   let pureGraphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($graphQLDocument, Query);
   assertEquals('#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Query {\n' +
-               '    personByName(\'John Doe\') {\n' +
+               '    personByName($name) {\n' +
                '        firstName, \n'+
                '        lastName\n'+
                '    }\n' +
@@ -313,7 +313,7 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
   let graphQLDocument = meta::legend::compileVS('#GQL{ query { employees: personByVariousProps(names:["John Doe","Steve Stark"], phone: 123456789, isSeniorCitizen: false, zipcode: "123456", minBalance: 10.00, maxBalance: 1000.50) { fullName } } }#')->cast(@meta::external::query::graphQL::metamodel::sdl::Document);
   let pureGraphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($graphQLDocument, Query);
   assertEquals('#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Query {\n' +
-              '    personByVariousProps([\'John Doe\', \'Steve Stark\'], 123456789, false, \'123456\', 10.0, 1000.5) {\n' +
+              '    personByVariousProps($names, $phone, $isSeniorCitizen, $zipcode, $minBalance, $maxBalance) {\n' +
               '        fullName()\n'+
               '    }\n' +
               '}}#', $pureGraphFetch->meta::pure::graphFetch::routing::asString(true));
@@ -324,7 +324,7 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
   let graphQLDocument = meta::legend::compileVS('#GQL{ query { employees: personByName(name:"John Doe") { firstName lastName firm { id } } } }#')->cast(@meta::external::query::graphQL::metamodel::sdl::Document);
   let pureGraphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($graphQLDocument, Query);
   assertEquals('#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Query {\n' +
-               '    personByName(\'John Doe\') {\n' +
+               '    personByName($name) {\n' +
                '        firstName, \n'+
                '        lastName, \n'+
                '        firm {\n'+

@@ -89,6 +89,7 @@ function <<access.private>> meta::pure::platform::executionPlan::generation::uni
    ^PlatformUnionExecutionNode
    (
       resultType = ^ResultType(type=$fe.genericType.rawType->toOne()),
+      isChildrenExecutionParallelizable = true,
       executionNodes = $updatedChildren,
       fromCluster = generatePlatformClusterForFunction($fe, $state.inScopeVars)
    );
