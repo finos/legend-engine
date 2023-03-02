@@ -14,11 +14,16 @@ identifier:                      VALID_STRING
 
 httpSecurityScheme:                         SIMPLE_HTTP_SECURITY_SCHEME
                                             BRACE_OPEN
-                                                   ( scheme )*
+                                                   ( scheme
+                                                     | bearerFormat
+                                                   )*
                                             BRACE_CLOSE
 ;
 
 scheme:                                     SCHEME COLON STRING SEMI_COLON
+;
+
+bearerFormat:                               BEARER_FORMAT COLON STRING SEMI_COLON
 ;
 
 apiKeySecurityScheme:                       API_KEY_SECURITY_SCHEME
