@@ -1,0 +1,44 @@
+{
+  "_type": "databaseCommand",
+  "aggregate": "firm",
+  "pipeline": [
+    {
+      "$match": {
+        "$expr": {
+          "$and": [
+            {
+              "$eq": [
+                "$level1",
+                {
+                  "f1": {
+                    "f2": {
+                      "f3.1": "SomeValue",
+                      "f3.2": 100
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "$eq": [
+                "$level1.level2",
+                {
+                  "f1": {
+                    "f2": {
+                      "f3.1": "SomeValue",
+                      "f3.2": 100,
+                      "f3.3": {
+                        "f4.1": true
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "cursor": {}
+}
