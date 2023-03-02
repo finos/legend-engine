@@ -134,6 +134,14 @@
         </dependency>
         <!-- COMMONS LANG -->
 
+        <!-- COMMONS IO -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons-io.version}</version>
+        </dependency>
+        <!-- COMMONS IO -->
+        
         <!-- ECLIPSE COLLECTIONS -->
         <dependency>
             <groupId>org.eclipse.collections</groupId>

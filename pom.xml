@@ -110,6 +110,7 @@
         <module>legend-engine-xt-relationalStore-grammar</module>
         <module>legend-engine-xt-relationalStore-protocol</module>
         <module>legend-engine-xt-relationalStore-test-server</module>
+        <module>legend-engine-xt-relationalStore-mutation-executionPlan-test</module>
 
         <module>legend-engine-xt-relationalStore-sqlserver-execution</module>
         <module>legend-engine-xt-relationalStore-sqlserver-execution-tests</module>
