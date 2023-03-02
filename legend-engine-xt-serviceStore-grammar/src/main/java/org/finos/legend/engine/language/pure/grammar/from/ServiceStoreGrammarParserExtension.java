@@ -136,7 +136,7 @@ public class ServiceStoreGrammarParserExtension implements IServiceStoreGrammarP
     {
        return Lists.mutable.with((securitySchemeId,securitySchemes) ->
        {
-           if(securitySchemes == null)
+           if (securitySchemes == null)
            {
                return null;
            }
