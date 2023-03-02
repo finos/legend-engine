@@ -170,6 +170,9 @@
         <module>legend-engine-xt-analytics-lineage-api</module>
         <module>legend-engine-xt-analytics-lineage-pure</module>
 
+        <module>legend-engine-xt-analytics-search-pure</module>
+        <module>legend-engine-xt-analytics-search-generation</module>
+
         <module>legend-engine-pure-code-compiled-core</module>
         <module>legend-engine-pure-platform-java</module>
         <module>legend-engine-pure-platform-functions-java</module>
@@ -1287,6 +1290,18 @@
                 <artifactId>legend-engine-xt-analytics-mapping-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-search-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-search-generation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-daml-pure</artifactId>
