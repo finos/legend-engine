@@ -116,22 +116,25 @@ public class ServiceStoreCompilerExtension implements IServiceStoreCompilerExten
     }
 
     @Override
-    public List<Function2<SecurityScheme, CompileContext, Root_meta_external_store_service_metamodel_SecurityScheme>> getExtraSecuritySchemeProcessors()
+    public List<Function2<SecurityScheme, CompileContext, Root_meta_external_store_service_metamodel_SecurityScheme>> getExtraSecurityProcessors()
     {
         return Lists.mutable.with((scheme, context) ->
         {
             if (scheme instanceof HttpSecurityScheme)
             {
-                HttpSecurityScheme simpleHttpSecurityScheme = (HttpSecurityScheme) scheme;
-                return new Root_meta_external_store_service_metamodel_SimpleHttpSecurityScheme_Impl("", null, context.pureModel.getClass("meta::external::store::service::metamodel::SimpleHttpSecurityScheme"))
-                        ._scheme(simpleHttpSecurityScheme.scheme);
+                HttpSecurityScheme httpSecurityScheme = (HttpSecurityScheme) scheme;
+                String ENUM_PATH = "meta::external::store::service::metamodel::Scheme";
+                return new Root_meta_external_store_service_metamodel_HttpSecurityScheme_Impl("", null, context.pureModel.getClass("meta::external::store::service::metamodel::SimpleHttpSecurityScheme"))
+                        ._scheme(context.resolveEnumValue(ENUM_PATH, httpSecurityScheme.scheme.name()))
+                        ._bearerFormat(httpSecurityScheme.bearerFormat);
 
             }
             else if (scheme instanceof ApiKeySecurityScheme)
             {
                 ApiKeySecurityScheme apiKeySecurityScheme = (ApiKeySecurityScheme) scheme;
+                String ENUM_PATH = "meta::external::store::service::metamodel::ApiKeyLocation";
                 return new Root_meta_external_store_service_metamodel_ApiKeySecurityScheme_Impl("", null, context.pureModel.getClass("meta::external::store::service::metamodel::ApiKeySecurityScheme"))
-                        ._location(apiKeySecurityScheme.location)
+                        ._location(context.resolveEnumValue(ENUM_PATH, apiKeySecurityScheme.location.name()))
                         ._keyName(apiKeySecurityScheme.keyName);
             }
             return null;
