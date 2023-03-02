@@ -58,6 +58,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
          platform:meta::pure::executionPlan::PlatformUnionExecutionNode[1]|
             ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::PlatformUnionExecutionNode(
               _type='platformUnion',
+              isChildrenExecutionParallelizable = $platform.isChildrenExecutionParallelizable,
               resultType=$platform.resultType->transformResultType($mapping, $extensions)
             ),
          platform:meta::pure::executionPlan::PlatformMergeExecutionNode[1]|

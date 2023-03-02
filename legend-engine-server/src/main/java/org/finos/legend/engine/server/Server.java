@@ -33,6 +33,14 @@ import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
+import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
+import org.finos.legend.authentication.credentialprovider.impl.PrivateKeyCredentialProvider;
+import org.finos.legend.authentication.intermediationrule.IntermediationRule;
+import org.finos.legend.authentication.intermediationrule.impl.EncryptedPrivateKeyFromVaultRule;
+import org.finos.legend.authentication.vault.CredentialVaultProvider;
+import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
+import org.finos.legend.engine.api.analytics.DataSpaceAnalytics;
+import org.finos.legend.engine.api.analytics.DiagramAnalytics;
 import org.finos.legend.engine.api.analytics.LineageAnalytics;
 import org.finos.legend.engine.api.analytics.MappingAnalytics;
 import org.finos.legend.engine.application.query.api.ApplicationQuery;
@@ -60,28 +68,30 @@ import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.api.ExecutePlanLegacy;
 import org.finos.legend.engine.plan.execution.api.ExecutePlanStrategic;
+import org.finos.legend.engine.plan.execution.api.concurrent.ConcurrentExecutionNodeExecutorPoolInfo;
 import org.finos.legend.engine.plan.execution.service.api.ServiceModelingApi;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemory;
 import org.finos.legend.engine.plan.execution.stores.relational.api.RelationalExecutorInformation;
+import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.SchemaExplorationApi;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relational;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
-import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStore;
+import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreExecutionConfiguration;
+import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreExecutor;
+import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreExecutorBuilder;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
-import org.finos.legend.engine.api.analytics.DataSpaceAnalytics;
-import org.finos.legend.engine.api.analytics.DiagramAnalytics;
 import org.finos.legend.engine.query.graphQL.api.debug.GraphQLDebug;
 import org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecute;
 import org.finos.legend.engine.query.graphQL.api.grammar.GraphQLGrammar;
 import org.finos.legend.engine.query.pure.api.Execute;
 import org.finos.legend.engine.query.sql.api.execute.SqlExecute;
 import org.finos.legend.engine.query.sql.api.grammar.SqlGrammar;
-import org.finos.legend.engine.server.core.bundles.ErrorHandlingBundle;
 import org.finos.legend.engine.server.core.ServerShared;
 import org.finos.legend.engine.server.core.api.CurrentUser;
 import org.finos.legend.engine.server.core.api.Info;
 import org.finos.legend.engine.server.core.api.Memory;
+import org.finos.legend.engine.server.core.bundles.ErrorHandlingBundle;
 import org.finos.legend.engine.server.core.exceptionMappers.CatchAllExceptionMapper;
 import org.finos.legend.engine.server.core.exceptionMappers.JsonInformationExceptionMapper;
 import org.finos.legend.engine.server.core.session.SessionAttributeBundle;
@@ -92,6 +102,7 @@ import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
 import org.finos.legend.engine.shared.core.operational.http.InflateInterceptor;
 import org.finos.legend.engine.shared.core.url.EngineUrlStreamHandlerFactory;
+import org.finos.legend.engine.shared.core.vault.PropertyVaultConfiguration;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.finos.legend.engine.shared.core.vault.VaultConfiguration;
 import org.finos.legend.engine.shared.core.vault.VaultFactory;
@@ -101,12 +112,16 @@ import org.finos.legend.server.pac4j.LegendPac4jBundle;
 import org.finos.legend.server.shared.bundles.ChainFixingFilterHandler;
 import org.finos.legend.server.shared.bundles.HostnameHeaderBundle;
 import org.slf4j.Logger;
+
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
 import javax.ws.rs.container.DynamicFeature;
+import java.io.FileInputStream;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.ServiceLoader;
 
 public class Server<T extends ServerConfiguration> extends Application<T>
@@ -152,6 +167,52 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         bootstrap.getObjectMapper().registerSubtypes(new NamedType(LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.class, "legendDefault"));
     }
 
+    public CredentialProviderProvider configureCredentialProviders(List<VaultConfiguration> vaultConfigurations)
+    {
+        Properties properties = this.buildVaultProperties(vaultConfigurations);
+
+        CredentialVaultProvider credentialVaultProvider = CredentialVaultProvider.builder()
+                .with(new PropertiesFileCredentialVault(properties))
+                .build();
+
+        PrivateKeyCredentialProvider privateKeyCredentialProvider = new PrivateKeyCredentialProvider(
+                Lists.immutable.<IntermediationRule>of(
+                        new EncryptedPrivateKeyFromVaultRule(credentialVaultProvider)
+                ).castToList()
+        );
+
+        CredentialProviderProvider credentialProviderProvider = CredentialProviderProvider.builder()
+                .with(privateKeyCredentialProvider)
+                .build();
+
+        return credentialProviderProvider;
+    }
+
+    private Properties buildVaultProperties(List<VaultConfiguration> vaultConfigurations)
+    {
+        Properties properties = new Properties();
+
+        if (vaultConfigurations == null)
+        {
+            return properties;
+        }
+
+        MutableList<VaultConfiguration> propertyVaultConfigurations = ListIterate.select(vaultConfigurations, v -> v instanceof PropertyVaultConfiguration);
+        propertyVaultConfigurations.forEach(vaultConfiguration ->
+        {
+            PropertyVaultConfiguration propertyVaultConfiguration = (PropertyVaultConfiguration) vaultConfiguration;
+            try
+            {
+                properties.load(new FileInputStream(propertyVaultConfiguration.location));
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+        });
+        return properties;
+    }
+
     @Override
     public void run(T serverConfiguration, Environment environment)
     {
@@ -165,8 +226,16 @@ public class Server<T extends ServerConfiguration> extends Application<T>
 
         ChainFixingFilterHandler.apply(environment.getApplicationContext(), serverConfiguration.filterPriorities);
 
+        CredentialProviderProvider credentialProviderProvider = this.configureCredentialProviders(serverConfiguration.vaults);
+
+        RelationalExecutionConfiguration relationalExecution = serverConfiguration.relationalexecution;
+        relationalExecution.setCredentialProviderProvider(credentialProviderProvider);
         relationalStoreExecutor = (RelationalStoreExecutor) Relational.build(serverConfiguration.relationalexecution);
-        PlanExecutor planExecutor = PlanExecutor.newPlanExecutor(relationalStoreExecutor, ServiceStore.build(), InMemory.build());
+
+        ServiceStoreExecutionConfiguration serviceStoreExecutionConfiguration = ServiceStoreExecutionConfiguration.builder().withCredentialProviderProvider(credentialProviderProvider).build();
+        ServiceStoreExecutor serviceStoreExecutor = (ServiceStoreExecutor) new ServiceStoreExecutorBuilder().build(serviceStoreExecutionConfiguration);
+
+        PlanExecutor planExecutor = PlanExecutor.newPlanExecutor(relationalStoreExecutor, serviceStoreExecutor, InMemory.build());
 
         // Session Management
         SessionTracker sessionTracker = new SessionTracker();
@@ -190,6 +259,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new CurrentUser());
         environment.jersey().register(new Memory());
         environment.jersey().register(new RelationalExecutorInformation());
+        environment.jersey().register(new ConcurrentExecutionNodeExecutorPoolInfo(Collections.emptyList()));
 
         // Grammar
         environment.jersey().register(new GrammarToJson());
@@ -233,7 +303,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new SqlGrammar());
 
         // Service
-        environment.jersey().register(new ServiceModelingApi(modelManager, serverConfiguration.deployment.mode));
+        environment.jersey().register(new ServiceModelingApi(modelManager, serverConfiguration.deployment.mode,planExecutor));
 
         // Query
         environment.jersey().register(new ApplicationQuery(ApplicationQueryConfiguration.getMongoClient()));

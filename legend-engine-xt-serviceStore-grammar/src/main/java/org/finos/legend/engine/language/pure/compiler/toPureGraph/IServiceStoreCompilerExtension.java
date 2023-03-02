@@ -37,12 +37,6 @@ public interface IServiceStoreCompilerExtension extends CompilerExtension
         return Lists.mutable.withAll(ServiceLoader.load(IServiceStoreCompilerExtension.class));
     }
 
-    @Deprecated
-    default List<Function<SecurityScheme, Root_meta_external_store_service_metamodel_SecurityScheme>> getExtraSecuritySchemeProcessors()
-    {
-        return FastList.newList();
-    }
-
     default List<Function2<SecurityScheme, CompileContext, Root_meta_external_store_service_metamodel_SecurityScheme>> getExtraSecurityProcessors()
     {
         return FastList.newList();

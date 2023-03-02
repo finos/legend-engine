@@ -113,6 +113,7 @@ Class meta::pure::executionPlan::PureExpressionPlatformExecutionNode extends met
 
 Class meta::pure::executionPlan::PlatformUnionExecutionNode extends meta::pure::executionPlan::ExecutionNode
 {
+  isChildrenExecutionParallelizable : Boolean[0..1];
 }
 
 Class meta::pure::executionPlan::PlatformMergeExecutionNode extends meta::pure::executionPlan::ExecutionNode
