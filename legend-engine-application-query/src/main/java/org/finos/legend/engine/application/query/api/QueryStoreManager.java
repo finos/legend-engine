@@ -29,6 +29,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.application.query.model.Query;
 import org.finos.legend.engine.application.query.model.QueryEvent;
 import org.finos.legend.engine.application.query.model.QuerySearchSpecification;
+import org.finos.legend.engine.application.query.model.QueryStoreStats;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TagPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
@@ -249,6 +250,17 @@ public class QueryStoreManager
         }
         return matchingQueries.get(0);
     }
+
+
+
+    public QueryStoreStats getQueryStoreStats() throws JsonProcessingException
+    {
+        Long count = this.getQueryCollection().countDocuments();
+        QueryStoreStats storeStats = new QueryStoreStats();
+        storeStats.setQueryCount(count);
+        return storeStats;
+    }
+
 
     public Query createQuery(Query query, String currentUser) throws JsonProcessingException
     {
