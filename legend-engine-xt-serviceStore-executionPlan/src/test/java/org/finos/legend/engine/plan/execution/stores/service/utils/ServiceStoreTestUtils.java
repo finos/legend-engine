@@ -149,7 +149,7 @@ public class ServiceStoreTestUtils
                 .with(intermediationRuleProvider)
                 .build();
 
-        JsonStreamingResult result = (JsonStreamingResult) planExecutor.execute(singleExecutionPlan, vars, (String) null, Lists.mutable.with(new KerberosProfile(LocalCredentials.INSTANCE)),credentialProviderProvider);
+        JsonStreamingResult result = (JsonStreamingResult) planExecutor.execute(singleExecutionPlan, vars, (String) null, Lists.mutable.with(new KerberosProfile(LocalCredentials.INSTANCE)));
         return result.flush(new JsonStreamToJsonDefaultSerializer(result));
     }
 }

@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.grammar.from;
 
 import org.antlr.v4.runtime.misc.Interval;
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
@@ -62,11 +63,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lam
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.PropertyPathElement;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_connection_authentication_AuthenticationSpecification;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -423,14 +426,15 @@ public class ServiceStoreParseTreeWalker
     private SecuritySchemeRequirement visitSecurity(ServiceStoreParserGrammar.IdentifierContext securityCtx, Map<String,SecurityScheme> securitySchemes)
     {
         String securitySchemeId = securityCtx.getText();
-        SecurityScheme scheme = securitySchemes.get(securitySchemeId);
-        if (scheme == null)
-        {
-            throw new EngineException(String.format("%s security scheme is not defined in service store",securitySchemeId), this.walkerSourceInformation.getSourceInformation(securityCtx), EngineErrorType.PARSER);
-        }
 
-        SingleSecuritySchemeRequirement securitySchemeRequirement = new SingleSecuritySchemeRequirement(securitySchemeId,scheme);
-        return securitySchemeRequirement;
+        List<Function2<String, Map<String,SecurityScheme>, SecuritySchemeRequirement>> processors = ListIterate.flatCollect(IServiceStoreGrammarParserExtension.getExtensions(), ext -> ext.getExtraSecurityParsers());
+
+        return  ListIterate
+                .collect(processors, processor -> processor.value(securitySchemeId,securitySchemes))
+                .select(Objects::nonNull)
+                .getFirstOptional()
+                .orElseThrow(() -> new EngineException(String.format("%s security scheme not defined",securitySchemeId), this.walkerSourceInformation.getSourceInformation(securityCtx), EngineErrorType.PARSER));
+
     }
 
 

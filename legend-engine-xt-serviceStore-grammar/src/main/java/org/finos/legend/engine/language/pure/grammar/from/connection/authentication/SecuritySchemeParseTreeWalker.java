@@ -25,7 +25,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.s
 public class SecuritySchemeParseTreeWalker
 {
 
-    public HttpSecurityScheme visitSimpleHttpSecurityScheme(SecuritySchemeSourceCode code, SecuritySchemeParserGrammar.HttpSecuritySchemeContext securitySchemeCtx)
+    public HttpSecurityScheme visitHttpSecurityScheme(SecuritySchemeSourceCode code, SecuritySchemeParserGrammar.HttpSecuritySchemeContext securitySchemeCtx)
     {
         HttpSecurityScheme securityScheme = new HttpSecurityScheme();
         securityScheme.sourceInformation = code.getSourceInformation();
