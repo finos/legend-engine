@@ -134,7 +134,12 @@ public class ServiceStoreGrammarParserExtension implements IServiceStoreGrammarP
     @Override
     public List<Function2<String, Map<String,SecurityScheme>, SecuritySchemeRequirement>> getExtraSecurityParsers()
     {
-       return Lists.mutable.with((securitySchemeId,securitySchemes) ->{
+       return Lists.mutable.with((securitySchemeId,securitySchemes) ->
+       {
+           if(securitySchemes == null)
+           {
+               return null;
+           }
            SecurityScheme scheme = securitySchemes.get(securitySchemeId);
            if (scheme != null)
            {

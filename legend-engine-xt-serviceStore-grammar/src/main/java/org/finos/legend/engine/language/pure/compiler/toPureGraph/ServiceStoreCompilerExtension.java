@@ -32,6 +32,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.connection.ServiceStoreConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.RootServiceStoreClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ApiKeySecurityScheme;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.HttpSecurityScheme;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecurityScheme;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceStore;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
@@ -111,6 +114,30 @@ public class ServiceStoreCompilerExtension implements IServiceStoreCompilerExten
                 }
         );
     }
+
+    @Override
+    public List<Function2<SecurityScheme, CompileContext, Root_meta_external_store_service_metamodel_SecurityScheme>> getExtraSecuritySchemeProcessors()
+    {
+        return Lists.mutable.with((scheme, context) ->
+        {
+            if (scheme instanceof HttpSecurityScheme)
+            {
+                HttpSecurityScheme simpleHttpSecurityScheme = (HttpSecurityScheme) scheme;
+                return new Root_meta_external_store_service_metamodel_SimpleHttpSecurityScheme_Impl("", null, context.pureModel.getClass("meta::external::store::service::metamodel::SimpleHttpSecurityScheme"))
+                        ._scheme(simpleHttpSecurityScheme.scheme);
+
+            }
+            else if (scheme instanceof ApiKeySecurityScheme)
+            {
+                ApiKeySecurityScheme apiKeySecurityScheme = (ApiKeySecurityScheme) scheme;
+                return new Root_meta_external_store_service_metamodel_ApiKeySecurityScheme_Impl("", null, context.pureModel.getClass("meta::external::store::service::metamodel::ApiKeySecurityScheme"))
+                        ._location(apiKeySecurityScheme.location)
+                        ._keyName(apiKeySecurityScheme.keyName);
+            }
+            return null;
+        });
+    }
+
 
     @Override
     public List<Procedure<Procedure2<String, List<String>>>> getExtraElementForPathToElementRegisters()
