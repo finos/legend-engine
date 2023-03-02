@@ -124,7 +124,7 @@ public class ServiceStoreCompilerExtension implements IServiceStoreCompilerExten
             {
                 HttpSecurityScheme httpSecurityScheme = (HttpSecurityScheme) scheme;
                 String ENUM_PATH = "meta::external::store::service::metamodel::Scheme";
-                return new Root_meta_external_store_service_metamodel_HttpSecurityScheme_Impl("", null, context.pureModel.getClass("meta::external::store::service::metamodel::SimpleHttpSecurityScheme"))
+                return new Root_meta_external_store_service_metamodel_HttpSecurityScheme_Impl("", null, context.pureModel.getClass("meta::external::store::service::metamodel::HttpSecurityScheme"))
                         ._scheme(context.resolveEnumValue(ENUM_PATH, httpSecurityScheme.scheme.name()))
                         ._bearerFormat(httpSecurityScheme.bearerFormat);
 

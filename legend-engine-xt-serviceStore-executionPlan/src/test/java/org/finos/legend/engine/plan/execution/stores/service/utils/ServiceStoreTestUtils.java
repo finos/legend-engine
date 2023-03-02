@@ -36,6 +36,7 @@ import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamToJsonDefaultSerializer;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemory;
+import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreExecutorBuilder;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
@@ -62,7 +63,8 @@ import java.util.stream.Collectors;
 
 public class ServiceStoreTestUtils
 {
-    private static PlanExecutor planExecutor = PlanExecutor.newPlanExecutor(new ServiceStoreExecutorBuilder().build(), InMemory.build());
+    private static ServiceStoreExecutionConfiguration serviceStoreExecutionConfiguration = ServiceStoreExecutionConfiguration.builder().withCredentialProviderProvider(configureCredentialProviders()).build();
+    private static PlanExecutor planExecutor = PlanExecutor.newPlanExecutor(new ServiceStoreExecutorBuilder().build(serviceStoreExecutionConfiguration), InMemory.build());
 
     public static String readGrammarFromPureFile(String path)
     {
@@ -134,6 +136,12 @@ public class ServiceStoreTestUtils
         Map<String, Result> vars = org.eclipse.collections.impl.factory.Maps.mutable.ofInitialCapacity(params.size());
         params.forEach((key, value) -> vars.put(key, new ConstantResult(value)));
 
+        JsonStreamingResult result = (JsonStreamingResult) planExecutor.execute(singleExecutionPlan, vars, (String) null, Lists.mutable.with(new KerberosProfile(LocalCredentials.INSTANCE)));
+        return result.flush(new JsonStreamToJsonDefaultSerializer(result));
+    }
+
+    public static CredentialProviderProvider configureCredentialProviders()
+    {
         CredentialVaultProvider credentialVaultProvider = CredentialVaultProvider.builder()
                 .with(new SystemPropertiesCredentialVault())
                 .build();
@@ -149,7 +157,6 @@ public class ServiceStoreTestUtils
                 .with(intermediationRuleProvider)
                 .build();
 
-        JsonStreamingResult result = (JsonStreamingResult) planExecutor.execute(singleExecutionPlan, vars, (String) null, Lists.mutable.with(new KerberosProfile(LocalCredentials.INSTANCE)));
-        return result.flush(new JsonStreamToJsonDefaultSerializer(result));
+        return credentialProviderProvider;
     }
 }
