@@ -36,6 +36,11 @@ Class meta::external::format::flatdata::executionPlan::test::Person
    lastName  : String[1];
 }
 
+Class meta::external::format::flatdata::executionPlan::test::TargetPerson
+{
+  fullName : String[1];
+}
+
 function meta::external::format::flatdata::executionPlan::test::getTestBinding():Binding[1]
 {
    let schemaSet = ^SchemaSet(
@@ -69,6 +74,41 @@ function meta::external::format::flatdata::executionPlan::test::getTestBinding()
       schemaSet   = $schemaSet,
       contentType = 'application/x.flatdata',
       modelUnit   = newModelUnit()->include(meta::external::format::flatdata::executionPlan::test::Person)
+   );
+}
+
+function meta::external::format::flatdata::executionPlan::test::getTargetPersonTestBinding():Binding[1]
+{
+   let schemaSet = ^SchemaSet(
+         name    = 'TargetPersonTestSchema',
+         package = meta::external::format::flatdata::executionPlan::test,
+         format  = 'FlatData',
+         schemas = [^Schema(
+            id = 'default.flatdata',
+            detail  = ^FlatData(
+               sections = ^FlatDataSection(
+                  name              = 'TargetPerson',
+                  driverId          = 'DelimitedWithHeadings',
+                  sectionProperties = [
+                     ^FlatDataProperty(name='scope.untilEof', value=true),
+                     ^FlatDataProperty(name='delimiter', value=',')
+                  ],
+                  recordType        = ^FlatDataRecordType(
+                     fields = [
+                        ^FlatDataRecordField(label='Full Name', type=^FlatDataString(optional=false))
+                     ]
+                  )
+               )
+            )
+         )]
+      );
+
+   ^Binding(
+      name        = 'TargetPersonTestBinding',
+      package     = meta::external::format::flatdata::executionPlan::test,
+      schemaSet   = $schemaSet,
+      contentType = 'application/x.flatdata',
+      modelUnit   = newModelUnit()->include(meta::external::format::flatdata::executionPlan::test::TargetPerson)
    );
 }
 
@@ -132,3 +172,15 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::flatdata::e
 
    assertEquals($expected, $planString);
 }
+
+###Mapping
+import meta::external::format::flatdata::executionPlan::test::*;
+
+Mapping meta::external::format::flatdata::executionPlan::test::M2MMapping
+(
+  TargetPerson: Pure
+  {
+    ~src Person
+    fullName : $src.firstName + ' ' + $src.lastName;
+  }
+)

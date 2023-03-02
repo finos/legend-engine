@@ -49,7 +49,7 @@ Class meta::pure::dataQuality::RelativePathNode
    index        : Integer[0..1];
 }
 
-function meta::pure::dataQuality::checked<T>(collection: T[*]):Checked<T>[*]
+function <<functionType.NotImplementedFunction>> meta::pure::dataQuality::checked<T>(collection: T[*]):Checked<T>[*]
 {
    fail('Not implemented!');
    $collection->map(e|^Checked<T>(value=$e));

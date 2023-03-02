@@ -23,6 +23,7 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.StreamingResult;
@@ -53,9 +54,9 @@ import static org.finos.legend.pure.generated.core_legend_service_validation.Roo
 
 public class LegendServicePostValidationRunner extends ServicePostValidationRunner
 {
-    public LegendServicePostValidationRunner(PureModel pureModel, Root_meta_legend_service_metamodel_Service pureService, List<Variable> rawParams, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, MutableList<PlanTransformer> transformers, String pureVersion, MutableList<CommonProfile> profiles, SerializationFormat format)
+    public LegendServicePostValidationRunner(PureModel pureModel, Root_meta_legend_service_metamodel_Service pureService, List<Variable> rawParams, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, MutableList<PlanTransformer> transformers, String pureVersion, MutableList<CommonProfile> profiles, SerializationFormat format, PlanExecutor planExecutor)
     {
-        super(pureModel, pureService, rawParams, extensions, transformers, pureVersion, profiles, format);
+        super(pureModel, pureService, rawParams, extensions, transformers, pureVersion, profiles, format,planExecutor);
     }
 
     protected MutableMap<String, Result> evaluateParameters(RichIterable<?> parameters)
