@@ -29,14 +29,16 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 { 
   let func ={|meta::relational::tests::model::simple::Person.all()
     ->project([
-        col(p |$p.lastName,'lastName') 
+        col(p |$p.lastName,'lastName')
+        ,col(p |$p.id,'id')
         ,col(window(p |$p.firstName ), func(p |$p.age->toOne(), y| $y->average()),'ageWindow')
-    ])}; 
+    ])->sort([asc('id')])};
+
   let result = executeViaPlan($func, simpleRelationalMappingInc, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
 
   runDataAssertion($result, $config,
-  | assertEquals($result.values.rows.values, ['Smith', 23.0, 'Johnson', 17.0, 'Hill', 17.0, 'Allen', 22.0, 'Roberts', 34.0, 'Hill', 32.0, 'Harris', 35.0]);
-    assertEquals($result.values.columns.name, ['lastName', 'ageWindow']);
+  | assertEquals($result.values.rows.values, ['Smith', 1, 23.0, 'Johnson', 2, 17.0, 'Hill', 3, 17.0, 'Allen', 4, 22.0, 'Roberts', 5, 34.0, 'Hill', 6, 32.0, 'Harris', 7, 35.0]);
+    assertEquals($result.values.columns.name, ['lastName', 'id', 'ageWindow']);
   );
 }
 
@@ -44,14 +46,16 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 {
   let func = {|meta::relational::tests::model::simple::Person.all()
     ->project([
-        col(p |$p.lastName,'lastName') 
+        col(p |$p.lastName,'lastName')
+        ,col(p |$p.id,'id')
         ,col(window(p |$p.firstName ),sortAsc(p |$p.lastName), func(p |$p.age->toOne(), y| $y->average()),'ageAverageWindow')
-    ])};
+    ])->sort([asc('id')])};
+
   let result = executeViaPlan($func, simpleRelationalMappingInc, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
-  
+
   runDataAssertion($result, $config,
-  | assertEquals($result.values.rows.values, ['Smith', 23.0, 'Johnson', 17.0, 'Hill', 12.0, 'Allen', 22.0, 'Roberts', 34.0, 'Hill', 32.0, 'Harris', 35.0]);
-    assertEquals($result.values.columns.name, ['lastName', 'ageAverageWindow']);
+  | assertEquals($result.values.rows.values, ['Smith', 1, 23.0, 'Johnson', 2, 17.0, 'Hill', 3, 12.0, 'Allen', 4, 22.0, 'Roberts', 5, 34.0, 'Hill', 6, 32.0, 'Harris', 7, 35.0]);
+    assertEquals($result.values.columns.name, ['lastName', 'id', 'ageAverageWindow']);
   );
 }
 
@@ -59,16 +63,17 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 {
   let func ={|meta::relational::tests::model::simple::Person.all()
     ->project([
-        col(p |$p.lastName,'lastName') 
+        col(p |$p.lastName,'lastName')
+        ,col(p |$p.id,'id')
         ,col(window(p |$p.firstName ),sortAsc(p |$p.lastName), func(p |$p.age->toOne(), y| $y->average()),'ageAverageWindow')
         ,col(window(p |$p.manager.lastName->toOne() ),sortDesc(p |$p.manager.firstName->toOne()), func(p |$p.age->toOne(), y| $y->sum()),'ageSumWindow')
+    ])->sort([asc('id')])};
 
-    ])};
   let result = executeViaPlan($func, simpleRelationalMappingInc, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
 
   runDataAssertion($result, $config,
-  | assertEquals($result.values.rows.values, ['Smith', 23.0, 35.0, 'Johnson', 17.0, 22.0, 'Hill', 12.0, 35.0, 'Allen', 22.0, 123.0, 'Roberts', 34.0, 123.0, 'Hill', 32.0, 123.0, 'Harris', 35.0, 123.0]);
-    assertEquals($result.values.columns.name, ['lastName', 'ageAverageWindow', 'ageSumWindow']);
+  | assertEquals($result.values.rows.values, ['Smith', 1, 23.0, 35.0, 'Johnson', 2, 17.0, 22.0, 'Hill', 3, 12.0, 35.0, 'Allen', 4, 22.0, 123.0, 'Roberts', 5, 34.0, 123.0, 'Hill', 6, 32.0, 123.0, 'Harris', 7, 35.0, 123.0]);
+    assertEquals($result.values.columns.name, ['lastName', 'id', 'ageAverageWindow', 'ageSumWindow']);
   );
 }
 
@@ -76,14 +81,16 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 {
   let func ={|meta::relational::tests::model::simple::Person.all()
     ->project([
-        col(p |$p.lastName,'lastName') 
+        col(p |$p.lastName,'lastName')
+        ,col(p |$p.id,'id')
         ,col(window(p |$p.firstName ), func(p |$p.age->toOne(), y| $y->max()),'ageMaxWindow')
         ,col(window(p |$p.manager.lastName->toOne() ), func(p |$p.age->toOne(), y| $y->sum()),'ageSumWindow')
-    ])};
+    ])->sort([asc('id')])};
+
   let result = executeViaPlan($func, simpleRelationalMappingInc, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
 
   runDataAssertion($result, $config,
-  | assertEquals($result.values.rows.values, ['Smith', 23.0, 35.0, 'Johnson', 22.0, 22.0, 'Hill', 22.0, 35.0, 'Allen', 22.0, 123.0, 'Roberts', 34.0, 123.0, 'Hill', 32.0, 123.0, 'Harris', 35.0, 123.0]);
-    assertEquals($result.values.columns.name, ['lastName', 'ageMaxWindow', 'ageSumWindow']);
+  | assertEquals($result.values.rows.values, ['Smith', 1, 23.0, 35.0, 'Johnson', 2, 22.0, 22.0, 'Hill', 3, 22.0, 35.0, 'Allen', 4, 22.0, 123.0, 'Roberts', 5, 34.0, 123.0, 'Hill', 6, 32.0, 123.0, 'Harris', 7, 35.0, 123.0]);
+    assertEquals($result.values.columns.name, ['lastName', 'id', 'ageMaxWindow', 'ageSumWindow']);
   );
 }

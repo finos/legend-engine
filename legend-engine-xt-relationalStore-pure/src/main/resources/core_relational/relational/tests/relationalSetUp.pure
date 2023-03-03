@@ -439,6 +439,7 @@ Mapping meta::relational::tests::simpleRelationalMappingIncWithStoreFilter
                ~filter [dbIncWithStoreFilter]personMappingFilter
                 scope([dbIncWithStoreFilter])
                 (
+                    id : PersonView.ID,
                     firstName : PersonView.FIRSTNAME,
                     age : PersonView.AGE
                 ),
@@ -528,6 +529,7 @@ Mapping meta::relational::tests::simpleRelationalMappingInc
                 //~primaryKey([dbInc]default.personTable.ID, [dbInc]default.personTable.FIRSTNAME)
                 scope([dbInc])
                 (
+                    id : personTable.ID,
                     firstName : personTable.FIRSTNAME,
                     age : personTable.AGE
                 ),
@@ -980,6 +982,7 @@ Mapping meta::relational::tests::TestMappingWithViewJoins
    Person : Relational
    {
      ~mainTable [db] firmTable
+     id : [db]@personViewWithFirmTable|PersonViewWithDistinct.id,
      firstName : [db]@personViewWithFirmTable|PersonViewWithDistinct.firstName,
      lastName : [db]@personViewWithFirmTable|PersonViewWithDistinct.lastName,
      activeEmployment: [db] case( equal(@personViewWithFirmTable| firmTable.LEGALNAME, sqlNull()),'false','true')
