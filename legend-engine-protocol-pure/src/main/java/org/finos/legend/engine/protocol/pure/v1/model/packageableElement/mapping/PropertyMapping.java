@@ -35,5 +35,10 @@ public abstract class PropertyMapping
     public LocalMappingPropertyInfo localMappingProperty;
     public SourceInformation sourceInformation;
 
-    public abstract <T> T accept(PropertyMappingVisitor<T> visitor);
+    public <T> T accept(PropertyMappingVisitor<T> visitor)
+    {
+        return visitor.visit(this);
+    }
+
+    ;
 }

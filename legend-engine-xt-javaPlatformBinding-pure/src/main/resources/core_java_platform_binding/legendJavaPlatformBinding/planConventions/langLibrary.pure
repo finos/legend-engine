@@ -164,8 +164,8 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::lang::
 function meta::pure::executionPlan::platformBinding::legendJava::library::lang::ifCoder(ctx:FuncCoderContext[1], condition:Code[1], then:Code[1], else:Code[1]) : Code[1]
 {
    let returnType = $ctx.returnType();
-   let supplier   = javaSupplier($returnType); 
-   
+   let supplier   = javaSupplier($returnType);
+
    j_conditional(
       $condition, 
       $then->j_cast($supplier)->j_invoke('get', [], $returnType), 
@@ -189,7 +189,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::lang::
    assert($conventions.newFunctionProhibitedList->filter(c|$c == $cls)->size()==0, 'Cannot create new instance for class used in mapping: ' + $cls->elementToPath());
    
    let kv = $args->at(2)->cast(@InstanceValue).values->cast(@KeyExpression);
-   let processedKV = $kv->map(k|let s = $k.key.values->toOne(); 
+   let processedKV = $kv->map(k|let s = $k.key.values->toOne();
                                 let e = $k.expression->generateJava($conventions, $debug);
                                 pair($s,$e););
          
@@ -245,7 +245,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::lang::
       
    let processed_args = $processedKV->map(arg | let prop = $props->filter(p| $p.name == $arg.first)->toOne();
                                                 let propType = $conventions->pureTypeToJavaType($prop);
-                                                let value = if($propType->isJavaList(), | $arg.second->j_listOf($propType), | $arg.second);
+                                                let value = $arg.second->castExpressionToReturnType($propType);
                                                 pair($prop, $value););
                                       
    let invoke = $processed_args
