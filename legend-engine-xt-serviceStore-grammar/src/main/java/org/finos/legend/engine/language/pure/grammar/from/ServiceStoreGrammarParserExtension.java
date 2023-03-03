@@ -116,7 +116,7 @@ public class ServiceStoreGrammarParserExtension implements IServiceStoreGrammarP
     @Override
     public List<Function<SecuritySchemeSourceCode, SecurityScheme>> getExtraSecuritySchemesParsers()
     {
-        return Collections.singletonList(code ->
+        return Lists.mutable.with(code ->
         {
             SecuritySchemeParseTreeWalker walker = new SecuritySchemeParseTreeWalker();
             switch (code.getType())
