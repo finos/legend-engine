@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.grammar.to;
 
 import org.eclipse.collections.api.block.function.Function2;
+import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
@@ -31,7 +32,7 @@ public interface IServiceStoreGrammarComposerExtension extends PureGrammarCompos
         return Lists.mutable.withAll(ServiceLoader.load(IServiceStoreGrammarComposerExtension.class));
     }
 
-    default List<Function2<Pair<String, SecurityScheme>, PureGrammarComposerContext, String>> getExtraSecuritySchemesComposers()
+    default List<Function3<String, SecurityScheme, PureGrammarComposerContext, String>> getExtraSecuritySchemesComposers()
     {
         return Collections.emptyList();
     }

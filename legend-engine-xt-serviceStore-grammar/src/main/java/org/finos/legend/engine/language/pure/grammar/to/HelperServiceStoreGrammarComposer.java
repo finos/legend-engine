@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.grammar.to;
 
 import org.eclipse.collections.api.block.function.Function2;
+import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
 import org.eclipse.collections.impl.tuple.Tuples;
@@ -231,9 +232,9 @@ public class HelperServiceStoreGrammarComposer
 
     private static String renderSecurityScheme(String id, SecurityScheme securityScheme, PureGrammarComposerContext context)
     {
-        List<Function2<Pair<String, SecurityScheme>, PureGrammarComposerContext, String>> processors = ListIterate.flatCollect(IServiceStoreGrammarComposerExtension.getExtensions(), ext -> ext.getExtraSecuritySchemesComposers());
+        List<Function3<String, SecurityScheme, PureGrammarComposerContext, String>> processors = ListIterate.flatCollect(IServiceStoreGrammarComposerExtension.getExtensions(), ext -> ext.getExtraSecuritySchemesComposers());
 
-        return ListIterate.collect(processors, processor -> processor.value(Tuples.pair(id, securityScheme), context))
+        return ListIterate.collect(processors, processor -> processor.value(id, securityScheme, context))
                 .select(Objects::nonNull)
                 .getFirstOptional()
                 .orElseThrow(() -> new EngineException("Unsupported securityScheme - " + securityScheme.getClass().getSimpleName(), securityScheme.sourceInformation, EngineErrorType.PARSER));

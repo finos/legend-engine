@@ -119,12 +119,10 @@ public class ServiceStoreGrammarComposerExtension implements IServiceStoreGramma
     }
 
     @Override
-    public List<Function2<Pair<String, SecurityScheme>, PureGrammarComposerContext, String>> getExtraSecuritySchemesComposers()
+    public List<Function3<String, SecurityScheme, PureGrammarComposerContext, String>> getExtraSecuritySchemesComposers()
     {
-        return Lists.mutable.with((securitySchemePair, context) ->
+        return Lists.mutable.with((id,_scheme, context) ->
         {
-            String id = securitySchemePair.getOne();
-            SecurityScheme _scheme = securitySchemePair.getTwo();
             if (_scheme instanceof HttpSecurityScheme)
             {
                 HttpSecurityScheme httpSecurityScheme = (HttpSecurityScheme) _scheme;
