@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.stores.relational.config;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorConfiguration;
@@ -30,6 +31,7 @@ public class RelationalExecutionConfiguration implements StoreExecutorConfigurat
     public List<OAuthProfile> oauthProfiles = Lists.mutable.empty();
     private DatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration;
     private Class<? extends DatabaseAuthenticationFlowProvider> flowProviderClass;
+    private CredentialProviderProvider credentialProviderProvider;
 
     @Override
     public StoreType getStoreType()
@@ -61,6 +63,16 @@ public class RelationalExecutionConfiguration implements StoreExecutorConfigurat
         return temporarytestdb;
     }
 
+    public CredentialProviderProvider getCredentialProviderProvider()
+    {
+        return credentialProviderProvider;
+    }
+
+    public void setCredentialProviderProvider(CredentialProviderProvider credentialProviderProvider)
+    {
+        this.credentialProviderProvider = credentialProviderProvider;
+    }
+
     public static Builder newInstance()
     {
         return new Builder();
@@ -73,6 +85,7 @@ public class RelationalExecutionConfiguration implements StoreExecutorConfigurat
         private Class<? extends DatabaseAuthenticationFlowProvider> flowProviderClass;
         private DatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration;
         private TemporaryTestDbConfiguration temporaryTestDbConfiguration;
+        private CredentialProviderProvider credentialProviderProvider;
 
         public Builder withTempPath(String tempPath)
         {
@@ -107,6 +120,12 @@ public class RelationalExecutionConfiguration implements StoreExecutorConfigurat
             return this;
         }
 
+        public Builder withCredentialProviderProvider(CredentialProviderProvider credentialProviderProvider)
+        {
+            this.credentialProviderProvider = credentialProviderProvider;
+            return this;
+        }
+
         public RelationalExecutionConfiguration build()
         {
             RelationalExecutionConfiguration relationalExecutionConfiguration = new RelationalExecutionConfiguration();
@@ -115,6 +134,7 @@ public class RelationalExecutionConfiguration implements StoreExecutorConfigurat
             relationalExecutionConfiguration.flowProviderClass = this.flowProviderClass;
             relationalExecutionConfiguration.flowProviderConfiguration = this.flowProviderConfiguration;
             relationalExecutionConfiguration.temporarytestdb = this.temporaryTestDbConfiguration;
+            relationalExecutionConfiguration.credentialProviderProvider = credentialProviderProvider;
             return relationalExecutionConfiguration;
         }
     }

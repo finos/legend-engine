@@ -309,7 +309,8 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOfOneObje
    assert(jsonEquivalent('{"targetAddress":"200 west"}'->parseJSON(), $result.values->toOne()->parseJSON()));
 }
 
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>> 
+//TODO - moved to engine to run in compiled mode
+function <<meta::pure::profiles::test.ToFix, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>> 
 {  serverVersion.start='v1_20_0',
    doc.doc='Given: a single JSON object that matches a source defintion, and an M2M mapping',
    doc.doc='When:  the mapping is executed using graphFetch with subType and serialize.',

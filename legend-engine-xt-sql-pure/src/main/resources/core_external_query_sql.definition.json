@@ -5,7 +5,9 @@
     "platform",
     "platform_functions",
     "platform_dsl_mapping",
+    "platform_store_relational",
     "core",
+    "core_relational",
     "core_external_compiler",
     "core_external_query_sql_metamodel"
   ]

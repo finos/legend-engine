@@ -267,6 +267,18 @@ Class meta::external::query::graphQL::transformation::queryToPure::tests::model:
   isSeniorCitizen() {$this.age > 60}: Boolean[1];
 }
 
+Class meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm
+{
+  legalName: String[1];
+  id: String[1];
+}
+
+Association meta::external::query::graphQL::transformation::queryToPure::tests::model::FIrm_Employee
+{
+  firm: meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm[1];
+  employees: meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1];
+}
+
 Class meta::external::query::graphQL::transformation::queryToPure::tests::model::Query
 {
   personByVariousProps(names:String[*], phone: Integer[1], isSeniorCitizen: Boolean[1], zipcode: String[1], minBalance: Float[1], maxBalance: Float[1])
@@ -289,7 +301,7 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
   let graphQLDocument = meta::legend::compileVS('#GQL{ query { employees: personByName(name:"John Doe") { firstName lastName } } }#')->cast(@meta::external::query::graphQL::metamodel::sdl::Document);
   let pureGraphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($graphQLDocument, Query);
   assertEquals('#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Query {\n' +
-               '    personByName(\'John Doe\') {\n' +
+               '    personByName($name) {\n' +
                '        firstName, \n'+
                '        lastName\n'+
                '    }\n' +
@@ -301,8 +313,23 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
   let graphQLDocument = meta::legend::compileVS('#GQL{ query { employees: personByVariousProps(names:["John Doe","Steve Stark"], phone: 123456789, isSeniorCitizen: false, zipcode: "123456", minBalance: 10.00, maxBalance: 1000.50) { fullName } } }#')->cast(@meta::external::query::graphQL::metamodel::sdl::Document);
   let pureGraphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($graphQLDocument, Query);
   assertEquals('#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Query {\n' +
-              '    personByVariousProps([\'John Doe\', \'Steve Stark\'], 123456789, false, \'123456\', 10.0, 1000.5) {\n' +
+              '    personByVariousProps($names, $phone, $isSeniorCitizen, $zipcode, $minBalance, $maxBalance) {\n' +
               '        fullName()\n'+
               '    }\n' +
               '}}#', $pureGraphFetch->meta::pure::graphFetch::routing::asString(true));
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::tests::testConvertQueryWithAssociationProperties():Boolean[1]
+{
+  let graphQLDocument = meta::legend::compileVS('#GQL{ query { employees: personByName(name:"John Doe") { firstName lastName firm { id } } } }#')->cast(@meta::external::query::graphQL::metamodel::sdl::Document);
+  let pureGraphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($graphQLDocument, Query);
+  assertEquals('#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Query {\n' +
+               '    personByName($name) {\n' +
+               '        firstName, \n'+
+               '        lastName, \n'+
+               '        firm {\n'+
+               '            id\n'+
+               '        }\n'+
+               '    }\n' +
+               '}}#', $pureGraphFetch->meta::pure::graphFetch::routing::asString(true));
 }

@@ -29,7 +29,6 @@ import org.finos.legend.engine.language.graphQL.grammar.from.GraphQLGrammarParse
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
-import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
 import org.finos.legend.engine.protocol.graphQL.metamodel.ExecutableDocument;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
@@ -68,7 +67,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ServiceLoader;
 import java.util.function.Function;
 
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
@@ -121,17 +119,44 @@ public class GraphQLDebug extends GraphQL
         )).build();
     }
 
+    @Deprecated
     @POST
-    @ApiOperation(value = "Generate Pure graphFetch(s) from a graphQL query using metadata from SDLC project")
+    @ApiOperation(value = "Generate Pure graphFetch(s) from a graphQL query using metadata from SDLC project",  notes = "DEPRECATED - Use the generateGraphFetch APIs that include 'workspace' or 'groupWorkspace' as path parameters")
     @Path("generateGraphFetch/dev/{projectId}/{workspaceId}/query/{queryClassPath}")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
     public Response generateGraphFetchDev(@Context HttpServletRequest request, @PathParam("workspaceId") String workspaceId, @PathParam("projectId") String projectId, @PathParam("queryClassPath") String queryClassPath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
+        return this.generateGraphFetchDevWithUserWorkspace(request, workspaceId, projectId, queryClassPath, query, pm);
+    }
+
+    @POST
+    @ApiOperation(value = "Generate Pure graphFetch(s) from a graphQL query using metadata from SDLC project (user workspace)")
+    @Path("generateGraphFetch/dev/{projectId}/workspace/{workspaceId}/query/{queryClassPath}")
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response generateGraphFetchDevWithUserWorkspace(@Context HttpServletRequest request, @PathParam("workspaceId") String workspaceId, @PathParam("projectId") String projectId, @PathParam("queryClassPath") String queryClassPath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    {
+        return this.generateGraphFetchDevImpl(request, workspaceId, false, projectId, queryClassPath, query, pm);
+    }
+
+
+    @POST
+    @ApiOperation(value = "Generate Pure graphFetch(s) from a graphQL query using metadata from SDLC project (group workspace)")
+    @Path("generateGraphFetch/dev/{projectId}/groupWorkspace/{workspaceId}/query/{queryClassPath}")
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response generateGraphFetchDevWithGroupWorkspace(@Context HttpServletRequest request, @PathParam("workspaceId") String workspaceId, @PathParam("projectId") String projectId, @PathParam("queryClassPath") String queryClassPath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    {
+        return this.generateGraphFetchDevImpl(request, workspaceId, true, projectId, queryClassPath, query, pm);
+    }
+
+    private Response generateGraphFetchDevImpl(HttpServletRequest request, String workspaceId, boolean isGroupWorkspace, String projectId, String queryClassPath, Query query, ProfileManager<CommonProfile> pm)
+    {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan("GraphQL: Generate Graph Fetch").startActive(true))
         {
-            return this.generateGraphFetch(queryClassPath, query, loadSDLCProjectModel(profiles, request, projectId, workspaceId, false));
+            return this.generateGraphFetch(queryClassPath, query, loadSDLCProjectModel(profiles, request, projectId, workspaceId, isGroupWorkspace));
         }
         catch (Exception ex)
         {
@@ -149,7 +174,7 @@ public class GraphQLDebug extends GraphQL
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan("GraphQL: Generate Graph Fetch").startActive(true))
         {
-            return this.generateGraphFetch(queryClassPath, query, loadProjectModel(profiles, request, groupId, artifactId, versionId));
+            return this.generateGraphFetch(queryClassPath, query, loadProjectModel(profiles, groupId, artifactId, versionId));
         }
         catch (Exception ex)
         {

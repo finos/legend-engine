@@ -1,0 +1,299 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::protocols::pure::v1_29_0::transformation::fromPureGraph::context::*;
+import meta::protocols::pure::v1_29_0::invocation::execution::execute::*;
+import meta::protocols::pure::v1_29_0::transformation::fromPureGraph::*;
+import meta::protocols::pure::v1_29_0::transformation::fromPureGraph::runtime::*;
+import meta::pure::functions::io::http::*;
+import meta::pure::runtime::*;
+import meta::pure::mapping::*;
+import meta::alloy::metadataServer::*;
+import meta::json::*;
+import meta::protocols::pure::v1_29_0::invocation::execution::testDataGeneration::*;
+
+Class meta::protocols::pure::v1_29_0::invocation::execution::testDataGeneration::SeedDataGenerationInput
+{
+   clientVersion : String[1];
+   function : meta::protocols::pure::v1_29_0::metamodel::valueSpecification::raw::Lambda[1];
+   mapping : String[1];
+   runtime : meta::protocols::pure::v1_29_0::metamodel::Runtime[1];
+   context : meta::protocols::pure::v1_29_0::metamodel::ExecutionContext[0..1];
+   model : meta::protocols::pure::v1_29_0::metamodel::PureModelContext[1];
+   parameters : Any[*];
+}
+
+Class meta::protocols::pure::v1_29_0::invocation::execution::testDataGeneration::TestDataGenerationWithSeedInput
+{
+   clientVersion : String[1];
+   function : meta::protocols::pure::v1_29_0::metamodel::valueSpecification::raw::Lambda[1];
+   mapping : String[1];
+   runtime : meta::protocols::pure::v1_29_0::metamodel::Runtime[1];
+   context : meta::protocols::pure::v1_29_0::metamodel::ExecutionContext[0..1];
+   model : meta::protocols::pure::v1_29_0::metamodel::PureModelContext[1];
+   hashStrings : Boolean[0..1];
+   tableRowIdentifiers : meta::protocols::pure::v1_29_0::metamodel::testDataGeneration::TableRowIdentfiiers[*];
+}
+
+Class meta::protocols::pure::v1_29_0::invocation::execution::testDataGeneration::TestDataGenerationWithDefaultSeedInput
+{
+   clientVersion : String[1];
+   function : meta::protocols::pure::v1_29_0::metamodel::valueSpecification::raw::Lambda[1];
+   mapping : String[1];
+   runtime : meta::protocols::pure::v1_29_0::metamodel::Runtime[1];
+   context : meta::protocols::pure::v1_29_0::metamodel::ExecutionContext[0..1];
+   model : meta::protocols::pure::v1_29_0::metamodel::PureModelContext[1];
+   parameters : Any[*];
+   hashStrings : Boolean[0..1];
+}
+
+function meta::protocols::pure::v1_29_0::invocation::execution::testDataGeneration::alloyGenerateSeedDataInteractive(f:FunctionDefinition<Any>[1], m:Mapping[1], pureRuntime:Runtime[1], context:ExecutionContext[0..1], parameters: Any[*], host:String[1], port:Integer[1], version:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
+{
+   alloyGenerateSeedData($f, $m, $pureRuntime, $context, $parameters, '-1', $host, $port, $version, ExecutionMode.INTERACTIVE->toString(), $extensions)
+}
+
+function meta::protocols::pure::v1_29_0::invocation::execution::testDataGeneration::alloyGenerateSeedDataSemiInteractive(f:FunctionDefinition<Any>[1], m:Mapping[1], pureRuntime:Runtime[1], context:ExecutionContext[0..1], parameters: Any[*], host:String[1], port:Integer[1], version:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
+{
+   alloyGenerateSeedData($f, $m, $pureRuntime, $context, $parameters, '-1', $host, $port, $version, ExecutionMode.SEMI_INTERACTIVE->toString(), $extensions)
+}
+
+function meta::protocols::pure::v1_29_0::invocation::execution::testDataGeneration::alloyGenerateSeedDataInteractive(f:FunctionDefinition<Any>[1], m:Mapping[1], pureRuntime:Runtime[1], context:ExecutionContext[0..1], parameters: Any[*], baseVersion:String[1], host:String[1], port:Integer[1], version:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
+{
+   alloyGenerateSeedData($f, $m, $pureRuntime, $context, $parameters, $baseVersion, $host, $port, $version, ExecutionMode.INTERACTIVE->toString(), $extensions)
+}
+
+function meta::protocols::pure::v1_29_0::invocation::execution::testDataGeneration::alloyGenerateSeedDataSemiInteractive(f:FunctionDefinition<Any>[1], m:Mapping[1], pureRuntime:Runtime[1], context:ExecutionContext[0..1], parameters: Any[*], baseVersion:String[1], host:String[1], port:Integer[1], version:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
+{
+   alloyGenerateSeedData($f, $m, $pureRuntime, $context, $parameters, $baseVersion, $host, $port, $version, ExecutionMode.SEMI_INTERACTIVE->toString(), $extensions)
+}
+
+function meta::protocols::pure::v1_29_0::invocation::execution::testDataGeneration::alloyGenerateSeedData(f:FunctionDefinition<Any>[1], m:Mapping[1], pureRuntime:Runtime[1], context:ExecutionContext[0..1], parameters: Any[*], baseVersion:String[1], host:String[1], port:Integer[1], version:String[1], executionMode:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
+{
+   let transformedContext = if($context->isNotEmpty(), | $context->toOne()->transformContext($extensions),| []);
+   let execMode = ExecutionMode->extractEnumValue($executionMode);
+
+   let toOrigin = {m:Mapping[1], p:meta::protocols::Protocol[1] | buildPureModelContextPointer(^meta::protocols::pure::v1_29_0::metamodel::PackageableElementPointer(type=meta::protocols::pure::v1_29_0::metamodel::PackageableElementType.MAPPING, path=$m->elementToPath()), $baseVersion, $p)};
+
+   let resultJSON = ^meta::protocols::pure::v1_29_0::invocation::execution::testDataGeneration::SeedDataGenerationInput
+   (
+      clientVersion = 'v1_29_0',
+      function = transformLambda($f, $extensions),
+      mapping = $m->elementToPath(),
+      runtime = transformRuntime($pureRuntime, $extensions),
+      context = $transformedContext,
+      model = if($execMode == ExecutionMode.SEMI_INTERACTIVE,
+                  |let stores =  $pureRuntime.connections.element->cast(@meta::pure::store::Store)
+                                    ->map(s|$s->findAllStoreIncludes())
+                                    ->removeDuplicates()
+                                    ->map(c|^meta::protocols::pure::v1_29_0::metamodel::PackageableElementPointer(type=meta::protocols::pure::v1_29_0::metamodel::PackageableElementType.STORE,path=$c->elementToPath()));
+                   let mapping = ^meta::protocols::pure::v1_29_0::metamodel::PackageableElementPointer(type=meta::protocols::pure::v1_29_0::metamodel::PackageableElementType.MAPPING,path=$m->elementToPath());
+                   ^meta::protocols::pure::v1_29_0::metamodel::PureModelContextPointer
+                   (
+                      _type='pointer',
+                      serializer = ^meta::protocols::Protocol
+                                   (
+                                      name='pure',
+                                      version = 'v1_29_0'
+                                   ),
+                      sdlcInfo = ^meta::protocols::pure::v1_29_0::metamodel::PureSDLC
+                                 (
+                                    _type = 'pure',
+                                    baseVersion = $baseVersion,
+                                    version = 'none',
+                                    packageableElementPointers = $stores->concatenate($mapping)
+                                 )
+                   );,
+                  |$m->buildBasePureModelFromMapping($toOrigin, $extensions).second
+               ),
+      parameters = $parameters
+   )->alloyToJSON();
+
+   let resp = executeHTTPRaw(^URL(host = $host , port=$port, path = '/api/pure/'+$version+'/execution/testDataGeneration/generateSeedData'),
+                                 HTTPMethod.POST,
+                                 'application/json',
+                                 $resultJSON
+         );
+   assertEq(200, $resp.statusCode, | $resp.statusCode->toString()+' \''+$resp.entity+'\'');
+   $resp.entity;
+}
+
+function meta::protocols::pure::v1_29_0::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive(f:FunctionDefinition<Any>[1], m:Mapping[1], pureRuntime:Runtime[1], context:ExecutionContext[0..1], tableRowIdentifiers: meta::relational::testDataGeneration::TableRowIdentifiers[*], hashStrings: Boolean[0..1], host:String[1], port:Integer[1], version:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
+{
+   alloyGenerateTestDataWithSeed($f, $m, $pureRuntime, $context, $tableRowIdentifiers, $hashStrings, '-1', $host, $port, $version, ExecutionMode.INTERACTIVE->toString(), $extensions)
+}
+
+function meta::protocols::pure::v1_29_0::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedSemiInteractive(f:FunctionDefinition<Any>[1], m:Mapping[1], pureRuntime:Runtime[1], context:ExecutionContext[0..1], tableRowIdentifiers: meta::relational::testDataGeneration::TableRowIdentifiers[*],  hashStrings: Boolean[0..1], host:String[1], port:Integer[1], version:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
+{
+   alloyGenerateTestDataWithSeed($f, $m, $pureRuntime, $context, $tableRowIdentifiers, $hashStrings, '-1', $host, $port, $version, ExecutionMode.SEMI_INTERACTIVE->toString(), $extensions)
+}
+
+function meta::protocols::pure::v1_29_0::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive(f:FunctionDefinition<Any>[1], m:Mapping[1], pureRuntime:Runtime[1], context:ExecutionContext[0..1], tableRowIdentifiers: meta::relational::testDataGeneration::TableRowIdentifiers[*], hashStrings: Boolean[0..1], baseVersion:String[1], host:String[1], port:Integer[1], version:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
+{
+   alloyGenerateTestDataWithSeed($f, $m, $pureRuntime, $context, $tableRowIdentifiers, $hashStrings, $baseVersion, $host, $port, $version, ExecutionMode.INTERACTIVE->toString(), $extensions)
+}
+
+function meta::protocols::pure::v1_29_0::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedSemiInteractive(f:FunctionDefinition<Any>[1], m:Mapping[1], pureRuntime:Runtime[1], context:ExecutionContext[0..1], tableRowIdentifiers: meta::relational::testDataGeneration::TableRowIdentifiers[*],  hashStrings: Boolean[0..1], baseVersion:String[1], host:String[1], port:Integer[1], version:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
+{
+   alloyGenerateTestDataWithSeed($f, $m, $pureRuntime, $context, $tableRowIdentifiers, $hashStrings, $baseVersion, $host, $port, $version, ExecutionMode.SEMI_INTERACTIVE->toString(), $extensions)
+}
+
+function meta::protocols::pure::v1_29_0::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeed(f:FunctionDefinition<Any>[1], m:Mapping[1], pureRuntime:Runtime[1], context:ExecutionContext[0..1], tableRowIdentifiers: meta::relational::testDataGeneration::TableRowIdentifiers[*], hashStrings: Boolean[0..1], baseVersion:String[1], host:String[1], port:Integer[1], version:String[1], executionMode:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
+{
+   let transformedContext = if($context->isNotEmpty(), | $context->toOne()->transformContext($extensions),| []);
+   let execMode = ExecutionMode->extractEnumValue($executionMode);
+
+   let toOrigin = {m:Mapping[1], p:meta::protocols::Protocol[1] | buildPureModelContextPointer(^meta::protocols::pure::v1_29_0::metamodel::PackageableElementPointer(type=meta::protocols::pure::v1_29_0::metamodel::PackageableElementType.MAPPING, path=$m->elementToPath()), $baseVersion, $p)};
+
+   let resultJSON = ^meta::protocols::pure::v1_29_0::invocation::execution::testDataGeneration::TestDataGenerationWithSeedInput
+   (
+      clientVersion = 'v1_29_0',
+      function = transformLambda($f, $extensions),
+      mapping = $m->elementToPath(),
+      runtime = transformRuntime($pureRuntime, $extensions),
+      context = $transformedContext,
+      model = if($execMode == ExecutionMode.SEMI_INTERACTIVE,
+                  |let stores =  $pureRuntime.connections.element->cast(@meta::pure::store::Store)
+                                    ->map(s|$s->findAllStoreIncludes())
+                                    ->removeDuplicates()
+                                    ->map(c|^meta::protocols::pure::v1_29_0::metamodel::PackageableElementPointer(type=meta::protocols::pure::v1_29_0::metamodel::PackageableElementType.STORE,path=$c->elementToPath()));
+                   let mapping = ^meta::protocols::pure::v1_29_0::metamodel::PackageableElementPointer(type=meta::protocols::pure::v1_29_0::metamodel::PackageableElementType.MAPPING,path=$m->elementToPath());
+                   ^meta::protocols::pure::v1_29_0::metamodel::PureModelContextPointer
+                   (
+                      _type='pointer',
+                      serializer = ^meta::protocols::Protocol
+                                   (
+                                      name='pure',
+                                      version = 'v1_29_0'
+                                   ),
+                      sdlcInfo = ^meta::protocols::pure::v1_29_0::metamodel::PureSDLC
+                                 (
+                                    _type = 'pure',
+                                    baseVersion = $baseVersion,
+                                    version = 'none',
+                                    packageableElementPointers = $stores->concatenate($mapping)
+                                 )
+                   );,
+                  |$m->buildBasePureModelFromMapping($toOrigin, $extensions).second
+               ),
+      tableRowIdentifiers = $tableRowIdentifiers->map(x | $x->meta::protocols::pure::v1_29_0::transformation::fromPureGraph::testDataGeneration::transformTableRowIdentifiers()),
+      hashStrings = $hashStrings
+   )->alloyToJSON();
+
+   let resp = executeHTTPRaw(^URL(host = $host , port=$port, path = '/api/pure/'+$version+'/execution/testDataGeneration/generateTestData_WithSeed'),
+                                 HTTPMethod.POST,
+                                 'application/json',
+                                 $resultJSON
+         );
+   assertEq(200, $resp.statusCode, | $resp.statusCode->toString()+' \''+$resp.entity+'\'');
+   $resp.entity;
+}
+
+function meta::protocols::pure::v1_29_0::invocation::execution::testDataGeneration::alloyGenerateTestDataWithDefaultSeedInteractive(f:FunctionDefinition<Any>[1], m:Mapping[1], pureRuntime:Runtime[1], context:ExecutionContext[0..1], hashStrings: Boolean[0..1], parameters: Any[*], host:String[1], port:Integer[1], version:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
+{
+   alloyGenerateTestDataWithDefaultSeed($f, $m, $pureRuntime, $context, $hashStrings, $parameters, '-1', $host, $port, $version, ExecutionMode.INTERACTIVE->toString(), $extensions)
+}
+
+function meta::protocols::pure::v1_29_0::invocation::execution::testDataGeneration::alloyGenerateTestDataWithDefaultSeedSemiInteractive(f:FunctionDefinition<Any>[1], m:Mapping[1], pureRuntime:Runtime[1], context:ExecutionContext[0..1], hashStrings: Boolean[0..1], parameters: Any[*], host:String[1], port:Integer[1], version:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
+{
+   alloyGenerateTestDataWithDefaultSeed($f, $m, $pureRuntime, $context, $hashStrings, $parameters, '-1', $host, $port, $version, ExecutionMode.SEMI_INTERACTIVE->toString(), $extensions)
+}
+
+function meta::protocols::pure::v1_29_0::invocation::execution::testDataGeneration::alloyGenerateTestDataWithDefaultSeedInteractive(f:FunctionDefinition<Any>[1], m:Mapping[1], pureRuntime:Runtime[1], context:ExecutionContext[0..1], hashStrings: Boolean[0..1], parameters: Any[*], baseVersion:String[1], host:String[1], port:Integer[1], version:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
+{
+   alloyGenerateTestDataWithDefaultSeed($f, $m, $pureRuntime, $context, $hashStrings, $parameters, $baseVersion, $host, $port, $version, ExecutionMode.INTERACTIVE->toString(), $extensions)
+}
+
+function meta::protocols::pure::v1_29_0::invocation::execution::testDataGeneration::alloyGenerateTestDataWithDefaultSeedSemiInteractive(f:FunctionDefinition<Any>[1], m:Mapping[1], pureRuntime:Runtime[1], context:ExecutionContext[0..1], hashStrings: Boolean[0..1], parameters: Any[*], baseVersion:String[1], host:String[1], port:Integer[1], version:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
+{
+   alloyGenerateTestDataWithDefaultSeed($f, $m, $pureRuntime, $context, $hashStrings, $parameters, $baseVersion, $host, $port, $version, ExecutionMode.SEMI_INTERACTIVE->toString(), $extensions)
+}
+
+function meta::protocols::pure::v1_29_0::invocation::execution::testDataGeneration::alloyGenerateTestDataWithDefaultSeed(f:FunctionDefinition<Any>[1], m:Mapping[1], pureRuntime:Runtime[1], context:ExecutionContext[0..1], hashStrings: Boolean[0..1], parameters: Any[*], baseVersion:String[1], host:String[1], port:Integer[1], version:String[1], executionMode:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
+{
+   let transformedContext = if($context->isNotEmpty(), | $context->toOne()->transformContext($extensions),| []);
+   let execMode = ExecutionMode->extractEnumValue($executionMode);
+
+   let toOrigin = {m:Mapping[1], p:meta::protocols::Protocol[1] | buildPureModelContextPointer(^meta::protocols::pure::v1_29_0::metamodel::PackageableElementPointer(type=meta::protocols::pure::v1_29_0::metamodel::PackageableElementType.MAPPING, path=$m->elementToPath()), $baseVersion, $p)};
+
+   let resultJSON = ^meta::protocols::pure::v1_29_0::invocation::execution::testDataGeneration::TestDataGenerationWithDefaultSeedInput
+   (
+      clientVersion = 'v1_29_0',
+      function = transformLambda($f, $extensions),
+      mapping = $m->elementToPath(),
+      runtime = transformRuntime($pureRuntime, $extensions),
+      context = $transformedContext,
+      model = if($execMode == ExecutionMode.SEMI_INTERACTIVE,
+                  |let stores =  $pureRuntime.connections.element->map(element |
+                     $element->match([
+                        store:meta::pure::store::Store[1] | $store->map(s|$s->findAllStoreIncludes())
+                                    ->removeDuplicates()
+                                    ->map(c|^meta::protocols::pure::v1_29_0::metamodel::PackageableElementPointer(type=meta::protocols::pure::v1_29_0::metamodel::PackageableElementType.STORE,path=$c->elementToPath()));,
+                        a:Any[*] | []
+                     ]);
+                   );
+                   let mapping = ^meta::protocols::pure::v1_29_0::metamodel::PackageableElementPointer(type=meta::protocols::pure::v1_29_0::metamodel::PackageableElementType.MAPPING,path=$m->elementToPath());
+                   ^meta::protocols::pure::v1_29_0::metamodel::PureModelContextPointer
+                   (
+                      _type='pointer',
+                      serializer = ^meta::protocols::Protocol
+                                   (
+                                      name='pure',
+                                      version = 'v1_29_0'
+                                   ),
+                      sdlcInfo = ^meta::protocols::pure::v1_29_0::metamodel::PureSDLC
+                                 (
+                                    _type = 'pure',
+                                    baseVersion = $baseVersion,
+                                    version = 'none',
+                                    packageableElementPointers = $stores->concatenate($mapping)
+                                 )
+                   );,
+                  |$m->buildBasePureModelFromMapping($toOrigin, $extensions).second
+               ),
+      parameters = $parameters,
+      hashStrings = $hashStrings
+   )->alloyToJSON();
+
+   let resp = executeHTTPRaw(^URL(host = $host , port=$port, path = '/api/pure/'+$version+'/execution/testDataGeneration/generateTestData_WithDefaultSeed'),
+                                 HTTPMethod.POST,
+                                 'application/json',
+                                 $resultJSON
+         );
+   assertEq(200, $resp.statusCode, | $resp.statusCode->toString()+' \''+$resp.entity+'\'');
+   $resp.entity;
+}
+
+function meta::protocols::pure::v1_29_0::transformation::fromPureGraph::testDataGeneration::transformTableRowIdentifiers(t: meta::relational::testDataGeneration::TableRowIdentifiers[1]):meta::protocols::pure::v1_29_0::metamodel::testDataGeneration::TableRowIdentfiiers[1]
+{
+   ^meta::protocols::pure::v1_29_0::metamodel::testDataGeneration::TableRowIdentfiiers
+   (
+      table = ^meta::protocols::pure::v1_29_0::metamodel::store::relational::element::TablePtr
+               (
+                  _type = 'table',
+                  table = $t.table.name,
+                  schema = $t.table.schema.name,
+                  database = $t.table.schema.database ->elementToPath(),
+                  mainTableDb = $t.table.schema.database ->elementToPath()
+               ),
+      rowIdentifiers = $t.rowIdentifiers->map({ri |
+         ^meta::protocols::pure::v1_29_0::metamodel::testDataGeneration::RowIdentifier
+          (
+             columnValuePairs = $ri.columnValuePairs->map(x | ^meta::protocols::pure::v1_29_0::metamodel::testDataGeneration::ColumnValuePair(name = $x.first, value = $x.second))
+          )
+      })
+   )
+}
+
+

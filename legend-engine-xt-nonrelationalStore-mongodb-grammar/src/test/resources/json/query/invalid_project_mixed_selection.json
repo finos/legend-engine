@@ -1,0 +1,13 @@
+{
+  "_type" : "databaseCommand",
+  "aggregate": "person",
+  "pipeline": [
+    {
+      "$project": {
+        "fName": 1,
+        "names.firstName": false
+      }
+    }
+  ],
+  "cursor": {}
+}

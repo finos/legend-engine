@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.DoubleNode;
 import com.fasterxml.jackson.databind.node.FloatNode;
 import com.fasterxml.jackson.databind.node.IntNode;
+import com.fasterxml.jackson.databind.node.LongNode;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 
@@ -107,7 +108,7 @@ public class AnyDeserializer extends JsonDeserializer<Object>
                             || (clazz == Integer.class && !(node instanceof IntNode))
                             || (clazz == Float.class && !(node instanceof FloatNode))
                             || (clazz == Double.class && !(node instanceof DoubleNode))
-                            || (clazz == Long.class && !(node instanceof IntNode))
+                            || (clazz == Long.class && !(node instanceof IntNode || node instanceof LongNode))
                             || (clazz == Boolean.class && !(node instanceof BooleanNode))
             )
             {

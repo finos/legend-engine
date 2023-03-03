@@ -1,0 +1,5 @@
+{
+  "name" : "core_nonrelational_mongodb",
+  "pattern" : "(meta::external::store::mongodb::metamodel|meta::external::store::mongodb::mapping)(::.*)?",
+  "dependencies" : ["platform", "core", "platform_dsl_mapping", "platform_dsl_path", "platform_functions","core_external_language_java", "core_authentication"]
+}

@@ -18,6 +18,7 @@ import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorBuilder;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorConfiguration;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
+import org.finos.legend.engine.plan.execution.stores.service.auth.ServiceStoreConnectionSpecification;
 
 public class ServiceStoreExecutorBuilder implements StoreExecutorBuilder
 {
@@ -30,12 +31,18 @@ public class ServiceStoreExecutorBuilder implements StoreExecutorBuilder
     @Override
     public ServiceStoreExecutor build()
     {
-        return ServiceStoreExecutor.INSTANCE;
+        return (ServiceStoreExecutor) build(ServiceStoreExecutionConfiguration.builder().build());
     }
 
     @Override
     public StoreExecutor build(StoreExecutorConfiguration storeExecutorConfiguration)
     {
-        return ServiceStoreExecutor.INSTANCE;
+        if (!(storeExecutorConfiguration instanceof ServiceStoreExecutionConfiguration))
+        {
+            throw new IllegalStateException("Incorrect store execution configuration. Please reach out to dev team");
+        }
+        ServiceStoreExecutionConfiguration serviceStoreExecutionConfiguration = (ServiceStoreExecutionConfiguration) storeExecutorConfiguration;
+        ServiceStoreState state = new ServiceStoreState();
+        return new ServiceStoreExecutor(state,serviceStoreExecutionConfiguration);
     }
 }

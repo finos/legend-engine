@@ -16,12 +16,18 @@
 
 package org.finos.legend.engine.service.post.validation.runner;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PackageableElementFirstPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PackageableElementSecondPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
+import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemory;
+import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relational;
+import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToJsonDefaultSerializer;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureExecution;
@@ -67,7 +73,8 @@ public class TestLegendServicePostValidationRunner
     {
         Root_meta_legend_service_metamodel_Service pureService = compileService(service, pureModel.getContext(service));
 
-        LegendServicePostValidationRunner servicePostValidationRunner = new LegendServicePostValidationRunner(pureModel, pureService, ((PureExecution) service.execution).func.parameters, Root_meta_relational_executionPlan_platformBinding_legendJava_relationalExtensionsWithLegendJavaPlatformBinding__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers, "vX_X_X", null, serializationFormat);
+        PlanExecutor planExecutor = PlanExecutor.newPlanExecutor(Relational.build(), InMemory.build());
+        LegendServicePostValidationRunner servicePostValidationRunner = new LegendServicePostValidationRunner(pureModel, pureService, ((PureExecution) service.execution).func.parameters, Root_meta_relational_executionPlan_platformBinding_legendJava_relationalExtensionsWithLegendJavaPlatformBinding__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers, "vX_X_X", null, serializationFormat,planExecutor);
         try
         {
             return servicePostValidationRunner.runValidationAssertion(assertionId);
@@ -121,16 +128,20 @@ public class TestLegendServicePostValidationRunner
     public void testSucceedingObjectService() throws Exception
     {
         String result = responseAsString(test("legend-test-object-services-with-validation.json", "meta::validation::test::DemoPassingService", "noFirstNamesWithLetterX", SerializationFormat.DEFAULT));
-
-        Assert.assertEquals("{\"id\": \"noFirstNamesWithLetterX\", \"message\": \"Expected no first names to begin with the letter X\", \"violations\": {\"builder\": {\"_type\":\"classBuilder\",\"mapping\":\"meta::validation::test::PersonMapping\",\"classMappings\":[{\"setImplementationId\":\"meta_validation_test_Person\",\"properties\":[{\"property\":\"firstName\",\"type\":\"String\"},{\"property\":\"lastName\",\"type\":\"String\"},{\"property\":\"age\",\"type\":\"Integer\"}],\"class\":\"meta::validation::test::Person\"}],\"class\":\"meta::validation::test::Person\"}, \"activities\": [{\"_type\":\"RelationalExecutionActivity\",\"sql\":\"select \\\"root\\\".ID as \\\"pk_0\\\", \\\"root\\\".FIRSTNAME as \\\"firstName\\\", \\\"root\\\".LASTNAME as \\\"lastName\\\", \\\"root\\\".AGE as \\\"age\\\" from PersonTable as \\\"root\\\" where \\\"root\\\".FIRSTNAME like 'X%'\"}], \"objects\" : []}}", result);
+        ObjectNode node = new ObjectMapper().readValue(result, ObjectNode.class);
+        Assert.assertEquals("noFirstNamesWithLetterX", node.get("id").asText());
+        Assert.assertEquals("Expected no first names to begin with the letter X", node.get("message").asText());
+        Assert.assertEquals("{\"builder\":{\"_type\":\"classBuilder\",\"mapping\":\"meta::validation::test::PersonMapping\",\"classMappings\":[{\"setImplementationId\":\"meta_validation_test_Person\",\"properties\":[{\"property\":\"firstName\",\"type\":\"String\"},{\"property\":\"lastName\",\"type\":\"String\"},{\"property\":\"age\",\"type\":\"Integer\"}],\"class\":\"meta::validation::test::Person\"}],\"class\":\"meta::validation::test::Person\"},\"activities\":[{\"_type\":\"RelationalExecutionActivity\",\"sql\":\"select \\\"root\\\".ID as \\\"pk_0\\\", \\\"root\\\".FIRSTNAME as \\\"firstName\\\", \\\"root\\\".LASTNAME as \\\"lastName\\\", \\\"root\\\".AGE as \\\"age\\\" from PersonTable as \\\"root\\\" where \\\"root\\\".FIRSTNAME like 'X%'\"}],\"objects\":[]}", RelationalResultToJsonDefaultSerializer.removeComment(node.get("violations").toString()));
     }
 
     @Test
     public void testFailingObjectService() throws Exception
     {
         String result = responseAsString(test("legend-test-object-services-with-validation.json", "meta::validation::test::DemoFailingService", "noFirstNamesWithLetterT", SerializationFormat.DEFAULT));
-
-        Assert.assertEquals("{\"id\": \"noFirstNamesWithLetterT\", \"message\": \"Expected no first names to begin with the letter T\", \"violations\": {\"builder\": {\"_type\":\"classBuilder\",\"mapping\":\"meta::validation::test::PersonMapping\",\"classMappings\":[{\"setImplementationId\":\"meta_validation_test_Person\",\"properties\":[{\"property\":\"firstName\",\"type\":\"String\"},{\"property\":\"lastName\",\"type\":\"String\"},{\"property\":\"age\",\"type\":\"Integer\"}],\"class\":\"meta::validation::test::Person\"}],\"class\":\"meta::validation::test::Person\"}, \"activities\": [{\"_type\":\"RelationalExecutionActivity\",\"sql\":\"select \\\"root\\\".ID as \\\"pk_0\\\", \\\"root\\\".FIRSTNAME as \\\"firstName\\\", \\\"root\\\".LASTNAME as \\\"lastName\\\", \\\"root\\\".AGE as \\\"age\\\" from PersonTable as \\\"root\\\" where \\\"root\\\".FIRSTNAME like 'T%'\"}], \"objects\" : [{\"firstName\":\"Tom\",\"lastName\":\"Wilson\",\"age\":24,\"alloyStoreObjectReference$\":\"ASOR:MDAxOjAxMDowMDAwMDAwMDEwOlJlbGF0aW9uYWw6MDAwMDAwMDAzNzptZXRhOjp2YWxpZGF0aW9uOjp0ZXN0OjpQZXJzb25NYXBwaW5nOjAwMDAwMDAwMjc6bWV0YV92YWxpZGF0aW9uX3Rlc3RfUGVyc29uOjAwMDAwMDAwMjc6bWV0YV92YWxpZGF0aW9uX3Rlc3RfUGVyc29uOjAwMDAwMDA1MDg6eyJfdHlwZSI6IlJlbGF0aW9uYWxEYXRhYmFzZUNvbm5lY3Rpb24iLCJhdXRoZW50aWNhdGlvblN0cmF0ZWd5Ijp7Il90eXBlIjoiaDJEZWZhdWx0In0sImRhdGFzb3VyY2VTcGVjaWZpY2F0aW9uIjp7Il90eXBlIjoiaDJMb2NhbCIsInRlc3REYXRhU2V0dXBTcWxzIjpbIkRST1AgVEFCTEUgSUYgRVhJU1RTIFBlcnNvblRhYmxlOyIsIkNSRUFURSBUQUJMRSBQZXJzb25UYWJsZSAoSUQgaW50LCBGSVJTVE5BTUUgdmFyY2hhcigyMDApLCBMQVNUTkFNRSB2YXJjaGFyKDIwMCksIEFHRSBpbnQpOyIsIklOU0VSVCBJTlRPIFBlcnNvblRhYmxlIFZBTFVFUyAoMSwgJ1RvbScsICdXaWxzb24nLCAyNCk7IiwiSU5TRVJUIElOVE8gUGVyc29uVGFibGUgVkFMVUVTICgyLCAnRGlodWknLCAnQmFvJywgMzIpOyJdfSwiZWxlbWVudCI6Im1ldGE6OnZhbGlkYXRpb246OnRlc3Q6OlRlc3REQiIsInBvc3RQcm9jZXNzb3JXaXRoUGFyYW1ldGVyIjpbXSwicG9zdFByb2Nlc3NvcnMiOltdLCJ0eXBlIjoiSDIifTowMDAwMDAwMDExOnsicGskXzAiOjF9\"}]}}", result);
+        ObjectNode node = new ObjectMapper().readValue(result, ObjectNode.class);
+        Assert.assertEquals("noFirstNamesWithLetterT", node.get("id").asText());
+        Assert.assertEquals("Expected no first names to begin with the letter T", node.get("message").asText());
+        Assert.assertEquals("{\"builder\":{\"_type\":\"classBuilder\",\"mapping\":\"meta::validation::test::PersonMapping\",\"classMappings\":[{\"setImplementationId\":\"meta_validation_test_Person\",\"properties\":[{\"property\":\"firstName\",\"type\":\"String\"},{\"property\":\"lastName\",\"type\":\"String\"},{\"property\":\"age\",\"type\":\"Integer\"}],\"class\":\"meta::validation::test::Person\"}],\"class\":\"meta::validation::test::Person\"},\"activities\":[{\"_type\":\"RelationalExecutionActivity\",\"sql\":\"select \\\"root\\\".ID as \\\"pk_0\\\", \\\"root\\\".FIRSTNAME as \\\"firstName\\\", \\\"root\\\".LASTNAME as \\\"lastName\\\", \\\"root\\\".AGE as \\\"age\\\" from PersonTable as \\\"root\\\" where \\\"root\\\".FIRSTNAME like 'T%'\"}],\"objects\":[{\"firstName\":\"Tom\",\"lastName\":\"Wilson\",\"age\":24,\"alloyStoreObjectReference$\":\"ASOR:MDAxOjAxMDowMDAwMDAwMDEwOlJlbGF0aW9uYWw6MDAwMDAwMDAzNzptZXRhOjp2YWxpZGF0aW9uOjp0ZXN0OjpQZXJzb25NYXBwaW5nOjAwMDAwMDAwMjc6bWV0YV92YWxpZGF0aW9uX3Rlc3RfUGVyc29uOjAwMDAwMDAwMjc6bWV0YV92YWxpZGF0aW9uX3Rlc3RfUGVyc29uOjAwMDAwMDA1MDg6eyJfdHlwZSI6IlJlbGF0aW9uYWxEYXRhYmFzZUNvbm5lY3Rpb24iLCJhdXRoZW50aWNhdGlvblN0cmF0ZWd5Ijp7Il90eXBlIjoiaDJEZWZhdWx0In0sImRhdGFzb3VyY2VTcGVjaWZpY2F0aW9uIjp7Il90eXBlIjoiaDJMb2NhbCIsInRlc3REYXRhU2V0dXBTcWxzIjpbIkRST1AgVEFCTEUgSUYgRVhJU1RTIFBlcnNvblRhYmxlOyIsIkNSRUFURSBUQUJMRSBQZXJzb25UYWJsZSAoSUQgaW50LCBGSVJTVE5BTUUgdmFyY2hhcigyMDApLCBMQVNUTkFNRSB2YXJjaGFyKDIwMCksIEFHRSBpbnQpOyIsIklOU0VSVCBJTlRPIFBlcnNvblRhYmxlIFZBTFVFUyAoMSwgJ1RvbScsICdXaWxzb24nLCAyNCk7IiwiSU5TRVJUIElOVE8gUGVyc29uVGFibGUgVkFMVUVTICgyLCAnRGlodWknLCAnQmFvJywgMzIpOyJdfSwiZWxlbWVudCI6Im1ldGE6OnZhbGlkYXRpb246OnRlc3Q6OlRlc3REQiIsInBvc3RQcm9jZXNzb3JXaXRoUGFyYW1ldGVyIjpbXSwicG9zdFByb2Nlc3NvcnMiOltdLCJ0eXBlIjoiSDIifTowMDAwMDAwMDExOnsicGskXzAiOjF9\"}]}", RelationalResultToJsonDefaultSerializer.removeComment(node.get("violations").toString()));
     }
 
     @Test

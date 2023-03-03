@@ -19,7 +19,8 @@ env:
   CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
+  DATABRICKS_API_TOKEN: ${{ secrets.DATABRICKS_API_TOKEN }}
+  
 on:
   schedule:
     - cron: "0 0 * * *" # every day at 00:00 on default/base branch
@@ -85,3 +86,15 @@ jobs:
           name: ${{github.workflow}}
           path: sql_test_summary.txt
           retention-days: 1
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: legend-engine-test-reports/surefire-reports-aggregate/*.xml
+      - name: Upload CI Event
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: event-file
+          path: ${{ github.event_path }}

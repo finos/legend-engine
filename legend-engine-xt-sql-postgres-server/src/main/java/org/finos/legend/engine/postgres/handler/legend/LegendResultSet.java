@@ -17,17 +17,24 @@ package org.finos.legend.engine.postgres.handler.legend;
 import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.ResolverStyle;
+import java.time.temporal.TemporalAccessor;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 
 public class LegendResultSet implements PostgresResultSet
 {
 
-    private static final DateTimeFormatter TIMESTAMP_FORMATTER =
+    public static final DateTimeFormatter TIMESTAMP_FORMATTER =
             new DateTimeFormatterBuilder()
                     .parseCaseInsensitive()
                     .append(ISO_LOCAL_DATE)
@@ -62,13 +69,22 @@ public class LegendResultSet implements PostgresResultSet
         switch (legendColumn.getType())
         {
             case "StrictDate":
-                return LocalDate.from(ISO_LOCAL_DATE.parse(value)).toEpochDay();
+                LocalDate localDate = ISO_LOCAL_DATE.parse(value, LocalDate::from);
+                long toEpochMilli = localDate.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli();
+                System.out.println("actual : " + toEpochMilli);
+                return toEpochMilli;
             case "Date":
-                return LocalDate.from(ISO_LOCAL_DATE.parse(value)).toEpochDay();
             case "DateTime":
-                //TODO HANDLE TIMESTAMP
-
-                //return Types.TIMESTAMP;
+                TemporalAccessor temporalAccessor = TIMESTAMP_FORMATTER.parseBest(value, Instant::from, LocalDate::from);
+                if (temporalAccessor instanceof Instant)
+                {                    //if date is a valid time stamp
+                    return ((Instant) temporalAccessor).toEpochMilli();
+                }
+                else
+                {
+                    //if date is a date parse as date and convert to time tamp
+                    return ((LocalDate) temporalAccessor).atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli();
+                }
             case "Integer":
                 return Integer.parseInt(value);
             case "Float":

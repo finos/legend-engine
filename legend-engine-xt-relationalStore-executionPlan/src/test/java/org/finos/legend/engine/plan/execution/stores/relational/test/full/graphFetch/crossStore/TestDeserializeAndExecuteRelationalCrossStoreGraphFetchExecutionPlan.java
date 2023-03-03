@@ -36,7 +36,6 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -48,8 +47,9 @@ public class TestDeserializeAndExecuteRelationalCrossStoreGraphFetchExecutionPla
     @Test
     public void testDeserializeAndExecutePlansWithJavaSourceCode() throws IOException
     {
-        List<String> sourceCodePlanResources = Collections.singletonList(
-                "org/finos/legend/engine/plan/execution/stores/relational/test/full/graphFetch/crossStore/withSourceCode/plan1.json"
+        List<String> sourceCodePlanResources = Arrays.asList(
+                "org/finos/legend/engine/plan/execution/stores/relational/test/full/graphFetch/crossStore/withSourceCode/plan1.json",
+                "org/finos/legend/engine/plan/execution/stores/relational/test/full/graphFetch/crossStore/withSourceCode/plan2.json"
         );
 
         for (String planWithSourceCode: sourceCodePlanResources)
@@ -63,8 +63,9 @@ public class TestDeserializeAndExecuteRelationalCrossStoreGraphFetchExecutionPla
     @Test
     public void testDeserializeAndExecutePlansWithJavaSourceCodeWithCache() throws IOException, JavaCompileException
     {
-        List<String> sourceCodePlanResources = Collections.singletonList(
-                "org/finos/legend/engine/plan/execution/stores/relational/test/full/graphFetch/crossStore/withSourceCode/plan1.json"
+        List<String> sourceCodePlanResources = Arrays.asList(
+                "org/finos/legend/engine/plan/execution/stores/relational/test/full/graphFetch/crossStore/withSourceCode/plan1.json",
+                "org/finos/legend/engine/plan/execution/stores/relational/test/full/graphFetch/crossStore/withSourceCode/plan2.json"
         );
 
         for (String planWithSourceCode: sourceCodePlanResources)
@@ -87,8 +88,9 @@ public class TestDeserializeAndExecuteRelationalCrossStoreGraphFetchExecutionPla
     @Test
     public void testDeserializeAndExecutePlansWithJavaByteCode() throws IOException
     {
-        List<String> byteCodePlanResources = Collections.singletonList(
-                "org/finos/legend/engine/plan/execution/stores/relational/test/full/graphFetch/crossStore/withByteCode/plan1.json"
+        List<String> byteCodePlanResources = Arrays.asList(
+                "org/finos/legend/engine/plan/execution/stores/relational/test/full/graphFetch/crossStore/withByteCode/plan1.json",
+                "org/finos/legend/engine/plan/execution/stores/relational/test/full/graphFetch/crossStore/withByteCode/plan2.json"
         );
 
         for (String planWithByteCode: byteCodePlanResources)
@@ -102,8 +104,9 @@ public class TestDeserializeAndExecuteRelationalCrossStoreGraphFetchExecutionPla
     @Test
     public void testDeserializeAndExecutePlansWithJavaByteCodeWithCache() throws IOException, JavaCompileException
     {
-        List<String> byteCodePlanResources = Collections.singletonList(
-                "org/finos/legend/engine/plan/execution/stores/relational/test/full/graphFetch/crossStore/withByteCode/plan1.json"
+        List<String> byteCodePlanResources = Arrays.asList(
+                "org/finos/legend/engine/plan/execution/stores/relational/test/full/graphFetch/crossStore/withByteCode/plan1.json",
+                "org/finos/legend/engine/plan/execution/stores/relational/test/full/graphFetch/crossStore/withByteCode/plan2.json"
         );
 
         for (String planWithByteCode: byteCodePlanResources)

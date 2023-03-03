@@ -16,6 +16,8 @@ package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes;
 
 public class PlatformUnionExecutionNode extends ExecutionNode
 {
+    public boolean isChildrenExecutionParallelizable = false;
+
     @Override
     public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)
     {
