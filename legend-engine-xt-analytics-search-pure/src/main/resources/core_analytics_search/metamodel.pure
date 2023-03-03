@@ -42,7 +42,6 @@ Class meta::analytics::search::metamodel::dataspace::RootDocument extends meta::
   package: String[1];
   name: String[1];
   description: String[0..1];
-  url: String[0..1];
   defaultExecutionContext: String[1];
   diagrams: String[*];
   executionContexts: meta::analytics::search::metamodel::dataspace::ExecutionContextDocument[*];
