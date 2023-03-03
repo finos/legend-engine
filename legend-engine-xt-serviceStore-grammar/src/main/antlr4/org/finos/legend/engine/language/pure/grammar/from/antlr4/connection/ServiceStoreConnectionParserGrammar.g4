@@ -22,7 +22,7 @@ definition:                             (connectionStore | authenticationSpec | 
 connectionStore:                        STORE COLON qualifiedName SEMI_COLON
 ;
 
-authenticationSpec:                         AUTH_SPECS COLON
+authenticationSpec:                     AUTH_SPECS COLON
                                         BRACE_OPEN
                                                 ( authSpecificationObject ( COMMA authSpecificationObject )* )?
                                         BRACE_CLOSE

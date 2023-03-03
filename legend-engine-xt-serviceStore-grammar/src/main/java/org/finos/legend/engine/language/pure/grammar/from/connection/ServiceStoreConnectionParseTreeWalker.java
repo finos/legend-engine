@@ -94,7 +94,6 @@ public class ServiceStoreConnectionParseTreeWalker
         return Tuples.pair(securitySchemeId, spec);
     }
 
-
     private void validateUrl(String url, SourceInformation sourceInformation)
     {
         if (url.endsWith("/"))

@@ -115,6 +115,7 @@ public class ServiceStoreParseTreeWalker
             serviceStore.securitySchemes = securitySchemeList.stream().collect(Collectors.toMap(pair -> pair.getOne(), pair -> pair.getTwo()));
 
         }
+
         serviceStore.elements = ListIterate.collect(ctx.serviceStoreElement(), s -> visitServiceStoreElement(s, serviceStore.securitySchemes));
         validateServiceStoreElements(serviceStore.elements, serviceStore.sourceInformation);
 

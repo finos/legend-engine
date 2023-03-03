@@ -19,12 +19,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionVisitor;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 public class ServiceStoreConnection extends Connection
 {
     public String baseUrl;
-    public Map<String, AuthenticationSpecification> authenticationSpecifications;
+    public Map<String, AuthenticationSpecification> authenticationSpecifications = new HashMap<>();
 
     @Override
     public <T> T accept(ConnectionVisitor<T> connectionVisitor)

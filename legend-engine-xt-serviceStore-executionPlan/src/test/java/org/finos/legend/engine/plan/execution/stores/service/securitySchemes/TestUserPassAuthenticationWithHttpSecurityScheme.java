@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -93,7 +93,7 @@ public class TestUserPassAuthenticationWithHttpSecurityScheme extends ServiceSto
         }
         finally
         {
-            System.clearProperty("reference1");
+            System.clearProperty("property1");
         }
     }
 }

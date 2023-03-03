@@ -71,32 +71,34 @@ public class HelperServiceStoreGrammarComposer
             builder.append("description : ").append("'").append(serviceStore.description).append("'").append(";\n\n");
         }
 
-        renderSecuritySchemes(serviceStore.securitySchemes, builder, PureGrammarComposerContext.Builder.newInstance().withIndentation(baseIndentation).build());
+        renderSecuritySchemesMap(serviceStore.securitySchemes, builder, PureGrammarComposerContext.Builder.newInstance().withIndentation(baseIndentation).build());
         renderServiceStoreElements(serviceStore.elements, builder, baseIndentation);
 
         builder.append(")");
         return builder.toString();
     }
 
-    public static void renderSecuritySchemes(Map<String, SecurityScheme> securitySchemes, StringBuilder builder, PureGrammarComposerContext context)
+    public static void renderSecuritySchemesMap(Map<String, SecurityScheme> securitySchemes, StringBuilder builder, PureGrammarComposerContext context)
     {
+        builder.append(context.getIndentationString()).append(PureGrammarComposerUtility.getTabString(1)).append("securitySchemes ").append(": ").append("{\n");
         if (securitySchemes != null && !securitySchemes.isEmpty())
         {
-            builder.append(context.getIndentationString()).append(PureGrammarComposerUtility.getTabString(1)).append("securitySchemes ").append(": ").append("{\n").append(PureGrammarComposerUtility.getTabString(2)).append(MapIterate.toListOfPairs(securitySchemes).collect(pair -> renderSecurityScheme(pair.getOne(), pair.getTwo(), context)).makeString(",\n" + getTabString(2))).append("\n").append(getTabString()).append("};\n");
+            builder.append(PureGrammarComposerUtility.getTabString(2)).append(MapIterate.toListOfPairs(securitySchemes).collect(pair -> renderSecurityScheme(pair.getOne(), pair.getTwo(), context)).makeString(",\n" + getTabString(2))).append("\n");
         }
+        builder.append(getTabString()).append("};\n");
     }
 
-    public static String renderAuthSpecs(ServiceStoreConnection serviceStoreConnection, PureGrammarComposerContext context)
+    public static String renderAuthenticationSpecificationsMap(Map<String,AuthenticationSpecification> authenticationSpecifications, PureGrammarComposerContext context)
     {
-        if (serviceStoreConnection.authenticationSpecifications != null)
+        if (authenticationSpecifications != null && !authenticationSpecifications.isEmpty())
         {
             return "\n" + context.getIndentationString() + getTabString() + "auth: {\n" + getTabString(1) +
-                    serviceStoreConnection.authenticationSpecifications.entrySet().stream().map(entry
+                    authenticationSpecifications.entrySet().stream().map(entry
                                     -> renderAuthenticationSpecification(entry.getKey(), entry.getValue(), 2))
                             .collect(Collectors.joining(",\n" + getTabString(1))) +
                     "\n" + context.getIndentationString() + getTabString() + "};";
         }
-        return "";
+        return "auth: {\n" + context.getIndentationString() + getTabString() + "};";
     }
 
     private static void renderServiceStoreElements(List<ServiceStoreElement> elements, StringBuilder builder, int baseIndentation)

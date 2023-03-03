@@ -62,6 +62,7 @@ public interface IServiceStoreGrammarParserExtension extends PureGrammarParserEx
         return Collections.emptyList();
     }
 
+    @Deprecated
     default List<Function<SpecificationSourceCode, AuthenticationSpecification>> getExtraAuthenticationParsers()
     {
         return Collections.emptyList();

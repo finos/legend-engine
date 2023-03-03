@@ -105,7 +105,7 @@ public class ServiceStoreGrammarComposerExtension implements IServiceStoreGramma
                         context.getIndentationString() + "{\n" +
                                 context.getIndentationString() + getTabString() + "store: " + serviceStoreConnection.element + ";\n" +
                                 context.getIndentationString() + getTabString() + "baseUrl: " + PureGrammarComposerUtility.convertString(serviceStoreConnection.baseUrl, true) + ";" +
-                                HelperServiceStoreGrammarComposer.renderAuthSpecs(serviceStoreConnection, context) +
+                                HelperServiceStoreGrammarComposer.renderAuthenticationSpecificationsMap(serviceStoreConnection.authenticationSpecifications, context) +
                                 context.getIndentationString() + "\n}");
             }
             return null;
@@ -127,19 +127,20 @@ public class ServiceStoreGrammarComposerExtension implements IServiceStoreGramma
             SecurityScheme _scheme = securitySchemePair.getTwo();
             if (_scheme instanceof HttpSecurityScheme)
             {
-                HttpSecurityScheme scheme = (HttpSecurityScheme) _scheme;
+                HttpSecurityScheme httpSecurityScheme = (HttpSecurityScheme) _scheme;
                 return context.getIndentationString() + id + " : Http\n" +
                         context.getIndentationString() + getTabString(2) + "{\n" +
-                        context.getIndentationString() + getTabString(3) + PureGrammarComposerUtility.getTabString(1) + "scheme : " + convertString(scheme.scheme.toString().toLowerCase(), true) + ";\n" +
+                        context.getIndentationString() + getTabString(3) + PureGrammarComposerUtility.getTabString(1) + "scheme : " + convertString(httpSecurityScheme.scheme.toString().toLowerCase(), true) + ";\n" +
+                        context.getIndentationString() + getTabString(3) + PureGrammarComposerUtility.getTabString(1) + "bearerFormat : " + convertString(httpSecurityScheme.bearerFormat, true) + ";\n" +
                         context.getIndentationString() + getTabString(2) + "}";
             }
             else if (_scheme instanceof ApiKeySecurityScheme)
             {
-                ApiKeySecurityScheme scheme = (ApiKeySecurityScheme) _scheme;
+                ApiKeySecurityScheme apiKeySecurityScheme = (ApiKeySecurityScheme) _scheme;
                 return context.getIndentationString() + id + " : ApiKey\n" +
                         context.getIndentationString() + getTabString(2) + "{\n" +
-                        context.getIndentationString() + getTabString(3) + PureGrammarComposerUtility.getTabString(1) + "location : " + convertString(scheme.location.toString().toLowerCase(), true) + ";\n" +
-                        context.getIndentationString() + getTabString(3) + PureGrammarComposerUtility.getTabString(1) + "keyName : " + convertString(scheme.keyName, true) + ";\n" +
+                        context.getIndentationString() + getTabString(3) + PureGrammarComposerUtility.getTabString(1) + "location : " + convertString(apiKeySecurityScheme.location.toString().toLowerCase(), true) + ";\n" +
+                        context.getIndentationString() + getTabString(3) + PureGrammarComposerUtility.getTabString(1) + "keyName : " + convertString(apiKeySecurityScheme.keyName, true) + ";\n" +
                         context.getIndentationString() + getTabString(2) + "}";
             }
 
