@@ -232,6 +232,7 @@
         <module>legend-engine-executionPlan-execution-authorizer</module>
         <module>legend-engine-xt-relationalStore-executionPlan-authorizer</module>
         <module>legend-engine-xt-javaGeneration-pure</module>
+        <module>legend-engine-xt-javaGeneration-featureBased-pure</module>
         <module>legend-engine-xt-javaPlatformBinding-pure</module>
         <module>legend-engine-xt-java-runtime-compiler</module>
         <module>legend-engine-xt-flatdata-javaPlatformBinding-pure</module>
