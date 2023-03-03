@@ -110,6 +110,7 @@ public class ServiceStoreParseTreeWalker
         ServiceStoreParserGrammar.SecuritySchemesContext securitySchemeCtx = ctx.securitySchemes();
         if (securitySchemeCtx != null)
         {
+            //TODO: Make sure order of securitySchemes in Map is same as in grammar
             MutableList<Pair<String, SecurityScheme>> securitySchemeList = ListIterate.collect(securitySchemeCtx.securitySchemeObject(), this::visitSecuritySchemeObject);
             validateSecuritySchemes(securitySchemeList, serviceStore.sourceInformation);
             serviceStore.securitySchemes = securitySchemeList.stream().collect(Collectors.toMap(pair -> pair.getOne(), pair -> pair.getTwo()));

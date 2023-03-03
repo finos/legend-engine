@@ -65,6 +65,7 @@ public class ServiceStoreConnectionParseTreeWalker
         ServiceStoreConnectionParserGrammar.AuthenticationSpecContext authContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.authenticationSpec(), "authentication", connectionValue.sourceInformation);
         if (authContext != null)
         {
+            //TODO: Make sure order of authSpecs in Map is same as in grammar
             connectionValue.authenticationSpecifications = ListIterate.collect(authContext.authSpecificationObject(), this::visitAuthentication).stream().collect(Collectors.toMap(Pair::getOne, Pair::getTwo, (u, v) -> u, LinkedHashMap::new));
         }
     }

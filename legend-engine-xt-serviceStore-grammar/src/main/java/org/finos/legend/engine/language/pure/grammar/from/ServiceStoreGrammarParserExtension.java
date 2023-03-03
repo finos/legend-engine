@@ -136,14 +136,9 @@ public class ServiceStoreGrammarParserExtension implements IServiceStoreGrammarP
     {
        return Lists.mutable.with((securitySchemeId,securitySchemes) ->
        {
-           if (securitySchemes == null)
+           if (securitySchemes != null && securitySchemes.get(securitySchemeId) != null)
            {
-               return null;
-           }
-           SecurityScheme scheme = securitySchemes.get(securitySchemeId);
-           if (scheme != null)
-           {
-               return new SingleSecuritySchemeRequirement(securitySchemeId,scheme);
+               return new SingleSecuritySchemeRequirement(securitySchemeId,securitySchemes.get(securitySchemeId));
            }
            return null;
        });
