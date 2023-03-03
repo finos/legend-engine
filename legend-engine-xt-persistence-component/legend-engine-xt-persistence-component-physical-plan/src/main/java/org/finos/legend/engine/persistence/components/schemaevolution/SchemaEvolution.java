@@ -83,7 +83,7 @@ public class SchemaEvolution
         1. Validate that nothing has changed with the primary keys of the main table.
         2. Check if Schema of main table and staging table is different and accordingly modify schema.
         3. Check executor capabilities to check if operation is permitted, else throw an exception.
-        4. Generate the logical operation and modify the milestoning object of main table
+        4. Generate the logical operation and modify the schema of the main dataset object.
      */
 
     public SchemaEvolution(Sink sink, IngestMode ingestMode, Set<SchemaEvolutionCapability> schemaEvolutionCapabilitySet)
