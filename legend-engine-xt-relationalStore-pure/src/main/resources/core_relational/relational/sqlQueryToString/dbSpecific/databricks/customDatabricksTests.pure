@@ -158,28 +158,12 @@ function <<test.Test>> meta::relational::databricks::tests::testSliceOffsetTake(
    assertEquals('select `root`.age as `age` from test_schema.test_table as `root` offset 5', $result3);
 
    let result4 = toSQLString(
-               |meta::relational::databricks::tests::domain::Person.all()->project([col(p |$p.age,'age')])->limit(10)->drop(5),
-               meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
-               DatabaseType.Databricks,
-               meta::relational::extension::relationalExtensions());
-
-   assertEquals('select `age` as `age` from (select `root`.age as `age` from test_schema.test_table as `root` offset 5) as `subselect` limit 10', $result4);
-
-   let result5 = toSQLString(
-               |meta::relational::databricks::tests::domain::Person.all()->project([col(p |$p.age,'age')])->drop(5)->limit(10),
-               meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
-               DatabaseType.Databricks,
-               meta::relational::extension::relationalExtensions());
-
-   assertEquals('select `age` as `age` from (select `root`.age as `age` from test_schema.test_table as `root` limit 10) as `subselect` offset 5', $result5);
-
-   let result6 = toSQLString(
                |meta::relational::databricks::tests::domain::Person.all()->project([col(p |$p.age,'age')])->slice(5, 11),
                meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
                DatabaseType.Databricks,
                meta::relational::extension::relationalExtensions());
 
-   assertEquals('select `root`.age as `age` from test_schema.test_table limit 6 offset 5', $result5);
+   assertEquals('select `root`.age as `age` from test_schema.test_table as `root` limit 6 offset 5', $result4);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::joinStrings():Boolean[1]

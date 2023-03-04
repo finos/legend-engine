@@ -126,7 +126,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as string)')),
-    dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateTimeDatabricks()})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='weekofyear(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))
   ];
@@ -209,8 +208,16 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 {
    assert( 2 - $params->size()  >= 0,'Incorrect number of parameters for convertDate: convertDate(column,[dateformat])');
    assert($params->size()==1 || dateFormatsDatabricks()->contains($params->at(1)->replace('\'', '')) , | $params->at(1) +' not supported ');
-   let dateFormat = if( $params->size() == 1,|'\'%Y-%m-%d\'' ,| $params->at(1););
+   let dateFormat = if( $params->size() == 1,|'\'yyyy-MM-dd\'' ,| $params->at(1););
    'to_date('+$params->at(0)+','+$dateFormat +')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::convertToDateTimeDatabricks(params:String[*]):String[1]
+{
+   assert( 2 - $params->size()  >= 0,'Incorrect number of parameters for convertDateTime: convertDateTime(column,[dateformat])');
+   assert($params->size()==1 || dateTimeFormatsDatabricks()->contains($params->at(1)->replace('\'', '')) , | $params->at(1) +' not supported ');
+   let dateTimeFormat = if( $params->size() == 1,|'\'yyyy-MM-dd HH:mm:ss\'',| $params->at(1));
+   'to_timestamp('+$params->at(0)+','+$dateTimeFormat +')';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::transformAlphaNumericParamsDatabricks(params: String[1]):String[1]
@@ -228,13 +235,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::schemaNameToIdentifierForDatabricks(schemaName: String[1], dbConfig: DbConfig[1]): String[1]
 {
    $schemaName->replace('$', '.');
-}
-
-function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::convertToDateTimeDatabricks(params:String[*]):String[1]
-{
-   $params->convertDateTimeFunctionHasCorrectParams();
-   let dateTimeFormat = if( $params->size() == 1,|'\'yyyy-MM-dd hh:mm:ss[.nnnnnnnnn]\'',| $params->at(1););
-   'to_timestamp('+$params->at(0)+','+$dateTimeFormat +')';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::dateDiffDatabricks(p:String[2..3]):String[1]
@@ -286,4 +286,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::dateFormatsDatabricks():String[*]
 {
    ['yyyy-MM-dd', 'MMMyyyy', 'yyyyMMdd'];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::dateTimeFormatsDatabricks():String[*]
+{
+   ['yyyy-MM-dd HH:mm:ss', 'yyyy-MM-dd HH:mm:ss.SSS'];
 }
