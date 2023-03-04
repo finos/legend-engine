@@ -6,6 +6,7 @@ TRINO:                                      'Trino';
 HOST:                                       'host';
 PORT:                                       'port';
 CATALOG:                                    'catalog';
+SCHEMA:                                     'schema';
 CLIENT_TAGS:                                'clientTags';
 
 SSL:                                        'ssl';

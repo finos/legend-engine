@@ -22,6 +22,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.authe
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.OAuthProfile;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.DelegatedKerberosAuthenticationStrategyKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.UserNamePasswordAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.trino.TrinoCommands;
@@ -34,6 +35,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.manag
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategyVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DelegatedKerberosAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecificationVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.TrinoDatasourceSpecification;
 
@@ -69,6 +71,13 @@ public class TrinoConnectionExtension implements RelationalConnectionExtension, 
                 DelegatedKerberosAuthenticationStrategy delegatedKerberosAuthenticationStrategy = (DelegatedKerberosAuthenticationStrategy) authenticationStrategy;
                 return new DelegatedKerberosAuthenticationStrategyKey(((DelegatedKerberosAuthenticationStrategy) authenticationStrategy).serverPrincipal);
             }
+            else if (authenticationStrategy instanceof UserNamePasswordAuthenticationStrategy)
+            {
+                UserNamePasswordAuthenticationStrategy userNamePasswordAuthStrategy = (UserNamePasswordAuthenticationStrategy) authenticationStrategy;
+                String userNameVaultReference = userNamePasswordAuthStrategy.baseVaultReference == null ? userNamePasswordAuthStrategy.userNameVaultReference : userNamePasswordAuthStrategy.baseVaultReference + userNamePasswordAuthStrategy.userNameVaultReference;
+                String passwordVaultReference = userNamePasswordAuthStrategy.baseVaultReference == null ? userNamePasswordAuthStrategy.passwordVaultReference : userNamePasswordAuthStrategy.baseVaultReference + userNamePasswordAuthStrategy.passwordVaultReference;
+                return new UserNamePasswordAuthenticationStrategyKey(userNameVaultReference, passwordVaultReference);
+            }
             return null;
         };
     }
@@ -91,6 +100,7 @@ public class TrinoConnectionExtension implements RelationalConnectionExtension, 
                         trinoDatasourceSpecification.host,
                         trinoDatasourceSpecification.port,
                         trinoDatasourceSpecification.catalog,
+                        trinoDatasourceSpecification.schema,
                         trinoDatasourceSpecification.clientTags,
                         trinoDatasourceSpecification.ssl,
                         trinoDatasourceSpecification.trustStorePathVaultReference,

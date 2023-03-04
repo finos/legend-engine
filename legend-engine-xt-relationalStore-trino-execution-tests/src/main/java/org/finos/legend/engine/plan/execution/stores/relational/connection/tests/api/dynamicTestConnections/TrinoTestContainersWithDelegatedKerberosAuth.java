@@ -19,17 +19,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DelegatedKerberosAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.TrinoDatasourceSpecification;
-import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
-import org.finos.legend.engine.shared.core.vault.Vault;
-import org.finos.legend.engine.shared.core.vault.VaultImplementation;
 import org.testcontainers.containers.TrinoContainer;
 import org.testcontainers.containers.startupcheck.MinimumDurationRunningStartupCheckStrategy;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
-import java.util.Properties;
 
-public class TrinoTestContainers
+public class TrinoTestContainersWithDelegatedKerberosAuth
         implements DynamicTestConnection
 {
     @Override
@@ -41,13 +37,10 @@ public class TrinoTestContainers
     public TrinoContainer trinoContainer = new TrinoContainer(DockerImageName.parse("trinodb/trino"))
             .withStartupCheckStrategy(new MinimumDurationRunningStartupCheckStrategy(Duration.ofSeconds(10)));
 
-    private VaultImplementation vaultImplementation;
-
     @Override
     public void setup()
     {
         this.startTrinoContainer();
-        this.registerVault();
     }
 
     private void startTrinoContainer()
@@ -63,15 +56,6 @@ public class TrinoTestContainers
         System.out.println("Completed setup of dynamic connection for database: Trino on host:" + containerHost + " and port:" + containerPort + " , time taken(ms):" + (end - start));
     }
 
-    public void registerVault()
-    {
-        Properties properties = new Properties();
-        properties.put("sqlServerAccount.user", "SA");
-        properties.put("sqlServerAccount.password", "A_Str0ng_Required_Password");
-        this.vaultImplementation = new PropertiesVaultImplementation(properties);
-        Vault.INSTANCE.registerImplementation(this.vaultImplementation);
-    }
-
     @Override
     public RelationalDatabaseConnection getConnection()
     {
@@ -80,11 +64,8 @@ public class TrinoTestContainers
         trinoDatasourceSpecification.port = this.trinoContainer.getMappedPort(8080);
         trinoDatasourceSpecification.kerberosUseCanonicalHostname = false;
         trinoDatasourceSpecification.clientTags = "cg:vega";
-        //trinoDatasourceSpecification.trustStorePathVaultReference = "some/vault/path";
-        //trinoDatasourceSpecification.trustStorePasswordVaultReference = "some_vault_password";
 
         DelegatedKerberosAuthenticationStrategy authSpec = new DelegatedKerberosAuthenticationStrategy();
-        authSpec.serverPrincipal = "ase/NYGSDEVD005@GS.COM";
 
         RelationalDatabaseConnection conn = new RelationalDatabaseConnection(trinoDatasourceSpecification, authSpec, DatabaseType.Trino);
         conn.type = DatabaseType.Trino;         // for compatibility with legacy DatabaseConnection
@@ -95,7 +76,6 @@ public class TrinoTestContainers
     @Override
     public void cleanup()
     {
-        Vault.INSTANCE.unregisterImplementation(this.vaultImplementation);
         this.trinoContainer.stop();
     }
 }

@@ -20,6 +20,7 @@ public class TrinoDatasourceSpecification
     public String host;
     public int port;
     public String catalog;
+    public String schema;
     public String clientTags;
 
     /**

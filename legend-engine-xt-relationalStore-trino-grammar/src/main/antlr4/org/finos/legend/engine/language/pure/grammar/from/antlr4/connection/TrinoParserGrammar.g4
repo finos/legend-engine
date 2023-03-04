@@ -15,6 +15,7 @@ trinoDatasourceSpecification:               TRINO
                                                         trinoHost
                                                         | trinoPort
                                                         | trinoCatalog
+                                                        | trinoSchema
                                                         | trinoClientTags
                                                         | trinoSSL
                                                         | trinoTrustStorePathVaultReference
@@ -35,6 +36,9 @@ trinoPort:                                  PORT COLON INTEGER SEMI_COLON
 ;
 
 trinoCatalog:                               CATALOG COLON STRING SEMI_COLON
+;
+
+trinoSchema:                               SCHEMA COLON STRING SEMI_COLON
 ;
 
 trinoClientTags:                            CLIENT_TAGS COLON STRING SEMI_COLON

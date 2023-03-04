@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.trino;
 
+import com.google.common.base.Strings;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DriverWrapper;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.TrinoDatasourceSpecificationRuntime;
 
@@ -35,10 +36,17 @@ public class TrinoDriver extends DriverWrapper
     {
         Properties trinoDriverProperties = new Properties();
         List<String> propertiesForDriver = TrinoDatasourceSpecificationRuntime.propertiesForDriver;
+
+        // Keep only the valid Trino JDBC properties
         properties.keySet().stream().filter(key -> propertiesForDriver.contains(key)).forEach(key -> trinoDriverProperties.put(key,properties.get(key)));
-        if (!Boolean.parseBoolean(properties.getProperty("SSL")))
+
+        // Also remove null or blank properties
+        // This is useful for running container based tests where we don't
+        // have support for SSL or Kerberos
+        if (Strings.isNullOrEmpty((String)trinoDriverProperties.get("password")))
         {
             trinoDriverProperties.remove("password");
+            trinoDriverProperties.remove("SSL");
         }
 
         return trinoDriverProperties;

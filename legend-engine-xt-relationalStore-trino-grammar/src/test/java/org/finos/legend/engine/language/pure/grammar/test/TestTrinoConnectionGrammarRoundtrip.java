@@ -31,6 +31,7 @@ public class TestTrinoConnectionGrammarRoundtrip extends TestGrammarRoundtrip.Te
                 "    host: 'host';\n" +
                 "    port: 1234;\n" +
                 "    catalog: 'tpch';\n" +
+                "    schema: 'tiny';\n" +
                 "    clientTags: 'cg::vega';\n" +
                 "    ssl: false;\n" +
                 "    trustStorePathVaultReference: 'abc12cde';\n" +

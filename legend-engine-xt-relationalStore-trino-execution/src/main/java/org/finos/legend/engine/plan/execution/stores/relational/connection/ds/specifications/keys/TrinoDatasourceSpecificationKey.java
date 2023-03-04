@@ -24,6 +24,7 @@ public class TrinoDatasourceSpecificationKey
     public String host;
     public int port;
     public String catalog;
+    public String schema;
     public String clientTags;
 
     /**
@@ -51,11 +52,12 @@ public class TrinoDatasourceSpecificationKey
                 ", kerberosUseCanonicalHostname:" + kerberosUseCanonicalHostname;
     }
 
-    public TrinoDatasourceSpecificationKey(String host, int port, String catalog, String clientTags, boolean ssl, String trustStorePathVaultReference, String trustStorePasswordVaultReference, String kerberosRemoteServiceName, boolean kerberosUseCanonicalHostname)
+    public TrinoDatasourceSpecificationKey(String host, int port, String catalog, String schema, String clientTags, boolean ssl, String trustStorePathVaultReference, String trustStorePasswordVaultReference, String kerberosRemoteServiceName, boolean kerberosUseCanonicalHostname)
     {
         this.host = host;
         this.port = port;
         this.catalog = catalog;
+        this.schema = schema;
         this.clientTags = clientTags;
         this.ssl = ssl;
         this.trustStorePathVaultReference = trustStorePathVaultReference;
@@ -76,7 +78,13 @@ public class TrinoDatasourceSpecificationKey
             return false;
         }
         TrinoDatasourceSpecificationKey that = (TrinoDatasourceSpecificationKey) o;
-        return port == that.port && ssl == that.ssl && kerberosUseCanonicalHostname == that.kerberosUseCanonicalHostname && host.equals(that.host) && Objects.equals(catalog, that.catalog) && Objects.equals(clientTags, that.clientTags) && Objects.equals(trustStorePathVaultReference, that.trustStorePathVaultReference) && Objects.equals(trustStorePasswordVaultReference, that.trustStorePasswordVaultReference) && Objects.equals(kerberosRemoteServiceName, that.kerberosRemoteServiceName);
+        return port == that.port && ssl == that.ssl && kerberosUseCanonicalHostname == that.kerberosUseCanonicalHostname && Objects.equals(host, that.host) && Objects.equals(catalog, that.catalog) && Objects.equals(schema, that.schema) && Objects.equals(clientTags, that.clientTags) && Objects.equals(trustStorePathVaultReference, that.trustStorePathVaultReference) && Objects.equals(trustStorePasswordVaultReference, that.trustStorePasswordVaultReference) && Objects.equals(kerberosRemoteServiceName, that.kerberosRemoteServiceName);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(host, port, catalog, schema, clientTags, ssl, trustStorePathVaultReference, trustStorePasswordVaultReference, kerberosRemoteServiceName, kerberosUseCanonicalHostname);
     }
 
     @Override
@@ -86,6 +94,7 @@ public class TrinoDatasourceSpecificationKey
                 "host='" + host + '\'' +
                 ", port=" + port +
                 ", catalog='" + catalog + '\'' +
+                ", schema='" + schema + '\'' +
                 ", clientTags='" + clientTags + '\'' +
                 ", ssl=" + ssl +
                 ", trustStorePathVaultReference='" + trustStorePathVaultReference + '\'' +
@@ -93,12 +102,6 @@ public class TrinoDatasourceSpecificationKey
                 ", kerberosRemoteServiceName='" + kerberosRemoteServiceName + '\'' +
                 ", kerberosUseCanonicalHostname=" + kerberosUseCanonicalHostname +
                 '}';
-    }
-
-    @Override
-    public int hashCode()
-    {
-        return Objects.hash(host, port, catalog, clientTags, ssl, trustStorePathVaultReference, trustStorePasswordVaultReference, kerberosRemoteServiceName, kerberosUseCanonicalHostname);
     }
 
     public String getHost()
@@ -144,5 +147,10 @@ public class TrinoDatasourceSpecificationKey
     public boolean isKerberosUseCanonicalHostname()
     {
         return kerberosUseCanonicalHostname;
+    }
+
+    public String getSchema()
+    {
+        return schema;
     }
 }

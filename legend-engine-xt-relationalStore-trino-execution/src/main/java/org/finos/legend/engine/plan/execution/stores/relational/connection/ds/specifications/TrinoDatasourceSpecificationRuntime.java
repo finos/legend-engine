@@ -14,23 +14,27 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications;
 
+import org.apache.commons.codec.binary.Base64;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.DelegatedKerberosAuthenticationStrategy;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.UserNamePasswordAuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.TrinoDatasourceSpecificationKey;
+import org.finos.legend.engine.shared.core.vault.Vault;
 
-import java.util.ArrayList;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import static java.util.Optional.ofNullable;
 
 public class TrinoDatasourceSpecificationRuntime extends org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification
 {
 
     private static final String CLIENT_TAGS = "clientTags";
     private static final String CATALOG = "catalog";
+    private static final String SCHEMA = "schema";
     private static final String SSL = "SSL";
     private static final String SSL_TRUST_STORE_PATH = "SSLTrustStorePath";
     private static final String SSL_TRUST_STORE_PASSWORD = "SSLTrustStorePassword";
@@ -61,50 +65,58 @@ public class TrinoDatasourceSpecificationRuntime extends org.finos.legend.engine
     {
         Properties properties = new Properties();
 
-        if (key.getClientTags() != null)
-        {
-            properties.setProperty(CLIENT_TAGS, key.getClientTags());
-        }
+        ofNullable(key.getClientTags()).ifPresent(x -> properties.setProperty(CLIENT_TAGS, x));
+        ofNullable(key.getCatalog()).ifPresent(x -> properties.setProperty(CATALOG, x));
+        ofNullable(key.getSchema()).ifPresent(x -> properties.setProperty(SCHEMA, x));
 
-        if (key.getCatalog() != null)
-        {
-            properties.setProperty(CATALOG, key.getCatalog());
-        }
+        ofNullable(key.isSsl()).ifPresent(x -> properties.setProperty(SSL, String.valueOf(x)));
+        ofNullable(key.getTrustStorePathVaultReference()).ifPresent(x -> properties.setProperty(SSL_TRUST_STORE_PATH, x));
+        ofNullable(key.getTrustStorePasswordVaultReference()).ifPresent(x -> properties.setProperty(SSL_TRUST_STORE_PASSWORD, x));
 
-        AuthenticationStrategy authenticationStrategy = getAuthenticationStrategy();
-        if (authenticationStrategy instanceof UserNamePasswordAuthenticationStrategy)
-        {
-            properties.setProperty(SSL, String.valueOf(key.isSsl()));
-        }
+        ofNullable(key.getKerberosRemoteServiceName()).ifPresent(x -> properties.setProperty(KERBEROES_REMOTE_SERVICE_NAME, x));
+        ofNullable(key.isKerberosUseCanonicalHostname()).ifPresent(x -> properties.setProperty(KERBEROS_USE_CANONICAL_HOSTNAME, String.valueOf(x)));
 
-        if (authenticationStrategy instanceof DelegatedKerberosAuthenticationStrategy)
+        if (key.getTrustStorePathVaultReference() != null && key.getTrustStorePasswordVaultReference() != null)
         {
-            properties.setProperty(SSL, "true");
+            String trustStorePathVaultReference = key.getTrustStorePathVaultReference();
+            String trustStorePasswordVaultReference = key.getTrustStorePasswordVaultReference();
 
-            if (key.getTrustStorePathVaultReference() != null)
+            String sslTrustStoreValue = Vault.INSTANCE.getValue(trustStorePathVaultReference);
+            String sslTrustStorePassword = Vault.INSTANCE.getValue(trustStorePasswordVaultReference);
+
+            if (sslTrustStoreValue == null || sslTrustStorePassword == null)
             {
-                properties.setProperty(SSL_TRUST_STORE_PATH,key.getTrustStorePathVaultReference());
+                throw new RuntimeException("No valid SSL trustStorePathVaultReference and trustStorePasswordVaultReference values found for references ");
             }
-
-            if (key.getTrustStorePasswordVaultReference() != null)
-            {
-                properties.setProperty(SSL_TRUST_STORE_PASSWORD, key.getTrustStorePasswordVaultReference());
-            }
-
-            properties.setProperty(KERBEROS_USE_CANONICAL_HOSTNAME, String.valueOf(key.isKerberosUseCanonicalHostname()));
+            properties.setProperty(SSL_TRUST_STORE_PATH, createTrinoTempDile(trustStorePathVaultReference, sslTrustStoreValue));
         }
-
-        //properties.setProperty(KERBEROES_REMOTE_SERVICE_NAME, "HTTP");
-        //properties.setProperty(SSL, "true");
-        //properties.setProperty(SSL_TRUST_STORE_PATH,key.getTrustStorePathVaultReference());
-        //properties.setProperty(SSL_TRUST_STORE_PASSWORD, key.getTrustStorePasswordVaultReference());
-        //properties.setProperty(CLIENT_TAGS, key.getClientTags());
-        //properties.setProperty(KERBEROS_USE_CANONICAL_HOSTNAME, String.valueOf(key.getKerberosUseCanonicalHostname()));
 
         return properties;
     }
 
+    private String createTrinoTempDile(String trustStorePathVaultReference, String sslTrustStoreValue)
+    {
+        File keystoreTempFile;
+        try
+        {
+            keystoreTempFile = File.createTempFile("trino_keystore_" + trustStorePathVaultReference, "jks");
+            keystoreTempFile.deleteOnExit();
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException("Unable to create trino keystore file.",e);
+        }
 
+        try (FileOutputStream fos = new FileOutputStream(keystoreTempFile))
+        {
+            fos.write(Base64.decodeBase64(sslTrustStoreValue.getBytes()));
+            return keystoreTempFile.getAbsolutePath();
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException("Unable to write to Trino keystore file.",e);
+        }
+    }
 
     @Override
     protected String getJdbcUrl(String host, int port, String databaseName, Properties properties)

@@ -19,43 +19,31 @@ import org.finos.legend.engine.authentication.TrinoTestDatabaseAuthenticationFlo
 import org.finos.legend.engine.authentication.TrinoTestDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.dynamicTestConnections.TrinoTestContainersWithUserAndPasswordAuth;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.dynamicTestConnections.TrinoTestContainersWithDelegatedKerberosAuth;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.TrinoDatasourceSpecification;
 import org.finos.legend.engine.shared.core.vault.EnvironmentVaultImplementation;
-import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
-import org.finos.legend.engine.shared.core.vault.VaultImplementation;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.testcontainers.containers.TrinoContainer;
-import org.testcontainers.containers.startupcheck.MinimumDurationRunningStartupCheckStrategy;
-import org.testcontainers.utility.DockerImageName;
 
 import javax.security.auth.Subject;
 import javax.security.auth.kerberos.KerberosPrincipal;
 
 import java.io.IOException;
 import java.sql.Connection;
-import java.time.Duration;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
 
 import static org.junit.Assume.assumeTrue;
 
-public class ExternalIntegration2_TestConnectionAcquisitionWithFlowProviderWithUserPasswordAuth_Trino
+public class ExternalIntegration_TestConnectionAcquisitionWithFlowProviderWithDelegatedKerberosAuth_Trino
         extends RelationalConnectionTest
 {
     private ConnectionManagerSelector connectionManagerSelector;
-    private VaultImplementation vaultImplementation;
-   // private TrinoTestContainersWithUserAndPasswordAuth trinoTestContainers;
-    public TrinoTestContainersWithUserAndPasswordAuth  trinoTestContainersWithUserAndPasswordAuth;
+    private TrinoTestContainersWithDelegatedKerberosAuth trinoTestContainers;
 
     @BeforeClass
     public static void setupTest()
@@ -68,41 +56,35 @@ public class ExternalIntegration2_TestConnectionAcquisitionWithFlowProviderWithU
             throws IOException
     {
         startTrinoContainer();
-        TrinoTestDatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration = null;
         TrinoTestDatabaseAuthenticationFlowProvider flowProvider = new TrinoTestDatabaseAuthenticationFlowProvider();
         flowProvider.configure(new TrinoTestDatabaseAuthenticationFlowProviderConfiguration());
-
-
         this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList(), Optional.of(flowProvider));
-        Properties properties = new Properties();
-        properties.put("trino.user", "test");
-        properties.put("trino.password", "test");
-
-        this.vaultImplementation = new PropertiesVaultImplementation(properties);
-        Vault.INSTANCE.registerImplementation(this.vaultImplementation);
     }
 
     private void startTrinoContainer()
     {
         try
         {
-            this.trinoTestContainersWithUserAndPasswordAuth = new TrinoTestContainersWithUserAndPasswordAuth();
-            this.trinoTestContainersWithUserAndPasswordAuth.setup();
+            this.trinoTestContainers = new TrinoTestContainersWithDelegatedKerberosAuth();
+            this.trinoTestContainers.setup();
         }
         catch (Throwable ex)
         {
-            assumeTrue("Cannot start Trino Container", false);
+            assumeTrue("Cannot start TrinoContainer", false);
         }
     }
 
     @Test
-    public void testTrinoWithDUserPasswordConnection()
+    public void testTrinoWithDelegatedKerberosConnection()
             throws Exception
     {
+        RelationalDatabaseConnection systemUnderTest = this.trinoTestContainers.getConnection();
 
-        RelationalDatabaseConnection systemUnderTest = this.trinoTestContainersWithUserAndPasswordAuth.getConnection();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject) null, systemUnderTest);
+        Set<KerberosPrincipal> principals = new HashSet<>();
+        principals.add(new KerberosPrincipal("peter@test.com"));
+        Subject testSubject = new Subject(false, principals, Sets.fixedSize.empty(), Sets.fixedSize.empty());
+
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection(testSubject, systemUnderTest);
         testConnection(connection, 1, "select 1");
-
     }
 }

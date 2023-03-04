@@ -53,6 +53,9 @@ public class TrinoGrammarParserExtension implements IRelationalGrammarParserExte
         // Catalog name
         TrinoParserGrammar.TrinoCatalogContext catalogCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.trinoCatalog(), "catalog", dsSpec.sourceInformation);
         dsSpec.catalog = PureGrammarParserUtility.fromGrammarString(catalogCtx.STRING().getText(), true);
+        // Schema name
+        TrinoParserGrammar.TrinoSchemaContext schemaCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.trinoSchema(), "schema", dsSpec.sourceInformation);
+        dsSpec.schema = PureGrammarParserUtility.fromGrammarString(schemaCtx.STRING().getText(), true);
         // clientTags
         TrinoParserGrammar.TrinoClientTagsContext ClientTagCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.trinoClientTags(), "clientTags", dsSpec.sourceInformation);
         dsSpec.clientTags = PureGrammarParserUtility.fromGrammarString(ClientTagCtx.STRING().getText(), true);

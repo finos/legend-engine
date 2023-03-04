@@ -3,6 +3,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::a
    host: String[1];
    port: Integer[1];
    catalog: String[1];
+   schema: String[1];
    clientTags: String[1];
    ssl: Boolean[1];
    trustStorePathVaultReference: String[1];

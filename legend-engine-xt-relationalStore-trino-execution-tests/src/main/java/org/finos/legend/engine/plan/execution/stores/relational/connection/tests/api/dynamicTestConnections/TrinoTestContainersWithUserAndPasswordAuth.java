@@ -17,7 +17,6 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.test
 import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.DynamicTestConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DelegatedKerberosAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.TrinoDatasourceSpecification;
 import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
@@ -68,7 +67,7 @@ public class TrinoTestContainersWithUserAndPasswordAuth
     {
         Properties properties = new Properties();
         properties.put("trino.user", "SA");
-        properties.put("trino.password", "A_Str0ng_Required_Password");
+        properties.put("trino.password", "");
         this.vaultImplementation = new PropertiesVaultImplementation(properties);
         Vault.INSTANCE.registerImplementation(this.vaultImplementation);
     }
@@ -80,7 +79,8 @@ public class TrinoTestContainersWithUserAndPasswordAuth
         trinoDatasourceSpecification.host = this.trinoContainer.getHost();
         trinoDatasourceSpecification.port = this.trinoContainer.getMappedPort(8080);
         trinoDatasourceSpecification.catalog = "memory";
-        trinoDatasourceSpecification.clientTags = "default";
+        trinoDatasourceSpecification.schema = "default";
+
 
         UserNamePasswordAuthenticationStrategy authSpec = new UserNamePasswordAuthenticationStrategy();
         authSpec.baseVaultReference = "trino.";

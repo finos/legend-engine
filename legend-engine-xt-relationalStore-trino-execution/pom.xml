@@ -60,11 +60,22 @@
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
 
+        <!-- MISC -->
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+        <!-- MISC -->
+
         <!-- https://mvnrepository.com/artifact/io.trino/trino-jdbc -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-trino-protocol</artifactId>
-            <version>4.1.1-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
 
 

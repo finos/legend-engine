@@ -39,6 +39,7 @@ public class TrinoGrammarComposerExtension implements IRelationalGrammarComposer
                         context.getIndentationString() + getTabString(baseIndentation + 1) + "host: " + PureGrammarComposerUtility.convertString(spec.host,true) + ";\n" +
                         context.getIndentationString() + getTabString(baseIndentation + 1) + "port: " + spec.port + ";\n" +
                         context.getIndentationString() + getTabString(baseIndentation + 1) + "catalog: " + PureGrammarComposerUtility.convertString(spec.catalog,true) + ";\n" +
+                        context.getIndentationString() + getTabString(baseIndentation + 1) + "schema: " + PureGrammarComposerUtility.convertString(spec.schema,true) + ";\n" +
                         context.getIndentationString() + getTabString(baseIndentation + 1) + "clientTags: " + PureGrammarComposerUtility.convertString(spec.clientTags,true) + ";\n" +
                         context.getIndentationString() + getTabString(baseIndentation + 1) + "ssl: " + spec.ssl + ";\n" +
                         context.getIndentationString() + getTabString(baseIndentation + 1) + "trustStorePathVaultReference: " + PureGrammarComposerUtility.convertString(spec.trustStorePathVaultReference,true) + ";\n" +
