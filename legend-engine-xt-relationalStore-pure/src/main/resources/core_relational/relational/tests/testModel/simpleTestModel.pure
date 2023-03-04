@@ -99,7 +99,6 @@ Class meta::relational::tests::model::simple::PersonNameParameterNested
 
 Class meta::relational::tests::model::simple::Person extends EntityWithAddress, EntityWithLocations
 {
-    id : Integer[*];
     firstName : String[1];
     lastName : String[1];
     otherNames : String[*];

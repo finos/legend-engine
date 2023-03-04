@@ -65,7 +65,7 @@ function <<test.Test>> meta::relational::tests::postProcessor::testReplaceTables
    let pair1 = pair(db->schema('default')->toOne()->table('personTable')->toOne(),db->schema('default')->toOne()->table('differentPersonTable')->toOne());
    let pair2 = pair(db->schema('default')->toOne()->table('firmTable')->toOne(),db->schema('default')->toOne()->table('otherFirmTable')->toOne());
    let result = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees.firstName],['firm', 'employee']), simpleRelationalMapping, runtimeWithTableReplace([$pair1, $pair2]), meta::relational::extension::relationalExtensions());
-   
+
    assertSameSQL('select "root".LEGALNAME as "firm", "persontable_0".FIRSTNAME as "employee" from otherFirmTable as "root" left outer join differentPersonTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)', $result);
 }
 
