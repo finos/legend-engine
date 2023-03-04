@@ -82,58 +82,6 @@ function meta::relational::databricks::tests::testRuntimeForDB():Runtime[1]
    meta::relational::tests::testRuntime(meta::relational::databricks::tests::db::delta);
 }
 
-function <<test.Test>> meta::relational::databricks::tests::testSliceOffsetTake():Boolean[1]
-{
-
-   let result1 = toSQLString(
-               |meta::relational::databricks::tests::domain::Person.all()->project([col(p |$p.age,'age')]),
-               meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
-               DatabaseType.Databricks,
-               meta::relational::extension::relationalExtensions());
-
-   assertEquals('select `root`.AGE as `age` from personTable as `root`', $result1);
-
-   let result2 = toSQLString(
-               |meta::relational::databricks::tests::domain::Person.all()->project([col(p |$p.age,'age')])->limit(10),
-               meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
-               DatabaseType.Databricks,
-               meta::relational::extension::relationalExtensions());
-
-   assertEquals('select `root`.AGE as `age` from personTable as `root` limit 10', $result2);
-
-   let result3 = toSQLString(
-               |meta::relational::databricks::tests::domain::Person.all()->project([col(p |$p.age,'age')])->drop(5),
-               meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
-               DatabaseType.Databricks,
-               meta::relational::extension::relationalExtensions());
-
-   assertEquals('select `root`.AGE as `age` from personTable as `root` offset 5', $result3);
-
-   let result4 = toSQLString(
-               |meta::relational::databricks::tests::domain::Person.all()->project([col(p |$p.age,'age')])->limit(10)->drop(5),
-               meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
-               DatabaseType.Databricks,
-               meta::relational::extension::relationalExtensions());
-
-   assertEquals('select `age` as `age` from (select `root`.AGE as `age` from personTable as `root` offset 5) as `subselect` limit 10', $result4);
-
-   let result5 = toSQLString(
-               |meta::relational::databricks::tests::domain::Person.all()->project([col(p |$p.age,'age')])->drop(5)->limit(10),
-               meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
-               DatabaseType.Databricks,
-               meta::relational::extension::relationalExtensions());
-
-   assertEquals('select `age` as `age` from (select `root`.AGE as `age` from personTable as `root` limit 10) as `subselect` offset 5', $result5);
-
-   let result6 = toSQLString(
-               |meta::relational::databricks::tests::domain::Person.all()->project([col(p |$p.age,'age')])->slice(5, 11),
-               meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
-               DatabaseType.Databricks,
-               meta::relational::extension::relationalExtensions());
-
-   assertEquals('select `root`.AGE as `age` from personTable as `root` limit 6 offset 5', $result5);
-}
-
 function <<test.Test>> meta::relational::databricks::tests::tableAndColumnNamesAreQuoted():Boolean[1]
 {
    let result = toSQLString(
@@ -165,8 +113,8 @@ function <<test.Test>> meta::relational::databricks::tests::getDateTime():Boolea
    let dt = %2015-01-01T00:00:00.000;
    let result = toSQLString(
     |Trade.all()->project(t | $t.settlementDateTime, 'settlementDateTime')->filter(r | $r.getDateTime('settlementDateTime') < $dt),
-    meta::relational::tests::simpleRelationalMapping,
-    DatabaseType.Databricks,
+    meta::relational::tests::simpleRelationalMapping, 
+    DatabaseType.Databricks, 
     meta::relational::extension::relationalExtensions());
    assertEquals('select `root`.settlementDateTime as `settlementDateTime` from tradeTable as `root` where `root`.settlementDateTime < to_timestamp(\'2015-01-01 00:00:00.000\')', $result);
 }
@@ -176,10 +124,62 @@ function <<test.Test>> meta::relational::databricks::tests::getDate():Boolean[1]
    let dt = %2015-01-01T00:00:00.000;
    let result = toSQLString(
     |Trade.all()->project(t | $t.date, 'date')->filter(r | $r.getDate('date') < $dt),
-    meta::relational::tests::simpleRelationalMapping,
+    meta::relational::tests::simpleRelationalMapping, 
      DatabaseType.Databricks,
      meta::relational::extension::relationalExtensions());
    assertEquals('select `root`.tradeDate as `date` from tradeTable as `root` where `root`.tradeDate < to_timestamp(\'2015-01-01 00:00:00.000\')', $result);
+}
+
+function <<test.Test>> meta::relational::databricks::tests::testSliceOffsetTake():Boolean[1]
+{
+
+   let result1 = toSQLString(
+               |meta::relational::databricks::tests::domain::Person.all()->project([col(p |$p.age,'age')]),
+               meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
+               DatabaseType.Databricks,
+               meta::relational::extension::relationalExtensions());
+
+   assertEquals('select `root`.age as `age` from test_schema.test_table as `root`', $result1);
+
+   let result2 = toSQLString(
+               |meta::relational::databricks::tests::domain::Person.all()->project([col(p |$p.age,'age')])->limit(10),
+               meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
+               DatabaseType.Databricks,
+               meta::relational::extension::relationalExtensions());
+
+   assertEquals('select `root`.age as `age` from test_schema.test_table as `root` limit 10', $result2);
+
+   let result3 = toSQLString(
+               |meta::relational::databricks::tests::domain::Person.all()->project([col(p |$p.age,'age')])->drop(5),
+               meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
+               DatabaseType.Databricks,
+               meta::relational::extension::relationalExtensions());
+
+   assertEquals('select `root`.age as `age` from test_schema.test_table as `root` offset 5', $result3);
+
+   let result4 = toSQLString(
+               |meta::relational::databricks::tests::domain::Person.all()->project([col(p |$p.age,'age')])->limit(10)->drop(5),
+               meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
+               DatabaseType.Databricks,
+               meta::relational::extension::relationalExtensions());
+
+   assertEquals('select `age` as `age` from (select `root`.age as `age` from test_schema.test_table as `root` offset 5) as `subselect` limit 10', $result4);
+
+   let result5 = toSQLString(
+               |meta::relational::databricks::tests::domain::Person.all()->project([col(p |$p.age,'age')])->drop(5)->limit(10),
+               meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
+               DatabaseType.Databricks,
+               meta::relational::extension::relationalExtensions());
+
+   assertEquals('select `age` as `age` from (select `root`.age as `age` from test_schema.test_table as `root` limit 10) as `subselect` offset 5', $result5);
+
+   let result6 = toSQLString(
+               |meta::relational::databricks::tests::domain::Person.all()->project([col(p |$p.age,'age')])->slice(5, 11),
+               meta::relational::databricks::tests::mapping::simpleRelationalMappingPersonForDelta,
+               DatabaseType.Databricks,
+               meta::relational::extension::relationalExtensions());
+
+   assertEquals('select `root`.age as `age` from test_schema.test_table limit 6 offset 5', $result5);
 }
 
 function <<test.Test>> meta::relational::databricks::tests::joinStrings():Boolean[1]
