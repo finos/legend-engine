@@ -1,0 +1,206 @@
+{
+  "serviceName": "legend",
+  "serviceId": 17,
+  "policyVersion": 3,
+  "policyUpdateTime": "20160804-09:51:46.000-+0100",
+  "policies": [
+    {
+      "id": 1,
+      "guid": "46d31156-22a1-46b5-a1b5-bf717331ab2f",
+      "isEnabled": true,
+      "createdBy": "Admin",
+      "updatedBy": "Admin",
+      "createTime": "20160804-09:51:46.000-+0100",
+      "updateTime": "20160804-09:51:46.000-+0100",
+      "version": 1,
+      "service": "legend",
+      "name": "Legend Service Access",
+      "policyType": 0,
+      "policyPriority": 0,
+      "resourceSignature": "f711797f48bd65529388f0b2f723d0a4e64e44d90f3e54c427d6a6f244cd7ff5",
+      "isAuditEnabled": true,
+      "resources": {
+        "service-guid": {
+          "values": [
+            "legend-service-path1"
+          ],
+          "isExcludes": false,
+          "isRecursive": true
+        }
+      },
+      "policyItems": [
+        {
+          "accesses": [
+            {
+              "type": "execute_service",
+              "isAllowed": true
+            }
+          ],
+          "users": [
+            "alice", "bob", "dave"
+          ],
+          "delegateAdmin": false
+        }
+      ],
+      "serviceType": "legend",
+      "isDenyAllElse": false
+    },
+    {
+      "id": 2,
+      "guid": "46d31156-22a1-46b5-a1b5-bf717331ab2f",
+      "isEnabled": true,
+      "createdBy": "Admin",
+      "updatedBy": "Admin",
+      "createTime": "20160804-09:51:46.000-+0100",
+      "updateTime": "20160804-09:51:46.000-+0100",
+      "version": 1,
+      "service": "legend",
+      "name": "Legend Service Access",
+      "policyType": 0,
+      "policyPriority": 0,
+      "resourceSignature": "f711797f48bd65529388f0b2f723d0a4e64e44d90f3e54c427d6a6f244cd7ff5",
+      "isAuditEnabled": true,
+      "resources": {
+        "service-guid": {
+          "values": [
+            "legend-service-path2"
+          ],
+          "isExcludes": false,
+          "isRecursive": true
+        }
+      },
+      "policyItems": [
+        {
+          "accesses": [
+            {
+              "type": "execute_service",
+              "isAllowed": true
+            }
+          ],
+          "users": [
+             "fred"
+          ],
+          "delegateAdmin": false
+        }
+      ],
+      "serviceType": "legend",
+      "isDenyAllElse": false
+    }
+  ],
+  "serviceDef": {
+    "id": 204,
+    "guid": "3e1afb5a-184a-4e82-9d9c-87a5cacc243D",
+    "isEnabled": true,
+    "createTime": "20160804-09:51:46.000-+0100",
+    "updateTime": "20160804-09:51:46.000-+0100",
+    "version": 1,
+    "name": "legend",
+    "displayName": "Legend",
+    "implClass": "org.apache.ranger.services.legend.RangerServiceLegend",
+    "label": "Legend",
+    "description": "Legend",
+    "options": {
+      "enableDenyAndExceptionsInPolicies": "true"
+    },
+    "configs": [
+      {
+        "itemId": 1,
+        "name": "legend-execution-service-host",
+        "type": "string",
+        "mandatory": true,
+        "label": "Domain"
+      }
+    ],
+    "resources": [
+      {
+        "itemId": 1,
+        "name": "service-guid",
+        "type": "string",
+        "level": 10,
+        "mandatory": true,
+        "lookupSupported": true,
+        "recursiveSupported": true,
+        "excludesSupported": true,
+        "matcher": "org.apache.ranger.plugin.resourcematcher.RangerDefaultResourceMatcher",
+        "matcherOptions": {
+          "wildCard": "true",
+          "ignoreCase": "false"
+        },
+        "label": "Alloy Service Path",
+        "description": "Alloy Service path",
+        "isValidLeaf": true
+      },
+      {
+        "itemId": 2,
+        "name": "database",
+        "type": "string",
+        "level": 10,
+        "mandatory": true,
+        "lookupSupported": true,
+        "recursiveSupported": false,
+        "excludesSupported": true,
+        "matcher": "org.apache.ranger.plugin.resourcematcher.RangerDefaultResourceMatcher",
+        "matcherOptions": {
+          "wildCard": "false",
+          "ignoreCase": "false"
+        },
+        "label": "Database Name",
+        "description": "Database Name",
+        "isValidLeaf": false
+      },
+      {
+        "itemId": 3,
+        "name": "host",
+        "type": "string",
+        "level": 30,
+        "parent": "database",
+        "mandatory": false,
+        "lookupSupported": true,
+        "recursiveSupported": false,
+        "excludesSupported": true,
+        "matcher": "org.apache.ranger.plugin.resourcematcher.RangerDefaultResourceMatcher",
+        "matcherOptions": {
+          "wildCard": "false",
+          "ignoreCase": "false"
+        },
+        "label": "Database Host",
+        "description": "Database Host",
+        "isValidLeaf": false
+      },
+      {
+        "itemId": 4,
+        "name": "port",
+        "type": "string",
+        "level": 40,
+        "parent": "host",
+        "mandatory": false,
+        "lookupSupported": true,
+        "recursiveSupported": false,
+        "excludesSupported": true,
+        "matcher": "org.apache.ranger.plugin.resourcematcher.RangerDefaultResourceMatcher",
+        "matcherOptions": {
+          "wildCard": "false",
+          "ignoreCase": "false"
+        },
+        "label": "Database Port",
+        "description": "Database Port",
+        "isValidLeaf": true
+      }
+    ],
+    "accessTypes": [
+      {
+        "itemId": 1,
+        "name": "execute_service",
+        "label": "Execute Service"
+      },
+      {
+        "itemId": 2,
+        "name": "explore_data",
+        "label": "Explore Data"
+      }
+    ],
+    "dataMaskDef": {},
+    "rowFilterDef": {}
+  },
+  "auditMode": "audit-none"
+}
