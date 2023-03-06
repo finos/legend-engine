@@ -52,7 +52,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 
   runDataAssertion($result, $config,
   | assertEquals($result.values.rows.values, $expected);
-    assertEquals($result.values.columns.name, ['lastName', 'ageWindow']);
+    assertEquals($result.values.columns.name, ['id', 'lastName', 'ageWindow']);
   );
 }
 
@@ -85,7 +85,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 
   runDataAssertion($result, $config,
   | assertEquals($result.values.rows.values, $expected);
-    assertEquals($result.values.columns.name, ['lastName', 'ageAverageWindow']);
+    assertEquals($result.values.columns.name, ['id', 'lastName', 'ageAverageWindow']);
   );
 }
 
@@ -119,7 +119,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 
   runDataAssertion($result, $config,
   | assertEquals($result.values.rows.values, $expected);
-    assertEquals($result.values.columns.name, ['lastName', 'ageAverageWindow', 'ageSumWindow']);
+    assertEquals($result.values.columns.name, ['id', 'lastName', 'ageAverageWindow', 'ageSumWindow']);
   );
 }
 
@@ -153,7 +153,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 
   runDataAssertion($result, $config,
   | assertEquals($result.values.rows.values, $expected);
-    assertEquals($result.values.columns.name, ['lastName', 'ageMaxWindow', 'ageSumWindow']);
+    assertEquals($result.values.columns.name, ['id', 'lastName', 'ageMaxWindow', 'ageSumWindow']);
   );
 }
 
