@@ -1,7 +1,7 @@
 ###Service
-Service testModelStoreTestSuites::service::DocM2MService3
+Service testModelStoreTestSuites::service::DocM2MService
 {
-  pattern: '/testModelStoreTestSuites/service';
+  pattern: '/testModelStoreTestSuites/service/{param}';
   owners:
   [
     'dummy',
@@ -11,22 +11,17 @@ Service testModelStoreTestSuites::service::DocM2MService3
   autoActivateUpdates: true;
   execution: Multi
   {
-    query: |testModelStoreTestSuites::model::Doc.all()->graphFetchChecked(#{testModelStoreTestSuites::model::Doc{firm_tbl{addressId,firmId,legalName,ceoId},person_tbl{addressId,age,firmId,firstName,id,lastName}}}#)->serialize(#{testModelStoreTestSuites::model::Doc{firm_tbl{addressId,firmId,legalName,ceoId},person_tbl{addressId,age,firmId,firstName,id,lastName}}}#);
+    query: {param:String[1]|testModelStoreTestSuites::model::Doc.all()->graphFetchChecked(#{testModelStoreTestSuites::model::Doc{firm_tbl{addressId,firmId,legalName,ceoId},person_tbl{addressId,age,firmId,firstName,id,lastName}}}#)->serialize(#{testModelStoreTestSuites::model::Doc{firm_tbl{addressId,firmId,legalName,ceoId},person_tbl{addressId,age,firmId,firstName,id,lastName}}}#)};
     key: 'env';
-    executions['QA1']:
+    executions['QA']:
     {
       mapping: testModelStoreTestSuites::mapping::DocM2MMapping;
       runtime: testModelStoreTestSuites::runtime::DocM2MRuntime;
     }
-    executions['QA4']:
-    {
-      mapping: testModelStoreTestSuites::mapping::DocM2MMapping;
-      runtime: testModelStoreTestSuites::runtime::DocM2MRuntime2;
-    }
     executions['UAT']:
     {
       mapping: testModelStoreTestSuites::mapping::DocM2MMapping;
-      runtime: testModelStoreTestSuites::runtime::DocM2MRuntime3;
+      runtime: testModelStoreTestSuites::runtime::DocM2MRuntime;
     }
   }
   testSuites:
@@ -37,6 +32,11 @@ Service testModelStoreTestSuites::service::DocM2MService3
       [
         connections:
         [
+          connection_1:
+            Reference
+            #{
+              testServiceStoreTestSuites::TestData
+            }#,
           connection_2:
             Reference
             #{
@@ -51,8 +51,12 @@ Service testModelStoreTestSuites::service::DocM2MService3
           serializationFormat: PURE;
           keys:
           [
-            'UAT'
+            'QA'
           ];
+          parameters:
+          [
+            param = 'dummy firstName'
+          ]
           asserts:
           [
             assert1:
@@ -74,6 +78,10 @@ Service testModelStoreTestSuites::service::DocM2MService3
           [
             'UAT'
           ];
+          parameters:
+          [
+            param = 'firstName 69'
+          ]
           asserts:
           [
             assert1:
@@ -88,13 +96,17 @@ Service testModelStoreTestSuites::service::DocM2MService3
               }#
           ]
         },
-        test3:
+       test3:
         {
           serializationFormat: PURE;
           keys:
           [
             'QA','UAT'
           ];
+          parameters:
+          [
+            param = 'firstName 69'
+          ]
           asserts:
           [
             assert1:
