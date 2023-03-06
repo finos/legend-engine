@@ -181,11 +181,6 @@ public abstract class RelationalIngestorAbstract
         {
             resourcesBuilder.stagingDataSetEmpty(datasetEmpty(updatedDatasets.stagingDataset(), transformer, executor));
         }
-        // Validate if main dataset schema matches the actual table
-        if (executor.datasetExists(updatedDatasets.mainDataset()))
-        {
-            validateMainDatasetSchema(updatedDatasets.mainDataset(), executor);
-        }
 
         // generate sql plans
         RelationalGenerator generator = RelationalGenerator.builder()

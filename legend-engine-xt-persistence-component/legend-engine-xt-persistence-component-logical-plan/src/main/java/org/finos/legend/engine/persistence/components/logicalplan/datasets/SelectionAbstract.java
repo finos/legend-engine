@@ -47,6 +47,8 @@ public interface SelectionAbstract extends Dataset, Operation
 
     Optional<String> alias();
 
+    Optional<Integer> limit();
+
     @Derived
     default DatasetReference datasetReference()
     {
