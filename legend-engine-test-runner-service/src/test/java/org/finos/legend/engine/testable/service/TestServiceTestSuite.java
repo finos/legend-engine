@@ -2833,7 +2833,7 @@ public class TestServiceTestSuite
     @Test
     public void testServiceTestKeysWithOptimizedWorkflow()
     {
-        List<TestResult> MultiKeyTestResult = executeServiceTest("testable/service/", "serviceGrammarModel.pure", "serviceGrammarWithOptimizedWorkflow.pure", "testModelStoreTestSuites::service::DocM2MService");
+        List<TestResult> MultiKeyTestResult = executeServiceTest("testable/service/", "serviceGrammarModel.pure", "serviceGrammarTestWithOptimizedWorkflow.pure", "testModelStoreTestSuites::service::DocM2MService");
         Assert.assertEquals(3, MultiKeyTestResult.size());
         Assert.assertTrue(MultiKeyTestResult.get(0) instanceof MultiExecutionServiceTestResult);
         Assert.assertEquals("testModelStoreTestSuites::service::DocM2MService", MultiKeyTestResult.get(0).testable);
