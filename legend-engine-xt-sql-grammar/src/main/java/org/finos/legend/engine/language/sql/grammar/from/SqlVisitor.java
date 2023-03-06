@@ -1029,8 +1029,17 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitNullPredicate(SqlBaseParser.NullPredicateContext context)
     {
-        //TODO
-        return unsupported();
+        Expression value = (Expression) visit(context.value);
+
+        if (context.NOT() != null)
+        {
+            IsNotNullPredicate isNotNullPredicate = new IsNotNullPredicate();
+            isNotNullPredicate.value = value;
+            return isNotNullPredicate;
+        }
+        IsNullPredicate isNullPredicate = new IsNullPredicate();
+        isNullPredicate.value = value;
+        return isNullPredicate;
     }
 
     @Override
@@ -1139,8 +1148,14 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitConcatenation(SqlBaseParser.ConcatenationContext context)
     {
-        //TODO
-        return unsupported();
+        FunctionCall concat = new FunctionCall();
+        concat.name = qualifiedName("concat");
+        concat.arguments = FastList.newListWith(
+                (Expression) visit(context.left),
+                (Expression) visit(context.right)
+        );
+
+        return concat;
     }
 
     @Override
@@ -1225,8 +1240,15 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitSpecialDateTimeFunction(SqlBaseParser.SpecialDateTimeFunctionContext context)
     {
-        //TODO
-        return unsupported();
+        CurrentTime currentTime = new CurrentTime();
+        currentTime.type = getDateTimeFunctionType(context.name);
+
+        if (context.precision != null)
+        {
+            currentTime.precision = Long.parseLong(context.precision.getText());
+        }
+
+        return currentTime;
     }
 
     @Override
@@ -1238,8 +1260,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitSubstring(SqlBaseParser.SubstringContext context)
     {
-        QualifiedName qualifiedName = new QualifiedName();
-        qualifiedName.parts = FastList.newListWith("substring");
+        QualifiedName qualifiedName = qualifiedName("substring");
 
         FunctionCall functionCall = new FunctionCall();
         functionCall.name = qualifiedName;
@@ -1720,6 +1741,21 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
         }
     }
 
+    private static CurrentTimeType getDateTimeFunctionType(Token token)
+    {
+        switch (token.getType())
+        {
+            case SqlBaseLexer.CURRENT_DATE:
+                return CurrentTimeType.DATE;
+            case SqlBaseLexer.CURRENT_TIME:
+                return CurrentTimeType.TIME;
+            case SqlBaseLexer.CURRENT_TIMESTAMP:
+                return CurrentTimeType.TIMESTAMP;
+            default:
+                throw new UnsupportedOperationException("Unsupported special function: " + token.getText());
+        }
+    }
+
     private static SortItemNullOrdering getNullOrderingType(Token token)
     {
         if (token != null)
@@ -1752,6 +1788,14 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
             }
         }
         return SortItemOrdering.ASCENDING;
+    }
+
+    private QualifiedName qualifiedName(String... parts)
+    {
+        QualifiedName qualifiedName = new QualifiedName();
+        qualifiedName.parts = FastList.newListWith(parts);
+
+        return qualifiedName;
     }
 
     private Node unsupported()
