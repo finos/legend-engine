@@ -39,7 +39,7 @@ public class SearchDocumentArtifactGenerationExtension implements ArtifactGenera
 {
     public final String ROOT_PATH = "searchDocuments";
 
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(SearchDocumentArtifactGenerationExtension.class);
 
     @Override
     public String getKey()
