@@ -460,7 +460,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
    javaMethod(['public'], $javaClass, $enum->readMethodName($conventions), $nodeParameter,
       $conventions->codeType(javaString())->codeToString()+' text  = acceptString(node);\n' +
       $conventions->codeType(javaString())->codeToString()+' value = text.startsWith('+escapedString($qualifier)+') ? text.substring('+$qualifier->length()->toString()+') : text;\n' +
-      'return '+$conventions->codeType($javaClass)->codeToString()+'.valueOf(value);'
+      'return '+$conventions->codeType($javaClass)->codeToString()+'.getEnumFromPureName(value);'
    );
 }
 
