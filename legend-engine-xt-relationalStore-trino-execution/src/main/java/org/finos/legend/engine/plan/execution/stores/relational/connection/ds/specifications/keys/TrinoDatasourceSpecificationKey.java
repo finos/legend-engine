@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys;
 
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.TrinoSSLSpecification;
 
 import java.util.Objects;
 
@@ -30,40 +31,52 @@ public class TrinoDatasourceSpecificationKey
     /**
      *  SSL level properties
      */
-    public boolean ssl;
-    public String trustStorePathVaultReference;
-    public String trustStorePasswordVaultReference;
+    public TrinoSSLSpecification sslSpecification;
 
-    /**
-     * Kerberos Auth related Properties
-     */
-    public String kerberosRemoteServiceName;
-    public boolean kerberosUseCanonicalHostname;
+
+    private String toString(TrinoSSLSpecification sslSpecification)
+    {
+        return "TrinoSSLSpecification{" +
+                "ssl=" + sslSpecification.ssl +
+                ", trustStorePathVaultReference='" + sslSpecification.trustStorePathVaultReference + '\'' +
+                ", trustStorePasswordVaultReference='" + sslSpecification.trustStorePasswordVaultReference + '\'' +
+                '}';
+    }
+
+    private String shortId(TrinoSSLSpecification sslSpecification)
+    {
+        if(sslSpecification != null) {
+            return "TrinoSSLSpecification_" +
+                    "ssl:" + sslSpecification.ssl + "_" +
+                    "trustStorePathVaultReference:'" + sslSpecification.trustStorePathVaultReference + "_" +
+                    "trustStorePasswordVaultReference:'" + sslSpecification.trustStorePasswordVaultReference;
+        }
+        return "_";
+    }
 
     @Override
     public String shortId()
     {
-        return "TrinoDatasourceSpecificationKey_" +
-                "host:'" + host + "_" +
-                ", port:" + port + "_" +
-                ", trustStorePathVaultReference:'" + trustStorePathVaultReference + "_" +
-                ", trustStorePasswordVaultReference:'" + trustStorePasswordVaultReference + "_" +
-                ", clientTags:'" + clientTags + "_" +
-                ", kerberosUseCanonicalHostname:" + kerberosUseCanonicalHostname;
+        return "Trino_" +
+            "host:" + host + "_" +
+            "port:" + port + "_" +
+            "catalog:" + catalog + "_" +
+            "schema:" + schema + "_" +
+            "clientTags:" + clientTags + "_" +
+            "sslSpecification:" + shortId(this.sslSpecification) + "_";
     }
 
-    public TrinoDatasourceSpecificationKey(String host, int port, String catalog, String schema, String clientTags, boolean ssl, String trustStorePathVaultReference, String trustStorePasswordVaultReference, String kerberosRemoteServiceName, boolean kerberosUseCanonicalHostname)
+    @Override
+    public String toString()
     {
-        this.host = host;
-        this.port = port;
-        this.catalog = catalog;
-        this.schema = schema;
-        this.clientTags = clientTags;
-        this.ssl = ssl;
-        this.trustStorePathVaultReference = trustStorePathVaultReference;
-        this.trustStorePasswordVaultReference = trustStorePasswordVaultReference;
-        this.kerberosRemoteServiceName = kerberosRemoteServiceName;
-        this.kerberosUseCanonicalHostname = kerberosUseCanonicalHostname;
+        return "TrinoDatasourceSpecificationKey{" +
+                "host='" + host + '\'' +
+                ", port=" + port +
+                ", catalog='" + catalog + '\'' +
+                ", schema='" + schema + '\'' +
+                ", clientTags='" + clientTags + '\'' +
+                ", sslSpecification=" + toString(this.sslSpecification) +
+                '}';
     }
 
     @Override
@@ -78,30 +91,23 @@ public class TrinoDatasourceSpecificationKey
             return false;
         }
         TrinoDatasourceSpecificationKey that = (TrinoDatasourceSpecificationKey) o;
-        return port == that.port && ssl == that.ssl && kerberosUseCanonicalHostname == that.kerberosUseCanonicalHostname && Objects.equals(host, that.host) && Objects.equals(catalog, that.catalog) && Objects.equals(schema, that.schema) && Objects.equals(clientTags, that.clientTags) && Objects.equals(trustStorePathVaultReference, that.trustStorePathVaultReference) && Objects.equals(trustStorePasswordVaultReference, that.trustStorePasswordVaultReference) && Objects.equals(kerberosRemoteServiceName, that.kerberosRemoteServiceName);
+        return port == that.port && Objects.equals(host, that.host) && Objects.equals(catalog, that.catalog) && Objects.equals(schema, that.schema) && Objects.equals(clientTags, that.clientTags) && Objects.equals(sslSpecification, that.sslSpecification);
+    }
+
+    public TrinoDatasourceSpecificationKey(String host, int port, String catalog, String schema, String clientTags, TrinoSSLSpecification sslSpecification)
+    {
+        this.host = host;
+        this.port = port;
+        this.catalog = catalog;
+        this.schema = schema;
+        this.clientTags = clientTags;
+        this.sslSpecification = sslSpecification;
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(host, port, catalog, schema, clientTags, ssl, trustStorePathVaultReference, trustStorePasswordVaultReference, kerberosRemoteServiceName, kerberosUseCanonicalHostname);
-    }
-
-    @Override
-    public String toString()
-    {
-        return "TrinoDatasourceSpecificationKey{" +
-                "host='" + host + '\'' +
-                ", port=" + port +
-                ", catalog='" + catalog + '\'' +
-                ", schema='" + schema + '\'' +
-                ", clientTags='" + clientTags + '\'' +
-                ", ssl=" + ssl +
-                ", trustStorePathVaultReference='" + trustStorePathVaultReference + '\'' +
-                ", trustStorePasswordVaultReference='" + trustStorePasswordVaultReference + '\'' +
-                ", kerberosRemoteServiceName='" + kerberosRemoteServiceName + '\'' +
-                ", kerberosUseCanonicalHostname=" + kerberosUseCanonicalHostname +
-                '}';
+        return Objects.hash(host, port, catalog, schema, clientTags, sslSpecification);
     }
 
     public String getHost()
@@ -119,38 +125,18 @@ public class TrinoDatasourceSpecificationKey
         return catalog;
     }
 
+    public String getSchema()
+    {
+        return schema;
+    }
+
     public String getClientTags()
     {
         return clientTags;
     }
 
-    public boolean isSsl()
+    public TrinoSSLSpecification getSslSpecification()
     {
-        return ssl;
-    }
-
-    public String getTrustStorePathVaultReference()
-    {
-        return trustStorePathVaultReference;
-    }
-
-    public String getTrustStorePasswordVaultReference()
-    {
-        return trustStorePasswordVaultReference;
-    }
-
-    public String getKerberosRemoteServiceName()
-    {
-        return kerberosRemoteServiceName;
-    }
-
-    public boolean isKerberosUseCanonicalHostname()
-    {
-        return kerberosUseCanonicalHostname;
-    }
-
-    public String getSchema()
-    {
-        return schema;
+        return sslSpecification;
     }
 }

@@ -18,6 +18,8 @@ import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TrinoDelegatedKerberosAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.TrinoDatasourceSpecification;
 
@@ -31,7 +33,11 @@ public class TrinoProtocolExtension implements PureProtocolExtension
         return Lists.fixedSize.with(() -> Lists.fixedSize.with(
             ProtocolSubTypeInfo.newBuilder(DatasourceSpecification.class)
                     .withSubtype(TrinoDatasourceSpecification.class, "Trino")
-                .build()
+                .build(),
+                // AuthenticationStrategy
+                ProtocolSubTypeInfo.newBuilder(AuthenticationStrategy.class)
+                        .withSubtype(TrinoDelegatedKerberosAuthenticationStrategy.class, "TrinoDelegatedKerberosAuth")
+                        .build()
         ));
     }
 }

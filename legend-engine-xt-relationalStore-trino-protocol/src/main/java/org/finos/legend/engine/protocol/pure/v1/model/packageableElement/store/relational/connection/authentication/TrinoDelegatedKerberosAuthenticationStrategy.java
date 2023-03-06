@@ -12,25 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication;
 
-public class TrinoDatasourceSpecification
-        extends DatasourceSpecification
+public class TrinoDelegatedKerberosAuthenticationStrategy extends DelegatedKerberosAuthenticationStrategy
 {
-    public String host;
-    public int port;
-    public String catalog;
-    public String schema;
-    public String clientTags;
-
-    /**
-     *  SSL level properties
-     */
-    public TrinoSSLSpecification sslSpecification;
+    public String kerberosRemoteServiceName;
+    public Boolean kerberosUseCanonicalHostname;
 
     @Override
-    public <T> T accept(DatasourceSpecificationVisitor<T> datasourceSpecificationVisitor)
+    public <T> T accept(AuthenticationStrategyVisitor<T> authenticationStrategyVisitor)
     {
-        return datasourceSpecificationVisitor.visit(this);
+        return authenticationStrategyVisitor.visit(this);
     }
 }

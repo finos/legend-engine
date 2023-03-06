@@ -20,8 +20,10 @@ import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.OAuthProfile;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TrinoDelegatedKerberosAuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.DelegatedKerberosAuthenticationStrategyKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.TrinoDelegatedKerberosAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.UserNamePasswordAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
@@ -35,6 +37,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.manag
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategyVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DelegatedKerberosAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TrinoDelegatedKerberosAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecificationVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.TrinoDatasourceSpecification;
@@ -66,17 +69,12 @@ public class TrinoConnectionExtension implements RelationalConnectionExtension, 
     {
         return authenticationStrategy ->
         {
-            if (authenticationStrategy instanceof DelegatedKerberosAuthenticationStrategy)
+            if (authenticationStrategy instanceof TrinoDelegatedKerberosAuthenticationStrategy)
             {
-                DelegatedKerberosAuthenticationStrategy delegatedKerberosAuthenticationStrategy = (DelegatedKerberosAuthenticationStrategy) authenticationStrategy;
-                return new DelegatedKerberosAuthenticationStrategyKey(((DelegatedKerberosAuthenticationStrategy) authenticationStrategy).serverPrincipal);
-            }
-            else if (authenticationStrategy instanceof UserNamePasswordAuthenticationStrategy)
-            {
-                UserNamePasswordAuthenticationStrategy userNamePasswordAuthStrategy = (UserNamePasswordAuthenticationStrategy) authenticationStrategy;
-                String userNameVaultReference = userNamePasswordAuthStrategy.baseVaultReference == null ? userNamePasswordAuthStrategy.userNameVaultReference : userNamePasswordAuthStrategy.baseVaultReference + userNamePasswordAuthStrategy.userNameVaultReference;
-                String passwordVaultReference = userNamePasswordAuthStrategy.baseVaultReference == null ? userNamePasswordAuthStrategy.passwordVaultReference : userNamePasswordAuthStrategy.baseVaultReference + userNamePasswordAuthStrategy.passwordVaultReference;
-                return new UserNamePasswordAuthenticationStrategyKey(userNameVaultReference, passwordVaultReference);
+                TrinoDelegatedKerberosAuthenticationStrategy trinoDelegatedKerberosAuthenticationStrategy = (TrinoDelegatedKerberosAuthenticationStrategy) authenticationStrategy;
+
+                return new TrinoDelegatedKerberosAuthenticationStrategyKey(trinoDelegatedKerberosAuthenticationStrategy.serverPrincipal,
+                        trinoDelegatedKerberosAuthenticationStrategy.kerberosRemoteServiceName, trinoDelegatedKerberosAuthenticationStrategy.kerberosUseCanonicalHostname);
             }
             return null;
         };
@@ -85,7 +83,19 @@ public class TrinoConnectionExtension implements RelationalConnectionExtension, 
     @Override
     public AuthenticationStrategyVisitor<AuthenticationStrategy> getExtraAuthenticationStrategyTransformGenerators(List<OAuthProfile> oauthProfiles)
     {
-        return authenticationStrategy -> null;
+        return authenticationStrategy ->
+        {
+            if (authenticationStrategy instanceof TrinoDelegatedKerberosAuthenticationStrategy)
+            {
+                TrinoDelegatedKerberosAuthenticationStrategy trinoDelegatedKerberosAuthenticationStrategy = (TrinoDelegatedKerberosAuthenticationStrategy) authenticationStrategy;
+                return new TrinoDelegatedKerberosAuthenticationStrategyRuntime(
+                        trinoDelegatedKerberosAuthenticationStrategy.serverPrincipal,
+                        trinoDelegatedKerberosAuthenticationStrategy.kerberosRemoteServiceName,
+                        trinoDelegatedKerberosAuthenticationStrategy.kerberosUseCanonicalHostname
+                );
+            }
+            return null;
+        };
     }
 
     @Override
@@ -102,11 +112,7 @@ public class TrinoConnectionExtension implements RelationalConnectionExtension, 
                         trinoDatasourceSpecification.catalog,
                         trinoDatasourceSpecification.schema,
                         trinoDatasourceSpecification.clientTags,
-                        trinoDatasourceSpecification.ssl,
-                        trinoDatasourceSpecification.trustStorePathVaultReference,
-                        trinoDatasourceSpecification.trustStorePasswordVaultReference,
-                        trinoDatasourceSpecification.kerberosRemoteServiceName,
-                        trinoDatasourceSpecification.kerberosUseCanonicalHostname
+                        trinoDatasourceSpecification.sslSpecification
                 );
             }
             return null;

@@ -69,28 +69,23 @@ public class TrinoDatasourceSpecificationRuntime extends org.finos.legend.engine
         ofNullable(key.getCatalog()).ifPresent(x -> properties.setProperty(CATALOG, x));
         ofNullable(key.getSchema()).ifPresent(x -> properties.setProperty(SCHEMA, x));
 
-        ofNullable(key.isSsl()).ifPresent(x -> properties.setProperty(SSL, String.valueOf(x)));
-        ofNullable(key.getTrustStorePathVaultReference()).ifPresent(x -> properties.setProperty(SSL_TRUST_STORE_PATH, x));
-        ofNullable(key.getTrustStorePasswordVaultReference()).ifPresent(x -> properties.setProperty(SSL_TRUST_STORE_PASSWORD, x));
-
-        ofNullable(key.getKerberosRemoteServiceName()).ifPresent(x -> properties.setProperty(KERBEROES_REMOTE_SERVICE_NAME, x));
-        ofNullable(key.isKerberosUseCanonicalHostname()).ifPresent(x -> properties.setProperty(KERBEROS_USE_CANONICAL_HOSTNAME, String.valueOf(x)));
-
-        if (key.getTrustStorePathVaultReference() != null && key.getTrustStorePasswordVaultReference() != null)
+        if (key.sslSpecification != null)
         {
-            String trustStorePathVaultReference = key.getTrustStorePathVaultReference();
-            String trustStorePasswordVaultReference = key.getTrustStorePasswordVaultReference();
+            String trustStorePathVaultReference = key.getSslSpecification().trustStorePathVaultReference;
+            String trustStorePasswordVaultReference = key.getSslSpecification().trustStorePasswordVaultReference;
 
-            String sslTrustStoreValue = Vault.INSTANCE.getValue(trustStorePathVaultReference);
-            String sslTrustStorePassword = Vault.INSTANCE.getValue(trustStorePasswordVaultReference);
-
-            if (sslTrustStoreValue == null || sslTrustStorePassword == null)
+            if (trustStorePathVaultReference != null && trustStorePasswordVaultReference != null)
             {
-                throw new RuntimeException("No valid SSL trustStorePathVaultReference and trustStorePasswordVaultReference values found for references ");
-            }
-            properties.setProperty(SSL_TRUST_STORE_PATH, createTrinoTempDile(trustStorePathVaultReference, sslTrustStoreValue));
-        }
+                String sslTrustStoreValue = Vault.INSTANCE.getValue(trustStorePathVaultReference);
+                String sslTrustStorePassword = Vault.INSTANCE.getValue(trustStorePasswordVaultReference);
 
+                if (sslTrustStoreValue == null || sslTrustStorePassword == null)
+                {
+                    throw new RuntimeException("No valid SSL trustStorePathVaultReference and trustStorePasswordVaultReference values found for references ");
+                }
+                properties.setProperty(SSL_TRUST_STORE_PATH, createTrinoTempDile(trustStorePathVaultReference, sslTrustStoreValue));
+            }
+        }
         return properties;
     }
 

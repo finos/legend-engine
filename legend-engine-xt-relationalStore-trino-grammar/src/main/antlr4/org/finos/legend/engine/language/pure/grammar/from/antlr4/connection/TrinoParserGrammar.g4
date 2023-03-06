@@ -17,14 +17,7 @@ trinoDatasourceSpecification:               TRINO
                                                         | trinoCatalog
                                                         | trinoSchema
                                                         | trinoClientTags
-                                                        | trinoSSL
-                                                        | trinoTrustStorePathVaultReference
-                                                        | trinoTrustStorePasswordVaultReference
-                                                        | trinoKerberosRemoteServiceName
-                                                        | trinoKerberosUseCanonicalHostname
-                                                        | baseVaultRef
-                                                        | userNameVaultRef
-                                                        | passwordVaultRef
+                                                        | trinoSSLSpecification
                                                     )*
                                                 BRACE_CLOSE
 ;
@@ -44,7 +37,16 @@ trinoSchema:                               SCHEMA COLON STRING SEMI_COLON
 trinoClientTags:                            CLIENT_TAGS COLON STRING SEMI_COLON
 ;
 
-trinoSSL:                                   SSL COLON BOOLEAN SEMI_COLON
+trinoSSLSpecification:                      SSL_SPECIFICATION COLON  BRACE_OPEN
+                                                (
+                                                    trinoSSL
+                                                    | trinoTrustStorePathVaultReference
+                                                    | trinoTrustStorePasswordVaultReference
+                                                )*
+                                            BRACE_CLOSE SEMI_COLON
+;
+
+trinoSSL:                                    SSL COLON BOOLEAN SEMI_COLON
 ;
 
 trinoTrustStorePathVaultReference:          TRUST_STORE_PATH_VAULT_REFERENCE COLON STRING SEMI_COLON
@@ -53,17 +55,24 @@ trinoTrustStorePathVaultReference:          TRUST_STORE_PATH_VAULT_REFERENCE COL
 trinoTrustStorePasswordVaultReference:       TRUST_STORE_PASSWORD_VAULT_REFERENCE COLON STRING SEMI_COLON
 ;
 
+trinoDelegatedKerberosAuth:               TRINO_DELEGATED_KERBEROS
+                                                BRACE_OPEN
+                                                    (
+                                                       trinoServerPrincipal
+                                                        | trinoKerberosRemoteServiceName
+                                                        | trinoKerberosUseCanonicalHostname
+                                                    )*
+                                                BRACE_CLOSE
+;
+
+
+trinoServerPrincipal:                     SERVER_PRINCIPAL COLON STRING SEMI_COLON
+;
+
 trinoKerberosRemoteServiceName:             KERBEROS_REMOTE_SERVICE_NAME COLON STRING SEMI_COLON
 ;
 
 trinoKerberosUseCanonicalHostname:          KERBEROS_USE_CANONICAL_HOSTNAME COLON BOOLEAN SEMI_COLON
-;
-
-baseVaultRef:                           BASE_VAULT_REF COLON STRING SEMI_COLON
-;
-userNameVaultRef:                       USERNAME_VAULT_REF COLON STRING SEMI_COLON
-;
-passwordVaultRef:                       PASSWORD_VAULT_REF COLON STRING SEMI_COLON
 ;
 
 

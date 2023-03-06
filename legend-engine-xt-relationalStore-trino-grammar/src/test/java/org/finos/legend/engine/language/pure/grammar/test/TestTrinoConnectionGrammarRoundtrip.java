@@ -33,13 +33,18 @@ public class TestTrinoConnectionGrammarRoundtrip extends TestGrammarRoundtrip.Te
                 "    catalog: 'tpch';\n" +
                 "    schema: 'tiny';\n" +
                 "    clientTags: 'cg::vega';\n" +
-                "    ssl: false;\n" +
-                "    trustStorePathVaultReference: 'abc12cde';\n" +
-                "    trustStorePasswordVaultReference: 'abc12cde';\n" +
-                "    kerberosRemoteServiceName: 'HTTP';\n" +
-                "    kerberosUseCanonicalHostname: false;\n" +
+                "    sslSpecification:\n" +
+                "    {\n" +
+                "      ssl: false;\n" +
+                "      trustStorePathVaultReference: 'abc12cde';\n" +
+                "      trustStorePasswordVaultReference: 'abc12cde';\n" +
+                "    };\n" +
                 "  };\n" +
-                "  auth: DelegatedKerberos;\n" +
+                "  auth: TrinoDelegatedKerberos\n" +
+                "  {\n" +
+                "    kerberosUseCanonicalHostname: false;\n" +
+                "    kerberosRemoteServiceName: 'HTTP';\n" +
+                "  };\n" +
                 "}\n");
     }
 }

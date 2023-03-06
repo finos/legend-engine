@@ -18,6 +18,13 @@ meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::trinoS
   ^meta::protocols::pure::vX_X_X::extension::RelationalModuleSerializerExtension(
     module = 'trino',
     transfers_connection_transformAuthenticationStrategy = [
+        u:meta::pure::alloy::connections::alloy::authentication::TrinoDelegatedKerberosAuthenticationStrategy[1] |
+            ^meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::TrinoDelegatedKerberosAuthenticationStrategy(
+                     _type = 'TrinoDelegatedKerberosAuth',
+                     kerberosRemoteServiceName = $u.kerberosRemoteServiceName,
+                     kerberosUseCanonicalHostname = $u.kerberosUseCanonicalHostname,
+                     serverPrincipal = $u.serverPrincipal
+                  )
     ],
     transfers_connection_transformDatasourceSpecification = [
     s:meta::pure::alloy::connections::alloy::specification::TrinoDatasourceSpecification[1] |
@@ -28,17 +35,24 @@ meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::trinoS
                         catalog = $s.catalog,
                         schema = $s.schema,
                         clientTags = $s.clientTags,
-                        ssl = $s.ssl,
-                        trustStorePathVaultReference = $s.trustStorePathVaultReference,
-                        trustStorePasswordVaultReference = $s.trustStorePasswordVaultReference,
-                        kerberosRemoteServiceName = $s.kerberosRemoteServiceName,
-                        kerberosUseCanonicalHostname = $s.kerberosUseCanonicalHostname
+                        sslSpecification = if($s.sslSpecification->isEmpty(), |[], |^meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::TrinoSSLSpecification(
+                                   ssl = $s.sslSpecification->toOne().ssl,
+                                   trustStorePathVaultReference = $s.sslSpecification->toOne().trustStorePathVaultReference,
+                                   trustStorePasswordVaultReference = $s.sslSpecification->toOne().trustStorePasswordVaultReference
+                            ))
                      )
     ],
     reverse_transfers_typeLookups = [
-     pair('Trino', 'TrinoDatasourceSpecification')
+     pair('Trino', 'TrinoDatasourceSpecification'),
+     pair('TrinoDelegatedKerberosAuth', 'TrinoDelegatedKerberosAuthenticationStrategy')
     ],
     reverse_transfers_connection_transformAuthenticationStrategy = [
+    u:meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::TrinoDelegatedKerberosAuthenticationStrategy[1] |
+                ^meta::pure::alloy::connections::alloy::authentication::TrinoDelegatedKerberosAuthenticationStrategy(
+                         kerberosRemoteServiceName = $u.kerberosRemoteServiceName,
+                         kerberosUseCanonicalHostname = $u.kerberosUseCanonicalHostname,
+                         serverPrincipal = $u.serverPrincipal
+                      )
     ],
     reverse_transfers_connection_transformDatasourceSpecification = [
     s:meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::TrinoDatasourceSpecification[1] |
@@ -48,11 +62,11 @@ meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::trinoS
                         catalog = $s.catalog,
                         schema = $s.schema,
                         clientTags = $s.clientTags,
-                        ssl = $s.ssl,
-                        trustStorePathVaultReference = $s.trustStorePathVaultReference,
-                        trustStorePasswordVaultReference = $s.trustStorePasswordVaultReference,
-                        kerberosRemoteServiceName = $s.kerberosRemoteServiceName,
-                        kerberosUseCanonicalHostname = $s.kerberosUseCanonicalHostname
+                        sslSpecification =  if($s.sslSpecification->isEmpty(), |[], |^meta::pure::alloy::connections::alloy::specification::TrinoSSLSpecification(
+                                                           ssl = $s.sslSpecification->toOne().ssl,
+                                                           trustStorePathVaultReference = $s.sslSpecification->toOne().trustStorePathVaultReference,
+                                                           trustStorePasswordVaultReference = $s.sslSpecification->toOne().trustStorePasswordVaultReference
+                                                   ))
                      )
     ]
   )

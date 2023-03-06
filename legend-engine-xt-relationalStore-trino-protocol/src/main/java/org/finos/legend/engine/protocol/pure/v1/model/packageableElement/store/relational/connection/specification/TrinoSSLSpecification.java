@@ -14,23 +14,21 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification;
 
-public class TrinoDatasourceSpecification
-        extends DatasourceSpecification
-{
-    public String host;
-    public int port;
-    public String catalog;
-    public String schema;
-    public String clientTags;
+import java.util.Objects;
 
+public class TrinoSSLSpecification
+{
     /**
      *  SSL level properties
      */
-    public TrinoSSLSpecification sslSpecification;
+    public boolean ssl;
+    public String trustStorePathVaultReference;
+    public String trustStorePasswordVaultReference;
 
-    @Override
-    public <T> T accept(DatasourceSpecificationVisitor<T> datasourceSpecificationVisitor)
+    public TrinoSSLSpecification(boolean ssl, String trustStorePathVaultReference, String trustStorePasswordVaultReference)
     {
-        return datasourceSpecificationVisitor.visit(this);
+        this.ssl = ssl;
+        this.trustStorePathVaultReference = trustStorePathVaultReference;
+        this.trustStorePasswordVaultReference = trustStorePasswordVaultReference;
     }
 }

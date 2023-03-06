@@ -62,7 +62,6 @@ public class TrinoTestContainersWithDelegatedKerberosAuth
         TrinoDatasourceSpecification trinoDatasourceSpecification = new TrinoDatasourceSpecification();
         trinoDatasourceSpecification.host = this.trinoContainer.getHost();
         trinoDatasourceSpecification.port = this.trinoContainer.getMappedPort(8080);
-        trinoDatasourceSpecification.kerberosUseCanonicalHostname = false;
         trinoDatasourceSpecification.clientTags = "cg:vega";
 
         DelegatedKerberosAuthenticationStrategy authSpec = new DelegatedKerberosAuthenticationStrategy();

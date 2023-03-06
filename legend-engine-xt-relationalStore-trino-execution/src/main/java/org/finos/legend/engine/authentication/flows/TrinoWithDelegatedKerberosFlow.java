@@ -16,7 +16,7 @@ package org.finos.legend.engine.authentication.flows;
 
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DelegatedKerberosAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TrinoDelegatedKerberosAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.TrinoDatasourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -25,7 +25,7 @@ import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCre
 import java.util.Optional;
 
 public class TrinoWithDelegatedKerberosFlow
-        implements DatabaseAuthenticationFlow<TrinoDatasourceSpecification, DelegatedKerberosAuthenticationStrategy>
+        implements DatabaseAuthenticationFlow<TrinoDatasourceSpecification, TrinoDelegatedKerberosAuthenticationStrategy>
 {
     @Override
     public Class<TrinoDatasourceSpecification> getDatasourceClass()
@@ -34,9 +34,9 @@ public class TrinoWithDelegatedKerberosFlow
     }
 
     @Override
-    public Class<DelegatedKerberosAuthenticationStrategy> getAuthenticationStrategyClass()
+    public Class<TrinoDelegatedKerberosAuthenticationStrategy> getAuthenticationStrategyClass()
     {
-        return DelegatedKerberosAuthenticationStrategy.class;
+        return TrinoDelegatedKerberosAuthenticationStrategy.class;
     }
 
     @Override
@@ -46,7 +46,7 @@ public class TrinoWithDelegatedKerberosFlow
     }
 
     @Override
-    public Credential makeCredential(Identity identity, TrinoDatasourceSpecification trinoDatasourceSpecification, DelegatedKerberosAuthenticationStrategy delegatedKerberosAuthenticationStrategy)
+    public Credential makeCredential(Identity identity, TrinoDatasourceSpecification trinoDatasourceSpecification, TrinoDelegatedKerberosAuthenticationStrategy delegatedKerberosAuthenticationStrategy)
             throws Exception
     {
         Optional<LegendKerberosCredential> credentialHolder = identity.getCredential(LegendKerberosCredential.class);

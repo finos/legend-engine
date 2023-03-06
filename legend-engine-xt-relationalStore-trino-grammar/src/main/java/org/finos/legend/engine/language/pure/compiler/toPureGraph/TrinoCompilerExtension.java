@@ -18,20 +18,37 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TrinoDelegatedKerberosAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.TrinoDatasourceSpecification;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_AuthenticationStrategy;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_TrinoDelegatedKerberosAuthenticationStrategy_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_DatasourceSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_TrinoDatasourceSpecification_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_TrinoSSLSpecification_Impl;
 
 import java.util.List;
 
 public class TrinoCompilerExtension implements IRelationalCompilerExtension
 {
-  /*  @Override
+    @Override
     public List<Function2<AuthenticationStrategy, CompileContext, Root_meta_pure_alloy_connections_alloy_authentication_AuthenticationStrategy>> getExtraAuthenticationStrategyProcessors()
     {
-        return Lists.mutable.with((authenticationStrategy, context) -> null);
-    }*/
+        return Lists.mutable.with((authenticationStrategy, context) ->
+        {
+            if (authenticationStrategy instanceof TrinoDelegatedKerberosAuthenticationStrategy)
+            {
+                TrinoDelegatedKerberosAuthenticationStrategy trinoAuthenticationStrategy = (TrinoDelegatedKerberosAuthenticationStrategy) authenticationStrategy;
+                return new Root_meta_pure_alloy_connections_alloy_authentication_TrinoDelegatedKerberosAuthenticationStrategy_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::authentication::TrinoDelegatedKerberosAuthenticationStrategy"))
+                        ._serverPrincipal(trinoAuthenticationStrategy.serverPrincipal)
+                        ._kerberosRemoteServiceName(trinoAuthenticationStrategy.kerberosRemoteServiceName)
+                        ._kerberosUseCanonicalHostname(trinoAuthenticationStrategy.kerberosUseCanonicalHostname);
+            }
+            return null;
+        });
+    }
+
     @Override
     public List<Function2<DatasourceSpecification, CompileContext, Root_meta_pure_alloy_connections_alloy_specification_DatasourceSpecification>> getExtraDataSourceSpecificationProcessors()
     {
@@ -46,12 +63,12 @@ public class TrinoCompilerExtension implements IRelationalCompilerExtension
                         ._catalog(trinoDatasourceSpecification.catalog)
                         ._schema(trinoDatasourceSpecification.schema)
                         ._clientTags(trinoDatasourceSpecification.clientTags)
-                        ._ssl(trinoDatasourceSpecification.ssl)
-                        ._trustStorePathVaultReference(trinoDatasourceSpecification.trustStorePathVaultReference)
-                        ._trustStorePasswordVaultReference(trinoDatasourceSpecification.trustStorePasswordVaultReference)
-                        ._kerberosRemoteServiceName(trinoDatasourceSpecification.kerberosRemoteServiceName)
-                        ._kerberosUseCanonicalHostname(trinoDatasourceSpecification.kerberosUseCanonicalHostname)
-                        ;
+                        ._sslSpecification(new Root_meta_pure_alloy_connections_alloy_specification_TrinoSSLSpecification_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::specification::TrinoSSLSpecification"))
+                                ._ssl(trinoDatasourceSpecification.sslSpecification.ssl)
+                                ._trustStorePathVaultReference(trinoDatasourceSpecification.sslSpecification.trustStorePathVaultReference)
+                                ._trustStorePasswordVaultReference(trinoDatasourceSpecification.sslSpecification.trustStorePasswordVaultReference)
+                        );
+
             }
             return null;
         });
