@@ -70,7 +70,7 @@ public class TestSearchDocumentArtifactGenerationExtension
         Assert.assertEquals(searchDocumentResult.format, "json");
         Assert.assertEquals(searchDocumentResult.path, "model::Person.json");
         Assert.assertNotNull(searchDocumentResult.content);
-        Assert.assertEquals(searchDocumentResult.content, "{\"logicalType\":\"class\",\"package\":\"model\",\"name\":\"Person\",\"projectCoordinates\":{\"versionId\":\"UNKNOWN\",\"groupId\":\"UNKNOWN\",\"artifactId\":\"UNKNOWN\"},\"id\":\"model::Person\",\"type\":\"alloyClass\",\"properties\":[\"firstName\",\"lastName\"]}");
+        Assert.assertEquals(searchDocumentResult.content, "{\"package\":\"model\",\"name\":\"Person\",\"projectCoordinates\":{\"versionId\":\"UNKNOWN\",\"groupId\":\"UNKNOWN\",\"artifactId\":\"UNKNOWN\"},\"id\":\"model::Person\",\"type\":\"Class\",\"properties\":[\"firstName\",\"lastName\"]}");
     }
 
     @Test
@@ -100,6 +100,6 @@ public class TestSearchDocumentArtifactGenerationExtension
         Assert.assertEquals(searchDocumentResult.format, "json");
         Assert.assertEquals(searchDocumentResult.path, "model::Person.json");
         Assert.assertNotNull(searchDocumentResult.content);
-        Assert.assertEquals(searchDocumentResult.content, "{\"logicalType\":\"class\",\"package\":\"model\",\"name\":\"Person\",\"projectCoordinates\":{\"versionId\":\"0.0.1-SNAPSHOT\",\"groupId\":\"org.finos.test\",\"artifactId\":\"test-project\"},\"id\":\"model::Person\",\"type\":\"alloyClass\",\"properties\":[\"firstName\",\"lastName\"]}");
+        Assert.assertEquals(searchDocumentResult.content, "{\"package\":\"model\",\"name\":\"Person\",\"projectCoordinates\":{\"versionId\":\"0.0.1-SNAPSHOT\",\"groupId\":\"org.finos.test\",\"artifactId\":\"test-project\"},\"id\":\"model::Person\",\"type\":\"Class\",\"properties\":[\"firstName\",\"lastName\"]}");
     }
 }
