@@ -67,6 +67,7 @@ import org.finos.legend.engine.query.graphQL.api.execute.model.error.GraphQLErro
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
+import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.pure.generated.Root_meta_external_query_graphQL_transformation_queryToPure_NamedExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
@@ -80,6 +81,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
+import org.slf4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -110,6 +112,7 @@ import static org.finos.legend.engine.shared.core.operational.http.InflateInterc
 @Produces(MediaType.APPLICATION_JSON)
 public class GraphQLExecute extends GraphQL
 {
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
     private final PlanExecutor planExecutor;
     private final MutableList<PlanTransformer> transformers;
     private final Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensionsFunc;
@@ -229,7 +232,6 @@ public class GraphQLExecute extends GraphQL
         }
     }
 
-
     private Response executeGraphQLQuery(String queryClassPath, String mappingPath, String runtimePath, Document document, GraphQLCacheKey graphQLCacheKey, MutableList<CommonProfile> profiles, Callable<PureModel> modelLoader)
     {
         List<SerializedNamedPlans> planWithSerialized;
@@ -237,7 +239,6 @@ public class GraphQLExecute extends GraphQL
 
         try
         {
-
             if (isQueryIntrospection(graphQLQuery))
             {
                 PureModel pureModel = modelLoader.call();
@@ -250,17 +251,20 @@ public class GraphQLExecute extends GraphQL
             }
             else
             {
-
                 if (graphQLPlanCache != null)
                 {
                     planWithSerialized = graphQLPlanCache.getIfPresent(graphQLCacheKey);
                     if (planWithSerialized == null) //cache miss, generate the plan and add to the cache
                     {
+                        LOGGER.debug(new LogInfo(profiles, LoggingEventType.GRAPHQL_EXECUTE, "Cache miss. Generating new plan").toString());
                         PureModel pureModel = modelLoader.call();
                         planWithSerialized = buildPlanWithParameter(queryClassPath, mappingPath, runtimePath, document, graphQLQuery, pureModel, graphQLCacheKey);
                         graphQLPlanCache.put(graphQLCacheKey, planWithSerialized);
                     }
-
+                    else
+                    {
+                        LOGGER.debug(new LogInfo(profiles, LoggingEventType.GRAPHQL_EXECUTE, "Cache hit. Using previously cached plan").toString());
+                    }
                 }
                 else   //no cache so we generate the plan
                 {
@@ -370,8 +374,8 @@ public class GraphQLExecute extends GraphQL
         try (Scope scope = GlobalTracer.get().buildSpan("GraphQL: Execute").startActive(true))
         {
             Document document = GraphQLGrammarParser.newInstance().parseDocument(query.query);
-            objectMapper.writeValueAsString(createCachableGraphQLQuery(document));
-            GraphQLDevCacheKey key = new GraphQLDevCacheKey(projectId, workspaceId, queryClassPath, mappingPath, runtimePath, objectMapper.writeValueAsString(createCachableGraphQLQuery(document)));
+            Document cachableGraphQLQuery = createCachableGraphQLQuery(document);
+            GraphQLDevCacheKey key = new GraphQLDevCacheKey(projectId, workspaceId, queryClassPath, mappingPath, runtimePath, objectMapper.writeValueAsString(cachableGraphQLQuery));
             return this.executeGraphQLQuery(queryClassPath, mappingPath, runtimePath, document, key, profiles, () -> loadSDLCProjectModel(profiles, request, projectId, workspaceId, isGroupWorkspace));
         }
         catch (Exception ex)
