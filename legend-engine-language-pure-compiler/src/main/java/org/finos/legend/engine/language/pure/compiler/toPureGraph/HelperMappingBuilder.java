@@ -43,7 +43,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.GroupByFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.StoreTestData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingStoreTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTestSuite;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest_Legacy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStoreAssociationMapping;
@@ -64,8 +64,8 @@ import org.finos.legend.pure.generated.Root_meta_pure_mapping_aggregationAware_A
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_aggregationAware_GroupByFunctionSpecification_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_xStore_XStoreAssociationImplementation_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_LambdaFunction_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_mapping_metamodel_StoreTestData;
-import org.finos.legend.pure.generated.Root_meta_pure_mapping_metamodel_StoreTestData_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_mapping_metamodel_MappingStoreTestData;
+import org.finos.legend.pure.generated.Root_meta_pure_mapping_metamodel_MappingStoreTestData_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_property_Property_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_relationship_Generalization_Impl;
@@ -545,9 +545,9 @@ public class HelperMappingBuilder
             RichIterable<? extends Root_meta_pure_test_AtomicTest> tests = ListIterate.collect(mappingTestSuite.tests, unitTest -> (Root_meta_pure_test_AtomicTest) HelperMappingBuilder.processMappingTestAndTestSuite(unitTest, pureMapping, context));
 
             pureMappingTestSuite._id(test.id);
-            if (mappingTestSuite.storeTestDatas != null)
+            if (mappingTestSuite.mappingStoreTestDatas != null)
             {
-                pureMappingTestSuite._storeTestDatas(ListIterate.collect(mappingTestSuite.storeTestDatas, ele -> HelperMappingBuilder.processMappingElementTestData(ele, context, new ProcessingContext("Mapping Element: "))));
+                pureMappingTestSuite._mappingStoreTestDatas(ListIterate.collect(mappingTestSuite.mappingStoreTestDatas, ele -> HelperMappingBuilder.processMappingElementTestData(ele, context, new ProcessingContext("Mapping Element: "))));
             }
             else
             {
@@ -588,21 +588,21 @@ public class HelperMappingBuilder
         }
     }
 
-    private static Root_meta_pure_mapping_metamodel_StoreTestData processMappingElementTestData(StoreTestData testData, CompileContext context, ProcessingContext processingContext)
+    private static Root_meta_pure_mapping_metamodel_MappingStoreTestData processMappingElementTestData(MappingStoreTestData testData, CompileContext context, ProcessingContext processingContext)
     {
-        Root_meta_pure_mapping_metamodel_StoreTestData storeTestData = new Root_meta_pure_mapping_metamodel_StoreTestData_Impl("");
-        storeTestData._data(context.getCompilerExtensions().getExtraEmbeddedDataProcessors().stream().map(processor -> processor.value(testData.data, context, processingContext))
+        Root_meta_pure_mapping_metamodel_MappingStoreTestData mappingStoreTestData = new Root_meta_pure_mapping_metamodel_MappingStoreTestData_Impl("");
+        mappingStoreTestData._data(context.getCompilerExtensions().getExtraEmbeddedDataProcessors().stream().map(processor -> processor.value(testData.data, context, processingContext))
                         .filter(Objects::nonNull)
                         .findFirst()
                         .orElseThrow(() -> new UnsupportedOperationException("Unsupported data")));
         if (testData.store.equals("ModelStore"))
         {
-            storeTestData._store(new Root_meta_pure_mapping_modelToModel_ModelStore_Impl(""));
+            mappingStoreTestData._store(new Root_meta_pure_mapping_modelToModel_ModelStore_Impl(""));
         }
         else
         {
-            storeTestData._store(context.resolveStore(testData.store));
+            mappingStoreTestData._store(context.resolveStore(testData.store));
         }
-        return storeTestData;
+        return mappingStoreTestData;
     }
 }
