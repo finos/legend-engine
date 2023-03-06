@@ -36,8 +36,7 @@ function meta::analytics::search::transformation::packageableelement::buildDocum
 {
   ^meta::analytics::search::metamodel::BaseRootDocument(
     id = $packageableElement->elementToPath(),
-    type = 'packageableElement',
-    logicalType = if(!$packageableElement->genericType().rawType.name->isEmpty(), |$packageableElement->genericType().rawType.name->toOne(), |'packageableElement')
+    type = meta::analytics::search::metamodel::DocumentType.PackageableElement
   );
 }
 
@@ -49,8 +48,7 @@ function meta::analytics::search::transformation::class::buildDocument(class: Cl
     id = $class->elementToPath(),
     package = $class.package->toOne()->elementToPath(),
     name = $class.name->toOne(),
-    type = 'alloyClass',
-    logicalType = 'class',
+    type = meta::analytics::search::metamodel::DocumentType.Class,
     properties = $class.properties->meta::analytics::search::transformation::class::buildPropertyList()
   );
 }
@@ -73,8 +71,7 @@ function meta::analytics::search::transformation::dataspace::buildDocument(datas
     diagrams = $dataspace.featuredDiagrams->map(d|$d->elementToPath()),
     executionContexts = $dataspace.executionContexts->map(c|$c->meta::analytics::search::transformation::dataspace::buildExecutionContextDocument()),
     taxonomies = $dataspace.taggedValues->filter(t|$t.tag.value == 'taxonomyNodes').value,
-    type = 'alloyDataspace',
-    logicalType = 'dataspace'
+    type = meta::analytics::search::metamodel::DocumentType.DataSpace
   );
 }
 
@@ -107,8 +104,7 @@ function meta::analytics::search::transformation::diagram::buildDocument(diagram
     id = $diagram->elementToPath(),
     package = $diagram.package->toOne()->elementToPath(),
     name = $diagram.name->toOne(),
-    type = 'alloyDiagram',
-    logicalType = 'diagram',
+    type = meta::analytics::search::metamodel::DocumentType.Diagram,
     classes = $diagram->meta::analytics::search::transformation::diagram::buildClassDocuments()
   );
 }
@@ -132,8 +128,7 @@ function meta::analytics::search::transformation::mapping::buildDocument(mapping
     id = $mapping->elementToPath(),
     package = $mapping.package->toOne()->elementToPath(),
     name = $mapping.name->toOne(),
-    type = 'alloyMapping',
-    logicalType = 'mapping',
+    type = meta::analytics::search::metamodel::DocumentType.Mapping,
     classes = $mapping->meta::analytics::search::transformation::mapping::buildClassDocuments()
   );
 }
@@ -164,8 +159,7 @@ function meta::analytics::search::transformation::service::buildDocument(service
   ^meta::analytics::search::metamodel::service::RootDocument(
     id = $service.pattern,
     name = $service.pattern,
-    type = 'alloyService',
-    logicalType = 'service',
+    type = meta::analytics::search::metamodel::DocumentType.Service,
     owners = $service.owners,
     documentation = $service.documentation,
     executions = $service.execution->meta::analytics::search::transformation::service::buildExecutionDocuments()

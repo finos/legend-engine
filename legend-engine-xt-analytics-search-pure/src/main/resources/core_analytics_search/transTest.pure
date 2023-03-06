@@ -36,7 +36,7 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::search::transforma
   assert($result.projectCoordinates.versionId == '0.0.1-SNAPSHOT');
   
   let json = $result->alloyToJSON();
-  assert($json == '{"logicalType":"class","package":"meta::analytics::search::transformation::test","name":"Person","projectCoordinates":{"versionId":"0.0.1-SNAPSHOT","groupId":"org.finos.test","artifactId":"test-project"},"id":"meta::analytics::search::transformation::test::Person","type":"alloyClass","properties":["firstName","lastName"]}');
+  assert($json == '{"package":"meta::analytics::search::transformation::test","name":"Person","projectCoordinates":{"versionId":"0.0.1-SNAPSHOT","groupId":"org.finos.test","artifactId":"test-project"},"id":"meta::analytics::search::transformation::test::Person","type":"Class","properties":["firstName","lastName"]}');
 }
 
 function <<meta::pure::profiles::test.Test>> meta::analytics::search::transformation::test::testMappingDocumentGeneration(): Boolean[1]
@@ -51,7 +51,7 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::search::transforma
   assert($result.projectCoordinates.versionId == '0.0.1-SNAPSHOT');
   
   let json = $result->alloyToJSON();
-  assert($json == '{"logicalType":"mapping","package":"meta::analytics::search::transformation::test","classes":[{"package":"meta::analytics::search::transformation::test","name":"Firm","properties":["id","employees","address"]},{"package":"meta::analytics::search::transformation::test","name":"Person","properties":["firstName","lastName"]},{"package":"meta::analytics::search::transformation::test","name":"LegalEntity"},{"package":"meta::analytics::search::transformation::test","name":"Address"},{"package":"meta::analytics::search::transformation::test","name":"Street"}],"name":"sampleRelationalMapping","projectCoordinates":{"versionId":"0.0.1-SNAPSHOT","groupId":"org.finos.test","artifactId":"test-project"},"id":"meta::analytics::search::transformation::test::sampleRelationalMapping","type":"alloyMapping"}');
+  assert($json == '{"package":"meta::analytics::search::transformation::test","classes":[{"package":"meta::analytics::search::transformation::test","name":"Firm","properties":["id","employees","address"]},{"package":"meta::analytics::search::transformation::test","name":"Person","properties":["firstName","lastName"]},{"package":"meta::analytics::search::transformation::test","name":"LegalEntity"},{"package":"meta::analytics::search::transformation::test","name":"Address"},{"package":"meta::analytics::search::transformation::test","name":"Street"}],"name":"sampleRelationalMapping","projectCoordinates":{"versionId":"0.0.1-SNAPSHOT","groupId":"org.finos.test","artifactId":"test-project"},"id":"meta::analytics::search::transformation::test::sampleRelationalMapping","type":"Mapping"}');
 }
 
 ###Relational

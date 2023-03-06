@@ -1,14 +1,22 @@
+Enum meta::analytics::search::metamodel::DocumentType
+{
+  Class,
+  DataSpace,
+  Diagram,
+  Mapping,
+  Service,
+  PackageableElement
+}
+
 Class meta::analytics::search::metamodel::BaseRootDocument
 [
   idNotBlank: $this.id->length() > 0,
-  typeNotBlank: $this.type->length() > 0,
-  logicalTypeNotBlank: $this.logicalType->length() > 0
+  typeNotBlank: $this.type->isNotEmpty()
 ]
 {
   projectCoordinates : meta::analytics::search::metamodel::ProjectCoordinates[0..1];
   id: String[1];
-  type: String[1];
-  logicalType: String[1];
+  type: meta::analytics::search::metamodel::DocumentType[1];
 }
 
 Class meta::analytics::search::metamodel::ProjectCoordinates
