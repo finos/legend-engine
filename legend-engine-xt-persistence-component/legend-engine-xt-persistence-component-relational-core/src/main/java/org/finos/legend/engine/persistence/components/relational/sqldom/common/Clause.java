@@ -49,7 +49,8 @@ public enum Clause
     CASE("CASE"),
     WHEN("WHEN"),
     ELSE("ELSE"),
-    END("END");
+    END("END"),
+    LIMIT("LIMIT");
 
     private final String clause;
 
