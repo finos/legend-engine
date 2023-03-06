@@ -114,7 +114,7 @@ Service testModelStoreTestSuites::service::DocM2MService3
           serializationFormat: PURE;
           keys:
           [
-            'QA', 'UAT'
+            'QA','UAT'
           ];
           asserts:
           [
