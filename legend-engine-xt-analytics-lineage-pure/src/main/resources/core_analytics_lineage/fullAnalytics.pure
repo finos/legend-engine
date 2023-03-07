@@ -126,6 +126,20 @@ Class meta::analytics::lineage::ReportColumnsWithState
    idToSet: Map<String, List<SetImplementation>>[1];
 }
 
+Class meta::analytics::lineage::ColumnLineage
+{
+   name: String[1];
+   columns: meta::analytics::lineage::Column[*];   
+}
+
+Class meta::analytics::lineage::Column
+{
+   name: String[1];
+   table: String[1];
+   schema: String[1];
+   database: String[1];
+}
+
 
 function meta::analytics::lineage::buildReportLineage(funcBody:ValueSpecification[1], mapping:Mapping[1]):ReportLineage[1]
 {
@@ -347,3 +361,21 @@ function <<access.private>> meta::analytics::lineage::flowClass::getClassLinksFr
    );
 }
 
+function meta::analytics::lineage::transformColumns(c: meta::analytics::lineage::ReportLineage[1]): meta::analytics::lineage::ColumnLineage[*]
+{
+  $c.columns->map(e|
+    ^meta::analytics::lineage::ColumnLineage
+    (
+      name = $e.name,
+      columns = $e.columns->map(t|
+        ^meta::analytics::lineage::Column
+        (
+            database = $t.column.owner->match([t:Table[1]|$t.schema.database.name, v:View[1]|$v.schema.database.name])->toOne(),
+            schema = $t.column.owner->match([t:Table[1]|$t.schema.name, v:View[1]|$v.schema.name])->toOne(),
+            table = $t.column.owner->match([t:Table[1]|$t.name, v:View[1]|$v.name])->toOne(),
+            name = $t.column.name
+        )
+      )
+    )
+  );
+}

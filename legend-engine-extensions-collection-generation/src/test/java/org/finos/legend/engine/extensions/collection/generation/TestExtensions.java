@@ -22,6 +22,7 @@ import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
 import org.finos.legend.engine.generation.DataSpaceAnalyticsArtifactGenerationExtension;
+import org.finos.legend.engine.generation.SearchDocumentArtifactGenerationExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.ArtifactGenerationExtension;
@@ -322,7 +323,8 @@ public class TestExtensions
     {
         // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
         return Lists.mutable.<Class<? extends ArtifactGenerationExtension>>empty()
-                .with(DataSpaceAnalyticsArtifactGenerationExtension.class);
+                .with(DataSpaceAnalyticsArtifactGenerationExtension.class)
+                .with(SearchDocumentArtifactGenerationExtension.class);
     }
 
     protected Iterable<String> getExpectedCodeRepositories()
@@ -330,7 +332,9 @@ public class TestExtensions
         // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
         return Lists.mutable.<String>empty()
                 .with("core")
+                .with("core_analytics_lineage")
                 .with("core_analytics_mapping")
+                .with("core_analytics_search")
                 .with("core_data_space")
                 .with("core_diagram")
                 .with("core_external_format_avro")
