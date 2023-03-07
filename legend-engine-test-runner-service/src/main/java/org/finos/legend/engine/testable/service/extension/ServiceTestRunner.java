@@ -156,9 +156,9 @@ public class ServiceTestRunner implements TestRunner
 
         for (AtomicTest test: atomicTestsInScope)
         {
-            if(((ServiceTest) test).keys.isEmpty())
+            if (((ServiceTest) test).keys.isEmpty())
             {
-                allValidEnvIdsInTestSuite.addAll(((PureMultiExecution) service.execution).executionParameters.stream().map( x -> x.key).collect(Collectors.toList()));
+                allValidEnvIdsInTestSuite.addAll(((PureMultiExecution) service.execution).executionParameters.stream().map(x -> x.key).collect(Collectors.toList()));
             }
             else
             {
@@ -195,7 +195,7 @@ public class ServiceTestRunner implements TestRunner
         }
         finally
         {
-            for(Pair<Runtime, List<Closeable>> runtimeWIthCloseablePair: runtimeWithKeyMap.values())
+            for (Pair<Runtime, List<Closeable>> runtimeWIthCloseablePair: runtimeWithKeyMap.values())
             {
                 if (runtimeWIthCloseablePair != null)
                 {
