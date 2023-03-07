@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.mongodb.auth;
 
-
 import com.mongodb.ServerAddress;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.connection.ConnectionSpecification;

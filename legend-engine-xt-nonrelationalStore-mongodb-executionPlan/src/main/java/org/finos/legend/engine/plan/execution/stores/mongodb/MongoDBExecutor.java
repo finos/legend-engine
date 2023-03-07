@@ -25,17 +25,12 @@ import org.finos.legend.authentication.vault.CredentialVaultProvider;
 import org.finos.legend.authentication.vault.PlatformCredentialVaultProvider;
 import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
 import org.finos.legend.engine.plan.execution.result.InputStreamResult;
-import org.finos.legend.engine.plan.execution.stores.mongodb.activity.MongoDBStoreExecutionActivity;
 import org.finos.legend.engine.plan.execution.stores.mongodb.auth.MongoDBConnectionSpecification;
 import org.finos.legend.engine.plan.execution.stores.mongodb.auth.MongoDBStoreConnectionProvider;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.runtime.MongoDBConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.UserPasswordAuthenticationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.PropertiesFileSecret;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential;
 
-import java.io.InputStream;
-import java.sql.Connection;
 import java.util.Properties;
 
 public class MongoDBExecutor
@@ -51,7 +46,8 @@ public class MongoDBExecutor
     public InputStreamResult executeMongoDBQuery(String dbCommand, MongoDBConnection dbConnection)
     {
         // Conection has datasource details & authentication.
-        try {
+        try
+        {
             MongoDBStoreConnectionProvider mongoDBConnectionProvider = getMongoDBConnectionProvider();
             MongoDBConnectionSpecification mongoDBConnectionSpec = new MongoDBConnectionSpecification(dbConnection.dataSourceSpecification);
             Identity serviceIdentity = new Identity("serviceAccount", new AnonymousCredential());

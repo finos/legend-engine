@@ -228,8 +228,9 @@ Class  {doc.doc = 'https://www.mongodb.com/docs/manual/reference/command/aggrega
 meta::external::store::mongodb::metamodel::aggregation::DatabaseCommand extends MongoDBOperationElement
 {
     type: String[1];
-    collectionName: String[1];
-    aggregationPipeline: AggregationPipeline[1];
+    // collection name & aggregation pipeline get added after object instantiation hence the multiplicity set to [0..1], should be [1]
+    collectionName: String[0..1];
+    aggregationPipeline: AggregationPipeline[0..1];
     cursor: Cursor[0..1];
     explain: Boolean[0..1];
     allowDiskUse: Boolean[0..1];

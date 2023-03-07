@@ -44,7 +44,7 @@ Class meta::external::store::mongodb::metamodel::mapping::MongoDBPropertyMapping
 
 Class meta::external::store::mongodb::metamodel::mapping::Field
 {
-    ArgumentExpression:  ArgumentExpression[1];   //Can be FieldPathExpression, or regular OperationExpression
+    argumentExpression:  ArgumentExpression[1];   //Can be FieldPathExpression, or regular OperationExpression
     dataType : BsonType[0..1];                    // Datatype of the mapped field/expression
     nullable: Boolean[0..1];
     owner: Collection[0..1];
