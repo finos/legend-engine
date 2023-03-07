@@ -1,0 +1,30 @@
+###Connection
+RelationalDatabaseConnection demo::Connection
+{
+  store: demo::Store;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'DROP TABLE IF EXISTS firm;\nCREATE TABLE firm ( id INTEGER PRIMARY KEY, legalName VARCHAR(50), isPublicEntity BIT, stockValue NUMERIC(20,2));\nINSERT INTO firm (id,legalName,isPublicEntity,stockValue) VALUES (1,\'Firm 1\',false,200000.45);\nINSERT INTO firm (id,legalName) VALUES (2,\'Firm 2\');\nINSERT INTO firm (id,legalName) VALUES (3,\'Firm 3\');\nDROP TABLE IF EXISTS employee;\nCREATE TABLE employee ( id INTEGER PRIMARY KEY, firstName VARCHAR(50), lastName VARCHAR(50), firm_id INTEGER, date_of_birth TIMESTAMP, date_of_joining DATE, date_of_leaving TIMESTAMP);\nINSERT INTO employee (id,firstName,lastName,firm_id,date_of_birth,date_of_joining,date_of_leaving) VALUES (1,\'firstName 1\',\'lastName 1\',1,parsedatetime(\'01-01-2000 18:47:52.69\', \'dd-MM-yyyy hh:mm:ss.SS\'),parsedatetime(\'01-01-2021 10:00:00.00\', \'dd-MM-yyyy\'),parsedatetime(\'01-01-2023 18:47:52.69\', \'dd-MM-yyyy hh:mm:ss.SS\'));\nINSERT INTO employee (id,firstName,lastName,firm_id) VALUES (2,\'firstName 2\',\'lastName 2\',1);\nINSERT INTO employee (id,firstName,lastName,firm_id) VALUES (3,\'firstName 3\',\'lastName 3\',2);\nINSERT INTO employee (id,firstName,lastName,firm_id) VALUES (4,\'firstName 4\',\'lastName 3\',3);\n'
+      ];
+  };
+  auth: DefaultH2;
+}
+
+
+###Runtime
+Runtime demo::Runtime
+{
+  mappings:
+  [
+    demo::Mapping
+  ];
+  connections:
+  [
+    demo::Store:
+    [
+      connection_1: demo::Connection
+    ]
+  ];
+}

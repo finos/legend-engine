@@ -85,7 +85,8 @@ public class TestGraphQLAPI
         handlerCollection.setHandlers(new Handler[] {
                 buildPMCDMetadataHandler("/api/projects/Project1/workspaces/Workspace1/pureModelContextData", "/org/finos/legend/engine/query/graphQL/api/test/Project1_Workspace1.pure"),
                 buildPMCDMetadataHandler("/api/projects/Project1/workspaces/Workspace2/pureModelContextData", "/org/finos/legend/engine/query/graphQL/api/test/Project1_Workspace2.pure"),
-                buildPMCDMetadataHandler("/api/projects/Project2/workspaces/Workspace1/pureModelContextData", "/org/finos/legend/engine/query/graphQL/api/test/Project2_Workspace1.pure")
+                buildPMCDMetadataHandler("/api/projects/Project2/workspaces/Workspace1/pureModelContextData", "/org/finos/legend/engine/query/graphQL/api/test/Project2_Workspace1.pure"),
+                buildPMCDMetadataHandler("/api/projects/Project3/workspaces/Workspace1/pureModelContextData", "/org/finos/legend/engine/query/graphQL/api/test/Project3_Workspace1.pure")
         });
         server.setHandler(handlerCollection);
         server.start();
@@ -118,6 +119,39 @@ public class TestGraphQLAPI
                 "    }\n" +
                 "  }";
         Response response = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
+
+        String expected = "{" +
+                "\"data\":{" +
+                "\"allFirms\":[" +
+                "{\"legalName\":\"Firm X\",\"employees\":[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"John\",\"lastName\":\"Hill\"},{\"firstName\":\"Anthony\",\"lastName\":\"Allen\"}]}," +
+                "{\"legalName\":\"Firm A\",\"employees\":[{\"firstName\":\"Fabrice\",\"lastName\":\"Roberts\"}]}," +
+                "{\"legalName\":\"Firm B\",\"employees\":[{\"firstName\":\"Oliver\",\"lastName\":\"Hill\"},{\"firstName\":\"David\",\"lastName\":\"Harris\"}]}" +
+                "]" +
+                "}" +
+                "}";
+        Assert.assertEquals(expected, responseAsString(response));
+    }
+
+    @Test
+    public void testGraphQLExecuteDevAPI_Relational_WithDependencies() throws Exception
+    {
+        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
+        PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
+        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
+        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> generatorExtensions.flatCollect(g -> g.getExtraExtensions(pm)), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
+        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
+        Query query = new Query();
+        query.query = "query Query {\n" +
+                "  allFirms {\n" +
+                "      legalName,\n" +
+                "      employees {\n" +
+                "        firstName,\n" +
+                "        lastName\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }";
+        Response response = graphQLExecute.executeDev(mockRequest, "Project3", "Workspace1", "demo::Query", "demo::Mapping", "demo::Runtime", query, null);
 
         String expected = "{" +
                 "\"data\":{" +
