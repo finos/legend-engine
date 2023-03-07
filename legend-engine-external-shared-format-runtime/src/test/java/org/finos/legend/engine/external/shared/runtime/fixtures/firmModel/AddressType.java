@@ -23,6 +23,11 @@ public enum AddressType
 
     public String getName()
     {
-        return this.toString();
+        return this.name();
+    }
+
+    public static AddressType getEnumFromPureName(String pureName)
+    {
+        return AddressType.valueOf(pureName);
     }
 }

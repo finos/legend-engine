@@ -74,7 +74,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::jackso
       | $conventions->codeType($pureDate)->j_invoke('parsePureDate', $node->j_invoke('textValue', [], javaString()), $pureDate),
       | 
    if($type->instanceOf(meta::pure::metamodel::type::Enumeration),
-      | $conventions->codeType($conventions->pureTypeToJavaType($type, PureOne))->j_invoke('valueOf', $node->j_invoke('textValue', [], javaString()), $conventions->pureTypeToJavaType($type, PureOne)), 
+      | $conventions->codeType($conventions->pureTypeToJavaType($type, PureOne))->j_invoke('getEnumFromPureName', $node->j_invoke('textValue', [], javaString()), $conventions->pureTypeToJavaType($type, PureOne)),
       |
    if($type->instanceOf(Unit) || $type->instanceOf(Measure),
       | $conventions->codeType($conventions->pureTypeToJavaType($type, PureOne))->j_invoke('valueOf', $node->j_invoke('textValue', [], javaString()), $conventions->pureTypeToJavaType($type, PureOne)),
@@ -116,7 +116,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::jackso
       | $conventions->codeType($pureDate)->codeToString()+'.parsePureDate('+$parser+'.getText())',
       | 
    if($type->instanceOf(meta::pure::metamodel::type::Enumeration),
-      | $conventions->codeType($conventions->pureTypeToJavaType($type, PureOne))->codeToString()+'.valueOf('+$parser+'.getText())',
+      | $conventions->codeType($conventions->pureTypeToJavaType($type, PureOne))->codeToString()+'.getEnumFromPureName('+$parser+'.getText())',
       |
    if($type->instanceOf(Unit) || $type->instanceOf(Measure),
       | $conventions->codeType($conventions->pureTypeToJavaType($type, PureOne))->codeToString()+'.valueOf('+$parser+'.getText())',
@@ -158,7 +158,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::jackso
     | $pureDate->j_invoke('parsePureDate', $text, $pureDate),
     |
   if($type->instanceOf(meta::pure::metamodel::type::Enumeration),
-    | $conventions->pureTypeToJavaType($type, PureOne)->j_invoke('valueOf', $text),
+    | $conventions->pureTypeToJavaType($type, PureOne)->j_invoke('getEnumFromPureName', $text),
     |
   if($type->instanceOf(Unit) || $type->instanceOf(Measure),
     | $conventions->pureTypeToJavaType($type, PureOne)->j_invoke('valueOf', $text),
@@ -217,7 +217,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::jackso
    $generator->j_invoke('writeString', j_string('')
                 ->j_invoke('concat', j_string($type->elementToPath()), javaString())
                 ->j_invoke('concat', j_string('.'), javaString())
-                ->j_invoke('concat', [$data->j_invoke('name', [], javaString())], javaString()))
+                ->j_invoke('concat', [$data->j_invoke('getName', [], javaString())], javaString()))
 }
 
 function meta::pure::executionPlan::platformBinding::legendJava::library::jackson::jacksonTokenTypesFor(conventions:Conventions[1], type:meta::pure::metamodel::type::Type[1]): String[*]

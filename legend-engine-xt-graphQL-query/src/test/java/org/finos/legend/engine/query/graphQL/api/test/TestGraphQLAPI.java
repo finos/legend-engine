@@ -84,6 +84,7 @@ public class TestGraphQLAPI
         HandlerCollection handlerCollection = new HandlerCollection();
         handlerCollection.setHandlers(new Handler[] {
                 buildPMCDMetadataHandler("/api/projects/Project1/workspaces/Workspace1/pureModelContextData", "/org/finos/legend/engine/query/graphQL/api/test/Project1_Workspace1.pure"),
+                buildPMCDMetadataHandler("/api/projects/Project1/workspaces/Workspace2/pureModelContextData", "/org/finos/legend/engine/query/graphQL/api/test/Project1_Workspace2.pure"),
                 buildPMCDMetadataHandler("/api/projects/Project2/workspaces/Workspace1/pureModelContextData", "/org/finos/legend/engine/query/graphQL/api/test/Project2_Workspace1.pure")
         });
         server.setHandler(handlerCollection);
@@ -405,6 +406,59 @@ public class TestGraphQLAPI
 
     }
 
+    @Test
+    public void testCachingUsingNestedSelectionSets() throws Exception
+    {
+        ExecutionCache<GraphQLCacheKey, List<SerializedNamedPlans>> planCache = ExecutionCacheBuilder.buildExecutionCacheFromGuavaCache(CacheBuilder.newBuilder().recordStats().build());
+        GraphQLPlanCache cache = new GraphQLPlanCache(planCache);
+
+        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
+        PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
+        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
+        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> generatorExtensions.flatCollect(g -> g.getExtraExtensions(pm)), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers), cache);
+        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
+        Query query = new Query();
+        query.query = "query Query {\n" +
+                "  firmByLegalName(legalName: \"Firm X\") {\n" +
+                "      legalName,\n" +
+                "      employees {\n" +
+                "        firstName,\n" +
+                "        lastName\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }";
+        Response response = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace2", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
+
+        String expected = "{" +
+                "\"data\":{" +
+                "\"firmByLegalName\":" +
+                "{\"legalName\":\"Firm X\",\"employees\":[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"John\",\"lastName\":\"Hill\"},{\"firstName\":\"Anthony\",\"lastName\":\"Allen\"}]}" +
+                "}" +
+                "}";
+        Assert.assertEquals(expected, responseAsString(response));
+        Assert.assertEquals(0, cache.getCache().stats().hitCount(), 0);
+        Assert.assertEquals(1, cache.getCache().stats().missCount(), 0);
+
+        query.query = "query Query {\n" +
+                "  firmByLegalName(legalName: \"Firm A\") {\n" +
+                "      legalName,\n" +
+                "      employees {\n" +
+                "        firstName,\n" +
+                "        lastName,\n" +
+                "        address{\n" +
+                "           line1,\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }";
+
+        Response response2 = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace2", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
+        Assert.assertEquals(0, cache.getCache().stats().hitCount(), 0);
+        Assert.assertEquals(2, cache.getCache().stats().missCount(), 0);
+
+        Assert.assertEquals("{\"data\":{\"firmByLegalName\":{\"legalName\":\"Firm A\",\"employees\":[{\"firstName\":\"Fabrice\",\"lastName\":\"Roberts\",\"address\":{\"line1\":\"Fabrice address\"}}]}}}", responseAsString(response2));
+    }
 
     private static Handler buildPMCDMetadataHandler(String path, String resourcePath) throws Exception
     {

@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.2.1-SNAPSHOT</version>
+    <version>4.3.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -85,7 +85,6 @@
         <module>legend-engine-xt-flatdata-model</module>
         <module>legend-engine-xt-flatdata-shared</module>
         <module>legend-engine-xt-flatdata-runtime</module>
-        <module>legend-engine-xt-flatdata-protocol</module>
         <module>legend-engine-xt-flatdata-pure</module>
 
         <module>legend-engine-xt-json-model</module>
@@ -169,6 +168,9 @@
 
         <module>legend-engine-xt-analytics-lineage-api</module>
         <module>legend-engine-xt-analytics-lineage-pure</module>
+
+        <module>legend-engine-xt-analytics-search-pure</module>
+        <module>legend-engine-xt-analytics-search-generation</module>
 
         <module>legend-engine-pure-code-compiled-core</module>
         <module>legend-engine-pure-platform-java</module>
@@ -259,7 +261,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>4.2.1</legend.pure.version>
+        <legend.pure.version>4.3.1</legend.pure.version>
         <legend.shared.version>0.22.5</legend.shared.version>
 
         <!-- SONAR -->
@@ -1050,11 +1052,6 @@
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-flatdata-protocol</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-flatdata-model</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1291,6 +1288,18 @@
                 <artifactId>legend-engine-xt-analytics-mapping-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-search-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-search-generation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-daml-pure</artifactId>
