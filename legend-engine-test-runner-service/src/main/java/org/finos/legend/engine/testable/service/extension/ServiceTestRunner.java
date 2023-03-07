@@ -154,7 +154,7 @@ public class ServiceTestRunner implements TestRunner
         MutableSet<String> allValidEnvIdsInTestSuite = Sets.mutable.empty();
         List<AtomicTest> testsForEachValidEnv = Lists.mutable.empty();
 
-        for (AtomicTest test: suite.tests)
+        for (AtomicTest test: atomicTestsInScope)
         {
             if(((ServiceTest) test).keys.isEmpty())
             {
@@ -170,8 +170,8 @@ public class ServiceTestRunner implements TestRunner
         {
             for (KeyedExecutionParameter param : allValidEnvInTestSuite)
             {
-                testsForEachValidEnv = suite.tests.stream().filter(test -> ((ServiceTest) test).keys.contains(param.key)).collect(Collectors.toList());
 
+                testsForEachValidEnv = atomicTestsInScope.stream().filter(test -> ((ServiceTest) test).keys.contains(param.key) || ((ServiceTest) test).keys.isEmpty()).collect(Collectors.toList());
                 for (AtomicTest test: testsForEachValidEnv)
                 {
                     PureSingleExecution pureSingleExecution = new PureSingleExecution();
