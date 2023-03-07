@@ -1738,12 +1738,17 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-nonrelationalStore-mongodb-grammar-integration</artifactId>
+                <artifacgittId>legend-engine-xt-nonrelationalStore-mongodb-grammar-integration</artifacgit atId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-nonrelationalStore-mongodb-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-nonrelationalStore-mongodb-executionPlan</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!-- ENGINE -->
