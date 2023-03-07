@@ -22,7 +22,7 @@ function meta::external::store::mongodb::extension::mongoDBExtensions() : meta::
 
 function meta::external::store::mongodb::mongoDBSerializerExtension(version:String[1]):String[1]
 {
-  'meta::protocols::pure::'+$version+'::extension::store::mongodb::getMongoDbStoreExtension_String_1__SerializerExtension_1_'
+  'meta::protocols::pure::'+$version+'::extension::store::mongodb::getMongoDBStoreExtension_String_1__SerializerExtension_1_'
 }
 
 function meta::external::store::mongodb::extension::mongoDBExtensions(type:String[1]) : meta::pure::extension::Extension[1]
