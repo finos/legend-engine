@@ -186,7 +186,7 @@ public class PureModel implements IPureModel
                     new CompiledProcessorSupport(classLoader, metaData == null ? new MetadataWrapper(this.root, METADATA_LAZY, this) : metaData, Sets.mutable.empty()),
                     null,
                     new PureCodeStorage(null, new VersionControlledClassLoaderCodeStorage(classLoader, Lists.mutable.of(
-                            CodeRepository.newPlatformCodeRepository(),
+                            CodeRepositoryProviderHelper.findPlatformCodeRepository(),
                             SVNCodeRepository.newSystemCodeRepository()
                     ), null)),
                     null,

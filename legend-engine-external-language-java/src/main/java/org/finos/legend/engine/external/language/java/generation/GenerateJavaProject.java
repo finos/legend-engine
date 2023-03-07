@@ -59,7 +59,7 @@ public abstract class GenerateJavaProject
                 new CompiledProcessorSupport(classLoader, MetadataLazy.fromClassLoader(classLoader, CodeRepositoryProviderHelper.findCodeRepositories().collect(CodeRepository::getName)), Sets.mutable.empty()),
                 null,
                 new PureCodeStorage(null, new VersionControlledClassLoaderCodeStorage(classLoader, Lists.mutable.of(
-                        CodeRepository.newPlatformCodeRepository(),
+                        CodeRepositoryProviderHelper.findPlatformCodeRepository(),
                         SVNCodeRepository.newSystemCodeRepository()
                 ), null)),
                 null,

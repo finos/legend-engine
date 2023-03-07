@@ -110,7 +110,7 @@ public class ElasticsearchPureSpecificationGenerator
                 new JavaCompilerState(null, classLoader),
                 new CompiledProcessorSupport(classLoader, MetadataLazy.fromClassLoader(classLoader, codeRepositories.collect(CodeRepository::getName)), Sets.mutable.empty()),
                 null,
-                new PureCodeStorage(null, new ClassLoaderCodeStorage(classLoader, codeRepositories.with(CodeRepository.newPlatformCodeRepository()))),
+                new PureCodeStorage(null, new ClassLoaderCodeStorage(classLoader, codeRepositories.with(CodeRepositoryProviderHelper.findPlatformCodeRepository()))),
                 null,
                 null,
                 new ConsoleCompiled(),

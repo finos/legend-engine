@@ -24,7 +24,6 @@ import org.finos.legend.pure.m3.execution.FunctionExecution;
 import org.finos.legend.pure.m3.serialization.filesystem.PureCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
-import org.finos.legend.pure.m3.serialization.filesystem.repository.PlatformCodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.ClassLoaderCodeStorage;
 import org.finos.legend.pure.m3.serialization.runtime.Message;
 import org.finos.legend.pure.m3.serialization.runtime.PureRuntime;
@@ -45,11 +44,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @RunWith(Parameterized.class)
 public class LegendExecuteTest
@@ -305,7 +300,6 @@ public class LegendExecuteTest
 
     private static RichIterable<CodeRepository> getRepositories()
     {
-        return CodeRepositoryProviderHelper.findCodeRepositories(true).toList()
-                .with(PlatformCodeRepository.newPlatformCodeRepository());
+        return CodeRepositoryProviderHelper.findCodeRepositories(true);
     }
 }

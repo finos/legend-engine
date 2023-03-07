@@ -27,7 +27,6 @@ import meta::external::query::graphQL::metamodel::sdl::*;
 import meta::external::query::graphQL::binding::fromPure::sdl::*;
 
 
-
 /**********
  * GraphQLIntrospectionContract
  **********/

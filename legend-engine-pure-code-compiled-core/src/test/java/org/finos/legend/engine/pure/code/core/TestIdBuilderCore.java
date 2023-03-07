@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.pure.code.core;
 
-import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.map.MutableMap;
@@ -27,9 +26,8 @@ import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement
 import org.finos.legend.pure.m3.navigation.PrimitiveUtilities;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.serialization.filesystem.PureCodeStorage;
-import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
-import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.MutableCodeStorage;
+import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.MutableRepositoryCodeStorage;
 import org.finos.legend.pure.m3.serialization.runtime.PureRuntime;
 import org.finos.legend.pure.m3.serialization.runtime.PureRuntimeBuilder;
 import org.finos.legend.pure.m4.ModelRepository;
@@ -49,7 +47,7 @@ public class TestIdBuilderCore
     @BeforeClass
     public static void setUp()
     {
-        MutableCodeStorage codeStorage = PureCodeStorage.createCodeStorage(null, Lists.mutable.with(CodeRepository.newPlatformCodeRepository()).withAll(CodeRepositoryProviderHelper.findCodeRepositories()));
+        MutableRepositoryCodeStorage codeStorage = PureCodeStorage.createCodeStorage(null, CodeRepositoryProviderHelper.findCodeRepositories());
         runtime = new PureRuntimeBuilder(codeStorage).setTransactionalByDefault(false).withFactoryRegistryOverride(JavaModelFactoryRegistryLoader.loader()).buildAndInitialize();
         processorSupport = runtime.getProcessorSupport();
     }
