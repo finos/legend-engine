@@ -1738,7 +1738,7 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifacgittId>legend-engine-xt-nonrelationalStore-mongodb-grammar-integration</artifacgit atId>
+                <artifactId>legend-engine-xt-nonrelationalStore-mongodb-grammar-integration</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
