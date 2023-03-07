@@ -21,7 +21,10 @@ import io.opentracing.util.GlobalTracer;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -130,7 +133,7 @@ public class ServiceTestRunner implements TestRunner
             }
             if (((PureMultiExecution) service.execution).executionParameters != null && !((PureMultiExecution) service.execution).executionParameters.isEmpty())
             {
-                return executeMutiExecutionParametersTestSuite(atomicTestIds, pureModel, data, routerExtensions, planTransformers, service, suite, testResultsByTestId, atomicTestsInScope);
+                return executeMultiExecutionParametersTestSuite(atomicTestIds, pureModel, data, routerExtensions, planTransformers, service, suite, testResultsByTestId, atomicTestsInScope);
             }
             return executeMultiExecutionEnvironmentTestSuite((PureMultiExecution) service.execution, suite, atomicTestIds, pureModel, data, routerExtensions, planTransformers, testResultsByTestId);
         }
@@ -144,31 +147,71 @@ public class ServiceTestRunner implements TestRunner
         }
     }
 
-    private List<TestResult> executeMutiExecutionParametersTestSuite(List<String> atomicTestIds, PureModel pureModel, PureModelContextData data, RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions, MutableList<PlanTransformer> planTransformers, Service service, ServiceTestSuite suite, Map<String, MultiExecutionServiceTestResult> testResultsByTestId, List<AtomicTest> atomicTestsInScope)
+    private List<TestResult> executeMultiExecutionParametersTestSuite(List<String> atomicTestIds, PureModel pureModel, PureModelContextData data, RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions, MutableList<PlanTransformer> planTransformers, Service service, ServiceTestSuite suite, Map<String, MultiExecutionServiceTestResult> testResultsByTestId, List<AtomicTest> atomicTestsInScope)
     {
-        for  (AtomicTest test : atomicTestsInScope)
+        Pair<Runtime,List<Closeable>> runtimeWithCloseables = null;
+        MutableMap<String, Pair<Runtime, List<Closeable>>> runtimeWithKeyMap = Maps.mutable.empty();
+        MutableSet<String> allValidEnvIdsInTestSuite = Sets.mutable.empty();
+        List<AtomicTest> testsForEachValidEnv = Lists.mutable.empty();
+
+        for (AtomicTest test: atomicTestsInScope)
         {
-            List<KeyedExecutionParameter> allValidKeys = new ArrayList<>();
-            List<String> allKeys = ((ServiceTest) test).keys;
-            if (allKeys.isEmpty())
+            if (((ServiceTest) test).keys.isEmpty())
             {
-                allValidKeys.addAll(((PureMultiExecution) service.execution).executionParameters);
+                allValidEnvIdsInTestSuite.addAll(((PureMultiExecution) service.execution).executionParameters.stream().map(x -> x.key).collect(Collectors.toList()));
             }
             else
             {
-                allValidKeys = ((PureMultiExecution) service.execution).executionParameters.stream().filter(s -> allKeys.contains(s.key)).collect(Collectors.toList());
+                allValidEnvIdsInTestSuite.addAll(((ServiceTest) test).keys);
             }
-            allValidKeys.forEach(param ->
+        }
+        List<KeyedExecutionParameter> allValidEnvInTestSuite = ((PureMultiExecution) service.execution).executionParameters.stream().filter(s -> allValidEnvIdsInTestSuite.contains(s.key)).collect(Collectors.toList());
+        try
+        {
+            for (KeyedExecutionParameter param : allValidEnvInTestSuite)
             {
-                PureSingleExecution pureSingleExecution = new PureSingleExecution();
-                pureSingleExecution.func = ((PureMultiExecution) service.execution).func;
-                pureSingleExecution.mapping = param.mapping;
-                pureSingleExecution.runtime = param.runtime;
-                pureSingleExecution.executionOptions = param.executionOptions;
 
-                List<TestResult> testResultsForKey = executeSingleExecutionTestSuite(pureSingleExecution, suite, Collections.singletonList(test.id), pureModel, data, routerExtensions, planTransformers);
-                testResultsByTestId.get(test.id).addTestResult(param.key, testResultsForKey.get(0));
-            });
+                testsForEachValidEnv = atomicTestsInScope.stream().filter(test -> ((ServiceTest) test).keys.contains(param.key) || ((ServiceTest) test).keys.isEmpty()).collect(Collectors.toList());
+                for (AtomicTest test: testsForEachValidEnv)
+                {
+                    PureSingleExecution pureSingleExecution = new PureSingleExecution();
+                    pureSingleExecution.func = ((PureMultiExecution) service.execution).func;
+                    pureSingleExecution.mapping = param.mapping;
+                    if (runtimeWithKeyMap.containsKey(param.key))
+                    {
+                        pureSingleExecution.runtime = runtimeWithKeyMap.get(param.key).getOne();
+                    }
+                    else
+                    {
+                        runtimeWithCloseables = TestRuntimeBuilder.getTestRuntimeAndClosableResources(param.runtime, suite.testData, data);
+                        runtimeWithKeyMap.put(param.key, runtimeWithCloseables);
+                        pureSingleExecution.runtime = runtimeWithCloseables.getOne();
+                    }
+                    pureSingleExecution.executionOptions = param.executionOptions;
+                    List<TestResult> testResultsForKey = executeSingleExecutionTestSuite(pureSingleExecution, suite, Collections.singletonList(test.id), pureModel, data, routerExtensions, planTransformers);
+                    testResultsByTestId.get(test.id).addTestResult(param.key, testResultsForKey.get(0));
+                }
+            }
+        }
+        finally
+        {
+            for (Pair<Runtime, List<Closeable>> runtimeWIthCloseablePair: runtimeWithKeyMap.values())
+            {
+                if (runtimeWIthCloseablePair != null)
+                {
+                    runtimeWIthCloseablePair.getTwo().forEach(closeable ->
+                    {
+                        try
+                        {
+                            closeable.close();
+                        }
+                        catch (IOException e)
+                        {
+                            LOGGER.warn("Exception occurred closing closeable resource" + e);
+                        }
+                    });
+                }
+            }
         }
         return new ArrayList<>(testResultsByTestId.values());
     }
