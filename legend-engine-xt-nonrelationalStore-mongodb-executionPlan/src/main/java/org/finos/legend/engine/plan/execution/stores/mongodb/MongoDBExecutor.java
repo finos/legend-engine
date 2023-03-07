@@ -14,16 +14,29 @@
 
 package org.finos.legend.engine.plan.execution.stores.mongodb;
 
-import org.apache.http.Header;
-import org.apache.http.entity.StringEntity;
-import org.eclipse.collections.api.list.MutableList;
+import com.mongodb.MongoClient;
+import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
+import org.finos.legend.authentication.credentialprovider.impl.UserPasswordCredentialProvider;
+import org.finos.legend.authentication.intermediationrule.IntermediationRuleProvider;
+import org.finos.legend.authentication.intermediationrule.impl.UserPasswordFromVaultRule;
+import org.finos.legend.authentication.vault.CredentialVaultProvider;
+import org.finos.legend.authentication.vault.PlatformCredentialVaultProvider;
+import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
 import org.finos.legend.engine.plan.execution.result.InputStreamResult;
+import org.finos.legend.engine.plan.execution.stores.mongodb.activity.MongoDBStoreExecutionActivity;
+import org.finos.legend.engine.plan.execution.stores.mongodb.auth.MongoDBConnectionSpecification;
+import org.finos.legend.engine.plan.execution.stores.mongodb.auth.MongoDBStoreConnectionProvider;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.runtime.MongoDBConnection;
-import org.pac4j.core.profile.CommonProfile;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.UserPasswordAuthenticationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.PropertiesFileSecret;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential;
 
 import java.io.InputStream;
-import java.util.List;
+import java.sql.Connection;
+import java.util.Properties;
 
 public class MongoDBExecutor
 {
@@ -36,11 +49,53 @@ public class MongoDBExecutor
     }
 
     public InputStreamResult executeMongoDBQuery(String dbCommand, MongoDBConnection dbConnection)
-                                                 //List<Header> headers, StringEntity requestBodyEntity, HttpMethod httpMethod, String mimeType, List<SecurityScheme> securitySchemes, List<AuthenticationSchemeRequirement> authenticationSchemeRequirements, MutableList<CommonProfile> profiles)
     {
         // Conection has datasource details & authentication.
-        // TODO : Stream?
-        InputStream response = null;
-        return new InputStreamResult(response, org.eclipse.collections.api.factory.Lists.mutable.with(new MongoDBStoreExecutionActivity(dbCommand)));
+        try {
+            MongoDBStoreConnectionProvider mongoDBConnectionProvider = getMongoDBConnectionProvider();
+            MongoDBConnectionSpecification mongoDBConnectionSpec = new MongoDBConnectionSpecification(dbConnection.dataSourceSpecification);
+            Identity serviceIdentity = new Identity("serviceAccount", new AnonymousCredential());
+            MongoClient mongoClient = mongoDBConnectionProvider.makeConnection(mongoDBConnectionSpec, dbConnection.authenticationSpecification, serviceIdentity);
+            MongoDatabase mongoDatabase = mongoClient.getDatabase(dbConnection.dataSourceSpecification.databaseName);
+            Document bsonCmd = Document.parse(dbCommand);
+            mongoDatabase.runCommand(bsonCmd);
+            return null;
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+
     }
+
+    private MongoDBStoreConnectionProvider getMongoDBConnectionProvider()
+    {
+        Properties properties = new Properties();
+        properties.put("passwordRef1", "");
+        PropertiesFileCredentialVault propertiesFileCredentialVault = new PropertiesFileCredentialVault(properties);
+
+        PlatformCredentialVaultProvider platformCredentialVaultProvider = PlatformCredentialVaultProvider.builder()
+                .with(propertiesFileCredentialVault)
+                .build();
+
+        // Setup CV Provider with just platform CV provider
+        CredentialVaultProvider credentialVaultProvider = CredentialVaultProvider.builder()
+                .with(platformCredentialVaultProvider)
+                //.with(awsSecretsManagerVault)
+                .build();
+
+        // Looks like the link between the CV provider and the ProviderProvider
+        IntermediationRuleProvider intermediationRuleProvider = IntermediationRuleProvider.builder()
+                .with(new UserPasswordFromVaultRule(credentialVaultProvider))
+                .build();
+
+        CredentialProviderProvider credentialProviderProvider = CredentialProviderProvider.builder()
+                .with(new UserPasswordCredentialProvider())
+                .with(intermediationRuleProvider)
+                .build();
+
+        MongoDBStoreConnectionProvider connectionProvider = new MongoDBStoreConnectionProvider(credentialProviderProvider);
+        return connectionProvider;
+    }
+
 }
