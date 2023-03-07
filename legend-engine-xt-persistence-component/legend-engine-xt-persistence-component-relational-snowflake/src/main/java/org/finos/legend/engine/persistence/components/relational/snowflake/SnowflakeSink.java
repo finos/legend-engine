@@ -29,6 +29,7 @@ import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSin
 import org.finos.legend.engine.persistence.components.relational.snowflake.optmizer.LowerCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.snowflake.optmizer.UpperCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.SnowflakeDataTypeMapping;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.SnowflakeJdbcPropertiesToLogicalDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.AlterVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.BatchEndTimestampVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.SchemaDefinitionVisitor;
@@ -154,8 +155,8 @@ public class SnowflakeSink extends AnsiSqlSink
                 List<TabularData> results = executor.executePhysicalPlanAndGetResults(physicalPlanForDoesDatasetExist);
                 return results.size() > 0;
             },
-            //TODO -- need to verify whether to use JDBC or SHOW command
-            (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new SnowflakeDataTypeMapping()));
+            (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new SnowflakeDataTypeMapping()),
+            (executor, sink, tableName, schemaName, databaseName) -> sink.constructDatasetFromDatabase(tableName, schemaName, databaseName, new SnowflakeJdbcPropertiesToLogicalDataTypeMapping()));
     }
 
     @Override

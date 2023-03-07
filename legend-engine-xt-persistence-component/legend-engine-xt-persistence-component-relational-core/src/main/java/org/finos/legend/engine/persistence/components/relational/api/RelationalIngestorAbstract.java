@@ -355,6 +355,11 @@ public abstract class RelationalIngestorAbstract
         executor.validateMainDatasetSchema(dataset);
     }
 
+    private Dataset constructDatasetFromDatabase(Executor<SqlGen, TabularData, SqlPlan> executor, String tableName, String schemaName, String databaseName)
+    {
+        return executor.constructDatasetFromDatabase(tableName, schemaName, databaseName);
+    }
+
     private Map<StatisticName, Object> executeStatisticsPhysicalPlan(Executor<SqlGen, TabularData, SqlPlan> executor,
                                                                      Map<StatisticName, SqlPlan> statisticsSqlPlan,
                                                                      Map<String, String> placeHolderKeyValues)

@@ -148,7 +148,11 @@ public class MemSqlSink extends AnsiSqlSink
             SqlGenUtils.BACK_QUOTE_IDENTIFIER,
             LOGICAL_PLAN_VISITOR_BY_CLASS,
             (executor, sink, dataset) -> sink.doesTableExist(dataset),
-            VALIDATE_MAIN_DATASET_SCHEMA);
+            VALIDATE_MAIN_DATASET_SCHEMA,
+            (v, w, x, y, z) ->
+            {
+                throw new UnsupportedOperationException();
+            });
     }
 
 

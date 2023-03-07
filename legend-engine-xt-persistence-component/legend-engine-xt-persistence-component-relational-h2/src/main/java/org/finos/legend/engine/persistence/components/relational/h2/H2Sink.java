@@ -27,6 +27,7 @@ import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSin
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.LowerCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.H2DataTypeMapping;
+import org.finos.legend.engine.persistence.components.relational.h2.sql.H2JdbcPropertiesToLogicalDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.CsvExternalDatasetReferenceVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.HashFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.LoadCsvVisitor;
@@ -126,7 +127,8 @@ public class H2Sink extends AnsiSqlSink
             SqlGenUtils.QUOTE_IDENTIFIER,
             LOGICAL_PLAN_VISITOR_BY_CLASS,
             (executor, sink, dataset) -> sink.doesTableExist(dataset),
-            (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new H2DataTypeMapping()));
+            (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new H2DataTypeMapping()),
+            (executor, sink, tableName, schemaName, databaseName) -> sink.constructDatasetFromDatabase(tableName, schemaName, databaseName, new H2JdbcPropertiesToLogicalDataTypeMapping()));
     }
 
     @Override

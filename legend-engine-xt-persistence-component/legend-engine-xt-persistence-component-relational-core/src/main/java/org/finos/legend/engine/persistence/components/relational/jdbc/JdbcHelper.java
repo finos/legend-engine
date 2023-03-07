@@ -15,9 +15,13 @@
 package org.finos.legend.engine.persistence.components.relational.jdbc;
 
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Index;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.relational.sql.DataTypeMapping;
+import org.finos.legend.engine.persistence.components.relational.sql.JdbcPropertiesToLogicalDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause;
 import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.column.ColumnConstraint;
 import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.column.NotNullColumnConstraint;
@@ -35,10 +39,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 public class JdbcHelper
 {
@@ -49,10 +55,14 @@ public class JdbcHelper
 
     public static final String COLUMN_NAME = "COLUMN_NAME";
     public static final String TYPE_NAME = "TYPE_NAME";
+    public static final String DATA_TYPE = "DATA_TYPE";
     public static final String COLUMN_SIZE = "COLUMN_SIZE";
     public static final String DECIMAL_DIGITS = "DECIMAL_DIGITS";
     public static final String IS_NULLABLE = "IS_NULLABLE";
+    public static final String IS_AUTOINCREMENT = "IS_AUTOINCREMENT";
     public static final String BOOL_TRUE_STRING_VALUE = "YES";
+    public static final String INDEX_NAME = "INDEX_NAME";
+    public static final String NON_UNIQUE = "NON_UNIQUE";
 
     public static JdbcHelper of(Connection connection)
     {
@@ -226,6 +236,95 @@ public class JdbcHelper
 
             // Compare the schemas
             validateColumns(userColumns, dbColumns);
+        }
+        catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Dataset constructDatasetFromDatabase(String tableName, String schemaName, String databaseName, JdbcPropertiesToLogicalDataTypeMapping mapping)
+    {
+        try
+        {
+            DatabaseMetaData dbMetaData = this.connection.getMetaData();
+
+            // Get primary keys
+            Set<String> primaryKeys = new HashSet<>();
+            ResultSet primaryKeyResult = dbMetaData.getPrimaryKeys(databaseName, schemaName, tableName);
+            while (primaryKeyResult.next())
+            {
+                primaryKeys.add(primaryKeyResult.getString(COLUMN_NAME));
+            }
+
+            // Get all unique constraints and indices
+            Set<String> uniqueKeys = new HashSet<>();
+            Map<String, List<String>> indexMap = new HashMap<>();
+            Map<String, Boolean> indexNonUniqueMap = new HashMap<>();
+            ResultSet indexResult = dbMetaData.getIndexInfo(databaseName, schemaName, tableName, false, false);
+            while (indexResult.next())
+            {
+                String indexName = indexResult.getString(INDEX_NAME);
+                String columnName = indexResult.getString(COLUMN_NAME);
+                boolean isIndexNonUnique = indexResult.getBoolean(NON_UNIQUE);
+
+                // todo: if approach okay, put the regex as database-dependent arguments
+                if (!indexName.matches(Pattern.compile("PRIMARY_KEY_[a-zA-Z0-9]+").pattern()))
+                {
+                    if (indexName.matches(Pattern.compile("CONSTRAINT_INDEX_[a-zA-Z0-9]+").pattern()) && !isIndexNonUnique)
+                    {
+                        // Unique constraint index
+                        uniqueKeys.add(columnName);
+                    }
+                    else
+                    {
+                        // Custom index
+                        if (!indexMap.containsKey(indexName))
+                        {
+                            indexMap.put(indexName, new ArrayList<>());
+                            indexNonUniqueMap.put(indexName, isIndexNonUnique);
+                        }
+                        indexMap.get(indexName).add(columnName);
+                    }
+                }
+            }
+            List<Index> indices = new ArrayList<>();
+            for (String indexName : indexMap.keySet())
+            {
+                // todo: construct index after list of fields is changed to list of strings
+            }
+
+            // Get all columns
+            List<Field> fields = new ArrayList<>();
+            ResultSet columnResult = dbMetaData.getColumns(databaseName, schemaName, tableName, null);
+            while (columnResult.next())
+            {
+                String columnName = columnResult.getString(COLUMN_NAME);
+                String typeName = columnResult.getString(TYPE_NAME);
+                String dataType = JDBCType.valueOf(columnResult.getInt(DATA_TYPE)).getName();
+                int columnSize = columnResult.getInt(COLUMN_SIZE);
+                int decimalDigits = columnResult.getInt(DECIMAL_DIGITS);
+                String isNullable = columnResult.getString(IS_NULLABLE);
+                String isIdentity = columnResult.getString(IS_AUTOINCREMENT);
+
+                // Construct type
+                org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType logicalDataType = mapping.getDataType(typeName.toUpperCase(), dataType.toUpperCase());
+                FieldType fieldType = FieldType.of(logicalDataType, columnSize, decimalDigits);
+
+                // Construct constraints
+                boolean nullable = isNullable.equals(BOOL_TRUE_STRING_VALUE);
+                boolean identity = isIdentity.equals(BOOL_TRUE_STRING_VALUE);
+                boolean primaryKey = primaryKeys.contains(columnName);
+                boolean unique = uniqueKeys.contains(columnName);
+
+                Field field = Field.builder().name(columnName).type(fieldType).nullable(nullable).identity(identity).primaryKey(primaryKey).unique(unique).build();
+
+                fields.add(field);
+            }
+
+            // todo: columnStoreSpecification, shardSpecification
+            SchemaDefinition schemaDefinition = SchemaDefinition.builder().addAllFields(fields).addAllIndexes(indices).build();
+            return DatasetDefinition.builder().name(tableName).database(databaseName).group(schemaName).schema(schemaDefinition).build();
         }
         catch (SQLException e)
         {

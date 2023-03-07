@@ -64,6 +64,10 @@ public class SchemaEvolutionTest extends IngestModeTest
                     (x, y, z) ->
                     {
                         throw new UnsupportedOperationException();
+                    },
+                    (v, w, x, y, z) ->
+                    {
+                        throw new UnsupportedOperationException();
                     });
         }
     }

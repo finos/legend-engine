@@ -41,6 +41,7 @@ public abstract class RelationalSink implements Sink
 
     private final DatasetExists datasetExists;
     private final ValidateMainDatasetSchema validateMainDatasetSchema;
+    private final ConstructDatasetFromDatabase constructDatasetFromDatabase;
 
     protected RelationalSink(Set<Capability> capabilities,
                              Map<DataType, Set<DataType>> implicitDataTypeMapping,
@@ -48,7 +49,8 @@ public abstract class RelationalSink implements Sink
                              String quoteIdentifier,
                              Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass,
                              DatasetExists datasetExists,
-                             ValidateMainDatasetSchema validateMainDatasetSchema)
+                             ValidateMainDatasetSchema validateMainDatasetSchema,
+                             ConstructDatasetFromDatabase constructDatasetFromDatabase)
     {
         this.capabilities = capabilities;
         this.implicitDataTypeMapping = implicitDataTypeMapping;
@@ -57,6 +59,7 @@ public abstract class RelationalSink implements Sink
         this.logicalPlanVisitorByClass = logicalPlanVisitorByClass;
         this.datasetExists = datasetExists;
         this.validateMainDatasetSchema = validateMainDatasetSchema;
+        this.constructDatasetFromDatabase = constructDatasetFromDatabase;
     }
 
     @Override
@@ -104,6 +107,11 @@ public abstract class RelationalSink implements Sink
         return validateMainDatasetSchema;
     }
 
+    public ConstructDatasetFromDatabase constructDatasetFromDatabaseFn()
+    {
+        return constructDatasetFromDatabase;
+    }
+
     public abstract Optional<Optimizer> optimizerForCaseConversion(CaseConversion caseConversion);
 
     public interface DatasetExists
@@ -114,5 +122,10 @@ public abstract class RelationalSink implements Sink
     public interface ValidateMainDatasetSchema
     {
         void execute(Executor<SqlGen, TabularData, SqlPlan> executor, JdbcHelper sink, Dataset dataset);
+    }
+
+    public interface ConstructDatasetFromDatabase
+    {
+        Dataset execute(Executor<SqlGen, TabularData, SqlPlan> executor, JdbcHelper sink, String tableName, String schemaName, String databaseName);
     }
 }
