@@ -100,6 +100,27 @@ public class ApplicationQuery
         }
     }
 
+
+    @GET
+    @Path("/stats")
+    @ApiOperation(value = "Get Query Store Stats")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response getQueryCount()
+    {
+        try
+        {
+            return Response.ok(this.queryStoreManager.getQueryStoreStats()).build();
+        }
+        catch (Exception e)
+        {
+            if (e instanceof ApplicationQueryException)
+            {
+                return ((ApplicationQueryException) e).toResponse();
+            }
+            return ExceptionTool.exceptionManager(e, LoggingEventType.GET_QUERY_STATS_ERROR, null);
+        }
+    }
+
     @POST
     @ApiOperation(value = "Create a new query")
     @Consumes({MediaType.APPLICATION_JSON})

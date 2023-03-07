@@ -71,6 +71,7 @@ public class GraphQLCachableVisitorHelper
             public Selection visit(Field val)
             {
                 Field field = new Field();
+                field.name = val.name;
                 field.arguments = val.arguments.stream().map(a ->
                 {
                     Argument arg = new Argument();
@@ -79,6 +80,7 @@ public class GraphQLCachableVisitorHelper
                     return arg;
 
                 }).collect(Collectors.toList());
+                field.selectionSet = val.selectionSet.stream().map(s -> selectionVisitor(s)).collect(Collectors.toList());
                 return field;
             }
 

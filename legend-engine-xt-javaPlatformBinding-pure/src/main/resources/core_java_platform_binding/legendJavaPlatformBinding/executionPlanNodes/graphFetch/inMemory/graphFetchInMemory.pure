@@ -569,7 +569,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
    let transform = if ($setHasExplosion,
                        | $set->cast(@PureInstanceSetImplementation)->propertyExplosionCodes($primitiveSubTrees, $result, $graphImplClass, $src, $wrapAsGraphInstance, $resolveToList, $conventions, $extensions, $debug),
                        |  let inScopeSubTrees =   $primitiveSubTrees->filter( t| $set->propertyMappingsByPropertyName($t.property->cast(@Property<Nil,Any|*>).name->toOne())->head() ->isNotEmpty() && $isMerged || !$isMerged ); 
-                       
+
                          let propertyValues = $inScopeSubTrees->map({st |
                             let prop = $st.property->cast(@Property<Nil,Any|*>);
                             let propertyMapping =  $set->propertyMappingsByPropertyName($prop.name->toOne())->head();
@@ -631,17 +631,12 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
          let sourceProperty = $pureSetImpl->noMappingPassThruSourceProperty($property)->toOne();
          let sourceType     = $conventions->pureTypeToJavaType($sourceProperty);
          let callGetter     = $src->j_invoke($conventions->getterName($sourceProperty), [], $sourceType);
-         if($propertyJavaType == $sourceType,
-            | $callGetter,
-            |
-         if(isJavaList($propertyJavaType),
-            | $callGetter->j_listOf($propertyJavaType),
-            | $callGetter->j_cast($propertyJavaType)
-         ));
+
+         $callGetter->castExpressionToReturnType($propertyJavaType);
       },
       {|
          if($isNoMappingDefaultToEmpty || $isMergedUnMappedProperty,
-            {| 
+            {|
                if (isJavaList($propertyJavaType), 
                    | $propertyJavaType->j_emptyList(), 
                    | $propertyJavaType->j_null()
@@ -658,16 +653,7 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
                     let code              = if ($valueTransformer->isEmpty(), | $javaExpression, | $javaExpression->applyTransformer($valueTransformer->toOne(), $conventions, $debug->indent()));
                     let returnType        = if ($valueTransformer->isEmpty(), | $transformType,  | if($transformType->isJavaList(), | $conventions->enumerationType($valueTransformer->toOne())->javaList(), | $conventions->enumerationType($valueTransformer->toOne())));
 
-                    if ($returnType == $code.type,
-                        |$code,
-                        |
-                    if ($returnType->isJavaList() && ($returnType->elementTypeOfJavaList() == $code.type->toBoxed()),
-                        |$code->j_listOf($returnType),
-                        |
-                    if ($returnType->isJavaList(),
-                        |$code->j_listOf($returnType),
-                        |$code->j_cast($returnType)
-                    )));
+                    $code->castExpressionToReturnType($returnType);
                   },
                   | []
                 )
@@ -724,11 +710,11 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
    let fValuesField = javaField(['private', 'static', 'final'], $mapType, 'values', 'initValues()');
    let fValues      = $class->j_field($fValuesField);
    let values       = j_variable($mapType, 'values');
-   
+
    let addValues = $em.enumValueMappings->map({evm |
       $evm.sourceValues
          ->map(sv | ^InstanceValue(genericType = ^GenericType(rawType = $sv->type()), multiplicity = PureOne, values = $sv)->evaluateAndDeactivate()->generateJava($conventions, $debug->indent()))
-         ->map(sv | $values->j_invoke('put', [$sv, $enumType->j_field($evm.enum.name)]))
+         ->map(sv | $values->j_invoke('put', [$sv, $enumType->j_invoke('getEnumFromPureName', j_string($evm.enum.name), $enumType)]));
    });
    let initCode  = j_block($values->j_declare(javaTreeMap(javaObject(), $enumType)->j_new([]))->concatenate($addValues)->concatenate($values->j_return()));
 

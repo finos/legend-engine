@@ -1160,6 +1160,49 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting_mapped
   assertRoundTrip($input, $expected);
 }
 
+function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting_constantInAgg():Boolean[1]
+{   
+  let lambda = {|
+    let businessDate = %2023-01-01;
+    let x = 'a';
+    meta::pure::router::preeval::tests::Position.all($businessDate)->groupBy(
+      [],
+      agg(x|$x.client($businessDate).name + 'b', y|$y->count()),
+      'ID Count'
+    );
+  };
+
+  //we re-write the lambda to inline an AggregateValue with businessDate variable
+  let aggregateValue = ^meta::pure::functions::collection::AggregateValue<meta::pure::router::preeval::tests::Position, String, Integer>(mapFn={x:meta::pure::router::preeval::tests::Position[1] | $x.client(%2023-01-01).name + $x->toString()},aggregateFn={y:String[*] | $y->count()});
+
+  let expressionSequence = $lambda.expressionSequence->evaluateAndDeactivate();
+  let groupBy = $expressionSequence->at(2)->cast(@SimpleFunctionExpression);
+
+  let mapFn = $aggregateValue.mapFn;
+  let mapFnExpressionSequnce = $mapFn.expressionSequence->evaluateAndDeactivate()->cast(@SimpleFunctionExpression)->toOne();
+
+  let plus = $mapFnExpressionSequnce.parametersValues->at(0)->cast(@InstanceValue);
+  let plusParams = $plus.values;
+  let plusLeft = $plusParams->at(0)->cast(@SimpleFunctionExpression);
+  let client = $plusLeft.parametersValues->at(0)->cast(@SimpleFunctionExpression);
+  let newClient = ^$client(parametersValues = [$client.parametersValues->at(0), ^VariableExpression(name='businessDate',genericType=^GenericType(rawType = StrictDate),multiplicity=PureOne)]);
+
+  let newPlusLeft = ^$plusLeft(parametersValues = $newClient);
+  let newPlus = ^$plus(values = [$newPlusLeft,$plus.values->at(1)]);
+
+  let newAggregateValue = ^$aggregateValue(mapFn = ^$mapFn(expressionSequence = ^$mapFnExpressionSequnce(parametersValues = [$newPlus])));
+  let newAggregateValueInstance = ^InstanceValue(genericType=^GenericType(rawType = meta::pure::functions::collection::AggregateValue),multiplicity=PureOne, values = $newAggregateValue);
+  let newGroupBy = ^$groupBy(parametersValues = [$groupBy.parametersValues->at(0), $groupBy.parametersValues->at(1), $newAggregateValueInstance, $groupBy.parametersValues->at(3)]);
+  let newLambda = ^$lambda(expressionSequence = [$expressionSequence->at(0), $expressionSequence->at(1), $newGroupBy]);
+
+ 
+  let expected = {|
+    meta::pure::router::preeval::tests::Position.all(%2023-01-01)->groupBy([], ^meta::pure::functions::collection::AggregateValue<meta::pure::router::preeval::tests::Position, String, Integer>(mapFn={x:meta::pure::router::preeval::tests::Position[1] | $x.client(%2023-01-01).name + $x->toString()},aggregateFn={y:String[*]|$y->count()}), ['ID Count'])
+  };
+
+    assertRoundTrip($newLambda, $expected);
+}
+
 function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting_castEmptyCollection():Boolean[1]
 {
   let input = {b:Integer[*]|$b->uniqueValueOnly()};
@@ -1239,6 +1282,7 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPreroutingRemoveU
 
   assertRoundTrip($input, $expected);
 }
+
 
 function meta::pure::router::preeval::tests::myStopFunction(b: Integer[1]) : Integer[1]
 {

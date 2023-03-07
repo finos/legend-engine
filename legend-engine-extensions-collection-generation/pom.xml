@@ -19,7 +19,7 @@
     <parent>
         <artifactId>legend-engine</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.2.1-SNAPSHOT</version>
+        <version>4.3.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -154,10 +154,6 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-flatdata-model</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-flatdata-protocol</artifactId>
         </dependency>
 
         <dependency>
@@ -315,7 +311,7 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-spanner-protocol</artifactId>
         </dependency>
-     
+
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-serviceStore-grammar</artifactId>
@@ -337,6 +333,11 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-xml-model</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-analytics-search-generation</artifactId>
         </dependency>
         <!-- ENGINE XT -->
 

@@ -70,7 +70,7 @@ function <<access.private>> meta::protocols::pure::v1_29_0::transformation::from
          },
          i:InstanceValue[1]         | $i.values->map(v | $v->scan($visited)),
          k:meta::pure::functions::lang::KeyExpression[1]         | $k.expression->scan($visited);,
-         lf :LambdaFunction<Any>[1] | $lf.expressionSequence->evaluateAndDeactivate()->map(e|$e->scan($visited)),
+         lf :LambdaFunction<Any>[1] | $lf.expressionSequence->evaluateAndDeactivate()->map(e|$e->scan($visited))->concatenate($lf.classifierGenericType.typeArguments.rawType->cast(@FunctionType).parameters.genericType.rawType)->removeDuplicates(),
          v:VariableExpression[1]    | [],
          {cfd:ConcreteFunctionDefinition<Any>[1]|
             if ($cfd->in($visited) || ($cfd->elementToPath()->startsWith('meta::') && not($cfd->meta::alloy::isMetaAlloyTestDependency())),

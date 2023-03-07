@@ -15,6 +15,8 @@
 package org.finos.legend.engine.language.pure.compiler.test.fromGrammar;
 
 import java.util.Collections;
+
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 import org.junit.Test;
 
@@ -74,7 +76,7 @@ public class TestRuntimeCompilationFromGrammar extends TestCompilationFromGramma
                 "  mappings:\n" +
                 "  [\n" +
                 "  ];\n" +
-                "}\n", "COMPILATION error at [15:1-20:1]: Runtime must cover at least one mapping");
+                "}\n", null, Lists.mutable.with("COMPILATION error at [15:1-20:1]: Runtime must cover at least one mapping"));
         // Unknown connection pointer
         test(resource +
                 "###Runtime\n" +
