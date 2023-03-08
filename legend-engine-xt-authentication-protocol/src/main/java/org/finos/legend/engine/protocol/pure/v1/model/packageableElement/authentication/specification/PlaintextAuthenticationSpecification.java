@@ -14,15 +14,24 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification;
 
-public interface AuthenticationSpecificationVisitor<T>
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.CredentialVaultSecret;
+
+public class PlaintextAuthenticationSpecification extends AuthenticationSpecification
 {
-    T visit(ApiKeyAuthenticationSpecification authenticationSpecification);
+    public CredentialVaultSecret plaintextValue;
 
-    T visit(UserPasswordAuthenticationSpecification authenticationSpecification);
+    public PlaintextAuthenticationSpecification()
+    {
+    }
 
-    T visit(EncryptedPrivateKeyPairAuthenticationSpecification authenticationSpecification);
+    public PlaintextAuthenticationSpecification(CredentialVaultSecret plaintextValue)
+    {
+        this.plaintextValue = plaintextValue;
+    }
 
-    T visit(GCPWIFWithAWSIdPAuthenticationSpecification authenticationSpecification);
-
-    T visit(PlaintextAuthenticationSpecification authenticationSpecification);
+    @Override
+    public <T> T accept(AuthenticationSpecificationVisitor<T> visitor)
+    {
+        return visitor.visit(this);
+    }
 }

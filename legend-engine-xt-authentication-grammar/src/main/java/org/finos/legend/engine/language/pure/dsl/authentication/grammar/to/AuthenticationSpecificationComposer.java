@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.dsl.authentication.grammar.to;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiKeyAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecificationVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.PlaintextAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.EncryptedPrivateKeyPairAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.GCPWIFWithAWSIdPAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.UserPasswordAuthenticationSpecification;
@@ -87,6 +88,12 @@ public class AuthenticationSpecificationComposer implements AuthenticationSpecif
                 getTabString(indentLevel + 1) + "idP: " + this.renderGCPWIFWithAWSIdPIdP(authenticationSpecification.idPConfiguration, indentLevel + 1, context) + "\n" +
                 getTabString(indentLevel + 1) + "workload: " + this.renderGCPWIFWithAWSIdPWorkload(authenticationSpecification.workloadConfiguration, indentLevel + 1, context) + "\n" +
                 getTabString(indentLevel) + "}\n";
+    }
+
+    @Override
+    public String visit(PlaintextAuthenticationSpecification authenticationSpecification)
+    {
+        throw new UnsupportedOperationException("TODO");
     }
 
     private String renderGCPWIFWithAWSIdPWorkload(GCPWIFWithAWSIdPAuthenticationSpecification.WorkloadConfiguration workloadConfiguration, int indentLevel, PureGrammarComposerContext context)

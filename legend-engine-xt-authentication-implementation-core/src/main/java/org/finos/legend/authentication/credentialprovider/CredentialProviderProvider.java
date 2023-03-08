@@ -19,8 +19,11 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
+import org.finos.legend.authentication.credentialprovider.impl.PlainTextCredentialProvider;
 import org.finos.legend.authentication.intermediationrule.IntermediationRule;
 import org.finos.legend.authentication.intermediationrule.IntermediationRuleProvider;
+import org.finos.legend.authentication.vault.CredentialVaultProvider;
+import org.finos.legend.authentication.vault.impl.SystemPropertiesCredentialVault;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 
@@ -108,6 +111,14 @@ public class CredentialProviderProvider
     public static Builder builder()
     {
         return new Builder();
+    }
+
+    public static Builder defaultBuilder()
+    {
+        Builder builder = new Builder();
+        CredentialVaultProvider credentialVaultProvider = CredentialVaultProvider.builder().with(new SystemPropertiesCredentialVault()).build();
+        PlainTextCredentialProvider plainTextCredentialProvider = new PlainTextCredentialProvider(credentialVaultProvider);
+        return builder.with(plainTextCredentialProvider);
     }
 
     public static class Builder

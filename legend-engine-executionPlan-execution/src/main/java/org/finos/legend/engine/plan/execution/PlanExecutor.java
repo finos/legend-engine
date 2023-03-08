@@ -22,16 +22,26 @@ import org.eclipse.collections.api.multimap.list.ImmutableListMultimap;
 import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.internal.IterableIterate;
+import org.finos.legend.authentication.credentialprovider.CredentialBuilder;
+import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
 import org.finos.legend.engine.plan.execution.concurrent.ConcurrentExecutionNodeExecutorPool;
 import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
-import org.finos.legend.engine.plan.execution.stores.*;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutorBuilder;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutorBuilderLoader;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutorConfiguration;
+import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.engine.shared.core.identity.Credential;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.url.EngineUrlStreamHandlerFactory;
 import org.finos.legend.engine.shared.core.url.InputStreamProvider;
@@ -50,7 +60,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.ServiceLoader;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
@@ -66,17 +75,34 @@ public class PlanExecutor
     private final boolean isJavaCompilationAllowed;
     private final ImmutableList<StoreExecutor> extraExecutors;
     private final PlanExecutorInfo planExecutorInfo;
+    private final CredentialProviderProvider credentialProviderProvider;
     private ConcurrentExecutionNodeExecutorPool concurrentExecutionNodeExecutorPool;
     private long graphFetchBatchMemoryLimit;
     private BiFunction<MutableList<CommonProfile>, ExecutionState, ExecutionNodeExecutor> executionNodeExecutorBuilder;
 
+    private PlanExecutor(PlanExecutor that)
+    {
+        EngineUrlStreamHandlerFactory.initialize();
+        this.isJavaCompilationAllowed = that.isJavaCompilationAllowed;
+        this.extraExecutors = Lists.immutable.withAll(that.extraExecutors);
+        this.planExecutorInfo = PlanExecutorInfo.fromStoreExecutors(this.extraExecutors);
+        this.graphFetchBatchMemoryLimit = that.graphFetchBatchMemoryLimit;
+        this.credentialProviderProvider = that.credentialProviderProvider;
+    }
+
     private PlanExecutor(boolean isJavaCompilationAllowed, ImmutableList<StoreExecutor> extraExecutors, long graphFetchBatchMemoryLimit)
+    {
+        this(isJavaCompilationAllowed, extraExecutors, graphFetchBatchMemoryLimit, null);
+    }
+
+    private PlanExecutor(boolean isJavaCompilationAllowed, ImmutableList<StoreExecutor> extraExecutors, long graphFetchBatchMemoryLimit, CredentialProviderProvider credentialProviderProvider)
     {
         EngineUrlStreamHandlerFactory.initialize();
         this.isJavaCompilationAllowed = isJavaCompilationAllowed;
         this.extraExecutors = extraExecutors;
         this.planExecutorInfo = PlanExecutorInfo.fromStoreExecutors(this.extraExecutors);
         this.graphFetchBatchMemoryLimit = graphFetchBatchMemoryLimit;
+        this.credentialProviderProvider = credentialProviderProvider;
     }
 
     public PlanExecutorInfo getPlanExecutorInfo()
@@ -396,9 +422,14 @@ public class PlanExecutor
         }
     }
 
+    public static PlanExecutor newPlanExecutor(boolean isJavaCompilationAllowed, Iterable<? extends StoreExecutor> storeExecutors, long graphFetchBatchMemoryLimit, CredentialProviderProvider credentialProviderProvider)
+    {
+        return new PlanExecutor(isJavaCompilationAllowed, Lists.immutable.withAll(storeExecutors), graphFetchBatchMemoryLimit, credentialProviderProvider);
+    }
+
     public static PlanExecutor newPlanExecutor(boolean isJavaCompilationAllowed, Iterable<? extends StoreExecutor> storeExecutors, long graphFetchBatchMemoryLimit)
     {
-        return new PlanExecutor(isJavaCompilationAllowed, Lists.immutable.withAll(storeExecutors), graphFetchBatchMemoryLimit);
+        return new PlanExecutor(isJavaCompilationAllowed, Lists.immutable.withAll(storeExecutors), graphFetchBatchMemoryLimit, null);
     }
 
     public static PlanExecutor newPlanExecutor(boolean isJavaCompilationAllowed, Iterable<? extends StoreExecutor> storeExecutors)
@@ -414,6 +445,11 @@ public class PlanExecutor
     public static PlanExecutor newPlanExecutor(boolean isJavaCompilationAllowed, StoreExecutor... storeExecutors)
     {
         return new PlanExecutor(isJavaCompilationAllowed, Lists.immutable.with(storeExecutors), DEFAULT_GRAPH_FETCH_BATCH_MEMORY_LIMIT);
+    }
+
+    public static PlanExecutor newPlanExecutor(CredentialProviderProvider credentialProviderProvider, StoreExecutor... storeExecutors)
+    {
+        return new PlanExecutor(DEFAULT_IS_JAVA_COMPILATION_ALLOWED, Lists.immutable.with(storeExecutors), DEFAULT_GRAPH_FETCH_BATCH_MEMORY_LIMIT, credentialProviderProvider);
     }
 
     public static PlanExecutor newPlanExecutor(StoreExecutor... storeExecutors)
@@ -690,5 +726,10 @@ public class PlanExecutor
         {
             return executionNodeExecutorBuilder.apply(profiles, executionState);
         }
+    }
+
+    Credential makeCredential(AuthenticationSpecification authenticationSpecification, Identity identity) throws Exception
+    {
+        return CredentialBuilder.makeCredential(this.credentialProviderProvider, authenticationSpecification, identity);
     }
 }

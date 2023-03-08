@@ -18,6 +18,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiKeyAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecificationVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.PlaintextAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.EncryptedPrivateKeyPairAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.GCPWIFWithAWSIdPAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.UserPasswordAuthenticationSpecification;
@@ -77,6 +78,12 @@ public class HelperAuthenticationBuilder
 
         @Override
         public Root_meta_pure_runtime_connection_authentication_AuthenticationSpecification visit(GCPWIFWithAWSIdPAuthenticationSpecification gcpwifWithAWSIdPAuthenticationSpecification)
+        {
+            throw new UnsupportedOperationException("TODO - epsstan");
+        }
+
+        @Override
+        public Root_meta_pure_runtime_connection_authentication_AuthenticationSpecification visit(PlaintextAuthenticationSpecification authenticationSpecification)
         {
             throw new UnsupportedOperationException("TODO - epsstan");
         }
