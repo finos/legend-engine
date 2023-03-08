@@ -18,7 +18,7 @@ import meta::external::store::mongodb::metamodel::aggregation::*;
 import meta::external::store::mongodb::functions::pureToDatabaseCommand::*;
 import meta::external::store::mongodb::runtime::*;
 import meta::pure::graphFetch::executionPlan::*;
-import meta::external::store::mongodb::mapping::*;
+import meta::external::store::mongodb::metamodel::pure::*;
 import meta::external::store::mongodb::metamodel::*;
 import meta::external::store::mongodb::metamodel::runtime::*;
 import meta::pure::router::clustering::*;
@@ -64,7 +64,7 @@ function meta::external::store::mongodb::contract::planExecution(sq:meta::pure::
 
     let connection = $runtime->toOne()->connectionByElement($store)->cast(@MongoDBConnection);
 
-    ^meta::external::store::mongodb::metamodel::mapping::MongoDBExecutionNode(
+    ^MongoDBExecutionNode(
         resultType = ^meta::pure::executionPlan::ResultType(type = Any),
         databaseCommand = $databaseCommand,
         connection = $connection

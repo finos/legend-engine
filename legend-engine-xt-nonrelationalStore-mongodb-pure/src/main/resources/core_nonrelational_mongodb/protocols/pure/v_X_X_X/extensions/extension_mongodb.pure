@@ -43,7 +43,7 @@ function meta::protocols::pure::vX_X_X::extension::store::mongodb::getMongoDBSto
    moduleSerializerExtensions = meta::protocols::pure::vX_X_X::extension::store::mongodb::mongoDBModuleSerializerExtension(),
    transfers_executionPlan_transformNode = {mapping:Mapping[1], extensions:meta::pure::extension::Extension[*] |
           [
-        men:meta::external::store::mongodb::metamodel::mapping::MongoDBExecutionNode[1]|
+        men:meta::external::store::mongodb::metamodel::pure::MongoDBExecutionNode[1]|
 
                 ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::mongodb::MongoDBExecutionNode(
                            _type = 'mongoDBExecutionNode',

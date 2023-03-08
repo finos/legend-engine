@@ -14,7 +14,6 @@
 
 import meta::external::store::mongodb::metamodel::*;
 import meta::external::store::mongodb::metamodel::aggregation::*;
-import meta::external::store::mongodb::metamodel::authentication::*;
 
 Enum meta::external::store::mongodb::metamodel::aggregation::Operator
 {
@@ -210,7 +209,6 @@ Class meta::external::store::mongodb::metamodel::MongoDatabase extends meta::pur
 {
   collections: Collection[*];
   views: CollectionView[*];
-  authenticationStrategy: AuthenticationStrategy[0..1];
 }
 
 Class meta::external::store::mongodb::metamodel::Collation
@@ -457,40 +455,11 @@ Class meta::external::store::mongodb::metamodel::aggregation::KeyValuePair
 }
 
 
-
-
 Enum meta::external::store::mongodb::metamodel::authentication::AuthenticationMechanism
 {
   SCRAM_SHA_1, SCRAM_SHA_256, GSSAPI, MONGODB_X509
 }
 
-Class meta::external::store::mongodb::metamodel::authentication::AuthenticationStrategy
-{
-  authenticationMechanism: AuthenticationMechanism[1];
-  authenticationDatanbase: String[1];
-}
-
-Class meta::external::store::mongodb::metamodel::authentication::SCRAM extends AuthenticationStrategy
-{
-  baseVaultReference: String[0..1];
-  userNameVaultReference: String[1];
-  passwordVaultReference: String[1];
-  // digestPassword: Boolean[0..1];
-}
-
-Class meta::external::store::mongodb::metamodel::authentication::Kerberos extends AuthenticationStrategy
-{
-  serverPrincipal: String[1];
-  keyTabVaultReference: String[1];
-}
-
-
-Class meta::external::store::mongodb::metamodel::authentication::X509 extends AuthenticationStrategy
-{
-  requireTls: Boolean[1];
-  certificationKeyFileVaultRef: String[1];
-  certificationAuthorityFileVaultRef: String[1];
-}
 
 
 

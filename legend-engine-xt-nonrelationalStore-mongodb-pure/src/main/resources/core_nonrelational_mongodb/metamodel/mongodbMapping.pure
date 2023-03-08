@@ -54,7 +54,7 @@ Class meta::external::store::mongodb::metamodel::mapping::Field
 
 
 
-Class meta::external::store::mongodb::mapping::MongoDBSetImplementation extends InstanceSetImplementation
+Class meta::external::store::mongodb::metamodel::pure::MongoDBSetImplementation extends InstanceSetImplementation
 {
     // Store comes from PropertyMapping
     mainCollection : Collection[1];
@@ -63,7 +63,7 @@ Class meta::external::store::mongodb::mapping::MongoDBSetImplementation extends 
 
 
 
-Class meta::external::store::mongodb::mapping::RootMongoDbInstanceSetImplementation extends meta::pure::mapping::InstanceSetImplementation
+Class meta::external::store::mongodb::metamodel::pure::RootMongoDbInstanceSetImplementation extends InstanceSetImplementation
 {
 }
 

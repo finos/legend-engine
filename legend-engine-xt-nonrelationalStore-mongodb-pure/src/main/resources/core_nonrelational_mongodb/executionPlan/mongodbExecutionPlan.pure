@@ -13,10 +13,10 @@
 // limitations under the License.
 
 import meta::external::store::mongodb::metamodel::aggregation::*;
-import meta::external::store::mongodb::metamodel::mapping::*;
+import meta::external::store::mongodb::metamodel::pure::*;
 import meta::external::store::mongodb::metamodel::runtime::*;
 
-Class <<typemodifiers.abstract>> meta::external::store::mongodb::metamodel::mapping::MongoDBExecutionNode extends meta::pure::executionPlan::ExecutionNode
+Class meta::external::store::mongodb::metamodel::pure::MongoDBExecutionNode extends meta::pure::executionPlan::ExecutionNode
 {
   databaseCommand: DatabaseCommand[1];
   connection: MongoDBConnection[1];

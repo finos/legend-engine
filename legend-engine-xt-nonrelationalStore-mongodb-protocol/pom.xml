@@ -45,7 +45,7 @@
                                 <argument>meta::external::store::mongodb::metamodel</argument>
                                 <argument>org.finos.legend.engine.protocol.mongodb.schema.metamodel</argument>
                                 <argument>${project.build.directory}/generated-sources/</argument>
-                                <argument>meta::external::store::mongodb::mapping</argument>
+                                <argument>meta::external::store::mongodb::metamodel::pure</argument>
                                 <argument>meta::external::store::mongodb::metamodel::MongoDBProtocolGenerator__JavaProtocolGenerator_1_</argument>
                             </arguments>
                             <classpathScope>test</classpathScope>
@@ -136,6 +136,14 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-authentication-protocol</artifactId>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.finos.legend.engine</groupId>-->
+<!--            <artifactId>legend-engine-pure-platform-functions-json-java</artifactId>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.finos.legend.engine</groupId>-->
+<!--            <artifactId>legend-engine-pure-code-compiled-core</artifactId>-->
+<!--        </dependency>-->
         <!-- engine -->
 
         <!--pure -->

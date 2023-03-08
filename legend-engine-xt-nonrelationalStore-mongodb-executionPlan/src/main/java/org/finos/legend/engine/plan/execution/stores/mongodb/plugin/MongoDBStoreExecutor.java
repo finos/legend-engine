@@ -33,13 +33,13 @@ public class MongoDBStoreExecutor  implements StoreExecutor
 
 
     @Override
-    public StoreExecutionState buildStoreExecutionState()
+    public MongoDBStoreExecutionState buildStoreExecutionState()
     {
         return new MongoDBStoreExecutionState(this.state, this.storeExecutionConfiguration.getCredentialProviderProvider());
     }
 
     @Override
-    public StoreState getStoreState()
+    public MongoDBStoreState getStoreState()
     {
         return this.state;
     }

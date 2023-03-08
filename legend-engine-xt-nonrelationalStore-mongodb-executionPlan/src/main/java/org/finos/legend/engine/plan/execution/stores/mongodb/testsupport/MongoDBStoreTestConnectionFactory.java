@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.mongodb.test;
+package org.finos.legend.engine.plan.execution.stores.mongodb.testsupport;
 
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDatabase;
@@ -32,6 +32,31 @@ public class MongoDBStoreTestConnectionFactory implements ConnectionFactoryExten
     public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnection(Connection sourceConnection, EmbeddedData data)
     {
         // TODO : Implement test connection to in-memory instance + load data.
+
+//        if (sourceConnection instanceof MongoDBConnection && data instanceof ServiceStoreEmbeddedData)
+//        {
+//            String localHostUrl = "http://127.0.0.1";
+//            int port = DynamicPortGenerator.generatePort();
+//
+//            ServiceStoreConnection testConnection = new ServiceStoreConnection();
+//            testConnection.element = sourceConnection.element;
+//            testConnection.baseUrl = localHostUrl + ":" + port;
+//
+//            WireMockServer testServer = new TestServerSetupHelper((ServiceStoreEmbeddedData) data, port).setupTestServerWithData();
+//
+//            Closeable closeable = new Closeable()
+//            {
+//                @Override
+//                public void close() throws IOException
+//                {
+//                    testServer.stop();
+//                }
+//            };
+//
+//            return Optional.of(Tuples.pair(testConnection, Collections.singletonList(closeable)));
+//        }
+//        return Optional.empty();
+
         return Optional.empty();
     }
 

@@ -28,7 +28,7 @@ public class MongoDBStoreExecutorBuilder implements StoreExecutorBuilder
     }
 
     @Override
-    public StoreExecutor build()
+    public MongoDBStoreExecutor build()
     {
         return (MongoDBStoreExecutor) build(MongoDBStoreExecutorConfiguration.newInstance().build());
     }

@@ -8,6 +8,7 @@
     "platform_dsl_path",
     "platform_functions",
     "core_external_language_java",
+    "platform_functions_json",
     "core_authentication"
   ]
 }
