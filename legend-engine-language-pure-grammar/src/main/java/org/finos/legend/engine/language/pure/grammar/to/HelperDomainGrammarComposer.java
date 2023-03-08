@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.appendTabString;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
 
 public class HelperDomainGrammarComposer
 {
@@ -114,7 +115,11 @@ public class HelperDomainGrammarComposer
                 + PureGrammarComposerUtility.convertIdentifier(qualifiedProperty.name) + "("
                 + LazyIterate.collect(functionParameters, p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(transformer).withVariableInFunctionSignature().build())).makeString(",")
                 + ") {"
-                + LazyIterate.collect(qualifiedProperty.body, b -> b.accept(transformer)).makeString("\n")
+                + (qualifiedProperty.body.size() <= 1
+                    ? LazyIterate.collect(qualifiedProperty.body, b -> b.accept(transformer)).makeString("\n")
+                    : LazyIterate
+                        .collect(qualifiedProperty.body, b -> b.accept(transformer))
+                        .makeString("\n" + getTabString(2),";\n" + getTabString(2),";\n" + getTabString()))
                 + "}: "
                 + qualifiedProperty.returnType + "[" + renderMultiplicity(qualifiedProperty.returnMultiplicity) + "]";
     }
