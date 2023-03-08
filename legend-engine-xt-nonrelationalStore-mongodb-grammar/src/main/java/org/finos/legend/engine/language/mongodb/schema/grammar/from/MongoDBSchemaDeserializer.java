@@ -33,7 +33,7 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.IntType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.LongType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MaxKeyType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MinKeyType;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDatabase;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDatabase;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoIndex;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.ObjectIdType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.ObjectType;

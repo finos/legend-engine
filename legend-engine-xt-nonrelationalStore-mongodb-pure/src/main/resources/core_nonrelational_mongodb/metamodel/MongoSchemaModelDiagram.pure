@@ -171,17 +171,6 @@ Diagram meta::external::store::mongodb::metamodel::Mongo_StoreModel_Diagram(widt
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_28(
-        type=meta::external::store::mongodb::metamodel::MongoDatabase,
-        position=(611.01367, 501.33947),
-        width=294.43066,
-        height=72.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
 
     TypeView cview_36(
         type=meta::external::store::mongodb::metamodel::Validator,
@@ -519,19 +508,6 @@ Diagram meta::external::store::mongodb::metamodel::Mongo_StoreModel_Diagram(widt
         nameVisible=true,
         lineStyle=SIMPLE)
 
-    PropertyView pview_3(
-        property=meta::external::store::mongodb::metamodel::MongoDatabase.collections,
-        source=cview_28,
-        target=cview_29,
-        points=[(758.22900,537.33947),(977.97470,539.02690)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
 
     PropertyView pview_4(
         property=meta::external::store::mongodb::metamodel::Collection.collation,

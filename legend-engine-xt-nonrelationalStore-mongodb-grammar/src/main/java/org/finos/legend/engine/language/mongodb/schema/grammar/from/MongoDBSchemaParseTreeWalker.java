@@ -19,7 +19,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDatabase;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDatabase;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
 import java.io.IOException;

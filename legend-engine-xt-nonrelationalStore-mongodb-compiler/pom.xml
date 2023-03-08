@@ -28,7 +28,7 @@
     <name>Legend Engine - XT - Non-Relational Store - MongoDB - Compiler</name>
 
     <build>
-<!--        <plugins>-->
+        <plugins>
 <!--            <plugin>-->
 <!--                <groupId>org.codehaus.mojo</groupId>-->
 <!--                <artifactId>exec-maven-plugin</artifactId>-->
@@ -46,7 +46,7 @@
 <!--                                <argument>meta::external::store::mongodb::metamodel</argument>-->
 <!--                                <argument>org.finos.legend.engine.protocol.mongodb.schema.metamodel</argument>-->
 <!--                                <argument>${project.build.directory}/generated-sources/</argument>-->
-<!--                                <argument>meta::external::store::mongodb::mapping</argument>-->
+<!--                                <argument>meta::external::store::mongodb::metamodel::pure</argument>-->
 <!--                                <argument>-->
 <!--                                    meta::external::store::mongodb::metamodel::MongoDBProtocolGenerator__JavaProtocolGenerator_1_-->
 <!--                                </argument>-->
@@ -103,7 +103,7 @@
 <!--            &lt;!&ndash;                    </execution>&ndash;&gt;-->
 <!--            &lt;!&ndash;                </executions>&ndash;&gt;-->
 <!--            &lt;!&ndash;            </plugin>&ndash;&gt;-->
-<!--        </plugins>-->
+        </plugins>
     </build>
 
     <dependencies>

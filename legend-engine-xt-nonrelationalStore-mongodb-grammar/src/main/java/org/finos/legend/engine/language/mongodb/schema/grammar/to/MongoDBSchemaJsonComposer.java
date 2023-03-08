@@ -15,7 +15,7 @@
 package org.finos.legend.engine.language.mongodb.schema.grammar.to;
 
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.Collection;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDatabase;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDatabase;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDBOperationElement;
 
 import java.util.List;

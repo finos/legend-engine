@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::external::store::mongodb::metamodel::*;
+import meta::external::store::mongodb::metamodel::pure::*;
 import meta::external::store::mongodb::metamodel::aggregation::*;
 
 Enum meta::external::store::mongodb::metamodel::aggregation::Operator
@@ -205,7 +206,7 @@ Class meta::external::store::mongodb::metamodel::CollectionView
   pipeLine: ViewPipeline[1..*];
 } 
 
-Class meta::external::store::mongodb::metamodel::MongoDatabase extends meta::pure::store::Store
+Class meta::external::store::mongodb::metamodel::pure::MongoDatabase extends meta::pure::store::Store
 {
   collections: Collection[*];
   views: CollectionView[*];

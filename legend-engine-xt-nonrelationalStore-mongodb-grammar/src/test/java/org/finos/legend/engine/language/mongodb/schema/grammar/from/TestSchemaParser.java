@@ -15,7 +15,7 @@
 package org.finos.legend.engine.language.mongodb.schema.grammar.from;
 
 import org.finos.legend.engine.language.mongodb.schema.grammar.to.MongoDBSchemaJsonComposer;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDatabase;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDatabase;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
