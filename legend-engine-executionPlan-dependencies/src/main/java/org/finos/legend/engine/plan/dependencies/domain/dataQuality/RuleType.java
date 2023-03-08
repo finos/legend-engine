@@ -26,6 +26,11 @@ public enum RuleType
 
     public String getName()
     {
-        return this.toString();
+        return this.name();
+    }
+
+    public static RuleType getEnumFromPureName(String pureName)
+    {
+        return RuleType.valueOf(pureName);
     }
 }

@@ -185,6 +185,22 @@ Class meta::external::query::sql::metamodel::NegativeExpression extends meta::ex
   value: meta::external::query::sql::metamodel::Expression[1];
 }
 
+Class meta::external::query::sql::metamodel::IsNullPredicate extends meta::external::query::sql::metamodel::Expression
+{
+  value: meta::external::query::sql::metamodel::Expression[1];
+}
+
+Class meta::external::query::sql::metamodel::IsNotNullPredicate extends meta::external::query::sql::metamodel::Expression
+{
+  value: meta::external::query::sql::metamodel::Expression[1];
+}
+
+Class meta::external::query::sql::metamodel::CurrentTime extends meta::external::query::sql::metamodel::Expression
+{
+  type: meta::external::query::sql::metamodel::CurrentTimeType[1];
+  precision: Integer[0..1];
+}
+
 Class meta::external::query::sql::metamodel::FunctionCall extends meta::external::query::sql::metamodel::Expression
 {
   name: meta::external::query::sql::metamodel::QualifiedName[1];
@@ -317,4 +333,11 @@ Enum meta::external::query::sql::metamodel::ComparisonOperator
   LESS_THAN_OR_EQUAL,
   GREATER_THAN,
   GREATER_THAN_OR_EQUAL
+}
+
+Enum meta::external::query::sql::metamodel::CurrentTimeType
+{
+  DATE,
+  TIME,
+  TIMESTAMP
 }
