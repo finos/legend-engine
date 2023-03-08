@@ -675,7 +675,37 @@ function <<access.private>> meta::pure::router::preeval::prevalGenericSimpleFunc
                                   openVars = [],
                                   modified = true
                                 );
-                            })
+                            }),
+                            pair(
+                              {theSfe:SimpleFunctionExpression[1] | isFilterFunctionReturningConstant($theSfe, false)},
+                              {theSfe:SimpleFunctionExpression[1] |
+                                $state->printDebugWithDepth(|'Handling filter which returns false: ' + $newSfe.func->elementToPath());
+                                let r = ^InstanceValue(
+                                          genericType = ^GenericType(rawType = Nil),
+                                          multiplicity = PureZero
+                                        )->evaluateAndDeactivate();
+
+                                ^PrevalWrapper<InstanceValue>(
+                                  value = $r,
+                                  canPreval = true,
+                                  openVars = [],
+                                  modified = true
+                                );
+                              }
+                            ),
+                            pair(
+                              {theSfe:SimpleFunctionExpression[1] | isFilterFunctionReturningConstant($theSfe, true)},
+                              {theSfe:SimpleFunctionExpression[1] |
+                                $state->printDebugWithDepth(|'Handling filter which returns true: ' + $newSfe.func->elementToPath());
+
+                                ^PrevalWrapper<ValueSpecification>(
+                                  value = $theSfe.parametersValues->at(0),
+                                  canPreval = true,
+                                  openVars = [],
+                                  modified = true
+                                );
+                              }
+                            )
                         ]);
 
                     let handler = $handlers->filter(p|$p.first->eval($newSfe))->first();
@@ -712,6 +742,17 @@ function <<access.private>> meta::pure::router::preeval::prevalGenericSimpleFunc
           );
       );
   );
+}
+
+function <<access.public>> meta::pure::router::preeval::isFilterFunctionReturningConstant(sfe:SimpleFunctionExpression[1], value:Boolean[1]) : Boolean[1]
+{
+  let isFilter = $sfe.func == filter_T_MANY__Function_1__T_MANY_;
+
+  if ($isFilter,
+    |
+      let es = $sfe.parametersValues->last()->cast(@InstanceValue).values->cast(@LambdaFunction<Any>).expressionSequence->evaluateAndDeactivate();
+      $es->last()->toOne()->instanceOf(InstanceValue) && $es->last()->toOne()->cast(@InstanceValue).values == $value;,
+    | false);
 }
 
 // ====================================================================================================================================================================
