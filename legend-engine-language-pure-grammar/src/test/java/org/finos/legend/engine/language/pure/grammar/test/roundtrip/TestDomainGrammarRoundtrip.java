@@ -174,7 +174,20 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     {
         test("Class Firm\n" +
                 "{\n" +
-                "  prop() {let x = 0; $x;}: Integer[1];\n" +
+                "  prop1: Float[1];\n" +
+                "  prop3: String[1];\n" +
+                "  prop2() {\n" +
+                "    let x = 0;\n" +
+                "    $x;\n" +
+                "  }: Integer[1];\n" +
+                "}\n");
+
+        test("Class Query\n" +
+                "{\n" +
+                "  allFirms(limit: Integer[1]) {\n" +
+                "    let offset = $limit + 10;\n" +
+                "    Firm.all()->slice($limit, $offset);\n" +
+                "  }: Firm[*];\n" +
                 "}\n");
     }
 
