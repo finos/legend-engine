@@ -63,12 +63,11 @@ public class TrinoCompilerExtension implements IRelationalCompilerExtension
                         ._catalog(trinoDatasourceSpecification.catalog)
                         ._schema(trinoDatasourceSpecification.schema)
                         ._clientTags(trinoDatasourceSpecification.clientTags)
-                        ._sslSpecification(new Root_meta_pure_alloy_connections_alloy_specification_TrinoSSLSpecification_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::specification::TrinoSSLSpecification"))
+                        ._sslSpecification(trinoDatasourceSpecification == null ? null : new Root_meta_pure_alloy_connections_alloy_specification_TrinoSSLSpecification_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::specification::TrinoSSLSpecification"))
                                 ._ssl(trinoDatasourceSpecification.sslSpecification.ssl)
                                 ._trustStorePathVaultReference(trinoDatasourceSpecification.sslSpecification.trustStorePathVaultReference)
                                 ._trustStorePasswordVaultReference(trinoDatasourceSpecification.sslSpecification.trustStorePasswordVaultReference)
                         );
-
             }
             return null;
         });

@@ -60,13 +60,6 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProviderWithUs
         TrinoTestDatabaseAuthenticationFlowProvider flowProvider = new TrinoTestDatabaseAuthenticationFlowProvider();
         flowProvider.configure(new TrinoTestDatabaseAuthenticationFlowProviderConfiguration());
         this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList(), Optional.of(flowProvider));
-
-        Properties properties = new Properties();
-        properties.put("trino.user", "test");
-        properties.put("trino.password", "");
-
-        this.vaultImplementation = new PropertiesVaultImplementation(properties);
-        Vault.INSTANCE.registerImplementation(this.vaultImplementation);
     }
 
     private void startTrinoContainer()

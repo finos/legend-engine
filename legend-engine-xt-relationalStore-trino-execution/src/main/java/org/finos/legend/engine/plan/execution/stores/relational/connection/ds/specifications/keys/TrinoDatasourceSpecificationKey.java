@@ -45,7 +45,8 @@ public class TrinoDatasourceSpecificationKey
 
     private String shortId(TrinoSSLSpecification sslSpecification)
     {
-        if(sslSpecification != null) {
+        if (sslSpecification != null)
+        {
             return "TrinoSSLSpecification_" +
                     "ssl:" + sslSpecification.ssl + "_" +
                     "trustStorePathVaultReference:'" + sslSpecification.trustStorePathVaultReference + "_" +
@@ -91,7 +92,7 @@ public class TrinoDatasourceSpecificationKey
             return false;
         }
         TrinoDatasourceSpecificationKey that = (TrinoDatasourceSpecificationKey) o;
-        return port == that.port && Objects.equals(host, that.host) && Objects.equals(catalog, that.catalog) && Objects.equals(schema, that.schema) && Objects.equals(clientTags, that.clientTags) && Objects.equals(sslSpecification, that.sslSpecification);
+        return port == that.port && Objects.equals(host, that.host) && Objects.equals(catalog, that.catalog) && Objects.equals(schema, that.schema) && Objects.equals(clientTags, that.clientTags) && Objects.equals(sslSpecification.toString(), that.sslSpecification.toString());
     }
 
     public TrinoDatasourceSpecificationKey(String host, int port, String catalog, String schema, String clientTags, TrinoSSLSpecification sslSpecification)
@@ -107,7 +108,7 @@ public class TrinoDatasourceSpecificationKey
     @Override
     public int hashCode()
     {
-        return Objects.hash(host, port, catalog, schema, clientTags, sslSpecification);
+        return Objects.hash(host, port, catalog, schema, clientTags, sslSpecification.toString());
     }
 
     public String getHost()

@@ -24,11 +24,4 @@ public class TrinoSSLSpecification
     public boolean ssl;
     public String trustStorePathVaultReference;
     public String trustStorePasswordVaultReference;
-
-    public TrinoSSLSpecification(boolean ssl, String trustStorePathVaultReference, String trustStorePasswordVaultReference)
-    {
-        this.ssl = ssl;
-        this.trustStorePathVaultReference = trustStorePathVaultReference;
-        this.trustStorePasswordVaultReference = trustStorePasswordVaultReference;
-    }
 }
