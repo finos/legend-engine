@@ -2831,6 +2831,48 @@ public class TestServiceTestSuite
     }
 
     @Test
+    public void testServiceTestKeysWithOptimizedWorkflow()
+    {
+        List<TestResult> MultiKeyTestResult = executeServiceTest("testable/service/", "serviceGrammarModel.pure", "serviceGrammarTestWithOptimizedWorkflow.pure", "testModelStoreTestSuites::service::DocM2MService");
+        Assert.assertEquals(3, MultiKeyTestResult.size());
+        Assert.assertTrue(MultiKeyTestResult.get(0) instanceof MultiExecutionServiceTestResult);
+        Assert.assertEquals("testModelStoreTestSuites::service::DocM2MService", MultiKeyTestResult.get(0).testable);
+        Assert.assertEquals("testSuite1", MultiKeyTestResult.get(0).testSuiteId);
+        Assert.assertEquals("test1", MultiKeyTestResult.get(0).atomicTestId);
+
+        Map<String, TestResult> KeysInScopeTestResults = ((MultiExecutionServiceTestResult) MultiKeyTestResult.get(0)).getKeyIndexedTestResults();
+        KeysInScopeTestResults.forEach((key, value) ->
+        {
+            Assert.assertTrue(value instanceof TestExecuted);
+            Assert.assertSame(((TestExecuted) value).testExecutionStatus, TestExecutionStatus.PASS);
+            Assert.assertEquals("testModelStoreTestSuites::service::DocM2MService", value.testable);
+            Assert.assertEquals("testSuite1", value.testSuiteId);
+            Assert.assertEquals("test1", value.atomicTestId);
+
+        });
+
+        Map<String, TestResult> KeysInScopeTestResults2 = ((MultiExecutionServiceTestResult) MultiKeyTestResult.get(1)).getKeyIndexedTestResults();
+        KeysInScopeTestResults2.forEach((key, value) ->
+        {
+            Assert.assertTrue(value instanceof TestExecuted);
+            Assert.assertSame(((TestExecuted) value).testExecutionStatus, TestExecutionStatus.PASS);
+            Assert.assertEquals("testModelStoreTestSuites::service::DocM2MService", value.testable);
+            Assert.assertEquals("testSuite1", value.testSuiteId);
+            Assert.assertEquals("test2", value.atomicTestId);
+        });
+
+        Map<String, TestResult> KeysInScopeTestResults3 = ((MultiExecutionServiceTestResult) MultiKeyTestResult.get(2)).getKeyIndexedTestResults();
+        KeysInScopeTestResults3.forEach((key, value) ->
+        {
+            Assert.assertTrue(value instanceof TestExecuted);
+            Assert.assertSame(((TestExecuted) value).testExecutionStatus, TestExecutionStatus.PASS);
+            Assert.assertEquals("testModelStoreTestSuites::service::DocM2MService", value.testable);
+            Assert.assertEquals("testSuite1", value.testSuiteId);
+            Assert.assertEquals("test3", value.atomicTestId);
+        });
+    }
+
+    @Test
     public void testServiceTestKeysWithParametersWithMultipleTestBlocks()
     {
         List<TestResult> MultiKeyTestResult = executeServiceTest("testable/service/","serviceGrammarModel.pure","serviceGrammarWithTestKeysAndParameters.pure", "testModelStoreTestSuites::service::DocM2MService");

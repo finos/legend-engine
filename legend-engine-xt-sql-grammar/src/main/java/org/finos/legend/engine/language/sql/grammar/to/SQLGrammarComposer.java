@@ -51,6 +51,12 @@ public class SQLGrammarComposer
             Tuples.pair(JoinType.INNER, "INNER")
     );
 
+    private final MutableMap<CurrentTimeType, String> currentTime = UnifiedMap.newMapWith(
+            Tuples.pair(CurrentTimeType.TIME, "CURRENT_TIME"),
+            Tuples.pair(CurrentTimeType.TIMESTAMP, "CURRENT_TIMESTAMP"),
+            Tuples.pair(CurrentTimeType.DATE, "CURRENT_DATE")
+    );
+
     private SQLGrammarComposer()
     {
     }
@@ -121,6 +127,13 @@ public class SQLGrammarComposer
             }
 
             @Override
+            public String visit(CurrentTime val)
+            {
+                String params = val.precision != null ? "(" + val.precision + ")" : "";
+                return currentTime.get(val.type) + params;
+            }
+
+            @Override
             public String visit(LogicalBinaryExpression val)
             {
                 String left = val.left.accept(this);
@@ -184,6 +197,18 @@ public class SQLGrammarComposer
             public String visit(IntegerLiteral val)
             {
                 return String.valueOf(val.value);
+            }
+
+            @Override
+            public String visit(IsNotNullPredicate val)
+            {
+                return val.value.accept(this) + " IS NOT NULL";
+            }
+
+            @Override
+            public String visit(IsNullPredicate val)
+            {
+                return val.value.accept(this) + " IS NULL";
             }
 
             @Override
