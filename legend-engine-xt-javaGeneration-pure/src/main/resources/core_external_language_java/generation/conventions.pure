@@ -1111,7 +1111,7 @@ function meta::external::language::java::transform::registerLibrary(conventions:
 
 function meta::external::language::java::transform::defaultProhibitedFunctions(extraProhibitedFunctions : Function<Any>[*]): Function<{Conventions[1],Function<Any>[1]->Boolean[1]}>[1]
 {
-   let functionsBlacklist = [
+   let prohibitedFunctions = [
       // Instances
       copy_T_1__String_1__KeyExpression_MANY__T_1_,
       copy_T_1__String_1__T_1_,
@@ -1179,9 +1179,7 @@ function meta::external::language::java::transform::defaultProhibitedFunctions(e
       meta::json::fromJson_String_1__Class_1__JSONDeserializationConfig_1__T_1_,
       meta::json::parseJSON_String_1__JSONElement_1_,
       meta::json::toJsonBeta_Any_MANY__JSONSerializationConfig_1__String_1_
-
-      
-   ]->concatenate($extraProhibitedFunctions);
+   ]->concatenate($extraProhibitedFunctions)->map(f | pair($f, true))->newMap();
 
    let manipulatesPackagesBlacklist = [
       'meta::pure::codestore',
@@ -1222,24 +1220,18 @@ function meta::external::language::java::transform::defaultProhibitedFunctions(e
      'meta::pure::mapping::modelToModel::test'
    ];
 
-   {conventions:Conventions[1],func:Function<Any>[1]|
-      $func->match([
-         {nf:NativeFunction<Any>[1]     | $func->in($functionsBlacklist);},
-         {fd:FunctionDefinition<Any>[1] |
-            if($func->in($functionsBlacklist),
-               | true,
-               {|
-                  let funcType = $func->evaluateAndDeactivate()->functionType();
-                  let types    = $funcType.returnType.rawType->concatenate($funcType.parameters.genericType.rawType);
-                  let usesPkgs = $types->filter(t| !$t->in($manipulatesTypesWhitelist) && $t->instanceOf(PackageableElement))->cast(@PackageableElement).package->filter(p | !$excludeTestPackages->exists(b|$p->elementToPath()->startsWith($b)));
-                  $usesPkgs->exists({p|
-                     let name = $p->elementToPath();
-                     $manipulatesPackagesBlacklist->exists(b|$name->startsWith($b));
-                  });
-               }
-            );
-         }
-      ]);
+   {conventions:Conventions[1], func:Function<Any>[1] | $prohibitedFunctions->getIfAbsentPutWithKey($func, f |
+      if($f->instanceOf(NativeFunction),
+         | false,
+         | let funcType = $f->evaluateAndDeactivate()->functionType();
+           let types    = $funcType.returnType.rawType->concatenate($funcType.parameters.genericType.rawType);
+           let usesPkgs = $types->filter(t | $t->instanceOf(PackageableElement) && !$t->in($manipulatesTypesWhitelist))
+                                ->map(t | $t->cast(@PackageableElement).package)
+                                ->map(p | $p->elementToPath())
+                                ->filter(p | !$excludeTestPackages->exists(b | $p->startsWith($b)));
+           $usesPkgs->exists(p | $manipulatesPackagesBlacklist->exists(b | $p->startsWith($b)));
+         )
+      )->toOne()
    };
 }
 
