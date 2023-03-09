@@ -71,6 +71,7 @@ public class TrinoDatasourceSpecificationRuntime extends org.finos.legend.engine
 
         if (key.sslSpecification != null)
         {
+            properties.setProperty(SSL, String.valueOf(key.sslSpecification.ssl));
             String trustStorePathVaultReference = key.getSslSpecification().trustStorePathVaultReference;
             String trustStorePasswordVaultReference = key.getSslSpecification().trustStorePasswordVaultReference;
 

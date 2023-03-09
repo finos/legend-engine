@@ -73,8 +73,8 @@ public class TrinoDelegatedKerberosAuthenticationStrategyRuntime extends org.fin
     @Override
     public Pair<String, Properties> handleConnection(String url, Properties properties, DatabaseManager databaseManager)
     {
-        properties.setProperty("kerberosRemoteServiceName", this.kerberosRemoteServiceName);
-        properties.setProperty("kerberosUseCanonicalHostname", String.valueOf(this.kerberosUseCanonicalHostname));
+        properties.setProperty("KerberosRemoteServiceName", this.kerberosRemoteServiceName);
+        properties.setProperty("KerberosUseCanonicalHostname", String.valueOf(this.kerberosUseCanonicalHostname));
 
         return Tuples.pair(url, properties);
     }

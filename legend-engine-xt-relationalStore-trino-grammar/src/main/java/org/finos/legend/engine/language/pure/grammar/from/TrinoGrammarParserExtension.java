@@ -113,7 +113,7 @@ public class TrinoGrammarParserExtension implements IRelationalGrammarParserExte
         sslSpecification.trustStorePathVaultReference = trustPathCtx == null ? null : PureGrammarParserUtility.fromGrammarString(trustPathCtx.STRING().getText(), true);
 
         TrinoParserGrammar.TrinoTrustStorePasswordVaultReferenceContext trustPasswordCtx = PureGrammarParserUtility.validateAndExtractOptionalField(trinoSSLSpecificationContext.trinoTrustStorePasswordVaultReference(), "trustStorePasswordVaultReference", dsSpec.sourceInformation);
-        sslSpecification.trustStorePasswordVaultReference = trustPasswordCtx == null ? null : PureGrammarParserUtility.fromGrammarString(trinoSSLSpecificationContext.trinoTrustStorePasswordVaultReference().get(0).STRING().getText(), true);
+        sslSpecification.trustStorePasswordVaultReference = trustPasswordCtx == null ? null : PureGrammarParserUtility.fromGrammarString(trustPasswordCtx.STRING().getText(), true);
 
         return sslSpecification;
     }

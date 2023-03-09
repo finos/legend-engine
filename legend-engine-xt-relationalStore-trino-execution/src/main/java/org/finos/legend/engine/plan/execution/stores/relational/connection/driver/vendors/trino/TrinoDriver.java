@@ -46,7 +46,6 @@ public class TrinoDriver extends DriverWrapper
         if (Strings.isNullOrEmpty((String)trinoDriverProperties.get("password")))
         {
             trinoDriverProperties.remove("password");
-            trinoDriverProperties.remove("SSL");
         }
 
         return trinoDriverProperties;

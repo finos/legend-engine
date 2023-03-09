@@ -14,10 +14,11 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication;
 
-public class TrinoDelegatedKerberosAuthenticationStrategy extends DelegatedKerberosAuthenticationStrategy
+public class TrinoDelegatedKerberosAuthenticationStrategy extends AuthenticationStrategy
 {
     public String kerberosRemoteServiceName;
     public Boolean kerberosUseCanonicalHostname;
+    public String serverPrincipal;
 
     @Override
     public <T> T accept(AuthenticationStrategyVisitor<T> authenticationStrategyVisitor)
