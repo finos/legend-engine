@@ -172,7 +172,7 @@ function <<access.private>> meta::relational::mapping::getRelationalTypeFromRela
    ])->cast(@meta::relational::metamodel::datatype::DataType);
 }
 
-function <<access.private>> meta::relational::mapping::addEnumMapSupportFunctions(sq:meta::pure::mapping::StoreQuery[1], m:Mapping[1]):String[*]
+function meta::relational::mapping::addEnumMapSupportFunctions(sq:meta::pure::mapping::StoreQuery[1], m:Mapping[1]):String[*]
 {
    let enumParam = $sq.inScopeVars->keyValues().second->map(p | $p.values)->filter(e | $e->instanceOf(PlanVarPlaceHolder))->map(p | $p->cast(@PlanVarPlaceHolder).type)->filter(e | $e->instanceOf(Enumeration));
    let enumMapTemplateFunctions = if($enumParam->isNotEmpty(),

@@ -21,7 +21,7 @@ Database test::DB
       ID INT PRIMARY KEY,
       name VARCHAR(200),
       employeeType VARCHAR(200),
-      active VARCHAR(200)
+      active INT
     )
 )
 
@@ -44,6 +44,26 @@ Enum test::YesNo
 {
     YES,
     NO
+}
+
+function test::EnumParamEqualOpFilterGraphFetch(yesOrNo: test::YesNo[1]): String[1]
+{
+   test::Employee.all()->filter(x|$x.active == $yesOrNo)->graphFetch(#{test::Employee{id,name,active}}#)->serialize(#{test::Employee{id,name,active}}#)
+}
+
+function test::CollectionEnumParamGraphFetch(eType: test::EmployeeType[*]): String[1]
+{
+   test::Employee.all()->filter(x|$x.employeeType->in($eType))->graphFetch(#{test::Employee{id,name,employeeType}}#)->serialize(#{test::Employee{id,name,employeeType}}#)
+}
+
+function test::EnumParamStringParamFiltersGraphFetch(eType: test::EmployeeType[1], eName: String[1]): String[1]
+{
+   test::Employee.all()->filter(x|$eType == $x.employeeType)->filter(x|$x.name->in($eName))->graphFetch(#{test::Employee{id,name,employeeType}}#)->serialize(#{test::Employee{id,name,employeeType}}#)
+}
+
+function test::MultipleEnumParamsNotInOPEqualOpFilterGraphFetch(eType: test::EmployeeType[1], yesOrNo: test::YesNo[1]): String[1]
+{
+   test::Employee.all()->filter(x|$x.active == $yesOrNo)->filter(x|!($x.employeeType->in($eType)))->graphFetch(#{test::Employee{id}}#)->serialize(#{test::Employee{id}}#)
 }
 
 function test::EnumParamEqualOpFilter(eType: test::EmployeeType[1]): meta::pure::tds::TabularDataSet[1]
