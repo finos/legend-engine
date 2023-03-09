@@ -1299,6 +1299,86 @@ function <<test.Test>> meta::pure::router::preeval::tests::testAdditionalStopFun
   assertRoundTrip($input, $input, myStopFunction_Integer_1__Integer_1_, [], noDebug());
 }
 
+function <<test.Test>> meta::pure::router::preeval::tests::testFilterFalseSimplification():Boolean[1]
+{
+  let input = {o:OrganizationalEntity[1]| $o.positions(%2023-01-01)->filter(p | false).id};
+
+  let expected = {a:OrganizationalEntity[1]| []};
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testFilterFalseSimplificationAll():Boolean[1]
+{
+  let input = {s:String[0..1]| OrganizationalEntity.all(%2023-01-01)->filter(c | 1 == 2)->project(c | $c.name, 'name')};
+
+  let expected = {s:String[0..1]| OrganizationalEntity.all(%2023-01-01)->filter(c | false)->project(c | $c.name, 'name')};
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testFilterFalseSimplification2():Boolean[1]
+{
+  let input = {o:OrganizationalEntity[1]| $o.positions(%2023-01-01)->filter(p | 1 == 2).id};
+
+  let expected = {o:OrganizationalEntity[1]| []};
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testFilterFalseConstantSimplification():Boolean[1]
+{
+  let input = {o:OrganizationalEntity[1]| let bool = false; let date = %2023-01-01; $o.positions($date)->filter(p | $bool).id;};
+
+  let expected = {o:OrganizationalEntity[1]| []};
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testFilterFalseSimplificationReturnType():Boolean[1]
+{
+  let input = {o:OrganizationalEntity[1]| $o.positions(%2023-01-01)->filter(p | false).id;};
+  let result = $input->preval([]);
+  
+  assertEquals(Integer, $result->functionReturnType().rawType);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testFilterTrueSimplification():Boolean[1]
+{
+  let input = {o:OrganizationalEntity[1]| $o.positions(%2023-01-01)->filter(p | false; true;).id};
+
+  let expected = {o:OrganizationalEntity[1]| $o.positions(%2023-01-01).id};
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testFilterTrueSimplification2():Boolean[1]
+{
+  let input = {o:OrganizationalEntity[1]| $o.positions(%2023-01-01)->filter(p | 1 == 1).id};
+
+  let expected = {o:OrganizationalEntity[1]| $o.positions(%2023-01-01).id};
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testFilterTrueConstantSimplification():Boolean[1]
+{
+  let input = {o:OrganizationalEntity[1]| let bool = true; let date = %2023-01-01; $o.positions($date)->filter(p | $bool).id;};
+
+  let expected = {o:OrganizationalEntity[1]| $o.positions(%2023-01-01).id};
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testFilterNoSimplification():Boolean[1]
+{
+  let input = {o:OrganizationalEntity[1]| $o.positions(%2023-01-01)->filter(p | $p.id == true).id};
+
+  let expected = {o:OrganizationalEntity[1]| $o.positions(%2023-01-01)->filter(p | $p.id == true).id};
+
+  assertRoundTrip($input, $expected);
+}
+
 function meta::pure::router::preeval::tests::getTestRuntimeWithModelConnection(sourceClass:Class<Any>[1], inputs:Any[*]):Runtime[1]
 {
   // Need element as string to allow roundtrip to pass. When using ^ModelStore(), preeval evaluates it to a instance, however expected as it as a new function
