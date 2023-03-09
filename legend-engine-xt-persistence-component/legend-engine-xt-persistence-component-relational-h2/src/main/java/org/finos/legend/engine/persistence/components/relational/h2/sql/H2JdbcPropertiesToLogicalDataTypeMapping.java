@@ -15,46 +15,47 @@
 package org.finos.legend.engine.persistence.components.relational.h2.sql;
 
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.relational.sql.JdbcPropertiesToLogicalDataTypeMapping;
 
 public class H2JdbcPropertiesToLogicalDataTypeMapping implements JdbcPropertiesToLogicalDataTypeMapping
 {
-    public DataType getDataType(String typeName, String dataType)
+    public FieldType getDataType(String typeName, String dataType, int columnSize, int decimalDigits)
     {
         switch (typeName)
         {
             case CHAR:
-                return DataType.CHAR;
+                return FieldType.builder().dataType(DataType.CHAR).length(columnSize).build();
             case VARCHAR:
-                return DataType.VARCHAR;
+                return FieldType.builder().dataType(DataType.VARCHAR).length(columnSize).build();
             case CLOB:
-                return DataType.LONGTEXT;
+                return FieldType.builder().dataType(DataType.LONGTEXT).length(columnSize).build();
             case VARBINARY:
-                return DataType.BINARY;
+                return FieldType.builder().dataType(DataType.BINARY).length(columnSize).build();
             case BOOLEAN:
-                return DataType.BOOLEAN;
+                return FieldType.builder().dataType(DataType.BOOLEAN).build();
             case TINYINT:
-                return DataType.TINYINT;
+                return FieldType.builder().dataType(DataType.TINYINT).build();
             case SMALLINT:
-                return DataType.SMALLINT;
+                return FieldType.builder().dataType(DataType.SMALLINT).build();
             case INTEGER:
-                return DataType.INTEGER;
+                return FieldType.builder().dataType(DataType.INTEGER).build();
             case BIGINT:
-                return DataType.BIGINT;
+                return FieldType.builder().dataType(DataType.BIGINT).build();
             case DECIMAL:
-                return DataType.DECIMAL;
+                return FieldType.builder().dataType(DataType.DECIMAL).length(columnSize).scale(decimalDigits).build();
             case REAL:
-                return DataType.REAL;
+                return FieldType.builder().dataType(DataType.REAL).build();
             case DOUBLE:
-                return DataType.DOUBLE;
+                return FieldType.builder().dataType(DataType.DOUBLE).build();
             case DATE:
-                return DataType.DATE;
+                return FieldType.builder().dataType(DataType.DATE).build();
             case TIME:
-                return DataType.TIME;
+                return FieldType.builder().dataType(DataType.TIME).scale(decimalDigits).build();
             case TIMESTAMP:
-                return DataType.TIMESTAMP;
+                return FieldType.builder().dataType(DataType.TIMESTAMP).scale(decimalDigits).build();
             case TIMESTAMP_WITH_TIME_ZONE:
-                return DataType.TIMESTAMPTZ;
+                return FieldType.builder().dataType(DataType.TIMESTAMPTZ).scale(decimalDigits).build();
             default:
                 throw new IllegalArgumentException("Unexpected values: JDBC TYPE_NAME " + typeName + ", JDBC DATA_TYPE: " + dataType);
         }

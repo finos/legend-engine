@@ -76,7 +76,6 @@ public class H2DataTypeMapping implements DataTypeMapping
                 break;
             case DATE:
                 dataType = new Date();
-                type.scale().ifPresent(dataType::setScale);
                 break;
             case REAL:
             case FLOAT:

@@ -109,12 +109,12 @@ public class SchemaEvolution
     private void validatePrimaryKeys(Dataset mainDataset, Dataset stagingDataset)
     {
         List<Field> stagingFilteredFields = stagingDataset.schema().fields().stream().filter(field -> !(ingestMode.accept(STAGING_TABLE_FIELDS_TO_IGNORE).contains(field.name()))).collect(Collectors.toList());
-        Set<Field> stagingPkKeys = stagingFilteredFields.stream().filter(field -> field.primaryKey()).collect(Collectors.toSet());
+        Set<String> stagingPkNames = stagingFilteredFields.stream().filter(Field::primaryKey).map(Field::name).collect(Collectors.toSet());
         List<Field> mainFilteredFields = mainDataset.schema().fields().stream().filter(field -> !(ingestMode.accept(MAIN_TABLE_FIELDS_TO_IGNORE).contains(field.name()))).collect(Collectors.toList());
-        Set<Field> mainPkKeys = mainFilteredFields.stream().filter(field -> field.primaryKey()).collect(Collectors.toSet());
-        if (stagingPkKeys.size() != mainPkKeys.size() || !Objects.equals(stagingPkKeys, mainPkKeys))
+        Set<String> mainPkNames = mainFilteredFields.stream().filter(Field::primaryKey).map(Field::name).collect(Collectors.toSet());
+        if (!Objects.equals(stagingPkNames, mainPkNames))
         {
-            throw new IncompatibleSchemaChangeException("Primary keys for main table has changed which is not allowed ");
+            throw new IncompatibleSchemaChangeException("Primary keys for main table has changed which is not allowed");
         }
     }
 
@@ -244,7 +244,7 @@ public class SchemaEvolution
         }
         else
         {
-            throw new IncompatibleSchemaChangeException(String.format("Column \"%s\" couldn't be made non-nullable since user capability does not allow it", newField.name()));
+            throw new IncompatibleSchemaChangeException(String.format("Column \"%s\" couldn't be made nullable since user capability does not allow it", newField.name()));
         }
     }
 

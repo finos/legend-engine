@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.relational.snowflake.sql;
 
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.relational.sql.JdbcPropertiesToLogicalDataTypeMapping;
 
 public class SnowflakeJdbcPropertiesToLogicalDataTypeMapping implements JdbcPropertiesToLogicalDataTypeMapping
@@ -22,7 +23,7 @@ public class SnowflakeJdbcPropertiesToLogicalDataTypeMapping implements JdbcProp
 
     // Reference: https://docs.snowflake.com/en/sql-reference/data-types.html
 
-    public DataType getDataType(String typeName, String dataType)
+    public FieldType getDataType(String typeName, String dataType, int columnSize, int decimalDigits)
     {
         switch (typeName)
         {
@@ -30,36 +31,36 @@ public class SnowflakeJdbcPropertiesToLogicalDataTypeMapping implements JdbcProp
                 switch (dataType)
                 {
                     case BIGINT:
-                        return DataType.BIGINT;
+                        return FieldType.builder().dataType(DataType.BIGINT).build();
                     case DECIMAL:
-                        return DataType.DECIMAL;
+                        return FieldType.builder().dataType(DataType.DECIMAL).length(columnSize).scale(decimalDigits).build();
                     default:
                         throw new IllegalArgumentException("Unexpected values: JDBC TYPE_NAME " + typeName + ", JDBC DATA_TYPE: " + dataType);
                 }
             case DOUBLE:
-                return DataType.DOUBLE;
+                return FieldType.builder().dataType(DataType.DOUBLE).build();
             case VARCHAR:
-                return DataType.VARCHAR;
+                return FieldType.builder().dataType(DataType.VARCHAR).length(columnSize).build();
             case BINARY:
-                return DataType.BINARY;
+                return FieldType.builder().dataType(DataType.BINARY).length(columnSize).build();
             case BOOLEAN:
-                return DataType.BOOLEAN;
+                return FieldType.builder().dataType(DataType.BOOLEAN).build();
             case DATE:
-                return DataType.DATE;
+                return FieldType.builder().dataType(DataType.DATE).build();
             case TIME:
-                return DataType.TIME;
+                return FieldType.builder().dataType(DataType.TIME).scale(decimalDigits).build();
             case TIMESTAMPNTZ:
-                return DataType.TIMESTAMP;
+                return FieldType.builder().dataType(DataType.TIMESTAMP).scale(decimalDigits).build();
             case TIMESTAMPLTZ:
-                return DataType.TIMESTAMP_LTZ;
+                return FieldType.builder().dataType(DataType.TIMESTAMP_LTZ).scale(decimalDigits).build();
             case TIMESTAMPTZ:
-                return DataType.TIMESTAMP_TZ;
+                return FieldType.builder().dataType(DataType.TIMESTAMP_TZ).scale(decimalDigits).build();
             case VARIANT:
-                return DataType.VARIANT;
+                return FieldType.builder().dataType(DataType.VARIANT).build();
             case OBJECT:
-                return DataType.MAP;
+                return FieldType.builder().dataType(DataType.MAP).build();
             case ARRAY:
-                return DataType.ARRAY;
+                return FieldType.builder().dataType(DataType.ARRAY).build();
             default:
                 throw new IllegalArgumentException("Unexpected values: JDBC TYPE_NAME " + typeName + ", JDBC DATA_TYPE: " + dataType);
         }

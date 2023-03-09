@@ -308,8 +308,7 @@ public class JdbcHelper
                 String isIdentity = columnResult.getString(IS_AUTOINCREMENT);
 
                 // Construct type
-                org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType logicalDataType = mapping.getDataType(typeName.toUpperCase(), dataType.toUpperCase());
-                FieldType fieldType = FieldType.of(logicalDataType, columnSize, decimalDigits);
+                FieldType fieldType = mapping.getDataType(typeName.toUpperCase(), dataType.toUpperCase(), columnSize, decimalDigits);
 
                 // Construct constraints
                 boolean nullable = isNullable.equals(BOOL_TRUE_STRING_VALUE);

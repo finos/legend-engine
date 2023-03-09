@@ -82,24 +82,12 @@ public class SnowflakeSink extends AnsiSqlSink
         Map<DataType, Set<DataType>> implicitDataTypeMapping = new HashMap<>();
         implicitDataTypeMapping.put(DataType.DECIMAL, new HashSet<>(Arrays.asList(DataType.TINYINT, DataType.SMALLINT, DataType.INTEGER, DataType.INT, DataType.BIGINT, DataType.FLOAT, DataType.DOUBLE, DataType.REAL)));
         implicitDataTypeMapping.put(DataType.DOUBLE, new HashSet<>(Arrays.asList(DataType.TINYINT, DataType.SMALLINT, DataType.INTEGER, DataType.INT, DataType.FLOAT, DataType.REAL)));
-        implicitDataTypeMapping.put(DataType.FLOAT, new HashSet<>(Arrays.asList(DataType.TINYINT, DataType.SMALLINT, DataType.INTEGER, DataType.INT, DataType.REAL)));
-        implicitDataTypeMapping.put(DataType.REAL, new HashSet<>(Arrays.asList(DataType.TINYINT, DataType.SMALLINT, DataType.INTEGER, DataType.INT, DataType.FLOAT, DataType.DOUBLE)));
         implicitDataTypeMapping.put(DataType.BIGINT, new HashSet<>(Arrays.asList(DataType.TINYINT, DataType.SMALLINT, DataType.INTEGER, DataType.INT)));
-        implicitDataTypeMapping.put(DataType.INTEGER, new HashSet<>(Arrays.asList(DataType.INT, DataType.TINYINT, DataType.SMALLINT)));
-        implicitDataTypeMapping.put(DataType.INT, new HashSet<>(Arrays.asList(DataType.INTEGER, DataType.TINYINT, DataType.SMALLINT)));
-        implicitDataTypeMapping.put(DataType.SMALLINT, Collections.singleton(DataType.TINYINT));
         implicitDataTypeMapping.put(DataType.VARCHAR, Collections.singleton(DataType.CHAR));
-        implicitDataTypeMapping.put(DataType.LONGTEXT, new HashSet<>(Arrays.asList(DataType.CHAR, DataType.VARCHAR)));
         IMPLICIT_DATA_TYPE_MAPPING = Collections.unmodifiableMap(implicitDataTypeMapping);
 
         Map<DataType, Set<DataType>> explicitDataTypeMapping = new HashMap<>();
-        explicitDataTypeMapping.put(DataType.TINYINT, new HashSet<>(Arrays.asList(DataType.SMALLINT, DataType.INTEGER, DataType.INT, DataType.BIGINT, DataType.FLOAT, DataType.DOUBLE, DataType.DECIMAL)));
-        explicitDataTypeMapping.put(DataType.SMALLINT, new HashSet<>(Arrays.asList(DataType.INTEGER, DataType.INT, DataType.BIGINT, DataType.FLOAT, DataType.DOUBLE, DataType.DECIMAL)));
-        explicitDataTypeMapping.put(DataType.INTEGER, new HashSet<>(Arrays.asList(DataType.BIGINT, DataType.FLOAT, DataType.DOUBLE, DataType.DECIMAL)));
-        explicitDataTypeMapping.put(DataType.INT, new HashSet<>(Arrays.asList(DataType.BIGINT, DataType.FLOAT, DataType.DOUBLE, DataType.DECIMAL)));
         explicitDataTypeMapping.put(DataType.BIGINT, Collections.singleton(DataType.DECIMAL));
-        explicitDataTypeMapping.put(DataType.FLOAT, new HashSet<>(Arrays.asList(DataType.DOUBLE, DataType.DECIMAL)));
-        explicitDataTypeMapping.put(DataType.REAL, new HashSet<>(Arrays.asList(DataType.DOUBLE, DataType.DECIMAL)));
         explicitDataTypeMapping.put(DataType.DOUBLE, Collections.singleton(DataType.DECIMAL));
         explicitDataTypeMapping.put(DataType.CHAR, new HashSet<>(Arrays.asList(DataType.VARCHAR, DataType.LONGTEXT)));
         explicitDataTypeMapping.put(DataType.VARCHAR, Collections.singleton(DataType.LONGTEXT));

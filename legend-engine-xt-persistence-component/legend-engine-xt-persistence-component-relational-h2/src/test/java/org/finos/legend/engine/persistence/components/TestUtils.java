@@ -108,8 +108,8 @@ public class TestUtils
     public static Field nullableName = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 64, null)).fieldAlias(nameName).build();
     public static Field nameWithMoreLength = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 256, null)).nullable(false).fieldAlias(nameName).build();
     public static Field income = Field.builder().name(incomeName).type(FieldType.of(DataType.BIGINT, Optional.empty(), Optional.empty())).fieldAlias(incomeName).build();
-    public static Field notNullableIntIncome = Field.builder().name(incomeName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).nullable(false).fieldAlias(incomeName).build();
-    public static Field nullableIntIncome = Field.builder().name(incomeName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(incomeName).build();
+    public static Field notNullableIntIncome = Field.builder().name(incomeName).type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty())).nullable(false).fieldAlias(incomeName).build();
+    public static Field nullableIntIncome = Field.builder().name(incomeName).type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty())).fieldAlias(incomeName).build();
     public static Field decimalIncome = Field.builder().name(incomeName).type(FieldType.of(DataType.DECIMAL, 10, 2)).fieldAlias(incomeName).build();
     public static Field startTime = Field.builder().name(startTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(startTimeName).build();
     public static Field expiryDate = Field.builder().name(expiryDateName).type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).fieldAlias(expiryDateName).build();
@@ -872,10 +872,9 @@ public class TestUtils
             .group(testSchemaName)
             .name(mainTableName)
             .schema(SchemaDefinition.builder()
-                .addFields(tinyIntId)
+                .addFields(id)
                 .addFields(name)
                 .addFields(income)
-                .addFields(startTime)
                 .addFields(expiryDate)
                 .addFields(digest)
                 .build())

@@ -192,7 +192,10 @@ public abstract class RelationalIngestorAbstract
         // Validate if main dataset schema matches the actual table
         if (executor.datasetExists(updatedDatasets.mainDataset()))
         {
-            validateMainDatasetSchema(updatedDatasets.mainDataset(), executor);
+            String tableName = updatedDatasets.mainDataset().datasetReference().name().orElseThrow(IllegalStateException::new);
+            String schemaName = updatedDatasets.mainDataset().datasetReference().group().orElse(null);
+            String databaseName = updatedDatasets.mainDataset().datasetReference().database().orElse(null);
+            updatedDatasets = updatedDatasets.withMainDataset(constructDatasetFromDatabase(executor, tableName, schemaName, databaseName));
         }
 
         // generate sql plans

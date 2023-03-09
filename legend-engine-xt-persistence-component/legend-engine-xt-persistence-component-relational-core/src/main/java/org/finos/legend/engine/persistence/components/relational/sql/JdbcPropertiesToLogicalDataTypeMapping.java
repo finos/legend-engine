@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.relational.sql;
 
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 
 public interface JdbcPropertiesToLogicalDataTypeMapping
 {
@@ -43,5 +43,5 @@ public interface JdbcPropertiesToLogicalDataTypeMapping
     public static String OBJECT = "OBJECT";
     public static String ARRAY = "ARRAY";
 
-    DataType getDataType(String typeName, String dataType);
+    FieldType getDataType(String typeName, String dataType, int columnSize, int decimalDigits);
 }

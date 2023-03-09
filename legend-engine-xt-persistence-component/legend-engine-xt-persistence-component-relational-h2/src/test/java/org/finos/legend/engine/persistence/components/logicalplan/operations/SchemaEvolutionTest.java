@@ -512,7 +512,7 @@ class SchemaEvolutionTest extends BaseTest
         }
         catch (IncompatibleSchemaChangeException e)
         {
-            Assertions.assertEquals("Primary keys for main table has changed which is not allowed ", e.getMessage());
+            Assertions.assertEquals("Primary keys for main table has changed which is not allowed", e.getMessage());
         }
     }
 }
