@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::*;
-import meta::external::store::mongodb::metamodel::runtime::*;
+import meta::external::store::mongodb::metamodel::pure::runtime::*;
 
 function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::store::mongodb::transformDatabaseConnection(otherConnection: MongoDBConnection[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::store::mongodb::connection::MongoDBConnection[1]
 {

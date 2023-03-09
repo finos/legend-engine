@@ -14,18 +14,15 @@
 
 package org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure;
 
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DatabaseCommand;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.runtime.DatabaseType;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.runtime.MongoDBDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 
-public class MongoDBExecutionNode extends ExecutionNode
+public class MongoDBConnection extends Connection
 {
-    public DatabaseCommand databaseCommand;
-    public MongoDBConnection mongoDBConnection;
-
-    @Override
-    public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)
-    {
-        return executionNodeVisitor.visit(this);
-    }
+    public DatabaseType type;
+    public MongoDBDatasourceSpecification dataSourceSpecification;
+    public AuthenticationSpecification authenticationSpecification;
+    public Boolean debug;
 }

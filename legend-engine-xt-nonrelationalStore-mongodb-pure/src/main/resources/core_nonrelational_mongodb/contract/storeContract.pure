@@ -18,9 +18,6 @@ import meta::external::store::mongodb::metamodel::aggregation::*;
 import meta::external::store::mongodb::functions::pureToDatabaseCommand::*;
 import meta::external::store::mongodb::runtime::*;
 import meta::pure::graphFetch::executionPlan::*;
-import meta::external::store::mongodb::metamodel::pure::*;
-import meta::external::store::mongodb::metamodel::*;
-import meta::external::store::mongodb::metamodel::runtime::*;
 import meta::pure::router::clustering::*;
 import meta::pure::mapping::modelToModel::*;
 import meta::pure::extension::*;
@@ -31,6 +28,9 @@ import meta::pure::executionPlan::*;
 import meta::external::store::mongodb::functions::pureToDatabaseCommand::*;
 import meta::external::store::mongodb::graphFetch::executionPlan::*;
 import meta::external::store::mongodb::contract::*;
+import meta::external::store::mongodb::metamodel::pure::*;
+import meta::external::store::mongodb::metamodel::*;
+import meta::external::store::mongodb::metamodel::pure::runtime::*;
 
 function meta::external::store::mongodb::contract::mongoDBStoreContract(): StoreContract[1]
 {

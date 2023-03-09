@@ -23,7 +23,7 @@ Enum meta::external::store::mongodb::metamodel::runtime::DatabaseType
   MongoDb
 }
 
-Class meta::external::store::mongodb::metamodel::runtime::MongoDBConnection extends Connection
+Class meta::external::store::mongodb::metamodel::pure::runtime::MongoDBConnection extends Connection
 [
    $this.element->instanceOf(MongoDatabase)
 ]

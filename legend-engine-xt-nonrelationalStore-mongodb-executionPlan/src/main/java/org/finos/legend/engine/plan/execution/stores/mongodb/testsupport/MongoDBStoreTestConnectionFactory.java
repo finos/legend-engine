@@ -16,7 +16,7 @@ package org.finos.legend.engine.plan.execution.stores.mongodb.testsupport;
 
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDatabase;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.runtime.MongoDBConnection;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;

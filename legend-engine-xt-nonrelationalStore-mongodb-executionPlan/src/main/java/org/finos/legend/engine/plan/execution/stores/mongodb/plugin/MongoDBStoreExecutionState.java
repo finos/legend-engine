@@ -57,24 +57,29 @@ public class MongoDBStoreExecutionState implements StoreExecutionState
     @Override
     public ExecutionNodeVisitor<Result> getVisitor(MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
-        return null;
+        return new MongoDBExecutionNodeExecutor(profiles, executionState);
     }
 
     @Override
     public StoreExecutionState copy()
     {
-        return null;
+        return new MongoDBStoreExecutionState(this.state, this.runtimeContext, this.credentialProviderProvider);
     }
 
     @Override
     public RuntimeContext getRuntimeContext()
     {
-        return null;
+        return this.runtimeContext;
     }
 
     @Override
     public void setRuntimeContext(RuntimeContext runtimeContext)
     {
+        this.runtimeContext = runtimeContext;
+    }
 
+    public CredentialProviderProvider getCredentialProviderProvider()
+    {
+        return credentialProviderProvider;
     }
 }

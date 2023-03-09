@@ -50,9 +50,9 @@ public class MongoDBStoreExecutorConfiguration implements StoreExecutorConfigura
 
         public MongoDBStoreExecutorConfiguration build()
         {
-            MongoDBStoreExecutorConfiguration serviceStoreExecutionConfiguration = new MongoDBStoreExecutorConfiguration();
-            serviceStoreExecutionConfiguration.credentialProviderProvider = credentialProviderProvider;
-            return serviceStoreExecutionConfiguration;
+            MongoDBStoreExecutorConfiguration mongoDBStoreExecutionConfiguration = new MongoDBStoreExecutorConfiguration();
+            mongoDBStoreExecutionConfiguration.credentialProviderProvider = credentialProviderProvider;
+            return mongoDBStoreExecutionConfiguration;
         }
     }
 

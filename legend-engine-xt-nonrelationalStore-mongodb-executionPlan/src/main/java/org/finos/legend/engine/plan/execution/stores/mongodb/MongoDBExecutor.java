@@ -27,7 +27,7 @@ import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
 import org.finos.legend.engine.plan.execution.result.InputStreamResult;
 import org.finos.legend.engine.plan.execution.stores.mongodb.auth.MongoDBConnectionSpecification;
 import org.finos.legend.engine.plan.execution.stores.mongodb.auth.MongoDBStoreConnectionProvider;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.runtime.MongoDBConnection;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential;
 
