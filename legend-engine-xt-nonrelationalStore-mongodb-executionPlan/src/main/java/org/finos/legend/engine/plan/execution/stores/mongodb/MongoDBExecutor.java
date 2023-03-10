@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.mongodb;
 
-import com.mongodb.MongoClient;
+import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;

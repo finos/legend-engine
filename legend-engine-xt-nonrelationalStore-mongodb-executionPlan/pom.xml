@@ -165,6 +165,18 @@
             <groupId>org.mongodb</groupId>
             <artifactId>bson</artifactId>
         </dependency>
+        <dependency>
+            <groupId>de.bwaldvogel</groupId>
+            <artifactId>mongo-java-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>de.bwaldvogel</groupId>
+            <artifactId>mongo-java-server-core</artifactId>
+        </dependency>
+        <dependency>
+        <groupId>de.bwaldvogel</groupId>
+        <artifactId>mongo-java-server-memory-backend</artifactId>
+        </dependency>
         <!-- Mongo DB-->
 
         <!-- ECLIPSE COLLECTIONS -->
@@ -178,11 +190,13 @@
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
 
+        <!-- Logging -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Logging -->
 
 
         <!-- TEST -->
@@ -207,6 +221,7 @@
             <artifactId>legend-engine-language-pure-grammar</artifactId>
             <scope>test</scope>
         </dependency>
+
         <!--
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

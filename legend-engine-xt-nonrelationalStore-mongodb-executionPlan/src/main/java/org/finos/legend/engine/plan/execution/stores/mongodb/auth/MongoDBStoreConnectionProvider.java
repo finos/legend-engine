@@ -14,11 +14,11 @@
 
 package org.finos.legend.engine.plan.execution.stores.mongodb.auth;
 
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientOptions;
+import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
-import org.eclipse.collections.api.factory.Lists;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
 import org.finos.legend.connection.ConnectionProvider;
 import org.finos.legend.connection.ConnectionSpecification;
@@ -49,7 +49,6 @@ public class MongoDBStoreConnectionProvider extends ConnectionProvider<MongoClie
         MongoDBConnectionSpecification mongoDBConnectionSpec = (MongoDBConnectionSpecification) connectionSpec;
         UserPasswordAuthenticationSpecification userPasswordAuthSpec = (UserPasswordAuthenticationSpecification) authenticationSpec;
 
-        MongoClientOptions options = MongoClientOptions.builder().applicationName("Legend Execution Server").build();
 
         Credential credential = super.makeCredential(userPasswordAuthSpec, identity);
 
@@ -63,9 +62,13 @@ public class MongoDBStoreConnectionProvider extends ConnectionProvider<MongoClie
 
         MongoCredential cred = MongoCredential.createCredential(plaintextUserPasswordCredential.getUser(), mongoDBConnectionSpec.getDatabaseName(),
                 plaintextUserPasswordCredential.getPassword().toCharArray());
-
         List<ServerAddress> serverAddresses = mongoDBConnectionSpec.getServerAddresses();
-        MongoClient mongoClient = new MongoClient(serverAddresses, Lists.mutable.of(cred), options);
+
+        MongoClientSettings clientSettings = MongoClientSettings.builder()
+                .applyToClusterSettings(builder -> builder.hosts(serverAddresses))
+                .applicationName("Legend Execution Server")
+                .credential(cred).build();
+        com.mongodb.client.MongoClient mongoClient = MongoClients.create(clientSettings);
 
 
         return mongoClient;

@@ -15,15 +15,22 @@
 package org.finos.legend.engine.plan.execution.stores.mongodb.testsupport;
 
 import org.eclipse.collections.api.tuple.Pair;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDatabase;
+import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.impl.tuple.Tuples;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.data.MongoDBStoreEmbeddedData;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDatabase;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.runtime.MongoDBDatasourceSpecification;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.runtime.MongoDBURL;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
+import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 
 import java.io.Closeable;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,29 +40,35 @@ public class MongoDBStoreTestConnectionFactory implements ConnectionFactoryExten
     {
         // TODO : Implement test connection to in-memory instance + load data.
 
-//        if (sourceConnection instanceof MongoDBConnection && data instanceof ServiceStoreEmbeddedData)
-//        {
-//            String localHostUrl = "http://127.0.0.1";
-//            int port = DynamicPortGenerator.generatePort();
-//
-//            ServiceStoreConnection testConnection = new ServiceStoreConnection();
-//            testConnection.element = sourceConnection.element;
-//            testConnection.baseUrl = localHostUrl + ":" + port;
-//
-//            WireMockServer testServer = new TestServerSetupHelper((ServiceStoreEmbeddedData) data, port).setupTestServerWithData();
-//
-//            Closeable closeable = new Closeable()
-//            {
-//                @Override
-//                public void close() throws IOException
-//                {
-//                    testServer.stop();
-//                }
-//            };
-//
-//            return Optional.of(Tuples.pair(testConnection, Collections.singletonList(closeable)));
-//        }
-//        return Optional.empty();
+
+        if (sourceConnection instanceof MongoDBConnection && data instanceof MongoDBStoreEmbeddedData)
+        {
+
+            MongoDBConnection testConnection = new MongoDBConnection();
+            testConnection.element = sourceConnection.element;
+
+            InMemoryMongoDBSetupHelper inMemoryServer = new InMemoryMongoDBSetupHelper();
+
+            MongoDBDatasourceSpecification testDataSourceSpec = ((MongoDBConnection) sourceConnection).dataSourceSpecification;
+
+            MongoDBURL serverUrl = new MongoDBURL();
+            serverUrl.baseUrl = inMemoryServer.baseUrl;
+            serverUrl.port = inMemoryServer.port;
+            testDataSourceSpec.serverURLs = Lists.mutable.of(serverUrl);
+            testConnection.dataSourceSpecification = testDataSourceSpec;
+
+            inMemoryServer.setupData((MongoDBStoreEmbeddedData) data);
+            Closeable closeable = new Closeable()
+            {
+                @Override
+                public void close()
+                {
+                    inMemoryServer.cleanUp();
+                }
+            };
+
+            return Optional.of(Tuples.pair(testConnection, Collections.singletonList(closeable)));
+        }
 
         return Optional.empty();
     }
