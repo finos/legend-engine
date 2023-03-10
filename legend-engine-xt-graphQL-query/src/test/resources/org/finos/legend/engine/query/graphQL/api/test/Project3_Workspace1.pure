@@ -1,30 +1,48 @@
-###Connection
-RelationalDatabaseConnection demo::Connection
-{
-  store: demo::Store;
-  type: H2;
-  specification: LocalH2
-  {
-    testDataSetupSqls: [
-      'DROP TABLE IF EXISTS firm;\nCREATE TABLE firm ( id INTEGER PRIMARY KEY, legalName VARCHAR(50), isPublicEntity BIT, stockValue NUMERIC(20,2));\nINSERT INTO firm (id,legalName,isPublicEntity,stockValue) VALUES (1,\'Firm 1\',false,200000.45);\nINSERT INTO firm (id,legalName) VALUES (2,\'Firm 2\');\nINSERT INTO firm (id,legalName) VALUES (3,\'Firm 3\');\nDROP TABLE IF EXISTS employee;\nCREATE TABLE employee ( id INTEGER PRIMARY KEY, firstName VARCHAR(50), lastName VARCHAR(50), firm_id INTEGER, date_of_birth TIMESTAMP, date_of_joining DATE, date_of_leaving TIMESTAMP);\nINSERT INTO employee (id,firstName,lastName,firm_id,date_of_birth,date_of_joining,date_of_leaving) VALUES (1,\'firstName 1\',\'lastName 1\',1,parsedatetime(\'01-01-2000 18:47:52.69\', \'dd-MM-yyyy hh:mm:ss.SS\'),parsedatetime(\'01-01-2021 10:00:00.00\', \'dd-MM-yyyy\'),parsedatetime(\'01-01-2023 18:47:52.69\', \'dd-MM-yyyy hh:mm:ss.SS\'));\nINSERT INTO employee (id,firstName,lastName,firm_id) VALUES (2,\'firstName 2\',\'lastName 2\',1);\nINSERT INTO employee (id,firstName,lastName,firm_id) VALUES (3,\'firstName 3\',\'lastName 3\',2);\nINSERT INTO employee (id,firstName,lastName,firm_id) VALUES (4,\'firstName 4\',\'lastName 3\',3);\n'
-      ];
-  };
-  auth: DefaultH2;
-}
-
-
 ###Runtime
-Runtime demo::Runtime
+Runtime simple::runtime::Runtime
 {
-  mappings:
-  [
-    demo::Mapping
-  ];
-  connections:
-  [
-    demo::Store:
+    mappings :
     [
-      connection_1: demo::Connection
-    ]
-  ];
+        simple::mapping::Map
+    ];
+    connections :
+    [
+        simple::store::DB :
+        [
+            connection_1 : #{
+                RelationalDatabaseConnection {
+                    store: simple::store::DB;
+                    type: H2;
+                    specification: LocalH2{
+                        testDataSetupSqls: [
+                            'DROP TABLE IF EXISTS PERSON_TABLE;',
+                            'CREATE TABLE PERSON_TABLE(ID INT PRIMARY KEY, FIRST_NAME VARCHAR(100), LAST_NAME VARCHAR(100), FIRM_ID INT);',
+                            'INSERT INTO PERSON_TABLE(ID,FIRST_NAME,LAST_NAME,FIRM_ID) VALUES (1,\'Peter\',\'Smith\',1);',
+                            'INSERT INTO PERSON_TABLE(ID,FIRST_NAME,LAST_NAME,FIRM_ID) VALUES (2,\'John\',\'Johnson\',1);',
+                            'INSERT INTO PERSON_TABLE(ID,FIRST_NAME,LAST_NAME,FIRM_ID) VALUES (3,\'John\',\'Hill\',1);',
+                            'INSERT INTO PERSON_TABLE(ID,FIRST_NAME,LAST_NAME,FIRM_ID) VALUES (4,\'Anthony\',\'Allen\',1)',
+                            'INSERT INTO PERSON_TABLE(ID,FIRST_NAME,LAST_NAME,FIRM_ID) VALUES (5,\'Fabrice\',\'Roberts\',2)',
+                            'INSERT INTO PERSON_TABLE(ID,FIRST_NAME,LAST_NAME,FIRM_ID) VALUES (6,\'Oliver\',\'Hill\',3)',
+                            'INSERT INTO PERSON_TABLE(ID,FIRST_NAME,LAST_NAME,FIRM_ID) VALUES (7,\'David\',\'Harris\',3)',
+                            'DROP TABLE IF EXISTS FIRM_TABLE;',
+                            'CREATE TABLE FIRM_TABLE(ID INT PRIMARY KEY, LEGAL_NAME VARCHAR(100));',
+                            'INSERT INTO FIRM_TABLE(ID,LEGAL_NAME) VALUES (1,\'Firm X\');',
+                            'INSERT INTO FIRM_TABLE(ID,LEGAL_NAME) VALUES (2,\'Firm A\');',
+                            'INSERT INTO FIRM_TABLE(ID,LEGAL_NAME) VALUES (3,\'Firm B\');',
+                            'DROP TABLE IF EXISTS ADDRESS_TABLE;',
+                            'CREATE TABLE ADDRESS_TABLE(ID INT PRIMARY KEY, PERSON_ID INT, LINE1 VARCHAR(100));',
+                            'INSERT INTO ADDRESS_TABLE(ID, PERSON_ID, LINE1) VALUES (100, 1, \'peter address\');',
+                            'INSERT INTO ADDRESS_TABLE(ID, PERSON_ID, LINE1) VALUES (101, 2, \'John address\');',
+                            'INSERT INTO ADDRESS_TABLE(ID, PERSON_ID, LINE1) VALUES (102, 3, \'John hill address\');',
+                            'INSERT INTO ADDRESS_TABLE(ID, PERSON_ID, LINE1) VALUES (103, 4, \'Anthony address\');',
+                            'INSERT INTO ADDRESS_TABLE(ID, PERSON_ID, LINE1) VALUES (104, 5, \'Fabrice address\');',
+                            'INSERT INTO ADDRESS_TABLE(ID, PERSON_ID, LINE1) VALUES (105, 6, \'Oliver address\');',
+                            'INSERT INTO ADDRESS_TABLE(ID, PERSON_ID, LINE1) VALUES (106, 7, \'David address\');'
+                        ];
+                    };
+                    auth: Test;
+                }
+            }#
+        ]
+    ];
 }
