@@ -2436,7 +2436,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::execution::testSQLComme
 {
    let plan = executionPlan({|Person.all()->project(col(p|$p.firstName, 'firstName'))}, simpleRelationalMapping, meta::relational::tests::testRuntime(), relationalExtensions());
    let sqlComment = $plan.rootExecutionNode->allNodes(relationalExtensions())->filter(node | $node->instanceOf(SQLExecutionNode))->cast(@SQLExecutionNode).sqlComment;
-   assertEquals('-- executionTraceID : ${execID}', $sqlComment);
+   assertEquals('-- {"executionTraceID" : "${execID}"}', $sqlComment);
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::testSupportStreamFlagGraphFetchSimple():Boolean[1]
