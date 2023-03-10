@@ -314,7 +314,7 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
         let routedValueSpecForReturnClass = 
             if($returnClass->isEmpty(), 
                 | [], 
-                | if($f == getAll_Class_1__T_MANY_ || $f == getAllVersions_Class_1__T_MANY_ || $f == getAll_Class_1__Date_1__T_MANY_ || $f == getAll_Class_1__Date_1__Date_1__T_MANY_ || $f == getAllVersionsInRange_Class_1__Date_1__Date_1__T_MANY_ || $f == getAllForEachDate_Class_1__Date_MANY__T_MANY_,
+                | if(isGetAllFunction($f),
                     |$routed->filter(v|let ta = $v.value.genericType.typeArguments;
                                        $ta->isNotEmpty() && $ta->at(0).rawType->toOne()->_subTypeOf($returnClass->toOne());),
                     |$newSet->filter(v|if ($v.value.genericType.rawType == Property || $v.value.genericType.rawType == Path,
@@ -367,7 +367,7 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                     print(if($debug.debug,|$debug.space+'~>NQS) ('+$lastSecondPass.routingStrategy.toString()+') '+$possiblyWrapperd->evaluateAndDeactivate()->asString()+'\n',|''));
                     let shouldBeRouted = if($f == letFunction_String_1__T_m__T_m_,
                                             |false,
-                                            |$lastSecondPass.shouldBeRouted || $f == getAll_Class_1__T_MANY_ || $f == getAllVersions_Class_1__T_MANY_ || $f==getAll_Class_1__Date_1__T_MANY_ || $f==getAll_Class_1__Date_1__Date_1__T_MANY_ || $f == getAllVersionsInRange_Class_1__Date_1__Date_1__T_MANY_ || $f == getAllForEachDate_Class_1__Date_MANY__T_MANY_);
+                                            |$lastSecondPass.shouldBeRouted || isGetAllFunction($f));
                     ^$lastSecondPass(shouldBeRouted = $shouldBeRouted, value=$possiblyWrapperd, pathPrefix=$state.pathPrefix);,
                   | let newVars = $fullRes->mapVariables(newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>)),$inScopeVars);
                     assert($f->cast(@FunctionDefinition<Any>).expressionSequence->size() <= 1, | 'Function ' +$f->cast(@FunctionDefinition<Any>)->elementToPath() + ' is not yet supported as functions with more than one expression can not be routed');
@@ -562,6 +562,11 @@ function meta::pure::router::routing::varToString(a:Any[1]):String[1]
               k:KeyExpression[1]|'',
               a:Any[1] | $a->toString()
             ])
+}
+
+function meta::pure::router::routing::isGetAllFunction(f:Function<Any>[1]):Boolean[1]
+{
+  $f == getAll_Class_1__T_MANY_ || $f == getAllVersions_Class_1__T_MANY_ || $f == getAll_Class_1__Date_1__T_MANY_ || $f == getAll_Class_1__Date_1__Date_1__T_MANY_ || $f == getAllVersionsInRange_Class_1__Date_1__Date_1__T_MANY_ || $f == getAllForEachDate_Class_1__Date_MANY__T_MANY_
 }
 
 function meta::pure::router::routing::shouldStop(f:Function<Any>[1], extensions:meta::pure::extension::Extension[*]):Boolean[1]
