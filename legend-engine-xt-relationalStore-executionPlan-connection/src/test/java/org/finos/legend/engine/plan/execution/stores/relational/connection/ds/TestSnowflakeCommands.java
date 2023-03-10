@@ -42,7 +42,7 @@ public class TestSnowflakeCommands
                 "CREATE TEMPORARY TABLE temp_1 (a VARCHAR(100),b VARCHAR(100))",
                 "CREATE OR REPLACE TEMPORARY STAGE LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE",
                 "PUT file:///tmp/temp.csv @LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE//tmp/temp.csv PARALLEL = 16 AUTO_COMPRESS = TRUE",
-                "COPY INTO temp_1 FROM @LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE file_format = (type = CSV field_optionally_enclosed_by= '\"')",
+                "COPY INTO temp_1 FROM @LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE//tmp/temp.csv file_format = (type = CSV field_optionally_enclosed_by= '\"')",
                 "DROP STAGE LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE"
         );
         assertEquals(expectedSQLStatements, sqlStatements);
