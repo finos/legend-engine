@@ -52,10 +52,10 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Collections;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -160,20 +160,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Snowf
     @Ignore
     public void testTempTableHandlingWithRawJDBC() throws Exception
     {
-        Class.forName("net.snowflake.client.jdbc.SnowflakeDriver");
-
-        Properties properties = new Properties();
-        properties.put("ocspFailOpen", "true");
-        properties.put("account", "ki79827");
-        properties.put("warehouse", "LEGENDRO_WH");
-        properties.put("db", "LEGEND_TEMP_DB");
-        properties.put("schema", "LEGEND_TEMP_SCHEMA");
-        properties.put("role", "LEGEND_INTEGRATION_ROLE1");
-        properties.put("user", "GITHUB_EPSSTAN");
-        properties.put("password", "xxxxx!");
-        //properties.put("privateKey", "xxxxx");
-        String url = "jdbc:snowflake://ki79827.us-east-2.aws.snowflakecomputing.com";
-        Connection connection = DriverManager.getConnection(url, properties);
+        Connection connection = getSnowflakeConnection();
 
         String data = Lists.immutable.of("1", "2", "3").makeString("\n");
         Path tempPath = Files.createTempFile("temp", "temp").toAbsolutePath();
@@ -188,10 +175,69 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Snowf
         );
 
         Statement statement = connection.createStatement();
-        for (String sql : sqls)
-        {
+        for (String sql : sqls) {
             System.out.println("Executing " + sql);
             statement.execute(sql);
         }
     }
+
+
+    @Ignore
+    public void testSnowflakeCopyPerformance() throws Exception {
+        try (Connection connection = getSnowflakeConnection()) {
+
+            String data = Lists.immutable.of("1", "2", "3").makeString("\n");
+            Path tempPath = Files.createTempFile("temp", "temp").toAbsolutePath();
+            Files.write(tempPath, data.getBytes(), StandardOpenOption.APPEND);
+
+            Statement statement = connection.createStatement();
+
+            statement.execute("CREATE OR REPLACE TEMPORARY STAGE LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE");
+            statement.execute("PUT file://" + tempPath.toAbsolutePath().toString() + " @LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE//tmp/temp.csv PARALLEL = 16 AUTO_COMPRESS = TRUE");
+
+            System.out.println("Setup complete. Running tests");
+            List<Double> timeA = new ArrayList<>();
+            List<Double> timeB = new ArrayList<>();
+
+            for (int i = 0; i < 1000; i++) {
+                statement.execute("CREATE OR REPLACE TEMPORARY TABLE temp_1 (a VARCHAR(100))");
+                long time = System.nanoTime();
+                statement.execute("COPY INTO temp_1 FROM @LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE file_format = (type = CSV field_optionally_enclosed_by= '\"')");
+                time = System.nanoTime() - time;
+                timeA.add(time / 1.0e9);
+
+                time = System.nanoTime();
+                statement.execute("COPY INTO temp_1 FROM @LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE//tmp/temp.csv file_format = (type = CSV field_optionally_enclosed_by= '\"')");
+                time = System.nanoTime() - time;
+                timeB.add(time / 1.0e9);
+
+            }
+            DoubleSummaryStatistics statsA = timeA.stream().collect(Collectors.summarizingDouble(Double::doubleValue));
+            DoubleSummaryStatistics statsB = timeB.stream().collect(Collectors.summarizingDouble(Double::doubleValue));
+
+            System.out.println("Stats for version A: " + statsA);
+            System.out.println("Stats for version B: " + statsB);
+
+            statement.execute("DROP STAGE LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE");
+        }
+    }
+
+    private static Connection getSnowflakeConnection() throws ClassNotFoundException, SQLException {
+        Class.forName("net.snowflake.client.jdbc.SnowflakeDriver");
+
+        Properties properties = new Properties();
+        properties.put("ocspFailOpen", "true");
+        properties.put("account", "ki79827");
+        properties.put("warehouse", "LEGENDRO_WH");
+        properties.put("db", "LEGEND_TEMP_DB");
+        properties.put("schema", "LEGEND_TEMP_SCHEMA");
+        properties.put("role", "LEGEND_INTEGRATION_ROLE1");
+        properties.put("user", "GITHUB_EPSSTAN");
+        properties.put("password", "xxxxx!");
+        //properties.put("privateKey", "xxxxx");
+        String url = "jdbc:snowflake://ki79827.us-east-2.aws.snowflakecomputing.com";
+        Connection connection = DriverManager.getConnection(url, properties);
+        return connection;
+    }
+
 }
