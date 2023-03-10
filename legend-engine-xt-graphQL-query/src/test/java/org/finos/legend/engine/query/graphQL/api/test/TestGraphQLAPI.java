@@ -507,7 +507,8 @@ public class TestGraphQLAPI
         Assert.assertEquals("{\"data\":{\"firmByLegalName\":{\"legalName\":\"Firm A\",\"employees\":[{\"firstName\":\"Fabrice\",\"lastName\":\"Roberts\",\"address\":{\"line1\":\"Fabrice address\"}}]}}}", responseAsString(response2));
     }
 
-    private static Handler buildPMCDMetadataHandler(String path, String resourcePath) throws Exception {
+    private static Handler buildPMCDMetadataHandler(String path, String resourcePath) throws Exception
+    {
         return buildPMCDMetadataHandler(path, resourcePath, null, null);
     }
 
@@ -531,7 +532,8 @@ public class TestGraphQLAPI
         return contextHandler;
     }
 
-    private static Handler buildJsonHandler(String path, String json){
+    private static Handler buildJsonHandler(String path, String json)
+    {
         ContextHandler contextHandler = new ContextHandler(path);
         AbstractHandler handler = new AbstractHandler()
         {
