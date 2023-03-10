@@ -16,11 +16,17 @@ package org.finos.legend.engine.language.pure.compiler.test;
 
 import org.junit.Test;
 
-public class TestEmbeddedRelationalCompilationFromProtocol extends TestCompilationFromProtocol.TestCompilationFromProtocolTestSuite
+public class TestRelationalCompilationFromProtocol extends TestCompilationFromProtocol.TestCompilationFromProtocolTestSuite
 {
     @Test
     public void testEmbeddedMappingWithCorrectIdSetForClassMapping()
     {
         testWithProtocolPath("simpleEmbeddedMapping.json");
+    }
+
+    @Test
+    public void testMappingWithPropertyFromAssociation()
+    {
+        testWithProtocolPath("mappingWithMappedPropertyFromAssociation.json");
     }
 }
