@@ -649,11 +649,13 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             if (!statement.isClosed())
             {
                 statement.cancel();
+                LOGGER.info(new LogInfo(null, LoggingEventType.EXECUTABLE_CANCELLATION, "Successful cancellation of  RelationalResult " + sessionID).toString());
+
             }
         }
-        catch (SQLException ignore)
+        catch (Exception e)
         {
-            //ignore when we can't cancel - either the JDBC driver doesn't support cancellation or the statement is already closed
+            LOGGER.info(new LogInfo(null, LoggingEventType.EXECUTABLE_CANCELLATION_ERROR, "Unable to cancel  RelationalResult  for session " + sessionID + " " + e.getMessage()).toString());
         }
     }
 }
