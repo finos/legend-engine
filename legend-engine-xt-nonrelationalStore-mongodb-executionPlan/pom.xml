@@ -165,10 +165,10 @@
             <groupId>org.mongodb</groupId>
             <artifactId>bson</artifactId>
         </dependency>
-        <dependency>
-            <groupId>de.bwaldvogel</groupId>
-            <artifactId>mongo-java-server</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>de.bwaldvogel</groupId>-->
+<!--            <artifactId>mongo-java-server</artifactId>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>de.bwaldvogel</groupId>
             <artifactId>mongo-java-server-core</artifactId>
@@ -191,6 +191,11 @@
         <!-- ECLIPSE COLLECTIONS -->
 
         <!-- Logging -->
+<!--        <dependency>-->
+<!--            <groupId>org.slf4j</groupId>-->
+<!--            <artifactId>slf4j-api</artifactId>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>

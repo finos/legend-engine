@@ -18,7 +18,6 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import de.bwaldvogel.mongo.InMemoryMongoServer;
 import de.bwaldvogel.mongo.MongoServer;
 import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
 import org.bson.Document;
@@ -28,8 +27,6 @@ import java.net.InetSocketAddress;
 
 public class InMemoryMongoDBSetupHelper
 {
-
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
     public final String baseUrl;
     public final int port;
     private final MongoServer mongoServer;
@@ -43,13 +40,11 @@ public class InMemoryMongoDBSetupHelper
 
         this.baseUrl = address.getHostName();
         this.port = address.getPort();
-        LOGGER.info("Started Mongo DB at {}:{}", this.baseUrl, this.port);
         Runtime.getRuntime().addShutdownHook(new Thread()
         {
             @Override
             public void run()
             {
-                LOGGER.debug("Shutting down In Memory MongoServer");
                 mongoServer.shutdown();
             }
         });
@@ -59,13 +54,14 @@ public class InMemoryMongoDBSetupHelper
     public void cleanUp()
     {
         this.mongoClient.close();
-        // this.mongoServer.shutdown();
+        this.mongoServer.shutdown();
     }
 
     public void setupData(MongoDBStoreEmbeddedData data)
     {
         String dbName = data.databaseName;
-        data.testData.stream().forEach(item -> {
+        data.testData.stream().forEach(item ->
+        {
             MongoDatabase database = this.mongoClient.getDatabase(dbName);
             MongoCollection<Document> collection = database.getCollection(item.collectionName);
             item.documents.forEach(doc -> collection.insertOne(Document.parse(doc)));
