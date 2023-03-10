@@ -386,7 +386,7 @@ public abstract class RelationalIngestorAbstract
                                                             Optional<DataSplitRange> dataSplitRange)
     {
         Map<String, String> placeHolderKeyValues = new HashMap<>();
-        Optional<Integer> nextBatchId = getNextBatchId(datasets, executor, transformer, ingestMode);
+        Optional<Long> nextBatchId = getNextBatchId(datasets, executor, transformer, ingestMode);
         if (nextBatchId.isPresent())
         {
             placeHolderKeyValues.put(BATCH_ID_PATTERN, nextBatchId.get().toString());
@@ -400,22 +400,32 @@ public abstract class RelationalIngestorAbstract
         return placeHolderKeyValues;
     }
 
-    private Optional<Integer> getNextBatchId(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor,
+    private Optional<Long> getNextBatchId(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor,
                                              Transformer<SqlGen, SqlPlan> transformer, IngestMode ingestMode)
     {
-        Optional<Integer> nextBatchId = Optional.empty();
         if (ingestMode.accept(IngestModeVisitors.IS_INGEST_MODE_TEMPORAL))
         {
             LogicalPlan logicalPlanForNextBatchId = LogicalPlanFactory.getLogicalPlanForNextBatchId(datasets);
             List<TabularData> tabularData = executor.executePhysicalPlanAndGetResults(transformer.generatePhysicalPlan(logicalPlanForNextBatchId));
-            nextBatchId = Optional.ofNullable((Integer) tabularData.stream()
+            Optional<Object> nextBatchId = Optional.ofNullable(tabularData.stream()
                 .findFirst()
                 .map(TabularData::getData)
                 .flatMap(t -> t.stream().findFirst())
                 .map(Map::values)
                 .flatMap(t -> t.stream().findFirst())
                 .orElseThrow(IllegalStateException::new));
+            if (nextBatchId.isPresent())
+            {
+                if (nextBatchId.get() instanceof Integer)
+                {
+                    return Optional.of(Long.valueOf((Integer) nextBatchId.get()));
+                }
+                if (nextBatchId.get() instanceof Long)
+                {
+                    return Optional.of((Long) nextBatchId.get());
+                }
+            }
         }
-        return nextBatchId;
+        return Optional.empty();
     }
 }
