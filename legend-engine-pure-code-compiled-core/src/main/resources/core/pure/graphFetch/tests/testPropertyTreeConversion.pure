@@ -562,7 +562,6 @@ function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::prop
                           pTree(Road,     [pTreeN(Road,'coordinates',Location),   pTreeN(Road,'road')])
                         ]);  
 
-  // {Location(coordinates, ->subtype(Street)(coordinates, street))}  {Location(coordinates, ->subtype(Street)(coordinates, street), ->subtype(Road)(coordinates, road))}
   let  expectedWithBaseClassOwner =
    'Location\n'+
       '(\n' +
