@@ -25,11 +25,24 @@ public class MongoDBQueryJsonComposer
 
     final String const_TypeValue = "\"_type\": \"databaseCommand\",";
 
+    private boolean withTypeIdentifier;
+
+    public MongoDBQueryJsonComposer()
+    {
+        this.withTypeIdentifier = true;
+    }
+
+    public MongoDBQueryJsonComposer(boolean withTypeIdentifier)
+    {
+        this.withTypeIdentifier = withTypeIdentifier;
+    }
+
     public String parseDatabaseCommand(DatabaseCommand databaseCommand)
     {
         String collectionName = databaseCommand.collectionName;
-        return "{ " + const_TypeValue + "\"aggregate\": \"" + collectionName + "\" , " + visitDatabaseCommand(databaseCommand) +
-                ", \"cursor\": {} }";
+        return withTypeIdentifier
+                ? "{ " + const_TypeValue + "\"aggregate\": \"" + collectionName + "\" , " + visitDatabaseCommand(databaseCommand) + ", \"cursor\": {} }"
+                : "{ \"aggregate\": \"" + collectionName + "\" , " + visitDatabaseCommand(databaseCommand) + ", \"cursor\": {} }";
     }
 
     private String visitDatabaseCommand(DatabaseCommand databaseCommand)

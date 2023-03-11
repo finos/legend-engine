@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::store::mongodb::*;
+import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::authentication::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::*;
 import meta::external::store::mongodb::metamodel::pure::runtime::*;
 
@@ -26,8 +28,31 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connectio
          ^meta::protocols::pure::vX_X_X::metamodel::store::mongodb::connection::MongoDBConnection(
                   _type = $_type,
                   element = $element,
-                  type = $type)
-
+                  dataSourceSpecification = $dbCon.dataSourceSpecification->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::store::mongodb::transformSourceSpec(),
+                  authenticationSpecification = $dbCon.authenticationSpecification->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::authentication::transformAuthenticationSpecification($extensions),
+                  type = $type
+                   )
       ]
     )->toOneMany());
+}
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::store::mongodb::transformSourceSpec(sourceSpec: meta::external::store::mongodb::metamodel::runtime::MongoDBDatasourceSpecification[1]):meta::protocols::pure::vX_X_X::metamodel::store::mongodb::connection::MongoDBDatasourceSpecification[1]
+{
+  ^meta::protocols::pure::vX_X_X::metamodel::store::mongodb::connection::MongoDBDatasourceSpecification(
+    serverURLs = meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::store::mongodb::transformServerURLs($sourceSpec.serverURLs),
+    databaseName = $sourceSpec.databaseName,
+    useSSL = $sourceSpec.useSSL,
+    connectionTimeoutMS = $sourceSpec.connectionTimeoutMS,
+    socketTimeoutMS = $sourceSpec.socketTimeoutMS,
+    maxIdleTimeMS = $sourceSpec.maxIdleTimeMS,
+    maxLifeTimeMS = $sourceSpec.maxLifeTimeMS,
+    maxPoolSize = $sourceSpec.maxPoolSize,
+    waitQueueMultiple = $sourceSpec.waitQueueMultiple,
+    waitQueueTimeoutMS = $sourceSpec.waitQueueTimeoutMS
+  )
+}
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::store::mongodb::transformServerURLs(urls: meta::external::store::mongodb::metamodel::runtime::MongoDBURL[1..*]):meta::protocols::pure::vX_X_X::metamodel::store::mongodb::connection::MongoDBURL[1..*]
+{
+  $urls->map(url | ^meta::protocols::pure::vX_X_X::metamodel::store::mongodb::connection::MongoDBURL(baseUrl = $url.baseUrl, port = $url.port));
 }

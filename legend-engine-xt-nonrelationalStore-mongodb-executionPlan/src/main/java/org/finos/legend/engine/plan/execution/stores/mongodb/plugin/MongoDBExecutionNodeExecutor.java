@@ -14,17 +14,32 @@
 
 package org.finos.legend.engine.plan.execution.stores.mongodb.plugin;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
+import org.finos.legend.engine.language.mongodb.schema.grammar.to.MongoDBQueryJsonComposer;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.plan.execution.stores.mongodb.MongoDBExecutor;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.BaseTypeValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DatabaseCommand;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.*;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AggregationAwareExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AllocationExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ConstantExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ErrorExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.FreeMarkerConditionalExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.FunctionParametersValidationNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.GraphFetchM2MExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.MultiResultSequenceExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.PureExpressionPlatformExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SequenceExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.LocalGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.StoreMappingGlobalGraphFetchExecutionNode;
@@ -33,6 +48,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphF
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryRootGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.StoreStreamReadingExecutionNode;
 import org.pac4j.core.profile.CommonProfile;
+
+import java.io.IOException;
 
 public class MongoDBExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 {
@@ -54,11 +71,20 @@ public class MongoDBExecutionNodeExecutor implements ExecutionNodeVisitor<Result
             {
                 scope.span().setTag("databaseCommand", ((MongoDBExecutionNode) executionNode).databaseCommand.toString());
                 MongoDBExecutionNode node = (MongoDBExecutionNode) executionNode;
+                MongoDBConnection mongoDBConnection = node.connection;
+                String databaseCommand = node.databaseCommand;
 
-                String databaseCommand = node.databaseCommand.toString();
-                MongoDBConnection mongoDBConnection = node.mongoDBConnection;
+                ObjectMapper objectMapper = new ObjectMapper();
+                DatabaseCommand dbCommand = objectMapper.readValue(databaseCommand, DatabaseCommand.class);
+                MongoDBQueryJsonComposer mongoDBQueryJsonComposer = new MongoDBQueryJsonComposer(false);
+                String composedDbCommand = mongoDBQueryJsonComposer.parseDatabaseCommand(dbCommand);
+
                 CredentialProviderProvider credentialProviderProvider = ((MongoDBStoreExecutionState) executionState.getStoreExecutionState(StoreType.NonRelational_MongoDB)).getCredentialProviderProvider();
-                return new MongoDBExecutor(credentialProviderProvider).executeMongoDBQuery(databaseCommand, mongoDBConnection);
+                return new MongoDBExecutor(credentialProviderProvider).executeMongoDBQuery(composedDbCommand, mongoDBConnection);
+            }
+            catch (IOException e)
+            {
+                throw new IllegalStateException("Failed to parse databaseCommand from Mongo executionNode", e);
             }
         }
         else

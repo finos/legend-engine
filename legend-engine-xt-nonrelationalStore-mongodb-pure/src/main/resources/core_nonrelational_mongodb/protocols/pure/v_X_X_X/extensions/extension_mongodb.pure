@@ -21,8 +21,9 @@ import meta::pure::mapping::*;
 
 import meta::external::store::mongodb::metamodel::*;
 import meta::external::store::mongodb::metamodel::runtime::*;
-import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::mongodb::*;
 import meta::external::store::mongodb::graphFetch::executionPlan::*;
+//import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::mongodb::*;
+import meta::protocols::pure::vX_X_X::extension::store::mongodb::*;
 import meta::protocols::pure::vX_X_X::metamodel::executionPlan::*;
 import meta::external::store::mongodb::runtime::connections::*;
 
@@ -46,14 +47,30 @@ function meta::protocols::pure::vX_X_X::extension::store::mongodb::getMongoDBSto
         men:meta::external::store::mongodb::metamodel::pure::MongoDBExecutionNode[1]|
 
                 ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::mongodb::MongoDBExecutionNode(
-                           _type = 'mongoDBExecutionNode',
+                           _type = 'MongoDBExecutionNode',
                            resultType = $men.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
-                           databaseCommand = meta::json::toJSON($men.databaseCommand->toJSONElement([], 1000, meta::json::config(true, true, true, true, '_type', false)), 1000),
+                           //databaseCommand = meta::json::toJSON($men.databaseCommand, 1000, meta::json::config(true, true, true, true, '_type', false)),
+                           databaseCommand = $men.databaseCommand->getDatabaseCommandJSON(),
                            connection = $men.connection->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::store::mongodb::transformDatabaseConnection($extensions)
               );
           ];
        }
    )
+}
+
+
+function meta::protocols::pure::vX_X_X::extension::store::mongodb::getDatabaseCommandJSON(databaseCommand: meta::external::store::mongodb::metamodel::aggregation::DatabaseCommand[1]): String[1]
+{
+    // MongoDBOperationElement
+    let config = meta::json::config(true, true, true, true, '_type', false);
+    let customSerializers = [
+    {
+        m: MongoDBOperationElement[1], s: meta::json::JSONState[1] |
+        let elem = meta::json::anyToJSON($m, $s, 1000, $config)->cast(@meta::json::JSONObject);
+        ^$elem(keyValuePairs += meta::json::newJSONKeyValue('_type', ^meta::json::JSONString(value = $m->class().name->toLowerFirstCharacter()->toOne())));
+    }
+    ];
+    meta::json::toJSON($databaseCommand, $customSerializers, 1000, $config);
 }
 
 function meta::protocols::pure::vX_X_X::extension::store::mongodb::mongoDBModuleSerializerExtension(): meta::protocols::pure::vX_X_X::extension::store::mongodb::MongoDBModuleSerializerExtension[1]

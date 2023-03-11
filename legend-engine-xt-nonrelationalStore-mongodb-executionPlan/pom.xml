@@ -131,6 +131,10 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-nonrelationalStore-mongodb-grammar</artifactId>
+        </dependency>
         <!-- ENGINE -->
 
 
@@ -190,6 +194,17 @@
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
 
+        <!-- Jackson -->
+<!--        <dependency>-->
+<!--            <groupId>com.fasterxml.jackson.core</groupId>-->
+<!--            <artifactId>jackson-core</artifactId>-->
+<!--        </dependency>-->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <!-- Jackson -->
+
         <!-- Logging -->
 <!--        <dependency>-->
 <!--            <groupId>org.slf4j</groupId>-->
@@ -239,11 +254,7 @@
             <artifactId>legend-engine-xt-nonrelationalStore-mongodb-pure</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-nonrelationalStore-mongodb-grammar</artifactId>
-            <scope>test</scope>
-        </dependency>
+
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-testable</artifactId>

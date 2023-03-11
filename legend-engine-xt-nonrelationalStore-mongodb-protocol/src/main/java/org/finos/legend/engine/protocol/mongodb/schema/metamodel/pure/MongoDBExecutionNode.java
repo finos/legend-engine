@@ -20,8 +20,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Execut
 
 public class MongoDBExecutionNode extends ExecutionNode
 {
-    public DatabaseCommand databaseCommand;
-    public MongoDBConnection mongoDBConnection;
+    public String databaseCommand;
+    public MongoDBConnection connection;
 
     @Override
     public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)

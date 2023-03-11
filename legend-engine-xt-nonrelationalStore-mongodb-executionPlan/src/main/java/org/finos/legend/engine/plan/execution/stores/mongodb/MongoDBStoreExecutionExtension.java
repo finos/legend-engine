@@ -35,7 +35,7 @@ public class MongoDBStoreExecutionExtension implements IMongoDBStoreExecutionExt
             //TODO : Fix with real protocol definition
             if (executionNode instanceof MongoDBExecutionNode)
             {
-                return executionNode.accept(executionState.getStoreExecutionState(StoreType.Service).getVisitor(profiles, executionState));
+                return executionNode.accept(executionState.getStoreExecutionState(StoreType.NonRelational_MongoDB).getVisitor(profiles, executionState));
             }
             return null;
         }));

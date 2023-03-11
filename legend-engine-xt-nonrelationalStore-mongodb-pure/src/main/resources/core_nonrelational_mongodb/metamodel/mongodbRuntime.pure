@@ -29,8 +29,8 @@ Class meta::external::store::mongodb::metamodel::pure::runtime::MongoDBConnectio
 ]
 {
    type: meta::external::store::mongodb::metamodel::runtime::DatabaseType[1];
-   dataSourceSpecification: MongoDBDatasourceSpecification[0..1];
-   authenticationSpecification: AuthenticationSpecification[0..1];
+   dataSourceSpecification: MongoDBDatasourceSpecification[1];
+   authenticationSpecification: AuthenticationSpecification[1];
    debug: Boolean[0..1];
 }
 
