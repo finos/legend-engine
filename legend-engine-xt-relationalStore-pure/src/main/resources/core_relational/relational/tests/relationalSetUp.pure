@@ -40,7 +40,7 @@ Database meta::relational::tests::dbInc
        firstName: personTable.FIRSTNAME  PRIMARY KEY,
        address :  @Address_Person | addressTable.NAME PRIMARY KEY
     )
-   
+
     View personViewWithGroupBy
     (
        ~groupBy(personTable.ID)
@@ -215,6 +215,24 @@ Database meta::relational::tests::db
 Database meta::relational::tests::dbForPresto
 (
    Schema catalog$schema
+   (
+      Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT)
+   )
+)
+
+###Relational
+Database meta::relational::tests::dbForDatabricksCatalog
+(
+   Schema catalog$schema
+   (
+      Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT)
+   )
+)
+
+###Relational
+Database meta::relational::tests::dbForDatabricks
+(
+   Schema schema
    (
       Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT)
    )
@@ -444,6 +462,32 @@ Mapping meta::relational::tests::simpleRelationalMappingPersonForPresto
    }
 )
 
+Mapping meta::relational::tests::simpleRelationalMappingPersonForDatabricksCatalog
+(
+   Person : Relational
+   {
+      scope([dbForDatabricksCatalog])
+      (
+         firstName : catalog$schema.personTable.FIRSTNAME,
+         lastName: catalog$schema.personTable.LASTNAME,
+         age : catalog$schema.personTable.AGE
+      )
+   }
+)
+
+Mapping meta::relational::tests::simpleRelationalMappingPersonForDatabricks
+(
+   Person : Relational
+   {
+      scope([dbForDatabricks])
+      (
+         firstName : schema.personTable.FIRSTNAME,
+         lastName: schema.personTable.LASTNAME,
+         age : schema.personTable.AGE
+      )
+   }
+)
+
 Mapping meta::relational::tests::simpleRelationalMappingPersonForMemSQL
 (
    Person : Relational
@@ -469,8 +513,6 @@ Mapping meta::relational::tests::simpleRelationalMappingPersonForBQ
       )
    }
 )
-
-
 
 Mapping meta::relational::tests::simpleRelationalMappingInc
 (
@@ -513,6 +555,18 @@ Mapping meta::relational::tests::simpleRelationalMappingInc
                 locations : [dbInc]@Person_Location,
                 manager : [dbInc]@Person_Manager
             }
+
+       PersonSortable : Relational
+              {
+                scope([dbInc])
+                (
+                    id: [dbInc]personTable.ID,
+                    firstName : [dbInc]personTable.FIRSTNAME,
+                    lastName : [dbInc]personTable.LASTNAME,
+                    age : [dbInc]personTable.AGE,
+                    manager : [dbInc]@Person_Manager
+                )
+              }
 
    Firm : Relational
           {
@@ -667,7 +721,7 @@ Mapping meta::relational::tests::simpleRelationalMapping
                     active : case(equal([db]interactionTable.active,'Y'), 'true', 'false'),
                     longestInteractionBetweenSourceAndTarget : [db]@InteractionTable_InteractionViewMaxTime | interactionViewMaxTime.maxTime
                  }
-                
+
    testReservedWords : Relational
                  {
                      quantity: [db]testTable.quantity,
@@ -713,9 +767,9 @@ Mapping meta::relational::tests::simpleRelationalMapping
                      try : [db]testTable.try,
                      void : [db]testTable.void,
                      volatile : [db]testTable.volatile,
-                     while : [db]testTable.while 
+                     while : [db]testTable.while
                  }
-                
+
    class : Relational
          {
            desks : [db]testClassTable.desks,
@@ -1065,7 +1119,7 @@ function meta::relational::tests::createtestTableAndFillDb(connection : Database
    executeInDb('Create Table testTable(quantity INT, Class VARCHAR(200),boolean  INT, abstract  INT, assert  INT, break  INT, byte  INT, catch  INT, char  INT, const  INT, continue  INT, default  INT, do  INT, double  INT, else  INT, enum  INT, final  INT, finally  INT, float  INT, goto  INT, implements  INT, instanceof  INT, interface VARCHAR(100), long VARCHAR(100), new VARCHAR(100), package VARCHAR(100), private VARCHAR(100), protected VARCHAR(100), public VARCHAR(100), return VARCHAR(100), short VARCHAR(100), static VARCHAR(100), strictfp VARCHAR(100), super VARCHAR(100), switch VARCHAR(100), synchronized VARCHAR(100), this VARCHAR(100), throw VARCHAR(100), throws VARCHAR(100), transient VARCHAR(100), try VARCHAR(100), void VARCHAR(100), volatile VARCHAR(100), while VARCHAR(100));', $connection);
    executeInDb('insert into testTable (quantity, Class, boolean, abstract, assert, break, byte, catch, char, const, continue, default, do, double, else, enum, final, finally, float, goto, implements, instanceof, interface, long, new, package, private, protected, public, return, short, static, strictfp, super, switch, synchronized, this, throw, throws, transient, try, void, volatile, while ) values (1, \'Department A\',1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,\'a\',\'b\',\'c\',\'d\',\'e\',\'f\',\'g\',\'h\',\'i\',\'j\',\'k\',\'l\',\'m\',\'n\',\'o\',\'p\',\'q\',\'r\',\'s\',\'t\',\'u\',\'v\');', $connection);
    executeInDb('insert into testTable (quantity, Class, boolean, abstract, assert, break, byte, catch, char, const, continue, default, do, double, else, enum, final, finally, float, goto, implements, instanceof, interface, long, new, package, private, protected, public, return, short, static, strictfp, super, switch, synchronized, this, throw, throws, transient, try, void, volatile, while ) values (2, \'Department B\',20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,\'v\',\'u\',\'t\',\'s\',\'r\',\'q\',\'p\',\'o\',\'n\',\'m\',\'l\',\'k\',\'j\',\'i\',\'h\',\'g\',\'f\',\'e\',\'d\',\'c\',\'b\',\'a\');', $connection);
-   
+
    true;
 }
 
@@ -1118,7 +1172,7 @@ function meta::relational::tests::createTablesAndFillDb():Boolean[1]
    executeInDb('insert into tableWithQuotedColumns (ID, "FIRST NAME", "LAST NAME", "1columnStartsWithNumber") values (2, \'John\', \'Johnson\', \'value2\');', $connection);
    executeInDb('insert into tableWithQuotedColumns (ID, "FIRST NAME", "LAST NAME", "1columnStartsWithNumber") values (3, \'John\', \'Hill\', \'value3\');', $connection);
    executeInDb('insert into tableWithQuotedColumns (ID, "FIRST NAME", "LAST NAME", "1columnStartsWithNumber") values (4, \'Anthony\', \'Allen\', \'value4\');', $connection);
-   
+
    executeInDb('Drop table if exists PersonTableExtension;', $connection);
    executeInDb('Create Table PersonTableExtension(id INT, firstName VARCHAR(200), lastName VARCHAR(200), age INT, addressId INT, firmId INT, managerId INT, birthDate DATE);', $connection);
    executeInDb('insert into PersonTableExtension (id, firstName, lastName, age, addressId, firmId, managerId, birthDate) values (1, \'Peter\', \'Smith\',23, 1,1,2,\'2013-12-01\');', $connection);
@@ -1155,7 +1209,7 @@ function meta::relational::tests::createTablesAndFillDb():Boolean[1]
    executeInDb('insert into firmExtensionTable(firmId, legalName, establishedDate) values(1,\'FirmA\',\'2013-12-01\')', $connection);
    executeInDb('insert into firmExtensionTable(firmId, legalName, establishedDate) values(2,\'FirmB\',\'2013-12-01\')', $connection);
    executeInDb('insert into firmExtensionTable(firmId, legalName, establishedDate) values(3,\'FirmC\',\'2013-12-02\')', $connection);
-   
+
    meta::relational::functions::toDDL::dropAndCreateTableInDb(db, 'otherFirmTable', $connection);
 
    meta::relational::functions::toDDL::dropAndCreateTableInDb(db, 'addressTable', $connection);
@@ -1225,7 +1279,7 @@ function meta::relational::tests::createTablesAndFillDb():Boolean[1]
    executeInDb('Create Table salesPersonTable(PERSON_ID INT, ACCOUNT_ID INT, NAME VARCHAR(200));', $connection);
    executeInDb('insert into salesPersonTable (person_id, account_id, name) values (1, 1, \'Peter Smith\');', $connection);
    executeInDb('insert into salesPersonTable (person_id, account_id, name) values (2, 2, \'John Johnson\');', $connection);
-   
+
    executeInDb('Drop table if exists tradeEventTable;', $connection);
    executeInDb('Create Table tradeEventTable(event_id INT, trade_id INT, eventType VARCHAR(10), eventDate DATE, person_id INT);', $connection);
    executeInDb('insert into tradeEventTable (event_id, trade_id, eventType, eventDate, person_id) values (1, 1, \'New\', \'2014-12-01\', 1);', $connection);
@@ -1241,12 +1295,12 @@ function meta::relational::tests::createTablesAndFillDb():Boolean[1]
    executeInDb('Create Table schemaA.firmSet(id INT, name VARCHAR(200));', $connection);
    executeInDb('insert into schemaA.firmSet (id, name) values (1, \'Firm X\');', $connection);
    executeInDb('insert into schemaA.firmSet (id, name) values (2, \'Firm A\');', $connection);
-   
+
    executeInDb('Drop table if exists schemaA.personset;', $connection);
    executeInDb('Create Table schemaA.personset(id INT, lastName VARCHAR(200), FirmID INT, firstName VARCHAR(200));', $connection);
    executeInDb('insert into schemaA.personset(id, lastname, FirmID, firstName) values (3, \'Williams\', 1, \'Mohammed\');', $connection);
-   
-   
+
+
    executeInDb('Drop schema if exists schemaB cascade;', $connection);
    executeInDb('create schema schemaB;', $connection);
    executeInDb('Drop table if exists schemaB.PERSONSET;', $connection);
@@ -1327,7 +1381,7 @@ function <<test.Test>> meta::relational::tests::json::testResultToJsonStream():B
                   );
 
    println($result->toJSONStringStream([],true)->makeString());
-   
+
   assert(
           or( $result->toJSONStringStream([],true)->makeString() == '{"values": [{"columns":[{"name":"id","type":"String","metaType":"PrimitiveType"},{"name":"name","type":"","metaType":""},{"name":"value","type":"","metaType":""},{"name":"date","type":"","metaType":""},{"name":"Location","type":"meta::json::tests::GeographicEntityType","metaType":"Enumeration"}],"rows":[{"values":[1,"Hello",2.2,"2015-04-15","CITY"]},{"values":[2,"Geoff",3.2,"2015-02-15","CITY"]}], "__TYPE": "meta::pure::tds::TabularDataSet"}], "activities": [{"__TYPE":"meta::relational::mapping::RelationalActivity","sql":"select * from abc","comment":null,"executionTimeInNanoSecond":1,"sqlGenerationTimeInNanoSecond":1,"connectionAcquisitionTimeInNanoSecond":1,"executionPlanInformation":"","dataSource":{"__TYPE":"meta::relational::runtime::DataSource","host":"somehost","port":8080,"name":"testdb","type":"H2"}}, {"__TYPE":"meta::relational::mapping::RelationalActivity","sql":"select * from abc","comment":null,"executionTimeInNanoSecond":1,"sqlGenerationTimeInNanoSecond":1,"connectionAcquisitionTimeInNanoSecond":1,"executionPlanInformation":"","dataSource":{"__TYPE":"meta::relational::runtime::DataSource","host":"somehost","port":8080,"name":"testdb","type":"H2"}}], "__TYPE": "meta::pure::mapping::Result"}',
               $result->toJSONStringStream([],true)->makeString() == '{"values": [{"columns":[{"name":"id","type":"String","metaType":"PrimitiveType"},{"name":"name","type":"","metaType":""},{"name":"value","type":"","metaType":""},{"name":"date","type":"","metaType":""},{"name":"Location","type":"meta::json::tests::GeographicEntityType","metaType":"Enumeration"}],"rows":[{"values":[1,"Hello",2.2,"2015-04-15","CITY"]},{"values":[2,"Geoff",3.2,"2015-02-15","CITY"]}], "__TYPE": "meta::pure::tds::TabularDataSet"}], "activities": [{"__TYPE":"meta::relational::mapping::RelationalActivity","sql":"select * from abc","comment":null,"executionTimeInNanoSecond":1,"sqlGenerationTimeInNanoSecond":1,"connectionAcquisitionTimeInNanoSecond":1,"executionPlanInformation":"","dataSource":{"__TYPE":"meta::relational::runtime::DataSource","host":"somehost","port":8080,"name":"testdb","type":"H2","serverPrincipal":null}}, {"__TYPE":"meta::relational::mapping::RelationalActivity","sql":"select * from abc","comment":null,"executionTimeInNanoSecond":1,"sqlGenerationTimeInNanoSecond":1,"connectionAcquisitionTimeInNanoSecond":1,"executionPlanInformation":"","dataSource":{"__TYPE":"meta::relational::runtime::DataSource","host":"somehost","port":8080,"name":"testdb","type":"H2","serverPrincipal":null}}], "__TYPE": "meta::pure::mapping::Result"}'));
