@@ -32,6 +32,20 @@
           "path": "test::model::TestDiagram2"
         }
       ],
+      "elements": [
+        {
+          "type": "CLASS",
+          "path": "test::model::Class1"
+        },
+        {
+          "type": "CLASS",
+          "path": "test::model::Class2"
+        },
+        {
+          "type": "CLASS",
+          "path": "test::model::Assoc1"
+        }
+      ],
       "supportInfo": {
         "_type": "email",
         "address": "testEmail@test.org"

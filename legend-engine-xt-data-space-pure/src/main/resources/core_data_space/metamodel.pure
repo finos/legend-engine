@@ -23,6 +23,8 @@ Class meta::pure::metamodel::dataSpace::DataSpace extends PackageableElement
   featuredDiagrams: Diagram[*];
   title: String[0..1];
   description: String[0..1];
+
+  elements: PackageableElement[*];
   supportInfo: DataSpaceSupportInfo[0..1];
 
   // We might think of setting some sort of entitlement for the data space

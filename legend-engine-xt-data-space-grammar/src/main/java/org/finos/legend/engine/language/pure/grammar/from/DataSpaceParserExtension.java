@@ -44,7 +44,7 @@ public class DataSpaceParserExtension implements PureGrammarParserExtension
         DefaultCodeSection section = new DefaultCodeSection();
         section.parserName = sectionSourceCode.sectionType;
         section.sourceInformation = parserInfo.sourceInformation;
-        DataSpaceParseTreeWalker walker = new DataSpaceParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section);
+        DataSpaceParseTreeWalker walker = new DataSpaceParseTreeWalker(parserInfo.input, parserInfo.walkerSourceInformation, elementConsumer, section);
         walker.visit((DataSpaceParserGrammar.DefinitionContext) parserInfo.rootContext);
         return section;
     }
