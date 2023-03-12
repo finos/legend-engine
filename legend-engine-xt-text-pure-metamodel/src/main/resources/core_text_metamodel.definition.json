@@ -1,5 +1,5 @@
 {
-    "name" : "core_text",
+    "name" : "core_text_metamodel",
     "pattern" : "(meta::pure::metamodel::text)(::.*)?",
     "dependencies" : ["platform"]
 }

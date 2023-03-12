@@ -357,7 +357,7 @@ public class TestExtensions
                 .with("core_relational_spanner")
                 .with("core_servicestore")
                 .with("core_authentication")
-                .with("core_text")
+                .with("core_text_metamodel")
                 .with("core_external_language_java")
                 .with("core_java_platform_binding")
                 .with("core_relational_java_platform_binding")

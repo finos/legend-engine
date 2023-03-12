@@ -23,6 +23,6 @@ public class CoreTextCodeRepositoryProvider implements CodeRepositoryProvider
     @Override
     public CodeRepository repository()
     {
-        return GenericCodeRepository.build("core_text.definition.json");
+        return GenericCodeRepository.build("core_text_metamodel.definition.json");
     }
 }

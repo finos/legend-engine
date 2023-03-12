@@ -147,7 +147,7 @@
         <module>legend-engine-xt-text-grammar</module>
         <module>legend-engine-xt-text-compiler</module>
         <module>legend-engine-xt-text-protocol</module>
-        <module>legend-engine-xt-text-pure</module>
+        <module>legend-engine-xt-text-pure-metamodel</module>
 
         <module>legend-engine-xt-diagram-grammar</module>
         <module>legend-engine-xt-diagram-compiler</module>
@@ -1200,7 +1200,7 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-text-pure</artifactId>
+                <artifactId>legend-engine-xt-text-pure-metamodel</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
