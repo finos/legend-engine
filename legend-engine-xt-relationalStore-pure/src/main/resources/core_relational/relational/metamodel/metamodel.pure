@@ -70,3 +70,32 @@ Class meta::relational::metamodel::LoadTableSQL extends SQLQuery
     columnsToLoad : Column[*];
     parsedData : List<List<String>>[0..1];
 }
+
+Class meta::relational::metamodel::Alterable
+{
+}
+
+Class meta::relational::metamodel::Session extends Alterable
+{
+}
+
+Class meta::relational::metamodel::AlterSQL extends SQLQuery
+{
+  object: Alterable[1];
+  operation: AlterOperation[*];
+} 
+
+Class meta::relational::metamodel::AlterOperation
+{
+}
+
+Class meta::relational::metamodel::SetOperation extends AlterOperation
+{
+  propertyName: String[1];
+  propertyValue : Literal[1];
+}
+
+Class meta::relational::metamodel::UnSetOperation extends AlterOperation
+{
+  propertyName: String[1];
+}
