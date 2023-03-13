@@ -107,7 +107,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   debug('processProjection');
 
-  let exp = if ($groupBy->isEmpty(),
+  let exp = if ($groupBy->isEmpty() && !anyColumnAggregate($select),
     | processSelect($select, $context),
     | processGroupBy($select, $groupBy, $context));
 
@@ -125,10 +125,22 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   ^$context(expression = $distinctExp, aliases = $aliases);
 }
 
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::extractGroupByColumnNameFromExpression(expression:meta::external::query::sql::metamodel::Expression[1], select: Select[1]):String[1]
+{
+  $expression->match([
+    i:IntegerLiteral[1] | 
+      let index = $i.value - 1; //0 index offset in sql is 1;
+      assert($index < $select.selectItems->size(), 'No select column at index ' + $i.value->toString());
+      assert($select.selectItems->at($index)->instanceOf(SingleColumn), 'select * not currently supported for index group by');
+      $select.selectItems->at($index)->cast(@SingleColumn)->extractNameFromSingleColumn();,
+    e:meta::external::query::sql::metamodel::Expression[1] | $e->extractNameFromExpression()
+  ]);
+}
+
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processGroupBy(select: Select[1], groupBy: meta::external::query::sql::metamodel::Expression[*], context: SqlTransformContext[1]):FunctionExpression[1]
 {
   debug('processGroupBy');
-  let groupByColumns = $groupBy->map(g | $g->extractNameFromExpression());
+  let groupByColumns = $groupBy->map(g | $g->extractGroupByColumnNameFromExpression($select));
 
   //TODO should use equals on the expression instead of name checking in groupBy, cannot at moment due to no equality key.
   let aggregations = $select.selectItems->filter(s | $s->instanceOf(SingleColumn) && $s->cast(@SingleColumn).expression->instanceOf(FunctionCall))
@@ -149,7 +161,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
                                                 let mapLambda = lambda($mapFunctionType, $mapExpression);
 
                                                 let aggFunctionName = extractNameFromQualifiedName($functionCall.name->toOne());
-                                                let aggVariable = ^VariableExpression(genericType = ^GenericType(rawType = $mapReturnType),name = 'y', multiplicity = ZeroMany);
+                                                let aggVariable = ^VariableExpression(genericType = ^GenericType(rawType = $mapReturnType),name = 'y', multiplicity = ZeroMany)->evaluateAndDeactivate();
                                                 let aggExpression = functionCall($aggFunctionName, $aggVariable)->cast(@SimpleFunctionExpression)->evaluateAndDeactivate();
                                                 let aggReturnType = $aggExpression.genericType.rawType->toOne();
                                                 let aggFunctionType = functionType('y', $mapReturnType, ZeroMany, $aggReturnType, PureOne);
@@ -167,6 +179,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processSelect(select: Select[1], context: SqlTransformContext[1]):FunctionExpression[1]
 {
+
   debug('processSelect');
   if (isSelectStar($select),
     | $context.expression->toOne(),
@@ -176,9 +189,21 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 }
 
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::anyColumnAggregate(select: Select[1]):Boolean[1]
+{
+  $select.selectItems->exists(si | $si->isSelectItemAggregate());
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::isSelectItemAggregate(si: SelectItem[1]):Boolean[1]
+{
+  $si->instanceOf(SingleColumn) 
+  && $si->cast(@SingleColumn).expression->instanceOf(FunctionCall)
+  && functionProcessor($si->cast(@SingleColumn).expression->cast(@FunctionCall).name).isAggregate
+}
+
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processSelectToProject(select: Select[1], context: SqlTransformContext[1]):FunctionExpression[1]
 {
-  debug('processSlectToProject');
+  debug('processSelectToProject');
   let genericType = ^GenericType(rawType = TDSRow);
 
   let args = $select.selectItems->processSelectItems($context)->map(item |
@@ -220,12 +245,6 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   $select.selectItems->forAll(si | $si->instanceOf(SingleColumn) && $si->cast(@SingleColumn).expression->instanceOf(QualifiedNameReference));
 }
 
-//TODO
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::processGroupBy(expressions: meta::external::query::sql::metamodel::Expression[*], context: SqlTransformContext[1]): SqlTransformContext[1]
-{
-  debug('processGroupBy');
-  if ($expressions->isEmpty(), | $context, | createFilter($expressions->toOne(), $context));
-}
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processHaving(expression: meta::external::query::sql::metamodel::Expression[0..1], context: SqlTransformContext[1]): SqlTransformContext[1]
 {
@@ -733,33 +752,70 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let name = extractNameFromExpression($f);
   let col = $context.columnByName($name);
 
-  createTdsColumn($col.name->toOne(), $expContext.var, $context);
+  //if there is no column with the name, then fall back to process as function
+  //TODO investigate if better way of identifying whether to use processAsIdentifier
+  if ($col->isNotEmpty(), 
+    | createTdsColumn($col.name->toOne(), $expContext.var, $context), 
+    | processFunctionCall($f, ^$expContext(processFunctionCallAsIdentifier = false), $context));
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processFunctionCallAsFunction(f:FunctionCall[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):SimpleFunctionExpression[1]
 {
   debug('processFunctionCallAsFunction');
-
-  assertEquals(1, $f.name.parts->size(), | 'function name has more than 1 part ' + $f.name->extractNameFromQualifiedName());
-
   let args = $f.arguments->map(a | $a->processExpression($expContext, $context));
-  let name = $f.name.parts->at(0);
-
-  functionCall($name, $args);
+  functionCall($f.name, $args);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::functionCall(name:String[1], args:ValueSpecification[*]):SimpleFunctionExpression[1]
 {
-  assertEquals(1, $args->size(), | 'we currently only support single arg functions');
+  functionCall(^QualifiedName(parts = $name), $args);
+}
 
-  let func = [
-    pair('count', | sfe(count_Any_MANY__Integer_1_, $args)),
-    pair('distinct', | sfe(distinct_T_MANY__T_MANY_, $args)),
-    pair('sum', | sfe(sum_Number_MANY__Number_1_, $args)),
-    pair('avg', | sfe(average_Number_MANY__Float_1_, $args)),
-    pair('concat', | sfe(joinStrings_String_MANY__String_1_, $args)),
-    pair('trim', | sfe(trim_String_1__String_1_, $args))
-  ]->getValue($name)->eval();
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::functionCall(name:QualifiedName[1], args:ValueSpecification[*]):SimpleFunctionExpression[1]
+{
+  let processor = functionProcessor($name);
+  $processor.transform->eval($args->evaluateAndDeactivate());
+}
+
+function meta::external::query::sql::transformation::queryToPure::functionProcessor(name:QualifiedName[1]):FunctionProcessor[1]
+{
+  assertEquals(1, $name.parts->size(), | 'function name has more than 1 part ' + $name->extractNameFromQualifiedName());
+  functionProcessor($name.parts->at(0));
+}
+
+function meta::external::query::sql::transformation::queryToPure::functionProcessor(name:String[1]):FunctionProcessor[1]
+{
+  let processor = functionProcessors()->filter(p | $p.name == $name->toLower());
+
+  assertEquals(1, $processor->size(), | 'no handler found for function ' + $name);
+
+  $processor->toOne();
+}
+
+function meta::external::query::sql::transformation::queryToPure::functionProcessors():FunctionProcessor[*]
+{
+  [
+      processor('count', count_Any_MANY__Integer_1_, true),
+      processor('distinct', distinct_T_MANY__T_MANY_, true),
+      processor('sum', sum_Number_MANY__Number_1_, true),
+      processor('avg', average_Number_MANY__Float_1_, true),
+      processor('concat', joinStrings_String_MANY__String_1_, false),
+      processor('trim', trim_String_1__String_1_, false),
+      processor('date_trunc', false, {args |
+        assertEquals(2, $args->size(), 'incorrect number of args');
+        let part = $args->at(0);
+        let value = $part->reactivate()->toOne();
+        
+        let func = [
+          pair('year', firstDayOfYear_Date_1__Date_1_),
+          pair('quarter', firstDayOfQuarter_Date_1__StrictDate_1_),
+          pair('month', firstDayOfMonth_Date_1__Date_1_),
+          pair('week', firstDayOfWeek_Date_1__Date_1_)
+        ]->getValue($value);
+
+        sfe($func, $args->at(1));
+      })
+  ]
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processNotExpression(n:NotExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):SimpleFunctionExpression[1]
@@ -954,6 +1010,28 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformExpre
     let var = if ($name.parts->size() == 2, | $this.varMap->get($name.parts->first()->toOne()), | []);
     if ($var->isEmpty(), | $this.var, | $var->toOne());
   }:VariableExpression[1];
+}
+
+Class meta::external::query::sql::transformation::queryToPure::FunctionProcessor
+{
+  name: String[1];
+  transform: Function<{ValueSpecification[*]->SimpleFunctionExpression[1]}>[1];
+  isAggregate: Boolean[1];
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processor(name:String[1], func:Function<Any>[1], isAggregate:Boolean[1]):FunctionProcessor[1]
+{
+  processor($name, $isAggregate, simpleFunctionTransform($func));
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processor(name:String[1], isAggregate:Boolean[1], transform:Function<{ValueSpecification[*]->SimpleFunctionExpression[1]}>[1]):FunctionProcessor[1]
+{
+  ^FunctionProcessor(name = $name, isAggregate = $isAggregate, transform = $transform);
+}
+
+function meta::external::query::sql::transformation::queryToPure::simpleFunctionTransform(func:Function<Any>[1]):Function<{ValueSpecification[*]->SimpleFunctionExpression[1]}>[1]
+{
+  {args:ValueSpecification[*] | sfe($func, $args)}
 }
 
 
