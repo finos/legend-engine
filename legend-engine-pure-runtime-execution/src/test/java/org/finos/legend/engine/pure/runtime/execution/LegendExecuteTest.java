@@ -161,7 +161,7 @@ public class LegendExecuteTest
     }
 
     @Test
-    public void tesStringVariable()
+    public void testStringVariable()
     {
         String toExecute = "{pref: String[1], suf:String[1]|\n" +
                 "  let tree = #{test::Types{string, 'prefixed': string($pref, $suf)}}#;\n" +
