@@ -34,5 +34,11 @@ Class meta::external::store::mongodb::metamodel::pure::MongoDBExecutionNode exte
 
 Class meta::external::store::mongodb::metamodel::pure::graphFetch::executionPlan::MongoDBGraphFetchExecutionNode extends meta::pure::graphFetch::executionPlan::LocalGraphFetchExecutionNode
 {
-   children : MongoDBGraphFetchExecutionNode[*];
+  mainCollection: meta::external::store::mongodb::metamodel::Collection[0..1]; 
+  batchSize: Integer[0..1];
+  children : MongoDBGraphFetchExecutionNode[*];
+}
+
+Class meta::external::store::mongodb::metamodel::pure::graphFetch::executionPlan::RootMongoDBGraphFetchExecutionNode extends MongoDBGraphFetchExecutionNode
+{
 }
