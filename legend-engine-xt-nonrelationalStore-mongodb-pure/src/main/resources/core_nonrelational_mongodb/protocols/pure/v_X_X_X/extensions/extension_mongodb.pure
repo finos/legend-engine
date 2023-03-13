@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::mongodb::metamodel::aggregation::*;
 import meta::json::*;
 import meta::external::store::mongodb::metamodel::*;
 import  meta::external::store::mongodb::mapping::*;
@@ -66,8 +67,13 @@ function meta::protocols::pure::vX_X_X::extension::store::mongodb::getDatabaseCo
     let customSerializers = [
     {
         m: MongoDBOperationElement[1], s: meta::json::JSONState[1] |
-        let elem = meta::json::anyToJSON($m, $s, 1000, $config)->cast(@meta::json::JSONObject);
-        ^$elem(keyValuePairs += meta::json::newJSONKeyValue('_type', ^meta::json::JSONString(value = $m->class().name->toLowerFirstCharacter()->toOne())));
+          let elem = meta::json::anyToJSON($m, $s, 1000, $config)->cast(@meta::json::JSONObject);
+          ^$elem(keyValuePairs = $elem.keyValuePairs->filter(x | $x.key.value != '_type')->concatenate(meta::json::newJSONKeyValue('_type', ^meta::json::JSONString(value = $m->class().name->toLowerFirstCharacter()->toOne()))));
+    },
+    {
+        m: BaseTypeValue[1], s: meta::json::JSONState[1] |
+          let elem = meta::json::anyToJSON($m, $s, 1000, $config)->cast(@meta::json::JSONObject);
+          ^$elem(keyValuePairs = $elem.keyValuePairs->filter(x | $x.key.value != '_type')->concatenate(meta::json::newJSONKeyValue('_type', ^meta::json::JSONString(value = $m->class().name->toLowerFirstCharacter()->toOne()))));
     }
     ];
     meta::json::toJSON($databaseCommand, $customSerializers, 1000, $config);
