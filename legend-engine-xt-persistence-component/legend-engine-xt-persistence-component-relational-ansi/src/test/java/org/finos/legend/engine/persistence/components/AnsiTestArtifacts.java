@@ -41,7 +41,7 @@ public class AnsiTestArtifacts
             "\"batch_id_out\" INTEGER," +
             "\"batch_time_in\" DATETIME," +
             "\"batch_time_out\" DATETIME," +
-            "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"batch_time_in\"))";
+            "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\"))";
 
     public static String expectedMainTableCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN\"" +
             "(\"ID\" INTEGER," +
@@ -53,7 +53,7 @@ public class AnsiTestArtifacts
             "\"BATCH_ID_OUT\" INTEGER," +
             "\"BATCH_TIME_IN\" DATETIME," +
             "\"BATCH_TIME_OUT\" DATETIME," +
-            "PRIMARY KEY (\"ID\", \"NAME\", \"BATCH_ID_IN\", \"BATCH_TIME_IN\"))";
+            "PRIMARY KEY (\"ID\", \"NAME\", \"BATCH_ID_IN\"))";
 
     public static String expectedMainTableBatchIdBasedCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
             "\"id\" INTEGER,\"name\" VARCHAR,\"amount\" DOUBLE,\"biz_date\" DATE,\"digest\" VARCHAR," +
@@ -116,6 +116,23 @@ public class AnsiTestArtifacts
             "\"batch_update_time\" DATETIME," +
             "PRIMARY KEY (\"id\", \"name\", \"batch_update_time\"))";
 
+    public static String expectedBaseTableWithAuditNotPkCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
+            "\"id\" INTEGER," +
+            "\"name\" VARCHAR," +
+            "\"amount\" DOUBLE," +
+            "\"biz_date\" DATE," +
+            "\"digest\" VARCHAR," +
+            "\"batch_update_time\" DATETIME," +
+            "PRIMARY KEY (\"id\", \"name\"))";
+
+    public static String expectedBaseTableWithAuditPkCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
+            "\"id\" INTEGER," +
+            "\"name\" VARCHAR," +
+            "\"amount\" DOUBLE," +
+            "\"biz_date\" DATE," +
+            "\"batch_update_time\" DATETIME," +
+            "PRIMARY KEY (\"id\", \"name\", \"batch_update_time\"))";
+
     public static String expectedBitemporalMainTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
             "(\"id\" INTEGER," +
             "\"name\" VARCHAR," +
@@ -138,7 +155,7 @@ public class AnsiTestArtifacts
             "\"batch_time_out\" DATETIME," +
             "\"validity_from_target\" DATETIME," +
             "\"validity_through_target\" DATETIME," +
-            "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"batch_time_in\", \"validity_from_target\"))";
+            "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"validity_from_target\"))";
 
     public static String expectedBitemporalMainTableWithDatetimeCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
             "(\"id\" INTEGER," +
@@ -173,7 +190,7 @@ public class AnsiTestArtifacts
             "\"batch_time_out\" DATETIME," +
             "\"validity_from_target\" DATETIME," +
             "\"validity_through_target\" DATETIME," +
-            "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"batch_time_in\", \"validity_from_target\"))";
+            "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"validity_from_target\"))";
 
     public static String expectedBitemporalFromOnlyMainTableDateTimeBasedCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
             "\"id\" INTEGER," +
@@ -231,7 +248,7 @@ public class AnsiTestArtifacts
             "\"batch_time_out\" DATETIME," +
             "\"validity_from_target\" DATETIME," +
             "\"validity_through_target\" DATETIME," +
-            "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"batch_time_in\", \"validity_from_target\"))";
+            "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"validity_from_target\"))";
 
     public static String expectedBitemporalFromOnlyTempTableDateTimeBasedCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"temp\"(" +
             "\"id\" INTEGER," +

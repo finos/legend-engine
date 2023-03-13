@@ -99,7 +99,7 @@ public class AppendOnlyScenarios extends BaseTest
                 .deduplicationStrategy(FailOnDuplicates.builder().build())
                 .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
                 .build();
-        return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchemaAndDigest, ingestMode);
+        return new TestScenario(mainTableWithBaseSchemaHavingAuditFieldNotPk, stagingTableWithBaseSchema, ingestMode);
     }
 
     public TestScenario FILTER_DUPLICATES_NO_AUDITING()
