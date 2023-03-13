@@ -960,7 +960,8 @@ public class TestUtils
         Set<Field> actualFieldsSet = actualDataset.schema().fields().stream().collect(Collectors.toSet());
         Set<Field> expectedFieldsSet = expectedDataset.schema().fields().stream().collect(Collectors.toSet());
         expectedFieldsSet.forEach(
-                field-> {
+                field ->
+                {
                     Field matchedMainField = actualFieldsSet.stream().filter(mainField -> mainField.name().equals(field.name())).findFirst().orElse(null);
                     if (matchedMainField == null || field.nullable() != matchedMainField.nullable() || field.primaryKey() != matchedMainField.primaryKey() || !field.type().equals(matchedMainField.type()))
                     {
