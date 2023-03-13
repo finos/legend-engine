@@ -79,7 +79,7 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
           mvn -B -e install -DskipTests=true
-          mvn -B -e javadoc:javadoc deploy -DargLine="-Xmx4g" -P docker-snapshot
+          mvn -B -e javadoc:javadoc deploy -DargLine="-Xmx2000m" -P docker-snapshot
 
       - name: Upload Test Results
         if: always()
