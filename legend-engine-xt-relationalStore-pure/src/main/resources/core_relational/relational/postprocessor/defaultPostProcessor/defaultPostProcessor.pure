@@ -27,7 +27,7 @@ function meta::relational::mapping::defaultPlanPostProcessors(query: SQLQuery[1]
 {
    let postProcessors = postProcessorList();
    let result = $postProcessors->fold({pp,queryHolder| let result = $pp->eval($queryHolder.query,$runtime->toOne(),$store,$exeCtx,$extensions);
-                                                                         ^$queryHolder(query = $result.query,resultPostProcessor =$result.resultPostProcessor , executionNodes += $result.executionNodes, postExecutionNodes +=$result.postExecutionNodes, templateFunctions +=$result.templateFunctions);},
+                                                                         ^$queryHolder(query = $result.query,resultPostProcessor =$result.resultPostProcessor , executionNodes += $result.executionNodes, finallyExecutionNodes += $result.finallyExecutionNodes, postExecutionNodes +=$result.postExecutionNodes, templateFunctions +=$result.templateFunctions);},
                                                        ^PostProcessorResult(query =$query,resultPostProcessor = { result:Result<Any|*>[1] | $result},executionNodes = [])
                                     );
 

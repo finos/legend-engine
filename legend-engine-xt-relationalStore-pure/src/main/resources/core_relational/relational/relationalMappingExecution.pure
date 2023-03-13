@@ -51,8 +51,8 @@ function meta::relational::mapping::generateExecutionNodeForPostProcessedResult(
    let relationalNode =  if($wrapInInstantiationNode, | generateInstantiationExecutionNode($sq, $ext, $postProcessorResult.query, $sqlNode, $m), | $sqlNode);
    let nodes = $postProcessorResult.executionNodes->concatenate($relationalNode)->concatenate($postProcessorResult.postExecutionNodes);
    if($nodes->size()>1,
-      | if($nodes->map(node | $node->allNodes($extensions))->exists(node | $node->instanceOf(CreateAndPopulateTempTableExecutionNode)),
-           |^RelationalBlockExecutionNode(resultType = $relationalNode.resultType, executionNodes = $nodes, supportFunctions = $postProcessorResult.templateFunctions, resultSizeRange = $relationalNode.resultSizeRange),
+      | if($nodes->map(node | $node->allNodes($extensions))->exists(node | $node->instanceOf(CreateAndPopulateTempTableExecutionNode)) || $postProcessorResult.finallyExecutionNodes->isNotEmpty(),
+           |^RelationalBlockExecutionNode(resultType = $relationalNode.resultType, executionNodes = $nodes, supportFunctions = $postProcessorResult.templateFunctions, resultSizeRange = $relationalNode.resultSizeRange, finallyExecutionNodes=$postProcessorResult.finallyExecutionNodes),
            |^SequenceExecutionNode(resultType = $relationalNode.resultType, executionNodes = $nodes, supportFunctions = $postProcessorResult.templateFunctions, resultSizeRange = $relationalNode.resultSizeRange)),
       | $relationalNode
    );

@@ -7,6 +7,7 @@ import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::relation::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
+import meta::relational::mapping::*;
 
 Enum meta::relational::functions::sqlQueryToString::GenerationSide
 {
@@ -147,6 +148,12 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
      assert($translator.loadTable->isNotEmpty(), '[unsupported-api] Load table translation not supported for Database Type: ' + $this.dbType->toString());
      $translator.loadTable->toOne()->eval($l, $this);
    }: String[*];
+  
+   preAndFinallyExecutionSQLQuery()
+   {
+     assert($this.dbExtension.preAndFinallyExecutionSQLQuery->isNotEmpty(), 'Pre & Finally Execution SQL Queries are not set for Database Type: ' + $this.dbType->toString());
+     $this.dbExtension.preAndFinallyExecutionSQLQuery->toOne()->eval($this);
+   }: PreAndFinallyExecutionSQLQuery[*];
 }
 
 function meta::relational::functions::sqlQueryToString::createDbConfig(dbType:DatabaseType[1]):DbConfig[1]
@@ -187,6 +194,7 @@ Class meta::relational::functions::sqlQueryToString::DbExtension
    identifierProcessor: meta::pure::metamodel::function::Function<{String[1], DbConfig[1] -> String[1]}>[1];
    dynaFuncDispatch: meta::pure::metamodel::function::Function<{DynaFunction[1], SqlGenerationContext[1] -> DynaFunctionToSql[1]}>[1];
    ddlCommandsTranslator : RelationalDDLCommandsTranslator[0..1];
+   preAndFinallyExecutionSQLQuery: meta::pure::metamodel::function::Function<{DbConfig[1] -> PreAndFinallyExecutionSQLQuery[*]}>[0..1];
 }
 
 Class meta::relational::functions::sqlQueryToString::RelationalDDLCommandsTranslator

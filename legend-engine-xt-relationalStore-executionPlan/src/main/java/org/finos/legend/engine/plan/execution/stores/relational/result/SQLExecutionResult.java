@@ -244,6 +244,7 @@ public class SQLExecutionResult extends Result
         };
 
         FastList.newListWith(this.resultSet, this.statement, this.connection).forEach((Procedure<AutoCloseable>) closingFunction::accept);
+        super.close();
     }
 
 }
