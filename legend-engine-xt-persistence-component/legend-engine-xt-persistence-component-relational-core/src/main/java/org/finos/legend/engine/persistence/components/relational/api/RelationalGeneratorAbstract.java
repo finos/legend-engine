@@ -17,9 +17,11 @@ package org.finos.legend.engine.persistence.components.relational.api;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
+import org.finos.legend.engine.persistence.components.ingestmode.DeriveMainDatasetSchemaFromStaging;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.planner.Planner;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
 import org.finos.legend.engine.persistence.components.planner.Planners;
@@ -156,8 +158,9 @@ public abstract class RelationalGeneratorAbstract
 
     GeneratorResult generateOperations(Datasets datasets, Resources resources)
     {
-        Planner planner = Planners.get(datasets, ingestMode(), plannerOptions());
-        return generateOperations(datasets, resources, planner);
+        Datasets enrichedDatasets = deriveMainDatasetFromStaging(datasets, ingestMode());
+        Planner planner = Planners.get(enrichedDatasets, ingestMode(), plannerOptions());
+        return generateOperations(enrichedDatasets, resources, planner);
     }
 
     GeneratorResult generateOperations(Datasets datasets, Resources resources, Planner planner)
@@ -226,5 +229,18 @@ public abstract class RelationalGeneratorAbstract
             .putAllPreIngestStatisticsSqlPlan(preIngestStatisticsSqlPlan)
             .putAllPostIngestStatisticsSqlPlan(postIngestStatisticsSqlPlan)
             .build();
+    }
+
+    public Datasets deriveMainDatasetFromStaging(Datasets datasets, IngestMode ingestMode)
+    {
+        Datasets enrichedDatasets = datasets;
+        Dataset mainDataset = datasets.mainDataset();
+        List<Field> mainDatasetFields = mainDataset.schema().fields();
+        if (mainDatasetFields == null || mainDatasetFields.isEmpty())
+        {
+            Dataset derivedMainDataset = ingestMode.accept(new DeriveMainDatasetSchemaFromStaging(datasets.mainDataset(), datasets.stagingDataset()));
+            enrichedDatasets = datasets.withMainDataset(derivedMainDataset);
+        }
+        return enrichedDatasets;
     }
 }

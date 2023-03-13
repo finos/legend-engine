@@ -65,6 +65,23 @@ public class MemsqlTestArtifacts
             "`batch_update_time` DATETIME," +
             "PRIMARY KEY (`id`, `name`, `batch_update_time`))";
 
+    public static String expectedBaseTableWithAuditNotPKCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`main`(" +
+            "`id` INTEGER," +
+            "`name` VARCHAR(256)," +
+            "`amount` DOUBLE," +
+            "`biz_date` DATE," +
+            "`digest` VARCHAR(256)," +
+            "`batch_update_time` DATETIME," +
+            "PRIMARY KEY (`id`, `name`))";
+
+    public static String expectedBaseTableWithAuditPKCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`main`(" +
+            "`id` INTEGER," +
+            "`name` VARCHAR(256)," +
+            "`amount` DOUBLE," +
+            "`biz_date` DATE," +
+            "`batch_update_time` DATETIME," +
+            "PRIMARY KEY (`id`, `name`, `batch_update_time`))";
+
     public static String expectedStagingCleanupQuery = "DELETE FROM `mydb`.`staging` as stage";
 
     public static String expectedDropTableQuery = "DROP TABLE IF EXISTS `mydb`.`staging` CASCADE";
@@ -113,7 +130,7 @@ public class MemsqlTestArtifacts
             "`batch_id_out` INTEGER," +
             "`batch_time_in` DATETIME," +
             "`batch_time_out` DATETIME," +
-            "PRIMARY KEY (`id`, `name`, `batch_id_in`, `batch_time_in`))";
+            "PRIMARY KEY (`id`, `name`, `batch_id_in`))";
 
     public static String expectedMainTableCreateQueryWithUpperCase = "CREATE REFERENCE TABLE IF NOT EXISTS `MYDB`.`MAIN`" +
             "(`ID` INTEGER," +
@@ -125,7 +142,7 @@ public class MemsqlTestArtifacts
             "`BATCH_ID_OUT` INTEGER," +
             "`BATCH_TIME_IN` DATETIME," +
             "`BATCH_TIME_OUT` DATETIME," +
-            "PRIMARY KEY (`ID`, `NAME`, `BATCH_ID_IN`, `BATCH_TIME_IN`))";
+            "PRIMARY KEY (`ID`, `NAME`, `BATCH_ID_IN`))";
 
     public static String expectedMainTableTimeBasedCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`main`(" +
             "`id` INTEGER,`name` VARCHAR(256),`amount` DOUBLE,`biz_date` DATE,`digest` VARCHAR(256)," +
@@ -157,7 +174,7 @@ public class MemsqlTestArtifacts
             "`batch_time_out` DATETIME," +
             "`validity_from_target` DATETIME," +
             "`validity_through_target` DATETIME," +
-            "PRIMARY KEY (`id`, `name`, `batch_id_in`, `batch_time_in`, `validity_from_target`))";
+            "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`))";
 
     public static String expectedBitemporalMainTableWithDatetimeCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`main`" +
             "(`id` INTEGER," +
@@ -192,7 +209,7 @@ public class MemsqlTestArtifacts
             "`batch_time_out` DATETIME," +
             "`validity_from_target` DATETIME," +
             "`validity_through_target` DATETIME," +
-            "PRIMARY KEY (`id`, `name`, `batch_id_in`, `batch_time_in`, `validity_from_target`))";
+            "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`))";
 
     public static String expectedBitemporalFromOnlyMainTableDateTimeBasedCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`main`(" +
             "`id` INTEGER," +
@@ -250,7 +267,7 @@ public class MemsqlTestArtifacts
             "`batch_time_out` DATETIME," +
             "`validity_from_target` DATETIME," +
             "`validity_through_target` DATETIME," +
-            "PRIMARY KEY (`id`, `name`, `batch_id_in`, `batch_time_in`, `validity_from_target`))";
+            "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`))";
 
     public static String expectedBitemporalFromOnlyTempTableDateTimeBasedCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`temp`(" +
             "`id` INTEGER," +

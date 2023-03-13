@@ -83,7 +83,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
             "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",'2000-01-01 00:00:00' " +
             "FROM \"mydb\".\"staging\" as stage)";
 
-        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTableCreateQuery, preActionsSqlList.get(0));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTableWithAuditPkCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(cleanUpMainTableSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
 
@@ -104,7 +104,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
                 "WHERE (stage.\"data_split\" < stage_right.\"data_split\") AND ((stage.\"id\" = stage_right.\"id\") AND " +
                 "(stage.\"name\" = stage_right.\"name\")))))";
 
-        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTableCreateQuery, preActionsSqlList.get(0));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTableWithAuditPkCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(cleanUpMainTableSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
 

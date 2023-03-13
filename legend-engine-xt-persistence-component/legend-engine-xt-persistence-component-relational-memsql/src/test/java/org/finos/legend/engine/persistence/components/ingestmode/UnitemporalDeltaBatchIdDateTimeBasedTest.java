@@ -325,7 +325,7 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
                 "`batch_id_out` INTEGER," +
                 "`batch_time_in` DATETIME," +
                 "`batch_time_out` DATETIME," +
-                "PRIMARY KEY (`id`, `name`, `batch_id_in`, `batch_time_in`))";
+                "PRIMARY KEY (`id`, `name`, `batch_id_in`))";
 
         String expectedMilestoneQuery = "UPDATE `my_schema`.`main` as sink " +
                 "SET sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.`table_name` = 'main')-1," +
@@ -370,7 +370,7 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
                 "`batch_id_out` INTEGER," +
                 "`batch_time_in` DATETIME," +
                 "`batch_time_out` DATETIME," +
-                "PRIMARY KEY (`id`, `name`, `batch_id_in`, `batch_time_in`))";
+                "PRIMARY KEY (`id`, `name`, `batch_id_in`))";
 
         String expectedMilestoneQuery = "UPDATE `mydb`.`my_schema`.`main` as sink " +
                 "SET sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.`table_name` = 'main')-1," +
@@ -415,7 +415,7 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
                 "`batch_id_out` INTEGER," +
                 "`batch_time_in` DATETIME," +
                 "`batch_time_out` DATETIME," +
-                "PRIMARY KEY (`id`, `name`, `batch_id_in`, `batch_time_in`))";
+                "PRIMARY KEY (`id`, `name`, `batch_id_in`))";
 
         String expectedMilestoneQuery = "UPDATE main as sink " +
                 "SET sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.`table_name` = 'main')-1," +
