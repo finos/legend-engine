@@ -47,7 +47,7 @@ public class TestTrinoConnectionGrammarCompiler
                 "    kerberosUseCanonicalHostname: false;\n" +
                 "    kerberosRemoteServiceName: 'HTTP';\n" +
                 "  };\n" +
-                "}\n");
+                "}\n",null);
     }
 
     @Override
@@ -59,7 +59,7 @@ public class TestTrinoConnectionGrammarCompiler
     @Override
     protected String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "";
+        return null;
     }
 }
 
