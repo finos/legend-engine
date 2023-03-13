@@ -36,11 +36,15 @@ public class TrinoDatasourceSpecificationKey
 
     private String toString(TrinoSSLSpecification sslSpecification)
     {
-        return "TrinoSSLSpecification{" +
-                "ssl=" + sslSpecification.ssl +
-                ", trustStorePathVaultReference='" + sslSpecification.trustStorePathVaultReference + '\'' +
-                ", trustStorePasswordVaultReference='" + sslSpecification.trustStorePasswordVaultReference + '\'' +
-                '}';
+        if (sslSpecification != null)
+        {
+            return "TrinoSSLSpecification{" +
+                    "ssl=" + sslSpecification.ssl +
+                    ", trustStorePathVaultReference='" + sslSpecification.trustStorePathVaultReference + '\'' +
+                    ", trustStorePasswordVaultReference='" + sslSpecification.trustStorePasswordVaultReference + '\'' +
+                    '}';
+        }
+        return "_";
     }
 
     private String shortId(TrinoSSLSpecification sslSpecification)
