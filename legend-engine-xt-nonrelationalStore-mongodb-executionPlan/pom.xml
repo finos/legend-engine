@@ -25,7 +25,7 @@
 
     <artifactId>legend-engine-xt-nonrelationalStore-mongodb-executionPlan</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Engine - XT - Non-Relational Store - Execution Plan</name>
+    <name>Legend Engine - XT - Non-Relational Store - MongoDB - Execution Plan</name>
 
     <build>
         <plugins>
