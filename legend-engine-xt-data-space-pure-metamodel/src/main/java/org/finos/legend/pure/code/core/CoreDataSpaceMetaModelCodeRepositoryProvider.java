@@ -18,11 +18,11 @@ import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeReposito
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProvider;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
 
-public class CoreDataSpaceCodeRepositoryProvider implements CodeRepositoryProvider
+public class CoreDataSpaceMetaModelCodeRepositoryProvider implements CodeRepositoryProvider
 {
     @Override
     public CodeRepository repository()
     {
-        return GenericCodeRepository.build("core_data_space.definition.json");
+        return GenericCodeRepository.build("core_data_space_metamodel.definition.json");
     }
 }
