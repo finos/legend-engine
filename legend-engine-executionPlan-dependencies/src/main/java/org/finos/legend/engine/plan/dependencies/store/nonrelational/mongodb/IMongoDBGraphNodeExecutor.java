@@ -14,8 +14,23 @@
 
 package org.finos.legend.engine.plan.dependencies.store.nonrelational.mongodb;
 
-import org.finos.legend.engine.plan.dependencies.store.shared.IResult;
+import com.mongodb.Cursor;
+import org.bson.Document;
+import org.finos.legend.engine.plan.dependencies.domain.graphFetch.IGraphInstance;
 
-public interface IDocumentResult extends IResult
+import java.lang.reflect.Method;
+import java.util.List;
+
+public interface IMongoDBGraphNodeExecutor
 {
+
+    IGraphInstance<?> getObjectFromCursor(Cursor cursor, String databaseConnection);
+
+    List<Method> primaryKeyGetter();
+
+    default Document primaryKeyColumns()
+    {
+        return new Document();
+    }
+
 }
