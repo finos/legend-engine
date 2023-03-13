@@ -259,6 +259,7 @@
         <module>legend-engine-xt-nonrelationalStore-mongodb-grammar-integration</module>
         <module>legend-engine-xt-nonrelationalStore-mongodb-executionPlan</module>
         <module>legend-engine-xt-nonrelationalStore-mongodb-compiler</module>
+        <module>legend-engine-xt-nonrelationalStore-mongodb-javaPlatformBinding-pure</module>
     </modules>
 
     <properties>

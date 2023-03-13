@@ -64,7 +64,7 @@ Class meta::external::store::mongodb::metamodel::pure::MongoDBSetImplementation 
 
 
 
-Class meta::external::store::mongodb::metamodel::pure::RootMongoDbInstanceSetImplementation extends InstanceSetImplementation
+Class meta::external::store::mongodb::metamodel::pure::RootMongoDBSetImplementation extends InstanceSetImplementation
 {
 }
 

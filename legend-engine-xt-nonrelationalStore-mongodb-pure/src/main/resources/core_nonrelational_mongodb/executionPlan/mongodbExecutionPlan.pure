@@ -15,6 +15,7 @@
 import meta::external::store::mongodb::metamodel::aggregation::*;
 import meta::external::store::mongodb::metamodel::pure::*;
 import meta::external::store::mongodb::metamodel::pure::runtime::*;
+import meta::external::store::mongodb::metamodel::pure::graphFetch::executionPlan::*;
 
 Class meta::external::store::mongodb::metamodel::pure::MongoDBExecutionNode extends meta::pure::executionPlan::ExecutionNode
 {
@@ -30,3 +31,8 @@ Class meta::external::store::mongodb::metamodel::pure::MongoDBExecutionNode exte
 //[classResultType:$this.resultType->instanceOf(meta::pure::executionPlan::ClassResultType)]
 //{
 //}
+
+Class meta::external::store::mongodb::metamodel::pure::graphFetch::executionPlan::MongoDBGraphFetchExecutionNode extends meta::pure::graphFetch::executionPlan::LocalGraphFetchExecutionNode
+{
+   children : MongoDBGraphFetchExecutionNode[*];
+}

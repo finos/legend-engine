@@ -1,0 +1,14 @@
+{
+  "name": "core_nonrelational_mongodb_java_platform_binding",
+  "pattern": "(meta::external::store::mongodb::executionPlan::platformBinding::legendJava)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_functions",
+    "platform_dsl_mapping",
+    "core",
+    "core_external_format_json",
+    "core_nonrelational_mongodb",
+    "core_external_language_java",
+    "core_java_platform_binding"
+  ]
+}
