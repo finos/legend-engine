@@ -27,13 +27,17 @@ import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
+import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.ServerConnectionConfiguration;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.cache.ExecutionCache;
 import org.finos.legend.engine.plan.execution.cache.ExecutionCacheBuilder;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
+import org.finos.legend.engine.protocol.Protocol;
+import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.RelationalRootQueryTempTableGraphFetchExecutionNode;
@@ -65,6 +69,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
 import java.util.ServiceLoader;
@@ -84,12 +89,21 @@ public class TestGraphQLAPI
         HandlerCollection handlerCollection = new HandlerCollection();
         handlerCollection.setHandlers(new Handler[] {
                 buildPMCDMetadataHandler("/api/projects/Project1/workspaces/Workspace1/pureModelContextData", "/org/finos/legend/engine/query/graphQL/api/test/Project1_Workspace1.pure"),
+                buildJsonHandler("/api/projects/Project1/workspaces/Workspace1/revisions/HEAD/upstreamProjects", "[]"),
+
                 buildPMCDMetadataHandler("/api/projects/Project1/workspaces/Workspace2/pureModelContextData", "/org/finos/legend/engine/query/graphQL/api/test/Project1_Workspace2.pure"),
-                buildPMCDMetadataHandler("/api/projects/Project2/workspaces/Workspace1/pureModelContextData", "/org/finos/legend/engine/query/graphQL/api/test/Project2_Workspace1.pure")
+                buildJsonHandler("/api/projects/Project1/workspaces/Workspace2/revisions/HEAD/upstreamProjects", "[]"),
+
+                buildPMCDMetadataHandler("/api/projects/Project2/workspaces/Workspace1/pureModelContextData", "/org/finos/legend/engine/query/graphQL/api/test/Project2_Workspace1.pure"),
+                buildJsonHandler("/api/projects/Project2/workspaces/Workspace1/revisions/HEAD/upstreamProjects", "[]]"),
+
+                buildPMCDMetadataHandler("/api/projects/Project3/workspaces/Workspace1/pureModelContextData", "/org/finos/legend/engine/query/graphQL/api/test/Project3_Workspace1.pure"),
+                buildJsonHandler("/api/projects/Project3/workspaces/Workspace1/revisions/HEAD/upstreamProjects",  readModelContentFromResource("/org/finos/legend/engine/query/graphQL/api/test/Project3_upstreamProjects.json")),
+                buildPMCDMetadataHandler("/projects/org.finos.legend.graphql/models/versions/2.0.1/pureModelContextData","/org/finos/legend/engine/query/graphQL/api/test/Project4_Version_2.0.1.pure",new Protocol("pure", PureClientVersions.production),new PureModelContextPointer())
         });
         server.setHandler(handlerCollection);
         server.start();
-        metaDataServerConfiguration = new MetaDataServerConfiguration(null, null, new ServerConnectionConfiguration("127.0.0.1", serverPort));
+        metaDataServerConfiguration = new MetaDataServerConfiguration(null, new ServerConnectionConfiguration("127.0.0.1", serverPort), new ServerConnectionConfiguration("127.0.0.1", serverPort));
     }
 
     @AfterClass
@@ -118,6 +132,39 @@ public class TestGraphQLAPI
                 "    }\n" +
                 "  }";
         Response response = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
+
+        String expected = "{" +
+                "\"data\":{" +
+                "\"allFirms\":[" +
+                "{\"legalName\":\"Firm X\",\"employees\":[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"John\",\"lastName\":\"Hill\"},{\"firstName\":\"Anthony\",\"lastName\":\"Allen\"}]}," +
+                "{\"legalName\":\"Firm A\",\"employees\":[{\"firstName\":\"Fabrice\",\"lastName\":\"Roberts\"}]}," +
+                "{\"legalName\":\"Firm B\",\"employees\":[{\"firstName\":\"Oliver\",\"lastName\":\"Hill\"},{\"firstName\":\"David\",\"lastName\":\"Harris\"}]}" +
+                "]" +
+                "}" +
+                "}";
+        Assert.assertEquals(expected, responseAsString(response));
+    }
+
+    @Test
+    public void testGraphQLExecuteDevAPI_Relational_WithDependencies() throws Exception
+    {
+        ModelManager modelManager = new ModelManager(DeploymentMode.TEST, new SDLCLoader(metaDataServerConfiguration, null));
+        PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
+        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
+        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> generatorExtensions.flatCollect(g -> g.getExtraExtensions(pm)), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
+        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
+        Query query = new Query();
+        query.query = "query Query {\n" +
+                "  allFirms {\n" +
+                "      legalName,\n" +
+                "      employees {\n" +
+                "        firstName,\n" +
+                "        lastName\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }";
+        Response response = graphQLExecute.executeDev(mockRequest, "Project3", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
 
         String expected = "{" +
                 "\"data\":{" +
@@ -462,8 +509,13 @@ public class TestGraphQLAPI
 
     private static Handler buildPMCDMetadataHandler(String path, String resourcePath) throws Exception
     {
+        return buildPMCDMetadataHandler(path, resourcePath, null, null);
+    }
+
+    private static Handler buildPMCDMetadataHandler(String path, String resourcePath, Protocol serializer, PureModelContextPointer pointer) throws Exception
+    {
         ContextHandler contextHandler = new ContextHandler(path);
-        PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(readModelContentFromResource(resourcePath));
+        PureModelContextData pureModelContextData = PureModelContextData.newBuilder().withOrigin(pointer).withSerializer(serializer).withPureModelContextData(PureGrammarParser.newInstance().parseModel(readModelContentFromResource(resourcePath))).build();
         byte[] bytes = OBJECT_MAPPER.writeValueAsBytes(pureModelContextData);
 
         AbstractHandler handler = new AbstractHandler()
@@ -473,6 +525,23 @@ public class TestGraphQLAPI
             {
                 OutputStream stream = httpServletResponse.getOutputStream();
                 stream.write(bytes);
+                stream.flush();
+            }
+        };
+        contextHandler.setHandler(handler);
+        return contextHandler;
+    }
+
+    private static Handler buildJsonHandler(String path, String json)
+    {
+        ContextHandler contextHandler = new ContextHandler(path);
+        AbstractHandler handler = new AbstractHandler()
+        {
+            @Override
+            public void handle(String s, Request request, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws IOException
+            {
+                OutputStream stream = httpServletResponse.getOutputStream();
+                stream.write(json.getBytes(StandardCharsets.UTF_8));
                 stream.flush();
             }
         };
