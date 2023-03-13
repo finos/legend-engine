@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.analytics.model;
+package org.finos.legend.engine.generation.analytics.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.finos.legend.engine.protocol.analytics.model.MappingModelCoverageAnalysisResult;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportInfo;
 
@@ -34,33 +33,12 @@ public class DataSpaceAnalysisResult
     public String description;
     public DataSpaceSupportInfo supportInfo;
 
-    public PureModelContextData model;
-
     public List<DataSpaceExecutionContextAnalysisResult> executionContexts = Collections.emptyList();
     public String defaultExecutionContext;
 
     public List<String> featuredDiagrams = Collections.emptyList();
+    public PureModelContextData model;
 
-    public static class DataSpaceTaggedValueInfo
-    {
-        public String profile;
-        public String tag;
-        public String value;
-    }
-
-    public static class DataSpaceStereotypeInfo
-    {
-        public String profile;
-        public String value;
-    }
-
-    public static class DataSpaceExecutionContextAnalysisResult
-    {
-        public String name;
-        public String description;
-        public String mapping;
-        public List<String> compatibleRuntimes;
-        public String defaultRuntime;
-        public MappingModelCoverageAnalysisResult mappingModelCoverageAnalysisResult;
-    }
+    public List<String> elements = Collections.emptyList();
+    public List<DataSpaceModelDocumentationEntry> elementDocs = Collections.emptyList();
 }
