@@ -63,7 +63,8 @@ public class RelationalExecutor implements Executor<SqlGen, TabularData, SqlPlan
         for (String sql : physicalPlan.getSqlList())
         {
             List<Map<String, Object>> queryResult = jdbcHelper.executeQuery(sql);
-            if (!queryResult.isEmpty()) {
+            if (!queryResult.isEmpty())
+            {
                 resultSetList.add(new TabularData(queryResult));
             }
         }
@@ -78,7 +79,8 @@ public class RelationalExecutor implements Executor<SqlGen, TabularData, SqlPlan
         {
             String enrichedSql = getEnrichedSql(placeholderKeyValues, sql);
             List<Map<String, Object>> queryResult = jdbcHelper.executeQuery(enrichedSql);
-            if (!queryResult.isEmpty()) {
+            if (!queryResult.isEmpty())
+            {
                 resultSetList.add(new TabularData(queryResult));
             }
         }

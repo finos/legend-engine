@@ -50,7 +50,6 @@ import static org.finos.legend.engine.persistence.components.TestUtils.incomeNam
 import static org.finos.legend.engine.persistence.components.TestUtils.mainTableName;
 import static org.finos.legend.engine.persistence.components.TestUtils.name;
 import static org.finos.legend.engine.persistence.components.TestUtils.nameName;
-import static org.finos.legend.engine.persistence.components.TestUtils.nameWithMoreLength;
 import static org.finos.legend.engine.persistence.components.TestUtils.startTimeName;
 import static org.finos.legend.engine.persistence.components.TestUtils.testDatabaseName;
 import static org.finos.legend.engine.persistence.components.TestUtils.testSchemaName;
@@ -68,6 +67,9 @@ class SchemaEvolutionTest extends BaseTest
 
         // Create staging table
         createStagingTable(stagingTable);
+
+        //Create main table with Old schema
+        createTempTable(mainTable);
 
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestName)
@@ -98,7 +100,7 @@ class SchemaEvolutionTest extends BaseTest
         List<Map<String, Object>> actualTableData = h2Sink.executeQuery("select * from \"TEST\".\"main\"");
         assertTableColumnsEquals(Arrays.asList(schema), actualTableData);
         // 4. Verify schema changes in model objects
-        assertUpdatedDataset(stagingTable, result.updatedDatasets().mainDataset());
+        assertUpdatedDataset(TestUtils.expectedMainTableSchema(), result.updatedDatasets().mainDataset());
 
         // ------------ Perform Pass2 ------------------------
         String dataPass2 = basePathForInput + "add_column_data_pass2.csv";
@@ -124,6 +126,9 @@ class SchemaEvolutionTest extends BaseTest
 
         // Create staging table
         createStagingTable(stagingTable);
+
+        //Create main table with Old schema
+        createTempTable(mainTable);
 
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()
@@ -156,7 +161,7 @@ class SchemaEvolutionTest extends BaseTest
         assertTableColumnsEquals(Arrays.asList(schema), actualTableData);
         Assertions.assertEquals("BIGINT", getColumnDataTypeFromTable(h2Sink.connection(), testDatabaseName, testSchemaName, mainTableName, incomeName));
         // 4. Verify schema changes in model objects
-        assertUpdatedDataset(stagingTable, result.updatedDatasets().mainDataset());
+        assertUpdatedDataset(TestUtils.expectedMainTableSchema(), result.updatedDatasets().mainDataset());
 
         // ------------ Perform Pass2 ------------------------
         String dataPass2 = basePathForInput + "data_type_conversion_data_pass2.csv";
@@ -182,6 +187,9 @@ class SchemaEvolutionTest extends BaseTest
 
         // Create staging table
         createStagingTable(stagingTable);
+
+        //Create main table with Old schema
+        createTempTable(mainTable);
 
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()
@@ -216,7 +224,7 @@ class SchemaEvolutionTest extends BaseTest
         Assertions.assertEquals("VARCHAR", getColumnDataTypeFromTable(h2Sink.connection(), testDatabaseName, testSchemaName, mainTableName, nameName));
         Assertions.assertEquals(256, getColumnDataTypeLengthFromTable(h2Sink, mainTableName, nameName));
         // 4. Verify schema changes in model objects
-        assertUpdatedDataset(createDatasetWithUpdatedField(mainTable, nameWithMoreLength), result.updatedDatasets().mainDataset());
+        assertUpdatedDataset(TestUtils.expectedMainTableSchemaWithLengthEvolution(), result.updatedDatasets().mainDataset());
 
         // ------------ Perform Pass2 ------------------------
         String dataPass2 = basePathForInput + "datatype_type_size_change_data_pass2.csv";
@@ -242,6 +250,9 @@ class SchemaEvolutionTest extends BaseTest
 
         // Create staging table
         createStagingTable(stagingTable);
+
+        //Create main table with Old schema
+        createTempTable(mainTable);
 
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()
@@ -274,7 +285,7 @@ class SchemaEvolutionTest extends BaseTest
         assertTableColumnsEquals(Arrays.asList(schema), actualTableData);
         Assertions.assertEquals("YES", getIsColumnNullableFromTable(h2Sink, mainTableName, nameName));
         // 4. Verify schema changes in model objects
-        assertUpdatedDataset(stagingTable, result.updatedDatasets().mainDataset());
+        assertUpdatedDataset(createDatasetWithUpdatedField(TestUtils.expectedMainTableSchema(), name.withNullable(true)), result.updatedDatasets().mainDataset());
 
         // ------------ Perform Pass2 ------------------------
         String dataPass2 = basePathForInput + "column_nullability_change_data_pass2.csv";
@@ -300,6 +311,9 @@ class SchemaEvolutionTest extends BaseTest
 
         // Create staging table
         createStagingTable(stagingTable);
+
+        //Create main table with Old schema
+        createTempTable(mainTable);
 
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()
@@ -334,7 +348,7 @@ class SchemaEvolutionTest extends BaseTest
         Assertions.assertEquals("BIGINT", getColumnDataTypeFromTable(h2Sink.connection(), testDatabaseName, testSchemaName, mainTableName, incomeName));
         Assertions.assertEquals("YES", getIsColumnNullableFromTable(h2Sink, mainTableName, incomeName));
         // 4. Verify schema changes in model objects
-        assertUpdatedDataset(stagingTable, result.updatedDatasets().mainDataset());
+        assertUpdatedDataset(TestUtils.expectedMainTableSchema(), result.updatedDatasets().mainDataset());
 
         // ------------ Perform Pass2 ------------------------
         String dataPass2 = basePathForInput + "data_type_conversion_and_column_nullability_change_data_pass2.csv";
@@ -360,6 +374,9 @@ class SchemaEvolutionTest extends BaseTest
 
         // Create staging table
         createStagingTable(stagingTable);
+
+        //Create main table with Old schema
+        createTempTable(mainTable);
 
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()
@@ -395,7 +412,7 @@ class SchemaEvolutionTest extends BaseTest
         Assertions.assertEquals(10, getColumnDataTypeLengthFromTable(h2Sink, mainTableName, incomeName));
         Assertions.assertEquals(2, getColumnDataTypeScaleFromTable(h2Sink, mainTableName, incomeName));
         // 4. Verify schema changes in model objects
-        assertUpdatedDataset(stagingTable, result.updatedDatasets().mainDataset());
+        assertUpdatedDataset(TestUtils.expectedMainTableSchemaWithDatatypeChange(), result.updatedDatasets().mainDataset());
 
         // ------------ Perform Pass2 ------------------------
         String dataPass2 = basePathForInput + "data_type_conversion_and_data_type_size_change_data_pass2.csv";
@@ -421,6 +438,9 @@ class SchemaEvolutionTest extends BaseTest
 
         // Create staging table
         createStagingTable(stagingTable);
+
+        //Create main table with Old schema
+        createTempTable(mainTable);
 
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestName)
@@ -452,7 +472,7 @@ class SchemaEvolutionTest extends BaseTest
         assertTableColumnsEquals(Arrays.asList(schema), actualTableData);
         Assertions.assertEquals("YES", getIsColumnNullableFromTable(h2Sink, mainTableName, nameName));
         // 4. Verify schema changes in model objects
-        assertUpdatedDataset(createDatasetWithUpdatedField(mainTable, name.withNullable(true)), result.updatedDatasets().mainDataset());
+        assertUpdatedDataset(createDatasetWithUpdatedField(TestUtils.expectedMainTableSchema(), name.withNullable(true)), result.updatedDatasets().mainDataset());
 
         // ------------ Perform Pass2 ------------------------
         String dataPass2 = basePathForInput + "make_main_column_nullable_data_pass2.csv";
@@ -478,6 +498,9 @@ class SchemaEvolutionTest extends BaseTest
 
         // Create staging table
         createStagingTable(stagingTable);
+
+        //Create main table with Old schema
+        createTempTable(mainTable);
 
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()

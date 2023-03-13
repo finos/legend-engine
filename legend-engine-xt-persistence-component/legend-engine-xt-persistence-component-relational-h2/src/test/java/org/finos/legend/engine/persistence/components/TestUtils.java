@@ -102,7 +102,7 @@ public class TestUtils
         put(dateName, new HashSet<>(Arrays.asList("2021-12-01", "2021-12-02")));
     }};
 
-    public static Field id = Field.builder().name(idName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(idName).build();
+    public static Field id = Field.builder().name(idName).type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(idName).build();
     public static Field tinyIntId = Field.builder().name(idName).type(FieldType.of(DataType.TINYINT, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(idName).build();
     public static Field name = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 64, null)).nullable(false).fieldAlias(nameName).build();
     public static Field nullableName = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 64, null)).fieldAlias(nameName).build();
@@ -112,6 +112,7 @@ public class TestUtils
     public static Field nullableIntIncome = Field.builder().name(incomeName).type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty())).fieldAlias(incomeName).build();
     public static Field decimalIncome = Field.builder().name(incomeName).type(FieldType.of(DataType.DECIMAL, 10, 2)).fieldAlias(incomeName).build();
     public static Field startTime = Field.builder().name(startTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(startTimeName).build();
+    public static Field startTimeTimestamp = Field.builder().name(startTimeName).type(FieldType.of(DataType.TIMESTAMP, null, 6)).primaryKey(true).fieldAlias(startTimeName).build();
     public static Field expiryDate = Field.builder().name(expiryDateName).type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).fieldAlias(expiryDateName).build();
     public static Field date = Field.builder().name(dateName).type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(dateName).build();
     public static Field entity = Field.builder().name(entityName).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(entityName).build();
@@ -123,6 +124,7 @@ public class TestUtils
     public static Field dateIn = Field.builder().name(dateInName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(dateInName).build();
     public static Field dateOut = Field.builder().name(dateOutName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(dateOutName).build();
     public static Field digest = Field.builder().name(digestName).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).fieldAlias(digestName).build();
+    public static Field digestWithLength = Field.builder().name(digestName).type(FieldType.of(DataType.VARCHAR, 2147483647, null)).fieldAlias(digestName).build();
     public static Field batchUpdateTimestamp = Field.builder().name(batchUpdateTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).build();
     public static Field batchIdIn = Field.builder().name(batchIdInName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(batchIdInName).build();
     public static Field batchIdOut = Field.builder().name(batchIdOutName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(batchIdOutName).build();
@@ -771,6 +773,54 @@ public class TestUtils
             .build();
     }
 
+    public static DatasetDefinition expectedMainTableSchema()
+    {
+        return DatasetDefinition.builder()
+                .group(testSchemaName)
+                .name(mainTableName)
+                .schema(SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(income)
+            .addFields(startTimeTimestamp)
+            .addFields(expiryDate)
+            .addFields(digestWithLength)
+            .build())
+                .build();
+    }
+
+    public static DatasetDefinition expectedMainTableSchemaWithLengthEvolution()
+    {
+        return DatasetDefinition.builder()
+                .group(testSchemaName)
+                .name(mainTableName)
+                .schema(SchemaDefinition.builder()
+                        .addFields(id)
+                        .addFields(nameWithMoreLength)
+                        .addFields(income)
+                        .addFields(startTimeTimestamp)
+                        .addFields(expiryDate)
+                        .addFields(digestWithLength)
+                        .build())
+                .build();
+    }
+
+    public static DatasetDefinition expectedMainTableSchemaWithDatatypeChange()
+    {
+        return DatasetDefinition.builder()
+                .group(testSchemaName)
+                .name(mainTableName)
+                .schema(SchemaDefinition.builder()
+                        .addFields(id)
+                        .addFields(name)
+                        .addFields(decimalIncome)
+                        .addFields(startTimeTimestamp)
+                        .addFields(expiryDate)
+                        .addFields(digestWithLength)
+                        .build())
+                .build();
+    }
+
     public static DatasetDefinition getSchemaEvolutionDataTypeConversionMainTable()
     {
         return DatasetDefinition.builder()
@@ -907,14 +957,16 @@ public class TestUtils
     // This is to check the Dataset objects - whether everything has been updated properly
     public static void assertUpdatedDataset(Dataset expectedDataset, Dataset actualDataset)
     {
-        List<Field> actualFields = actualDataset.schema().fields();
-        List<Field> expectedFields = expectedDataset.schema().fields();
-        Set<Field> actualFieldsSet = actualFields.stream().collect(Collectors.toSet());
-        Set<Field> expectedFieldsSet = expectedFields.stream().collect(Collectors.toSet());
-        if (!actualFieldsSet.equals(expectedFieldsSet))
-        {
-            Assertions.fail("Updated dataset object does not match that of the expected dataset");
-        }
+        Set<Field> actualFieldsSet = actualDataset.schema().fields().stream().collect(Collectors.toSet());
+        Set<Field> expectedFieldsSet = expectedDataset.schema().fields().stream().collect(Collectors.toSet());
+        expectedFieldsSet.forEach(
+                field-> {
+                    Field matchedMainField = actualFieldsSet.stream().filter(mainField -> mainField.name().equals(field.name())).findFirst().orElse(null);
+                    if (field.nullable() != matchedMainField.nullable() || field.primaryKey() != matchedMainField.primaryKey() || !field.type().equals(matchedMainField.type()))
+                    {
+                        Assertions.fail("Updated dataset object does not match that of the expected dataset");
+                    }
+                });
     }
 
     // This is to check the actual database table - whether columns have been added properly

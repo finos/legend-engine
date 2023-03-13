@@ -404,7 +404,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         }
         catch (IncompatibleSchemaChangeException e)
         {
-            Assertions.assertEquals("Column \"amount\" couldn't be made non-nullable since user capability does not allow it", e.getMessage());
+            Assertions.assertEquals("Column \"amount\" couldn't be made nullable since user capability does not allow it", e.getMessage());
         }
     }
 
@@ -656,7 +656,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         }
         catch (IncompatibleSchemaChangeException e)
         {
-            Assertions.assertEquals("Column \"biz_date\" couldn't be made non-nullable since user capability does not allow it", e.getMessage());
+            Assertions.assertEquals("Column \"biz_date\" couldn't be made nullable since user capability does not allow it", e.getMessage());
         }
     }
 
