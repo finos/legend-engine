@@ -962,7 +962,7 @@ public class TestUtils
         expectedFieldsSet.forEach(
                 field-> {
                     Field matchedMainField = actualFieldsSet.stream().filter(mainField -> mainField.name().equals(field.name())).findFirst().orElse(null);
-                    if (field.nullable() != matchedMainField.nullable() || field.primaryKey() != matchedMainField.primaryKey() || !field.type().equals(matchedMainField.type()))
+                    if (matchedMainField == null || field.nullable() != matchedMainField.nullable() || field.primaryKey() != matchedMainField.primaryKey() || !field.type().equals(matchedMainField.type()))
                     {
                         Assertions.fail("Updated dataset object does not match that of the expected dataset");
                     }
