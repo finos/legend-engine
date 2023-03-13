@@ -25,7 +25,7 @@
 
     <artifactId>legend-engine-xt-text-pure-metamodel</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Engine - XT - Text - PAR/JAVA - metamodel</name>
+    <name>Legend Engine - XT - Text - PAR/JAVA - Metamodel</name>
 
     <build>
         <plugins>
@@ -89,11 +89,14 @@
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
         </dependency>
+        <!-- PURE -->
+
+        <!-- ENGINE -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-platform-java</artifactId>
         </dependency>
-        <!-- PURE -->
+        <!-- ENGINE -->
 
         <dependency>
             <groupId>org.eclipse.collections</groupId>

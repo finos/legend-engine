@@ -337,6 +337,7 @@ public class TestExtensions
                 .with("core_analytics_search")
                 .with("core_data_space")
                 .with("core_diagram")
+                .with("core_diagram_metamodel")
                 .with("core_external_format_avro")
                 .with("core_external_format_rosetta")
                 .with("core_external_language_morphir")

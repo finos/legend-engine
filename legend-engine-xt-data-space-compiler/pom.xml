@@ -46,6 +46,10 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-diagram-pure-metamodel</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-diagram-pure</artifactId>
         </dependency>
         <dependency>
@@ -96,7 +100,6 @@
             <artifactId>legend-engine-xt-analytics-mapping-protocol</artifactId>
         </dependency>
         <!-- ENGINE -->
-
 
         <!-- JACKSON -->
         <dependency>

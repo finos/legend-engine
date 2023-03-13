@@ -104,9 +104,11 @@ public class DataSpaceCompilerExtension implements CompilerExtension
                     metamodel._featuredDiagrams(dataSpace.featuredDiagrams != null ? ListIterate.collect(dataSpace.featuredDiagrams, item -> HelperDiagramBuilder.resolveDiagram(item.path, item.sourceInformation, context)) : null);
 
                     // elements
-                    metamodel._elements(dataSpace.elements != null ? ListIterate.collect(dataSpace.elements, el -> {
+                    metamodel._elements(dataSpace.elements != null ? ListIterate.collect(dataSpace.elements, el ->
+                    {
                         PackageableElement element = context.pureModel.getPackageableElement(el.path, el.sourceInformation);
-                        if (element instanceof Class || element instanceof Enumeration || element instanceof Association) {
+                        if (element instanceof Class || element instanceof Enumeration || element instanceof Association)
+                        {
                             return element;
                         }
                         throw new EngineException("Element is not of supported types (only classes, enumerations, and associations are supported)", el.sourceInformation, EngineErrorType.COMPILATION);

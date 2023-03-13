@@ -25,7 +25,7 @@
 
     <artifactId>legend-engine-xt-sql-pure-metamodel</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Engine - XT - SQL - PAR/JAVA - metamodel</name>
+    <name>Legend Engine - XT - SQL - PAR/JAVA - Metamodel</name>
 
     <build>
         <plugins>
