@@ -61,7 +61,7 @@ function meta::relational::dbTestRunner::runSqlQueryTest(sqlQuery:SQLQuery[1], e
                   let errMsg = 'Result assert failed, expected Values : '+ $expectedStr  +', actual Values : ' + $resStr;
                   
                   assert($areEqual , $errMsg);
-                  assert($res.activities->cast(@RelationalActivity).comment->toOne()->meta::pure::functions::string::matches('-- executionTraceID : [0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'));
+                  assert($res.activities->cast(@RelationalActivity).comment->toOne()->meta::pure::functions::string::matches('-- \\{\"executionTraceID\" : \"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\"\\}'));
               );
      );
 }
@@ -139,7 +139,7 @@ function meta::relational::dbTestRunner::wrapSQLStringInExecutionPlan(sqlString:
   let sqlExecutionNode = ^RelationalDataTypeInstantiationExecutionNode(
                            resultType=$resultType,
                            executionNodes=^SQLExecutionNode(
-                                sqlComment='-- executionTraceID : ${execID}',
+                                sqlComment= '-- {"executionTraceID" : "${execID}"}',
                                 sqlQuery=$sqlString ,
                                 connection=$connection , 
                                 resultType=$resultType,

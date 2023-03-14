@@ -88,4 +88,5 @@ Class meta::relational::mapping::CreateAndPopulateTempTableExecutionNode extends
 
 Class meta::pure::executionPlan::RelationalBlockExecutionNode extends meta::pure::executionPlan::SequenceExecutionNode
 {
+  finallyExecutionNodes :  ExecutionNode[*];
 }

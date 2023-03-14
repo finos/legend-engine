@@ -2176,5 +2176,4 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  ];\n" +
                 "}\n",null, Collections.singletonList("COMPILATION error at [97:21-70]: Multiple RelationalDatabaseConnections are Not Supported for the same Store - relational::graphFetch::dbInc"));
     }
-
 }

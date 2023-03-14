@@ -15,7 +15,7 @@
 import meta::pure::metamodel::diagram::analytics::modelCoverage::*;
 import meta::pure::milestoning::*;
 
-Class <<access.private>> meta::pure::metamodel::diagram::analytics::modelCoverage::DiagramModelCoverageAnalysisResult
+Class meta::pure::metamodel::diagram::analytics::modelCoverage::DiagramModelCoverageAnalysisResult
 {
   classes: Class<Any>[*];
   enumerations: Enumeration<Enum>[*];

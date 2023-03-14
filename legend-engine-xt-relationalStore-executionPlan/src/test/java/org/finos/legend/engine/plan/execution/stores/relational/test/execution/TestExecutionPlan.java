@@ -455,8 +455,8 @@ public class TestExecutionPlan extends AlloyTestServer
                 "}";
         SingleExecutionPlan plan = super.buildPlan(TestPlanExecutionForIn.LOGICAL_MODEL + TestPlanExecutionForIn.STORE_MODEL + TestPlanExecutionForIn.MAPPING + TestPlanExecutionForIn.RUNTIME + fetchFunction, null);
         RelationalResult result = (RelationalResult) planExecutor.execute(plan);
-        Assert.assertTrue(((RelationalExecutionActivity) result.activities.get(0)).comment.matches("-- executionTraceID : [0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"));
-        Assert.assertTrue(result.executedSQl.matches("-- executionTraceID : [0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\nselect \"root\".fullName as \"fullName\" from PERSON as \"root\""));
+        Assert.assertTrue(((RelationalExecutionActivity) result.activities.get(0)).comment.matches("-- \\{\"executionTraceID\" : \"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\"\\}"));
+        Assert.assertTrue(result.executedSQl.matches("-- \\{\"executionTraceID\" : \"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\"\\}\nselect \"root\".fullName as \"fullName\" from PERSON as \"root\""));
         String expected = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\"\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[{\"values\":[\"P1\"]},{\"values\":[\"P2\"]}]}}";
         Assert.assertEquals(expected, RelationalResultToJsonDefaultSerializer.removeComment(result.flush(new RelationalResultToJsonDefaultSerializer(result))));
     }
@@ -473,8 +473,8 @@ public class TestExecutionPlan extends AlloyTestServer
         SingleExecutionPlan plan = super.buildPlan(TestPlanExecutionForIn.LOGICAL_MODEL + TestPlanExecutionForIn.STORE_MODEL + TestPlanExecutionForIn.MAPPING + TestPlanExecutionForIn.RUNTIME + fetchFunction, null);
         JsonStreamingResult result = (JsonStreamingResult) planExecutor.execute(plan);
         Result graphFetchResult = ((GraphFetchResult) ((StreamingObjectResult) result.getChildResult()).getChildResult()).getRootResult();
-        Assert.assertTrue(((RelationalExecutionActivity) graphFetchResult.activities.get(0)).comment.matches("-- executionTraceID : [0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"));
-        Assert.assertTrue(((SQLExecutionResult) graphFetchResult).getExecutedSql().matches("-- executionTraceID : [0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\nselect \"root\".fullName as \"pk_0\", \"root\".fullName as \"fullName\" from PERSON as \"root\""));
+        Assert.assertTrue(((RelationalExecutionActivity) graphFetchResult.activities.get(0)).comment.matches("-- \\{\"executionTraceID\" : \"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\"\\}"));
+        Assert.assertTrue(((SQLExecutionResult) graphFetchResult).getExecutedSql().matches("-- \\{\"executionTraceID\" : \"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\"\\}\nselect \"root\".fullName as \"pk_0\", \"root\".fullName as \"fullName\" from PERSON as \"root\""));
         Assert.assertEquals("{\"builder\":{\"_type\":\"json\"},\"values\":[{\"fullName\":\"P1\"},{\"fullName\":\"P2\"}]}", result.flush(new JsonStreamToJsonDefaultSerializer(result)));
     }
 

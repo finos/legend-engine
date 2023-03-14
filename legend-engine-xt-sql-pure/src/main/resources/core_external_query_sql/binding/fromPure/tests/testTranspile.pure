@@ -272,9 +272,33 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByIndex():Boolean[1]
+{
+  let sqlString = 'SELECT String, sum(Integer) AS "sum" FROM service."/service/service1" GROUP BY 1';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
+        )->groupBy(['String'], agg('sum', row | $row.getInteger('Integer'), y | $y->sum()))
+      };
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByIndexMultipleWithAlias():Boolean[1]
+{
+  let sqlString = 'SELECT String, sum(Integer) AS "sum", Boolean AS "bool" FROM service."/service/service1" GROUP BY 1, 3';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
+        )->groupBy(['String', 'bool'], agg('sum', row | $row.getInteger('Integer'), y | $y->sum()))
+      };
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByFunctions():Boolean[1]
 {
-  let sqlString = 'SELECT count(Integer) AS "count", sum(Integer) AS "sum", avg(Integer) AS "avg" FROM service."/service/service1" GROUP BY String';
+  let sqlString = 'SELECT count(Integer) AS "count", SUM(Integer) AS "sum", avg(Integer) AS "avg" FROM service."/service/service1" GROUP BY String';
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {| FlatInput.all()->project(
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
@@ -288,16 +312,30 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
 
+function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure::tests::testSumConstant():Boolean[1]
+{
+  let sqlString = 'SELECT sum(1) AS "sum", FROM service."/service/service1"';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
+        )->groupBy('String', [
+          agg('sum', row | $row, y | sum(1))
+        ])
+      };
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+}
+
 //HAVING
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testHaving():Boolean[1]
 {
-  let sqlString = 'SELECT count(Integer) AS "count" FROM service."/service/service1" GROUP BY String HAVING count(Integer) > 0';
+  let sqlString = 'SELECT count(Integer) AS "count" FROM service."/service/service1" GROUP BY String HAVING count(Integer) > 0 AND count(1) > 0';
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {| FlatInput.all()->project(
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
           [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
         )->groupBy('String', agg('count', row | $row.getInteger('Integer'), y | $y->count())
-        )->filter(row | $row.getInteger('count') > 0)
+        )->filter(row | ($row.getInteger('count') > 0) && (count(1) > 0))
 
       };
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
@@ -506,6 +544,27 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 col(row:TDSRow[1] | now(), 'time'),
                 col(row:TDSRow[1] | now(), 'timestamp'),
                 col(row:TDSRow[1] | today(), 'date')
+              ])
+      };
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+}
+
+//DATE_TRUNC
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDateTrunc():Boolean[1]
+{
+  let sqlString = 'SELECT date_trunc(\'year\', StrictDate) AS "YEAR", date_trunc(\'quarter\', CAST(\'2023-01-01\' AS DATE)) AS "QUARTER", date_trunc(\'month\', StrictDate) AS "MONTH", date_trunc(\'week\', StrictDate) AS "WEEK" FROM service."/service/service1"';
+
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->project([
+                col(row:TDSRow[1] | firstDayOfYear($row.getStrictDate('StrictDate')), 'YEAR'),
+                col(row:TDSRow[1] | firstDayOfQuarter(parseDate('2023-01-01')), 'QUARTER'),
+                col(row:TDSRow[1] | firstDayOfMonth($row.getStrictDate('StrictDate')), 'MONTH'),
+                col(row:TDSRow[1] | firstDayOfWeek($row.getStrictDate('StrictDate')), 'WEEK')
               ])
       };
   assertLambdaEquals($expected, $sqlTransformContext.lambda());

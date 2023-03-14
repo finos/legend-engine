@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.3.3-SNAPSHOT</version>
+    <version>4.4.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -147,17 +147,19 @@
         <module>legend-engine-xt-text-grammar</module>
         <module>legend-engine-xt-text-compiler</module>
         <module>legend-engine-xt-text-protocol</module>
-        <module>legend-engine-xt-text-pure</module>
+        <module>legend-engine-xt-text-pure-metamodel</module>
 
+        <module>legend-engine-xt-diagram-api</module>
+        <module>legend-engine-xt-diagram-pure</module>
         <module>legend-engine-xt-diagram-grammar</module>
         <module>legend-engine-xt-diagram-compiler</module>
         <module>legend-engine-xt-diagram-protocol</module>
-        <module>legend-engine-xt-diagram-pure</module>
-        <module>legend-engine-xt-diagram-api</module>
+        <module>legend-engine-xt-diagram-pure-metamodel</module>
 
         <module>legend-engine-xt-data-space-grammar</module>
         <module>legend-engine-xt-data-space-compiler</module>
         <module>legend-engine-xt-data-space-protocol</module>
+        <module>legend-engine-xt-data-space-pure-metamodel</module>
         <module>legend-engine-xt-data-space-pure</module>
         <module>legend-engine-xt-data-space-generation</module>
         <module>legend-engine-xt-data-space-api</module>
@@ -264,7 +266,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>4.3.1</legend.pure.version>
+        <legend.pure.version>4.3.2</legend.pure.version>
         <legend.shared.version>0.23.3</legend.shared.version>
 
         <!-- SONAR -->
@@ -1203,10 +1205,20 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-text-pure</artifactId>
+                <artifactId>legend-engine-xt-text-pure-metamodel</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-diagram-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-diagram-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-diagram-compiler</artifactId>
@@ -1224,12 +1236,7 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-diagram-pure</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-diagram-api</artifactId>
+                <artifactId>legend-engine-xt-diagram-pure-metamodel</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -1257,6 +1264,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-data-space-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-data-space-pure-metamodel</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

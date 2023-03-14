@@ -17,6 +17,7 @@ package org.finos.legend.engine.plan.execution.stores;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -89,21 +90,24 @@ public enum StoreExecutableManager
         this.isRegistered = true;
     }
 
-    public void cancelExecutablesOnSession(String sessionID)
+    public Integer cancelExecutablesOnSession(String sessionID)
     {
+        AtomicReference<Integer> numberOfCancelled = new AtomicReference<>(0);
         sessionExecutableMap.remove(sessionID).forEach(
                 executable ->
                 {
                     try
                     {
                         executable.cancel();
+                        numberOfCancelled.updateAndGet(v -> v + 1);
                     }
-                    catch (Exception ignore)
+                    catch (Exception e)
                     {
                         LOGGER.info(new LogInfo(null, LoggingEventType.EXECUTABLE_CANCELLATION_ERROR, "Unable to cancel executable for session " + sessionID).toString());
                     }
                 }
         );
+        return numberOfCancelled.get();
     }
 }
 

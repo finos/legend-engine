@@ -38,6 +38,10 @@ public class DataSpace extends PackageableElement
     public String title;
     public String description;
     public List<PackageableElementPointer> featuredDiagrams;
+
+    // For now, these can only include classes, enumerations, associations
+    public List<PackageableElementPointer> elements;
+
     public DataSpaceSupportInfo supportInfo;
 
     @Override

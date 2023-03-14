@@ -734,8 +734,8 @@ function <<test.Test>>  meta::json::schema::fromSchema::tests::discriminatorTest
 
         '  ]\n' +
         '}';
-   
-   
+
+
     let prefix = 'meta::json::schema::fromSchema::tests';
     let fileMap = [
                   schemaInput('Cat.json', $cat,$prefix),
@@ -782,12 +782,90 @@ function <<test.Test>>  meta::json::schema::fromSchema::tests::discriminatorTest
 
 }
 
+function <<test.Test>>  meta::json::schema::fromSchema::tests::testAnyOfAdditionalProperties():Boolean[1]
+
+{
+
+  let schema = '{' +
+'    "$schema": "http://json-schema.org/draft-07/schema#",' +
+'    "title": "Zoo",' +
+'    "type": "object",' +
+'    "properties": {' +
+'        "animals": {' +
+'            "type": "array",' +
+'            "items": {' +
+'                "anyOf": [' +
+'                    {' +
+'                        "type": "object",' +
+'                        "additionalProperties": {' +
+'                            "$ref": "#/definitions/shared::Pet"' +
+'                        }' +
+'                    },' +
+'                    {' +
+'                        "$ref": "#/definitions/Dog"' +
+'                    }' +
+'                ]' +
+'            }' +
+'        }' +
+'    },' +
+'    "definitions": {' +
+'        "shared::Pet": {' +
+'            "$schema": "http://json-schema.org/draft-07/schema#",' +
+'            "title": "shared::Pet",' +
+'            "type": "object",' +
+'            "properties": {' +
+'                "name": {' +
+'                    "type": "string"' +
+'                }' +
+'            },' +
+'            "required": [' +
+'                "name"' +
+'            ]' +
+'        },' +
+'        "Dog": {' +
+'            "$schema": "http://json-schema.org/draft-07/schema#",' +
+'            "title": "Dog",' +
+'            "allOf": [' +
+'                {' +
+'                    "$ref": "#/definitions/shared::Pet"' +
+'                }' +
+'            ],' +
+'            "type": "object",' +
+'            "properties": {' +
+'                "woof": {' +
+'                    "type": "string"' +
+'                }' +
+'            },' +
+'            "required": [' +
+'                "woof"' +
+'            ]' +
+'        }' +
+'    }' +
+'}';
+    let prefix = 'meta::json::schema::fromSchema::tests';
+    let fileMap = [
+                  schemaInput('Zoo.json', $schema,$prefix)];
+
+   let generated =  $fileMap->JSONSchemaToPure(); 
+   let generatedZoo =  $generated->filter(g|$g->elementToPath()=='meta::json::schema::fromSchema::tests::Zoo')->toSerializer()->parseJSON();
+   let expectedZoo = meta::json::schema::fromSchema::tests::Zoo->toSerializer()->parseJSON();
+   assert(jsonEquivalent($expectedZoo,$generatedZoo));
+
+
+}
+
+Class {meta::json::schema::JSONSchemaGeneration.title='Zoo'} meta::json::schema::fromSchema::tests::Zoo 
+[animals_inLine:  $this.animals->forAll({value|or([$value->instanceOf(meta::json::schema::fromSchema::tests::shared::Pet) ,$value->instanceOf(meta::json::schema::fromSchema::tests::Dog) ] )})  ]
+{
+  animals:Any[*];
+}
+
+
 function  meta::json::schema::fromSchema::tests::printschemas(expected:JSONElement[1],actual:JSONElement[1]):String[1]
 {
 'expected\n'+ $expected->toPrettyJSONString()  + '\nactual\n' +$actual->toPrettyJSONString();
 
 }
-
 
 
 Class {meta::json::schema::JSONSchemaGeneration.title='Big Cat', meta::json::schema::JSONSchemaOpenAPIExtension.discriminatorName='bigCat'} meta::json::schema::fromSchema::tests::BigCat extends meta::json::schema::fromSchema::tests::Cat
@@ -835,6 +913,10 @@ function meta::json::schema::fromSchema::tests::friends(value: meta::json::schem
   $value->meta::json::schema::discriminateOneOf($value.petType,[meta::json::schema::fromSchema::tests::Cat, meta::json::schema::fromSchema::tests::Dog], [meta::json::schema::mapSchema('bigCat',meta::json::schema::fromSchema::tests::BigCat), meta::json::schema::mapSchema('Feline',meta::json::schema::fromSchema::tests::Cat),meta::json::schema::mapSchema( 'woof',meta::json::schema::fromSchema::tests::Dog), meta::json::schema::mapSchema('Canine',meta::json::schema::fromSchema::tests::Dog)]);
  }
 function meta::json::schema::fromSchema::tests::anyAnimal(value: meta::pure::metamodel::type::Any[0..1]): Boolean[1]
+{
+  $value->meta::pure::functions::collection::isNotEmpty()->meta::pure::functions::lang::if({|[$value->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::meta::instanceOf(meta::json::schema::fromSchema::tests::Cat), $value->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::meta::instanceOf(meta::json::schema::fromSchema::tests::Dog), $value->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::meta::instanceOf(meta::json::schema::fromSchema::tests::BigCat)]->meta::pure::functions::collection::or()}, {|true});
+}
+function meta::json::schema::fromSchema::tests::anyAnimalAdditionalProps(value: meta::pure::metamodel::type::Any[0..1]): Boolean[1]
 {
   $value->meta::pure::functions::collection::isNotEmpty()->meta::pure::functions::lang::if({|[$value->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::meta::instanceOf(meta::json::schema::fromSchema::tests::Cat), $value->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::meta::instanceOf(meta::json::schema::fromSchema::tests::Dog), $value->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::meta::instanceOf(meta::json::schema::fromSchema::tests::BigCat)]->meta::pure::functions::collection::or()}, {|true});
 }

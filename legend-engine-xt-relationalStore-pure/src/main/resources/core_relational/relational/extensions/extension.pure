@@ -141,7 +141,8 @@ function meta::relational::extension::relationalExtension(type:String[1]) : meta
       executionPlan_execution_allNodes = 
                               {extensions:meta::pure::extension::Extension[*] |
                                     [
-                                       g : meta::relational::graphFetch::executionPlan::RelationalGraphFetchExecutionNode[1] | $g->concatenate($g.children->concatenate($g.executionNodes)->map(n | $n->allNodes($extensions)))
+                                       g : meta::relational::graphFetch::executionPlan::RelationalGraphFetchExecutionNode[1] | $g->concatenate($g.children->concatenate($g.executionNodes)->map(n | $n->allNodes($extensions))),
+                                       r : meta::pure::executionPlan::RelationalBlockExecutionNode[1] | $r->concatenate($r.executionNodes->concatenate($r.finallyExecutionNodes)->map(n | $n->allNodes($extensions)))
                                     ]
                               },
       executionPlan_execution_buildVariableTemplateString =

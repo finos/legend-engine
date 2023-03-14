@@ -2383,9 +2383,12 @@ function meta::relational::functions::pureToSqlQuery::processSlice(f:FunctionExp
    let mainQuery = processValueSpecification($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
    let mainSelect = $mainQuery.select;
 
-   let fromRow = processValueSpecification($f.parametersValues->at(1), $currentPropertyMapping, $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor).select.columns->at(0)->cast(@Literal);
-   let toRow = processValueSpecification($f.parametersValues->at(2), $currentPropertyMapping, $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor).select.columns->at(0)->cast(@Literal);
-
+   let param1 = processValueSpecification($f.parametersValues->at(1), $currentPropertyMapping, $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor).select.columns->at(0);
+   assert($param1->instanceOf(Literal),'Invalid type for first parameter inside the slice function. Expected a value, found operation/function');
+   let fromRow = $param1->cast(@Literal);
+   let param2 = processValueSpecification($f.parametersValues->at(2), $currentPropertyMapping, $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor).select.columns->at(0);
+   assert($param2->instanceOf(Literal),'Invalid type for second parameter inside the slice function. Expected a value, found operation/function');
+   let toRow = $param2->cast(@Literal); 
    let processedSelect = ^$mainSelect (
                   fromRow = if ($fromRow.value->instanceOf(Integer) && $fromRow.value->cast(@Integer) == 0, |[], |$fromRow),
                   toRow = $toRow
@@ -2421,8 +2424,9 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::isolate
 function meta::relational::functions::pureToSqlQuery::processTake(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
    let mainQuery = processValueSpecification($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
-   let limitValue = processValueSpecification($f.parametersValues->at(1), $currentPropertyMapping, $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor).select.columns->toOne()->cast(@Literal);
-
+   let param1 = processValueSpecification($f.parametersValues->at(1), $currentPropertyMapping, $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor).select.columns->toOne();
+   assert($param1->instanceOf(Literal),'Invalid type for parameter inside the take/limit function. Expected a value, found operation/function');
+   let limitValue = $param1->cast(@Literal);
    let mainSelect = $mainQuery.select;
 
    let limitSize = if($limitValue->instanceOf(SQLNull),
@@ -2721,8 +2725,9 @@ function meta::relational::functions::pureToSqlQuery::processDrop(f:FunctionExpr
    let mainQuery = processValueSpecification($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
    let mainSelect = $mainQuery.select;
 
-   let fromValue = processValueSpecification($f.parametersValues->at(1), $currentPropertyMapping, $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor).select.columns->at(0)->cast(@Literal);//.value->cast(@Integer);
-
+   let param1 = processValueSpecification($f.parametersValues->at(1), $currentPropertyMapping, $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor).select.columns->at(0);//.value->cast(@Integer);
+   assert($param1->instanceOf(Literal),'Invalid type for parameter inside the drop function. Expected a value, found operation/function');
+   let fromValue = $param1->cast(@Literal);
    let processedSelect = ^$mainSelect(fromRow = $fromValue)->isolateSubSelectIfNotLastOperation($f, $state.functionExpressionStack, $extensions);
 
    ^$mainQuery(
