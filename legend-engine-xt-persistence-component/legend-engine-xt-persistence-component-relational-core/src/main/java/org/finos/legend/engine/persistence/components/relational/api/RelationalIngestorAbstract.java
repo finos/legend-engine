@@ -189,14 +189,6 @@ public abstract class RelationalIngestorAbstract
         {
             resourcesBuilder.stagingDataSetEmpty(datasetEmpty(updatedDatasets.stagingDataset(), transformer, executor));
         }
-        // Validate if main dataset schema matches the actual table
-        if (executor.datasetExists(updatedDatasets.mainDataset()))
-        {
-            String tableName = updatedDatasets.mainDataset().datasetReference().name().orElseThrow(IllegalStateException::new);
-            String schemaName = updatedDatasets.mainDataset().datasetReference().group().orElse(null);
-            String databaseName = updatedDatasets.mainDataset().datasetReference().database().orElse(null);
-            updatedDatasets = updatedDatasets.withMainDataset(constructDatasetFromDatabase(executor, tableName, schemaName, databaseName));
-        }
 
         // generate sql plans
         RelationalGenerator generator = RelationalGenerator.builder()
@@ -212,18 +204,37 @@ public abstract class RelationalIngestorAbstract
             .batchIdPattern(BATCH_ID_PATTERN)
             .build();
 
-        Planner planner = Planners.get(updatedDatasets, ingestMode(), plannerOptions());
-        GeneratorResult generatorResult = generator.generateOperations(updatedDatasets, resourcesBuilder.build(), planner);
-        if (generatorResult.schemaEvolutionDataset().isPresent())
+        boolean mainDatasetExists = executor.datasetExists(updatedDatasets.mainDataset());
+        if (mainDatasetExists)
         {
-            updatedDatasets = updatedDatasets.withMainDataset(generatorResult.schemaEvolutionDataset().get());
+            String tableName = updatedDatasets.mainDataset().datasetReference().name().orElseThrow(IllegalStateException::new);
+            String schemaName = updatedDatasets.mainDataset().datasetReference().group().orElse(null);
+            String databaseName = updatedDatasets.mainDataset().datasetReference().database().orElse(null);
+            updatedDatasets = updatedDatasets.withMainDataset(constructDatasetFromDatabase(executor, tableName, schemaName, databaseName));
+        }
+        else
+        {
+            updatedDatasets = generator.deriveMainDatasetFromStaging(updatedDatasets, ingestMode());
         }
 
-        // 1. Create tables
-        executor.executePhysicalPlan(generatorResult.preActionsSqlPlan());
-        // 2. Perform schema evolution
-        generatorResult.schemaEvolutionSqlPlan().ifPresent(executor::executePhysicalPlan);
-        // 3. Perform Ingestion
+        Planner planner = Planners.get(updatedDatasets, ingestMode(), plannerOptions());
+        GeneratorResult generatorResult = generator.generateOperations(updatedDatasets, resourcesBuilder.build(), planner);
+
+        // Create tables if they do not exist
+        if (!mainDatasetExists)
+        {
+            executor.executePhysicalPlan(generatorResult.preActionsSqlPlan());
+        }
+        else
+        {
+            // Perform schema evolution
+            if (generatorResult.schemaEvolutionDataset().isPresent())
+            {
+                updatedDatasets = updatedDatasets.withMainDataset(generatorResult.schemaEvolutionDataset().get());
+                generatorResult.schemaEvolutionSqlPlan().ifPresent(executor::executePhysicalPlan);
+            }
+        }
+        // Perform Ingestion
         List<IngestorResult> result = performIngestion(updatedDatasets, transformer, planner, executor, generatorResult, dataSplitRanges);
         return result;
     }
