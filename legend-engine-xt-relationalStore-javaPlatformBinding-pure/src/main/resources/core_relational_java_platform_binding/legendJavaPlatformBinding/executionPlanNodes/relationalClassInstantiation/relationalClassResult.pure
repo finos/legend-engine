@@ -402,7 +402,7 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
                       '                    {\n'+
                       '                        throw new RuntimeException("Enumeration mapping failure. Cannot find transformation for source value \'" + r + "\' for enumeration property \'' + $propertyName + '\' of type ' + $propertyType->elementToPath() + ' in enumeration mapping ' + $currentPropertyMapping.transformer->cast(@EnumerationMapping<Any>).name->toOne() + '.");\n'+
                       '                    }\n'+
-                      '                    res = Enum.valueOf(' + $javaEnumeration->typeToString() + '.class, transformedR);\n'+
+                      '                    res = ' + $javaEnumeration->typeToString() + '.getEnumFromPureName(transformedR);\n'+
                       '                }\n'+
                       '                return res;\n'+
                       '            }\n'+

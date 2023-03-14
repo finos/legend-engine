@@ -25,7 +25,6 @@ import org.junit.Test;
 
 public class TestSQLRoundTrip
 {
-
     @Test
     public void testEmptyStatement()
     {
@@ -131,7 +130,8 @@ public class TestSQLRoundTrip
     @Test
     public void testCompositeWhereOperators()
     {
-        check("SELECT * FROM table WHERE col = 1 AND col > 1 AND col < 1 AND col >= 1 AND col <= 1 AND col IN (1, 2, 3)");
+        check("SELECT * FROM table WHERE col = 1 AND col > 1 AND col < 1 " +
+                "AND col >= 1 AND col <= 1 AND col IN (1, 2, 3) AND col IS NULL AND col IS NOT NULL");
     }
 
     @Test
@@ -210,6 +210,12 @@ public class TestSQLRoundTrip
     public void testArithmetic()
     {
         check("SELECT (1 + 1) AS plus, (1 - 1) AS minus, (1 / 1) AS divide, (1 * 1) AS multiple FROM table");
+    }
+
+    @Test
+    public void testCurrentTIme()
+    {
+        check("SELECT CURRENT_TIME, CURRENT_TIMESTAMP, CURRENT_DATE FROM table");
     }
 
     private void fail(String sql, int start, int end, String message)

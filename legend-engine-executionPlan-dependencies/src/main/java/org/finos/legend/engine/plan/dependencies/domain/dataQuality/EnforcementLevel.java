@@ -20,6 +20,11 @@ public enum EnforcementLevel
 
     public String getName()
     {
-        return this.toString();
+        return this.name();
+    }
+
+    public static EnforcementLevel getEnumFromPureName(String pureName)
+    {
+        return EnforcementLevel.valueOf(pureName);
     }
 }

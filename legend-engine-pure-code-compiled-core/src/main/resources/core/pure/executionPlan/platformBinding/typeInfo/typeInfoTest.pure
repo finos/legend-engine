@@ -146,20 +146,26 @@ function <<test.Test>> meta::pure::executionPlan::platformBinding::typeInfo::tes
 function <<test.Test>> meta::pure::executionPlan::platformBinding::typeInfo::tests::testGraphIncludesOnlySpecifiedClassProperties(): Boolean[1]
 {
    let typeInfos = newTypeInfoSet()->addForGraphFetchTree(#{C {s, someAs {s, f, sd, c}}}#);
-   assertEquals(3, $typeInfos.typeInfos->size());
-   
+   assertEquals(6, $typeInfos.typeInfos->size());
+
    assertTypeInfo(['s', 'f', 'sd', 'c'], [], $typeInfos->forClass(A));
    assertTypeInfo(['s', 'someAs'], [], $typeInfos->forClass(C));
+   assertTypeInfo([], [A], $typeInfos->forClass(H));
+   assertTypeInfo([], [A], $typeInfos->forClass(B));
+   assertTypeInfo([], [A, B, H], $typeInfos->forClass(I));
    assertEquals(Colour, $typeInfos->forEnumeration(Colour).enumeration());
 }
 
 function <<test.Test>> meta::pure::executionPlan::platformBinding::typeInfo::tests::testGraphMergesForTrees(): Boolean[1]
 {
    let typeInfos = newTypeInfoSet()->addForGraphFetchTree(#{C {s, someAs {s, f}}}#)->addForGraphFetchTree(#{C {moreAs {sd, c}}}#);
-   assertEquals(3, $typeInfos.typeInfos->size());
-   
+   assertEquals(6, $typeInfos.typeInfos->size());
+
    assertTypeInfo(['s', 'f', 'sd', 'c'], [], $typeInfos->forClass(A));
    assertTypeInfo(['s', 'someAs', 'moreAs'], [], $typeInfos->forClass(C));
+   assertTypeInfo([], [A], $typeInfos->forClass(H));
+   assertTypeInfo([], [A], $typeInfos->forClass(B));
+   assertTypeInfo([], [A, B, H], $typeInfos->forClass(I));
    assertEquals(Colour, $typeInfos->forEnumeration(Colour).enumeration());
 }
 

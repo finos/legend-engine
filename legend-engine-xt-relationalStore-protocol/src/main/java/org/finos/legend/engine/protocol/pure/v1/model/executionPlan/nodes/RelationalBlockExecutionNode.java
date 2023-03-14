@@ -14,8 +14,13 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes;
 
+import java.util.Collections;
+import java.util.List;
+
 public class RelationalBlockExecutionNode extends SequenceExecutionNode
 {
+    public List<ExecutionNode> finallyExecutionNodes = Collections.emptyList();
+
     @Override
     public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)
     {

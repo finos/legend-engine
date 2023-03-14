@@ -21,8 +21,9 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.analytics.DataSpaceAnalyticsHelper;
 import org.finos.legend.engine.api.analytics.model.DataSpaceAnalysisInput;
+import org.finos.legend.engine.generation.analytics.DataSpaceAnalyticsHelper;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperDataSpaceBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -46,8 +47,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
-import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperDataSpaceBuilder.getDataSpace;
 
 @Api(tags = "Analytics - Model")
 @Path("pure/v1/analytics/dataSpace")
@@ -74,7 +73,7 @@ public class DataSpaceAnalytics
         PureModel pureModel = this.modelManager.loadModel(pureModelContextData, input.clientVersion, profiles, null);
         PackageableElement dataSpaceProtocol = pureModelContextData.getElements().stream().filter(el -> input.dataSpace.equals(el.getPath())).findFirst().orElse(null);
         Assert.assertTrue(dataSpaceProtocol instanceof DataSpace, () -> "Can't find data space '" + input.dataSpace + "'");
-        Root_meta_pure_metamodel_dataSpace_DataSpace dataSpace = getDataSpace(input.dataSpace, null, pureModel.getContext());
+        Root_meta_pure_metamodel_dataSpace_DataSpace dataSpace = HelperDataSpaceBuilder.getDataSpace(input.dataSpace, null, pureModel.getContext());
 
         try (Scope scope = GlobalTracer.get().buildSpan("Analytics: data space model coverage").startActive(true))
         {

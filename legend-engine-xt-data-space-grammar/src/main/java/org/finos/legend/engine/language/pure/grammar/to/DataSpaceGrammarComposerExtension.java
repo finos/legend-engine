@@ -46,7 +46,7 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
             {
                 if (element instanceof DataSpace)
                 {
-                    return renderDataSpace((DataSpace) element);
+                    return renderDataSpace((DataSpace) element, context);
                 }
                 return "/* Can't transform element '" + element.getPath() + "' in this section */";
             }).makeString("\n\n");
@@ -59,7 +59,7 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
         return Lists.fixedSize.with((elements, context, composedSections) ->
         {
             List<DataSpace> composableElements = ListIterate.selectInstancesOf(elements, DataSpace.class);
-            return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, DataSpaceGrammarComposerExtension::renderDataSpace).makeString("###" + DataSpaceParserExtension.NAME + "\n", "\n\n", ""), composableElements);
+            return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, el -> renderDataSpace(el, context)).makeString("###" + DataSpaceParserExtension.NAME + "\n", "\n\n", ""), composableElements);
         });
     }
 
@@ -87,7 +87,7 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
                 getTabString(2) + "}";
     }
 
-    private static String renderDataSpace(DataSpace dataSpace)
+    private static String renderDataSpace(DataSpace dataSpace, PureGrammarComposerContext context)
     {
         return "DataSpace " + HelperDomainGrammarComposer.renderAnnotations(dataSpace.stereotypes, dataSpace.taggedValues) + PureGrammarComposerUtility.convertPath(dataSpace.getPath()) + "\n" +
                 "{\n" +
@@ -96,6 +96,7 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
                 (dataSpace.title != null ? (getTabString() + "title: " + convertString(dataSpace.title, true) + ";\n") : "") +
                 (dataSpace.description != null ? (getTabString() + "description: " + convertString(dataSpace.description, true) + ";\n") : "") +
                 (dataSpace.featuredDiagrams != null ? (getTabString() + "featuredDiagrams:" + (dataSpace.featuredDiagrams.isEmpty() ? " []" : "\n" + getTabString() + "[\n" + getTabString(2) + ListIterate.collect(dataSpace.featuredDiagrams, diagram -> diagram.path).makeString(",\n" + getTabString(2)) + "\n" + getTabString() + "]") + ";\n") : "") +
+                (dataSpace.elements != null ? (getTabString() + "elements:" + (dataSpace.elements.isEmpty() ? " []" : "\n" + getTabString() + "[\n" + getTabString(2) + ListIterate.collect(dataSpace.elements, element -> element.path).makeString(",\n" + getTabString(2)) + "\n" + getTabString() + "]") + ";\n") : "") +
                 (dataSpace.supportInfo != null ? (getTabString() + "supportInfo: " + renderDataSpaceSupportInfo(dataSpace.supportInfo) + ";\n") : "") +
                 "}";
     }

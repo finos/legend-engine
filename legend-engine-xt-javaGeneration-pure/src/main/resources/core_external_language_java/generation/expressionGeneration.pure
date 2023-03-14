@@ -145,7 +145,7 @@ function <<access.private>> meta::external::language::java::transform::processIn
          {e:Enum[1] | 
             let enumeration = $e->type()->cast(@meta::pure::metamodel::type::Enumeration<Any>);
             let javaType    = $conventions->pureTypeToJavaType($enumeration, PureOne);
-            $javaType->j_field($e.name, $javaType);
+            $javaType->j_invoke('getEnumFromPureName', j_string($e.name), $javaType);
          },
          {v:ValueSpecification[1] |
             generateJava($v, $conventions, $debug);

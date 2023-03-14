@@ -208,7 +208,7 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::pla
                      let var      = j_variable(javaList($javaType), 'vs');
                      let v        = j_parameter($javaType, 'v');
 
-                     let vName      = $v->j_invoke('name', []);
+                     let vName      = $v->j_invoke('getName', [], javaString());
                      let vNameClean = $vName->j_invoke('replaceAll', [j_string('[^\\p{L}\\p{N}]'), j_string('')]);
                      let textClean   = $text->j_invoke('replaceAll', [j_string('[^\\p{L}\\p{N}]'), j_string('')]);
                      let compare1   = j_lambda($v, $vName     ->j_invoke('equals',           $text));

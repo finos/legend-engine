@@ -26,6 +26,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.JsonModelConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.XmlModelConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
@@ -214,251 +215,6 @@ public class TestM2MGrammarCompileAndExecute
         runTest(input);
     }
 
-    //TODO- move these to pure m2m tests
-    @Test
-    public void testM2MGraph_RootSubtypes_singleSubtype() throws IOException
-    {
-        runM2MGraphSubtypes("test::withSubType::rootLevel::sourceRoot::testMappingWithSingleSubType");
-    }
-
-    @Test
-    public void testM2MGraph_RootSubtypes_instanceOf() throws IOException
-    {
-        runM2MGraphSubtypes("test::withSubType::rootLevel::sourceRoot::testMappingWithMultipleSubTypes_instanceOf");
-    }
-
-    @Test
-    public void testM2MGraph_RootSubtypes_match() throws IOException
-    {
-        runM2MGraphSubtypes("test::withSubType::rootLevel::sourceRoot::testMappingWithMultipleSubTypes_match");
-    }
-
-    @Test
-    public void testM2MGraph_RootSubtypes_match_functionCall() throws IOException
-    {
-        runM2MGraphSubtypes("test::withSubType::rootLevel::sourceRoot::testMappingWithMultipleSubTypes_match_functionCall");
-    }
-
-    public void runM2MGraphSubtypes(String mappingName) throws IOException
-    {
-         String modelCode =
-                 "import test::withSubType::*;\n" +
-                 "Class test::withSubType::Target\n" +
-                 "{\n" +
-                 "   targetZipCode: String[1];\n" +
-                 "   targetAddress: String[1];\n" +
-                 "}\n" +
-                 " \n" +
-                 "Class test::withSubType::SourceClass\n" +
-                 "{\n" +
-                 "   sourceZipCode: String[1];\n" +
-                 "   sourceAddress: String[1];\n" +
-                 "}\n" +
-                 "\n" +
-                 "Class test::withSubType::Person\n" +
-                 "{\n" +
-                 "   address: Location[1];\n" +
-                 "}\n" +
-                 " \n" +
-                 "Class test::withSubType::Location\n" +
-                 "{\n" +
-                 "   zipCode: String[1];\n" +
-                 "   coordinates: String[1];\n" +
-                 "}\n" +
-                 " \n" +
-                 "Class test::withSubType::Street extends Location\n" +
-                 "{\n" +
-                 "   street: String[1];\n" +
-                 "}\n" +
-                 " \n" +
-                 "Class test::withSubType::Road extends Location\n" +
-                 "{\n" +
-                 "   road: String[1];\n" +
-                 "}\n" +
-                 "\n" +
-                 "Class test::withSubType::TargetStreetCluster\n" +
-                 "{\n" +
-                 "  streetNames: String[*];\n" +
-                 "  zipCodes: String[*];\n" +
-                 "}\n" +
-                 "\n" +
-                 "Class test::withSubType::SourceStreetCluster\n" +
-                 "{\n" +
-                 "  streetCluster: Street[*];\n" +
-                 "}\n" +
-                 "\n" +
-                 "Class test::withSubType::TargetPerson\n" +
-                 "{\n" +
-                 "   address: TargetLocation[1];\n" +
-                 "}\n" +
-                 "\n" +
-                 "Class test::withSubType::TargetLocation\n" +
-                 "{\n" +
-                 "   zipCode: String[1];\n" +
-                 "   coordinates: String[1];\n" +
-                 "}\n" +
-                 " \n" +
-                 "Class test::withSubType::TargetStreet extends TargetLocation\n" +
-                 "{\n" +
-                 "   street: String[1];\n" +
-                 "}\n" +
-                 " \n" +
-                 "Class test::withSubType::TargetRoad extends TargetLocation\n" +
-                 "{\n" +
-                 "   road: String[1];\n" +
-                 "}\n" +
-                 "function test::withSubType::rootLevel::sourceRoot::getLocationStr(loc:test::withSubType::Location[1]):String[1]\n" +
-                 "{\n" +
-                 "  $loc->match([\n" +
-                 "         s:test::withSubType::Street[1] | $s.street, \n" +
-                 "         r:test::withSubType::Road[1] | $r.road,\n" +
-                 "         l:test::withSubType::Location[1] | $l.coordinates\n" +
-                 "         ]);\n" +
-                 "}\n" +
-                 "\n" +
-                 "###Mapping\n" +
-                 "import test::withSubType::*;\n" +
-                 "Mapping test::withSubType::rootLevel::sourceRoot::testMappingWithSingleSubType\n" +
-                 "(\n" +
-                 "   *test::withSubType::Target: Pure\n" +
-                 "   {\n" +
-                 "      ~src test::withSubType::Location\n" +
-                 "      targetZipCode: $src.zipCode,\n" +
-                 "      targetAddress: if($src->instanceOf(test::withSubType::Street),|$src->cast(@test::withSubType::Street).street,|'unknown')\n" +
-                 "   }\n" +
-                 ")\n" +
-                 "\n" +
-                 "Mapping test::withSubType::rootLevel::sourceRoot::testMappingWithMultipleSubTypes_instanceOf\n" +
-                 "(\n" +
-                 "   *test::withSubType::Target: Pure\n" +
-                 "   {\n" +
-                 "      ~src test::withSubType::Location\n" +
-                 "      targetZipCode: $src.zipCode,\n" +
-                 "      targetAddress:if($src->instanceOf(test::withSubType::Street),\n" +
-                 "                       |$src->cast(@test::withSubType::Street).street,\n" +
-                 "                       |\n" +
-                 "                         if($src->instanceOf(test::withSubType::Road),\n" +
-                 "                         |$src->cast(@test::withSubType::Road).road,\n" +
-                 "                         |$src->cast(@test::withSubType::Location).coordinates\n" +
-                 "                         )\n" +
-                 "                      )   \n" +
-                 "   }\n" +
-                 ")\n" +
-                 "Mapping test::withSubType::rootLevel::sourceRoot::testMappingWithMultipleSubTypes_match\n" +
-                 "(\n" +
-                 "   *test::withSubType::Target: Pure\n" +
-                 "   {\n" +
-                 "      ~src test::withSubType::Location\n" +
-                 "      targetZipCode: $src.zipCode,\n" +
-                 "      targetAddress: $src->match([\n" +
-                 "         s:Street[1] | $s.street, \n" +
-                 "         r:Road[1] | $r.road,\n" +
-                 "         l:Location[1] | $l.coordinates\n" +
-                 "         ])\n" +
-                 "   }\n" +
-                 ")\n" +
-                 "Mapping test::withSubType::rootLevel::sourceRoot::testMappingWithMultipleSubTypes_match_functionCall\n" +
-                 "(\n" +
-                 "   *test::withSubType::Target: Pure\n" +
-                 "   {\n" +
-                 "      ~src test::withSubType::Location\n" +
-                 "      targetZipCode: $src.zipCode,\n" +
-                 "      targetAddress: $src->test::withSubType::rootLevel::sourceRoot::getLocationStr()\n" +
-                 "      }\n" +
-                 ")\n";
-
-        PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(modelCode);
-
-        ClassInstance fetchTree = rootGFT("test::withSubType::Target", propertyGFT("targetZipCode"), propertyGFT("targetAddress"));
-        Lambda lambda = lambda(apply(SERIALIZE, apply(GRAPH_FETCH, apply(GET_ALL, clazz("test::withSubType::Target")), fetchTree), fetchTree));
-
-        ExecuteInput input = new ExecuteInput();
-        input.clientVersion = "vX_X_X";
-        input.model = contextData;
-        input.mapping = "test::withSubType::rootLevel::sourceRoot::testMappingWithMultipleSubTypes_match";
-        input.function = lambda;
-        input.runtime = runtimeValue(jsonModelConnection("test::withSubType::Location",
-                 "[{ \"zipCode\": \"10000000\", \"coordinates\": \"111.1111\"}, \n" +
-                         "{ \"zipCode\": \"20000000\", \"coordinates\": \"222.2222\" , \"street\" : \"myStreet\" , \"@type\":\"test::withSubType::Street\"}, \n" +
-                         "{ \"zipCode\": \"30000000\", \"coordinates\": \"333.333\" , \"road\" : \"myRoad\" , \"@type\":\"test::withSubType::Road\"}]"
-        ));
-        input.context = context();
-        String json = responseAsString(runTest(input));
-        assertEquals("{\"builder\":{\"_type\":\"json\"},\"values\":" +
-                                        "[{\"targetZipCode\":\"10000000\",\"targetAddress\":\"111.1111\"}," +
-                                        "{\"targetZipCode\":\"20000000\",\"targetAddress\":\"myStreet\"}," +
-                                        "{\"targetZipCode\":\"30000000\",\"targetAddress\":\"myRoad\"}]}",
-                json);
-    }
-
-    @Test
-    public void testSimpleSerializeOfOneObjectWithMultiSubTypesWithoutAssoc() throws IOException
-    {
-        String modelCode =
-                "import test::*;\n" +
-                "Class test::Target\n" +
-                "{\n" +
-                "   targetZipCode: String[1];\n" +
-                "   targetAddress: String[1];\n" +
-                "}\n" +
-                "\n" +
-                "Class test::Person\n" +
-                "{\n" +
-                "   address: Location[1];\n" +
-                "}\n" +
-                " \n" +
-                "Class test::Location\n" +
-                "{\n" +
-                "   zipCode: String[1];\n" +
-                "   coordinates: String[1];\n" +
-                "}\n" +
-                " \n" +
-                "Class test::Street extends Location\n" +
-                "{\n" +
-                "   street: String[1];\n" +
-                "}\n" +
-                " \n" +
-                "Class test::Road extends Location\n" +
-                "{\n" +
-                "   road: String[1];\n" +
-                "}\n" +
-                "\n" +
-                "###Mapping\n" +
-                "import test::*;\n" +
-                "Mapping test::testMappingWithMultipleSubTypes\n" +
-                "(\n" +
-                "   *test::Target: Pure\n" +
-                "   {\n" +
-                "      ~src test::Person\n" +
-                "      targetZipCode: $src.address.zipCode,\n" +
-                "      targetAddress: $src.address->match([\n" +
-                "         s:Street[1] | $s.street, \n" +
-                "         r:Road[1] | $r.road,\n" +
-                "         l:Location[1] | $l.coordinates\n" +
-                "         ])\n" +
-                "   }\n" +
-                ")";
-
-        PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(modelCode);
-
-        ClassInstance fetchTree = rootGFT("test::Target", propertyGFT("targetAddress"));
-        Lambda lambda = lambda(apply(SERIALIZE, apply(GRAPH_FETCH, apply(GET_ALL, clazz("test::Target")), fetchTree), fetchTree));
-
-        ExecuteInput input = new ExecuteInput();
-        input.clientVersion = "vX_X_X";
-        input.model = contextData;
-        input.mapping = "test::testMappingWithMultipleSubTypes";
-        input.function = lambda;
-        input.runtime = runtimeValue(jsonModelConnection("test::Person",
-                "[{\"address\"  : [{ \"zipCode\": \"10282\", \"coordinates\": \"1\" , \"road\" : \"200 west\" , \"@type\":\"test::Road\"}]}]"
-        ));
-        input.context = context();
-        String json = responseAsString(runTest(input));
-        assertEquals("{\"builder\":{\"_type\":\"json\"},\"values\":" +
-                                "{\"targetAddress\":\"200 west\"}}",
-                json);
-    }
-
     @Test
     public void testHandlesDerived() throws IOException
     {
@@ -483,6 +239,73 @@ public class TestM2MGrammarCompileAndExecute
 
         String json = responseAsString(runTest(input));
         assertEquals("{\"builder\":{\"_type\":\"json\"},\"values\":{\"name\":\"Doe\"}}", json);
+    }
+
+    @Test
+    public void testM2MEnumMappingWithSpecialCharacters() throws IOException
+    {
+        PureModelContextData contextData = PureGrammarParser.newInstance().parseModel("" +
+                "Class test::SourceClass\n" +
+                "{\n" +
+                "   enum : test::SourceEnum[1];\n" +
+                "}" +
+                "\n" +
+                "Class test::TargetClass\n" +
+                "{\n" +
+                "   enum: test::TargetEnum[1];\n" +
+                "}" +
+                "\n" +
+                "Enum test::SourceEnum\n" +
+                "{\n" +
+                "   'Source Enum@$#_*[]{}()'\n" +
+                "}" +
+                "\n" +
+                "Enum test::TargetEnum\n" +
+                "{\n" +
+                "   'Target Enum@$#_*[]{}()'\n" +
+                "}" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::testMapping\n" +
+                "(\n" +
+                "   test::TargetClass : Pure\n" +
+                "   {\n" +
+                "     ~src test::SourceClass\n" +
+                "     enum : EnumerationMapping enumMapping : $src.enum\n" +
+                "   }\n" +
+                "   test::TargetEnum : EnumerationMapping enumMapping\n" +
+                "   {\n" +
+                "     'Target Enum@$#_*[]{}()' : [test::SourceEnum.'Source Enum@$#_*[]{}()'] \n" +
+                "   }\n" +
+                ")\n"
+        );
+
+        ClassInstance fetchTree = rootGFT("test::TargetClass", propertyGFT("enum"));
+        Lambda lambda = lambda(apply(SERIALIZE, apply(GRAPH_FETCH, apply(GET_ALL, clazz("test::TargetClass")), fetchTree), fetchTree));
+
+        ExecuteInput jsonInput = new ExecuteInput();
+        jsonInput.clientVersion = "vX_X_X";
+        jsonInput.model = contextData;
+        jsonInput.mapping = "test::testMapping";
+        jsonInput.function = lambda;
+        jsonInput.runtime = runtimeValue(jsonModelConnection("test::SourceClass", "{\"enum\": \"Source Enum@$#_*[]{}()\"}"));
+        jsonInput.context = context();
+        String jsonResult1 = responseAsString(runTest(jsonInput));
+        assertEquals("{\"builder\":{\"_type\":\"json\"},\"values\":{\"enum\":\"Target Enum@$#_*[]{}()\"}}", jsonResult1);
+
+        String xmlSourceData =
+                "<SourceClass>" +
+                "<enum>Source Enum@$#_*[]{}()</enum>" +
+                "</SourceClass>";
+        ExecuteInput input = new ExecuteInput();
+        input.clientVersion = "vX_X_X";
+        input.model = contextData;
+        input.mapping = "test::testMapping";
+        input.function = lambda;
+        input.runtime = runtimeValue(xmlModelConnection("test::SourceClass", xmlSourceData));
+        input.context = context();
+        String jsonResult2 = responseAsString(runTest(input));
+        assertEquals("{\"builder\":{\"_type\":\"json\"},\"values\":{\"enum\":\"Target Enum@$#_*[]{}()\"}}", jsonResult2);
     }
 
     private Response runTest(ExecuteInput input)
@@ -548,6 +371,15 @@ public class TestM2MGrammarCompileAndExecute
         connection.element = "ModelStore";
         connection._class = clazz;
         connection.url = "data:application/json," + data;
+        return connection;
+    }
+
+    private XmlModelConnection xmlModelConnection(String clazz, String data)
+    {
+        XmlModelConnection connection = new XmlModelConnection();
+        connection.element = "ModelStore";
+        connection._class = clazz;
+        connection.url = "data:application/xml," + data;
         return connection;
     }
 

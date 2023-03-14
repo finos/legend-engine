@@ -620,17 +620,28 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo
 
 function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addBasicClassTypeInfo(info:TypeInfoSet[1], class:Class<Any>[1], seenClasses:Class<Any>[*], isNewInstanceAllowed:Boolean[1]): TypeInfoSet[1]
 {
-   let supertypes          = $class->getGeneralizations();
-   let newSeenClasses      = $seenClasses->concatenate($class);
-   let withSupertypes      = $supertypes->fold({c, set | $set->addBasicTypeInfoIfMissing($newSeenClasses, $c)}, $info);
+  if ($seenClasses->contains($class),
+      | $info,
+      |
+        let supertypes          = $class->getGeneralizations();
+        let newSeenClasses      = $seenClasses->concatenate($class);
+        let withSupertypes      = $supertypes->fold({c, set | $set->addBasicTypeInfoIfMissing($newSeenClasses, $c)}, $info);
 
-   let classInfo = ^ClassTypeInfo(
-      type                 = $class,
-      supertypes           = $supertypes,
-      isNewInstanceAllowed = $isNewInstanceAllowed
-   );
+        let classInfo = ^ClassTypeInfo(
+            type                 = $class,
+            supertypes           = $supertypes,
+            isNewInstanceAllowed = $isNewInstanceAllowed
+        );
 
-   $withSupertypes->addOrReplace($classInfo);
+        let withSuperTypes      = $withSupertypes->addOrReplace($classInfo);
+
+        $class->getSpecializations()->fold(
+          {special, agg |
+            pair(list($agg.first.values->concatenate($special)), $agg.second->addBasicTypeInfoIfMissing($agg.first.values, $special))
+          },
+          pair(list($newSeenClasses->concatenate($supertypes)), $withSuperTypes)
+        ).second;
+  )
 }
 
 function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addUnitTypeInfo(info:TypeInfoSet[1], unit:Unit[1]): TypeInfoSet[1]

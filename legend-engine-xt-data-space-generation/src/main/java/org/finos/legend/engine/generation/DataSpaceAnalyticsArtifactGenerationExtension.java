@@ -19,8 +19,8 @@ import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperM
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Collections;
 import java.util.List;
-import org.finos.legend.engine.analytics.DataSpaceAnalyticsHelper;
-import org.finos.legend.engine.analytics.model.DataSpaceAnalysisResult;
+import org.finos.legend.engine.generation.analytics.DataSpaceAnalyticsHelper;
+import org.finos.legend.engine.generation.analytics.model.DataSpaceAnalysisResult;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.Artifact;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.ArtifactGenerationExtension;

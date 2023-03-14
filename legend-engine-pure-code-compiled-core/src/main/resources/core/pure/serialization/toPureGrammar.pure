@@ -50,7 +50,7 @@ function meta::pure::metamodel::serialization::grammar::printValueSpecification(
                 ]
              )
 }
-function <<access.private>> meta::pure::metamodel::serialization::grammar::removeAutomap(v:ValueSpecification[1]):ValueSpecification[1]
+function <<access.private>> meta::pure::metamodel::serialization::grammar::removeAutomap(v:ValueSpecification[0..1]):ValueSpecification[1]
 
 {
    $v->match([fe:FunctionExpression[1] | if($fe.functionName=='map' 
@@ -62,7 +62,9 @@ function <<access.private>> meta::pure::metamodel::serialization::grammar::remov
                                                  |  ^$fe(parametersValues=$fe.parametersValues->at(0)->meta::pure::metamodel::serialization::grammar::removeAutomap()->concatenate( $fe.parametersValues->tail()))
                                                 );
 
-                                           ,| ^$fe(parametersValues=$fe.parametersValues->at(0)->meta::pure::metamodel::serialization::grammar::removeAutomap()->concatenate( $fe.parametersValues->tail()))
+                                           ,| if ($fe.parametersValues->isNotEmpty(),
+                                                | ^$fe(parametersValues=$fe.parametersValues->at(0)->meta::pure::metamodel::serialization::grammar::removeAutomap()->concatenate( $fe.parametersValues->tail())),
+                                                | $fe)
                                       ),
                v:ValueSpecification[1] |  $v]);
 }

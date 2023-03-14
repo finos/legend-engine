@@ -613,5 +613,4 @@ public class TestEmbeddedRelationalCompilationFromGrammar
                 "  }\n" +
                 ") \n");
     }
-
 }

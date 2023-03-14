@@ -569,7 +569,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
    let transform = if ($setHasExplosion,
                        | $set->cast(@PureInstanceSetImplementation)->propertyExplosionCodes($primitiveSubTrees, $result, $graphImplClass, $src, $wrapAsGraphInstance, $resolveToList, $conventions, $extensions, $debug),
                        |  let inScopeSubTrees =   $primitiveSubTrees->filter( t| $set->propertyMappingsByPropertyName($t.property->cast(@Property<Nil,Any|*>).name->toOne())->head() ->isNotEmpty() && $isMerged || !$isMerged ); 
-                       
+
                          let propertyValues = $inScopeSubTrees->map({st |
                             let prop = $st.property->cast(@Property<Nil,Any|*>);
                             let propertyMapping =  $set->propertyMappingsByPropertyName($prop.name->toOne())->head();
@@ -636,7 +636,7 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
       },
       {|
          if($isNoMappingDefaultToEmpty || $isMergedUnMappedProperty,
-            {| 
+            {|
                if (isJavaList($propertyJavaType), 
                    | $propertyJavaType->j_emptyList(), 
                    | $propertyJavaType->j_null()
@@ -710,11 +710,11 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
    let fValuesField = javaField(['private', 'static', 'final'], $mapType, 'values', 'initValues()');
    let fValues      = $class->j_field($fValuesField);
    let values       = j_variable($mapType, 'values');
-   
+
    let addValues = $em.enumValueMappings->map({evm |
       $evm.sourceValues
          ->map(sv | ^InstanceValue(genericType = ^GenericType(rawType = $sv->type()), multiplicity = PureOne, values = $sv)->evaluateAndDeactivate()->generateJava($conventions, $debug->indent()))
-         ->map(sv | $values->j_invoke('put', [$sv, $enumType->j_field($evm.enum.name)]))
+         ->map(sv | $values->j_invoke('put', [$sv, $enumType->j_invoke('getEnumFromPureName', j_string($evm.enum.name), $enumType)]));
    });
    let initCode  = j_block($values->j_declare(javaTreeMap(javaObject(), $enumType)->j_new([]))->concatenate($addValues)->concatenate($values->j_return()));
 

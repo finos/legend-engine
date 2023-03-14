@@ -19,5 +19,15 @@ public enum Quarter
     Q1,
     Q2,
     Q3,
-    Q4
+    Q4;
+
+    public String getName()
+    {
+        return this.name();
+    }
+
+    public static Quarter getEnumFromPureName(String pureName)
+    {
+        return Quarter.valueOf(pureName);
+    }
 }

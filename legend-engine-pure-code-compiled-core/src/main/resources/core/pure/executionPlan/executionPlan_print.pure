@@ -102,7 +102,12 @@ function meta::pure::executionPlan::toString::header(e:ExecutionNode[1], space:S
 
 function meta::pure::executionPlan::toString::childrenToString(e:ExecutionNode[*], space:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
-   if($e.executionNodes->isEmpty(),|'',|'\n'+$space+'(\n'+$e.executionNodes->map(c|$c->planNodeToString($space+'  ', $extensions))->makeString('')+$space+')');
+  meta::pure::executionPlan::toString::nodesToString($e.executionNodes, $space, $extensions);
+}
+
+function meta::pure::executionPlan::toString::nodesToString(nodes:ExecutionNode[*], space:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
+{
+   if($nodes->isEmpty(),|'',|'\n'+$space+'(\n'+$nodes->map(c|$c->planNodeToString($space+'  ', $extensions))->makeString('')+$space+')');
 }
 
 function <<access.private>> meta::pure::executionPlan::toString::typeToString(e:ResultType[1], space:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
