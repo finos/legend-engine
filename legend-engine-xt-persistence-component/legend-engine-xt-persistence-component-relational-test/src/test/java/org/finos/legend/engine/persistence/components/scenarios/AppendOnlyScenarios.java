@@ -61,6 +61,13 @@ public class AppendOnlyScenarios extends BaseTest
         return new TestScenario(mainTableWithNoPrimaryKeys, stagingTableWithNoPrimaryKeys, ingestMode);
     }
 
+    public TestScenario ALLOW_DUPLICATES_NO_AUDITING_DERIVE_MAIN_SCHEMA()
+    {
+        TestScenario scenario = ALLOW_DUPLICATES_NO_AUDITING();
+        scenario.setMainTable(mainTableWithNoFields);
+        return scenario;
+    }
+
     public TestScenario ALLOW_DUPLICATES_WITH_AUDITING()
     {
         AppendOnly ingestMode = AppendOnly.builder()

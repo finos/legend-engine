@@ -551,6 +551,11 @@ public class BaseTest
             .schema(baseTableSchemaWithNoPrimaryKeys)
             .build();
 
+    protected Dataset mainTableWithNoFields = DatasetDefinition.builder()
+            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
+            .schema(SchemaDefinition.builder().build())
+            .build();
+
     protected Dataset stagingTableWithNoPrimaryKeys = DatasetDefinition.builder()
             .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
             .schema(baseTableSchemaWithNoPrimaryKeys)
