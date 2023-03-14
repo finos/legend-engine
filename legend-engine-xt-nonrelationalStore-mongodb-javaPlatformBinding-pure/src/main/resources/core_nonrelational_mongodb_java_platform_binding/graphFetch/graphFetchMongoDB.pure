@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::*;
+import meta::external::store::mongodb::executionPlan::platformBinding::legendJava::graphFetch::*;
 import meta::external::language::java::metamodel::project::*;
 import meta::external::language::java::factory::*;
 import meta::external::language::java::factory::project::*;
@@ -33,6 +35,36 @@ import meta::external::store::mongodb::metamodel::pure::graphFetch::executionPla
 import meta::external::store::mongodb::executionPlan::platformBinding::legendJava::*;
 
 import meta::pure::extension::*;
+
+function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::graphFetch::prepareForMongoDBGraphFetch(node: MongoDBGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1], debug: DebugContext[1]):GenerationContext[1]
+{
+  println('prepareForMongoDBGraphFetch');
+   $node->match([
+      r : MongoDBGraphFetchExecutionNode[1] | $r->prepareForMongoDBRootGraphFetch($path, $context, $debug)
+   ]);
+}
+
+function <<access.private>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::graphFetch::prepareForMongoDBRootGraphFetch(node: MongoDBGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1], debug: DebugContext[1]):GenerationContext[1]
+{
+
+   let pureType = $node->typeFromStoreLocalNode();
+
+   let simpleType = ^SimpleJavaType(pureType = $pureType, javaType = $context.conventions->className($pureType));
+
+   println('prepareForMongoDBRootGraphFetch');
+
+   let returnType = $node->match([
+      //r : RelationalRootQueryTempTableGraphFetchExecutionNode[1] | if($r.checked->isTrue(), | ^CheckedJavaType(checkedOf = $simpleType), | $simpleType),
+      p : RootMongoDBGraphFetchExecutionNode[1]| $simpleType
+   ]);
+
+   ^$context
+   (
+      nodeInfos = $context.nodeInfos->concatenate(
+         ^NodeInfo(path = $path, returnType = $returnType)
+      )
+   );
+}
 
 function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::generateMongoDBGraphFetchNodeProject(node:MongoDBGraphFetchExecutionNode[1], path:String[1], context:GenerationContext[1], extensions: Extension[*], debug:DebugContext[1]):Project[1]
 {  
@@ -74,7 +106,7 @@ function <<access.private>> meta::external::store::mongodb::executionPlan::platf
          javaField(['private'], javaResultSet(), 'resultSet'),
          javaField(['private'], javaString(), 'databaseConnection'),
          javaField(['private'], javaList(javaList(javaSupplier(javaObject()))), 'propertyGetters'),
-         javaField(['private'], javaClass('java.util.Calendar'), 'calendar'),
+         javaField(['private'], javaClass('java.util.Calendar'), 'calendar')
       ]);
       // ->addMethods([
       //    getAlloyNativeValueFromResultSetMethod(),

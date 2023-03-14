@@ -16,6 +16,8 @@
     "core_relational",
     "core_relational_java_platform_binding",
     "core_servicestore",
-    "core_servicestore_java_platform_binding"
+    "core_servicestore_java_platform_binding",
+    "core_nonrelational_mongodb_java_platform_binding",
+    "core_nonrelational_mongodb"
   ]
 }

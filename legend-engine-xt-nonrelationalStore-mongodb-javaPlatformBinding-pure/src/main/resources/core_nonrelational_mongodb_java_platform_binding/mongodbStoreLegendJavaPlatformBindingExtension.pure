@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::mongodb::executionPlan::platformBinding::legendJava::graphFetch::*;
 import meta::external::language::java::metamodel::project::*;
 import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
 import meta::external::language::java::factory::project::*;
@@ -43,7 +44,8 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
 
       updateGenerationContextForNode = {node: ExecutionNode[1], context: GenerationContext[1], path: String[1], extensions: Extension[*], debug: DebugContext[1] |
          $node->match([
-            n: MongoDBGraphFetchExecutionNode[1]       | $context
+            n: MongoDBGraphFetchExecutionNode[1]          | $n->prepareForMongoDBGraphFetch($path, $context, $debug),
+            n: ExecutionNode[1]                           | $context
          ])
       },
 
@@ -64,31 +66,6 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
             n: ExecutionNode[1]                                             | ^GeneratedCode()
          ])
       },
-
-
-      /*
-      /*
-            {r: RelationalGraphFetchExecutionNode[1] |
-               let relationalGraphImplUpdateFunction = {impl: meta::external::language::java::metamodel::Class[1] |
-                  $impl->enrichForRelationalGraphExecution($r, $context, $extensions, $debug)
-               };
-               let baseProject  = $r->generateBaseProjectForLocalGraphFetchNode($path, $context, $relationalGraphImplUpdateFunction, $debug);
-               let storeProject = $r->generateRelationalStoreGraphFetchProject($path, $context, $extensions, $debug);
-
-               generatedCode(
-                  $baseProject->concatenate($storeProject)->toOneMany()->mergeProjects(),
-                  $storeProject->resolve($context.conventions->planNodeClass('public', $path, 'Execute'))
-               );
-            },
-            {r: RelationalClassInstantiationExecutionNode[1] |
-               $r.resultType->match([
-                  pc : PartialClassResultType[1] | $r->generateImplementionForRelationalPartialClassResult($path, $pc.propertiesWithParameters.property, $context, $debug),
-                  c  : ClassResultType[1]        | $r->generateImplementionForRelationalClassResult($path, $context, $debug)
-               ])
-            },
-            r: CreateAndPopulateTempTableExecutionNode[1] | $r->generateImplementationForCreateAndPopulateTempTableNode($path, $context, $debug),
-            n: ExecutionNode[1]                           | ^GeneratedCode()
-      */
 
 
       // ------------------------------------------------------ Node based extensions
