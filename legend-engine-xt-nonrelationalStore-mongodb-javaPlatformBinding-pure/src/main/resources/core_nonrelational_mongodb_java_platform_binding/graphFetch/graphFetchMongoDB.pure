@@ -1,0 +1,141 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::factory::*;
+import meta::external::language::java::factory::project::*;
+import meta::external::language::java::transform::*;
+
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
+
+import meta::pure::metamodel::path::*;
+
+import meta::java::generation::expression::*;
+import meta::java::generation::convention::*;
+import meta::java::generation::code::*;
+
+import meta::java::metamodel::factory::*;
+import meta::java::metamodel::project::*;
+
+import meta::external::store::mongodb::metamodel::pure::graphFetch::executionPlan::*;
+import meta::external::store::mongodb::executionPlan::platformBinding::legendJava::*;
+
+import meta::pure::extension::*;
+
+function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::generateMongoDBGraphFetchNodeProject(node:MongoDBGraphFetchExecutionNode[1], path:String[1], context:GenerationContext[1], extensions: Extension[*], debug:DebugContext[1]):Project[1]
+{  
+   print(if($debug.debug,|$debug.space+'('+$path+') generateImplementationForMongoDBGraphFetchNode\n', |''));
+   
+    let specificsClass = initializeSpecificsClass($node, $path, $context, $debug);
+                           //->map(s | $s->addSpecificsPrepareMethod($node, $path, $context, $debug))
+                           //->map(s | $s->addSpecificsGeneralMethods($node, $path, $context, $debug))
+                           //->map(s | $s->addSpecificsCachingMethods($node, $path, $context, $debug));
+
+   let executeClass   = initializeExecuteClass($node, $specificsClass, $path, $context, $debug);
+                           //->map(e | $e->addExecuteGeneralMethods($node, $path, $context, $debug))
+                           //->map(e | $e->addExecuteCachingMethods($node, $path, $context, $debug));
+
+   newProject()->addClasses([$specificsClass, $executeClass]);
+
+   // let executeClass   = $executeClassWithImports->addMethod($resolveServiceParamsMethod);
+   // let project        = newProject()->addClasses($executeClass)->concatenate($propertiesMappingCodecs->dependencies()->resolveAndGetProjects())->toOneMany()->mergeProjects();
+
+   // generatedCode($project, $executeClass);
+}
+
+function <<access.private>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::initializeSpecificsClass(node: MongoDBGraphFetchExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]):meta::external::language::java::metamodel::Class[1]
+{
+   let conventions = $context.conventions;
+
+   let specificsClass = $context.conventions->planNodeClass([], $path, 'Specifics')
+      ->imports(javaPackage('java.util'))
+      ->imports(javaPackage('java.util.function'))
+      ->imports(javaPackage('java.util.stream'))
+      ->imports(javaReflectMethod())
+      ->imports(javaClass('org.eclipse.collections.impl.tuple.Tuples'))
+      ->imports(javaClass('org.eclipse.collections.api.tuple.Pair'))
+      ->imports($conventions->className(IExecutionNodeContext))
+      ->imports($conventions->className(IConstantResult))
+      ->imports($conventions->className(GraphInstance))
+      ->imports($conventions->className(PureDate))
+      ->addFields([
+         javaField(['private'], javaResultSet(), 'resultSet'),
+         javaField(['private'], javaString(), 'databaseConnection'),
+         javaField(['private'], javaList(javaList(javaSupplier(javaObject()))), 'propertyGetters'),
+         javaField(['private'], javaClass('java.util.Calendar'), 'calendar'),
+      ]);
+      // ->addMethods([
+      //    getAlloyNativeValueFromResultSetMethod(),
+      //    encodeHexMethod()
+      // ]);
+}
+
+
+function <<access.private>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::initializeExecuteClass(node:MongoDBGraphFetchExecutionNode[1], specificsClass: meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]):meta::external::language::java::metamodel::Class[1]
+{
+   let conventions   = $context.conventions;
+   // TODO: Use the INonrelationalMongoDBGraphFetchNodeSpecifics
+   let nodeSpecifics = $conventions->className($node->match([
+      rr : RootMongoDBGraphFetchExecutionNode[1]          | IRelationalRootQueryTempTableGraphFetchExecutionNodeSpecifics
+   ]));
+
+   let executeClass = $conventions->planNodeClass('public', $path, 'Execute');
+   $executeClass
+      ->imports(javaPackage('java.util'))
+      ->imports(javaPackage('java.util.function'))
+      ->imports(javaPackage('java.util.stream'))
+      ->imports(javaReflectMethod())
+      ->imports(javaResultSet())
+      ->imports(javaClass('org.eclipse.collections.api.tuple.Pair'))
+      ->imports($conventions->className(IExecutionNodeContext))
+      ->imports($conventions->className(GraphInstance))
+      ->imports($conventions->className(IReferencedObject))
+      ->imports($nodeSpecifics)->implements($nodeSpecifics)
+      ->addField(
+         javaField(['private'], $specificsClass, 'specifics')
+      )
+      ->addConstructor(
+         javaConstructor(
+            ['public'], [],
+            j_this($executeClass)->j_field('specifics', $specificsClass)->j_assign(j_new($specificsClass, []))
+         )
+      );
+}
+
+
+function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::enrichForMongoDBGraphExecution(cl: meta::external::language::java::metamodel::Class[1], node: MongoDBGraphFetchExecutionNode[1], context: GenerationContext[1], extensions: meta::pure::extension::Extension[*], debug: DebugContext[1]):Project[1]
+{
+   let primaryKeyProject  = $cl->updateImplementationClassWithPrimaryKeys($node, $context);
+   $primaryKeyProject;
+}
+
+function <<access.private>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::updateImplementationClassWithPrimaryKeys(implClass: meta::external::language::java::metamodel::Class[1], node: MongoDBGraphFetchExecutionNode[1], context: GenerationContext[1]): Project[1]
+{
+   let conventions = $context.conventions;
+   let pks        = ['_id']; 
+   //$node.resultType->cast(@ClassResultType).setImplementations->cast(@RelationalInstanceSetImplementation);
+   // Primary key is always an object type.
+
+   let withKeys = $pks->fold({pk, cl |
+        let pkIdx    = $pks->indexOf($pk);
+        let pkString = 'pk$_' + $pkIdx->toString() + if($pks->size() == 1, | '', | '_' + $pkIdx->toString());
+        let pkField  = $conventions->fieldName($pkString);
+        $cl->addField(javaField(['private'], bsonDocument(), $pkField))
+          ->addMethod(javaMethod(['public'], bsonDocument(), $conventions->getterName($pkString), [], 'return this.' + $pkField + ';'))
+          ->addMethod(javaMethod(['public'], javaVoid(), $conventions->setterName($pkString), [javaParam(bsonDocument(), $pkField)], 'this.' + $pkField + ' = ' + $pkField + ';'));
+   }, $implClass);
+
+   newProject()->addClasses($withKeys);
+}
