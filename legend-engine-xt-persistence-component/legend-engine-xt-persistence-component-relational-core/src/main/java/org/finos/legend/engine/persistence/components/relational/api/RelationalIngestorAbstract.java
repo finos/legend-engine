@@ -67,11 +67,11 @@ import static org.finos.legend.engine.persistence.components.transformer.Transfo
 
 @Immutable
 @Style(
-        typeAbstract = "*Abstract",
-        typeImmutable = "*",
-        jdkOnly = true,
-        optionalAcceptNullable = true,
-        strictBuilder = true
+    typeAbstract = "*Abstract",
+    typeImmutable = "*",
+    jdkOnly = true,
+    optionalAcceptNullable = true,
+    strictBuilder = true
 )
 public abstract class RelationalIngestorAbstract
 {
@@ -130,10 +130,10 @@ public abstract class RelationalIngestorAbstract
     protected PlannerOptions plannerOptions()
     {
         return PlannerOptions.builder()
-                .cleanupStagingData(cleanupStagingData())
-                .collectStatistics(collectStatistics())
-                .enableSchemaEvolution(enableSchemaEvolution())
-                .build();
+            .cleanupStagingData(cleanupStagingData())
+            .collectStatistics(collectStatistics())
+            .enableSchemaEvolution(enableSchemaEvolution())
+            .build();
     }
 
     @Derived
@@ -141,8 +141,8 @@ public abstract class RelationalIngestorAbstract
     {
 
         TransformOptions.Builder builder = TransformOptions.builder()
-                .executionTimestampClock(executionTimestampClock())
-                .batchIdPattern(BATCH_ID_PATTERN);
+            .executionTimestampClock(executionTimestampClock())
+            .batchIdPattern(BATCH_ID_PATTERN);
 
         relationalSink().optimizerForCaseConversion(caseConversion()).ifPresent(builder::addOptimizers);
 
@@ -192,17 +192,17 @@ public abstract class RelationalIngestorAbstract
 
         // generate sql plans
         RelationalGenerator generator = RelationalGenerator.builder()
-                .ingestMode(ingestMode())
-                .relationalSink(relationalSink())
-                .cleanupStagingData(cleanupStagingData())
-                .collectStatistics(collectStatistics())
-                .enableSchemaEvolution(enableSchemaEvolution())
-                .addAllSchemaEvolutionCapabilitySet(schemaEvolutionCapabilitySet())
-                .caseConversion(caseConversion())
-                .executionTimestampClock(executionTimestampClock())
-                .batchStartTimestampPattern(BATCH_START_TS_PATTERN)
-                .batchIdPattern(BATCH_ID_PATTERN)
-                .build();
+            .ingestMode(ingestMode())
+            .relationalSink(relationalSink())
+            .cleanupStagingData(cleanupStagingData())
+            .collectStatistics(collectStatistics())
+            .enableSchemaEvolution(enableSchemaEvolution())
+            .addAllSchemaEvolutionCapabilitySet(schemaEvolutionCapabilitySet())
+            .caseConversion(caseConversion())
+            .executionTimestampClock(executionTimestampClock())
+            .batchStartTimestampPattern(BATCH_START_TS_PATTERN)
+            .batchIdPattern(BATCH_ID_PATTERN)
+            .build();
 
         boolean mainDatasetExists = executor.datasetExists(updatedDatasets.mainDataset());
         if (mainDatasetExists)
@@ -240,7 +240,7 @@ public abstract class RelationalIngestorAbstract
     }
 
     private List<IngestorResult> performIngestion(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Planner planner, Executor<SqlGen,
-            TabularData, SqlPlan> executor, GeneratorResult generatorResult, List<DataSplitRange> dataSplitRanges)
+        TabularData, SqlPlan> executor, GeneratorResult generatorResult, List<DataSplitRange> dataSplitRanges)
     {
         try
         {
@@ -256,12 +256,12 @@ public abstract class RelationalIngestorAbstract
                 // Load main table, extract stats and update metadata table
                 Map<StatisticName, Object> statisticsResultMap = loadData(executor, generatorResult, placeHolderKeyValues);
                 IngestorResult result = IngestorResult.builder()
-                        .putAllStatisticByName(statisticsResultMap)
-                        .updatedDatasets(datasets)
-                        .batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN)) : null))
-                        .dataSplitRange(dataSplitRange)
-                        .schemaEvolutionSql(generatorResult.schemaEvolutionSql())
-                        .build();
+                    .putAllStatisticByName(statisticsResultMap)
+                    .updatedDatasets(datasets)
+                    .batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN)) : null))
+                    .dataSplitRange(dataSplitRange)
+                    .schemaEvolutionSql(generatorResult.schemaEvolutionSql())
+                    .build();
                 results.add(result);
                 dataSplitIndex++;
             }
@@ -286,12 +286,12 @@ public abstract class RelationalIngestorAbstract
     {
         // Extract preIngest Statistics
         Map<StatisticName, Object> statisticsResultMap = new HashMap<>(
-                executeStatisticsPhysicalPlan(executor, generatorResult.preIngestStatisticsSqlPlan(), placeHolderKeyValues));
+            executeStatisticsPhysicalPlan(executor, generatorResult.preIngestStatisticsSqlPlan(), placeHolderKeyValues));
         // Execute ingest SqlPlan
         executor.executePhysicalPlan(generatorResult.ingestSqlPlan(), placeHolderKeyValues);
         // Extract postIngest Statistics
         statisticsResultMap.putAll(
-                executeStatisticsPhysicalPlan(executor, generatorResult.postIngestStatisticsSqlPlan(), placeHolderKeyValues));
+            executeStatisticsPhysicalPlan(executor, generatorResult.postIngestStatisticsSqlPlan(), placeHolderKeyValues));
         // Execute metadata ingest SqlPlan
         if (generatorResult.metadataIngestSqlPlan().isPresent())
         {
@@ -306,10 +306,10 @@ public abstract class RelationalIngestorAbstract
         DatasetReference mainDataSetReference = datasets.mainDataset().datasetReference();
 
         externalDatasetReference = externalDatasetReference
-                .withName(externalDatasetReference.name().isPresent() ? externalDatasetReference.name().get() : LogicalPlanUtils.generateTableNameWithSuffix(mainDataSetReference.name().orElseThrow(IllegalStateException::new), STAGING))
-                .withDatabase(externalDatasetReference.database().isPresent() ? externalDatasetReference.database().get() : mainDataSetReference.database().orElse(null))
-                .withGroup(externalDatasetReference.group().isPresent() ? externalDatasetReference.group().get() : mainDataSetReference.group().orElse(null))
-                .withAlias(externalDatasetReference.alias().isPresent() ? externalDatasetReference.alias().get() : mainDataSetReference.alias().orElseThrow(RuntimeException::new) + UNDERSCORE + STAGING);
+            .withName(externalDatasetReference.name().isPresent() ? externalDatasetReference.name().get() : LogicalPlanUtils.generateTableNameWithSuffix(mainDataSetReference.name().orElseThrow(IllegalStateException::new), STAGING))
+            .withDatabase(externalDatasetReference.database().isPresent() ? externalDatasetReference.database().get() : mainDataSetReference.database().orElse(null))
+            .withGroup(externalDatasetReference.group().isPresent() ? externalDatasetReference.group().get() : mainDataSetReference.group().orElse(null))
+            .withAlias(externalDatasetReference.alias().isPresent() ? externalDatasetReference.alias().get() : mainDataSetReference.alias().orElseThrow(RuntimeException::new) + UNDERSCORE + STAGING);
 
         // TODO : Auto infer schema in future
 
@@ -321,10 +321,10 @@ public abstract class RelationalIngestorAbstract
         if (populateDigest)
         {
             Field digestField = datasets.mainDataset().schema().fields()
-                    .stream()
-                    .filter(field -> field.name().equals(digestFieldOptional.orElseThrow(IllegalStateException::new)))
-                    .findFirst()
-                    .get();
+                .stream()
+                .filter(field -> field.name().equals(digestFieldOptional.orElseThrow(IllegalStateException::new)))
+                .findFirst()
+                .get();
 
             List<Field> fields = new ArrayList<>(externalDatasetReference.schema().fields());
             fields.add(digestField);
@@ -355,12 +355,12 @@ public abstract class RelationalIngestorAbstract
         List<TabularData> results = executor.executePhysicalPlanAndGetResults(physicalPlanForCheckIsDataSetEmpty);
 
         String value = String.valueOf(results.stream()
-                .findFirst()
-                .map(TabularData::getData)
-                .flatMap(t -> t.stream().findFirst())
-                .map(Map::values)
-                .flatMap(t -> t.stream().findFirst())
-                .orElseThrow(IllegalStateException::new));
+            .findFirst()
+            .map(TabularData::getData)
+            .flatMap(t -> t.stream().findFirst())
+            .map(Map::values)
+            .flatMap(t -> t.stream().findFirst())
+            .orElseThrow(IllegalStateException::new));
         return !value.equals(TABLE_IS_NON_EMPTY);
     }
 
@@ -379,17 +379,17 @@ public abstract class RelationalIngestorAbstract
                                                                      Map<String, String> placeHolderKeyValues)
     {
         return statisticsSqlPlan.keySet()
-                .stream()
-                .collect(Collectors.toMap(
-                        k -> k,
-                        k -> executor.executePhysicalPlanAndGetResults(statisticsSqlPlan.get(k), placeHolderKeyValues)
-                                .stream()
-                                .findFirst()
-                                .map(TabularData::getData)
-                                .flatMap(t -> t.stream().findFirst())
-                                .map(Map::values)
-                                .flatMap(t -> t.stream().findFirst())
-                                .orElseThrow(IllegalStateException::new)));
+            .stream()
+            .collect(Collectors.toMap(
+                k -> k,
+                k -> executor.executePhysicalPlanAndGetResults(statisticsSqlPlan.get(k), placeHolderKeyValues)
+                    .stream()
+                    .findFirst()
+                    .map(TabularData::getData)
+                    .flatMap(t -> t.stream().findFirst())
+                    .map(Map::values)
+                    .flatMap(t -> t.stream().findFirst())
+                    .orElseThrow(IllegalStateException::new)));
     }
 
     private Map<String, String> extractPlaceHolderKeyValues(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor,
@@ -412,19 +412,19 @@ public abstract class RelationalIngestorAbstract
     }
 
     private Optional<Long> getNextBatchId(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor,
-                                          Transformer<SqlGen, SqlPlan> transformer, IngestMode ingestMode)
+                                             Transformer<SqlGen, SqlPlan> transformer, IngestMode ingestMode)
     {
         if (ingestMode.accept(IngestModeVisitors.IS_INGEST_MODE_TEMPORAL))
         {
             LogicalPlan logicalPlanForNextBatchId = LogicalPlanFactory.getLogicalPlanForNextBatchId(datasets);
             List<TabularData> tabularData = executor.executePhysicalPlanAndGetResults(transformer.generatePhysicalPlan(logicalPlanForNextBatchId));
             Optional<Object> nextBatchId = Optional.ofNullable(tabularData.stream()
-                    .findFirst()
-                    .map(TabularData::getData)
-                    .flatMap(t -> t.stream().findFirst())
-                    .map(Map::values)
-                    .flatMap(t -> t.stream().findFirst())
-                    .orElseThrow(IllegalStateException::new));
+                .findFirst()
+                .map(TabularData::getData)
+                .flatMap(t -> t.stream().findFirst())
+                .map(Map::values)
+                .flatMap(t -> t.stream().findFirst())
+                .orElseThrow(IllegalStateException::new));
             if (nextBatchId.isPresent())
             {
                 if (nextBatchId.get() instanceof Integer)
