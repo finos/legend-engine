@@ -42,8 +42,6 @@
         <module>legend-engine-xt-authentication-implementation-gcp-federation</module>
         <module>legend-engine-xt-authentication-experimental</module>
 
-        <module>legend-engine-test-reports</module>
-
         <module>legend-engine-xt-graphQL-grammar</module>
         <module>legend-engine-xt-graphQL-grammar-integration</module>
         <module>legend-engine-xt-graphQL-compiler</module>
@@ -227,11 +225,6 @@
         <module>legend-engine-shared-javaCompiler</module>
         <module>legend-engine-services-model</module>
         <module>legend-engine-services-model-api</module>
-        <module>legend-engine-server</module>
-        <module>legend-engine-test-server-shared</module>
-        <module>legend-engine-server-integration-tests</module>
-        <module>legend-engine-extensions-collection-execution</module>
-        <module>legend-engine-extensions-collection-generation</module>
         <module>legend-engine-testable</module>
         <module>legend-engine-executionPlan-execution-authorizer</module>
         <module>legend-engine-xt-relationalStore-executionPlan-authorizer</module>
@@ -259,6 +252,15 @@
         <module>legend-engine-xt-nonrelationalStore-mongodb-grammar</module>
         <module>legend-engine-xt-nonrelationalStore-mongodb-protocol</module>
         <module>legend-engine-xt-nonrelationalStore-mongodb-grammar-integration</module>
+
+        <!-- NOTE: Do not change the ordering of this block, we want to build these modules last -->
+        <module>legend-engine-test-reports</module>
+        <module>legend-engine-server</module>
+        <module>legend-engine-test-server-shared</module>
+        <module>legend-engine-server-integration-tests</module>
+        <module>legend-engine-extensions-collection-execution</module>
+        <module>legend-engine-extensions-collection-generation</module>
+        <!-- NOTE: Do not change the ordering of this block, we want to build these modules last -->
     </modules>
 
     <properties>
