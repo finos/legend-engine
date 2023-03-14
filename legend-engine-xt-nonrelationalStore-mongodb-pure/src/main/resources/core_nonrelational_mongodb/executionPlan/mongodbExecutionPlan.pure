@@ -23,15 +23,6 @@ Class meta::external::store::mongodb::metamodel::pure::MongoDBExecutionNode exte
   connection: MongoDBConnection[1];
 }
 
-//Class meta::external::store::mongodb::metamodel::mapping::MongoDBInstantiationExecutionNode extends MongoDBExecutionNode
-//{
-//}
-//
-//Class meta::external::store::mongodb::metamodel::mapping::MongoDBClassInstantiationExecutionNode extends MongoDBInstantiationExecutionNode
-//[classResultType:$this.resultType->instanceOf(meta::pure::executionPlan::ClassResultType)]
-//{
-//}
-
 Class meta::external::store::mongodb::metamodel::pure::graphFetch::executionPlan::MongoDBGraphFetchExecutionNode extends meta::pure::graphFetch::executionPlan::LocalGraphFetchExecutionNode
 {
   mainCollection: meta::external::store::mongodb::metamodel::Collection[0..1]; 

@@ -23,7 +23,6 @@ import meta::pure::mapping::*;
 import meta::external::store::mongodb::metamodel::*;
 import meta::external::store::mongodb::metamodel::runtime::*;
 import meta::external::store::mongodb::graphFetch::executionPlan::*;
-//import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::mongodb::*;
 import meta::protocols::pure::vX_X_X::extension::store::mongodb::*;
 import meta::protocols::pure::vX_X_X::metamodel::executionPlan::*;
 import meta::external::store::mongodb::runtime::connections::*;
@@ -45,15 +44,28 @@ function meta::protocols::pure::vX_X_X::extension::store::mongodb::getMongoDBSto
    moduleSerializerExtensions = meta::protocols::pure::vX_X_X::extension::store::mongodb::mongoDBModuleSerializerExtension(),
    transfers_executionPlan_transformNode = {mapping:Mapping[1], extensions:meta::pure::extension::Extension[*] |
           [
-        men:meta::external::store::mongodb::metamodel::pure::MongoDBExecutionNode[1]|
+              men:meta::external::store::mongodb::metamodel::pure::MongoDBExecutionNode[1]|
 
-                ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::mongodb::MongoDBExecutionNode(
-                           _type = 'MongoDBExecutionNode',
-                           resultType = $men.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
-                           //databaseCommand = meta::json::toJSON($men.databaseCommand, 1000, meta::json::config(true, true, true, true, '_type', false)),
-                           databaseCommand = $men.databaseCommand->getDatabaseCommandJSON(),
-                           connection = $men.connection->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::store::mongodb::transformDatabaseConnection($extensions)
-              );
+                  ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::mongodb::MongoDBExecutionNode(
+                    _type = 'MongoDBExecutionNode',
+                    resultType = $men.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                    databaseCommand = $men.databaseCommand->getDatabaseCommandJSON(),
+                    connection = $men.connection->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::store::mongodb::transformDatabaseConnection($extensions)
+                ),
+              men: meta::external::store::mongodb::metamodel::pure::graphFetch::executionPlan::MongoDBGraphFetchExecutionNode[1] |
+                  ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::mongodb::MongoDBGraphFetchExecutionNode(
+                    _type = 'MongoDBGraphFetchExecutionNode',
+                    nodeIndex = $men.nodeIndex,
+                    resultType = $men.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                    graphFetchTree = $men.graphFetchTree->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], newMap([]->cast(@Pair<String,List<Any>>)), $extensions)
+                ),
+              men: meta::external::store::mongodb::metamodel::pure::graphFetch::executionPlan::RootMongoDBGraphFetchExecutionNode[1] |
+                  ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::mongodb::RootMongoDBGraphFetchExecutionNode(
+                    _type = 'RootMongoDBGraphFetchExecutionNode',
+                    nodeIndex = $men.nodeIndex,
+                    resultType = $men.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                    graphFetchTree = $men.graphFetchTree->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], newMap([]->cast(@Pair<String,List<Any>>)), $extensions)
+                )
           ];
        }
    )

@@ -20,6 +20,8 @@ import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBExecutionNode;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBGraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.RootMongoDBGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.pac4j.core.profile.CommonProfile;
 
@@ -33,7 +35,7 @@ public class MongoDBStoreExecutionExtension implements IMongoDBStoreExecutionExt
         return Collections.singletonList(((executionNode, profiles, executionState) ->
         {
             //TODO : Fix with real protocol definition
-            if (executionNode instanceof MongoDBExecutionNode)
+            if (executionNode instanceof MongoDBExecutionNode || executionNode instanceof MongoDBGraphFetchExecutionNode)
             {
                 return executionNode.accept(executionState.getStoreExecutionState(StoreType.NonRelational_MongoDB).getVisitor(profiles, executionState));
             }

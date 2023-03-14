@@ -49,24 +49,6 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
          ])
       },
 
-      generateLegendJavaCodeForNode = {node: ExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1] |
-         $node->match([
-            { n: MongoDBGraphFetchExecutionNode[1]                            | 
-               let mongoDBGraphImplUpdateFunction = {impl: meta::external::language::java::metamodel::Class[1] |
-               $impl->enrichForMongoDBGraphExecution($n, $context, $extensions, $debug)
-               };
-               let baseProject  = $n->generateBaseProjectForLocalGraphFetchNode($path, $context, $mongoDBGraphImplUpdateFunction, $debug);
-               let storeProject = $n->generateMongoDBGraphFetchNodeProject($path, $context, $extensions, $debug);
-
-               generatedCode(
-                  $baseProject->concatenate($storeProject)->toOneMany()->mergeProjects(),
-                  $storeProject->resolve($context.conventions->planNodeClass('public', $path, 'Execute'))
-               );
-            },
-            n: ExecutionNode[1]                                             | ^GeneratedCode()
-         ])
-      },
-
 
       // ------------------------------------------------------ Node based extensions
 
@@ -108,32 +90,10 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
                                                                                           parametersValues = ^VariableExpression(genericType=^GenericType(rawType = $spm.property.owner->cast(@meta::pure::metamodel::type::Class<Any>)), multiplicity = PureOne, name = 'src'),
                                                                                           propertyName = ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = $spm.property.name));
                                                       ^$dummyLambda(classifierGenericType = $gen, expressionSequence = $exp);}
-//               {epm : EmbeddedServiceStoreSetImplementation[1] | let dummyLambda = {|'ok'};
-//                                                      let gen = ^GenericType
-//                                                                  (
-//                                                                     rawType = LambdaFunction,
-//                                                                     typeArguments = ^GenericType
-//                                                                                       (
-//                                                                                          rawType = ^meta::pure::metamodel::type::FunctionType
-//                                                                                                   (
-//                                                                                                      parameters = [],
-//                                                                                                      returnType = $epm.property->functionReturnType(),
-//                                                                                                      returnMultiplicity= $epm.property->functionReturnMultiplicity()
-//                                                                                                   )
-//                                                                                       )
-//                                                                  );
-//                                                      let exp = ^SimpleFunctionExpression(func = $epm.property,
-//                                                                                          genericType = $epm.property.genericType,
-//                                                                                          importGroup = system.children->at(0)->cast(@Package).children->at(0)->cast(@ImportGroup),
-//                                                                                          multiplicity = $epm.property.multiplicity,
-//                                                                                          parametersValues = ^VariableExpression(genericType=^GenericType(rawType = $epm.property.owner->cast(@meta::pure::metamodel::type::Class<Any>)), multiplicity = PureOne, name = 'src'),
-//                                                                                          propertyName = ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = $epm.property.name));
-//                                                      ^$dummyLambda(classifierGenericType = $gen, expressionSequence = $exp);}
             ],
 
             valueTransformerExtractors = [
                mpm : MongoDBPropertyMapping[1]           | []
-               // epm : EmbeddedServiceStoreSetImplementation[1] | []
             ]
          )
 

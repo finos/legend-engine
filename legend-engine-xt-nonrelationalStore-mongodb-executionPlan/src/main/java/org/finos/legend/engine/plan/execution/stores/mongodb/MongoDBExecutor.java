@@ -31,6 +31,7 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBCon
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential;
 
+import java.util.List;
 import java.util.Properties;
 
 public class MongoDBExecutor
@@ -56,6 +57,11 @@ public class MongoDBExecutor
             Document bsonCmd = Document.parse(dbCommand);
             Document dbResult = mongoDatabase.runCommand(bsonCmd);
             Document cursor = (Document) dbResult.get("cursor");
+            List<Document> firstBatchDocuments = (List<Document>) cursor.get("firstBatch");
+            firstBatchDocuments.stream().forEach(i -> {
+                System.out.println("new entry");
+                System.out.println(i);
+            });
             return null;
         }
         catch (Exception e)

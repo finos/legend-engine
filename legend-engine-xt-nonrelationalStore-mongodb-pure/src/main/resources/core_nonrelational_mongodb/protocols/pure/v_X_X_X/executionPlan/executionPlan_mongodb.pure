@@ -13,12 +13,25 @@
 // limitations under the License.
 
 
+import meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::*;
 import meta::pure::executionPlan::*;
 import meta::json::*;
 import meta::protocols::pure::vX_X_X::metamodel::store::mongodb::connection::*;
+import meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::mongodb::*;
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::mongodb::MongoDBExecutionNode extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::ExecutionNode
 {
     databaseCommand : String[1];
     connection      : MongoDBConnection[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::mongodb::MongoDBGraphFetchExecutionNode extends LocalGraphFetchExecutionNode
+{
+  mainCollection: meta::external::store::mongodb::metamodel::Collection[0..1]; 
+  batchSize: Integer[0..1];
+  children : MongoDBGraphFetchExecutionNode[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::mongodb::RootMongoDBGraphFetchExecutionNode extends MongoDBGraphFetchExecutionNode
+{
 }
