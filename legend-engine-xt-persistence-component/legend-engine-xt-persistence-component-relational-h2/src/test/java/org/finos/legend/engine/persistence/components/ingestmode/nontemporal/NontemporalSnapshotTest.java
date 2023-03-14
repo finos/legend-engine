@@ -61,7 +61,7 @@ class NontemporalSnapshotTest extends BaseTest
     @Test
     void testNontemporalSnapshotNoAuditing() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBasicMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
 
         // Create staging table
@@ -131,7 +131,7 @@ class NontemporalSnapshotTest extends BaseTest
     @Test
     void testNontemporalSnapshotImportExternalJson() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBasicMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         String dataPass1 = basePath + "input/vanilla_case/data_pass1.json";
         Dataset stagingTable = TestUtils.getBasicJsonDatasetReferenceTable(dataPass1);
 
@@ -163,7 +163,7 @@ class NontemporalSnapshotTest extends BaseTest
     @Test
     void testNontemporalSnapshotImportExternalCsv() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBasicMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         String dataPass1 = basePath + "input/vanilla_case/data_pass1.csv";
         Dataset stagingTable = TestUtils.getBasicCsvDatasetReferenceTable(dataPass1);
 
@@ -228,7 +228,7 @@ class NontemporalSnapshotTest extends BaseTest
     @Test
     void testNontemporalSnapshotWithCleanStagingData() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBasicMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
 
         // Create staging table
@@ -260,7 +260,7 @@ class NontemporalSnapshotTest extends BaseTest
     @Test
     void testNontemporalSnapshotWithDataSplits() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBasicMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         String dataPass1 = basePath + "input/with_data_splits/data_pass1.csv";
         Dataset stagingTable = TestUtils.getBasicCsvDatasetReferenceTableWithDataSplits(dataPass1);
 

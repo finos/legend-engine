@@ -21,6 +21,7 @@ import org.finos.legend.engine.persistence.components.executor.DigestInfo;
 import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.importer.Importer;
 import org.finos.legend.engine.persistence.components.importer.Importers;
+import org.finos.legend.engine.persistence.components.ingestmode.DeriveMainDatasetSchemaFromStaging;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestModeVisitors;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
@@ -318,14 +319,8 @@ public abstract class RelationalIngestorAbstract
 
         if (populateDigest)
         {
-            Field digestField = datasets.mainDataset().schema().fields()
-                .stream()
-                .filter(field -> field.name().equals(digestFieldOptional.orElseThrow(IllegalStateException::new)))
-                .findFirst()
-                .get();
-
             List<Field> fields = new ArrayList<>(externalDatasetReference.schema().fields());
-            fields.add(digestField);
+            DeriveMainDatasetSchemaFromStaging.addDigestField(fields, digestFieldOptional.get());
             externalDatasetReference = externalDatasetReference.withSchema(externalDatasetReference.schema().withFields(fields));
         }
 
