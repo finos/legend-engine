@@ -14,23 +14,10 @@
 
 package org.finos.legend.engine.postgres.auth;
 
-public enum Protocol
+import org.finos.legend.engine.postgres.ConnectionProperties;
+
+public interface AuthenticationProvider
 {
-
-    POSTGRES("pg"),
-    HTTP("http"),
-    TRANSPORT("transport");
-
-    private final String protocolName;
-
-    Protocol(String protocolName)
-    {
-        this.protocolName = protocolName;
-    }
-
-    @Override
-    public String toString()
-    {
-        return protocolName;
-    }
+    AuthenticationMethod resolveAuthenticationType(String user,
+                                                   ConnectionProperties connectionProperties);
 }

@@ -28,16 +28,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslHandler;
-import org.finos.legend.engine.postgres.auth.Authentication;
-import org.finos.legend.engine.postgres.auth.AuthenticationMethod;
-import org.finos.legend.engine.postgres.auth.Protocol;
-import org.finos.legend.engine.postgres.auth.User;
-import org.finos.legend.engine.postgres.handler.PostgresResultSet;
-import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
-import org.finos.legend.engine.postgres.types.PGType;
-import org.finos.legend.engine.postgres.types.PGTypes;
-import org.slf4j.Logger;
-
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
@@ -54,6 +44,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import javax.net.ssl.SSLSession;
+import org.finos.legend.engine.postgres.auth.AuthenticationMethod;
+import org.finos.legend.engine.postgres.auth.AuthenticationProvider;
+import org.finos.legend.engine.postgres.handler.PostgresResultSet;
+import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
+import org.finos.legend.engine.postgres.types.PGType;
+import org.finos.legend.engine.postgres.types.PGTypes;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.slf4j.Logger;
 import static org.finos.legend.engine.postgres.FormatCodes.getFormatCode;
 
 
@@ -182,7 +180,7 @@ public class PostgresWireProtocol
     final MessageHandler handler;
     private final SessionsFactory sessions;
     /* private final Function<CoordinatorSessionSettings, AccessControl> getAccessControl;*/
-    private final Authentication authService;
+    private final AuthenticationProvider authService;
     /*  private final Consumer<ChannelPipeline> addTransportHandler;
      */
     private DelayableWriteChannel channel;
@@ -194,7 +192,7 @@ public class PostgresWireProtocol
     public PostgresWireProtocol(SessionsFactory sessions,
             /*Function<CoordinatorSessionSettings, AccessControl> getAcessControl,*/
             /*Consumer<ChannelPipeline> addTransportHandler,*/
-                                Authentication authService,
+                                AuthenticationProvider authService,
                                 Supplier<SslContext> getSslContext)
     {
         this.sessions = sessions;
@@ -469,8 +467,7 @@ public class PostgresWireProtocol
         InetAddress address = getRemoteAddress(channel);
 
         SSLSession sslSession = getSession(channel);
-        ConnectionProperties connProperties = new ConnectionProperties(address, Protocol.POSTGRES,
-                sslSession);
+        ConnectionProperties connProperties = new ConnectionProperties(address, sslSession);
 
         AuthenticationMethod authMethod = authService.resolveAuthenticationType(userName,
                 connProperties);
@@ -500,7 +497,7 @@ public class PostgresWireProtocol
         assert authContext != null : "finishAuthentication() requires an authContext instance";
         try
         {
-            User authenticatedUser = authContext.authenticate();
+            Identity authenticatedUser = authContext.authenticate();
             String database = properties.getProperty("database");
             session = sessions.createSession(database, authenticatedUser);
             Messages.sendAuthenticationOK(channel)

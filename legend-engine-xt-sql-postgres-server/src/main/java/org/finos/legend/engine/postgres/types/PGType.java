@@ -24,9 +24,8 @@ package org.finos.legend.engine.postgres.types;
 //import io.crate.types.Regproc;
 
 import io.netty.buffer.ByteBuf;
-import org.slf4j.Logger;
-
 import java.nio.charset.StandardCharsets;
+import org.slf4j.Logger;
 
 public abstract class PGType<T>
 {

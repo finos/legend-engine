@@ -21,16 +21,16 @@
 
 package org.finos.legend.engine.postgres;
 
-import org.finos.legend.engine.postgres.auth.AuthenticationMethod;
-import org.finos.legend.engine.postgres.auth.User;
-import org.slf4j.Logger;
-
 import java.io.Closeable;
+import org.finos.legend.engine.postgres.auth.AuthenticationMethod;
+import org.finos.legend.engine.postgres.auth.SecureString;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.slf4j.Logger;
 
 class AuthenticationContext implements Closeable
 {
 
-    private String password;
+    private SecureString password;
     private final String userName;
     private final Logger logger;
 
@@ -59,12 +59,12 @@ class AuthenticationContext implements Closeable
     }
 
 
-    User authenticate()
+    Identity authenticate()
     {
-        User user = authMethod.authenticate(userName, password, connProperties);
+        Identity user = authMethod.authenticate(userName, password, connProperties);
         if (user != null && logger.isTraceEnabled())
         {
-            logger.trace("Authentication succeeded user \"{}\" and method \"{}\".", user.name(),
+            logger.trace("Authentication succeeded user \"{}\" and method \"{}\".", user.getName(),
                     authMethod.name());
         }
         return user;
@@ -72,14 +72,10 @@ class AuthenticationContext implements Closeable
 
     void setSecurePassword(char[] secureString)
     {
-        this.password = new String(secureString);
+        this.password = new SecureString(secureString);
     }
 
 
-    String password()
-    {
-        return password;
-    }
 
     /**
      * Close method should be called as soon as possible in order to clear out the password char[].
@@ -90,7 +86,7 @@ class AuthenticationContext implements Closeable
     {
         if (password != null)
         {
-            //password.close();
+            password.close();
         }
     }
 }

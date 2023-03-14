@@ -14,13 +14,12 @@
 
 package org.finos.legend.engine.postgres.handler.legend;
 
+import java.sql.ParameterMetaData;
+import java.util.List;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
 import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
-
-import java.sql.ParameterMetaData;
-import java.util.List;
 
 public class LegendPreparedStatement implements PostgresPreparedStatement
 {

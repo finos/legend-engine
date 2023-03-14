@@ -22,7 +22,6 @@
 package org.finos.legend.engine.postgres.types;
 
 import io.netty.buffer.ByteBuf;
-
 import java.nio.charset.StandardCharsets;
 
 class CharType extends PGType<Byte>

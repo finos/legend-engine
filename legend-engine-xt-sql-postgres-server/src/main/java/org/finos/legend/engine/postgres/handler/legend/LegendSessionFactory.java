@@ -14,14 +14,16 @@
 
 package org.finos.legend.engine.postgres.handler.legend;
 
+import java.security.PrivilegedAction;
+import java.sql.SQLException;
+import javax.security.auth.Subject;
 import org.finos.legend.engine.postgres.Session;
 import org.finos.legend.engine.postgres.SessionsFactory;
-import org.finos.legend.engine.postgres.auth.User;
 import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
 import org.finos.legend.engine.postgres.handler.PostgresStatement;
 import org.finos.legend.engine.postgres.handler.SessionHandler;
-
-import java.sql.SQLException;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
 
 public class LegendSessionFactory implements SessionsFactory
 {
@@ -34,8 +36,26 @@ public class LegendSessionFactory implements SessionsFactory
     }
 
     @Override
-    public Session createSession(String defaultSchema, User authenticatedUser)
+    public Session createSession(String defaultSchema, Identity identity)
             throws Exception
+    {
+        if (identity.getFirstCredential() instanceof LegendKerberosCredential)
+        {
+            LegendKerberosCredential credential = (LegendKerberosCredential) identity.getFirstCredential();
+            return Subject.doAs(credential.getSubject(), (PrivilegedAction<Session>) () ->
+            {
+                return createSession();
+
+            });
+        }
+        else
+        {
+            return createSession();
+        }
+
+    }
+
+    private Session createSession()
     {
         return new Session(new SessionHandler()
         {

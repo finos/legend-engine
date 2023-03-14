@@ -14,15 +14,6 @@
 
 package org.finos.legend.engine.postgres.handler.jdbc;
 
-import org.finos.legend.engine.postgres.Session;
-import org.finos.legend.engine.postgres.SessionsFactory;
-import org.finos.legend.engine.postgres.auth.User;
-import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
-import org.finos.legend.engine.postgres.handler.PostgresResultSet;
-import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
-import org.finos.legend.engine.postgres.handler.PostgresStatement;
-import org.finos.legend.engine.postgres.handler.SessionHandler;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ParameterMetaData;
@@ -34,6 +25,14 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Date;
+import org.finos.legend.engine.postgres.Session;
+import org.finos.legend.engine.postgres.SessionsFactory;
+import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
+import org.finos.legend.engine.postgres.handler.PostgresResultSet;
+import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
+import org.finos.legend.engine.postgres.handler.PostgresStatement;
+import org.finos.legend.engine.postgres.handler.SessionHandler;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 public class JDBCSessionFactory implements SessionsFactory
 {
@@ -51,7 +50,7 @@ public class JDBCSessionFactory implements SessionsFactory
     }
 
     @Override
-    public Session createSession(String defaultSchema, User authenticatedUser)
+    public Session createSession(String defaultSchema, Identity identity)
             throws Exception
     {
         return new Session(new SessionHandler()

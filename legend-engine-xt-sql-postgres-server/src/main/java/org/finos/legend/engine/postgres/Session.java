@@ -21,17 +21,16 @@
 
 package org.finos.legend.engine.postgres;
 
-import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
-import org.finos.legend.engine.postgres.handler.PostgresResultSet;
-import org.finos.legend.engine.postgres.handler.PostgresStatement;
-import org.finos.legend.engine.postgres.handler.SessionHandler;
-import org.slf4j.Logger;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
+import org.finos.legend.engine.postgres.handler.PostgresResultSet;
+import org.finos.legend.engine.postgres.handler.PostgresStatement;
+import org.finos.legend.engine.postgres.handler.SessionHandler;
+import org.slf4j.Logger;
 
 public class Session implements AutoCloseable
 {

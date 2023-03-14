@@ -14,11 +14,10 @@
 
 package org.finos.legend.engine.postgres.handler.legend;
 
+import java.util.List;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresStatement;
-
-import java.util.List;
 
 public class LegendStatement implements PostgresStatement
 {

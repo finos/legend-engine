@@ -14,9 +14,8 @@
 
 package org.finos.legend.engine.postgres.handler.legend;
 
-import org.eclipse.collections.api.tuple.Pair;
-
 import java.util.List;
+import org.eclipse.collections.api.tuple.Pair;
 
 public interface LegendExecutionClient
 {
