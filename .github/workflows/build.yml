@@ -19,7 +19,7 @@ env:
   CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-  MAVEN_OPTS: -Xmx4g
+  MAVEN_OPTS: -Xmx8g
 
 on: [push, pull_request]
 
@@ -70,7 +70,7 @@ jobs:
 
       - name: Build + Test
         if: (github.repository != 'finos/legend-engine') || (github.ref != 'refs/heads/master')
-        run: mvn -B -e install -DargLine="-Xmx3g"
+        run: mvn -B -e install -DargLine="-Xmx6g"
 
       - name: Build + Test + Maven Deploy + Sonar + Docker Snapshot
         if: (github.repository == 'finos/legend-engine') && (github.ref == 'refs/heads/master')
@@ -79,7 +79,7 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
           mvn -B -e install -DskipTests=true
-          mvn -B -e javadoc:javadoc deploy -DargLine="-Xmx3g" -P docker-snapshot
+          mvn -B -e javadoc:javadoc deploy -DargLine="-Xmx6g" -P docker-snapshot
 
       - name: Upload Test Results
         if: always()
