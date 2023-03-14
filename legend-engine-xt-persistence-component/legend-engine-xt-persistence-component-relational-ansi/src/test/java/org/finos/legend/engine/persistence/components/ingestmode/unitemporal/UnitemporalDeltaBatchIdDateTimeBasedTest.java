@@ -317,12 +317,12 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
         List<String> metadataIngestSql = operations.metadataIngestSql();
 
         String expectedCreateMainTableQuery = "CREATE TABLE IF NOT EXISTS \"my_schema\".\"main\"" +
-                "(\"id\" INTEGER," +
-                "\"name\" VARCHAR," +
+                "(\"id\" INTEGER NOT NULL," +
+                "\"name\" VARCHAR NOT NULL," +
                 "\"amount\" DOUBLE," +
                 "\"biz_date\" DATE," +
                 "\"digest\" VARCHAR," +
-                "\"batch_id_in\" INTEGER," +
+                "\"batch_id_in\" INTEGER NOT NULL," +
                 "\"batch_id_out\" INTEGER," +
                 "\"batch_time_in\" DATETIME," +
                 "\"batch_time_out\" DATETIME," +
@@ -362,12 +362,12 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
         List<String> metadataIngestSql = operations.metadataIngestSql();
 
         String expectedCreateMainTableQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"my_schema\".\"main\"" +
-                "(\"id\" INTEGER," +
-                "\"name\" VARCHAR," +
+                "(\"id\" INTEGER NOT NULL," +
+                "\"name\" VARCHAR NOT NULL," +
                 "\"amount\" DOUBLE," +
                 "\"biz_date\" DATE," +
                 "\"digest\" VARCHAR," +
-                "\"batch_id_in\" INTEGER," +
+                "\"batch_id_in\" INTEGER NOT NULL," +
                 "\"batch_id_out\" INTEGER," +
                 "\"batch_time_in\" DATETIME," +
                 "\"batch_time_out\" DATETIME," +
@@ -407,12 +407,12 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
         List<String> metadataIngestSql = operations.metadataIngestSql();
 
         String expectedCreateMainTableQuery = "CREATE TABLE IF NOT EXISTS main" +
-                "(\"id\" INTEGER," +
-                "\"name\" VARCHAR," +
+                "(\"id\" INTEGER NOT NULL," +
+                "\"name\" VARCHAR NOT NULL," +
                 "\"amount\" DOUBLE," +
                 "\"biz_date\" DATE," +
                 "\"digest\" VARCHAR," +
-                "\"batch_id_in\" INTEGER," +
+                "\"batch_id_in\" INTEGER NOT NULL," +
                 "\"batch_id_out\" INTEGER," +
                 "\"batch_time_in\" DATETIME," +
                 "\"batch_time_out\" DATETIME," +

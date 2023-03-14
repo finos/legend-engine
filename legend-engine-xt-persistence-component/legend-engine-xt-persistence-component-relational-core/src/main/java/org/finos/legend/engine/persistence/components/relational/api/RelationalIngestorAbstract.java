@@ -220,12 +220,10 @@ public abstract class RelationalIngestorAbstract
         Planner planner = Planners.get(updatedDatasets, ingestMode(), plannerOptions());
         GeneratorResult generatorResult = generator.generateOperations(updatedDatasets, resourcesBuilder.build(), planner);
 
-        // Create tables if they do not exist
-        if (!mainDatasetExists)
-        {
-            executor.executePhysicalPlan(generatorResult.preActionsSqlPlan());
-        }
-        else
+        // Create tables
+        executor.executePhysicalPlan(generatorResult.preActionsSqlPlan());
+        // The below boolean is created before the execution of pre-actions, hence it represents whether the main table has already existed before that
+        if (mainDatasetExists)
         {
             // Perform schema evolution
             if (generatorResult.schemaEvolutionDataset().isPresent())
