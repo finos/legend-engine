@@ -37,12 +37,12 @@ import org.finos.legend.pure.m3.navigation.Instance;
 import org.finos.legend.pure.m3.navigation.M3Properties;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
-import org.finos.legend.pure.m3.serialization.filesystem.PureCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.CodeStorageNode;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.RepositoryCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.VersionControlledClassLoaderCodeStorage;
+import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.composite.CompositeCodeStorage;
 import org.finos.legend.pure.m3.serialization.runtime.Message;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.compiler.JavaCompilerState;
@@ -339,7 +339,7 @@ public class PureTestHelper
                 new JavaCompilerState(null, PureTestHelper.class.getClassLoader()),
                 new CompiledProcessorSupport(PureTestHelper.class.getClassLoader(), PureModel.METADATA_LAZY, Sets.mutable.empty()),
                 null,
-                new PureCodeStorage(null, new VersionControlledClassLoaderCodeStorage(PureTestHelper.class.getClassLoader(), CodeRepositoryProviderHelper.findCodeRepositories(true), null)),
+                new CompositeCodeStorage(new VersionControlledClassLoaderCodeStorage(PureTestHelper.class.getClassLoader(), CodeRepositoryProviderHelper.findCodeRepositories(true), null)),
                 null,
                 null,
                 console,

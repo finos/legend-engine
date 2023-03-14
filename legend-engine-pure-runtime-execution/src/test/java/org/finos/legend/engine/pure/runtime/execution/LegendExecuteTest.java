@@ -21,10 +21,10 @@ import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.pure.runtime.compiler.interpreted.natives.LegendCompileMixedProcessorSupport;
 import org.finos.legend.pure.m3.coreinstance.CoreInstanceFactoryRegistry;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
-import org.finos.legend.pure.m3.serialization.filesystem.PureCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.ClassLoaderCodeStorage;
+import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.composite.CompositeCodeStorage;
 import org.finos.legend.pure.m3.serialization.runtime.Message;
 import org.finos.legend.pure.m3.serialization.runtime.PureRuntime;
 import org.finos.legend.pure.m3.serialization.runtime.PureRuntimeBuilder;
@@ -55,7 +55,7 @@ public class LegendExecuteTest
 
         RichIterable<CodeRepository> repositories = getRepositories().select(p -> !p.getName().startsWith("other_") && !p.getName().startsWith("test_"));
         System.out.println(repositories.collect(CodeRepository::getName).makeString("Code Repos: ", ", ", ""));
-        PureCodeStorage codeStorage = new PureCodeStorage(null, new ClassLoaderCodeStorage(repositories));
+        CompositeCodeStorage codeStorage = new CompositeCodeStorage(new ClassLoaderCodeStorage(repositories));
 
         ClassLoaderPureGraphCache graphCache = new ClassLoaderPureGraphCache()
         {
