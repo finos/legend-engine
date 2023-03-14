@@ -19,7 +19,6 @@ env:
   CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-  MAVEN_OPTS: -Xmx4g
 
 on: [push, pull_request]
 
@@ -70,7 +69,9 @@ jobs:
 
       - name: Build + Test
         if: (github.repository != 'finos/legend-engine') || (github.ref != 'refs/heads/master')
-        run: mvn -B -e install -DargLine="-Xmx3g"
+        run: |
+          mvn -B -e -DXss4m -DXX:MaxRAMPercentage=90.0 -DskipTests=true install
+          mvn -B -e -DXss4m -DXX:MaxRAMPercentage=10.0 surefire:test -DargLine="-XX:MaxRAMPercentage=80.0"
 
       - name: Build + Test + Maven Deploy + Sonar + Docker Snapshot
         if: (github.repository == 'finos/legend-engine') && (github.ref == 'refs/heads/master')
@@ -78,8 +79,8 @@ jobs:
           DOCKER_USERNAME: finos
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
-          mvn -B -e install -DskipTests=true
-          mvn -B -e javadoc:javadoc deploy -DargLine="-Xmx3g" -P docker-snapshot
+         mvn -B -e -DXss4m -DXX:MaxRAMPercentage=90.0 -DskipTests=true javadoc:javadoc deploy -P docker-snapshot
+         mvn -B -e -DXss4m -DXX:MaxRAMPercentage=10.0 surefire:test -DargLine="-XX:MaxRAMPercentage=80.0"
 
       - name: Upload Test Results
         if: always()
