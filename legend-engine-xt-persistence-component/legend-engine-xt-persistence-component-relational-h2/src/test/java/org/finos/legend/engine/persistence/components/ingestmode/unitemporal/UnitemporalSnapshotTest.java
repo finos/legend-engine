@@ -39,8 +39,6 @@ import static org.finos.legend.engine.persistence.components.TestUtils.priceName
 import static org.finos.legend.engine.persistence.components.TestUtils.dateName;
 import static org.finos.legend.engine.persistence.components.TestUtils.digestName;
 import static org.finos.legend.engine.persistence.components.TestUtils.expiryDateName;
-import static org.finos.legend.engine.persistence.components.TestUtils.getBasicStagingTable;
-import static org.finos.legend.engine.persistence.components.TestUtils.getUnitemporalMainTableWithMissingColumn;
 import static org.finos.legend.engine.persistence.components.TestUtils.idName;
 import static org.finos.legend.engine.persistence.components.TestUtils.incomeName;
 import static org.finos.legend.engine.persistence.components.TestUtils.nameName;
@@ -59,9 +57,8 @@ class UnitemporalSnapshotTest extends BaseTest
     @Test
     void testUnitemporalSnapshotMilestoningLogicWithoutPartition() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getUnitemporalMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
-        MetadataDataset metadataDataset = TestUtils.getMetadataDataset();
 
         String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
 

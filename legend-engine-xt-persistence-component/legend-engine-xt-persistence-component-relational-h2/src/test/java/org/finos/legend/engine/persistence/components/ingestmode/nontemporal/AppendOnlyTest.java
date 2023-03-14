@@ -27,7 +27,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
 import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
-import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -68,7 +67,7 @@ class AppendOnlyTest extends BaseTest
     @Test
     void testAppendOnlyWithFilterDuplicatesAndNoAuditing() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBasicMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
 
         // Create staging table
@@ -117,7 +116,7 @@ class AppendOnlyTest extends BaseTest
     @Test
     void testAppendOnlyWithStagingDataImportedWithPopulateDigest() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBasicMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         String dataPass1 = "src/test/resources/data/import-data/data_pass1.json";
         Dataset stagingTable = TestUtils.getJsonDatasetWithoutDigestReferenceTable(dataPass1);
 
@@ -200,7 +199,7 @@ class AppendOnlyTest extends BaseTest
     @Test
     void testAppendOnlyWithCleanStagingData() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBasicMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
 
         // Create staging table
@@ -242,7 +241,7 @@ class AppendOnlyTest extends BaseTest
     @Test
     void testAppendOnlyWithFilterDuplicatesAndAuditingEnabled() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getMainTableWithBatchUpdateTimeField();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         String dataPass1 = basePath + "input/with_update_timestamp_field/data_pass1.csv";
         Dataset stagingTable = TestUtils.getBasicCsvDatasetReferenceTable(dataPass1);
 

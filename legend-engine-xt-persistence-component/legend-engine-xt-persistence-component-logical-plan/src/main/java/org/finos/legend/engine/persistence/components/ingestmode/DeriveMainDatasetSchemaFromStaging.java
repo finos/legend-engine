@@ -141,16 +141,16 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
         }
     }
 
-    private void addDigestField(List<Field> mainSchemaFields, String digestFieldName)
+    public static void addDigestField(List<Field> schemaFields, String digestFieldName)
     {
         // DIGEST field addition
-        if (!mainSchemaFields.stream().anyMatch(field -> field.name().equals(digestFieldName)))
+        if (!schemaFields.stream().anyMatch(field -> field.name().equals(digestFieldName)))
         {
             Field digest = Field.builder()
                     .name(digestFieldName)
                     .type(FieldType.of(DataType.STRING, Optional.empty(), Optional.empty()))
                     .build();
-            mainSchemaFields.add(digest);
+            schemaFields.add(digest);
         }
     }
 

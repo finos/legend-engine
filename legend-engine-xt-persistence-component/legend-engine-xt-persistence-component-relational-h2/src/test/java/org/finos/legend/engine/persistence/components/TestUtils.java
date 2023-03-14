@@ -160,6 +160,15 @@ public class TestUtils
             .build();
     }
 
+    public static DatasetDefinition getDefaultMainTable()
+    {
+        return DatasetDefinition.builder()
+                .group(testSchemaName)
+                .name(mainTableName)
+                .schema(SchemaDefinition.builder().build())
+                .build();
+    }
+
     public static DatasetDefinition getMainTableWithBatchUpdateTimeField()
     {
         return DatasetDefinition.builder()
@@ -312,15 +321,6 @@ public class TestUtils
             .build();
     }
 
-    public static DatasetDefinition getBasicTableWithNoPks()
-    {
-        return DatasetDefinition.builder()
-            .group(testSchemaName)
-            .name(mainTableName)
-            .schema(getSchemaWithNoPKs())
-            .build();
-    }
-
     public static Dataset getCsvDatasetRefWithLessColumnsThanMain(String dataPath)
     {
         return CsvExternalDatasetReference.builder()
@@ -348,26 +348,6 @@ public class TestUtils
                 .addFields(income)
                 .addFields(startTime)
                 .addFields(expiryDate)
-                .addFields(digest)
-                .addFields(batchIdIn)
-                .addFields(batchIdOut)
-                .addFields(batchTimeIn)
-                .addFields(batchTimeOut)
-                .build()
-            )
-            .build();
-    }
-
-    public static DatasetDefinition getUnitemporalMainTableWithMissingColumn()
-    {
-        return DatasetDefinition.builder()
-            .group(testSchemaName)
-            .name(mainTableName)
-            .schema(SchemaDefinition.builder()
-                .addFields(id)
-                .addFields(name)
-                .addFields(income)
-                .addFields(startTime)
                 .addFields(digest)
                 .addFields(batchIdIn)
                 .addFields(batchIdOut)
