@@ -56,6 +56,8 @@ Class meta::pure::executionPlan::platformBinding::legendJava::IRelationalClassQu
 Class meta::pure::executionPlan::platformBinding::legendJava::IRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics {}
 Class meta::pure::executionPlan::platformBinding::legendJava::IServiceParametersResolutionExecutionNodeSpecifics {}
 Class meta::pure::executionPlan::platformBinding::legendJava::IPlatformPrimitiveQualifierLocalGraphFetchExecutionNodeSpecifics {}
+Class meta::pure::executionPlan::platformBinding::legendJava::IMongoDBRootGraphExecutionNodeSpecifics {}
+
 
 function meta::pure::executionPlan::platformBinding::legendJava::applyJavaEngineDependencies(conventions:Conventions[1], extensions:meta::pure::extension::Extension[*]):Conventions[1]
 {
@@ -467,6 +469,12 @@ function meta::pure::executionPlan::platformBinding::legendJava::applyJavaEngine
       ->addMethod(javaMethod('public', javaList(javaString()), 'parentPrimaryKeyColumns', [javaParam(javaList(javaString()), 'p0')]))
       ->addMethod(javaMethod('public', javaVoid(), 'prepare', [javaParam(javaResultSet(), 'p0'), javaParam(javaString(), 'p1'), javaParam(javaString(), 'p2')]));
 
+  let jMongoDBRootGraphFetchExecutionNodeSpecifics = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.nonrelational.mongodb.IMongoDBRootGraphExecutionNodeSpecifics')
+      ->addMethod(javaMethod('public', javaParameterizedType($jIGraphInstance, [javaWildcard()]), 'nextGraphInstance', []))
+      ->addMethod(javaMethod('public', javaVoid(), 'prepare', [javaParam(mongoCursor(), 'p0')]))
+      ->addMethod(javaMethod('public', javaString(), 'primaryKeyField', []))
+       ->addMethod(javaMethod('public', javaList(javaReflectMethod()), 'primaryKeyGetters', []));
+
    let jIServiceParametersResolutionExecutionNodeSpecifics = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.serviceStore.IServiceParametersResolutionExecutionNodeSpecifics')
       ->addMethod(javaMethod('public', javaParameterizedType(javaClass('java.util.Map'), [javaString(), javaObject()]), 'resolveServiceParameters', [javaParam(javaParameterizedType(javaClass('java.util.Map'), [javaString(), javaObject()]), 'p0')]));
 
@@ -518,7 +526,8 @@ function meta::pure::executionPlan::platformBinding::legendJava::applyJavaEngine
       ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::IRelationalClassQueryTempTableGraphFetchExecutionNodeSpecifics, $jIRelationalClassQueryTempTableGraphFetchExecutionNodeSpecifics)
       ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::IRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics, $jIRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics)
       ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::IServiceParametersResolutionExecutionNodeSpecifics, $jIServiceParametersResolutionExecutionNodeSpecifics)
-      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::IPlatformPrimitiveQualifierLocalGraphFetchExecutionNodeSpecifics, $jIPlatformPrimitiveQualifierLocalGraphFetchExecutionNodeSpecifics);
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::IPlatformPrimitiveQualifierLocalGraphFetchExecutionNodeSpecifics, $jIPlatformPrimitiveQualifierLocalGraphFetchExecutionNodeSpecifics)
+      ->addProvidedType(meta::pure::executionPlan::platformBinding::legendJava::IMongoDBRootGraphExecutionNodeSpecifics, $jMongoDBRootGraphFetchExecutionNodeSpecifics);
 
    let platformDependencyUpdates = $extensions->meta::pure::executionPlan::platformBinding::legendJava::extractLegendJavaAdhocExtensionsOfType(meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformDependencyUpdateExtension).platformDependencyUpdate;
    $platformDependencyUpdates->fold({e,b|$e->eval($b, $extensions)}, $res);

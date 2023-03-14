@@ -24,7 +24,7 @@ import java.util.List;
 public interface IMongoDBGraphNodeExecutor
 {
 
-    IGraphInstance<?> getObjectFromCursor(Cursor cursor, String databaseConnection);
+    IGraphInstance<?> getObjectFromCursor(Cursor cursor);
 
     List<Method> primaryKeyGetter();
 

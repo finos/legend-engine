@@ -54,7 +54,8 @@ public class MongoDBExecutor
             MongoClient mongoClient = mongoDBConnectionProvider.makeConnection(mongoDBConnectionSpec, dbConnection.authenticationSpecification, serviceIdentity);
             MongoDatabase mongoDatabase = mongoClient.getDatabase(dbConnection.dataSourceSpecification.databaseName);
             Document bsonCmd = Document.parse(dbCommand);
-            mongoDatabase.runCommand(bsonCmd);
+            Document dbResult = mongoDatabase.runCommand(bsonCmd);
+            Document cursor = (Document) dbResult.get("cursor");
             return null;
         }
         catch (Exception e)

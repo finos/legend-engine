@@ -40,6 +40,7 @@ import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMe
 import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMemoryRootGraphFetchExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMemoryRootGraphFetchMergeExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IStoreStreamReadingExecutionNodeSpecifics;
+import org.finos.legend.engine.plan.dependencies.store.nonrelational.mongodb.IMongoDBRootGraphExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.platform.IGraphSerializer;
 import org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeGraphFetchMergeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeGraphFetchUnionSpecifics;
@@ -164,6 +165,7 @@ public class GeneratePureConfig
         MAIN_DEPENDENCIES.put(PURE_PACKAGE + "IRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics", IRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics.class);
         MAIN_DEPENDENCIES.put(PURE_PACKAGE + "IServiceParametersResolutionExecutionNodeSpecifics", IServiceParametersResolutionExecutionNodeSpecifics.class);
         MAIN_DEPENDENCIES.put(PURE_PACKAGE + "IPlatformPrimitiveQualifierLocalGraphFetchExecutionNodeSpecifics", IPlatformPrimitiveQualifierLocalGraphFetchExecutionNodeSpecifics.class);
+        MAIN_DEPENDENCIES.put(PURE_PACKAGE + "IMongoDBRootGraphExecutionNodeSpecifics", IMongoDBRootGraphExecutionNodeSpecifics.class);
     }
 
     private final Class<?> extensionClass;

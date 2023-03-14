@@ -12,32 +12,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.dependencies.store.nonrelational.mongodb;
+package org.finos.legend.engine.plan.execution.stores.mongodb.specifics;
 
 import com.mongodb.Cursor;
-import org.bson.Document;
-import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.plan.dependencies.domain.graphFetch.IGraphInstance;
+import org.finos.legend.engine.plan.dependencies.store.nonrelational.mongodb.IMongoDBRootGraphExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.shared.IReferencedObject;
 
 import java.lang.reflect.Method;
 import java.util.List;
 
-public interface IMongoDBRootGraphExecutionNodeSpecifics
+public class MongoDBRootGraphExecutionNodeSpecifics implements IMongoDBRootGraphExecutionNodeSpecifics
 {
-    /* PK columns in result set */
-    default String primaryKeyField()
+
+
+    @Override
+    public List<Method> primaryKeyGetter()
     {
-        return "_id";
+        return null;
     }
 
-    /* PK methods for returned objects */
-    List<Method> primaryKeyGetter();
+    @Override
+    public void prepare(Cursor cursor)
+    {
 
-    /* Prepare for reading */
-    void prepare(Cursor cursor);
+    }
 
-    /* Read next graphFetch instance */
-    IGraphInstance<? extends IReferencedObject> nextGraphInstance();
-
+    @Override
+    public IGraphInstance<? extends IReferencedObject> nextGraphInstance()
+    {
+        return null;
+    }
 }
