@@ -201,7 +201,45 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
     }
 
     @Test
-    public void testDiagramCompilation()
+    public void testDataSpaceWithUnsupportedElement()
+    {
+        test("Class model::element {}\n" +
+                "###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  featuredDiagrams: [];\n" +
+                "  elements: [model::element, model::dummyMapping];\n" +
+                "}\n", "COMPILATION error at [31:30-48]: Element is not of supported types (only classes, enumerations, and associations are supported)");
+    }
+
+    @Test
+    public void testDataSpaceCompilation()
     {
         // no diagrams
         test("###Mapping\n" +

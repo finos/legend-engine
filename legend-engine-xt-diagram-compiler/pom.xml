@@ -34,7 +34,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-diagram-pure</artifactId>
+            <artifactId>legend-engine-xt-diagram-pure-metamodel</artifactId>
         </dependency>
         <!-- PURE -->
 
