@@ -103,7 +103,7 @@ public enum StoreExecutableManager
                     }
                     catch (Exception e)
                     {
-                        LOGGER.info(new LogInfo(null, LoggingEventType.EXECUTABLE_CANCELLATION_ERROR, "Unable to cancel executable for session " + sessionID).toString());
+                        LOGGER.error(new LogInfo(null, LoggingEventType.EXECUTABLE_CANCELLATION_ERROR, "Unable to cancel executable for session " + sessionID + e.getMessage()).toString());
                     }
                 }
         );
