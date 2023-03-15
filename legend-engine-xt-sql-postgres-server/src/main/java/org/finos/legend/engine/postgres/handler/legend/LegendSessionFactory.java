@@ -14,16 +14,14 @@
 
 package org.finos.legend.engine.postgres.handler.legend;
 
-import java.security.PrivilegedAction;
 import java.sql.SQLException;
-import javax.security.auth.Subject;
+
 import org.finos.legend.engine.postgres.Session;
 import org.finos.legend.engine.postgres.SessionsFactory;
 import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
 import org.finos.legend.engine.postgres.handler.PostgresStatement;
 import org.finos.legend.engine.postgres.handler.SessionHandler;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
 
 public class LegendSessionFactory implements SessionsFactory
 {
@@ -39,36 +37,18 @@ public class LegendSessionFactory implements SessionsFactory
     public Session createSession(String defaultSchema, Identity identity)
             throws Exception
     {
-        if (identity.getFirstCredential() instanceof LegendKerberosCredential)
-        {
-            LegendKerberosCredential credential = (LegendKerberosCredential) identity.getFirstCredential();
-            return Subject.doAs(credential.getSubject(), (PrivilegedAction<Session>) () ->
-            {
-                return createSession();
-
-            });
-        }
-        else
-        {
-            return createSession();
-        }
-
-    }
-
-    private Session createSession()
-    {
         return new Session(new SessionHandler()
         {
             @Override
             public PostgresPreparedStatement prepareStatement(String query) throws SQLException
             {
-                return new LegendPreparedStatement(query, legendExecutionClient);
+                return new LegendPreparedStatement(query, legendExecutionClient, identity);
             }
 
             @Override
             public PostgresStatement createStatement() throws SQLException
             {
-                return new LegendStatement(legendExecutionClient);
+                return new LegendStatement(legendExecutionClient, identity);
             }
         });
     }

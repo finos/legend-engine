@@ -14,10 +14,15 @@
 
 package org.finos.legend.engine.postgres.handler.legend;
 
-import java.util.List;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresStatement;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
+
+import java.security.PrivilegedAction;
+import java.util.List;
+import javax.security.auth.Subject;
 
 public class LegendStatement implements PostgresStatement
 {
@@ -25,19 +30,36 @@ public class LegendStatement implements PostgresStatement
     private LegendExecutionClient client;
     private Iterable<TDSRow> tdsRows;
     private List<LegendColumn> columns;
+    private Identity identity;
 
-    public LegendStatement(LegendExecutionClient client)
+    public LegendStatement(LegendExecutionClient client, Identity identity)
     {
         this.client = client;
+        this.identity = identity;
     }
 
     @Override
     public boolean execute(String query) throws Exception
     {
-        Pair<List<LegendColumn>, Iterable<TDSRow>> schemaAndResult = client.getSchemaAndExecuteQuery(query);
-        columns = schemaAndResult.getOne();
-        tdsRows = schemaAndResult.getTwo();
-        return true;
+        if (identity.getFirstCredential() instanceof LegendKerberosCredential)
+        {
+            LegendKerberosCredential credential = (LegendKerberosCredential) identity.getFirstCredential();
+            return Subject.doAs(credential.getSubject(), (PrivilegedAction<Boolean>) () ->
+            {
+                Pair<List<LegendColumn>, Iterable<TDSRow>> schemaAndResult = client.getSchemaAndExecuteQuery(query);
+                columns = schemaAndResult.getOne();
+                tdsRows = schemaAndResult.getTwo();
+                return true;
+            });
+        }
+        else
+        {
+            Pair<List<LegendColumn>, Iterable<TDSRow>> schemaAndResult = client.getSchemaAndExecuteQuery(query);
+            columns = schemaAndResult.getOne();
+            tdsRows = schemaAndResult.getTwo();
+            return true;
+
+        }
     }
 
     @Override

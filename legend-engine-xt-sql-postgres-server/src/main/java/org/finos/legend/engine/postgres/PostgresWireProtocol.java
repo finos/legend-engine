@@ -171,7 +171,7 @@ public class PostgresWireProtocol
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
             PostgresWireProtocol.class);
 
-    private static final String PASSWORD_AUTH_NAME = "password";
+    private static final String PASSWORD_AUTH_NAME = "PASSWORD";
 
     public static int SERVER_VERSION_NUM = 100500;
     public static String PG_SERVER_VERSION = "10.5";
