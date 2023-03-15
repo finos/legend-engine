@@ -224,6 +224,19 @@ public class TestGraphQLAPI
                 "}";
         Response response2 = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
         Assert.assertEquals(expected2, responseAsString(response2));
+        query.query = "query Query {\n" +
+                "  personsByLastNames(lastNames: [\"Smith\"]) {\n" +
+                "     firstName,\n" +
+                "     lastName\n" +
+                "  }\n" +
+                "}";
+        String expected3 = "{" +
+                "\"data\":{" +
+                    "\"personsByLastNames\":" + "{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}" +
+                "}" +
+            "}";
+        Response response3 = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
+        Assert.assertEquals(expected3, responseAsString(response3));
 
 
     }

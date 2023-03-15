@@ -26,6 +26,7 @@ Class simple::model::Query
                                                            let end = $start + $limit;
                                                            Person.all()->slice($start, $end);
                                                          }: simple::model::Person[*];
+  personsByLastNames(lastNames: String[*]) {simple::model::Person.all()->filter(p|$p.lastName->in($lastNames))}: simple::model::Person[*];
 }
 
 Class simple::model::Firm
