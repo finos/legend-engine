@@ -62,7 +62,8 @@ public class H2Sink extends AnsiSqlSink
         capabilities.add(Capability.ADD_COLUMN);
         capabilities.add(Capability.IMPLICIT_DATA_TYPE_CONVERSION);
         capabilities.add(Capability.EXPLICIT_DATA_TYPE_CONVERSION);
-        capabilities.add(Capability.DATA_TYPE_SIZE_CHANGE);
+        capabilities.add(Capability.DATA_TYPE_LENGTH_CHANGE);
+        capabilities.add(Capability.DATA_TYPE_SCALE_CHANGE);
         CAPABILITIES = Collections.unmodifiableSet(capabilities);
 
         Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass = new HashMap<>();

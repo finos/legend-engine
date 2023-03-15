@@ -50,7 +50,8 @@ public class SchemaEvolutionTest extends IngestModeTest
             super(
                     new HashSet<>(Arrays.asList(
                             Capability.ADD_COLUMN,
-                            Capability.DATA_TYPE_SIZE_CHANGE,
+                            Capability.DATA_TYPE_LENGTH_CHANGE,
+                            Capability.DATA_TYPE_SCALE_CHANGE,
                             Capability.IMPLICIT_DATA_TYPE_CONVERSION,
                             Capability.EXPLICIT_DATA_TYPE_CONVERSION)),
                     Collections.singletonMap(DataType.DOUBLE, EnumSet.of(DataType.TINYINT, DataType.SMALLINT, DataType.INTEGER, DataType.INT, DataType.FLOAT, DataType.REAL)),
@@ -255,7 +256,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         }
         catch (IncompatibleSchemaChangeException e)
         {
-            Assertions.assertEquals("Data sizing changes couldn't be performed on column \"description\" since user capability does not allow it", e.getMessage());
+            Assertions.assertEquals("Data type length changes couldn't be performed on column \"description\" since user capability does not allow it", e.getMessage());
         }
     }
 
@@ -315,7 +316,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         }
         catch (IncompatibleSchemaChangeException e)
         {
-            Assertions.assertEquals("Data sizing changes couldn't be performed on column \"decimal_col\" since user capability does not allow it", e.getMessage());
+            Assertions.assertEquals("Data type scale changes couldn't be performed on column \"decimal_col\" since user capability does not allow it", e.getMessage());
         }
     }
 
@@ -530,7 +531,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         }
         catch (IncompatibleSchemaChangeException e)
         {
-            Assertions.assertEquals("Data sizing changes couldn't be performed on column \"amount\" since user capability does not allow it", e.getMessage());
+            Assertions.assertEquals("Data type length changes couldn't be performed on column \"amount\" since user capability does not allow it", e.getMessage());
         }
     }
 
