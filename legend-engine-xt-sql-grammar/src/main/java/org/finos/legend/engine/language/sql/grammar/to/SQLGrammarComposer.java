@@ -14,46 +14,51 @@
 
 package org.finos.legend.engine.language.sql.grammar.to;
 
-import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.map.MutableMap;
-import org.finos.legend.engine.protocol.sql.metamodel.AllColumns;
-import org.finos.legend.engine.protocol.sql.metamodel.AllRows;
-import org.finos.legend.engine.protocol.sql.metamodel.ComparisonExpression;
-import org.finos.legend.engine.protocol.sql.metamodel.ComparisonOperator;
-import org.finos.legend.engine.protocol.sql.metamodel.Expression;
-import org.finos.legend.engine.protocol.sql.metamodel.Identifier;
-import org.finos.legend.engine.protocol.sql.metamodel.Limit;
-import org.finos.legend.engine.protocol.sql.metamodel.Literal;
-import org.finos.legend.engine.protocol.sql.metamodel.LongLiteral;
-import org.finos.legend.engine.protocol.sql.metamodel.Node;
-import org.finos.legend.engine.protocol.sql.metamodel.NodeVisitor;
-import org.finos.legend.engine.protocol.sql.metamodel.OrderBy;
-import org.finos.legend.engine.protocol.sql.metamodel.Query;
-import org.finos.legend.engine.protocol.sql.metamodel.QueryBody;
-import org.finos.legend.engine.protocol.sql.metamodel.QuerySpecification;
-import org.finos.legend.engine.protocol.sql.metamodel.Relation;
-import org.finos.legend.engine.protocol.sql.metamodel.Select;
-import org.finos.legend.engine.protocol.sql.metamodel.SelectItem;
-import org.finos.legend.engine.protocol.sql.metamodel.SingleColumn;
-import org.finos.legend.engine.protocol.sql.metamodel.SortItem;
-import org.finos.legend.engine.protocol.sql.metamodel.Statement;
-import org.finos.legend.engine.protocol.sql.metamodel.Table;
+import org.eclipse.collections.impl.map.mutable.UnifiedMap;
+import org.eclipse.collections.impl.tuple.Tuples;
+import org.finos.legend.engine.protocol.sql.metamodel.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class SQLGrammarComposer
 {
-    private final MutableMap<ComparisonOperator, String> comparator;
+    private final MutableMap<ComparisonOperator, String> comparator = UnifiedMap.newMapWith(
+            Tuples.pair(ComparisonOperator.EQUAL, "="),
+            Tuples.pair(ComparisonOperator.NOT_EQUAL, "!="),
+            Tuples.pair(ComparisonOperator.GREATER_THAN, ">"),
+            Tuples.pair(ComparisonOperator.LESS_THAN, "<"),
+            Tuples.pair(ComparisonOperator.LESS_THAN_OR_EQUAL, "<="),
+            Tuples.pair(ComparisonOperator.GREATER_THAN_OR_EQUAL, ">=")
+    );
+    private final MutableMap<LogicalBinaryType, String> binaryComparator = UnifiedMap.newMapWith(
+            Tuples.pair(LogicalBinaryType.AND, "AND"),
+            Tuples.pair(LogicalBinaryType.OR, "OR")
+    );
+
+    private final MutableMap<ArithmeticType, String> arithmetic = UnifiedMap.newMapWith(
+            Tuples.pair(ArithmeticType.ADD, "+"),
+            Tuples.pair(ArithmeticType.SUBTRACT, "-"),
+            Tuples.pair(ArithmeticType.MULTIPLY, "*"),
+            Tuples.pair(ArithmeticType.DIVIDE, "/"),
+            Tuples.pair(ArithmeticType.MODULUS, "*")
+    );
+
+    private final MutableMap<JoinType, String> joins = UnifiedMap.newMapWith(
+            Tuples.pair(JoinType.LEFT, "LEFT OUTER"),
+            Tuples.pair(JoinType.RIGHT, "RIGHT OUTER"),
+            Tuples.pair(JoinType.INNER, "INNER")
+    );
+
+    private final MutableMap<CurrentTimeType, String> currentTime = UnifiedMap.newMapWith(
+            Tuples.pair(CurrentTimeType.TIME, "CURRENT_TIME"),
+            Tuples.pair(CurrentTimeType.TIMESTAMP, "CURRENT_TIMESTAMP"),
+            Tuples.pair(CurrentTimeType.DATE, "CURRENT_DATE")
+    );
 
     private SQLGrammarComposer()
     {
-        comparator = Maps.mutable.with(
-                ComparisonOperator.EQUAL, "=",
-                ComparisonOperator.NOT_EQUAL, "!=",
-                ComparisonOperator.GREATER_THAN, ">",
-                ComparisonOperator.LESS_THAN, "<"
-        );
     }
 
     public static SQLGrammarComposer newInstance()
@@ -66,15 +71,46 @@ public class SQLGrammarComposer
         return node.accept(new NodeVisitor<String>()
         {
             @Override
+            public String visit(AliasedRelation val)
+            {
+                return visit(val.relation) + " AS " + val.alias;
+            }
+
+            @Override
             public String visit(AllColumns val)
             {
                 return "*";
             }
 
             @Override
-            public String visit(AllRows val)
+            public String visit(FunctionCall val)
             {
-                return "ALL";
+                String args = visit(val.arguments, ", ");
+                return String.join(".", val.name.parts) + "(" + args + ")";
+            }
+
+            @Override
+            public String visit(SimpleCaseExpression val)
+            {
+                String operand = val.operand.accept(this);
+                String when = visit(val.whenClauses, " ");
+                String def = val.defaultValue == null ? "" :  " ELSE " + val.defaultValue.accept(this);
+
+                return "CASE " + operand + when + def + " END";
+            }
+
+            @Override
+            public String visit(SearchedCaseExpression val)
+            {
+                String when = visit(val.whenClauses, " ");
+                String def = val.defaultValue == null ? "" :  " ELSE " + val.defaultValue.accept(this);
+                return "CASE " + when + def + " END";
+            }
+
+            @Override
+            public String visit(WhenClause val)
+            {
+                return "WHEN " + val.operand.accept(this) + " THEN " + val.result.accept(this);
             }
 
             @Override
@@ -91,21 +127,113 @@ public class SQLGrammarComposer
             }
 
             @Override
+            public String visit(CurrentTime val)
+            {
+                String params = val.precision != null ? "(" + val.precision + ")" : "";
+                return currentTime.get(val.type) + params;
+            }
+
+            @Override
+            public String visit(LogicalBinaryExpression val)
+            {
+                String left = val.left.accept(this);
+                String right = val.right.accept(this);
+                String operator = binaryComparator.get(val.type);
+                if (operator == null)
+                {
+                    throw new IllegalArgumentException("Unknown operator: " + val.type);
+                }
+                return left + " " + operator + " " + right;
+            }
+
+            @Override
+            public String visit(NotExpression val)
+            {
+                String value = val.value.accept(this);
+
+                return "not " + value;
+            }
+
+            @Override
+            public String visit(NullLiteral val)
+            {
+                return "NULL";
+            }
+
+            @Override
+            public String visit(NegativeExpression val)
+            {
+                String value = val.value.accept(this);
+
+                return "-" + value;
+            }
+
+            @Override
+            public String visit(ArithmeticExpression val)
+            {
+                String type = arithmetic.get(val.type);
+                return "(" + val.left.accept(this) + " " + type + " " + val.right.accept(this) + ")";
+            }
+
+            @Override
             public String visit(Expression val)
             {
                 return val.accept(this);
             }
 
             @Override
-            public String visit(Identifier val)
+            public String visit(InListExpression val)
             {
-                return val.delimited ? "\"" + val.value + "\"" : val.value;
+                return visit(val.values, ", ");
             }
 
             @Override
-            public String visit(Limit val)
+            public String visit(InPredicate val)
             {
-                return " limit " + val.rowCount.accept(this);
+                return val.value.accept(this) + " IN (" + val.valueList.accept(this) + ")";
+            }
+
+            @Override
+            public String visit(IntegerLiteral val)
+            {
+                return String.valueOf(val.value);
+            }
+
+            @Override
+            public String visit(IsNotNullPredicate val)
+            {
+                return val.value.accept(this) + " IS NOT NULL";
+            }
+
+            @Override
+            public String visit(IsNullPredicate val)
+            {
+                return val.value.accept(this) + " IS NULL";
+            }
+
+            @Override
+            public String visit(Join val)
+            {
+                NodeVisitor<String> visitor = this;
+                String type = joins.get(val.type);
+                String left = val.left.accept(this);
+                String right = val.right.accept(this);
+                String criteria = val.criteria.accept(new JoinCriteriaVisitor<String>()
+                {
+                    @Override
+                    public String visit(JoinOn val)
+                    {
+                        return "ON (" + val.expression.accept(visitor) + ")";
+                    }
+
+                    @Override
+                    public String visit(JoinUsing val)
+                    {
+                        return "USING (" + String.join(", ", val.columns) + ")";
+                    }
+                });
+
+                return left + " " + type + " JOIN " + right + " " + criteria;
             }
 
             @Override
@@ -121,23 +249,56 @@ public class SQLGrammarComposer
             }
 
             @Override
-            public String visit(OrderBy val)
+            public String visit(DoubleLiteral val)
             {
-                return val.sortItems.isEmpty() ? "" : " order by " + visit(val.sortItems, ", ");
+                return Double.toString(val.value);
+            }
+
+            @Override
+            public String visit(BooleanLiteral val)
+            {
+                return Boolean.toString(val.value);
+            }
+
+            @Override
+            public String visit(Cast val)
+            {
+                String value = val.expression.accept(this);
+                String type = val.type.accept(this);
+                return "CAST(" + value + " AS " + type + ")";
+            }
+
+            @Override
+            public String visit(ColumnType val)
+            {
+                return val.name;
+            }
+
+            @Override
+            public String visit(ArrayLiteral val)
+            {
+                return "[" + visit(val.values, ", ") + "]";
+            }
+
+            @Override
+            public String visit(QualifiedNameReference val)
+            {
+                //TODO quote if needed
+                return String.join(".", val.name.parts);
             }
 
             @Override
             public String visit(Query val)
             {
                 return val.queryBody.accept(this)
-                        + val.orderBy.accept(this)
+                        + (val.orderBy.isEmpty() ? "" : visit(val.orderBy, ", "))
                         + (val.limit == null ? "" : val.limit.accept(this));
             }
 
             @Override
             public String visit(QueryBody val)
             {
-                return null;
+                return val.accept(this);
             }
 
             @Override
@@ -145,13 +306,17 @@ public class SQLGrammarComposer
             {
                 return val.select.accept(this)
                         + " from " + visit(val.from, "")
-                        + (val.where == null ? "" : " where " + val.where.accept(this));
+                        + (val.where == null ? "" : " where " + val.where.accept(this))
+                        + (val.groupBy == null || val.groupBy.isEmpty() ? "" : " group by " + visit(val.groupBy, ", "))
+                        + (val.having == null ? "" : " having " + visit(val.having))
+                        + (val.orderBy.isEmpty() ? "" : " order by " + visit(val.orderBy, ", "))
+                        + (val.limit == null ? "" : " limit " + visit(val.limit));
             }
 
             @Override
             public String visit(Relation val)
             {
-                return null;
+                return val.accept(this);
             }
 
             @Override
@@ -163,19 +328,19 @@ public class SQLGrammarComposer
             @Override
             public String visit(SelectItem val)
             {
-                return null;
+                return val.accept(this);
+            }
+
+            @Override
+            public String visit(SetOperation val)
+            {
+                return val.accept(this);
             }
 
             @Override
             public String visit(SingleColumn val)
             {
-                String column = "";
-                Identifier prefixIdent = val.prefix;
-                if (prefixIdent != null)
-                {
-                    column += prefixIdent.accept(this) + ".";
-                }
-                return column + val.expression.accept(this);
+                return val.expression.accept(this) + (val.alias == null ? "" : " AS " + val.alias);
             }
 
             @Override
@@ -207,13 +372,38 @@ public class SQLGrammarComposer
             @Override
             public String visit(Statement val)
             {
-                return null;
+                return val.accept(this);
+            }
+
+            @Override
+            public String visit(StringLiteral val)
+            {
+                return val.value;
+            }
+
+            @Override
+            public String visit(SubqueryExpression val)
+            {
+                return "(" + val.query.accept(this) + ")";
             }
 
             @Override
             public String visit(Table val)
             {
-                return visit(val.name, ".");
+                return String.join(".", val.name.parts);
+            }
+
+            @Override
+            public String visit(TableSubquery val)
+            {
+                return null;
+            }
+
+            @Override
+            public String visit(Union val)
+            {
+                String operator = val.distinct ? " UNION " : " UNION ALL ";
+                return val.left.accept(this) + operator + val.right.accept(this);
             }
 
             private String visit(List<? extends Node> nodes, String delimiter)

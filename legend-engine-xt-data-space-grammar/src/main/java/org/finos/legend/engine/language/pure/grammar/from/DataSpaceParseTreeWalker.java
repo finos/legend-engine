@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.grammar.from;
 
+import org.antlr.v4.runtime.CharStream;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.DataSpaceParserGrammar;
@@ -36,12 +37,14 @@ import java.util.function.Consumer;
 
 public class DataSpaceParseTreeWalker
 {
+    private final CharStream input;
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final Consumer<PackageableElement> elementConsumer;
     private final DefaultCodeSection section;
 
-    public DataSpaceParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, DefaultCodeSection section)
+    public DataSpaceParseTreeWalker(CharStream input, ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, DefaultCodeSection section)
     {
+        this.input = input;
         this.walkerSourceInformation = walkerSourceInformation;
         this.elementConsumer = elementConsumer;
         this.section = section;
@@ -63,7 +66,7 @@ public class DataSpaceParseTreeWalker
 
         // Execution contexts
         DataSpaceParserGrammar.ExecutionContextsContext executionContextsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.executionContexts(), "executionContexts", dataSpace.sourceInformation);
-        dataSpace.executionContexts = ListIterate.collect(executionContextsContext.executionContext(), executionContext -> this.visitDataSpaceExecutionContext(executionContext, dataSpace.sourceInformation));
+        dataSpace.executionContexts = ListIterate.collect(executionContextsContext.executionContext(), executionContext -> this.visitDataSpaceExecutionContext(executionContext));
         // Default execution context
         DataSpaceParserGrammar.DefaultExecutionContextContext defaultExecutionContextContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.defaultExecutionContext(), "defaultExecutionContext", dataSpace.sourceInformation);
         dataSpace.defaultExecutionContext = PureGrammarParserUtility.fromGrammarString(defaultExecutionContextContext.STRING().getText(), true);
@@ -88,30 +91,47 @@ public class DataSpaceParseTreeWalker
             return pointer;
         }) : null;
 
+        // Elements (optional)
+        DataSpaceParserGrammar.ElementsContext elementsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.elements(), "elements", dataSpace.sourceInformation);
+        dataSpace.elements = elementsContext != null ? ListIterate.collect(elementsContext.qualifiedName(), elementContext ->
+        {
+            PackageableElementPointer pointer = new PackageableElementPointer(
+                    PackageableElementType.CLASS,
+                    PureGrammarParserUtility.fromQualifiedName(elementContext.packagePath() == null ? Collections.emptyList() : elementContext.packagePath().identifier(), elementContext.identifier())
+            );
+            pointer.sourceInformation = walkerSourceInformation.getSourceInformation(elementContext);
+            return pointer;
+        }) : null;
+
         // Support info (optional)
         DataSpaceParserGrammar.SupportInfoContext supportInfoContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.supportInfo(), "supportInfo", dataSpace.sourceInformation);
         dataSpace.supportInfo = supportInfoContext != null ? this.visitDataSpaceSupportInfo(supportInfoContext, dataSpace.sourceInformation) : null;
         return dataSpace;
     }
 
-    private DataSpaceExecutionContext visitDataSpaceExecutionContext(DataSpaceParserGrammar.ExecutionContextContext ctx, SourceInformation dataSpaceSourceInformation)
+    private DataSpaceExecutionContext visitDataSpaceExecutionContext(DataSpaceParserGrammar.ExecutionContextContext ctx)
     {
         DataSpaceExecutionContext executionContext = new DataSpaceExecutionContext();
+        executionContext.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+
         // Name
-        DataSpaceParserGrammar.ExecutionContextNameContext executionContextNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.executionContextName(), "name", dataSpaceSourceInformation);
+        DataSpaceParserGrammar.ExecutionContextNameContext executionContextNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.executionContextName(), "name", executionContext.sourceInformation);
         executionContext.name = PureGrammarParserUtility.fromGrammarString(executionContextNameContext.STRING().getText(), true);
+
         // Description (optional)
-        DataSpaceParserGrammar.DescriptionContext descriptionContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.description(), "description", dataSpaceSourceInformation);
+        DataSpaceParserGrammar.DescriptionContext descriptionContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.description(), "description", executionContext.sourceInformation);
         executionContext.description = descriptionContext != null ? PureGrammarParserUtility.fromGrammarString(descriptionContext.STRING().getText(), true) : null;
+
         // Mapping
-        DataSpaceParserGrammar.MappingContext mappingContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.mapping(), "mapping", dataSpaceSourceInformation);
+        DataSpaceParserGrammar.MappingContext mappingContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.mapping(), "mapping", executionContext.sourceInformation);
         executionContext.mapping = new PackageableElementPointer(
                 PackageableElementType.MAPPING,
                 PureGrammarParserUtility.fromQualifiedName(mappingContext.qualifiedName().packagePath() == null ? Collections.emptyList() : mappingContext.qualifiedName().packagePath().identifier(), mappingContext.qualifiedName().identifier())
         );
         executionContext.mapping.sourceInformation = walkerSourceInformation.getSourceInformation(mappingContext);
+
         // Runtime
-        DataSpaceParserGrammar.DefaultRuntimeContext defaultRuntimeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.defaultRuntime(), "defaultRuntime", dataSpaceSourceInformation);
+        DataSpaceParserGrammar.DefaultRuntimeContext defaultRuntimeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.defaultRuntime(), "defaultRuntime", executionContext.sourceInformation);
         executionContext.defaultRuntime = new PackageableElementPointer(
                 PackageableElementType.RUNTIME,
                 PureGrammarParserUtility.fromQualifiedName(defaultRuntimeContext.qualifiedName().packagePath() == null ? Collections.emptyList() : defaultRuntimeContext.qualifiedName().packagePath().identifier(), defaultRuntimeContext.qualifiedName().identifier())
@@ -125,6 +145,7 @@ public class DataSpaceParseTreeWalker
     private DataSpaceSupportInfo visitDataSpaceSupportInfo(DataSpaceParserGrammar.SupportInfoContext ctx, SourceInformation dataSpaceSourceInformation)
     {
         DataSpaceSupportEmail supportInfo = new DataSpaceSupportEmail();
+
         // Email
         DataSpaceParserGrammar.SupportEmailContext supportEmailContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.supportEmail(), "address", dataSpaceSourceInformation);
         supportInfo.address = PureGrammarParserUtility.fromGrammarString(supportEmailContext.STRING().getText(), true);

@@ -31,6 +31,9 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.util.Date;
 
 public class JDBCSessionFactory implements SessionsFactory
 {
@@ -172,7 +175,16 @@ public class JDBCSessionFactory implements SessionsFactory
         @Override
         public Object getObject(int i) throws Exception
         {
-            return resultSet.getObject(i);
+            Object value = resultSet.getObject(i);
+            if (value != null && resultSet.getMetaData().getColumnType(i) == Types.TIMESTAMP)
+            {
+                return ((Timestamp) value).toInstant().toEpochMilli();
+            }
+            if (value != null && resultSet.getMetaData().getColumnType(i) == Types.DATE)
+            {
+                return ((Date) value).toInstant().toEpochMilli();
+            }
+            return value;
         }
 
         @Override

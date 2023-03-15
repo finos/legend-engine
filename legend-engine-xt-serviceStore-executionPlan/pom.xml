@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.1.1-SNAPSHOT</version>
+        <version>4.4.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -102,6 +102,20 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-serviceStore-protocol</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-authentication-protocol</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-authentication-implementation-core</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.bouncycastle</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
         <!-- ENGINE -->
 
         <!-- ECLIPSE COLLECTIONS -->
@@ -156,6 +170,11 @@
         </dependency>
         <!-- Http Client -->
 
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+        </dependency>
+
         <!-- WIREMOCK -->
         <dependency>
             <groupId>com.github.tomakehurst</groupId>
@@ -183,6 +202,12 @@
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-executionPlan-execution</artifactId>
+            <type>test-jar</type>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -243,11 +268,6 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-flatdata-model</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-flatdata-protocol</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

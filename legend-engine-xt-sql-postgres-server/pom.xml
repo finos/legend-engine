@@ -3,7 +3,7 @@
     <parent>
         <artifactId>legend-engine</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.1.1-SNAPSHOT</version>
+        <version>4.4.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -23,11 +23,6 @@
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.collections</groupId>
@@ -68,6 +63,16 @@
             <artifactId>jcl-over-slf4j</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <!-- WIREMOCK -->
         <dependency>
@@ -80,6 +85,12 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.5.1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

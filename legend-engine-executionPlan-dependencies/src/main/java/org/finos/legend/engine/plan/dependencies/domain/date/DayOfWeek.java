@@ -22,5 +22,15 @@ public enum DayOfWeek
     Thursday,
     Friday,
     Saturday,
-    Sunday
+    Sunday;
+
+    public String getName()
+    {
+        return this.name();
+    }
+
+    public static DayOfWeek getEnumFromPureName(String pureName)
+    {
+        return DayOfWeek.valueOf(pureName);
+    }
 }

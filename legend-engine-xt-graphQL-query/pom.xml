@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.1.1-SNAPSHOT</version>
+        <version>4.4.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -195,6 +195,12 @@
             <artifactId>httpcore</artifactId>
         </dependency>
 
+        <!-- CACHING -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+        <!-- CACHING -->
 
         <!-- LOG -->
         <dependency>

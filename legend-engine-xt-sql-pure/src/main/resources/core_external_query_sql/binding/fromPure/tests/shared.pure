@@ -1,3 +1,17 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 ###Pure
 Class meta::external::query::sql::transformation::queryToPure::tests::FlatInput
 {
@@ -17,6 +31,7 @@ Mapping meta::external::query::sql::transformation::queryToPure::tests::dummyMap
 )
 
 ###Pure
+import meta::pure::extension::*;
 import meta::pure::alloy::connections::*;
 import meta::pure::alloy::connections::alloy::authentication::*;
 import meta::pure::alloy::connections::alloy::specification::*;
@@ -43,16 +58,66 @@ function meta::external::query::sql::transformation::queryToPure::tests::dummyRu
   );
 }
 
+function meta::external::query::sql::transformation::queryToPure::tests::sqlExtensions():Extension[*]
+{
+  let sqlTestExtension = ^meta::pure::extension::Extension(
+    type = 'sql', 
+    serializerExtension = meta::external::query::sql::transformation::queryToPure::tests::getSqlSerializerExtension_String_1__String_1_);
+
+  meta::relational::extension::relationalExtensions()->concatenate($sqlTestExtension);
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::getSqlSerializerExtension(version:String[1]):String[1]
+{
+   'meta::external::query::sql::transformation::queryToPure::tests::sqlSerializerExtension_String_1__SerializerExtension_vX_X_X_1_';
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::sqlSerializerExtension(version:String[1]):meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X[1]
+{
+  ^meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X(
+      transfers_store_transformConnection2 = {extensions:meta::pure::extension::Extension[*] |
+      [
+         c:Connection[1] | ^meta::protocols::pure::vX_X_X::metamodel::runtime::Connection(_type = 'connection', element = $c.element->toString())
+      ]}
+    );
+}
+
+
 function meta::external::query::sql::transformation::queryToPure::tests::assertLambdaEquals(expected:FunctionDefinition<Any>[1], actual:FunctionDefinition<Any>[1]): Boolean[1]
 {
   assertEquals($expected->printFunctionDefinition(''), $actual->printFunctionDefinition(''));
 }
 
-function meta::external::query::sql::transformation::queryToPure::tests::TdsService(): Service[1]
+
+function meta::external::query::sql::transformation::queryToPure::tests::assertLambdaJSONEquals(expected:FunctionDefinition<Any>[1], actual:FunctionDefinition<Any>[1]): Boolean[1]
+{
+  assertEquals($expected->functionJSON(), $actual->functionJSON());
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::functionJSON(func:FunctionDefinition<Any>[1]): String[1]
+{
+  $func->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda(sqlExtensions())->meta::json::toJSON(100);
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::serviceToSource(service:Service[1]): SQLSource[1]
+{
+  let execution = $service.execution->cast(@PureSingleExecution);
+
+  ^SQLSource(
+      type = 'service',
+      id = $service.pattern,
+      func = $execution.func,
+      mapping = $execution.mapping,
+      runtime = $execution.runtime,
+      executionOptions = $execution.executionOptions
+  );
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::Service1(): Service[1]
 {
   ^Service
   (
-    pattern = '/service/testTdsService',
+    pattern = '/service/service1',
     owners = ['dummy'],
     documentation = '',
     autoActivateUpdates = true,
@@ -75,3 +140,29 @@ function meta::external::query::sql::transformation::queryToPure::tests::TdsServ
   );
 }
 
+function meta::external::query::sql::transformation::queryToPure::tests::Service2(): Service[1]
+{
+  ^Service
+  (
+    pattern = '/service/service2',
+    owners = ['dummy'],
+    documentation = '',
+    autoActivateUpdates = true,
+    execution = ^PureSingleExecution
+    (
+      func = | FlatInput.all()->project(
+        [
+          x | $x.idIn, x | $x.integerIn, x | $x.stringIn
+        ],
+        [
+          'ID', 'Integer', 'String'
+        ]
+      ),
+      mapping = dummyMapping,
+      runtime = dummyRuntime()
+    ),
+    test = ^SingleExecutionTest(
+      data = '',
+      asserts = ^TestContainer(assert = x:Result<Any|m>[1] | true))
+  );
+}

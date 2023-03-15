@@ -21,6 +21,7 @@ import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import org.apache.commons.lang3.ClassUtils;
 import org.eclipse.collections.api.block.function.Function2;
+import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
@@ -44,8 +45,7 @@ import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionNo
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.nodes.state.GraphExecutionState;
-import org.finos.legend.engine.plan.execution.result.ConstantResult;
-import org.finos.legend.engine.plan.execution.result.Result;
+import org.finos.legend.engine.plan.execution.result.*;
 import org.finos.legend.engine.plan.execution.result.builder._class.ClassBuilder;
 import org.finos.legend.engine.plan.execution.result.graphFetch.GraphFetchResult;
 import org.finos.legend.engine.plan.execution.result.graphFetch.GraphObjectsBatch;
@@ -54,6 +54,7 @@ import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.plan.execution.stores.relational.RelationalDatabaseCommandsVisitorBuilder;
 import org.finos.legend.engine.plan.execution.stores.relational.RelationalExecutor;
 import org.finos.legend.engine.plan.execution.stores.relational.activity.AggregationAwareActivity;
+import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
 import org.finos.legend.engine.plan.execution.stores.relational.blockConnection.BlockConnection;
 import org.finos.legend.engine.plan.execution.stores.relational.blockConnection.BlockConnectionContext;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
@@ -110,14 +111,33 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             RelationalBlockExecutionNode relationalBlockExecutionNode = (RelationalBlockExecutionNode) executionNode;
             ExecutionState connectionAwareState = new ExecutionState(this.executionState);
             ((RelationalStoreExecutionState) connectionAwareState.getStoreExecutionState(StoreType.Relational)).setRetainConnection(true);
+            Result res = null;
             try
             {
-                Result res = new ExecutionNodeExecutor(this.profiles, connectionAwareState).visit((SequenceExecutionNode) relationalBlockExecutionNode);
-                ((RelationalStoreExecutionState) connectionAwareState.getStoreExecutionState(StoreType.Relational)).getBlockConnectionContext().unlockAllBlockConnections();
+                res = new ExecutionNodeExecutor(this.profiles, connectionAwareState).visit((SequenceExecutionNode) relationalBlockExecutionNode);
+
+                if (!relationalBlockExecutionNode.finallyExecutionNodes.isEmpty())
+                {
+                    res.setPropertyChangeListeners(buildOnClosedResultExecutionNodeExecutor(relationalBlockExecutionNode.finallyExecutionNodes, connectionAwareState));
+                    res.activities.addAll(buildFinallyExecutionNodeActivities(relationalBlockExecutionNode, connectionAwareState));
+                }
+                else
+                {
+                    ((RelationalStoreExecutionState) connectionAwareState.getStoreExecutionState(StoreType.Relational)).getBlockConnectionContext().unlockAllBlockConnections();
+                }
+
                 return res;
             }
             catch (Exception e)
             {
+                if (res != null)
+                {
+                    res.close();
+                }
+                else
+                {
+                    relationalBlockExecutionNode.finallyExecutionNodes.forEach(fn -> new ExecutionNodeExecutor(this.profiles, new ExecutionState(connectionAwareState)).visit(fn));
+                }
                 ((RelationalStoreExecutionState) connectionAwareState.getStoreExecutionState(StoreType.Relational)).getBlockConnectionContext().unlockAllBlockConnections();
                 ((RelationalStoreExecutionState) connectionAwareState.getStoreExecutionState(StoreType.Relational)).getBlockConnectionContext().closeAllBlockConnections();
                 throw e;
@@ -699,6 +719,46 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             return new ConstantResult(childObjects);
         }
         throw new RuntimeException("Not implemented!");
+    }
+
+    private ResultIsClosedListener buildOnClosedResultExecutionNodeExecutor(List<ExecutionNode> executionNodes, ExecutionState state)
+    {
+        Consumer<Boolean> executeFinallyNodes = isClosed ->
+        {
+            if (isClosed)
+            {
+                executionNodes.forEach(n -> n.accept(new ExecutionNodeExecutor(this.profiles, state)));
+                ((RelationalStoreExecutionState) state.getStoreExecutionState(StoreType.Relational)).getBlockConnectionContext().unlockAllBlockConnections();
+            }
+        };
+        return new ResultIsClosedListener(executeFinallyNodes);
+    }
+
+    private List<ExecutionActivity> buildFinallyExecutionNodeActivities(RelationalBlockExecutionNode relationalBlockExecutionNode, ExecutionState state)
+    {
+        ExecutionState stateWithModifiedExecutors = new ExecutionState(state);
+        stateWithModifiedExecutors.extraNodeExecutors.clear();
+        stateWithModifiedExecutors.extraNodeExecutors.add((Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>) (executionNode, commonProfiles, executionState) ->
+        {
+            if (executionNode instanceof SQLExecutionNode)
+            {
+                SQLExecutionNode sqlNode = (SQLExecutionNode) executionNode;
+                return new Result("", Lists.mutable.of(new RelationalExecutionActivity(sqlNode.sqlQuery, "")))
+                {
+                    @Override
+                    public <T> T accept(ResultVisitor<T> resultVisitor)
+                    {
+                        throw new UnsupportedOperationException();
+                    }
+                };
+            }
+            else
+            {
+                return null;
+            }
+        });
+        ExecutionNodeExecutor ex = new ExecutionNodeExecutor(this.profiles, stateWithModifiedExecutors);
+        return relationalBlockExecutionNode.finallyExecutionNodes.stream().map(n -> n.accept(ex)).filter(Result.class::isInstance).map(Result.class::cast).flatMap(r -> r.activities.stream()).collect(Collectors.toList());
     }
 
     private void executeRelationalChildren(RelationalGraphFetchExecutionNode node, String tempTableNameFromNode, RealizedRelationalResult realizedRelationalResult, DatabaseConnection databaseConnection, String databaseType, String databaseTimeZone, DoubleStrategyHashMap<Object, Object, SQLExecutionResult> parentMap, List<Method> parentKeyGetters)

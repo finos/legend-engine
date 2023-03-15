@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.1.1-SNAPSHOT</version>
+        <version>4.4.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -165,6 +165,14 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-graph-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-mapping-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
         </dependency>
         <!-- PURE -->
@@ -180,6 +188,10 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-functions-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-xml-pure</artifactId>
         </dependency>
         <dependency>
@@ -189,6 +201,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-javaPlatformBinding-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-dsl-mapping-java</artifactId>
         </dependency>
         <!-- ENGINE -->
 

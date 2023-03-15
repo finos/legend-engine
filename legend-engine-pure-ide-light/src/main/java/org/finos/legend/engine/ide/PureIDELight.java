@@ -47,8 +47,10 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xt-relationalStore-spanner-pure", "relational_spanner"))
                 .with(this.buildCore("legend-engine-xt-relationalStore-athena-pure", "relational_athena"))
                 .with(this.buildCore("legend-engine-xt-serviceStore-pure", "servicestore"))
-                .with(this.buildCore("legend-engine-xt-text-pure", "text"))
+                .with(this.buildCore("legend-engine-xt-text-pure-metamodel", "text-metamodel"))
+                .with(this.buildCore("legend-engine-xt-data-space-pure-metamodel", "data-space-metamodel"))
                 .with(this.buildCore("legend-engine-xt-data-space-pure", "data-space"))
+                .with(this.buildCore("legend-engine-xt-diagram-pure-metamodel", "diagram-metamodel"))
                 .with(this.buildCore("legend-engine-xt-diagram-pure", "diagram"))
                 .with(this.buildCore("legend-engine-xt-flatdata-pure", "external-format-flatdata"))
                 .with(this.buildCore("legend-engine-xt-json-pure", "external-format-json"))
@@ -66,6 +68,7 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xt-changetoken-pure", "pure-changetoken"))
                 .with(this.buildCore("legend-engine-xt-analytics-mapping-pure", "analytics-mapping"))
                 .with(this.buildCore("legend-engine-xt-analytics-lineage-pure", "analytics-lineage"))
+                .with(this.buildCore("legend-engine-xt-analytics-search-pure", "analytics-search"))
                 .with(this.buildCore("legend-engine-xt-javaGeneration-pure", "external-language-java"))
                 .with(this.buildCore("legend-engine-xt-javaPlatformBinding-pure", "java-platform-binding"))
                 .with(this.buildCore("legend-engine-xt-flatdata-javaPlatformBinding-pure", "external-format-flatdata-java-platform-binding"))
@@ -79,6 +82,7 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xt-authentication-pure", "authentication"))
                 .with(this.buildCore("legend-engine-xt-elasticsearch/legend-engine-xt-elasticsearch-pure-specification-metamodel", "elasticsearch_specification_metamodel"))
                 .with(this.buildCore("legend-engine-xt-elasticsearch/legend-engine-xt-elasticsearch-V7-pure-metamodel", "elasticsearch_seven_metamodel"))
+                .with(this.buildCore("legend-engine-xt-nonrelationalStore-mongodb-pure","nonrelational-mongodb"))
                 ;
     }
 

@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.1.1-SNAPSHOT</version>
+        <version>4.4.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -31,7 +31,7 @@
         <!-- PURE -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-data-space-pure</artifactId>
+            <artifactId>legend-engine-xt-data-space-pure-metamodel</artifactId>
         </dependency>
         <!-- PURE -->
 
@@ -55,6 +55,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-data-space-compiler</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-data-space-generation</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.1.1-SNAPSHOT</version>
+        <version>4.4.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -28,12 +28,16 @@
     <name>Legend Engine - XT - Diagram - API</name>
 
     <dependencies>
-        <!-- Pure -->
+        <!-- PURE -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-diagram-pure-metamodel</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-diagram-pure</artifactId>
         </dependency>
-        <!-- Pure -->
+        <!-- PURE -->
 
         <!-- ENGINE -->
         <dependency>

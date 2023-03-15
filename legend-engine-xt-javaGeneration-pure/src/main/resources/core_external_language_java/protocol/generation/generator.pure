@@ -88,8 +88,8 @@ function meta::protocols::generation::java::defaultConfigureConventions(purePack
                                                   | '.' + $packageStr;
                                            );
         pair(
-          $package->sanitizeIdentifier(),
-          $x.name->toOne()->sanitizeIdentifier()->toUpperFirstCharacter()->toOne()
+          $c->identifier($package),
+          $c->identifier($x.name->toOne())->toUpperFirstCharacter()->toOne()
         );}
   );
 }

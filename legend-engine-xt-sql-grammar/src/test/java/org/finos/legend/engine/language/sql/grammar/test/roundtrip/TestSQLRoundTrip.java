@@ -26,81 +26,225 @@ import org.junit.Test;
 public class TestSQLRoundTrip
 {
     @Test
-    public void testSelectAllRoundTrip()
-    {
-        check("SELECT DISTINCT * FROM alloy.\"table\" ORDER BY firstName ASC, lastName DESC NULLS FIRST LIMIT 1");
-    }
-
-    @Test
-    public void testLimitAllExpressionRoundTrip()
-    {
-        check("SELECT * FROM alloy.\"table\" LIMIT ALL");
-    }
-
-    @Test
-    public void testSelectOneColumnRoundTrip()
-    {
-        check("SELECT DISTINCT id FROM alloy.\"table\" LIMIT 1");
-    }
-
-    @Test
-    public void testSelectOneColumnQuotedRoundTrip()
-    {
-        check("SELECT \"id\" FROM alloy.\"table\" LIMIT 1");
-    }
-
-    @Test
-    public void testSelectManyColumnsRoundTrip()
-    {
-        check("SELECT id1, id2 FROM alloy.\"table\" LIMIT 1");
-    }
-
-    @Test
-    public void testFilter()
-    {
-        check("SELECT id1, id2 FROM alloy.\"table\" WHERE id1 > 1");
-    }
-
-    @Test
     public void testEmptyStatement()
     {
-        try
-        {
-            SQLGrammarParser parser = SQLGrammarParser.newInstance();
-            parser.parseStatement("");
-            Assert.fail();
-        }
-        catch (SQLParserException e)
-        {
-            Assert.assertEquals(1, e.getSourceInformation().startColumn);
-            Assert.assertEquals(1, e.getSourceInformation().startLine);
-            Assert.assertEquals("Unexpected token", e.getMessage());
-        }
+        fail("", 1, 1, "Unexpected token");
     }
 
     @Test
-    public void testStringTableName()
+    public void testSelectStar()
+    {
+        check("SELECT * FROM table");
+    }
+
+    @Test
+    public void testSelectColumns()
+    {
+        check("SELECT col1, col2 FROM table");
+    }
+
+    @Test
+    public void testSelectWithAliases()
+    {
+        check("SELECT col1 AS COL FROM table AS table1");
+    }
+
+    @Test
+    public void testSelectQualified()
+    {
+        check("SELECT col1, table.col2 FROM table");
+    }
+
+    @Test
+    public void testSelectQualifiedWithAlias()
+    {
+        check("SELECT col1, table1.col2 FROM table AS table1");
+    }
+
+    @Test
+    public void testDistinct()
+    {
+        check("SELECT DISTINCT * FROM table");
+    }
+
+    @Test
+    public void testLimit()
+    {
+        check("SELECT * FROM table LIMIT 1");
+    }
+
+    @Test
+    public void testOrderBy()
+    {
+        check("SELECT * FROM table ORDER BY col1 DESC, col2 ASC");
+    }
+
+    @Test
+    public void testOrderByDefaultASC()
+    {
+        check("SELECT * FROM table ORDER BY col1 DESC, col2", "SELECT * FROM table ORDER BY col1 DESC, col2 ASC");
+    }
+
+    @Test
+    public void testOrderByAlias()
+    {
+        check("SELECT * FROM table AS table1 ORDER BY table1.col1 DESC, col2 ASC");
+    }
+
+    @Test
+    public void testOrderByQualified()
+    {
+        check("SELECT * FROM table ORDER BY table.col1 DESC, col2 ASC");
+    }
+
+    @Test
+    public void testOrderByQualifiedWithAlias()
+    {
+        check("SELECT * FROM table AS table1 ORDER BY table1.col1 DESC, col2 ASC");
+    }
+
+    @Test
+    public void testWhere()
+    {
+        check("SELECT * FROM table WHERE col1 = 1");
+    }
+
+    @Test
+    public void testCompositeWhere()
+    {
+        check("SELECT * FROM table WHERE col1 = 1 AND col2 = 1");
+    }
+
+    @Test
+    public void testWhereQualified()
+    {
+        check("SELECT * FROM table WHERE table.col1 = 1");
+    }
+
+    @Test
+    public void testCompositeWhereQualifiedWithAlias()
+    {
+        check("SELECT * FROM table AS table1 WHERE col = 1 AND table1.col = 1");
+    }
+
+    @Test
+    public void testCompositeWhereOperators()
+    {
+        check("SELECT * FROM table WHERE col = 1 AND col > 1 AND col < 1 " +
+                "AND col >= 1 AND col <= 1 AND col IN (1, 2, 3) AND col IS NULL AND col IS NOT NULL");
+    }
+
+    @Test
+    public void testGroupBy()
+    {
+        check("SELECT COUNT(col) FROM table GROUP BY col1");
+    }
+
+    @Test
+    public void testGroupByQualified()
+    {
+        check("SELECT COUNT(col) FROM table GROUP BY table.col1");
+    }
+
+    @Test
+    public void testGroupByQualifiedWithAlias()
+    {
+        check("SELECT COUNT(col) FROM table AS table1 GROUP BY table1.col1");
+    }
+
+    @Test
+    public void testHaving()
+    {
+        check("SELECT COUNT(col) FROM table AS table1 GROUP BY col1 HAVING COUNT(col) > 1");
+    }
+
+    @Test
+    public void testJoinUsing()
+    {
+        check("SELECT * FROM table LEFT OUTER JOIN table2 USING (col, col2)");
+    }
+
+    @Test
+    public void testJoinUsingQualified()
+    {
+        check("SELECT table.col, tableb.col FROM table LEFT OUTER JOIN tableb USING (col, col2)");
+    }
+
+    @Test
+    public void testJoinUsingQualifiedAlias()
+    {
+        check("SELECT table1.col, tableb.col FROM table AS table1 LEFT OUTER JOIN tableb USING (col, col2)");
+    }
+
+    @Test
+    public void testJoinOn()
+    {
+        check("SELECT * FROM table LEFT OUTER JOIN tableb ON (table.col = tableb.col)");
+    }
+
+    @Test
+    public void testJoinOnQualified()
+    {
+        check("SELECT table.col, tableb.col FROM table LEFT OUTER JOIN tableb ON (table.col = tableb.col)");
+    }
+
+    @Test
+    public void testJoinOnQualifiedAlias()
+    {
+        check("SELECT table1.col, table2.col FROM table AS table1 LEFT OUTER JOIN tableb AS table2 ON (table1.col = table2.col)");
+    }
+
+    @Test
+    public void testUnionAll()
+    {
+        check("SELECT * FROM table UNION ALL SELECT * FROM table");
+    }
+
+    @Test
+    public void testUnion()
+    {
+        check("SELECT * FROM table UNION SELECT * FROM table");
+    }
+
+    @Test
+    public void testArithmetic()
+    {
+        check("SELECT (1 + 1) AS plus, (1 - 1) AS minus, (1 / 1) AS divide, (1 * 1) AS multiple FROM table");
+    }
+
+    @Test
+    public void testCurrentTIme()
+    {
+        check("SELECT CURRENT_TIME, CURRENT_TIMESTAMP, CURRENT_DATE FROM table");
+    }
+
+    private void fail(String sql, int start, int end, String message)
     {
         try
         {
             SQLGrammarParser parser = SQLGrammarParser.newInstance();
-            parser.parseStatement("SELECT * FROM 'table'");
+            parser.parseStatement(sql);
             Assert.fail();
         }
         catch (SQLParserException e)
         {
-            Assert.assertEquals(15, e.getSourceInformation().startColumn);
-            Assert.assertEquals(1, e.getSourceInformation().startLine);
-            Assert.assertEquals("no viable alternative at input 'SELECT * FROM 'table''", e.getMessage());
+            Assert.assertEquals(start, e.getSourceInformation().startColumn);
+            Assert.assertEquals(end, e.getSourceInformation().startLine);
+            Assert.assertEquals(message, e.getMessage());
         }
     }
 
-    protected void check(String value)
+    private void check(String sql)
+    {
+        check(sql, sql);
+    }
+
+    private void check(String sql, String expected)
     {
         SQLGrammarParser parser = SQLGrammarParser.newInstance();
-        Node node = parser.parseStatement(value);
+        Node node = parser.parseStatement(sql);
         SQLGrammarComposer composer = SQLGrammarComposer.newInstance();
         String result = composer.renderNode(node);
-        MatcherAssert.assertThat(result.trim(), IsEqualIgnoringCase.equalToIgnoringCase(value));
+        MatcherAssert.assertThat(result.trim(), IsEqualIgnoringCase.equalToIgnoringCase(expected));
     }
 }

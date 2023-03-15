@@ -51,8 +51,8 @@ function meta::relational::mapping::generateExecutionNodeForPostProcessedResult(
    let relationalNode =  if($wrapInInstantiationNode, | generateInstantiationExecutionNode($sq, $ext, $postProcessorResult.query, $sqlNode, $m), | $sqlNode);
    let nodes = $postProcessorResult.executionNodes->concatenate($relationalNode)->concatenate($postProcessorResult.postExecutionNodes);
    if($nodes->size()>1,
-      | if($nodes->map(node | $node->allNodes($extensions))->exists(node | $node->instanceOf(CreateAndPopulateTempTableExecutionNode)),
-           |^RelationalBlockExecutionNode(resultType = $relationalNode.resultType, executionNodes = $nodes, supportFunctions = $postProcessorResult.templateFunctions, resultSizeRange = $relationalNode.resultSizeRange),
+      | if($nodes->map(node | $node->allNodes($extensions))->exists(node | $node->instanceOf(CreateAndPopulateTempTableExecutionNode)) || $postProcessorResult.finallyExecutionNodes->isNotEmpty(),
+           |^RelationalBlockExecutionNode(resultType = $relationalNode.resultType, executionNodes = $nodes, supportFunctions = $postProcessorResult.templateFunctions, resultSizeRange = $relationalNode.resultSizeRange, finallyExecutionNodes=$postProcessorResult.finallyExecutionNodes),
            |^SequenceExecutionNode(resultType = $relationalNode.resultType, executionNodes = $nodes, supportFunctions = $postProcessorResult.templateFunctions, resultSizeRange = $relationalNode.resultSizeRange)),
       | $relationalNode
    );
@@ -172,7 +172,7 @@ function <<access.private>> meta::relational::mapping::getRelationalTypeFromRela
    ])->cast(@meta::relational::metamodel::datatype::DataType);
 }
 
-function <<access.private>> meta::relational::mapping::addEnumMapSupportFunctions(sq:meta::pure::mapping::StoreQuery[1], m:Mapping[1]):String[*]
+function meta::relational::mapping::addEnumMapSupportFunctions(sq:meta::pure::mapping::StoreQuery[1], m:Mapping[1]):String[*]
 {
    let enumParam = $sq.inScopeVars->keyValues().second->map(p | $p.values)->filter(e | $e->instanceOf(PlanVarPlaceHolder))->map(p | $p->cast(@PlanVarPlaceHolder).type)->filter(e | $e->instanceOf(Enumeration));
    let enumMapTemplateFunctions = if($enumParam->isNotEmpty(),
@@ -314,6 +314,11 @@ function meta::relational::mapping::execution(store: Database[1], f:FunctionExpr
 
 }
 
+function meta::relational::mapping::sqlCommentPureExecution(): String[1]
+{
+  '-- {"executionTraceID" : "' + meta::pure::runtime::generateGuid() + '"}';
+}
+
 function meta::relational::mapping::executeQuery(sql:String[1], query:SQLQuery[0..1], paths: Pair<String, PathInformation>[*], connection : DatabaseConnection[1], runtime: Runtime[1], class:Type[0..1], ext:RoutedValueSpecification[0..1], m: Mapping[1], sqlGenerationTimeInNanoSecond:Integer[0..1], g_queryTimeOutInSeconds: Integer[0..1], exeCtx:ExecutionContext[1], extensions: Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
 {
    print(if(!$debug.debug, |'', | $debug.space+'>Execute SQL: '+$sql+'\n'));
@@ -322,15 +327,16 @@ function meta::relational::mapping::executeQuery(sql:String[1], query:SQLQuery[0
                                        | $g_queryTimeOutInSeconds->toOne(),
                                        | 3600 //1 hour
                                        );
-   let res = executeInDb($sql, $connection->cast(@DatabaseConnection), $queryTimeOutInSeconds, 1000);
+   let sqlComment = sqlCommentPureExecution();
+   let res = executeInDb($sqlComment + '\n' + $sql, $connection->cast(@DatabaseConnection), $queryTimeOutInSeconds, 1000);
     //let res = ^ResultSet(connectionAcquisitionTimeInNanoSecond=1,executionTimeInNanoSecond=2);
    print(if(!$debug.debug, |'', |let ds = $res.dataSource->toOne();
                                  $debug.space+'>Query executed in '+$res.executionTimeInNanoSecond->toString()+'ns, host: \''+$ds.host+':'+$ds.port->toOne()->toString()+'\', name: \''+$ds.name+'\', type: \''+$ds.type->toOne()->toString()+'\'\n';));
 
    if ($class->toOne()->_subTypeOf(TabularDataSet),
-       | buildExecutionResultInTDS($sql, $res, $paths, $sqlGenerationTimeInNanoSecond),
+       | buildExecutionResultInTDS($sql, $sqlComment, $res, $paths, $sqlGenerationTimeInNanoSecond),
        | if($class->toOne()->_subTypeOf(RelationData),
-            | buildExecutionResultInRelationData($sql, $query, $res, $paths, $sqlGenerationTimeInNanoSecond),
+            | buildExecutionResultInRelationData($sql, $sqlComment, $query, $res, $paths, $sqlGenerationTimeInNanoSecond),
             | let objs = $class->match([
                  e : Enumeration<Any>[1] | fail('Direct query on Enumerations is not supported yet!'); [];,
                  p : PrimitiveType[1] | if($res.rows->isEmpty(),
@@ -351,13 +357,18 @@ function meta::relational::mapping::executeQuery(sql:String[1], query:SQLQuery[0
                                        ]
                                     );
               ]);
-              let result = ^Result<Any|*>(values=$objs, activities=^RelationalActivity(sql=$sql, executionTimeInNanoSecond=$res.executionTimeInNanoSecond, executionPlanInformation = $res.executionPlanInformation, dataSource = $res.dataSource, sqlGenerationTimeInNanoSecond = $sqlGenerationTimeInNanoSecond, connectionAcquisitionTimeInNanoSecond = $res.connectionAcquisitionTimeInNanoSecond));
+              let result = ^Result<Any|*>(values=$objs, activities=^RelationalActivity(sql=$sql, comment = $sqlComment, executionTimeInNanoSecond=$res.executionTimeInNanoSecond, executionPlanInformation = $res.executionPlanInformation, dataSource = $res.dataSource, sqlGenerationTimeInNanoSecond = $sqlGenerationTimeInNanoSecond, connectionAcquisitionTimeInNanoSecond = $res.connectionAcquisitionTimeInNanoSecond));
               $result;
          )
    );
 }
 
 function meta::relational::mapping::buildExecutionResultInTDS(sql:String[1], res:ResultSet[1], paths: Pair<String, PathInformation>[*], sqlGenerationTimeInNanoSecond:Integer[0..1]):Result<TabularDataSet|1>[1]
+{
+  buildExecutionResultInTDS($sql, '', $res, $paths, $sqlGenerationTimeInNanoSecond);
+}
+
+function <<access.private>> meta::relational::mapping::buildExecutionResultInTDS(sql:String[1], sqlComment:String[0..1], res:ResultSet[1], paths: Pair<String, PathInformation>[*], sqlGenerationTimeInNanoSecond:Integer[0..1]):Result<TabularDataSet|1>[1]
 {
    let propertyMappings = $res.columnNames->map(c| let matchedPath = $paths->filter(p|$p.first->toLower() == $c->toLower());
                                                                     if ($matchedPath->isEmpty(),
@@ -400,11 +411,16 @@ function meta::relational::mapping::buildExecutionResultInTDS(sql:String[1], res
    ^Result<TabularDataSet|1>
    (
       values = $tds,
-      activities=^RelationalActivity(sql=$sql, executionTimeInNanoSecond=$res.executionTimeInNanoSecond, executionPlanInformation = $res.executionPlanInformation, dataSource = $res.dataSource, sqlGenerationTimeInNanoSecond = $sqlGenerationTimeInNanoSecond, connectionAcquisitionTimeInNanoSecond = $res.connectionAcquisitionTimeInNanoSecond)
+      activities=^RelationalActivity(sql=$sql, comment = $sqlComment, executionTimeInNanoSecond=$res.executionTimeInNanoSecond, executionPlanInformation = $res.executionPlanInformation, dataSource = $res.dataSource, sqlGenerationTimeInNanoSecond = $sqlGenerationTimeInNanoSecond, connectionAcquisitionTimeInNanoSecond = $res.connectionAcquisitionTimeInNanoSecond)
    );
 }
 
 function meta::relational::mapping::buildExecutionResultInRelationData(sql:String[1], query:SQLQuery[0..1], res:ResultSet[1], paths: Pair<String, PathInformation>[*], sqlGenerationTimeInNanoSecond:Integer[0..1]):Result<RelationData|1>[1]
+{
+  buildExecutionResultInRelationData($sql, '', $query, $res, $paths, $sqlGenerationTimeInNanoSecond);
+}
+
+function <<access.private>> meta::relational::mapping::buildExecutionResultInRelationData(sql:String[1], sqlComment:String[0..1], query:SQLQuery[0..1], res:ResultSet[1], paths: Pair<String, PathInformation>[*], sqlGenerationTimeInNanoSecond:Integer[0..1]):Result<RelationData|1>[1]
 {
    let tdsNull = ^TDSNull();
    let relationDataQuery = $query->toOne()->cast(@RelationDataSelectSqlQuery);
@@ -427,7 +443,7 @@ function meta::relational::mapping::buildExecutionResultInRelationData(sql:Strin
    ^Result<RelationData|1>
    (
       values = $relationData,
-      activities=^RelationalActivity(sql=$sql, executionTimeInNanoSecond=$res.executionTimeInNanoSecond, executionPlanInformation = $res.executionPlanInformation, dataSource = $res.dataSource, sqlGenerationTimeInNanoSecond = $sqlGenerationTimeInNanoSecond, connectionAcquisitionTimeInNanoSecond = $res.connectionAcquisitionTimeInNanoSecond)
+      activities=^RelationalActivity(sql=$sql, comment = $sqlComment, executionTimeInNanoSecond=$res.executionTimeInNanoSecond, executionPlanInformation = $res.executionPlanInformation, dataSource = $res.dataSource, sqlGenerationTimeInNanoSecond = $sqlGenerationTimeInNanoSecond, connectionAcquisitionTimeInNanoSecond = $res.connectionAcquisitionTimeInNanoSecond)
    );
 }
 
@@ -578,9 +594,11 @@ function meta::relational::mapping::processProperty(o:Any[1], property:Property<
            let sql = sqlQueryToStringPretty($targetImplSqlQueryPair.second, $sourceConnection.type, $sourceConnection.timeZone, $sourceConnection.quoteIdentifiers, $extensions);
            let sqlQueryToStringDurationMilliseconds = ($sqlQueryToStringStart->dateDiff(now(),DurationUnit.MILLISECONDS));
 
-           let executed = executeInDb($sql, $keyInformation.sourceConnection->cast(@DatabaseConnection));
+           let sqlComment = sqlCommentPureExecution();
+           let executed = executeInDb($sqlComment + '\n' + $sql, $keyInformation.sourceConnection->cast(@DatabaseConnection));
 
            meta::pure::functions::io::logActivities(^RelationalActivity(sql=$sql,
+                                                                        comment = $sqlComment,
                                                                         sqlGenerationTimeInNanoSecond = $sqlQueryToStringDurationMilliseconds*1000000,
                                                                         dataSource = $executed.dataSource,
                                                                         executionTimeInNanoSecond=$executed.executionTimeInNanoSecond,

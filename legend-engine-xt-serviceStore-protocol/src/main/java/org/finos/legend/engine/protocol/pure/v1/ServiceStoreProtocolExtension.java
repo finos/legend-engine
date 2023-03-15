@@ -87,7 +87,7 @@ public class ServiceStoreProtocolExtension implements PureProtocolExtension
                 ProtocolSubTypeInfo.newBuilder(SecuritySchemeRequirement.class)
                          .withSubtype(SingleSecuritySchemeRequirement.class,"singleSecuritySchemeReq")
                          .build(),
-                //Authentication Scheme
+                //Authentication Scheme Requirement
                 ProtocolSubTypeInfo.newBuilder(AuthenticationSchemeRequirement.class)
                         .withSubtype(SingleAuthenticationSchemeRequirement.class,"singleAuthScheme")
                         .build()

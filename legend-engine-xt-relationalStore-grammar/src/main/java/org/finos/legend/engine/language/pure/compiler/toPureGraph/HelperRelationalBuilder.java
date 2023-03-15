@@ -134,6 +134,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.MappingClass;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMappingsImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Generalization;
@@ -1101,7 +1102,8 @@ public class HelperRelationalBuilder
     {
         if (propertyMapping.property._class != null)
         {
-            return context.resolveClass(propertyMapping.property._class, propertyMapping.property.sourceInformation);
+            PropertyOwner owner = context.resolvePropertyOwner(propertyMapping.property._class, propertyMapping.property.sourceInformation);
+            return owner instanceof Class<?> ? (Class<?>) owner : HelperModelBuilder.getAssociationPropertyClass((Association) owner, propertyMapping.property.property, propertyMapping.property.sourceInformation, context);
         }
         else if (immediateParent instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.EmbeddedRelationalInstanceSetImplementation)
         {
@@ -1117,7 +1119,8 @@ public class HelperRelationalBuilder
     {
         if (propertyMapping.property._class != null)
         {
-            return context.resolveClass(propertyMapping.property._class, propertyMapping.property.sourceInformation);
+            PropertyOwner owner = context.resolvePropertyOwner(propertyMapping.property._class, propertyMapping.property.sourceInformation);
+            return owner instanceof Class<?> ? (Class<?>) owner : HelperModelBuilder.getAssociationPropertyClass((Association) owner, propertyMapping.property.property, propertyMapping.property.sourceInformation, context);
         }
         else if (immediateParent instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.RelationalInstanceSetImplementation)
         {

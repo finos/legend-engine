@@ -129,13 +129,19 @@ public abstract class CredentialProvider<SPEC extends AuthenticationSpecificatio
 
     protected Credential makeCredential(AuthenticationSpecification specification, Identity identity, Class<? extends Credential> outputCredentialType) throws Exception
     {
+        ImmutableSet<? extends Class<? extends Credential>> identityCredentialTypes = FastList.newList(identity.getCredentials()).collect(credential -> credential.getClass()).toSet().toImmutable();
+
+        if (identityCredentialTypes.contains(outputCredentialType))
+        {
+           return identity.getCredential(outputCredentialType).get();
+        }
+
         if (this.intermediationRules.isEmpty())
         {
             String message = String.format("Cannot make credential for configuration of type '%s'. No intermediation rules have been configured", specification.getClass());
             throw new UnsupportedOperationException(message);
         }
 
-        ImmutableSet<? extends Class<? extends Credential>> identityCredentialTypes = FastList.newList(identity.getCredentials()).collect(credential -> credential.getClass()).toSet().toImmutable();
         Optional<IntermediationRule> matchingRuleHolder = this.findMatchingRule(specification, identityCredentialTypes, outputCredentialType);
         if (!matchingRuleHolder.isPresent())
         {

@@ -4,6 +4,7 @@
   "dependencies": [
     "platform",
     "platform_functions",
-    "core"
+    "core",
+    "core_diagram_metamodel"
   ]
 }

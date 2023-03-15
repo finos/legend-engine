@@ -56,6 +56,9 @@ import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
 import org.finos.legend.pure.generated.Root_meta_external_query_sql_metamodel_Node;
+import org.finos.legend.pure.generated.Root_meta_external_query_sql_transformation_queryToPure_SQLSource;
+import org.finos.legend.pure.generated.Root_meta_external_query_sql_transformation_queryToPure_SQLSource_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureSingleExecution;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
@@ -106,7 +109,7 @@ public class SqlExecute
         this.extensions = extensions;
         this.transformers = transformers;
         this.metadataServer = metadataServer;
-        this.serviceModeling = new ServiceModeling(modelManager, deploymentMode);
+        this.serviceModeling = new ServiceModeling(modelManager, deploymentMode,planExecutor);
     }
 
     @POST
@@ -179,9 +182,28 @@ public class SqlExecute
                 .collect(e -> serviceModeling.compileService(e, pureModel.getContext(e)))
                 .toList();
 
-        Root_meta_pure_executionPlan_ExecutionPlan plan = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_getPlansFromSQL_Service_MANY__Node_1__Extension_MANY__ExecutionPlan_1_(services, query, extensions.apply(pureModel), pureModel.getExecutionSupport());
+        RichIterable<? extends Root_meta_external_query_sql_transformation_queryToPure_SQLSource> sources = toSources(services);
+
+        Root_meta_pure_executionPlan_ExecutionPlan plan = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_getPlansFromSQL_SQLSource_MANY__Node_1__Extension_MANY__ExecutionPlan_1_(sources, query, extensions.apply(pureModel), pureModel.getExecutionSupport());
         SingleExecutionPlan singleExecutionPlan = transformExecutionPlan(plan, pureModel, clientVersion, profiles, extensions.apply(pureModel), transformers);
         return singleExecutionPlan;
+    }
+
+    private RichIterable<? extends Root_meta_external_query_sql_transformation_queryToPure_SQLSource> toSources(MutableList<Root_meta_legend_service_metamodel_Service> services)
+    {
+        return services.collect(this::toSource);
+    }
+
+    private Root_meta_external_query_sql_transformation_queryToPure_SQLSource toSource(Root_meta_legend_service_metamodel_Service s)
+    {
+        Root_meta_legend_service_metamodel_PureSingleExecution execution = (Root_meta_legend_service_metamodel_PureSingleExecution) s._execution();
+        return new Root_meta_external_query_sql_transformation_queryToPure_SQLSource_Impl("")
+                ._type("service")
+                ._id(s._pattern())
+                ._func(execution._func())
+                ._mapping(execution._mapping())
+                ._runtime(execution._runtime())
+                ._executionOptions(execution._executionOptions());
     }
 
     protected PureModelContextData loadModelContextData(MutableList<CommonProfile> profiles, HttpServletRequest request, String project) throws PrivilegedActionException

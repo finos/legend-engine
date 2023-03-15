@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.1.1-SNAPSHOT</version>
+    <version>4.4.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -40,9 +40,7 @@
         <module>legend-engine-xt-authentication-implementation-core</module>
         <module>legend-engine-xt-authentication-implementation-vault-aws</module>
         <module>legend-engine-xt-authentication-implementation-gcp-federation</module>
-        <module>legend-engine-xt-authentication-example</module>
-
-        <module>legend-engine-test-reports</module>
+        <module>legend-engine-xt-authentication-experimental</module>
 
         <module>legend-engine-xt-graphQL-grammar</module>
         <module>legend-engine-xt-graphQL-grammar-integration</module>
@@ -85,7 +83,6 @@
         <module>legend-engine-xt-flatdata-model</module>
         <module>legend-engine-xt-flatdata-shared</module>
         <module>legend-engine-xt-flatdata-runtime</module>
-        <module>legend-engine-xt-flatdata-protocol</module>
         <module>legend-engine-xt-flatdata-pure</module>
 
         <module>legend-engine-xt-json-model</module>
@@ -148,17 +145,19 @@
         <module>legend-engine-xt-text-grammar</module>
         <module>legend-engine-xt-text-compiler</module>
         <module>legend-engine-xt-text-protocol</module>
-        <module>legend-engine-xt-text-pure</module>
+        <module>legend-engine-xt-text-pure-metamodel</module>
 
+        <module>legend-engine-xt-diagram-api</module>
+        <module>legend-engine-xt-diagram-pure</module>
         <module>legend-engine-xt-diagram-grammar</module>
         <module>legend-engine-xt-diagram-compiler</module>
         <module>legend-engine-xt-diagram-protocol</module>
-        <module>legend-engine-xt-diagram-pure</module>
-        <module>legend-engine-xt-diagram-api</module>
+        <module>legend-engine-xt-diagram-pure-metamodel</module>
 
         <module>legend-engine-xt-data-space-grammar</module>
         <module>legend-engine-xt-data-space-compiler</module>
         <module>legend-engine-xt-data-space-protocol</module>
+        <module>legend-engine-xt-data-space-pure-metamodel</module>
         <module>legend-engine-xt-data-space-pure</module>
         <module>legend-engine-xt-data-space-generation</module>
         <module>legend-engine-xt-data-space-api</module>
@@ -169,6 +168,9 @@
 
         <module>legend-engine-xt-analytics-lineage-api</module>
         <module>legend-engine-xt-analytics-lineage-pure</module>
+
+        <module>legend-engine-xt-analytics-search-pure</module>
+        <module>legend-engine-xt-analytics-search-generation</module>
 
         <module>legend-engine-pure-code-compiled-core</module>
         <module>legend-engine-pure-platform-java</module>
@@ -223,11 +225,6 @@
         <module>legend-engine-shared-javaCompiler</module>
         <module>legend-engine-services-model</module>
         <module>legend-engine-services-model-api</module>
-        <module>legend-engine-server</module>
-        <module>legend-engine-test-server-shared</module>
-        <module>legend-engine-server-integration-tests</module>
-        <module>legend-engine-extensions-collection-execution</module>
-        <module>legend-engine-extensions-collection-generation</module>
         <module>legend-engine-testable</module>
         <module>legend-engine-executionPlan-execution-authorizer</module>
         <module>legend-engine-xt-relationalStore-executionPlan-authorizer</module>
@@ -251,12 +248,25 @@
         <module>legend-engine-xt-sql-pure</module>
         <module>legend-engine-xt-sql-postgres-server</module>
         <module>legend-engine-xt-elasticsearch</module>
+        <module>legend-engine-xt-nonrelationalStore-mongodb-pure</module>
+        <module>legend-engine-xt-nonrelationalStore-mongodb-grammar</module>
+        <module>legend-engine-xt-nonrelationalStore-mongodb-protocol</module>
+        <module>legend-engine-xt-nonrelationalStore-mongodb-grammar-integration</module>
+
+        <!-- NOTE: Do not change the ordering of this block, we want to build these modules last -->
+        <module>legend-engine-test-reports</module>
+        <module>legend-engine-server</module>
+        <module>legend-engine-test-server-shared</module>
+        <module>legend-engine-server-integration-tests</module>
+        <module>legend-engine-extensions-collection-execution</module>
+        <module>legend-engine-extensions-collection-generation</module>
+        <!-- NOTE: Do not change the ordering of this block, we want to build these modules last -->
     </modules>
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>4.2.0</legend.pure.version>
-        <legend.shared.version>0.22.5</legend.shared.version>
+        <legend.pure.version>4.3.2</legend.pure.version>
+        <legend.shared.version>0.23.3</legend.shared.version>
 
         <!-- SONAR -->
         <sonar.projectKey>legend-engine</sonar.projectKey>
@@ -280,7 +290,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.release>8</maven.compiler.release>
         <maven.enforcer.requireJavaVersion>[11.0.10,12)</maven.enforcer.requireJavaVersion>
-        <surefire.vm.params>-Xmx2000m -Xms1g -XX:MaxPermSize=1024m -XX:SoftRefLRUPolicyMSPerMB=1</surefire.vm.params>
+        <surefire.vm.params>-XX:SoftRefLRUPolicyMSPerMB=1</surefire.vm.params>
 
         <!-- Databases -->
         <hikaricp.version>4.0.3</hikaricp.version>
@@ -311,6 +321,7 @@
         <commons-text.version>1.10.0</commons-text.version>
         <freemarker.version>2.3.30</freemarker.version>
         <opentracing.version>0.32.0</opentracing.version>
+        <opentracing.contrib.version>0.3.0</opentracing.contrib.version>
         <prometheus.version>0.8.1</prometheus.version>
         <httpclient.version>4.5.13</httpclient.version>
         <httpasyncclient.version>4.1.5</httpasyncclient.version>
@@ -730,7 +741,7 @@
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-authentication-example</artifactId>
+                <artifactId>legend-engine-xt-authentication-experimental</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -1045,11 +1056,6 @@
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-flatdata-protocol</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-flatdata-model</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1198,10 +1204,20 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-text-pure</artifactId>
+                <artifactId>legend-engine-xt-text-pure-metamodel</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-diagram-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-diagram-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-diagram-compiler</artifactId>
@@ -1219,12 +1235,7 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-diagram-pure</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-diagram-api</artifactId>
+                <artifactId>legend-engine-xt-diagram-pure-metamodel</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -1252,6 +1263,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-data-space-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-data-space-pure-metamodel</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -1286,6 +1302,18 @@
                 <artifactId>legend-engine-xt-analytics-mapping-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-search-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-search-generation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-daml-pure</artifactId>
@@ -1310,6 +1338,12 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-executionPlan-execution</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-executionPlan-execution</artifactId>
+                <type>test-jar</type>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -1705,6 +1739,26 @@
                 <artifactId>legend-engine-xt-sql-postgres-server</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-nonrelationalStore-mongodb-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-nonrelationalStore-mongodb-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-nonrelationalStore-mongodb-grammar-integration</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-nonrelationalStore-mongodb-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <!-- ENGINE -->
 
             <!-- PURE -->
@@ -2080,6 +2134,11 @@
                 <groupId>io.opentracing</groupId>
                 <artifactId>opentracing-noop</artifactId>
                 <version>${opentracing.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.opentracing.contrib</groupId>
+                <artifactId>opentracing-concurrent</artifactId>
+                <version>${opentracing.contrib.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.zipkin.reporter2</groupId>

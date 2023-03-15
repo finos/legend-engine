@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 public class TestStoreExecutableManager
@@ -42,9 +43,31 @@ public class TestStoreExecutableManager
 
     }
 
+    @Test
+    public void testCancellation()
+    {
+        String session = "testSession";
+        String session2 = "testSession2";
+
+        StoreExecutableManager.INSTANCE.reset();
+        StoreExecutableManager.INSTANCE.registerManager();
+        TestExecutable test1 = new TestExecutable();
+        TestExecutable test2 = new TestExecutable();
+        TestExecutable test3 = new TestExecutable();
+
+        StoreExecutableManager.INSTANCE.addExecutable(session, test1);
+        StoreExecutableManager.INSTANCE.addExecutable(session, test2);
+        StoreExecutableManager.INSTANCE.addExecutable(session2, test3);
+        assert (StoreExecutableManager.INSTANCE.cancelExecutablesOnSession(session) == 2);
+        assert (StoreExecutableManager.INSTANCE.getExecutables(session2).size() == 1);
+        assert (StoreExecutableManager.INSTANCE.getExecutables(session).size() == 0);
+
+        StoreExecutableManager.INSTANCE.reset(); //clean up state of singleton
+
+    }
+
     private class TestExecutable implements StoreExecutable
     {
-
         @Override
         public void cancel()
         {

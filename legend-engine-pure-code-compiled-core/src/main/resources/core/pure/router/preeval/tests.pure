@@ -1160,6 +1160,49 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting_mapped
   assertRoundTrip($input, $expected);
 }
 
+function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting_constantInAgg():Boolean[1]
+{   
+  let lambda = {|
+    let businessDate = %2023-01-01;
+    let x = 'a';
+    meta::pure::router::preeval::tests::Position.all($businessDate)->groupBy(
+      [],
+      agg(x|$x.client($businessDate).name + 'b', y|$y->count()),
+      'ID Count'
+    );
+  };
+
+  //we re-write the lambda to inline an AggregateValue with businessDate variable
+  let aggregateValue = ^meta::pure::functions::collection::AggregateValue<meta::pure::router::preeval::tests::Position, String, Integer>(mapFn={x:meta::pure::router::preeval::tests::Position[1] | $x.client(%2023-01-01).name + $x->toString()},aggregateFn={y:String[*] | $y->count()});
+
+  let expressionSequence = $lambda.expressionSequence->evaluateAndDeactivate();
+  let groupBy = $expressionSequence->at(2)->cast(@SimpleFunctionExpression);
+
+  let mapFn = $aggregateValue.mapFn;
+  let mapFnExpressionSequnce = $mapFn.expressionSequence->evaluateAndDeactivate()->cast(@SimpleFunctionExpression)->toOne();
+
+  let plus = $mapFnExpressionSequnce.parametersValues->at(0)->cast(@InstanceValue);
+  let plusParams = $plus.values;
+  let plusLeft = $plusParams->at(0)->cast(@SimpleFunctionExpression);
+  let client = $plusLeft.parametersValues->at(0)->cast(@SimpleFunctionExpression);
+  let newClient = ^$client(parametersValues = [$client.parametersValues->at(0), ^VariableExpression(name='businessDate',genericType=^GenericType(rawType = StrictDate),multiplicity=PureOne)]);
+
+  let newPlusLeft = ^$plusLeft(parametersValues = $newClient);
+  let newPlus = ^$plus(values = [$newPlusLeft,$plus.values->at(1)]);
+
+  let newAggregateValue = ^$aggregateValue(mapFn = ^$mapFn(expressionSequence = ^$mapFnExpressionSequnce(parametersValues = [$newPlus])));
+  let newAggregateValueInstance = ^InstanceValue(genericType=^GenericType(rawType = meta::pure::functions::collection::AggregateValue),multiplicity=PureOne, values = $newAggregateValue);
+  let newGroupBy = ^$groupBy(parametersValues = [$groupBy.parametersValues->at(0), $groupBy.parametersValues->at(1), $newAggregateValueInstance, $groupBy.parametersValues->at(3)]);
+  let newLambda = ^$lambda(expressionSequence = [$expressionSequence->at(0), $expressionSequence->at(1), $newGroupBy]);
+
+ 
+  let expected = {|
+    meta::pure::router::preeval::tests::Position.all(%2023-01-01)->groupBy([], ^meta::pure::functions::collection::AggregateValue<meta::pure::router::preeval::tests::Position, String, Integer>(mapFn={x:meta::pure::router::preeval::tests::Position[1] | $x.client(%2023-01-01).name + $x->toString()},aggregateFn={y:String[*]|$y->count()}), ['ID Count'])
+  };
+
+    assertRoundTrip($newLambda, $expected);
+}
+
 function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting_castEmptyCollection():Boolean[1]
 {
   let input = {b:Integer[*]|$b->uniqueValueOnly()};
@@ -1240,6 +1283,7 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPreroutingRemoveU
   assertRoundTrip($input, $expected);
 }
 
+
 function meta::pure::router::preeval::tests::myStopFunction(b: Integer[1]) : Integer[1]
 {
   $b+1;
@@ -1253,6 +1297,86 @@ function <<test.Test>> meta::pure::router::preeval::tests::testAdditionalStopFun
 
   assertRoundTrip($input, $expected);
   assertRoundTrip($input, $input, myStopFunction_Integer_1__Integer_1_, [], noDebug());
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testFilterFalseSimplification():Boolean[1]
+{
+  let input = {o:OrganizationalEntity[1]| $o.positions(%2023-01-01)->filter(p | false).id};
+
+  let expected = {a:OrganizationalEntity[1]| []};
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testFilterFalseSimplificationAll():Boolean[1]
+{
+  let input = {s:String[0..1]| OrganizationalEntity.all(%2023-01-01)->filter(c | 1 == 2)->project(c | $c.name, 'name')};
+
+  let expected = {s:String[0..1]| OrganizationalEntity.all(%2023-01-01)->filter(c | false)->project(c | $c.name, 'name')};
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testFilterFalseSimplification2():Boolean[1]
+{
+  let input = {o:OrganizationalEntity[1]| $o.positions(%2023-01-01)->filter(p | 1 == 2).id};
+
+  let expected = {o:OrganizationalEntity[1]| []};
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testFilterFalseConstantSimplification():Boolean[1]
+{
+  let input = {o:OrganizationalEntity[1]| let bool = false; let date = %2023-01-01; $o.positions($date)->filter(p | $bool).id;};
+
+  let expected = {o:OrganizationalEntity[1]| []};
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testFilterFalseSimplificationReturnType():Boolean[1]
+{
+  let input = {o:OrganizationalEntity[1]| $o.positions(%2023-01-01)->filter(p | false).id;};
+  let result = $input->preval([]);
+  
+  assertEquals(Integer, $result->functionReturnType().rawType);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testFilterTrueSimplification():Boolean[1]
+{
+  let input = {o:OrganizationalEntity[1]| $o.positions(%2023-01-01)->filter(p | false; true;).id};
+
+  let expected = {o:OrganizationalEntity[1]| $o.positions(%2023-01-01).id};
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testFilterTrueSimplification2():Boolean[1]
+{
+  let input = {o:OrganizationalEntity[1]| $o.positions(%2023-01-01)->filter(p | 1 == 1).id};
+
+  let expected = {o:OrganizationalEntity[1]| $o.positions(%2023-01-01).id};
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testFilterTrueConstantSimplification():Boolean[1]
+{
+  let input = {o:OrganizationalEntity[1]| let bool = true; let date = %2023-01-01; $o.positions($date)->filter(p | $bool).id;};
+
+  let expected = {o:OrganizationalEntity[1]| $o.positions(%2023-01-01).id};
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testFilterNoSimplification():Boolean[1]
+{
+  let input = {o:OrganizationalEntity[1]| $o.positions(%2023-01-01)->filter(p | $p.id == true).id};
+
+  let expected = {o:OrganizationalEntity[1]| $o.positions(%2023-01-01)->filter(p | $p.id == true).id};
+
+  assertRoundTrip($input, $expected);
 }
 
 function meta::pure::router::preeval::tests::getTestRuntimeWithModelConnection(sourceClass:Class<Any>[1], inputs:Any[*]):Runtime[1]

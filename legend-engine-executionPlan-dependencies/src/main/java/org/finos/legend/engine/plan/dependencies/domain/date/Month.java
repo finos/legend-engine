@@ -27,5 +27,15 @@ public enum Month
     September,
     October,
     November,
-    December
+    December;
+
+    public String getName()
+    {
+        return this.name();
+    }
+
+    public static Month getEnumFromPureName(String pureName)
+    {
+        return Month.valueOf(pureName);
+    }
 }

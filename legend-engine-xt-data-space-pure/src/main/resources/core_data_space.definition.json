@@ -3,9 +3,12 @@
   "pattern": "(meta::pure::metamodel::dataSpace)(::.*)?",
   "dependencies": [
     "platform",
-    "platform_dsl_mapping",
     "platform_functions",
+    "platform_dsl_mapping",
     "core",
-    "core_diagram"
+    "core_diagram_metamodel",
+    "core_diagram",
+    "core_analytics_mapping",
+    "core_data_space_metamodel"
   ]
 }

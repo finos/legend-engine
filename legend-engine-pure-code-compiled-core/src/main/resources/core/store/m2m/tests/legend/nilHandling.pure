@@ -109,9 +109,47 @@ meta::pure::mapping::modelToModel::test::alloy::simple::canHandleComplexProperty
    assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
 }
 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>> 
+{  serverVersion.start='vX_X_X',
+   doc.doc='Given: a mapping that uses new operator for complex property',
+   doc.doc='When:  a mapping is executed using graphFetch and serialize.',
+   doc.doc='Then:  the mapping conversion should succeed.'
+}
+meta::pure::mapping::modelToModel::test::alloy::simple::canHandleNilInNewInComplexProperty(): Boolean[1]
+{
+   let tree = #{Target {nested {a, b}}}#;
+
+   let result = execute(
+      |Target.all()->graphFetch($tree)->serialize($tree),
+      useNilInNewInComplexProperty,
+      testJsonRuntime(Source, '{"i":0}'),
+      meta::pure::extension::defaultExtensions()
+   );
+
+   let json = $result.values->toOne();
+   let expected = '{"nested":{"a": null, "b": "b"}}';   
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));  
+
+   let result2 = execute(
+      |Target.all()->graphFetch($tree)->serialize($tree),
+      useNilInNewInComplexProperty,
+      testJsonRuntime(Source, '{"i":-1}'),
+      meta::pure::extension::defaultExtensions()
+   );
+
+   let json2 = $result2.values->toOne();
+   let expected2 = '{"nested":{"a": "-1", "b": "b"}}';   
+   assert(jsonEquivalent($expected2->parseJSON(), $json2->parseJSON()));    
+}
+
 Class meta::pure::mapping::modelToModel::test::alloy::simple::nilHandling::Source
 {
    i: Integer[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::nilHandling::SourceTransformed
+{
+   s: String[0..1];
 }
 
 Class meta::pure::mapping::modelToModel::test::alloy::simple::nilHandling::Target
@@ -165,6 +203,22 @@ Mapping meta::pure::mapping::modelToModel::test::alloy::simple::nilHandling::map
       {
          ~src Source
          a: [],
+         b: 'b'
+      }
+)
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::simple::nilHandling::useNilInNewInComplexProperty
+(
+   Target: Pure
+      {
+         ~src Source
+         nested: if($src.i == 0, | ^SourceTransformed(s=[]), | ^SourceTransformed(s=$src.i->toString()))
+      }
+
+   TargetNested: Pure
+      {
+         ~src SourceTransformed
+         a: $src.s,
          b: 'b'
       }
 )

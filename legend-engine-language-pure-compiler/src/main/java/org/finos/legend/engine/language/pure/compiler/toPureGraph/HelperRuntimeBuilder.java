@@ -91,10 +91,9 @@ public class HelperRuntimeBuilder
         // TODO?: drill down for model store to detect when a class has not been mapped?
         if (!mappedStores.isEmpty())
         {
-            throw new EngineException("Runtime does not cover store(s) '"
+            context.pureModel.addWarnings(Lists.mutable.with(new Warning(sourceInformation, "Runtime does not cover store(s) '"
                     + StringUtils.join(new ArrayList<>(mappedStores), "', '")
-                    + "' in mapping(s) '" + StringUtils.join(mappings.stream().map(mapping -> HelperModelBuilder.getElementFullPath(mapping, context.pureModel.getExecutionSupport())).collect(Collectors.toList()), "', '") + "'",
-                    sourceInformation, EngineErrorType.COMPILATION);
+                    + "' in mapping(s) '" + StringUtils.join(mappings.stream().map(mapping -> HelperModelBuilder.getElementFullPath(mapping, context.pureModel.getExecutionSupport())).collect(Collectors.toList())))));
         }
     }
 
@@ -102,10 +101,10 @@ public class HelperRuntimeBuilder
     {
         if (engineRuntime.mappings.isEmpty())
         {
-            throw new EngineException("Runtime must cover at least one mapping", engineRuntime.sourceInformation, EngineErrorType.COMPILATION);
+            context.pureModel.addWarnings(Lists.mutable.with(new Warning(engineRuntime.sourceInformation, "Runtime must cover at least one mapping")));
         }
         // verify if each mapping associated with the PackageableRuntime exists
-        List<Mapping> mappings = engineRuntime.mappings.stream().map(mappingPointer -> context.resolveMapping(mappingPointer.path, mappingPointer.sourceInformation)).collect(Collectors.toList());
+        List<Mapping> mappings = engineRuntime.mappings.isEmpty() ? Lists.mutable.empty() : engineRuntime.mappings.stream().map(mappingPointer -> context.resolveMapping(mappingPointer.path, mappingPointer.sourceInformation)).collect(Collectors.toList());
         // build connections
         List<Connection> connections = new ArrayList<>();
         List<CoreInstance> visitedSourceClasses = new ArrayList<>();

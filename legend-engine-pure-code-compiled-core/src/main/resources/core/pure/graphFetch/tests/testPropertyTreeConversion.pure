@@ -14,6 +14,7 @@
 
 
 ###Pure
+import meta::pure::graphFetch::tests::utils::*;
 import meta::pure::graphFetch::*;
 import meta::pure::graphFetch::routing::*;
 import meta::pure::graphFetch::tests::propertyTreeConversion::*;
@@ -22,57 +23,15 @@ import meta::pure::lineage::scanProperties::propertyTree::*;
 
 function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::propertyTreeConversion::testPropertyTreeConversion():Boolean[1]
 {
-   let propertyTree = ^PropertyPathTree(
-      display  = 'root',
-      value    = 'root',
-      children = [
-         ^PropertyPathTree(
-            display  = 'A', 
-            value    = A, 
-            children = [
-               ^PropertyPathTree(
-                  display  = 'myB',
-                  value    = ^PropertyPathNode(class=A, property=A->propertyByName('myB')->toOne()),
-                  children = [
-                     ^PropertyPathTree(
-                        display  = 's1',
-                        value    = ^PropertyPathNode(class=B, property=B->propertyByName('s1')->toOne()),
-                        children = []
-                     )
-                  ]
-               ),
-               ^PropertyPathTree(
-                  display  = 'myB',
-                  value    = ^PropertyPathNode(class=A, property=A->propertyByName('myB')->toOne()),
-                  children = [
-                     ^PropertyPathTree(
-                        display  = 's2',
-                        value    = ^PropertyPathNode(class=B, property=B->propertyByName('s2')->toOne()),
-                        children = []
-                     )
-                  ]
-               ),
-               ^PropertyPathTree(
-                  display  = 'myB',
-                  value    = ^PropertyPathNode(class=A, property=A->propertyByName('myB')->toOne()),
-                  children = [
-                     ^PropertyPathTree(
-                        display  = 'i1',
-                        value    = ^PropertyPathNode(class=BPlus, property=BPlus->propertyByName('i1')->toOne()),
-                        children = []
-                     )
-                  ]
-               ),
-               ^PropertyPathTree( // Spurious property will be ignored
-                  display  = 'd1',
-                  value    = ^PropertyPathNode(class=Z, property=Z->propertyByName('d1')->toOne()),
-                  children = []
-               )
-            ]
-         )
-      ]
-   );
-
+  let propertyTree= pTree('root', [
+                            pTree(A, 
+                              [
+                                  pTree( pNode(A,'myB'), [pTreeN(B,'s1') ]),
+                                  pTree( pNode(A,'myB'), [pTreeN(B,'s2') ]),
+                                  pTree( pNode(A,'myB'), [pTreeN(BPlus,'i1') ]),
+                                  pTree( pNode(Z,'d1'),  [])
+                              ])
+                    ]); 
    let actual = $propertyTree->propertyTreeToGraphFetchTree(A);
 
    let expected = #{ A {
@@ -325,3 +284,401 @@ Class meta::pure::graphFetch::tests::propertyTreeConversion::Z
 //   p_StaticMarket.mic
 //   p_StaticMarket.micType
 //   p_StaticMarket.operatingMic
+
+
+###Pure
+import meta::pure::graphFetch::tests::utils::*;
+import meta::pure::graphFetch::*;
+import meta::pure::lineage::scanProperties::*;
+import meta::pure::lineage::scanProperties::propertyTree::*;
+import meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::*;
+
+// assumption: nodes are well formed : 
+    //  classNode and embedded propertyPathNode have same classes  , should not have something like  :  c_classA( p_classB_prop1 )
+    //  a class node doesnt have any non existing propertyPathNodes  :  c_classA( p_classA_prop1, p_classA_nonExistentPropertyInClassA )
+
+function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::propertyTreeConversion::tesSubTypeOnRoot_accessFromBaseType_baseTypeProperties():Boolean[1]
+{
+  let propertyTree= pTree('root', [ pTree(Location, [pTreeN(Location,'coordinates')]) ]);
+
+  let expectedWithBaseClassOwner =
+      'Location\n'+
+      '(\n' +
+      '  coordinates\n' +
+      ')';
+
+   let actualWithBaseClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Location);
+   assertEquals($expectedWithBaseClassOwner, $actualWithBaseClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+
+  let expectedWithSubClassOwner =
+      'Street\n'+
+      '(\n' +
+      '  coordinates\n' +
+      ')';
+
+   let actualWithSubClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Street);
+    assertEquals($expectedWithSubClassOwner, $actualWithSubClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+}   
+
+
+function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::propertyTreeConversion::tesSubTypeOnRoot_accessFromSubType_baseTypeProperties():Boolean[1]
+{
+  let propertyTree= pTree('root', [ pTree(Street,[pTreeN(Street,'coordinates', Location)]) ]);
+
+  let  expectedWithBaseClassOwner = 
+   'Location\n'+
+      '(\n' +
+      '  coordinates\n' +
+      '  ->SubType(Street)\n' +
+      '  (\n' +
+      '    coordinates\n' +
+      '  )\n'+
+      ')';
+   let actualWithBaseClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Location);
+  assertEquals($expectedWithBaseClassOwner, $actualWithBaseClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+
+
+  let  expectedWithSubClassOwner = 
+   'Street\n'+
+      '(\n' +
+      '  coordinates\n' +
+      ')'; 
+  let actualWithSubClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Street);
+  assertEquals($expectedWithSubClassOwner, $actualWithSubClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+}   
+
+function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::propertyTreeConversion::tesSubTypeOnRoot_accessFromSubType_subTypeProperties():Boolean[1]
+{
+  let propertyTree= pTree('root', [ pTree(Street, [pTreeN(Street,'street')]) ]);  
+
+  let  expectedWithBaseClassOwner ='Location\n'+
+      '(\n' +
+      '  ->SubType(Street)\n' +
+      '  (\n' +
+      '    street\n' +
+      '  )\n'+
+      ')';
+  let actualWithBaseClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Location);
+  assertEquals($expectedWithBaseClassOwner, $actualWithBaseClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+
+  let  expectedWithSubClassOwner =
+      'Street\n'+
+      '(\n' +
+      '  street\n' +
+      ')';
+  let actualWithSubClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Street);
+  assertEquals($expectedWithSubClassOwner, $actualWithSubClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+}   
+
+function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::propertyTreeConversion::tesSubTypeOnRoot_accessFromSubType_baseAndSingleSubTypeProperties():Boolean[1]
+{
+  let propertyTree= pTree('root', [ pTree(Street, [pTreeN(Street,'coordinates', Location), pTreeN(Street,'street')]) ]);
+
+  let expectedWithBaseClassOwner =
+   'Location\n'+
+      '(\n' +
+      '  coordinates\n' +
+      '  ->SubType(Street)\n' +
+      '  (\n' +
+      '    coordinates\n' +
+      '    street\n' +
+      '  )\n'+
+      ')';
+  let actualWithBaseClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Location);
+  assertEquals($expectedWithBaseClassOwner, $actualWithBaseClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+
+  let expectedWithSubClassOwner = 
+    'Street\n'+
+      '(\n' +
+      '  coordinates\n' +
+      '  street\n' +
+      ')'
+   ; 
+  let actualWithSubClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Street);
+  assertEquals($expectedWithSubClassOwner, $actualWithSubClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+}   
+
+function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::propertyTreeConversion::tesSubTypeOnRoot_accessFromBaseAndSubType_baseTypeProperties():Boolean[1]
+{
+  let propertyTree= pTree('root', [ pTree(Location, [pTreeN(Location,'coordinates')]),  pTree(Street, [pTreeN(Street,'coordinates',Location)]) ]);
+
+  let  expectedWithBaseClassOwner =
+   'Location\n'+
+      '(\n' +
+      '  coordinates\n' +
+      '  ->SubType(Street)\n' +
+      '  (\n' +
+      '    coordinates\n' +
+      '  )\n'+
+      ')';
+  let actualWithBaseClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Location);
+  assertEquals($expectedWithBaseClassOwner, $actualWithBaseClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+
+
+  let  expectedWithSubClassOwner = 
+   'Street\n'+
+      '(\n' +
+      '  coordinates\n' +
+      ')';
+  let actualWithSubClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Street);
+  assertEquals($expectedWithSubClassOwner, $actualWithSubClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+}   
+
+function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::propertyTreeConversion::tesSubTypeOnRoot_accessFromBaseAndSubType_subTypeProperties():Boolean[1]
+{
+  let propertyTree= pTree('root', [
+                          pTree(Location, [pTreeN(Location,'coordinates')] ),
+                          pTree(Street,   [pTreeN(Street,'street')] )
+                        ]); 
+
+  let  expectedWithBaseClassOwner =
+   'Location\n'+
+      '(\n' +
+      '  coordinates\n' +
+      '  ->SubType(Street)\n' +
+      '  (\n' +
+      '    coordinates\n' +
+      '    street\n' +
+      '  )\n'+
+      ')';
+  let actualWithBaseClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Location);
+  assertEquals($expectedWithBaseClassOwner, $actualWithBaseClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+
+  let  expectedWithSubClassOwner = 
+    'Street\n'+
+      '(\n' +
+      '  coordinates\n' +
+      '  street\n'+
+      ')';
+  let actualWithSubClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Street);
+  assertEquals($expectedWithSubClassOwner, $actualWithSubClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+}   
+
+function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::propertyTreeConversion::tesSubTypeOnRoot_accessFromBaseAndSubType_baseAndSingleSubTypeProperties():Boolean[1]
+{
+  let propertyTree= pTree('root', [
+                          pTree(Location, [pTreeN(Location,'coordinates')] ),
+                          pTree(Street,   [pTreeN(Street,'coordinates',Location), pTreeN(Street, 'street')] )
+                        ]);  
+
+  let  expectedWithBaseClassOwner =
+   'Location\n'+
+      '(\n' +
+      '  coordinates\n' +
+      '  ->SubType(Street)\n' +
+      '  (\n' +
+      '    coordinates\n' +
+      '    street\n' +
+      '  )\n'+
+      ')';
+  let actualWithBaseClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Location);
+  assertEquals($expectedWithBaseClassOwner, $actualWithBaseClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+
+  let  expectedWithSubClassOwner = 
+    'Street\n'+
+      '(\n' +
+      '  coordinates\n' +
+      '  street\n'+
+      ')';
+  let actualWithSubClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Street);
+  assertEquals($expectedWithSubClassOwner, $actualWithSubClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+}   
+
+function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::propertyTreeConversion::tesSubTypeOnRoot_accessFromBaseAndMultipleSubTypes_baseTypeProperties():Boolean[1]
+{
+  let propertyTree= pTree('root', [
+                      pTree(Location, [pTreeN(Location,'coordinates')] ),
+                      pTree(Street,   [pTreeN(Street,'coordinates',Location)] ),
+                      pTree(Road,     [pTreeN(Road,'coordinates',Location)] )
+                    ]); 
+
+  let  expectedWithBaseClassOwner = 
+  'Location\n'+
+      '(\n' +
+      '  coordinates\n' +
+      '  ->SubType(Road)\n' +
+      '  (\n' +
+      '    coordinates\n' +
+      '  )\n' +
+      '  ->SubType(Street)\n' +
+      '  (\n' +
+      '    coordinates\n' +
+      '  )\n'+
+      ')';
+  let actualWithBaseClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Location);
+  assertEquals($expectedWithBaseClassOwner, $actualWithBaseClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+
+
+  let  expectedWithSubClassOwner = 
+   'Street\n'+
+      '(\n' +
+      '  coordinates\n' +
+      ')';
+  let actualWithSubClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Street);
+  assertEquals($expectedWithSubClassOwner, $actualWithSubClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+}   
+
+function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::propertyTreeConversion::tesSubTypeOnRoot_accessFromBaseAndMultipleSubTypes_subTypeProperties():Boolean[1]
+{
+  let propertyTree= pTree('root', [
+                    pTree(Location, [pTreeN(Location,'coordinates')] ),
+                    pTree(Street,   [pTreeN(Street,'street')] ),
+                    pTree(Road,     [pTreeN(Road,'road')] )
+                  ]); 
+
+  let  expectedWithBaseClassOwner =
+   'Location\n'+
+      '(\n' +
+      '  coordinates\n' +
+      '  ->SubType(Road)\n' +
+      '  (\n' +
+      '    coordinates\n' +
+      '    road\n' +
+      '  )\n' +
+      '  ->SubType(Street)\n' +
+      '  (\n' +
+      '    coordinates\n' +
+      '    street\n' +
+      '  )\n'+
+      ')';
+  let actualWithBaseClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Location);
+  assertEquals($expectedWithBaseClassOwner, $actualWithBaseClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+
+   let expectedWithSubClassOwner = 
+  'Street\n'+
+      '(\n' +
+      '  coordinates\n' +
+      '  street\n'+
+      ')';
+  let actualWithSubClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Street);
+  assertEquals($expectedWithSubClassOwner, $actualWithSubClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+}   
+
+function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::propertyTreeConversion::tesSubTypeOnRoot_accessFromBaseAndMultipleSubTypes_baseAndSingleSubTypeProperties():Boolean[1]
+{
+  let propertyTree= pTree('root', [
+                          pTree(Location, [pTreeN(Location,'coordinates')]),
+                          pTree(Street,   [pTreeN(Street,'coordinates',Location), pTreeN(Street, 'street')]),
+                          pTree(Road,     [pTreeN(Road,'coordinates',Location),   pTreeN(Road,'road')])
+                        ]);  
+
+  let  expectedWithBaseClassOwner =
+   'Location\n'+
+      '(\n' +
+      '  coordinates\n' +
+      '  ->SubType(Road)\n' +
+      '  (\n' +
+      '    coordinates\n' +
+      '    road\n' +
+      '  )\n' +
+      '  ->SubType(Street)\n' +
+      '  (\n' +
+      '    coordinates\n' +
+      '    street\n' +
+      '  )\n'+
+      ')';
+  let actualWithBaseClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Location);
+  assertEquals($expectedWithBaseClassOwner, $actualWithBaseClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+
+  let  expectedWithSubClassOwner =
+    'Street\n'+
+      '(\n' +
+      '  coordinates\n' +
+      '  street\n'+
+      ')';
+  let actualWithSubClassOwner = $propertyTree->propertyTreeToGraphFetchTree(Street);
+  assertEquals($expectedWithSubClassOwner, $actualWithSubClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+}   
+
+
+###Pure
+import meta::pure::graphFetch::tests::utils::*;
+import meta::pure::graphFetch::*;
+import meta::pure::lineage::scanProperties::*;
+import meta::pure::lineage::scanProperties::propertyTree::*;
+import meta::pure::mapping::modelToModel::test::shared::src::*;
+
+function <<meta::pure::profiles::test.Test>> meta::pure::graphFetch::tests::propertyTreeConversion::tesSubTypeOnRoot_propertiesInSubTypeOnly_WithInheritedPropertiesViaAssociation():Boolean[1]
+{
+  let propertyTree= pTree('root', [
+                        pTree(_S_PersonA, 
+                            [
+                              pTreeN(_S_PersonA,'aName'),
+                              pTree(pNode(_S_PersonA,'address',_S_Person) , 
+                                  [ pTree( pNode(S_Person_Address, 'street'), []) ])
+                            ])
+                      ]);
+   
+  let actualWithBaseClassOwner = $propertyTree->propertyTreeToGraphFetchTree(_S_Person);
+  let expectedWithBaseClassOwner  = 
+      '_S_Person\n'+
+      '(\n' +
+      '  address\n' +
+      '  (\n'+
+      '    street\n'+
+      '  )\n'+
+      '  ->SubType(_S_PersonA)\n' +
+      '  (\n' +
+      '    aName\n' +
+      '    address\n' +
+      '    (\n'+
+      '      street\n'+
+      '    )\n'+
+      '  )\n' +
+      ')';
+  assertEquals($expectedWithBaseClassOwner, $actualWithBaseClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+
+  let actualWithSubClassOwner = $propertyTree->propertyTreeToGraphFetchTree(_S_PersonA);
+  let expectedWithSubClassOwner = 
+      '_S_PersonA\n'+ 
+      '(\n' +
+      '  aName\n' +
+      '  address\n' +
+      '  (\n'+
+      '    street\n'+
+      '  )\n'+
+      ')';
+  assertEquals($expectedWithSubClassOwner, $actualWithSubClassOwner->sortTree()->meta::pure::graphFetch::treeToString());
+
+}
+
+function meta::pure::graphFetch::tests::utils::pTreeN(clazz:Class<Any>[1], propertyName:String[1]):PropertyPathTree[1]
+{
+  pTree(pNode($clazz, $propertyName), []);
+}
+
+function meta::pure::graphFetch::tests::utils::pTreeN(clazz:Class<Any>[1], propertyName:String[1], propertyOwner: PropertyOwner[1]):PropertyPathTree[1]
+{
+  pTree(pNode($clazz, $propertyName, $propertyOwner), []);
+}
+
+function meta::pure::graphFetch::tests::utils::pTree(value:Any[1],  children:PropertyPathTree[*]):PropertyPathTree[1]
+{
+  let display = $value->match([
+    s:String[1] | $s,
+    c:Class<Any>[1] | $c.name->toOne(),
+    pn:PropertyPathNode[1] | $pn.property.name->toOne(),
+    a:Any[1] | $a->toString()
+  ]);
+
+   ^PropertyPathTree( 
+      display  = $display,
+      value    = $value,
+      children = $children
+   );
+}
+
+function meta::pure::graphFetch::tests::utils::pNode(clazz:Class<Any>[1], propertyName:String[1]):PropertyPathNode[1]
+{
+  pNode($clazz, $propertyName, $clazz);
+}
+
+function meta::pure::graphFetch::tests::utils::pNode(clazz:Class<Any>[1], propertyName:String[1], propertyOwner : PropertyOwner[1]):PropertyPathNode[1]
+{
+  let property = $propertyOwner->match([
+    c:Class<Any>[1] | $c->propertyByName($propertyName)->toOne(),
+    a:Association[1] | $a->propertyByName($propertyName)->toOne()
+  ]);
+
+  ^PropertyPathNode(class=$clazz, property=$property);
+}

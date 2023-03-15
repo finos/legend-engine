@@ -139,7 +139,7 @@ function <<test.Test>> meta::external::query::graphQL::generation::tests::testGe
     )
   );
   
-  assertEquals([
+  assertSameElements([
     'meta/external/query/graphQL/generation/tests/model/ClassWithCustomScalars.graphql',
     'meta/external/query/graphQL/generation/tests/model/Firm.graphql',
     'meta/external/query/graphQL/generation/tests/model/Person.graphql',
@@ -150,7 +150,7 @@ function <<test.Test>> meta::external::query::graphQL::generation::tests::testGe
   ], $res.fileName);
 
   let scalars = +'scalar BigDecimal\n'+'scalar Date\n'+'scalar DateTime';
-  assertEquals([classWithCustomScalars_graphql(), firm_graphql(), person_graphql(), query_graphql(), query2_graphql(), inctype_graphql(), $scalars], $res.content);
+  assertSameElements([classWithCustomScalars_graphql(), firm_graphql(), person_graphql(), query_graphql(), query2_graphql(), inctype_graphql(), $scalars], $res.content);
 }
 
 function <<test.Test>> meta::external::query::graphQL::generation::tests::testGenerateMultiple():Boolean[1]

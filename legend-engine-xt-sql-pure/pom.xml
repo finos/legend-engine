@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.1.1-SNAPSHOT</version>
+        <version>4.4.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -42,7 +42,8 @@
                         <repository>core_external_query_sql</repository>
                     </repositories>
                     <extraRepositories>
-                        <extraRepository>${project.basedir}/src/main/resources/core_external_query_sql.definition.json</extraRepository>
+                        <extraRepository>${project.basedir}/src/main/resources/core_external_query_sql.definition.json
+                        </extraRepository>
                     </extraRepositories>
                 </configuration>
                 <executions>
@@ -82,6 +83,11 @@
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-pure-runtime-compiler</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-relationalStore-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
@@ -134,6 +140,11 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-relationalStore-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-pure-runtime-compiler</artifactId>
                         <version>${project.version}</version>
                     </dependency>
@@ -174,10 +185,6 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-platform-dsl-mapping-java</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-platform-functions-java</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -189,6 +196,15 @@
             <artifactId>legend-engine-pure-runtime-compiler</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-pure</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-functions-java</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.eclipse.collections</groupId>
@@ -210,11 +226,11 @@
             <artifactId>legend-engine-xt-sql-grammar</artifactId>
             <scope>test</scope>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.engine</groupId>-->
-<!--            <artifactId>legend-engine-xt-sql-grammar</artifactId>-->
-<!--            <type>test-jar</type>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.finos.legend.engine</groupId>-->
+        <!--            <artifactId>legend-engine-xt-sql-grammar</artifactId>-->
+        <!--            <type>test-jar</type>-->
+        <!--        </dependency>-->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-language-pure-compiler</artifactId>
@@ -245,7 +261,6 @@
             <artifactId>legend-engine-xt-sql-compiler</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-sql-grammar-integration</artifactId>

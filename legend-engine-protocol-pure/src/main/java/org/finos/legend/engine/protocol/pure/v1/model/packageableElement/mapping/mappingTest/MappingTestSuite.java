@@ -21,5 +21,5 @@ import java.util.List;
 
 public class MappingTestSuite extends TestSuite
 {
-    public List<StoreTestData> storeTestDatas = Lists.mutable.empty();
+    public List<MappingStoreTestData> mappingStoreTestDatas = Lists.mutable.empty();
 }

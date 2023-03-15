@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.1.1-SNAPSHOT</version>
+        <version>4.4.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -42,7 +42,27 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-data-space-pure-metamodel</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-data-space-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-analytics-mapping-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-diagram-pure-metamodel</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-diagram-pure</artifactId>
         </dependency>
         <!-- PURE -->
 
@@ -61,24 +81,39 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-data-space-compiler</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-data-space-protocol</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-language-pure-dsl-generation</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-external-shared</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-analytics-mapping-protocol</artifactId>
+        </dependency>
         <!-- ENGINE -->
 
         <!-- JACKSON -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
         <!-- JACKSON -->
+
+        <!-- ECLIPSE COLLECTIONS -->
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections</artifactId>
+        </dependency>
+        <!-- ECLIPSE COLLECTIONS -->
 
         <!-- TEST -->
         <dependency>
@@ -105,6 +140,11 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-language-pure-compiler</artifactId>
             <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-data-space-compiler</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- TEST -->

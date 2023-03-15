@@ -25,9 +25,9 @@ Class meta::legend::service::metamodel::Service extends PackageableElement, meta
    multiExecutionKeyMustBePartOfPattern: if($this.execution->instanceOf(meta::legend::service::metamodel::PureMultiExecution) && $this.execution->cast(@meta::legend::service::metamodel::PureMultiExecution).executionParameters->isNotEmpty() ,|$this.pattern->contains('{'+ $this.execution->cast(@PureMultiExecution).executionKey+'}'),|true),
 
    executionAndTestTypesMatch: if($this.execution->instanceOf(meta::legend::service::metamodel::PureMultiExecution),
-                                  | assert($this.test->instanceOf(MultiExecutionTest),'Service with multiple executions requires a MultiExecution test'),
+                                  |assert($this.test->isEmpty() || ($this.test->isNotEmpty() && $this.test->toOne()->instanceOf(MultiExecutionTest)),'Service with multiple executions requires a MultiExecution test'),
                                   |if($this.execution->instanceOf(meta::legend::service::metamodel::PureSingleExecution),
-                                      |assert($this.test->instanceOf(SingleExecutionTest),'Service with a single execution requires a SingleExecution test'),
+                                      |assert($this.test->isEmpty() || ($this.test->isNotEmpty() && $this.test->toOne()->instanceOf(SingleExecutionTest)),'Service with a single execution requires a SingleExecution test'),
                                       |true)
                                   ),
 
@@ -42,7 +42,7 @@ Class meta::legend::service::metamodel::Service extends PackageableElement, meta
    tags: ServiceTag[*];
    postValidations: PostValidation<Any|*>[*];
 
-   <<doc.deprecated>> test: Test[1];
+   <<doc.deprecated>> test: Test[0..1];
 }
 
 Class meta::legend::service::metamodel::ServiceTag

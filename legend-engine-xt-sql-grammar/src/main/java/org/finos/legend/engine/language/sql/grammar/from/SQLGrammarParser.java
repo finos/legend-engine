@@ -129,6 +129,6 @@ public class SQLGrammarParser
 
     private Node visitStatement(SqlBaseParser.SingleStatementContext statement)
     {
-        return new SqlVisitor().visit(statement);
+        return new SqlVisitor().visitSingleStatement(statement);
     }
 }

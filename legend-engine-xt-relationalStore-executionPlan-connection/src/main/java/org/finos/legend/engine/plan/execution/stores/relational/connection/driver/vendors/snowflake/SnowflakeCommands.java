@@ -49,7 +49,7 @@ public class SnowflakeCommands extends RelationalDatabaseCommands
                 "CREATE TEMPORARY TABLE " + tableName + " " + columns.stream().map(c -> c.name + " " + c.type).collect(Collectors.joining(",", "(", ")")),
                 "CREATE OR REPLACE TEMPORARY STAGE " + tempStageName(),
                 "PUT file://" + optionalCSVFileLocation + " @" + tempStageName() + "/" + optionalCSVFileLocation + " PARALLEL = 16 AUTO_COMPRESS = TRUE",
-                "COPY INTO " + tableName + " FROM @" + tempStageName() + " file_format = (type = CSV field_optionally_enclosed_by= '\"')",
+                "COPY INTO " + tableName + " FROM @" + tempStageName() + "/" + optionalCSVFileLocation + " file_format = (type = CSV field_optionally_enclosed_by= '\"')",
                 "DROP STAGE " + tempStageName()
         );
         return strings;
