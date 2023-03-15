@@ -16,6 +16,10 @@ package org.finos.legend.engine.shared.core.kerberos;
 
 import javax.security.auth.Subject;
 import javax.security.auth.SubjectDomainCombiner;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.kerberos.KerberosPrincipal;
 import javax.security.auth.login.Configuration;
 import javax.security.auth.login.LoginContext;
@@ -67,6 +71,38 @@ public class SubjectTools
         {
             Configuration config = new SystemAccountLoginConfiguration(keytabLocation, principal, initiator);
             LoginContext loginContext = new LoginContext("", null, null, config);
+            loginContext.login();
+            return loginContext.getSubject();
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Subject getSubjectFromUsernamePassword(String username, char[] password)
+    {
+        try
+        {
+            Configuration config = new UsernamePasswordAccountLoginConfiguration(username);
+            LoginContext loginContext = new LoginContext("", null, new CallbackHandler()
+            {
+                @Override
+                public void handle(Callback[] callbacks) throws UnsupportedCallbackException
+                {
+                    for (Callback callback : callbacks)
+                    {
+                        if (callback instanceof PasswordCallback)
+                        {
+                            ((PasswordCallback) callback).setPassword(password);
+                        }
+                        else
+                        {
+                            throw new UnsupportedCallbackException(callback, "Unrecognised Callback");
+                        }
+                    }
+                }
+            }, config);
             loginContext.login();
             return loginContext.getSubject();
         }

@@ -17,20 +17,26 @@ package org.finos.legend.engine.postgres.auth;
 import org.finos.legend.engine.postgres.ConnectionProperties;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
-public interface AuthenticationMethod
+public class UsernamePasswordAuthenticationMethod implements AuthenticationMethod
 {
+    public static final String NAME = "PASSWORD";
 
-    /**
-     * @param userName the userName sent with the startup message
-     * @param passwd   the password in clear-text or null
-     * @return the user or null; null should be handled as if it's a "guest" user
-     * @throws RuntimeException if the authentication failed
-     */
+    private IdentityProvider identityProvider;
 
-    Identity authenticate(String userName, SecureString passwd, ConnectionProperties connProperties);
+    public UsernamePasswordAuthenticationMethod(IdentityProvider identityProvider)
+    {
+        this.identityProvider = identityProvider;
+    }
 
-    /**
-     * @return unique name of the authentication method
-     */
-    String name();
+    @Override
+    public Identity authenticate(String userName, SecureString passwd, ConnectionProperties connProperties)
+    {
+        return identityProvider.getIdentityForPassword(userName, passwd);
+    }
+
+    @Override
+    public String name()
+    {
+        return NAME;
+    }
 }

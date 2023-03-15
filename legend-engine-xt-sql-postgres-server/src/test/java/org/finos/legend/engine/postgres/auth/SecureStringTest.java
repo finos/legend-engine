@@ -12,23 +12,25 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package org.finos.legend.engine.postgres.types;
+package org.finos.legend.engine.postgres.auth;
 
-import java.nio.charset.StandardCharsets;
-import junit.framework.TestCase;
+import org.junit.Assert;
 import org.junit.Test;
 
-public class TimestampTypeTest extends TestCase
+public class SecureStringTest
 {
     @Test
-    public void testEncodeAsUTF8Text()
+    public void testAccessOpen()
     {
-        assertEquals("2023-02-20 00:00:00.000+00",
-                new String(TimestampType.INSTANCE.encodeAsUTF8Text(1676851200000L), StandardCharsets.UTF_8));
-        assertEquals("0667-01-01 00:00:00.000+00 BC",
-                new String(TimestampType.INSTANCE.encodeAsUTF8Text(-83184105600000L), StandardCharsets.UTF_8));
+        SecureString secureString = new SecureString(new char[] {'t', 'e', 's', 't'});
+        Assert.assertArrayEquals(secureString.getChars(), new char[] {'t', 'e', 's', 't'});
     }
 
-
-
+    @Test(expected = IllegalStateException.class)
+    public void testCloseString()
+    {
+        SecureString secureString = new SecureString(new char[] {'t', 'e', 's', 't'});
+        secureString.close();
+        secureString.getChars();
+    }
 }
