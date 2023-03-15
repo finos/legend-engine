@@ -268,7 +268,6 @@ public class JdbcHelper
                 String columnName = indexResult.getString(COLUMN_NAME);
                 boolean isIndexNonUnique = indexResult.getBoolean(NON_UNIQUE);
 
-                // todo: if approach okay, put the regex as database-dependent arguments
                 if (!indexName.matches(Pattern.compile("PRIMARY_KEY_[a-zA-Z0-9]+").pattern()))
                 {
                     if (indexName.matches(Pattern.compile("CONSTRAINT_INDEX_[a-zA-Z0-9]+").pattern()) && !isIndexNonUnique)
@@ -291,7 +290,12 @@ public class JdbcHelper
             List<Index> indices = new ArrayList<>();
             for (String indexName : indexMap.keySet())
             {
-                // todo: construct index after list of fields is changed to list of strings
+                Index index = Index.builder()
+                        .indexName(indexName)
+                        .addAllColumns(indexMap.get(indexName))
+                        .unique(!indexNonUniqueMap.get(indexName))
+                        .build();
+                indices.add(index);
             }
 
             // Get all columns
@@ -321,12 +325,12 @@ public class JdbcHelper
                 fields.add(field);
             }
 
-            // todo: columnStoreSpecification, shardSpecification
             SchemaDefinition schemaDefinition = SchemaDefinition.builder().addAllFields(fields).addAllIndexes(indices).build();
             return DatasetDefinition.builder().name(tableName).database(databaseName).group(schemaName).schema(schemaDefinition).build();
         }
         catch (SQLException e)
         {
+            LOGGER.error("Exception in Constructing dataset Schema from Database", e);
             throw new RuntimeException(e);
         }
     }

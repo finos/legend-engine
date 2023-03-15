@@ -78,7 +78,7 @@ public class SchemaEvolutionTest extends IngestModeTest
     @Test
     void testSnapshotMilestoningWithAddColumnAndUserProvidedSchemaEvolutionCapability()
     {
-        RelationalTransformer transformer = new RelationalTransformer(relationalSink, TransformOptions.builder().addOptimizers(new UpperCaseOptimizer()).build());
+        RelationalTransformer transformer = new RelationalTransformer(relationalSink, TransformOptions.builder().build());
 
         Dataset mainTable = DatasetDefinition.builder()
                 .database(mainDbName).name(mainTableName).alias(mainTableAlias)
@@ -101,7 +101,7 @@ public class SchemaEvolutionTest extends IngestModeTest
         // Use the planner utils to return the sql
         List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
 
-        Assertions.assertEquals(expectedSchemaEvolutionAddColumnWithUpperCase, sqlsForSchemaEvolution.get(0));
+        Assertions.assertEquals(expectedSchemaEvolutionAddColumn, sqlsForSchemaEvolution.get(0));
     }
 
     // Column missing in main table and add_column capability allowed with upper case optimizer enabled
@@ -311,9 +311,7 @@ public class SchemaEvolutionTest extends IngestModeTest
             SchemaEvolutionResult result = schemaEvolution.buildLogicalPlanForSchemaEvolution(mainTable, stagingTable);
             RelationalTransformer transformer = new RelationalTransformer(relationalSink);
             SqlPlan physicalPlanForSchemaEvolution = transformer.generatePhysicalPlan(result.logicalPlan());
-
-            List<String> sqlsForSchemaEvolution = physicalPlanForSchemaEvolution.getSqlList();
-            Assertions.assertEquals(expectedSchemaEvolutionModifyScale, sqlsForSchemaEvolution.get(0));
+            Assertions.fail("Exception was not thrown");
         }
         catch (IncompatibleSchemaChangeException e)
         {
