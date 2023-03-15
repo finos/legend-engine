@@ -158,7 +158,8 @@ public abstract class RelationalGeneratorAbstract
 
     GeneratorResult generateOperations(Datasets datasets, Resources resources)
     {
-        Datasets enrichedDatasets = deriveMainDatasetFromStaging(datasets, ingestMode());
+        Dataset enrichedMainDataset = deriveMainDatasetFromStaging(datasets, ingestMode());
+        Datasets enrichedDatasets = datasets.withMainDataset(enrichedMainDataset);
         Planner planner = Planners.get(enrichedDatasets, ingestMode(), plannerOptions());
         return generateOperations(enrichedDatasets, resources, planner);
     }
@@ -231,16 +232,14 @@ public abstract class RelationalGeneratorAbstract
             .build();
     }
 
-    public Datasets deriveMainDatasetFromStaging(Datasets datasets, IngestMode ingestMode)
+    public Dataset deriveMainDatasetFromStaging(Datasets datasets, IngestMode ingestMode)
     {
-        Datasets enrichedDatasets = datasets;
         Dataset mainDataset = datasets.mainDataset();
         List<Field> mainDatasetFields = mainDataset.schema().fields();
         if (mainDatasetFields == null || mainDatasetFields.isEmpty())
         {
-            Dataset derivedMainDataset = ingestMode.accept(new DeriveMainDatasetSchemaFromStaging(datasets.mainDataset(), datasets.stagingDataset()));
-            enrichedDatasets = datasets.withMainDataset(derivedMainDataset);
+            mainDataset = ingestMode.accept(new DeriveMainDatasetSchemaFromStaging(datasets.mainDataset(), datasets.stagingDataset()));
         }
-        return enrichedDatasets;
+        return mainDataset;
     }
 }

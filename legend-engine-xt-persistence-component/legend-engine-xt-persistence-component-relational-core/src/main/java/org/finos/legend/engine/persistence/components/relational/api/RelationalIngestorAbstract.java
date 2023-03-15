@@ -208,14 +208,11 @@ public abstract class RelationalIngestorAbstract
         boolean mainDatasetExists = executor.datasetExists(updatedDatasets.mainDataset());
         if (mainDatasetExists)
         {
-            String tableName = updatedDatasets.mainDataset().datasetReference().name().orElseThrow(IllegalStateException::new);
-            String schemaName = updatedDatasets.mainDataset().datasetReference().group().orElse(null);
-            String databaseName = updatedDatasets.mainDataset().datasetReference().database().orElse(null);
-            updatedDatasets = updatedDatasets.withMainDataset(constructDatasetFromDatabase(executor, tableName, schemaName, databaseName));
+            updatedDatasets = updatedDatasets.withMainDataset(constructDatasetFromDatabase(executor, updatedDatasets.mainDataset()));
         }
         else
         {
-            updatedDatasets = generator.deriveMainDatasetFromStaging(updatedDatasets, ingestMode());
+            updatedDatasets = updatedDatasets.withMainDataset(generator.deriveMainDatasetFromStaging(updatedDatasets, ingestMode()));
         }
 
         Planner planner = Planners.get(updatedDatasets, ingestMode(), plannerOptions());
@@ -357,13 +354,11 @@ public abstract class RelationalIngestorAbstract
         return !value.equals(TABLE_IS_NON_EMPTY);
     }
 
-    private void validateMainDatasetSchema(Dataset dataset, Executor<SqlGen, TabularData, SqlPlan> executor)
+    private Dataset constructDatasetFromDatabase(Executor<SqlGen, TabularData, SqlPlan> executor, Dataset dataset)
     {
-        executor.validateMainDatasetSchema(dataset);
-    }
-
-    private Dataset constructDatasetFromDatabase(Executor<SqlGen, TabularData, SqlPlan> executor, String tableName, String schemaName, String databaseName)
-    {
+        String tableName = dataset.datasetReference().name().orElseThrow(IllegalStateException::new);
+        String schemaName = dataset.datasetReference().group().orElse(null);
+        String databaseName = dataset.datasetReference().database().orElse(null);
         return executor.constructDatasetFromDatabase(tableName, schemaName, databaseName);
     }
 
