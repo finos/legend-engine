@@ -50,7 +50,8 @@ public class MongoDBStoreConnectionProvider extends ConnectionProvider<MongoClie
         UserPasswordAuthenticationSpecification userPasswordAuthSpec = (UserPasswordAuthenticationSpecification) authenticationSpec;
 
 
-        Credential credential = super.makeCredential(userPasswordAuthSpec, identity);
+        //Credential credential = super.makeCredential(userPasswordAuthSpec, identity);
+        Credential credential = new PlaintextUserPasswordCredential("mongo", "mongo");
 
         if (!(credential instanceof PlaintextUserPasswordCredential))
         {

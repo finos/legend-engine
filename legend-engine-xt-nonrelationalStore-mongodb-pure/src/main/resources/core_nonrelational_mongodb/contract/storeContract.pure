@@ -39,7 +39,7 @@ function meta::external::store::mongodb::contract::mongoDBStoreContract(): Store
   (
     id = 'mongoDBStore',
     planExecution =  meta::external::store::mongodb::contract::planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_,
-    // planGraphFetchExecution = meta::external::store::mongodb::contract::planGraphFetchExecution_StoreMappingLocalGraphFetchExecutionNodeGenerationInput_1__LocalGraphFetchExecutionNode_1_,
+    planGraphFetchExecution = meta::external::store::mongodb::contract::planGraphFetchExecution_StoreMappingLocalGraphFetchExecutionNodeGenerationInput_1__LocalGraphFetchExecutionNode_1_,
     supportsStore = s:Store[1]|$s->instanceOf(meta::external::store::mongodb::metamodel::pure::MongoDatabase),
     supportsNativeJoinAmongElements = false,
     supportsSetImplementation = s:SetImplementation[1]| $s->instanceOf(MongoDBSetImplementation) ||
@@ -53,23 +53,31 @@ function meta::external::store::mongodb::contract::planExecution(sq:meta::pure::
 {
     let store = $sq.store->cast(@MongoDatabase);
     let fe = $sq.fe->evaluateAndDeactivate();
-    let connections = $runtime.connections->filter(c | $c->instanceOf(MongoDBConnection));
-    let storeRuntime = if($connections->size() <= 1,
-                             | $runtime->toOne(),
-                             | let oldRuntime = $runtime->toOne();
-                               let dbConn = $oldRuntime->connectionByElement($store)->cast(@MongoDBConnection);
-                               ^$oldRuntime(connections = $dbConn);
-                          );
 
-    let databaseCommand = $sq.fe->toDatabaseCommand($m->toOne(), $sq.inScopeVars, $debug, $extensions)->cast(@DatabaseCommand);
+    if($fe.func->in([meta::pure::graphFetch::execution::graphFetchFunctions()]),
+      |
+        // Graph Fetch Flow
+        $sq->meta::pure::graphFetch::executionPlan::planGraphFetchExecution($ext, $m->toOne(), $runtime->toOne(), $exeCtx, $extensions, $debug);,
+      |
+        // Normal Flow
+        let connections = $runtime.connections->filter(c | $c->instanceOf(MongoDBConnection));
+        let storeRuntime = if($connections->size() <= 1,
+                                | $runtime->toOne(),
+                                | let oldRuntime = $runtime->toOne();
+                                  let dbConn = $oldRuntime->connectionByElement($store)->cast(@MongoDBConnection);
+                                  ^$oldRuntime(connections = $dbConn);
+                              );
 
-    let connection = $runtime->toOne()->connectionByElement($store)->cast(@MongoDBConnection);
+        let databaseCommand = $sq.fe->toDatabaseCommand($m->toOne(), $sq.inScopeVars, $debug, $extensions)->cast(@DatabaseCommand);
 
-    ^MongoDBExecutionNode(
-        resultType = ^meta::pure::executionPlan::ResultType(type = Any),
-        databaseCommand = $databaseCommand,
-        connection = $connection
-      );
+        let connection = $runtime->toOne()->connectionByElement($store)->cast(@MongoDBConnection);
+
+        ^MongoDBExecutionNode(
+            resultType = ^meta::pure::executionPlan::ResultType(type = Any),
+            databaseCommand = $databaseCommand,
+            connection = $connection
+          );
+    );
 }
 
 function meta::external::store::mongodb::contract::getStore(r:InstanceSetImplementation[1]):Store[1]
@@ -85,10 +93,10 @@ function meta::external::store::mongodb::contract::getStore(r:InstanceSetImpleme
 
 function meta::external::store::mongodb::contract::supports(f:FunctionExpression[1]):Boolean[1]
 {
-  !findSupportedFunction($f, getSupportedFunctions())->isEmpty()
+  !findSupportedFunction($f, getSupportedFunctions())->isEmpty();
 }
 
-// function meta::external::store::mongodb::contract::planGraphFetchExecution(input: StoreMappingLocalGraphFetchExecutionNodeGenerationInput[1]): LocalGraphFetchExecutionNode[1]
-// {
-//   meta::external::store::mongodb::graphFetch::executionPlan::planRootGraphFetchExecutionMongoDb($input.storeQuery, $input.ext, $input.clusteredTree, $input.orderedPaths, $input.mapping, $input.runtime, $input.exeCtx, $input.enableConstraints, $input.checked, $input.extensions, $input.debug)
-// }
+function meta::external::store::mongodb::contract::planGraphFetchExecution(input: StoreMappingLocalGraphFetchExecutionNodeGenerationInput[1]): LocalGraphFetchExecutionNode[1]
+{
+  meta::external::store::mongodb::graphFetch::executionPlan::planRootGraphFetchExecutionMongoDb($input.storeQuery, $input.ext, $input.clusteredTree, $input.orderedPaths, $input.mapping, $input.runtime, $input.exeCtx, $input.enableConstraints, $input.checked, $input.extensions, $input.debug)
+}

@@ -28,9 +28,6 @@ import meta::external::store::mongodb::metamodel::*;
 import meta::external::store::mongodb::metamodel::mapping::*;
 import meta::external::store::mongodb::metamodel::aggregation::*;
 import meta::external::store::mongodb::functions::pureToDatabaseCommand::*;
-//import meta::external::store::mongodb::extension::databaseCommandToString::*;
-//import meta::external::store::mongodb::functions::pureToDatabaseCommand::metamodel::*;
-//import meta::external::store::mongodb::metamodel::mapping::functions::*;
 
 Class meta::external::store::mongodb::functions::pureToDatabaseCommand::MongoDBExecutionContext extends ExecutionContext
 {
@@ -49,8 +46,6 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::toDat
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::processFunctionExpression(f:FunctionExpression[1], databaseCommand:DatabaseCommand[1], mapping:Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]):MongoDBOperationElement[1]
 {
    let res  = $f.func->match ([
-      //p:Property<Nil,Any|*>[1] | ^$databaseCommand(processingParam = $f->findAndReplacePropertyPathsInValueSpecification([]).second.values->toOne()),
-      //q:QualifiedProperty<Any>[1] | ^$databaseCommand(processingParam = $f->findAndReplacePropertyPathsInValueSpecification([]).second.values->toOne()),
       a:Any[1]| processFunction($f, $databaseCommand, $mapping, $inScopeVars, $debug)
    ]);
 
@@ -83,7 +78,7 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::getFieldPathForPropertyNameAndMapping(propertyName: String[1], mapping: Mapping[1]): String[1]
 {
   let mongoDbPropertyMapping = $mapping.classMappings->cast(@MongoDBSetImplementation).propertyMappings->filter(x | $x.property.name == $propertyName)->toOne();
-  $mongoDbPropertyMapping->cast(@MongoDBPropertyMapping).field.argumentExpression->cast(@FieldPathExpression).fieldPath;
+  '$' + $mongoDbPropertyMapping->cast(@MongoDBPropertyMapping).field.argumentExpression->cast(@FieldPathExpression).fieldPath;
 }
 
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::processInstanceValue(i: InstanceValue[1], databaseCommand: DatabaseCommand[1], mapping: Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]): MongoDBOperationElement[1]
@@ -105,7 +100,6 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
                  r:FunctionRoutedValueSpecification[1]     | $r.value->processValueSpecification($databaseCommand, $mapping, $inScopeVars, $debug),
                  f:FunctionExpression[1]                   | $f->processFunctionExpression($databaseCommand, $mapping, $inScopeVars, $debug),
                  i:InstanceValue[1]                        | $i->processInstanceValue($databaseCommand, $mapping, $inScopeVars, $debug)
-                 //v:VariableExpression[1]                   | $v->processVariableExpression($databaseCommand, $mapping, $inScopeVars, $debug)
              ]);
 }
 
@@ -121,8 +115,8 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
     |
       let leftSideExpression = $leftSide.aggregationPipeline.stages->filter(x | $x->instanceOf(MatchStage))->toOne()->cast(@MatchStage).expression->cast(@ExprQueryExpression).expression;
       let matchExpression = $leftSideExpression->match([
-        c: ComparisonOperatorExpression[1]      | ^AndOperatorExpression(expressions=[$leftSideExpression, $rightSide])
-        // TODO: look into if it needs to handle a logicalOperatorExpression here, for when having two separate filter lambdas with logical operators
+        c: ComparisonOperatorExpression[1] | ^AndOperatorExpression(expressions=[$leftSideExpression, $rightSide]),
+        l: LogicalOperatorExpression[1]    | ^AndOperatorExpression(expressions=[$leftSideExpression, $rightSide])
       ]);
       ^MatchStage(expression=^ExprQueryExpression(expression=$matchExpression));,
     | ^MatchStage(expression=^ExprQueryExpression(expression=$rightSide))
@@ -139,28 +133,23 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
 
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::processAnd(functionExpression: FunctionExpression[1], databaseCommand: DatabaseCommand [1], mapping: Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]): AndOperatorExpression[1]
 {
-  let leftSide = processValueSpecification($functionExpression.parametersValues->at(0), $databaseCommand, $mapping, $inScopeVars, $debug)->cast(@ComparisonOperatorExpression);
+  let leftSide = processValueSpecification($functionExpression.parametersValues->at(0), $databaseCommand, $mapping, $inScopeVars, $debug)->match([
+    c: ComparisonOperatorExpression[1] | $c,
+    l: LogicalOperatorExpression[1]    | $l
+  ]);
   let rightSide = processValueSpecification($functionExpression.parametersValues->at(1), $databaseCommand, $mapping, $inScopeVars, $debug)->cast(@ComparisonOperatorExpression);
   ^AndOperatorExpression(expressions=[$leftSide, $rightSide]);
 }
 
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::processOr(functionExpression: FunctionExpression[1], databaseCommand: DatabaseCommand [1], mapping: Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]): OrOperatorExpression[1]
 {
-  let leftSide = processValueSpecification($functionExpression.parametersValues->at(0), $databaseCommand, $mapping, $inScopeVars, $debug)->match([
-    obj: ObjectExpression[1]      | $obj,
-    and: AndOperatorExpression[1] | $and,
-    or:  OrOperatorExpression[1]  | $or
-  ]);
-
+  let leftSide = processValueSpecification($functionExpression.parametersValues->at(0), $databaseCommand, $mapping, $inScopeVars, $debug)->cast(@ComparisonOperatorExpression);
   let rightSide = processValueSpecification($functionExpression.parametersValues->at(1), $databaseCommand, $mapping, $inScopeVars, $debug)->match([
-    obj: ObjectExpression[1]      | $obj,
-    and: AndOperatorExpression[1] | $and,
-    or:  OrOperatorExpression[1]  | $or
+    c: ComparisonOperatorExpression[1] | $c,
+    l: LogicalOperatorExpression[1]    | $l
   ]);
-
   ^OrOperatorExpression(expressions=[$leftSide, $rightSide]);
 }
-
 
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::processGetAll(functionExpression: FunctionExpression[1], databaseCommand: DatabaseCommand [1], mapping: Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]): DatabaseCommand[1]
 {
@@ -180,9 +169,14 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::getPr
   ^ObjectQueryExpression(keyValues=$keyValues);
 }
 
+function meta::external::store::mongodb::functions::pureToDatabaseCommand::processNoOp(functionExpression: FunctionExpression[1], databaseCommand: DatabaseCommand [1], mapping: Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]): MongoDBOperationElement[1]
+{
+  ^MongoDBOperationElement();
+}
+
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::findSupportedFunction(fe:FunctionExpression[1], supportedFunctions:Map<meta::pure::metamodel::function::Function<Any>,meta::pure::metamodel::function::Function<{FunctionExpression[1], DatabaseCommand[1], Mapping[1], Map<String, List<Any>>[1], DebugContext[1]->MongoDBOperationElement[1]}>>[1]):meta::pure::metamodel::function::Function<{FunctionExpression[1], DatabaseCommand[1], Mapping[1], Map<String, List<Any>>[1], DebugContext[1]->MongoDBOperationElement[1]}>[0..1]
 {
-   $supportedFunctions->get($fe.func)
+   $supportedFunctions->get($fe.func);
 }
 
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::getSupportedFunctions():Map<meta::pure::metamodel::function::Function<Any>,meta::pure::metamodel::function::Function<{FunctionExpression[1], DatabaseCommand[1], Mapping[1], Map<String, List<Any>>[1], DebugContext[1]->MongoDBOperationElement[1]}>>[1]
@@ -193,16 +187,8 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::getSu
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::collection::filter_T_MANY__Function_1__T_MANY_, second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processFilter_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__DatabaseCommand_1_),
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::collection::getAll_Class_1__T_MANY_, second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processGetAll_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__DatabaseCommand_1_),
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_, second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processAnd_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__AndOperatorExpression_1_),
-      ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::or_Boolean_1__Boolean_1__Boolean_1_, second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processOr_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__OrOperatorExpression_1_)
+      ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::or_Boolean_1__Boolean_1__Boolean_1_, second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processOr_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__OrOperatorExpression_1_),
+      ^PureFunctionToMongoDBFunctionPair(first=meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_, second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processNoOp_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__MongoDBOperationElement_1_),
+      ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::collection::map_T_MANY__Function_1__V_MANY_, second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processNoOp_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__MongoDBOperationElement_1_)
    ])
 }
-
-
-//
-// let extraSerializers = [
-// { a: MongoDBOperationElement[1], s: meta::json::JSONState[1] |
-//  let elem = meta::json::anyToJSON($a, $s, 1000, $config)->cast(@meta::json::JSONObject);
-//  ^$elem(keyValuePairs += meta::json::newJSONKeyValue('_type', ^meta::json::JSONString(value = $a->class().name->toLowerFirstCharacter()->toOne())));
-//  }
-//  ];
-//  println(meta::json::toJSON($p, $extraSerializers, 1000, $config);

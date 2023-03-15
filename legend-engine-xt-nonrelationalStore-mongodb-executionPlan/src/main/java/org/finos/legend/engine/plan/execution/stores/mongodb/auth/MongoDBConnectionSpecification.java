@@ -20,6 +20,7 @@ import org.finos.legend.connection.ConnectionSpecification;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.runtime.MongoDBDatasourceSpecification;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MongoDBConnectionSpecification extends ConnectionSpecification
 {
@@ -33,7 +34,7 @@ public class MongoDBConnectionSpecification extends ConnectionSpecification
 
     public List<ServerAddress> getServerAddresses()
     {
-        return Lists.mutable.empty();
+        return this.mongoDBDataSourceSpec.serverURLs.stream().map(x -> new ServerAddress(x.baseUrl, (int) x.port)).collect(Collectors.toList());
     }
 
     public String getDatabaseName()
