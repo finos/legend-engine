@@ -65,7 +65,9 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
                 "    }\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
-                "}\n", "PARSER error at [2:1-11:1]: Field 'name' is required");
+                "}\n", "PARSER error at [5:5-8:5]: Field 'name' is required");
+
+        // Execution Context
         test("###DataSpace\n" +
                 "DataSpace model::dataSpace" +
                 "{\n" +
@@ -77,7 +79,7 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
                 "    }\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
-                "}\n", "PARSER error at [2:1-11:1]: Field 'mapping' is required");
+                "}\n", "PARSER error at [5:5-8:5]: Field 'mapping' is required");
         test("###DataSpace\n" +
                 "DataSpace model::dataSpace" +
                 "{\n" +
@@ -89,7 +91,9 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
                 "    }\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
-                "}\n", "PARSER error at [2:1-11:1]: Field 'defaultRuntime' is required");
+                "}\n", "PARSER error at [5:5-8:5]: Field 'defaultRuntime' is required");
+
+        // Support
         test("###DataSpace\n" +
                 "DataSpace model::dataSpace" +
                 "{\n" +
@@ -135,90 +139,6 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
                 "      defaultRuntime: model::Runtime;\n" +
                 "    }\n" +
                 "  ];\n" +
-                "  executionContexts:\n" +
-                "  [\n" +
-                "    {\n" +
-                "      name: 'Context 1';\n" +
-                "      mapping: model::String;\n" +
-                "      defaultRuntime: model::Runtime;\n" +
-                "    }\n" +
-                "  ];\n" +
-                "  defaultExecutionContext: 'Context 1';\n" +
-                "}\n", "PARSER error at [2:1-21:1]: Field 'executionContexts' should be specified only once");
-        test("###DataSpace\n" +
-                "DataSpace model::dataSpace\n" +
-                "{\n" +
-                "  executionContexts:\n" +
-                "  [\n" +
-                "    {\n" +
-                "      name: 'Context 1';\n" +
-                "      mapping: model::String;\n" +
-                "      defaultRuntime: model::Runtime;\n" +
-                "    }\n" +
-                "  ];\n" +
-                "  executionContexts:\n" +
-                "  [\n" +
-                "    {\n" +
-                "      name: 'Context 1';\n" +
-                "      mapping: model::String;\n" +
-                "      defaultRuntime: model::Runtime;\n" +
-                "    }\n" +
-                "  ];\n" +
-                "  defaultExecutionContext: 'Context 1';\n" +
-                "}\n", "PARSER error at [2:1-21:1]: Field 'executionContexts' should be specified only once");
-        test("###DataSpace\n" +
-                "DataSpace model::dataSpace\n" +
-                "{\n" +
-                "  executionContexts:\n" +
-                "  [\n" +
-                "    {\n" +
-                "      name: 'Context 1';\n" +
-                "      name: 'Context 1';\n" +
-                "      mapping: model::String;\n" +
-                "      defaultRuntime: model::Runtime;\n" +
-                "    }\n" +
-                "  ];\n" +
-                "  defaultExecutionContext: 'Context 1';\n" +
-                "}\n", "PARSER error at [2:1-14:1]: Field 'name' should be specified only once");
-        test("###DataSpace\n" +
-                "DataSpace model::dataSpace\n" +
-                "{\n" +
-                "  executionContexts:\n" +
-                "  [\n" +
-                "    {\n" +
-                "      name: 'Context 1';\n" +
-                "      mapping: model::String;\n" +
-                "      mapping: model::String;\n" +
-                "      defaultRuntime: model::Runtime;\n" +
-                "    }\n" +
-                "  ];\n" +
-                "  defaultExecutionContext: 'Context 1';\n" +
-                "}\n", "PARSER error at [2:1-14:1]: Field 'mapping' should be specified only once");
-        test("###DataSpace\n" +
-                "DataSpace model::dataSpace\n" +
-                "{\n" +
-                "  executionContexts:\n" +
-                "  [\n" +
-                "    {\n" +
-                "      name: 'Context 1';\n" +
-                "      mapping: model::String;\n" +
-                "      defaultRuntime: model::Runtime;\n" +
-                "      defaultRuntime: model::Runtime;\n" +
-                "    }\n" +
-                "  ];\n" +
-                "  defaultExecutionContext: 'Context 1';\n" +
-                "}\n", "PARSER error at [2:1-14:1]: Field 'defaultRuntime' should be specified only once");
-        test("###DataSpace\n" +
-                "DataSpace model::dataSpace\n" +
-                "{\n" +
-                "  executionContexts:\n" +
-                "  [\n" +
-                "    {\n" +
-                "      name: 'Context 1';\n" +
-                "      mapping: model::String;\n" +
-                "      defaultRuntime: model::Runtime;\n" +
-                "    }\n" +
-                "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
                 "  title: 'some title';\n" +
                 "  title: 'some title';\n" +
@@ -253,6 +173,109 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
                 "  featuredDiagrams:[model::Diagram];\n" +
                 "  featuredDiagrams:[model::Diagram];\n" +
                 "}\n", "PARSER error at [2:1-15:1]: Field 'featuredDiagrams' should be specified only once");
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  elements:[model::MyClass];\n" +
+                "  elements:[model::MyClass];\n" +
+                "}\n", "PARSER error at [2:1-15:1]: Field 'elements' should be specified only once");
+
+        // Execution Context
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "}\n", "PARSER error at [2:1-21:1]: Field 'executionContexts' should be specified only once");
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "}\n", "PARSER error at [2:1-21:1]: Field 'executionContexts' should be specified only once");
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "}\n", "PARSER error at [6:5-11:5]: Field 'name' should be specified only once");
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::String;\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "}\n", "PARSER error at [6:5-11:5]: Field 'mapping' should be specified only once");
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "}\n", "PARSER error at [6:5-11:5]: Field 'defaultRuntime' should be specified only once");
+
+        // Support Info
         test("###DataSpace\n" +
                 "DataSpace model::dataSpace\n" +
                 "{\n" +

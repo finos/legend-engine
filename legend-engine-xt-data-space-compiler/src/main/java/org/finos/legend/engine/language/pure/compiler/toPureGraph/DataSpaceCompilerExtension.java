@@ -36,8 +36,13 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSp
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_TaggedValue_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration;
 
 import java.util.Collections;
+import java.util.Objects;
 
 public class DataSpaceCompilerExtension implements CompilerExtension
 {
@@ -97,6 +102,17 @@ public class DataSpaceCompilerExtension implements CompilerExtension
                     metamodel._title(dataSpace.title);
                     metamodel._description(dataSpace.description);
                     metamodel._featuredDiagrams(dataSpace.featuredDiagrams != null ? ListIterate.collect(dataSpace.featuredDiagrams, item -> HelperDiagramBuilder.resolveDiagram(item.path, item.sourceInformation, context)) : null);
+
+                    // elements
+                    metamodel._elements(dataSpace.elements != null ? ListIterate.collect(dataSpace.elements, el ->
+                    {
+                        PackageableElement element = context.pureModel.getPackageableElement(el.path, el.sourceInformation);
+                        if (element instanceof Class || element instanceof Enumeration || element instanceof Association)
+                        {
+                            return element;
+                        }
+                        throw new EngineException("Element is not of supported types (only classes, enumerations, and associations are supported)", el.sourceInformation, EngineErrorType.COMPILATION);
+                    }).select(Objects::nonNull) : null);
 
                     // support
                     if (dataSpace.supportInfo != null)

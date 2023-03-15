@@ -19,7 +19,7 @@
     <parent>
         <artifactId>legend-engine</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.3.3-SNAPSHOT</version>
+        <version>4.4.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -43,8 +43,9 @@
                         <repository>platform_store_relational</repository>
                         <repository>core</repository>
                         <repository>core_relational</repository>
-                        <repository>core_data_space</repository>
+                        <repository>core_data_space_metamodel</repository>
                         <repository>core_diagram</repository>
+                        <repository>core_diagram_metamodel</repository>
                         <repository>core_analytics_lineage</repository>
                         <repository>core_analytics_mapping</repository>
                         <repository>core_analytics_search</repository>
@@ -100,7 +101,12 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-data-space-pure</artifactId>
+                        <artifactId>legend-engine-xt-data-space-pure-metamodel</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-diagram-pure-metamodel</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -188,6 +194,16 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-data-space-pure-metamodel</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-diagram-pure-metamodel</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-xt-diagram-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
@@ -245,7 +261,11 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-data-space-pure</artifactId>
+            <artifactId>legend-engine-xt-data-space-pure-metamodel</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-diagram-pure-metamodel</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
