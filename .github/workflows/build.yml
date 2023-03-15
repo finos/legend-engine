@@ -19,7 +19,6 @@ env:
   CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-  MAVEN_OPTS: -Xmx4g
 
 on: [push, pull_request]
 
@@ -70,16 +69,24 @@ jobs:
 
       - name: Build + Test
         if: (github.repository != 'finos/legend-engine') || (github.ref != 'refs/heads/master')
-        run: mvn -B -e install -DargLine="-Xmx3g"
+        run: |
+          mvn -B -e -DXss4m -DXX:MaxRAMPercentage=90.0 -DskipTests=true install
+          mvn -B -e -DXss4m -DXX:MaxRAMPercentage=10.0 surefire:test -DargLine="-XX:MaxRAMPercentage=80.0"
 
       - name: Build + Test + Maven Deploy + Sonar + Docker Snapshot
         if: (github.repository == 'finos/legend-engine') && (github.ref == 'refs/heads/master')
         env:
           DOCKER_USERNAME: finos
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        # NOTE: here we publish snapshot to a staging Maven registry
+        # some registry like Maven Central requires javadoc, but for now we
+        # don't need to, if we do, call javadoc:jar goal instead of javadoc:javadoc
+        # as the latter binds to generate-sources which runs before compile phase
+        # and can cause problem with some code generators
+        # See https://github.com/finos/legend-engine/pull/924
         run: |
-          mvn -B -e install -DskipTests=true
-          mvn -B -e javadoc:javadoc deploy -DargLine="-Xmx3g" -P docker-snapshot
+          mvn -B -e -DXss4m -DXX:MaxRAMPercentage=90.0 -DskipTests=true deploy -P docker-snapshot
+          mvn -B -e -DXss4m -DXX:MaxRAMPercentage=10.0 surefire:test -DargLine="-XX:MaxRAMPercentage=80.0"
 
       - name: Upload Test Results
         if: always()

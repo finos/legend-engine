@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.4.1-SNAPSHOT</version>
+    <version>4.4.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -41,8 +41,6 @@
         <module>legend-engine-xt-authentication-implementation-vault-aws</module>
         <module>legend-engine-xt-authentication-implementation-gcp-federation</module>
         <module>legend-engine-xt-authentication-experimental</module>
-
-        <module>legend-engine-test-reports</module>
 
         <module>legend-engine-xt-graphQL-grammar</module>
         <module>legend-engine-xt-graphQL-grammar-integration</module>
@@ -227,11 +225,6 @@
         <module>legend-engine-shared-javaCompiler</module>
         <module>legend-engine-services-model</module>
         <module>legend-engine-services-model-api</module>
-        <module>legend-engine-server</module>
-        <module>legend-engine-test-server-shared</module>
-        <module>legend-engine-server-integration-tests</module>
-        <module>legend-engine-extensions-collection-execution</module>
-        <module>legend-engine-extensions-collection-generation</module>
         <module>legend-engine-testable</module>
         <module>legend-engine-executionPlan-execution-authorizer</module>
         <module>legend-engine-xt-relationalStore-executionPlan-authorizer</module>
@@ -260,6 +253,15 @@
         <module>legend-engine-xt-nonrelationalStore-mongodb-grammar</module>
         <module>legend-engine-xt-nonrelationalStore-mongodb-protocol</module>
         <module>legend-engine-xt-nonrelationalStore-mongodb-grammar-integration</module>
+
+        <!-- NOTE: Do not change the ordering of this block, we want to build these modules last -->
+        <module>legend-engine-test-reports</module>
+        <module>legend-engine-server</module>
+        <module>legend-engine-test-server-shared</module>
+        <module>legend-engine-server-integration-tests</module>
+        <module>legend-engine-extensions-collection-execution</module>
+        <module>legend-engine-extensions-collection-generation</module>
+        <!-- NOTE: Do not change the ordering of this block, we want to build these modules last -->
     </modules>
 
     <properties>
@@ -289,7 +291,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.release>8</maven.compiler.release>
         <maven.enforcer.requireJavaVersion>[11.0.10,12)</maven.enforcer.requireJavaVersion>
-        <surefire.vm.params>-Xmx2000m -Xms1g -XX:MaxPermSize=1024m -XX:SoftRefLRUPolicyMSPerMB=1</surefire.vm.params>
+        <surefire.vm.params>-XX:SoftRefLRUPolicyMSPerMB=1</surefire.vm.params>
 
         <!-- Databases -->
         <hikaricp.version>4.0.3</hikaricp.version>
