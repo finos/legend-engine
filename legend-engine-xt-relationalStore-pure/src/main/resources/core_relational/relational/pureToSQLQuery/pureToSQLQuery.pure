@@ -1515,7 +1515,17 @@ function meta::relational::functions::pureToSqlQuery::findUnionPropertyMapping(u
    let allSourceSetImplementationIds = $setImpl->cast(@PropertyMappingsImplementation)->allPropertyMappings().sourceSetImplementationId->distinct();
    if ($setImpl->instanceOf(EmbeddedRelationalInstanceSetImplementation),
        | $setImpl->cast(@EmbeddedRelationalInstanceSetImplementation)->_propertyMappingsByPropertyName($property.name->toOne())->filter(r|$r->instanceOf(RelationalPropertyMapping))->cast(@RelationalPropertyMapping),
-       | $relationalPropertyMappings->filter(r|$state.mapping->classMappingById($r.sourceSetImplementationId)->match([r:RootRelationalInstanceSetImplementation[1]|$r,e:EmbeddedRelationalInstanceSetImplementation[1]|$e.setMappingOwner])->cast(@InstanceSetImplementation).id->in($allSourceSetImplementationIds))
+       | let propMappings = $relationalPropertyMappings->filter(r|$state.mapping->classMappingById($r.sourceSetImplementationId)->match([r:RootRelationalInstanceSetImplementation[1]|$r,e:EmbeddedRelationalInstanceSetImplementation[1]|$e.setMappingOwner])->cast(@InstanceSetImplementation).id->in($allSourceSetImplementationIds));
+         // Filtering overriden property mappings
+         let propertyMappingToSuperSetIdsMap = $propMappings->map({pm |
+            let pmSourceSetId = $pm.sourceSetImplementationId;
+            pair($pm, list($state.mapping->allSuperSetImplementationIds($pmSourceSetId)->remove($pmSourceSetId)));
+         })->newMap();
+         $propMappings->filter({pm |
+            let pmSourceSetId = $pm.sourceSetImplementationId;
+            // Check that there doesn't exist another property mapping with source set extending current property mapping source set (implying a property mapping override)
+            !$propMappings->exists(other | $propertyMappingToSuperSetIdsMap->get($other).values->contains($pmSourceSetId));
+         });
    );
 }
 
