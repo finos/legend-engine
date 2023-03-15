@@ -15,7 +15,6 @@
 package org.finos.legend.engine.plan.execution.stores.mongodb.auth;
 
 import com.mongodb.MongoClientSettings;
-import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
@@ -49,9 +48,7 @@ public class MongoDBStoreConnectionProvider extends ConnectionProvider<MongoClie
         MongoDBConnectionSpecification mongoDBConnectionSpec = (MongoDBConnectionSpecification) connectionSpec;
         UserPasswordAuthenticationSpecification userPasswordAuthSpec = (UserPasswordAuthenticationSpecification) authenticationSpec;
 
-
-        //Credential credential = super.makeCredential(userPasswordAuthSpec, identity);
-        Credential credential = new PlaintextUserPasswordCredential("mongo", "mongo");
+        Credential credential = super.makeCredential(userPasswordAuthSpec, identity);
 
         if (!(credential instanceof PlaintextUserPasswordCredential))
         {
@@ -59,20 +56,19 @@ public class MongoDBStoreConnectionProvider extends ConnectionProvider<MongoClie
             throw new UnsupportedOperationException(message);
         }
 
-        PlaintextUserPasswordCredential plaintextUserPasswordCredential = (PlaintextUserPasswordCredential) credential;
-
-        MongoCredential cred = MongoCredential.createCredential(plaintextUserPasswordCredential.getUser(), mongoDBConnectionSpec.getDatabaseName(),
-                plaintextUserPasswordCredential.getPassword().toCharArray());
+        PlaintextUserPasswordCredential plaintextCredential = (PlaintextUserPasswordCredential) credential;
         List<ServerAddress> serverAddresses = mongoDBConnectionSpec.getServerAddresses();
 
         MongoClientSettings clientSettings = MongoClientSettings.builder()
                 .applyToClusterSettings(builder -> builder.hosts(serverAddresses))
-                .applicationName("Legend Execution Server")
-                .credential(cred).build();
-        com.mongodb.client.MongoClient mongoClient = MongoClients.create(clientSettings);
-
+                .applicationName("Legend Execution Server").build();
+        String connectionURL = "mongodb://" + plaintextCredential.getUser() + ":"
+                + plaintextCredential.getPassword() + "@"
+                + serverAddresses.get(0).toString() + "/admin";
+        com.mongodb.client.MongoClient mongoClient = MongoClients.create(connectionURL); //MongoClients.create(clientSettings);
 
         return mongoClient;
     }
+
 
 }

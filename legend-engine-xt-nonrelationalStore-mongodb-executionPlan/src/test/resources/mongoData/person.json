@@ -1,0 +1,17 @@
+{
+  "insert": "person",
+  "documents": [
+    { "firstName": "John", "lastName": "Doe",  "age": 20 },
+    { "firstName": "Jane", "lastName": "Doe", "age": 22 },
+    { "firstName": "Jane2", "lastName": "Doe", "age": 23 },
+    { "firstName": "Jane3", "lastName": "Doe", "age": 24 },
+    { "firstName": "Jane4", "lastName": "Doe", "age": 25 },
+    { "firstName": "Jane5", "lastName": "Doe", "age": 26 },
+    { "firstName": "Jane6", "lastName": "Doe", "age": 27 },
+    { "firstName": "Jane8", "lastName": "Doe", "age": 28 },
+    { "firstName": "Jane9", "lastName": "Doe", "age": 29 },
+    { "firstName": "Jane10", "lastName": "Doe", "age": 30 },
+    { "firstName": "Jane11", "lastName": "Doe", "age": 31 },
+    { "firstName": "Jane12", "lastName": "Doe", "age": 32 }
+  ]
+}
