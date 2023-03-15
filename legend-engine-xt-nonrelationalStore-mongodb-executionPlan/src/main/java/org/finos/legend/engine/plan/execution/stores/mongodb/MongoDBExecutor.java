@@ -58,7 +58,8 @@ public class MongoDBExecutor
             Document dbResult = mongoDatabase.runCommand(bsonCmd);
             Document cursor = (Document) dbResult.get("cursor");
             List<Document> firstBatchDocuments = (List<Document>) cursor.get("firstBatch");
-            firstBatchDocuments.stream().forEach(i -> {
+            firstBatchDocuments.stream().forEach(i ->
+            {
                 System.out.println("new entry");
                 System.out.println(i);
             });

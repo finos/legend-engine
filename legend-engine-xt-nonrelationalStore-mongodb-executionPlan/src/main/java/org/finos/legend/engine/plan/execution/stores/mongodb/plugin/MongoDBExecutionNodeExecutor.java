@@ -87,7 +87,7 @@ public class MongoDBExecutionNodeExecutor implements ExecutionNodeVisitor<Result
     {
         try (Scope scope = GlobalTracer.get().buildSpan("MongoDB Store Execution").startActive(true))
         {
-            scope.span().setTag("databaseCommand", ( mongoDBExecutionNode).databaseCommand.toString());
+            scope.span().setTag("databaseCommand", (mongoDBExecutionNode).databaseCommand.toString());
             MongoDBConnection mongoDBConnection = mongoDBExecutionNode.connection;
             String databaseCommand = mongoDBExecutionNode.databaseCommand;
 

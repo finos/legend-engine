@@ -88,10 +88,6 @@ function meta::external::language::java::factory::javaSqlTimestamp():           
 
 function meta::external::language::java::factory::javaUUID():                   meta::external::language::java::metamodel::Class[1] { javaClass('java.util.UUID');}
 
-function meta::external::language::java::factory::bsonDocument():               meta::external::language::java::metamodel::Class[1] { javaClass('org.bson.Document'); }
-function meta::external::language::java::factory::mongoCursor():                meta::external::language::java::metamodel::Class[1] { javaClass('com.mongodb.client.MongoCursor'); }
-
-
 function meta::external::language::java::factory::javaCollection(t:meta::external::language::java::metamodel::Type[1]) : meta::external::language::java::metamodel::Type[1]
 {
    ^meta::external::language::java::metamodel::ParameterizedType(rawType=javaClass('java.util.Collection'), typeArguments=$t->toBoxed());
