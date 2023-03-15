@@ -14,33 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.mongodb.specifics;
 
-import com.mongodb.Cursor;
-import org.finos.legend.engine.plan.dependencies.domain.graphFetch.IGraphInstance;
-import org.finos.legend.engine.plan.dependencies.store.nonrelational.mongodb.IMongoDBRootGraphExecutionNodeSpecifics;
-import org.finos.legend.engine.plan.dependencies.store.shared.IReferencedObject;
-
-import java.lang.reflect.Method;
-import java.util.List;
-
-public class MongoDBRootGraphExecutionNodeSpecifics implements IMongoDBRootGraphExecutionNodeSpecifics
+public class MongoDBRootGraphExecutionNodeSpecifics
 {
 
-
-    @Override
-    public List<Method> primaryKeyGetter()
-    {
-        return null;
-    }
-
-    @Override
-    public void prepare(Cursor cursor)
-    {
-
-    }
-
-    @Override
-    public IGraphInstance<? extends IReferencedObject> nextGraphInstance()
-    {
-        return null;
-    }
 }
