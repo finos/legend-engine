@@ -43,7 +43,8 @@ public class ExecSubject
         }
         try
         {
-            return Subject.doAs(subject, (PrivilegedExceptionAction<T>) proc::safeValue);        }
+            return Subject.doAs(subject, (PrivilegedExceptionAction<T>) proc::safeValue);
+        }
         catch (PrivilegedActionException e)
         {
             Throwable cause = e.getCause();
