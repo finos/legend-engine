@@ -14,22 +14,34 @@
 
 package org.finos.legend.authentication.credentialprovider;
 
+import java.util.Optional;
 import org.eclipse.collections.api.set.ImmutableSet;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
-
-import java.util.Optional;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionCategory;
 
 public class CredentialBuilder
 {
-    public static Credential makeCredential(CredentialProviderProvider credentialProviderProvider, AuthenticationSpecification authenticationSpecification, Identity identity) throws Exception
+    public static Credential makeCredential(CredentialProviderProvider credentialProviderProvider, AuthenticationSpecification authenticationSpecification, Identity identity)
     {
-        ImmutableSet<? extends Class<? extends Credential>> inputCredentialTypes = identity.getCredentials().collect(c -> c.getClass()).toSet().toImmutable();
-        Optional<CredentialProvider> matchingCredentialProvider = credentialProviderProvider.findMatchingCredentialProvider(authenticationSpecification.getClass(), inputCredentialTypes);
+        try
+        {
+            ImmutableSet<? extends Class<? extends Credential>> inputCredentialTypes = identity.getCredentials().collect(c -> c.getClass()).toSet().toImmutable();
+            Optional<CredentialProvider> matchingCredentialProvider = credentialProviderProvider.findMatchingCredentialProvider(authenticationSpecification.getClass(), inputCredentialTypes);
 
-        String message = String.format("Did not find a credential provider for specification type=%s, input credential types=%s.", authenticationSpecification.getClass(), inputCredentialTypes);
-        CredentialProvider credentialProvider = matchingCredentialProvider.orElseThrow(() -> new RuntimeException(message));
-        return credentialProvider.makeCredential(authenticationSpecification, identity);
+            String message = String.format("Did not find a credential provider for specification type=%s, input credential types=%s.", authenticationSpecification.getClass(), inputCredentialTypes);
+            CredentialProvider credentialProvider = matchingCredentialProvider.orElseThrow(() -> new EngineException(message, ExceptionCategory.USER_CREDENTIALS_ERROR));
+            return credentialProvider.makeCredential(authenticationSpecification, identity);
+        }
+        catch (RuntimeException e)
+        {
+            throw e;
+        }
+        catch (Exception e)
+        {
+            throw new EngineException(e.getMessage(), e, ExceptionCategory.USER_CREDENTIALS_ERROR);
+        }
     }
 }
