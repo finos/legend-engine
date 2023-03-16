@@ -66,6 +66,7 @@ public class MongoDBStoreConnectionProvider extends ConnectionProvider<MongoClie
 
         MongoClientSettings clientSettings = MongoClientSettings.builder()
                 .applyToClusterSettings(builder -> builder.hosts(serverAddresses))
+                .credential(mongoCredential)
                 .applicationName("Legend Execution Server").build();
 
         MongoClient mongoClient = MongoClients.create(clientSettings);

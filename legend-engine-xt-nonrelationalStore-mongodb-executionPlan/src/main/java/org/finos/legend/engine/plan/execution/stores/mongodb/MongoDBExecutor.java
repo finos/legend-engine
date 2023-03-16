@@ -52,22 +52,6 @@ public class MongoDBExecutor
         this.credentialProviderProvider = credentialProviderProvider;
     }
 
-//    public List<Document> getPipelineFromDbCommand(String dbCommand) throws JsonProcessingException
-//    {
-//        ObjectMapper mapper = new ObjectMapper();
-//        JsonNode actualObj = mapper.readTree(dbCommand);
-//        ArrayNode pipelineString = (ArrayNode) actualObj.get("pipeline");
-//        List<Document> pipeline = new ArrayList<>();
-//
-//        pipelineString.forEach(node ->
-//        {
-//            String nodeStr = node.toString();
-//            pipeline.add(Document.parse(nodeStr));
-//        });
-//
-//        return pipeline;
-//    }
-
     public InputStreamResult executeMongoDBQuery(String dbCommand, MongoDBConnection dbConnection)
     {
         // Connection has datasource details & authentication.
