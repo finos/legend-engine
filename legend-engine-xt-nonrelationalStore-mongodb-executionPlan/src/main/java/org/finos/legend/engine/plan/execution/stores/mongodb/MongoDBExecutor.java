@@ -48,7 +48,7 @@ import java.util.Properties;
 public class MongoDBExecutor
 {
 
-    private final static int DEFAULT_BATCH_SIZE = 10;
+    private static final int DEFAULT_BATCH_SIZE = 10;
     private final CredentialProviderProvider credentialProviderProvider;
 
     public MongoDBExecutor(CredentialProviderProvider credentialProviderProvider)
@@ -125,8 +125,9 @@ public class MongoDBExecutor
         PropertiesFileCredentialVault propertiesFileCredentialVault = new PropertiesFileCredentialVault(properties);
         SystemPropertiesCredentialVault systemPropertiesCredentialVault = new SystemPropertiesCredentialVault();
 
-        PlatformCredentialVaultProvider platformCredentialVaultProvider = PlatformCredentialVaultProvider.builder().
-                with(systemPropertiesCredentialVault).with(propertiesFileCredentialVault).build();
+        PlatformCredentialVaultProvider platformCredentialVaultProvider = PlatformCredentialVaultProvider.builder()
+                .with(systemPropertiesCredentialVault)
+                .with(propertiesFileCredentialVault).build();
 
 
         // Setup CV Provider with just platform CV provider
