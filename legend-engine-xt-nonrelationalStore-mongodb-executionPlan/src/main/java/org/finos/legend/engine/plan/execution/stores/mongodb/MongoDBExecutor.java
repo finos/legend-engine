@@ -14,7 +14,12 @@
 
 package org.finos.legend.engine.plan.execution.stores.mongodb;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
@@ -24,6 +29,7 @@ import org.finos.legend.authentication.intermediationrule.impl.UserPasswordFromV
 import org.finos.legend.authentication.vault.CredentialVaultProvider;
 import org.finos.legend.authentication.vault.PlatformCredentialVaultProvider;
 import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
+import org.finos.legend.authentication.vault.impl.SystemPropertiesCredentialVault;
 import org.finos.legend.engine.plan.execution.result.InputStreamResult;
 import org.finos.legend.engine.plan.execution.stores.mongodb.auth.MongoDBConnectionSpecification;
 import org.finos.legend.engine.plan.execution.stores.mongodb.auth.MongoDBStoreConnectionProvider;
@@ -31,6 +37,11 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBCon
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -38,15 +49,32 @@ public class MongoDBExecutor
 {
 
     private final CredentialProviderProvider credentialProviderProvider;
+    private final static int DEFAULT_BATCH_SIZE = 10;
 
     public MongoDBExecutor(CredentialProviderProvider credentialProviderProvider)
     {
         this.credentialProviderProvider = credentialProviderProvider;
     }
 
+    public List<Document> getPipelineFromDbCommand(String dbCommand) throws JsonProcessingException
+    {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode actualObj = mapper.readTree(dbCommand);
+        ArrayNode pipelineString = (ArrayNode) actualObj.get("pipeline");
+        List<Document> pipeline = new ArrayList<>();
+
+        pipelineString.forEach(node ->
+        {
+            String nodeStr = node.toString();
+            pipeline.add(Document.parse(nodeStr));
+        });
+
+        return pipeline;
+    }
+
     public InputStreamResult executeMongoDBQuery(String dbCommand, MongoDBConnection dbConnection)
     {
-        // Conection has datasource details & authentication.
+        // Connection has datasource details & authentication.
         try
         {
             MongoDBStoreConnectionProvider mongoDBConnectionProvider = getMongoDBConnectionProvider();
@@ -54,22 +82,51 @@ public class MongoDBExecutor
             Identity serviceIdentity = new Identity("serviceAccount", new AnonymousCredential());
             MongoClient mongoClient = mongoDBConnectionProvider.makeConnection(mongoDBConnectionSpec, dbConnection.authenticationSpecification, serviceIdentity);
             MongoDatabase mongoDatabase = mongoClient.getDatabase(dbConnection.dataSourceSpecification.databaseName);
+
             Document bsonCmd = Document.parse(dbCommand);
+
+            // Loading with no iterator
             Document dbResult = mongoDatabase.runCommand(bsonCmd);
-            Document cursor = (Document) dbResult.get("cursor");
-            List<Document> firstBatchDocuments = (List<Document>) cursor.get("firstBatch");
-            firstBatchDocuments.stream().forEach(i ->
+// <<<<<<< mongo-execute-p1-docker
+
+            // using Collection and Iterator
+            List<String> result = new ArrayList<>();
+            List<Document> pipelineDoc = getPipelineFromDbCommand(dbCommand);
+            try (MongoCursor<Document> cursor = mongoDatabase.getCollection("person").
+                    aggregate(pipelineDoc)
+                    .batchSize(DEFAULT_BATCH_SIZE).iterator())
             {
-                System.out.println("new entry");
-                System.out.println(i);
-            });
-            return null;
+                while (cursor.hasNext())
+                {
+                    result.add(cursor.next().toJson());
+                }
+            }
+
+            // return results as InputStream
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(baos);
+            oos.writeObject(result);
+            oos.flush();
+            byte[] bytes = baos.toByteArray();
+            InputStream inputStream = new ByteArrayInputStream(bytes);
+
+            return new InputStreamResult(inputStream);
+
+// =======
+//             Document cursor = (Document) dbResult.get("cursor");
+//             List<Document> firstBatchDocuments = (List<Document>) cursor.get("firstBatch");
+//             firstBatchDocuments.stream().forEach(i ->
+//             {
+//                 System.out.println("new entry");
+//                 System.out.println(i);
+//             });
+//             return null;
+// >>>>>>> mongo-execute-p1
         }
         catch (Exception e)
         {
-            throw new RuntimeException(e);
+            throw new RuntimeException("error streaming MongoDB Results", e);
         }
-
     }
 
     private MongoDBStoreConnectionProvider getMongoDBConnectionProvider()
@@ -77,10 +134,11 @@ public class MongoDBExecutor
         Properties properties = new Properties();
         properties.put("passwordRef1", "");
         PropertiesFileCredentialVault propertiesFileCredentialVault = new PropertiesFileCredentialVault(properties);
+        SystemPropertiesCredentialVault systemPropertiesCredentialVault = new SystemPropertiesCredentialVault();
 
-        PlatformCredentialVaultProvider platformCredentialVaultProvider = PlatformCredentialVaultProvider.builder()
-                .with(propertiesFileCredentialVault)
-                .build();
+        PlatformCredentialVaultProvider platformCredentialVaultProvider = PlatformCredentialVaultProvider.builder().
+                with(systemPropertiesCredentialVault).with(propertiesFileCredentialVault).build();
+
 
         // Setup CV Provider with just platform CV provider
         CredentialVaultProvider credentialVaultProvider = CredentialVaultProvider.builder()

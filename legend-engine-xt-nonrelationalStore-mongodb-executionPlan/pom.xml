@@ -204,7 +204,17 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
         <!-- Jackson -->
-
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>mongodb</artifactId>
+            <version>1.17.6</version>
+            <scope>test</scope>
+        </dependency>
         <!-- Logging -->
 <!--        <dependency>-->
 <!--            <groupId>org.slf4j</groupId>-->
