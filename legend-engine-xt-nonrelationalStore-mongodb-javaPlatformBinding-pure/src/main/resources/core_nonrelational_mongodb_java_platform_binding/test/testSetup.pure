@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::shared::format::functions::*;
 import meta::pure::runtime::*;
 import meta::pure::model::unit::*;
 import meta::external::shared::format::binding::*;
@@ -121,4 +122,20 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
          ])
       ])
    ]
+}
+
+
+function <<meta::pure::profiles::test.Test>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::testJsonInternalize(): Boolean[1]
+{
+  let binding = getSimpleBinding();
+  //let roundtripQuery   = {data:String[1] | Person->internalize($binding, $data)
+  //  ->externalize($binding, #{Person{firstName, lastName}}#)};
+
+  let vars    = pair('data', '{"firstName":"John", "lastName":"Doe", "age":25, "firm": {"legalName": "Firm A" } }');
+
+  let internalizeQuery   = {data:String[1] | Person->internalize($binding, $data)};
+  let internalizeResult  = executeJsonBindingQuery($internalizeQuery, $vars);
+  let expectedResult = '{"builder": null, "activities": [], "objects\" : [{"firstName":"John","lastName":"Doe","age":25,"firm":{"legalName":"Firm A"}}]}';
+  println($internalizeResult);
+  assertEquals($expectedResult, $internalizeResult);
 }
