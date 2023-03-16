@@ -329,13 +329,24 @@ public class TestQueryStoreManager
 
 
     @Test
-    public void testGetQueryState() throws Exception
+    public void testGetQueryStats() throws Exception
     {
         String currentUser = "testUser";
         Assert.assertEquals(Long.valueOf(0),  this.queryStoreManager.getQueryStoreStats().getQueryCount());
         queryStoreManager.createQuery(TestQueryBuilder.create("1", "query1", currentUser).build(), currentUser);
         queryStoreManager.createQuery(TestQueryBuilder.create("2", "query2", currentUser).build(), currentUser);
         Assert.assertEquals(Long.valueOf(2),  this.queryStoreManager.getQueryStoreStats().getQueryCount());
+    }
+
+    @Test
+    public void testGetQueryStatsWithDataSpaceQueryCount() throws Exception
+    {
+        String currentUser = "testUser";
+        TaggedValue taggedValue1 = createTestTaggedValue("meta::pure::profiles::query", "dataSpace", "value1");
+        Assert.assertEquals(Long.valueOf(0),  this.queryStoreManager.getQueryStoreStats().getQueryCount());
+        queryStoreManager.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withTaggedValues(Lists.fixedSize.of(taggedValue1)).build(), currentUser);
+        queryStoreManager.createQuery(TestQueryBuilder.create("2", "query2", currentUser).build(), currentUser);
+        Assert.assertEquals(Long.valueOf(1),  this.queryStoreManager.getQueryStoreStats().getQueryCreatedFromDataSpaceCount());
     }
 
     @Test
