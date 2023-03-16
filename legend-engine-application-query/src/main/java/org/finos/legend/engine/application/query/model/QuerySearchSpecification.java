@@ -27,4 +27,5 @@ public class QuerySearchSpecification
     public List<StereotypePtr> stereotypes;
     public Integer limit;
     public Boolean showCurrentUserQueriesOnly;
+    public Boolean showLatestQueries;
 }
