@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::shared::format::functions::*;
 import meta::pure::runtime::*;
 import meta::pure::model::unit::*;
 import meta::external::shared::format::binding::*;
@@ -31,7 +32,7 @@ Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava
   firstName : String[1];
   lastName  : String[1];
   age:        Integer[0..1];
-  firm      : Firm[1];
+  firm      : Firm[0..1];
   //addresses : Address[*];
 }
 
@@ -78,8 +79,7 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
             '  }\n'+
             '  \"required\": [\n'+
             '    \"firstName\",\n'+
-            '    \"lastName\",\n'+
-            '    \"firm\"\n' +
+            '    \"lastName\"\n'+
             '  ]\n'+
             '}'
       )
@@ -97,7 +97,7 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
       package     = meta::external::format::json::executionPlan::test,
       schemaSet   = getSimpleSchema(),
       contentType = 'application/json',
-      modelUnit   = newModelUnit()->include([meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Person])
+      modelUnit   = newModelUnit()->include([meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Person,meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Firm])
    );
 }
 
@@ -122,4 +122,20 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
          ])
       ])
    ]
+}
+
+
+function <<meta::pure::profiles::test.Test>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::testJsonInternalize(): Boolean[1]
+{
+  let binding = getSimpleBinding();
+  //let roundtripQuery   = {data:String[1] | Person->internalize($binding, $data)
+  //  ->externalize($binding, #{Person{firstName, lastName}}#)};
+
+  let vars    = pair('data', '{"firstName":"John", "lastName":"Doe", "age":25, "firm": {"legalName": "Firm A" } }');
+
+  let internalizeQuery   = {data:String[1] | Person->internalize($binding, $data)};
+  let internalizeResult  = executeJsonBindingQuery($internalizeQuery, $vars);
+  let expectedResult = '{"builder": null, "activities": [], "objects\" : [{"firstName":"John","lastName":"Doe","age":25,"firm":{"legalName":"Firm A"}}]}';
+  println($internalizeResult);
+  assertEquals($expectedResult, $internalizeResult);
 }

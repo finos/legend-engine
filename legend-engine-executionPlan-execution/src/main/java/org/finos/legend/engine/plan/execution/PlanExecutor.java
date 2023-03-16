@@ -15,6 +15,17 @@
 package org.finos.legend.engine.plan.execution;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
@@ -22,6 +33,7 @@ import org.eclipse.collections.api.multimap.list.ImmutableListMultimap;
 import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.internal.IterableIterate;
+import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
 import org.finos.legend.engine.plan.execution.concurrent.ConcurrentExecutionNodeExecutorPool;
 import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
@@ -41,19 +53,6 @@ import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
 import org.pac4j.core.profile.CommonProfile;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.ServiceLoader;
-import java.util.function.BiFunction;
-import java.util.stream.Collectors;
-
 public class PlanExecutor
 {
     public static final long DEFAULT_GRAPH_FETCH_BATCH_MEMORY_LIMIT = 52_428_800L; /* 50MB - 50 * 1024 * 1024 */
@@ -69,14 +68,16 @@ public class PlanExecutor
     private ConcurrentExecutionNodeExecutorPool concurrentExecutionNodeExecutorPool;
     private long graphFetchBatchMemoryLimit;
     private BiFunction<MutableList<CommonProfile>, ExecutionState, ExecutionNodeExecutor> executionNodeExecutorBuilder;
+    private final CredentialProviderProvider credentialProviderProvider;
 
-    private PlanExecutor(boolean isJavaCompilationAllowed, ImmutableList<StoreExecutor> extraExecutors, long graphFetchBatchMemoryLimit)
+    private PlanExecutor(boolean isJavaCompilationAllowed, ImmutableList<StoreExecutor> extraExecutors, long graphFetchBatchMemoryLimit, CredentialProviderProvider credentialProviderProvider)
     {
         EngineUrlStreamHandlerFactory.initialize();
         this.isJavaCompilationAllowed = isJavaCompilationAllowed;
         this.extraExecutors = extraExecutors;
         this.planExecutorInfo = PlanExecutorInfo.fromStoreExecutors(this.extraExecutors);
         this.graphFetchBatchMemoryLimit = graphFetchBatchMemoryLimit;
+        this.credentialProviderProvider = credentialProviderProvider;
     }
 
     public PlanExecutorInfo getPlanExecutorInfo()
@@ -349,7 +350,7 @@ public class PlanExecutor
 
     private ExecutionState buildDefaultExecutionState(SingleExecutionPlan executionPlan, Map<String, Result> vars, PlanExecutionContext planExecutionContext)
     {
-        ExecutionState executionState = new ExecutionState(vars, executionPlan.templateFunctions, this.extraExecutors.collect(StoreExecutor::buildStoreExecutionState), this.isJavaCompilationAllowed, this.graphFetchBatchMemoryLimit, null);
+        ExecutionState executionState = new ExecutionState(vars, executionPlan.templateFunctions, this.extraExecutors.collect(StoreExecutor::buildStoreExecutionState), this.isJavaCompilationAllowed, this.graphFetchBatchMemoryLimit, null, this.credentialProviderProvider);
 
         if (planExecutionContext != null)
         {
@@ -396,54 +397,144 @@ public class PlanExecutor
         }
     }
 
+    public static PlanExecutor.Builder newPlanExecutorBuilder()
+    {
+        return new PlanExecutor.Builder();
+    }
+
+    public static class Builder
+    {
+        private boolean isJavaCompilationAllowed = DEFAULT_IS_JAVA_COMPILATION_ALLOWED;
+        private final MutableList<StoreExecutor> storeExecutors = Lists.mutable.empty();
+        private long graphFetchBatchMemoryLimit = DEFAULT_GRAPH_FETCH_BATCH_MEMORY_LIMIT;
+        private CredentialProviderProvider credentialProviderProvider = CredentialProviderProvider.defaultProviderProvider();
+
+        private Builder()
+        {
+
+        }
+
+        public Builder isJavaCompilationAllowed(boolean isJavaCompilationAllowed)
+        {
+            this.isJavaCompilationAllowed = isJavaCompilationAllowed;
+            return this;
+        }
+
+        public Builder withGraphFetchBatchMemoryLimit(long graphFetchBatchMemoryLimit)
+        {
+            this.graphFetchBatchMemoryLimit = graphFetchBatchMemoryLimit;
+            return this;
+        }
+
+        public Builder withStoreExecutors(StoreExecutor... storeExecutors)
+        {
+            Collections.addAll(this.storeExecutors, storeExecutors);
+            return this;
+        }
+
+        public Builder withAvailableStoreExecutors()
+        {
+            IterableIterate.collect(StoreExecutorBuilderLoader.extensions(), StoreExecutorBuilder::build, this.storeExecutors);
+            return this;
+        }
+
+        public Builder withCredentialProviderProvider(CredentialProviderProvider credentialProviderProvider)
+        {
+            this.credentialProviderProvider = credentialProviderProvider;
+            return this;
+        }
+
+        public PlanExecutor build()
+        {
+            return new PlanExecutor(this.isJavaCompilationAllowed, this.storeExecutors.toImmutable(), this.graphFetchBatchMemoryLimit, this.credentialProviderProvider);
+        }
+    }
+
+    @Deprecated
     public static PlanExecutor newPlanExecutor(boolean isJavaCompilationAllowed, Iterable<? extends StoreExecutor> storeExecutors, long graphFetchBatchMemoryLimit)
     {
-        return new PlanExecutor(isJavaCompilationAllowed, Lists.immutable.withAll(storeExecutors), graphFetchBatchMemoryLimit);
+        return newPlanExecutorBuilder()
+                .isJavaCompilationAllowed(isJavaCompilationAllowed)
+                .withStoreExecutors(Iterate.toArray(storeExecutors, new StoreExecutor[0]))
+                .withGraphFetchBatchMemoryLimit(graphFetchBatchMemoryLimit)
+                .build();
     }
 
+    @Deprecated
     public static PlanExecutor newPlanExecutor(boolean isJavaCompilationAllowed, Iterable<? extends StoreExecutor> storeExecutors)
     {
-        return PlanExecutor.newPlanExecutor(isJavaCompilationAllowed, storeExecutors, DEFAULT_GRAPH_FETCH_BATCH_MEMORY_LIMIT);
+        return newPlanExecutorBuilder()
+                .isJavaCompilationAllowed(isJavaCompilationAllowed)
+                .withStoreExecutors(Iterate.toArray(storeExecutors, new StoreExecutor[0]))
+                .build();
     }
 
+    @Deprecated
     public static PlanExecutor newPlanExecutor(Iterable<? extends StoreExecutor> storeExecutors)
     {
-        return newPlanExecutor(DEFAULT_IS_JAVA_COMPILATION_ALLOWED, storeExecutors);
+        return newPlanExecutorBuilder()
+                .withStoreExecutors(Iterate.toArray(storeExecutors, new StoreExecutor[0]))
+                .build();
     }
 
     public static PlanExecutor newPlanExecutor(boolean isJavaCompilationAllowed, StoreExecutor... storeExecutors)
     {
-        return new PlanExecutor(isJavaCompilationAllowed, Lists.immutable.with(storeExecutors), DEFAULT_GRAPH_FETCH_BATCH_MEMORY_LIMIT);
+        return newPlanExecutorBuilder()
+                .isJavaCompilationAllowed(isJavaCompilationAllowed)
+                .withStoreExecutors(storeExecutors)
+                .build();
     }
 
+    @Deprecated
     public static PlanExecutor newPlanExecutor(StoreExecutor... storeExecutors)
     {
-        return newPlanExecutor(DEFAULT_IS_JAVA_COMPILATION_ALLOWED, storeExecutors);
+        return newPlanExecutorBuilder()
+                .withStoreExecutors(storeExecutors)
+                .build();
     }
 
+    @Deprecated
     public static PlanExecutor newPlanExecutor(boolean isJavaCompilationAllowed, StoreExecutor storeExecutor)
     {
-        return new PlanExecutor(isJavaCompilationAllowed, Lists.immutable.with(storeExecutor), DEFAULT_GRAPH_FETCH_BATCH_MEMORY_LIMIT);
+        return newPlanExecutorBuilder()
+                .isJavaCompilationAllowed(isJavaCompilationAllowed)
+                .withStoreExecutors(storeExecutor)
+                .build();
     }
 
+    @Deprecated
     public static PlanExecutor newPlanExecutor(StoreExecutor storeExecutor)
     {
-        return newPlanExecutor(DEFAULT_IS_JAVA_COMPILATION_ALLOWED, Lists.immutable.with(storeExecutor));
+        return newPlanExecutorBuilder()
+                .withStoreExecutors(storeExecutor)
+                .build();
     }
 
+    @Deprecated
     public static PlanExecutor newPlanExecutorWithAvailableStoreExecutors(boolean isJavaCompilationAllowed, long graphFetchBatchMemoryLimit)
     {
-        return newPlanExecutor(isJavaCompilationAllowed, IterableIterate.collect(StoreExecutorBuilderLoader.extensions(), StoreExecutorBuilder::build, Lists.mutable.empty()), graphFetchBatchMemoryLimit);
+        return newPlanExecutorBuilder()
+                .isJavaCompilationAllowed(isJavaCompilationAllowed)
+                .withGraphFetchBatchMemoryLimit(graphFetchBatchMemoryLimit)
+                .withAvailableStoreExecutors()
+                .build();
     }
 
+    @Deprecated
     public static PlanExecutor newPlanExecutorWithAvailableStoreExecutors(boolean isJavaCompilationAllowed)
     {
-        return newPlanExecutorWithAvailableStoreExecutors(isJavaCompilationAllowed, PlanExecutor.DEFAULT_GRAPH_FETCH_BATCH_MEMORY_LIMIT);
+        return newPlanExecutorBuilder()
+                .isJavaCompilationAllowed(isJavaCompilationAllowed)
+                .withAvailableStoreExecutors()
+                .build();
     }
 
+    @Deprecated
     public static PlanExecutor newPlanExecutorWithAvailableStoreExecutors()
     {
-        return newPlanExecutorWithAvailableStoreExecutors(DEFAULT_IS_JAVA_COMPILATION_ALLOWED);
+        return newPlanExecutorBuilder()
+                .withAvailableStoreExecutors()
+                .build();
     }
 
     public static List<StoreExecutorBuilder> loadStoreExecutorBuilders()

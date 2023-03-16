@@ -87,6 +87,7 @@ public class MongoDBExecutor
 
             // Loading with no iterator
             Document dbResult = mongoDatabase.runCommand(bsonCmd);
+// <<<<<<< mongo-execute-p1-docker
 
             // using Collection and Iterator
             List<String> result = new ArrayList<>();
@@ -111,6 +112,16 @@ public class MongoDBExecutor
 
             return new InputStreamResult(inputStream);
 
+// =======
+//             Document cursor = (Document) dbResult.get("cursor");
+//             List<Document> firstBatchDocuments = (List<Document>) cursor.get("firstBatch");
+//             firstBatchDocuments.stream().forEach(i ->
+//             {
+//                 System.out.println("new entry");
+//                 System.out.println(i);
+//             });
+//             return null;
+// >>>>>>> mongo-execute-p1
         }
         catch (Exception e)
         {
