@@ -31,7 +31,7 @@ Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava
   firstName : String[1];
   lastName  : String[1];
   age:        Integer[0..1];
-  firm      : Firm[1];
+  firm      : Firm[0..1];
   //addresses : Address[*];
 }
 
@@ -78,8 +78,7 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
             '  }\n'+
             '  \"required\": [\n'+
             '    \"firstName\",\n'+
-            '    \"lastName\",\n'+
-            '    \"firm\"\n' +
+            '    \"lastName\"\n'+
             '  ]\n'+
             '}'
       )
@@ -97,7 +96,7 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
       package     = meta::external::format::json::executionPlan::test,
       schemaSet   = getSimpleSchema(),
       contentType = 'application/json',
-      modelUnit   = newModelUnit()->include([meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Person])
+      modelUnit   = newModelUnit()->include([meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Person,meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Firm])
    );
 }
 
