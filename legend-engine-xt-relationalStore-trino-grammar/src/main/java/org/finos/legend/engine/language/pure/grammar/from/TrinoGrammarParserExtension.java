@@ -55,7 +55,7 @@ public class TrinoGrammarParserExtension implements IRelationalGrammarParserExte
         TrinoParserGrammar.TrinoKerberosRemoteServiceNameContext remoteSvcNameCtx = PureGrammarParserUtility.validateAndExtractRequiredField(authCtx.trinoKerberosRemoteServiceName(), "kerberosRemoteServiceName", authStrategy.sourceInformation);
         authStrategy.kerberosRemoteServiceName = PureGrammarParserUtility.fromGrammarString(remoteSvcNameCtx.STRING().getText(), true);
         TrinoParserGrammar.TrinoKerberosUseCanonicalHostnameContext kerberosUseCanonicalHostNameCtx = PureGrammarParserUtility.validateAndExtractOptionalField(authCtx.trinoKerberosUseCanonicalHostname(), "kerberosUseCanonicalHostname", authStrategy.sourceInformation);
-        authStrategy.kerberosUseCanonicalHostname = kerberosUseCanonicalHostNameCtx == null ? null : Boolean.parseBoolean(PureGrammarParserUtility.fromGrammarString(kerberosUseCanonicalHostNameCtx.BOOLEAN().getText(), true));
+        authStrategy.kerberosUseCanonicalHostname = kerberosUseCanonicalHostNameCtx == null ? null : Boolean.parseBoolean(kerberosUseCanonicalHostNameCtx.BOOLEAN().getText());
 
         return authStrategy;
     }
@@ -107,7 +107,7 @@ public class TrinoGrammarParserExtension implements IRelationalGrammarParserExte
     {
         TrinoSSLSpecification sslSpecification = new TrinoSSLSpecification();
         TrinoParserGrammar.TrinoSSLContext sslCtx = PureGrammarParserUtility.validateAndExtractRequiredField(trinoSSLSpecificationContext.trinoSSL(), "ssl", dsSpec.sourceInformation);
-        sslSpecification.ssl = Boolean.parseBoolean(PureGrammarParserUtility.fromGrammarString(sslCtx.BOOLEAN().getText(), true));
+        sslSpecification.ssl = Boolean.parseBoolean(sslCtx.BOOLEAN().getText());
 
         TrinoParserGrammar.TrinoTrustStorePathVaultReferenceContext trustPathCtx = PureGrammarParserUtility.validateAndExtractOptionalField(trinoSSLSpecificationContext.trinoTrustStorePathVaultReference(), "trustStorePathVaultReference", dsSpec.sourceInformation);
         sslSpecification.trustStorePathVaultReference = trustPathCtx == null ? null : PureGrammarParserUtility.fromGrammarString(trustPathCtx.STRING().getText(), true);
