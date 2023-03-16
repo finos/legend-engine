@@ -57,6 +57,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   debug('processQueryBody');
   $queryBody->match([
     table: Table[1]                   | $table->processTable($context),
+    tf:TableFunction[1]               | $tf->processTableFunction($context),
     tsq: TableSubquery[1]             | $tsq->processTableSubquery($context),
     querySpec: QuerySpecification[1]  | $querySpec->processQuerySpec($context),
     set:SetOperation[1]               | $set->processSetOperation($context),
@@ -392,6 +393,13 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   processQuery($tsq.query, $context);
 }
 
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processTableFunction(tableFunc: TableFunction[1], context: SqlTransformContext[1]): SqlTransformContext[1]
+{
+  debug('processTableFunction');
+  fail('Table Functions Not Yet Supported');
+  $context;
+}
+
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processTable(table: Table[1], context: SqlTransformContext[1]): SqlTransformContext[1]
 {
   debug('processTable');
@@ -563,6 +571,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     n:IsNullPredicate[1] | processIsNullPredicate($n, $expContext, $context),
     n:IsNotNullPredicate[1] | processIsNotNullPredicate($n, $expContext, $context),
     c:CurrentTime[1] | processCurrentTime($c, $expContext, $context),
+    n:NamedArgumentExpression[1] | fail('Named Argument Expressions only supported within function calls'); iv(1);,
     e:meta::external::query::sql::metamodel::Expression[*] | fail('Expression type not yet supported'); iv(1);
   ]);
 }
@@ -741,6 +750,9 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processFunctionCall(f:FunctionCall[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):SimpleFunctionExpression[1]
 {
   debug('processFunctionCall');
+
+  assert($f.window->isEmpty(), | 'window functions not currently supported');
+
   if ($expContext.processFunctionCallAsIdentifier,
     | processFunctionCallAsIdentifier($f, $expContext, $context),
     | processFunctionCallAsFunction($f, $expContext, $context));
@@ -797,25 +809,118 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
   [
       processor('count', count_Any_MANY__Integer_1_, true),
       processor('distinct', distinct_T_MANY__T_MANY_, true),
-      processor('sum', sum_Number_MANY__Number_1_, true),
+
+      //MATH
+      processor('abs', abs_Number_1__Number_1_, false),
+      processor('acos', acos_Number_1__Float_1_, false),
+      processor('asin', asin_Number_1__Float_1_, false),
+      processor('atan', atan_Number_1__Float_1_, false),
+      processor('atan2', atan2_Number_1__Number_1__Float_1_, false),
       processor('avg', average_Number_MANY__Float_1_, true),
-      processor('concat', joinStrings_String_MANY__String_1_, false),
+      processor('ceil', ceiling_Number_1__Integer_1_, false),
+      processor('ceiling', ceiling_Number_1__Integer_1_, false),
+      processor('cos', cos_Number_1__Float_1_, false),
+      processor('degrees', toDegrees_Number_1__Float_1_, false),
+      processor('div', divide_Number_1__Number_1__Float_1_, false),
+      processor('exp', exp_Number_1__Float_1_, false),
+      processor('floor', floor_Number_1__Integer_1_, false),
+      processor('ln', log_Number_1__Float_1_, false),
+      processor('mod', rem_Number_1__Number_1__Number_1_, false),
+      processor('pi', pi__Float_1_, false),
+      processor('power', pow_Number_1__Number_1__Number_1_, false),
+      processor('radians', toRadians_Number_1__Float_1_, false),
+      processor('round', false, {args | 
+        assert(($args->size() == 1) || ($args->size() == 2), 'incorrect number of args for round');
+        let func = if ($args->size() == 1, | round_Number_1__Integer_1_, | round_Decimal_1__Integer_1__Decimal_1_);
+
+        sfe($func, $args);
+      }),
+      processor('sin', sin_Number_1__Float_1_, false),
+      processor('stddev_pop', stdDevPopulation_Number_MANY__Number_1_, true),
+      processor('stddev_samp', stdDevSample_Number_MANY__Number_1_, true),
+      processor('sum', sum_Number_MANY__Number_1_, true),
+      processor('sqrt', sqrt_Number_1__Float_1_, false),
+      processor('tan', tan_Number_1__Float_1_, false),
+      
+
+      //STRING
+      processor('char_length', length_String_1__Integer_1_, false),
+      processor('concat', joinStrings_String_MANY__String_1_, false),      
+      processor('lower', toLower_String_1__String_1_, false),
+      processor('regexp_like', matches_String_1__String_1__Boolean_1_, false),
+      processor('replace', replace_String_1__String_1__String_1__String_1_, false),
+      processor('starts_with', startsWith_String_1__String_1__Boolean_1_, false),
+      processor('substring', false, processSubstring_ValueSpecification_MANY__SimpleFunctionExpression_1_),
+      processor('substr', false, processSubstring_ValueSpecification_MANY__SimpleFunctionExpression_1_),
       processor('trim', trim_String_1__String_1_, false),
+      processor('upper', toUpper_String_1__String_1_, false),
+
+      //DATE
       processor('date_trunc', false, {args |
         assertEquals(2, $args->size(), 'incorrect number of args');
         let part = $args->at(0);
-        let value = $part->reactivate()->toOne();
+        let value = $part->reactivate()->toOne()->cast(@String);
         
         let func = [
           pair('year', firstDayOfYear_Date_1__Date_1_),
           pair('quarter', firstDayOfQuarter_Date_1__StrictDate_1_),
           pair('month', firstDayOfMonth_Date_1__Date_1_),
           pair('week', firstDayOfWeek_Date_1__Date_1_)
+        ]->getValue($value->toLower());
+
+        sfe($func, $args->at(1));
+      }),
+      processor('date_add', false, {args | 
+        assertEquals(3, $args->size(), 'incorrect number of args');
+        let part = $args->at(0);
+        let value = $part->reactivate()->toOne();
+
+        let unit = [
+          pair('year', DurationUnit.YEARS),
+          pair('month', DurationUnit.MONTHS),
+          pair('week', DurationUnit.WEEKS),
+          pair('day', DurationUnit.DAYS),
+          pair('hour', DurationUnit.HOURS),
+          pair('minute', DurationUnit.MINUTES),
+          pair('second', DurationUnit.SECONDS),
+          pair('millisecond', DurationUnit.MILLISECONDS),
+          pair('microsecond', DurationUnit.MICROSECONDS),
+          pair('nanosecond', DurationUnit.NANOSECONDS)
         ]->getValue($value);
+
+        let unitSfe = sfe(extractEnumValue_Enumeration_1__String_1__T_1_, [iv(DurationUnit), iv($unit.name)]);
+
+        sfe(adjust_Date_1__Integer_1__DurationUnit_1__Date_1_, [$args->at(2), $args->at(1), $unitSfe]);        
+      }),
+      processor('date_part', false, {args |
+        assertEquals(2, $args->size(), 'incorrect number of args');
+        let part = $args->at(0);
+        let value = $part->reactivate()->toOne()->cast(@String);
+        
+        let func = [
+          pair('year', year_Date_1__Integer_1_),
+          pair('quarter', quarterNumber_Date_1__Integer_1_),
+          pair('month', monthNumber_Date_1__Integer_1_),
+          pair('week', weekOfYear_Date_1__Integer_1_),
+          pair('dow', dayOfWeekNumber_Date_1__Integer_1_),
+          pair('day', dayOfMonth_Date_1__Integer_1_),
+          pair('hour', hour_Date_1__Integer_1_),
+          pair('minute', minute_Date_1__Integer_1_),
+          pair('second', second_Date_1__Integer_1_)
+        ]->getValue($value->toLower());
 
         sfe($func, $args->at(1));
       })
   ]
+}
+
+function meta::external::query::sql::transformation::queryToPure::processSubstring(args:ValueSpecification[*]):SimpleFunctionExpression[1]
+{
+  assert($args->size() == 2 || $args->size() == 3, 'invalid number of args for substring');
+  
+  let func = if ($args->size() == 2, | substring_String_1__Integer_1__String_1_, | substring_String_1__Integer_1__Integer_1__String_1_);
+
+  sfe($func, $args);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processNotExpression(n:NotExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):SimpleFunctionExpression[1]
@@ -849,6 +954,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   ]->getValue($a.type)->eval();
 }
 
+
+//TODO handle arg type
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processComparisonExpression(c:ComparisonExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):SimpleFunctionExpression[1]
 {
   debug('processComparisonExpression');
@@ -1033,7 +1140,6 @@ function meta::external::query::sql::transformation::queryToPure::simpleFunction
 {
   {args:ValueSpecification[*] | sfe($func, $args)}
 }
-
 
 //MISC
 function meta::external::query::sql::transformation::queryToPure::getValue<X, Y>(pairs : Pair<X, Y>[*], key : X[1]) : Y[1]
