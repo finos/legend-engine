@@ -186,9 +186,8 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
 }
 
 
-function  meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::getTestMongoPersonMapping(personCollection: meta::external::store::mongodb::metamodel::Collection[1]): meta::pure::mapping::Mapping[1] 
+function  meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::getTestMongoPersonMapping(personCollection: meta::external::store::mongodb::metamodel::Collection[1], domainClass: Class<Any>[1]): meta::pure::mapping::Mapping[1] 
 {
-    let domainClass = meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Person;
 
     // Map Fields to properties. create fields that correspond to collection representation
     let first_name = ^meta::external::store::mongodb::metamodel::mapping::Field(
