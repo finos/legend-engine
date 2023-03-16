@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//import meta::external::store::mongodb::metamodel::*;
+import meta::external::store::mongodb::metamodel::aggregation::*;
+import meta::external::store::mongodb::metamodel::pure::*;
 import meta::external::shared::format::functions::*;
 import meta::pure::runtime::*;
 import meta::pure::model::unit::*;
@@ -23,6 +26,7 @@ import meta::external::store::mongodb::executionPlan::platformBinding::legendJav
 Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::TestSchema
 {
 }
+
 
 Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Person
 [
@@ -139,3 +143,101 @@ function <<meta::pure::profiles::test.Test>> meta::external::store::mongodb::exe
   println($internalizeResult);
   assertEquals($expectedResult, $internalizeResult);
 }
+
+
+function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::getTestMongoPersonCollection(mongoDatabase : MongoDatabase[1]): meta::external::store::mongodb::metamodel::Collection[1]
+{
+    let fName = ^meta::external::store::mongodb::metamodel::PropertyType(
+      key = 'fName',
+      value = ^meta::external::store::mongodb::metamodel::StringType()
+    );
+
+    let lName = ^meta::external::store::mongodb::metamodel::PropertyType(
+      key = 'lName',
+      value = ^meta::external::store::mongodb::metamodel::StringType()
+    );
+
+    let age = ^meta::external::store::mongodb::metamodel::PropertyType(
+      key = 'age',
+      value = ^meta::external::store::mongodb::metamodel::IntType()
+    );
+
+    let schema = ^meta::external::store::mongodb::metamodel::Schema(
+      properties = [$fName, $lName, $age],
+      required = ['fName', 'lName'],
+      additionalPropertiesAllowed = true
+    );
+
+    let jsonSchemaExpression = ^meta::external::store::mongodb::metamodel::aggregation::JsonSchemaExpression(
+      schemaExpression=$schema
+    );
+
+    let validator = ^meta::external::store::mongodb::metamodel::Validator(
+      validatorExpression=$jsonSchemaExpression
+    );
+
+    let collection = ^meta::external::store::mongodb::metamodel::Collection(
+      owner=$mongoDatabase,
+      name='person',
+      uuid='1b71e944-c3ec-11ed-afa1-0242ac120002',
+      validator=$validator
+    );
+    $collection;
+}
+
+
+function  meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::getTestMongoPersonMapping(personCollection: meta::external::store::mongodb::metamodel::Collection[1]): meta::pure::mapping::Mapping[1] 
+{
+    let domainClass = meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Person;
+
+    // Map Fields to properties. create fields that correspond to collection representation
+    let first_name = ^meta::external::store::mongodb::metamodel::mapping::Field(
+          dataType = ^meta::external::store::mongodb::metamodel::StringType(),
+          argumentExpression = ^FieldPathExpression(fieldPath='first_name')
+    );
+    let last_name = ^meta::external::store::mongodb::metamodel::mapping::Field(
+          dataType = ^meta::external::store::mongodb::metamodel::StringType(),
+          argumentExpression = ^FieldPathExpression(fieldPath='last_name')
+    );
+    let age = ^meta::external::store::mongodb::metamodel::mapping::Field(
+          dataType = ^meta::external::store::mongodb::metamodel::IntType(),
+          argumentExpression = ^FieldPathExpression(fieldPath='age')
+    );
+    let legal_name = ^meta::external::store::mongodb::metamodel::mapping::Field(
+          dataType = ^meta::external::store::mongodb::metamodel::StringType(),
+          argumentExpression = ^FieldPathExpression(fieldPath='legal_name')
+    );
+
+    //Map the domain class attributes to fields created above
+    let personPropMappings = [
+      ^meta::external::store::mongodb::metamodel::mapping::MongoDBPropertyMapping(
+        property = $domainClass.properties->filter(p | $p.name == 'firstName')->toOne(),
+        sourceSetImplementationId = 'person', targetSetImplementationId = '',
+        field = $first_name),
+      ^meta::external::store::mongodb::metamodel::mapping::MongoDBPropertyMapping(
+        property = $domainClass.properties->filter(p | $p.name == 'lastName')->toOne(),
+        sourceSetImplementationId = 'person', targetSetImplementationId = '',
+        field = $last_name),
+        ^meta::external::store::mongodb::metamodel::mapping::MongoDBPropertyMapping(
+        property = $domainClass.properties->filter(p | $p.name == 'age')->toOne(),
+        sourceSetImplementationId = 'person', targetSetImplementationId = '',
+        field = $age)
+   ];
+   
+   let mongoDbClassMapping = ^meta::external::store::mongodb::metamodel::pure::MongoDBSetImplementation(
+    class=$domainClass,
+    root=true,
+    id='person',
+    parent = meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::MongoDBTestMapping,
+    propertyMappings = $personPropMappings,
+    mainCollection = $personCollection,
+    stores = [$personCollection.owner]
+   );
+
+   let mongoTestMapping = ^meta::pure::mapping::Mapping(classMappings=[$mongoDbClassMapping], name='mongoDbClassMapping');
+   $mongoTestMapping;
+}
+
+###Mapping
+Mapping meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::MongoDBTestMapping
+()
