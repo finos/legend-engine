@@ -881,9 +881,26 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     }
 
     @Override
-    public Node visitTableFunction(SqlBaseParser.TableFunctionContext ctx)
+    public Node visitNamedFunctionArg(SqlBaseParser.NamedFunctionArgContext context)
     {
-        return unsupported();
+        NamedArgumentExpression namedArgumentExpression = new NamedArgumentExpression();
+        namedArgumentExpression.name = getIdentText(context.name);
+        namedArgumentExpression.expression = (Expression) context.valueExpression().accept(this);
+
+        return namedArgumentExpression;
+    }
+
+    @Override
+    public Node visitTableFunction(SqlBaseParser.TableFunctionContext context)
+    {
+        QualifiedName qualifiedName = getQualifiedName(context.qname());
+        List<Expression> arguments = visitCollection(context.functionArg(), Expression.class);
+        FunctionCall functionCall = new FunctionCall();
+        functionCall.name = qualifiedName;
+        functionCall.arguments = arguments;
+        TableFunction tableFunction = new TableFunction();
+        tableFunction.functionCall = functionCall;
+        return tableFunction;
     }
 
     // Boolean expressions
@@ -1167,33 +1184,52 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitWindowDefinition(SqlBaseParser.WindowDefinitionContext context)
     {
-        //TODO
-        return unsupported();
+        Window window = new Window();
+        window.windowRef = getIdentText(context.windowRef);
+        window.partitions = visitCollection(context.partition, Expression.class);
+        window.orderBy = visitCollection(context.sortItem(), SortItem.class);
+        window.windowFrame = visitIfPresent(context.windowFrame(), WindowFrame.class).orElse(null);
+
+        return window;
     }
 
     @Override
     public Node visitWindowFrame(SqlBaseParser.WindowFrameContext ctx)
     {
-        //TODO
-        return unsupported();
+        WindowFrame frame = new WindowFrame();
+        frame.mode = getFrameType(ctx.frameType);
+        frame.start = (FrameBound) visit(ctx.start);
+        frame.end = (FrameBound) visit(ctx.end);
+
+        return frame;
     }
 
     @Override
     public Node visitUnboundedFrame(SqlBaseParser.UnboundedFrameContext context)
     {
-        return unsupported();
+        FrameBound frameBound = new FrameBound();
+        frameBound.type = getUnboundedFrameBoundType(context.boundType);
+
+        return frameBound;
     }
 
     @Override
     public Node visitBoundedFrame(SqlBaseParser.BoundedFrameContext context)
     {
-        return unsupported();
+        FrameBound frameBound = new FrameBound();
+        frameBound.type = getBoundedFrameBoundType(context.boundType);
+        frameBound.value = (Expression) visit(context.expr());
+
+        return frameBound;
     }
 
     @Override
     public Node visitCurrentRowBound(SqlBaseParser.CurrentRowBoundContext context)
     {
-        return unsupported();
+        FrameBound frameBound = new FrameBound();
+        frameBound.type = FrameBoundType.CURRENT_ROW;
+
+        return frameBound;
     }
 
     @Override
@@ -1431,6 +1467,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
         functionCall.arguments = visitCollection(context.expr(), Expression.class);
         functionCall.filter = visitIfPresent(context.filter(), Expression.class).orElse(null);
         functionCall.distinct = isDistinct(context.setQuant());
+        functionCall.window = visitIfPresent(context.over(), Window.class).orElse(null);
 
         return functionCall;
     }
@@ -1796,6 +1833,46 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
         qualifiedName.parts = FastList.newListWith(parts);
 
         return qualifiedName;
+    }
+
+    private static WindowFrameMode getFrameType(Token type)
+    {
+        switch (type.getType())
+        {
+            case SqlBaseLexer.RANGE:
+                return WindowFrameMode.RANGE;
+            case SqlBaseLexer.ROWS:
+                return WindowFrameMode.ROWS;
+            default:
+                throw new IllegalArgumentException("Unsupported frame type: " + type.getText());
+        }
+    }
+
+    private static FrameBoundType getBoundedFrameBoundType(Token token)
+    {
+        switch (token.getType())
+        {
+            case SqlBaseLexer.PRECEDING:
+                return FrameBoundType.PRECEDING;
+            case SqlBaseLexer.FOLLOWING:
+                return FrameBoundType.FOLLOWING;
+            default:
+                throw new IllegalArgumentException("Unsupported bound type: " + token.getText());
+        }
+    }
+
+    private static FrameBoundType getUnboundedFrameBoundType(Token token)
+    {
+        switch (token.getType())
+        {
+            case SqlBaseLexer.PRECEDING:
+                return FrameBoundType.UNBOUNDED_PRECEDING;
+            case SqlBaseLexer.FOLLOWING:
+                return FrameBoundType.UNBOUNDED_FOLLOWING;
+
+            default:
+                throw new IllegalArgumentException("Unsupported bound type: " + token.getText());
+        }
     }
 
     private Node unsupported()
