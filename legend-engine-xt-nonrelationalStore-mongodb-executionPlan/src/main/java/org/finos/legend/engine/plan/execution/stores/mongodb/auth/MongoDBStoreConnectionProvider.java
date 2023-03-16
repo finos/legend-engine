@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.stores.mongodb.auth;
 
 import com.mongodb.MongoClientSettings;
+import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
@@ -31,6 +32,8 @@ import java.util.List;
 
 public class MongoDBStoreConnectionProvider extends ConnectionProvider<MongoClient>
 {
+
+    private static final String ADMIN_DB = "admin";
 
     public MongoDBStoreConnectionProvider(CredentialProviderProvider credentialProviderProvider)
     {
@@ -57,16 +60,15 @@ public class MongoDBStoreConnectionProvider extends ConnectionProvider<MongoClie
         }
 
         PlaintextUserPasswordCredential plaintextCredential = (PlaintextUserPasswordCredential) credential;
+        //TODO: THE admin DB should come from credentials
+        MongoCredential mongoCredential = MongoCredential.createCredential(plaintextCredential.getUser(), ADMIN_DB, plaintextCredential.getPassword().toCharArray());
         List<ServerAddress> serverAddresses = mongoDBConnectionSpec.getServerAddresses();
 
         MongoClientSettings clientSettings = MongoClientSettings.builder()
                 .applyToClusterSettings(builder -> builder.hosts(serverAddresses))
                 .applicationName("Legend Execution Server").build();
-        String connectionURL = "mongodb://" + plaintextCredential.getUser() + ":"
-                + plaintextCredential.getPassword() + "@"
-                + serverAddresses.get(0).toString() + "/admin";
-        com.mongodb.client.MongoClient mongoClient = MongoClients.create(connectionURL); //MongoClients.create(clientSettings);
 
+        MongoClient mongoClient = MongoClients.create(clientSettings);
         return mongoClient;
     }
 

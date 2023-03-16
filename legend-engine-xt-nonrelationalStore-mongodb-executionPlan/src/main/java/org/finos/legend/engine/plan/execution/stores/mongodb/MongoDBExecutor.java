@@ -48,8 +48,8 @@ import java.util.Properties;
 public class MongoDBExecutor
 {
 
-    private final CredentialProviderProvider credentialProviderProvider;
     private final static int DEFAULT_BATCH_SIZE = 10;
+    private final CredentialProviderProvider credentialProviderProvider;
 
     public MongoDBExecutor(CredentialProviderProvider credentialProviderProvider)
     {
@@ -87,13 +87,12 @@ public class MongoDBExecutor
 
             // Loading with no iterator
             Document dbResult = mongoDatabase.runCommand(bsonCmd);
-// <<<<<<< mongo-execute-p1-docker
 
             // using Collection and Iterator
             List<String> result = new ArrayList<>();
             List<Document> pipelineDoc = getPipelineFromDbCommand(dbCommand);
-            try (MongoCursor<Document> cursor = mongoDatabase.getCollection("person").
-                    aggregate(pipelineDoc)
+            try (MongoCursor<Document> cursor = mongoDatabase.getCollection("person")
+                    .aggregate(pipelineDoc)
                     .batchSize(DEFAULT_BATCH_SIZE).iterator())
             {
                 while (cursor.hasNext())
@@ -112,16 +111,6 @@ public class MongoDBExecutor
 
             return new InputStreamResult(inputStream);
 
-// =======
-//             Document cursor = (Document) dbResult.get("cursor");
-//             List<Document> firstBatchDocuments = (List<Document>) cursor.get("firstBatch");
-//             firstBatchDocuments.stream().forEach(i ->
-//             {
-//                 System.out.println("new entry");
-//                 System.out.println(i);
-//             });
-//             return null;
-// >>>>>>> mongo-execute-p1
         }
         catch (Exception e)
         {
