@@ -12,6 +12,165 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::functions::pureToSqlQuery::calendarAggregations::*;
+
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation annualized function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation:= Aggregating over the endDate\'s year, annualising based on number of fiscalDays in the year.'} meta::pure::functions::date::calendar::annualized(inputDate: Date[1], calendarType: String[1], endDate: StrictDate[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation cme function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the endDate\'s month, projecting based on number of fiscalDays in the month (similar to \'annualized\', but for a month). Acronym:= Current Month Estimate.'} meta::pure::functions::date::calendar::cme(inputDate: Date[1], calendarType: String[1], endDate: StrictDate[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation cw function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the current week. Acronym: Current Week.'} meta::pure::functions::date::calendar::cw(inputDate: Date[1], calendarType: String[1], endDate: StrictDate[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation cw_fm function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the current week, including the previous weekend (Franchise Manager\'s use-case). Acronym: Current Week, Franchise Manager.'} meta::pure::functions::date::calendar::cw_fm(inputDate: Date[1], calendarType: String[1], endDate: StrictDate[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation CYMinus2 function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the Current Year minus 2.'} meta::pure::functions::date::calendar::CYMinus2(inputDate: Date[1], calendarType: String[1], endDate: StrictDate[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation CYMinus3 function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the Current Year minus 3.'} meta::pure::functions::date::calendar::CYMinus3(inputDate: Date[1], calendarType: String[1], endDate: StrictDate[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation mtd function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over month-to-date.'} meta::pure::functions::date::calendar::mtd(inputDate: Date[1], calendarType: String[1], endDate: StrictDate[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation p12wa function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous 12 weeks, divided by 12. Acronym:= Previous 12 Weeks Averaged.'} meta::pure::functions::date::calendar::p12wa(inputDate: Date[1], calendarType: String[1], endDate: StrictDate[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation p12wtd function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous 12 weeks until endDate. Acronym:= Previous 12 Weeks To Date.'} meta::pure::functions::date::calendar::p12wtd(inputDate: Date[1], calendarType: String[1], endDate: StrictDate[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation p4wa function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous 4 weeks, divided by 4. Acronym:= Previous 4 Weeks Averaged.'} meta::pure::functions::date::calendar::p4wa(inputDate: Date[1], calendarType: String[1], endDate: StrictDate[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation p4wtd function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous 4 weeks until endDate. Acronym:= Previous 4 Weeks To Date.'} meta::pure::functions::date::calendar::p4wtd(inputDate: Date[1], calendarType: String[1], endDate: StrictDate[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation p52wtd function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous 52 weeks until endDate. Acronym:= Previous 52 Weeks To Date.'} meta::pure::functions::date::calendar::p52wtd(inputDate: Date[1], calendarType: String[1], endDate: StrictDate[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation p52wa function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous 52 weeks, divided by 52. Acronym:= Previous 52 Weeks Averaged.'} meta::pure::functions::date::calendar::p52wa(inputDate: Date[1], calendarType: String[1], endDate: StrictDate[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation pma function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= If endDate is not in January, aggregating over the previous months of endDate\'s year, divided by number of number of months elapsed. If endDate is in January, aggregating over endDate\'s previous year, divided by 12. Acronym:= Previous Months Averaged.'} meta::pure::functions::date::calendar::pma(inputDate: Date[1], calendarType: String[1], endDate: StrictDate[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation pmtd function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous month, for the same number of fiscalDays as endDate\'s fiscalDayInMonth. Acronym:= Previous Month To Date.'} meta::pure::functions::date::calendar::pmtd(inputDate: Date[1], calendarType: String[1], endDate: StrictDate[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation pqtd function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous quarter, for the same number of fiscalDays as endDate\'s fiscalDayInQuarter. Acronym:= Previous Quarter To Date.'} meta::pure::functions::date::calendar::pqtd(inputDate: Date[1], calendarType: String[1], endDate: StrictDate[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation priorDay function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the business day previous to endDate.'} meta::pure::functions::date::calendar::priorDay(inputDate: Date[1], calendarType: String[1], endDate: StrictDate[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation priorYear function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the (entire) year previous to endDate.'} meta::pure::functions::date::calendar::priorYear(inputDate: Date[1], calendarType: String[1], endDate: StrictDate[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation pw function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous week. Acronym: Previous Week.'} meta::pure::functions::date::calendar::pw(inputDate: Date[1], calendarType: String[1], endDate: StrictDate[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation pw_fm function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous week, including the weekend before (Franchise Manager\'s use-case). Acronym: Previous Week, Franchise Manager.'} meta::pure::functions::date::calendar::pw_fm(inputDate: Date[1], calendarType: String[1], endDate: StrictDate[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation pwa function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= If endDate is in the first 5 weeks of the year, aggregating over the previous year, dividing by 5 (there are typically 5 business days in a week). If endDate is not in the first 5 weeks of the year, aggregating over current year until endDate, dividing by the number of weeks elapsed. Acronym:= Past Weeks\' Average.'} meta::pure::functions::date::calendar::pwa(inputDate: Date[1], calendarType: String[1], endDate: StrictDate[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation pwtd function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous week, for the same number of fiscalDays as endDate\'s fiscalDayInWeek. Acronym:= Previous Week To Date.'} meta::pure::functions::date::calendar::pwtd(inputDate: Date[1], calendarType: String[1], endDate: StrictDate[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation pymtd function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous year\'s (same) month, for the same number of fiscalDays as endDate\'s fiscalDayInMonth. Acronym:= Previous Year\'s Month To Date.'} meta::pure::functions::date::calendar::pymtd(inputDate: Date[1], calendarType: String[1], endDate: StrictDate[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation pyqtd function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous year\'s (same) quarter, for the same number of fiscalDays as endDate\'s fiscalDayInQuarter. Acronym:= Previous Year\'s Quarter To Date.'} meta::pure::functions::date::calendar::pyqtd(inputDate: Date[1], calendarType: String[1], endDate: StrictDate[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation pytd function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous year, for the same number of fiscalDays as endDate\'s fiscalDayInYear. Acronym:= Previous Year To Date.'} meta::pure::functions::date::calendar::pytd(inputDate: Date[1], calendarType: String[1], endDate: StrictDate[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation pywa function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous year, dividing by 5 (there are typically 5 business days in a week). This function returns null if endDate is not in the first 5 weeks of the year. Acronym:= Previous Year\'s Weekly Average.'} meta::pure::functions::date::calendar::pywa(inputDate: Date[1], calendarType: String[1], endDate: StrictDate[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation pywtd function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over the previous year\'s (same) week, for the same number of fiscalDays as endDate\'s fiscalDayInWeek. Acronym:= Previous Year\'s Week To Date.'} meta::pure::functions::date::calendar::pywtd(inputDate: Date[1], calendarType: String[1], endDate: StrictDate[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation qtd function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over quarter-to-date.'} meta::pure::functions::date::calendar::qtd(inputDate: Date[1], calendarType: String[1], endDate: StrictDate[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation reportEndDay function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over endDate.'} meta::pure::functions::date::calendar::reportEndDay(inputDate: Date[1], calendarType: String[1], endDate: StrictDate[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation wtd function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over week-to-date.'} meta::pure::functions::date::calendar::wtd(inputDate: Date[1], calendarType: String[1], endDate: StrictDate[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+function <<functionType.NotImplementedFunction>> {doc.doc = 'Calendar aggregation ytd function. Arguments: inputDate := date column to aggregate against. CalendarType := region of the calendar to consider, currently NY or London. endDate := end date of the calculation. inputValue := value column to aggregate. Calculation: Calculation:= Aggregating over year-to-date.'} meta::pure::functions::date::calendar::ytd(inputDate: Date[1], calendarType: String[1], endDate: StrictDate[1], inputValue: Number[0..1]): Number[0..1]
+{
+  fail('Implemented by execution plans');
+  1.0;
+}
+
 function meta::pure::functions::date::daysOfMonth(date:Date[1]):Integer[*]
 {
    if ($date->hasDay(),
