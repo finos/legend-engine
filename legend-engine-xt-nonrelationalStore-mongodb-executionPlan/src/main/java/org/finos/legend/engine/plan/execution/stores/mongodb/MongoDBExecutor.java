@@ -14,10 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.mongodb;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
@@ -56,21 +52,21 @@ public class MongoDBExecutor
         this.credentialProviderProvider = credentialProviderProvider;
     }
 
-    public List<Document> getPipelineFromDbCommand(String dbCommand) throws JsonProcessingException
-    {
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode actualObj = mapper.readTree(dbCommand);
-        ArrayNode pipelineString = (ArrayNode) actualObj.get("pipeline");
-        List<Document> pipeline = new ArrayList<>();
-
-        pipelineString.forEach(node ->
-        {
-            String nodeStr = node.toString();
-            pipeline.add(Document.parse(nodeStr));
-        });
-
-        return pipeline;
-    }
+//    public List<Document> getPipelineFromDbCommand(String dbCommand) throws JsonProcessingException
+//    {
+//        ObjectMapper mapper = new ObjectMapper();
+//        JsonNode actualObj = mapper.readTree(dbCommand);
+//        ArrayNode pipelineString = (ArrayNode) actualObj.get("pipeline");
+//        List<Document> pipeline = new ArrayList<>();
+//
+//        pipelineString.forEach(node ->
+//        {
+//            String nodeStr = node.toString();
+//            pipeline.add(Document.parse(nodeStr));
+//        });
+//
+//        return pipeline;
+//    }
 
     public InputStreamResult executeMongoDBQuery(String dbCommand, MongoDBConnection dbConnection)
     {
@@ -85,19 +81,21 @@ public class MongoDBExecutor
 
             Document bsonCmd = Document.parse(dbCommand);
 
-            // Loading with no iterator
-            Document dbResult = mongoDatabase.runCommand(bsonCmd);
+
+            // Loading with no iterator - TODO: Fix this up
+            // Document dbResult = mongoDatabase.runCommand(bsonCmd);
 
             // using Collection and Iterator
             List<String> result = new ArrayList<>();
-            List<Document> pipelineDoc = getPipelineFromDbCommand(dbCommand);
-            try (MongoCursor<Document> cursor = mongoDatabase.getCollection("person")
-                    .aggregate(pipelineDoc)
+            try (MongoCursor<Document> cursor = mongoDatabase.getCollection(bsonCmd.getString("aggregate"))
+                    .aggregate(bsonCmd.getList("pipeline", Document.class))
                     .batchSize(DEFAULT_BATCH_SIZE).iterator())
             {
                 while (cursor.hasNext())
                 {
-                    result.add(cursor.next().toJson());
+                    String jsonResult = cursor.next().toJson();
+                    System.out.println(jsonResult);
+                    result.add(jsonResult);
                 }
             }
 
