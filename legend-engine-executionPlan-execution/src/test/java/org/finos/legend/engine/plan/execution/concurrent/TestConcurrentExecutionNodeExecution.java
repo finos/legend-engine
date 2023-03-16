@@ -61,7 +61,15 @@ public class TestConcurrentExecutionNodeExecution
                 }).join();
             }
 
-//             Assert.assertTrue("Response : " + concurrentExecutionNodeExecutorPool, concurrentExecutionNodeExecutorPool.toString().contains(executorPoolStateAssertMessage));
+            try
+            {
+                Thread.sleep(1000);
+            }
+            catch (Exception ignored)
+            {
+ 
+            }
+            Assert.assertTrue("Response : " + concurrentExecutionNodeExecutorPool, concurrentExecutionNodeExecutorPool.toString().contains(executorPoolStateAssertMessage));
             return results;
         }
     }
