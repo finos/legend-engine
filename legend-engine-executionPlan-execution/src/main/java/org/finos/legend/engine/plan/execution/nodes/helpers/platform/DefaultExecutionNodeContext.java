@@ -82,6 +82,10 @@ public class DefaultExecutionNodeContext implements ExecutionNodeContext
             {
                 return (T) ((EngineDate) value).transformToPureDate();
             }
+            else if (clazz.equals(Long.class) && value instanceof String)
+            {
+                return (T) Long.valueOf(Long.parseLong((String)value));
+            }
         }
         throw new IllegalArgumentException("Unable to convert " + result.getClass().getSimpleName() + " to " + TypeUtils.toString(clazz));
     }
