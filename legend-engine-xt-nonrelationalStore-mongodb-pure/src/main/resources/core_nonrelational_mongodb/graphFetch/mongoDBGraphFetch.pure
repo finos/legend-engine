@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::mongodb::graphFetch::executionPlan::*;
 import meta::external::store::mongodb::metamodel::aggregation::*;
 import meta::external::store::mongodb::functions::pureToDatabaseCommand::*;
 import meta::external::store::mongodb::metamodel::pure::runtime::*;
@@ -30,7 +31,10 @@ function meta::external::store::mongodb::graphFetch::executionPlan::planRootGrap
   let rootTree = $clusteredTree->byPassClusteringInfo()->cast(@RoutedRootGraphFetchTree<Any>);
   let store = $sq.store->cast(@MongoDatabase);
 
-  let databaseCommand = $lhsFe->toDatabaseCommand($mapping, $sq.inScopeVars, $debug, $extensions)->cast(@DatabaseCommand);
+  let propertyNamesToProject = $rootTree.subTrees->cast(@meta::pure::graphFetch::PropertyGraphFetchTree).property->filter(x | $x->instanceOf(Property))->cast(@Property<Nil,Any|*>).name;
+
+  let databaseCommand = $lhsFe->toDatabaseCommand($mapping, $sq.inScopeVars, $debug, $extensions)->cast(@DatabaseCommand)->filterOutProjectedFields($propertyNamesToProject);
+
   let connection = $runtime->toOne()->connectionByElement($store)->cast(@MongoDBConnection);
 
   ^RootMongoDBGraphFetchExecutionNode(
@@ -44,5 +48,19 @@ function meta::external::store::mongodb::graphFetch::executionPlan::planRootGrap
         connection = $connection
       )
     ]
+  );
+}
+
+
+function meta::external::store::mongodb::graphFetch::executionPlan::filterOutProjectedFields(databaseCommand: DatabaseCommand[1], fieldNames: String[*]): DatabaseCommand[1]
+{
+  let matchStage = $databaseCommand.aggregationPipeline.stages->filter(x | $x->instanceOf(MatchStage))->cast(@MatchStage);
+
+  let keyValuesToProject = $databaseCommand.aggregationPipeline.stages->filter(x | $x->instanceOf(ProjectStage))->toOne()->cast(@ProjectStage).projections->cast(@ObjectQueryExpression).keyValues->filter(k | $k->cast(@QueryExprKeyValue).key->cast(@FieldPathExpression).fieldPath->in($fieldNames));
+
+  ^$databaseCommand(
+    aggregationPipeline = ^AggregationPipeline(
+      stages = $matchStage->concatenate(^ProjectStage(projections=^ObjectQueryExpression(keyValues = $keyValuesToProject)))
+    )
   );
 }

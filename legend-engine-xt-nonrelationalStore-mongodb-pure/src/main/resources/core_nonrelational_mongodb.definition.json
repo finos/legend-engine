@@ -1,10 +1,11 @@
 {
   "name": "core_nonrelational_mongodb",
-  "pattern": "(meta::external::store::mongodb|meta::protocols::pure)(::.*)?",
+  "pattern": "(meta::external::store::mongodb|meta::protocols::pure|meta::pure::graphFetch)(::.*)?",
   "dependencies": [
     "platform",
     "core",
     "platform_dsl_mapping",
+    "platform_dsl_graph",
     "platform_dsl_path",
     "platform_functions",
     "core_external_language_java",
