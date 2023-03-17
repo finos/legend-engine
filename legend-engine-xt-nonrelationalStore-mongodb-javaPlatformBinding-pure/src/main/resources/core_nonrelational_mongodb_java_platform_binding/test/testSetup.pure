@@ -13,6 +13,7 @@
 // limitations under the License.
 
 //import meta::external::store::mongodb::metamodel::*;
+import meta::pure::graphFetch::execution::*;
 import meta::external::store::mongodb::metamodel::aggregation::*;
 import meta::external::store::mongodb::metamodel::pure::*;
 import meta::external::shared::format::functions::*;
@@ -22,6 +23,8 @@ import meta::external::shared::format::binding::*;
 import meta::external::format::json::metamodel::*;
 import meta::external::shared::format::metamodel::*;
 import meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::*;
+import meta::pure::runtime::connection::authentication::*;
+
 
 Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::TestSchema
 {
@@ -237,6 +240,64 @@ function  meta::external::store::mongodb::executionPlan::platformBinding::legend
    $mongoTestMapping;
 }
 
+function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::executeMongoDBPersonQuery() : Boolean[1]
+{
+   let domainClass = meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Person;
+
+  let mongoDatabase = ^meta::external::store::mongodb::metamodel::pure::MongoDatabase(
+        name     = 'TestMongoDatabase'
+    );
+
+  let personCollection = getTestMongoPersonCollection($mongoDatabase);   // From Store representation
+  let personMapping = getTestMongoPersonMapping($personCollection, $domainClass);      // Mapping depends on domain + store representation
+
+  let personTree = #{
+      meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Person {
+        firstName,
+        lastName
+      }
+    }#;
+
+  let personQuery = {|Person.all()
+      ->filter(y | ($y.lastName == 'Smith' && $y.firstName == 'Linda'))->graphFetch($personTree)->serialize($personTree)};
+
+
+    let firmTree = #{
+      meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Firm {
+         legalName
+      }
+    }#;
+
+   let mongoExtensions = [meta::external::store::mongodb::extension::mongoDBExtensions()];
+   let executionContext = ^meta::external::store::mongodb::functions::pureToDatabaseCommand::MongoDBExecutionContext(queryTimeOutInSeconds=5, enableConstraints=false);
+   
+   let debugContext = ^meta::pure::tools::DebugContext(
+      debug=false,
+      space=' '
+    );
+   
+   let mongoRuntime = ^meta::pure::runtime::Runtime(
+      connections = ^meta::external::store::mongodb::metamodel::pure::runtime::MongoDBConnection(
+          element=$mongoDatabase,
+          type=meta::external::store::mongodb::metamodel::runtime::DatabaseType.MongoDb,
+          authenticationSpecification = ^UserPasswordAuthenticationSpecification(username='legend_user', password=^SystemPropertiesSecret(systemPropertyName='mongo_pwd')),
+          dataSourceSpecification = ^meta::external::store::mongodb::metamodel::runtime::MongoDBDatasourceSpecification(
+              databaseName = 'legend_db',
+              serverURLs=[
+                ^meta::external::store::mongodb::metamodel::runtime::MongoDBURL(baseUrl = 'localhost', port = 27017)
+              ]
+          )
+      )
+    );
+
+    let result = execute($personQuery, $personMapping, $mongoRuntime, $mongoExtensions).values;
+    // TODO: Conver this to test + assert.
+    true;
+
+}
+
+
 ###Mapping
 Mapping meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::MongoDBTestMapping
-()
+(
+)
