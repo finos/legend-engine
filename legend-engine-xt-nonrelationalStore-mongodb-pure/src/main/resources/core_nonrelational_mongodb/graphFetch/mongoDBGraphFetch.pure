@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::mongodb::metamodel::mapping::*;
 import meta::external::store::mongodb::graphFetch::executionPlan::*;
 import meta::external::store::mongodb::metamodel::aggregation::*;
 import meta::external::store::mongodb::functions::pureToDatabaseCommand::*;
@@ -31,9 +32,13 @@ function meta::external::store::mongodb::graphFetch::executionPlan::planRootGrap
   let rootTree = $clusteredTree->byPassClusteringInfo()->cast(@RoutedRootGraphFetchTree<Any>);
   let store = $sq.store->cast(@MongoDatabase);
 
-  let propertyNamesToProject = $rootTree.subTrees->cast(@meta::pure::graphFetch::PropertyGraphFetchTree).property->filter(x | $x->instanceOf(Property))->cast(@Property<Nil,Any|*>).name;
+  let domainFieldsToProject = $rootTree.subTrees->cast(@meta::pure::graphFetch::PropertyGraphFetchTree).property->filter(x | $x->instanceOf(Property))->cast(@Property<Nil,Any|*>).name;
 
-  let databaseCommand = $lhsFe->toDatabaseCommand($mapping, $sq.inScopeVars, $debug, $extensions)->cast(@DatabaseCommand)->filterOutProjectedFields($propertyNamesToProject);
+  let storeFieldsToProject = $mapping.classMappings->cast(@MongoDBSetImplementation).propertyMappings
+    ->filter(p | $p->cast(@MongoDBPropertyMapping).property->cast(@Property<Nil,Any|*>).name->in($domainFieldsToProject))
+    ->map(p | $p->cast(@MongoDBPropertyMapping).field->cast(@Field).argumentExpression->cast(@FieldPathExpression).fieldPath);
+
+  let databaseCommand = $lhsFe->toDatabaseCommand($mapping, $sq.inScopeVars, $debug, $extensions)->cast(@DatabaseCommand)->filterOutProjectedFields($storeFieldsToProject);
 
   let connection = $runtime->toOne()->connectionByElement($store)->cast(@MongoDBConnection);
 
