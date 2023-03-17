@@ -51,12 +51,20 @@ meta::external::store::elasticsearch::specification::metamodel::GenerationState
 
 function meta::external::store::elasticsearch::specification::metamodel::generatePureCode(specAsJson: String[1], pkgPrefix: String[1], apisToGenerate: String[*], debug: Boolean[1]): String[1]
 {
+  let esProfile = ^meta::protocols::pure::vX_X_X::metamodel::domain::Profile(
+    _type = 'profile',
+    package = $pkgPrefix,
+    name = 'ESProfile',
+    stereotypes = ['ContainerProperty', 'TaggedUnion', 'ExternalTagged', 'ContainerVariant', 'AdditionalProperty', 'SingleKeyMap'],
+    tags = ['esQuirk', 'docURL', 'specLocation', 'since', 'stability', 'name', 'internalTag']
+  );
+
   let generated = $specAsJson->parse()->specToPure($pkgPrefix, $apisToGenerate, $debug).generated;
   let protocol = ^meta::protocols::Protocol(name='pure', version='vX_X_X');
   let pmcd = ^meta::protocols::pure::vX_X_X::metamodel::PureModelContextData(
       _type = 'data',
       serializer = $protocol,
-      elements = $generated
+      elements = $esProfile->concatenate($generated)
   );
 
   let pureCode = $pmcd->meta::json::toJSON(1000, meta::json::config(false, false, true, true));
@@ -66,7 +74,7 @@ function
 <<access.private>>
 meta::external::store::elasticsearch::specification::metamodel::addConstraints(class: meta::protocols::pure::vX_X_X::metamodel::domain::Class[1]): meta::protocols::pure::vX_X_X::metamodel::domain::Class[1]
 {
-  if ($class.stereotypes->filter(s | $s.value->in(['TaggedUnion', 'ContainerVariant']))->isNotEmpty(),
+  let constraints = if ($class.stereotypes->filter(s | $s.value->in(['TaggedUnion', 'ContainerVariant']))->isNotEmpty(),
     |
       let thisVar = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable(_type = 'var', name = 'this');
 
@@ -129,12 +137,81 @@ meta::external::store::elasticsearch::specification::metamodel::addConstraints(c
                               parameters = $thisVar
                           );      
 
-      let constraints = ^meta::protocols::pure::vX_X_X::metamodel::domain::Constraint(name = 'singleValueContainer', functionDefinition = $constraintLambda);
-      
-      ^$class(constraints = $class.constraints->concatenate($constraints));,
+      ^meta::protocols::pure::vX_X_X::metamodel::domain::Constraint(name = 'singleValueContainer', functionDefinition = $constraintLambda);
+      ,
     | 
-      $class
+      [];
   );
+
+  let singleKeyConstrains = $class.properties
+        ->filter(p | $p.stereotypes.value->exists(s | $s == 'SingleKeyMap'))
+        ->map(p | $p->singleKeyMapConstraint());
+
+  ^$class(constraints = $class.constraints->concatenate($constraints)->concatenate($singleKeyConstrains));
+}
+
+function
+<<access.private>>
+meta::external::store::elasticsearch::specification::metamodel::singleKeyMapConstraint(p: meta::protocols::pure::vX_X_X::metamodel::domain::Property[1]): meta::protocols::pure::vX_X_X::metamodel::domain::Constraint[0..1] // todo
+{
+  let thisVar = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable(_type = 'var', name = 'this');
+
+  let mapProperty = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::AppliedProperty(_type = 'property', property = $p.name, parameters = $thisVar);
+
+  let lambdaParameter = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable(
+                _type = 'var',
+                name = 'b'
+              );
+
+  let keysFunc = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::AppliedFunction
+                    (
+                      _type = 'func', 
+                      function = 'keys',
+                      fControl = 'keys_Map_1__U_MANY_', 
+                      parameters = $lambdaParameter
+                    );            
+
+  let mapLambda = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda
+                      (
+                          _type = 'lambda',
+                          body = $keysFunc,
+                          parameters = $lambdaParameter
+                      );
+
+  let mapFunc = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::AppliedFunction
+                    (
+                      _type = 'func', 
+                      function = 'map',
+                      fControl = 'map_T_MANY__Function_1__V_MANY_', 
+                      parameters = [$mapProperty, $mapLambda]
+                    );
+
+  let sizeFunc = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::AppliedFunction
+                    (
+                      _type = 'func', 
+                      function = 'size',
+                      fControl = 'size_Any_MANY__Integer_1_', 
+                      parameters = $mapFunc
+                    );
+
+  let lessThanEqualFunc = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::AppliedFunction
+                    (
+                      _type = 'func', 
+                      function = 'lessThanEqual',
+                      fControl = 'lessThanEqual_Number_1__Number_1__Boolean_1_', 
+                      parameters = [
+                          $sizeFunc,
+                          ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CInteger(_type = 'integer', value = 1)
+                        ]
+                    );
+
+  let constraintLambda = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda
+                    (
+                        _type = 'lambda',
+                        body = $lessThanEqualFunc,
+                        parameters = $thisVar
+                    );    
+  ^meta::protocols::pure::vX_X_X::metamodel::domain::Constraint(name = 'singleKeyMap_' + $p.name, functionDefinition = $constraintLambda);
 }
 
 function
@@ -237,6 +314,11 @@ meta::external::store::elasticsearch::specification::metamodel::createClass(type
       let modelProp = $p->createProperty($state)->map(x | ^$x(stereotypes = ^meta::protocols::pure::vX_X_X::metamodel::domain::StereotypePtr(profile = $state.pkgPrefix + '::ESProfile', value = 'AdditionalProperty')));
     });
 
+  let typeProperty = if($superTypes->isNotEmpty(),
+    |^_Property(name = '_pure_protocol_type', required = true, type = ^LiteralValue(value = toLowerFirstCharacter($namePrefix + $type.name->getPureName($state))->toOne()))->createProperty($state),
+    |[]
+  );
+
   let class = ^meta::protocols::pure::vX_X_X::metamodel::domain::Class(
       _type = 'class',
       name = $namePrefix + $type.name->getPureName($state) + $genericsForString,
@@ -244,7 +326,7 @@ meta::external::store::elasticsearch::specification::metamodel::createClass(type
       taggedValues = addDocumentation($type.description, $type.docUrl, $type.specLocation, [], $type.esQuirk, $type.deprecation, $state),
       stereotypes = $type.deprecation->map(x | ^meta::protocols::pure::vX_X_X::metamodel::domain::StereotypePtr(profile = 'doc', value = 'deprecated')),
       superTypes = $superTypes,
-      properties = $behaviorProperties
+      properties = $typeProperty->concatenate($behaviorProperties)
   );
 
   $state->registerType($type.name, $class.package->toOne() + '::' + $class.name);
@@ -312,7 +394,7 @@ meta::external::store::elasticsearch::specification::metamodel::createProperty(p
   let docs = $property.stability->map(x | ^meta::protocols::pure::vX_X_X::metamodel::domain::TaggedValue(tag = ^meta::protocols::pure::vX_X_X::metamodel::domain::TagPtr(profile = $state.pkgPrefix + '::ESProfile', value = 'stability'), value = $x.name));
 
   let fullProp = ^$toAnnotate(
-    stereotypes = $containerStereotype->concatenate($property.deprecation->map(x | ^meta::protocols::pure::vX_X_X::metamodel::domain::StereotypePtr(profile = 'doc', value = 'deprecated'))),
+    stereotypes = $property.type->propertyTypeStereotypes($state)->concatenate($containerStereotype->concatenate($property.deprecation->map(x | ^meta::protocols::pure::vX_X_X::metamodel::domain::StereotypePtr(profile = 'doc', value = 'deprecated')))),
     taggedValues = addDocumentation($property.description, $property.docUrl, [], $property.since, $property.esQuirk, $property.deprecation, $state)->concatenate($docs)->concatenate($nameTag)
   );
 
@@ -322,11 +404,21 @@ meta::external::store::elasticsearch::specification::metamodel::createProperty(p
 
 function
 <<access.private>>
+meta::external::store::elasticsearch::specification::metamodel::propertyTypeStereotypes(type: ValueOf[1], state: GenerationState[1]): meta::protocols::pure::vX_X_X::metamodel::domain::StereotypePtr[*]
+{
+  $type->match([
+    mapT: DictionaryOf[1] | if($mapT.singleKey, |^meta::protocols::pure::vX_X_X::metamodel::domain::StereotypePtr(profile = $state.pkgPrefix + '::ESProfile', value = 'SingleKeyMap'), |[]),
+    any: Any[1] | []
+  ]);
+}
+
+function
+<<access.private>>
 meta::external::store::elasticsearch::specification::metamodel::propertyTypeMultiplicity(type: ValueOf[1], required: Boolean[1], state: GenerationState[1]): Multiplicity[1]
 {
   $type->match([
     arrayT: ArrayOf[1] | if($required, |OneMany, |ZeroMany),
-    mapT: DictionaryOf[1] | if($required, |if($mapT.singleKey, |PureOne, |OneMany), |if($mapT.singleKey, |ZeroOne, |ZeroMany)),
+    mapT: DictionaryOf[1] | if($required, |PureOne, |ZeroOne),
     instanceT: InstanceOf[1] | $instanceT->instanceOfTypeMultiplicity($required, $state),
     unionT: UnionOf[1] | $unionT->unionOfTypeMultiplicity($required, $state),
     userDefT: UserDefinedValue[1] | if($required, |PureOne, |ZeroOne)
@@ -382,13 +474,12 @@ meta::external::store::elasticsearch::specification::metamodel::propertyTypeToPu
     arrayT: ArrayOf[1] | $arrayT.value->propertyTypeToPureType($state),
     {mapT: DictionaryOf[1] |
       let keyType = $mapT.key->propertyTypeToPureType($state);
-      assert($keyType == 'String', |'dictionary with key that is not String are not supported');
       let keyMult = $mapT.key->propertyTypeMultiplicity(true, $state);
       assert($keyMult == PureOne, |'dictionary with key that is not pure one are not supported');
       let valueType = $mapT.value->propertyTypeToPureType($state);
       let valueMult = $mapT.value->propertyTypeMultiplicity(false, $state);
-      let dictionaryClass = if($valueMult->isToMany(), |'DictionaryEntryMultiValue', |'DictionaryEntrySingleValue');
-      '%s::%s<%s>'->format([ $state.pkgPrefix, $dictionaryClass, $valueType ]);
+      let mapValue = if($valueMult->isToMany(), |'List<%s>'->format($valueType), |$valueType);
+      'Map<%s, %s>'->format([ $keyType, $mapValue ]);
     },
     instanceT: InstanceOf[1] | $instanceT->instanceOfTypeToPureType($state),
     unionT: UnionOf[1] | $unionT->unionOfTypeToPureType($state),
@@ -404,7 +495,7 @@ meta::external::store::elasticsearch::specification::metamodel::unionOfTypeToPur
 
   $state.log(|'Generating started for union of type: %s'->format($types->joinStrings(', ')));  
 
-  let distinct = $types->distinct()->filter(x | $x != 'Nil');
+  let distinct = $types->distinct()->filter(x | $x->in(['Nil'])->not());
   if($distinct->size() == 1,
     {|
       $distinct->at(0);
@@ -416,9 +507,7 @@ meta::external::store::elasticsearch::specification::metamodel::unionOfTypeToPur
         |
           if($distinct->exists(x | $x == 'String'),
             |'String',
-            |
-              fail($distinct->joinStrings('Too many types to union: ', ', ', ''));
-              $distinct->at(0);
+            |'Any'
           )
       );
     }

@@ -1,0 +1,130 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::functions::io::http::*;
+import meta::pure::test::*;
+import meta::pure::store::*;
+import meta::pure::runtime::*;
+
+import meta::pure::runtime::connection::authentication::*;
+
+import meta::external::store::elasticsearch::executionTest::test::*;
+import meta::external::store::elasticsearch::executionTest::test::v7::*;
+import meta::external::store::elasticsearch::executionTest::testCase::*;
+
+import meta::external::store::elasticsearch::v7::extension::*;
+
+import meta::external::store::elasticsearch::v7::metamodel::runtime::*;
+import meta::external::store::elasticsearch::v7::metamodel::store::*;
+
+import meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::*;
+import meta::external::store::elasticsearch::v7::metamodel::specification::indices::delete::*;
+import meta::external::store::elasticsearch::v7::metamodel::specification::indices::create::*;
+import meta::external::store::elasticsearch::v7::metamodel::specification::global::bulk::*;
+import meta::external::store::elasticsearch::v7::metamodel::specification::types::*;
+
+function <<access.private>> meta::external::store::elasticsearch::executionTest::test::v7::omdbMapping(): TypeMapping[1]
+{
+  ^TypeMapping(
+    properties = newMap([
+      pair('Title', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(keyword = ^KeywordProperty())),
+      pair('Director', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(keyword = ^KeywordProperty()))
+    ])
+  );
+}
+
+function <<access.private>> meta::external::store::elasticsearch::executionTest::test::v7::mapping(type: Type[1]): TypeMapping[1]
+{
+  $type->match([
+    a: Class<OmdbRecord>[1] | omdbMapping()
+  ]);
+}
+
+function <<access.private>> meta::external::store::elasticsearch::executionTest::test::v7::index(name: String[1], records: Any[*]): Any[*]
+{
+  let deletIndex = ^DeleteRequest(
+      index = $name,
+      ignore_unavailable = true
+  );
+
+  let mappings = $records->type()->mapping();
+
+  let createIndex = ^CreateRequest(
+    body = ^CreateRequestBody(
+      mappings = $mappings
+    ),
+    index = $name
+  );
+
+  let indexData = ^BulkRequest<Any, Any>(
+      operations = $records->map(r | [^IndexOperation(), $r])->toOneMany(),
+      index = $name,
+      refresh = Refresh._true
+  );
+
+  [
+    $deletIndex,
+    $createIndex,
+    $indexData
+  ];
+}
+
+function <<access.private>> meta::external::store::elasticsearch::executionTest::test::v7::store(name: String[1], type: Type[1]): Elasticsearch7Store[1]
+{
+    let mapping = $type->mapping();
+
+    let index = ^Elasticsearch7StoreIndexMapping(
+        indexName = $name,
+        properties = $mapping.properties->toOne()->keyValues()->map(x | ^Elasticsearch7StoreIndexMappingProperty(propertyName = $x.first, property = $x.second))
+    );
+
+    let store = ^Elasticsearch7Store(
+      name = 'TestStore',
+      package = 'meta::external::store::elasticsearch::executionTest::test::v7::'->pathToPackage(false),
+      indices = $index
+    );
+}
+
+function <<access.private>> meta::external::store::elasticsearch::executionTest::test::v7::connection(url: URL[1], store: Store[1]): Connection[1]
+{
+  ^Elasticsearch7StoreConnection(
+        element = $store,
+        sourceSpec = ^Elasticsearch7StoreURLSourceSpecification(url = $url),
+        authSpec = ^UserPasswordAuthenticationSpecification(
+          username = 'elastic',
+          password = ^SystemPropertiesSecret(systemPropertyName = 'org.finos.legend.engine.plan.execution.stores.elasticsearch.test.password')
+        )
+  )
+}
+
+function <<access.private>> meta::external::store::elasticsearch::executionTest::test::v7::collectTest(tag: String[1]): PureTestCollection[1]
+{
+  collectTest(
+    $tag,
+    store_String_1__Type_1__Elasticsearch7Store_1_,
+    connection_URL_1__Store_1__Connection_1_,
+    elasticsearchV7Extension(),
+    index_String_1__Any_MANY__Any_MANY_
+  );
+}
+
+function <<test.TestCollection>> meta::external::store::elasticsearch::executionTest::test::v7::test_7_8_0(): PureTestCollection[1]
+{
+  '7.8.0'->collectTest();  
+}
+
+function <<test.TestCollection>> meta::external::store::elasticsearch::executionTest::test::v7::test_7_17_0(): PureTestCollection[1]
+{
+  '7.17.0'->collectTest();
+}
