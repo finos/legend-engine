@@ -9,7 +9,7 @@
 Execution engine for Legend. It provides:
 - A Pure parser and compiler.
 - An execution engine, generating and/or executing execution plans when provided with a Pure function, a Mapping and a Runtime.
-- Access point for model transformers written using the Pure language (soon to come).
+- Access point for model transformers written using the Pure language (soon to come).   da
 
 ## Development setup
 
