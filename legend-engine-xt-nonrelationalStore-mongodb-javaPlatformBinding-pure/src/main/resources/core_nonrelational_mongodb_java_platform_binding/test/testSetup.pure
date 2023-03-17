@@ -268,7 +268,7 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
       }
     }#;
 
-   let mongoExtensions = [meta::external::store::mongodb::extension::mongoDBExtensions()];
+   let mongoExtensions = meta::external::store::mongodb::extension::mongoDBExtensions();
    let executionContext = ^meta::external::store::mongodb::functions::pureToDatabaseCommand::MongoDBExecutionContext(queryTimeOutInSeconds=5, enableConstraints=false);
    
    let debugContext = ^meta::pure::tools::DebugContext(
