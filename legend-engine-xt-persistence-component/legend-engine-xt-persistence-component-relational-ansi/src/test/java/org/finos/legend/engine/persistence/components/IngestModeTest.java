@@ -14,10 +14,13 @@
 
 package org.finos.legend.engine.persistence.components;
 
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.ColumnStoreSpecification;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Index;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.ShardSpecification;
 import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
 
 import java.time.Clock;
@@ -60,6 +63,8 @@ public class IngestModeTest
     protected String validityThroughReferenceField = "validity_through_reference";
     protected String validityFromTargetField = "validity_from_target";
     protected String validityThroughTargetField = "validity_through_target";
+    protected String someIndexName = "someIndex";
+    protected String anotherIndexName = "anotherIndex";
 
     protected String[] partitionKeys = new String[]{"biz_date"};
     protected Map<String, Set<String>> partitionFilter = new HashMap<String, Set<String>>()
@@ -118,6 +123,30 @@ public class IngestModeTest
         add(DataSplitRange.of(8, 10));
         add(DataSplitRange.of(11, 14));
     }};
+
+    protected SchemaDefinition baseTableSchemaComplete = SchemaDefinition.builder()
+        .addFields(id)
+        .addFields(name)
+        .addFields(amount)
+        .addFields(bizDate)
+        .addIndexes(Index.builder()
+            .indexName(someIndexName)
+            .addColumns(id.name())
+            .addColumns(bizDate.name())
+            .build())
+        .addIndexes(Index.builder()
+            .indexName(anotherIndexName)
+            .addColumns(amount.name())
+            .build())
+        .columnStoreSpecification(ColumnStoreSpecification.builder()
+            .columnStore(false)
+            .addColumnStoreKeys(name)
+            .addColumnStoreKeys(amount)
+            .build())
+        .shardSpecification(ShardSpecification.builder()
+            .addShardKeys(bizDate)
+            .build())
+        .build();
 
     protected SchemaDefinition baseTableSchema = SchemaDefinition.builder()
             .addFields(id)

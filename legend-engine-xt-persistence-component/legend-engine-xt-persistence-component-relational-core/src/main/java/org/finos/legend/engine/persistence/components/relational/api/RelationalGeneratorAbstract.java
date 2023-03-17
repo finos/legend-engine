@@ -20,13 +20,9 @@ import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.DeriveMainDatasetSchemaFromStaging;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.ColumnStoreSpecification;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetsCaseConverter;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.Index;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.ShardSpecification;
 import org.finos.legend.engine.persistence.components.planner.Planner;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
 import org.finos.legend.engine.persistence.components.planner.Planners;
@@ -39,7 +35,6 @@ import org.finos.legend.engine.persistence.components.schemaevolution.SchemaEvol
 import org.finos.legend.engine.persistence.components.schemaevolution.SchemaEvolutionResult;
 import org.finos.legend.engine.persistence.components.transformer.TransformOptions;
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
-import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapability;
 import org.immutables.value.Value.Default;
 import org.immutables.value.Value.Derived;
@@ -47,13 +42,11 @@ import org.immutables.value.Value.Immutable;
 import org.immutables.value.Value.Style;
 
 import java.time.Clock;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Immutable
@@ -253,111 +246,15 @@ public abstract class RelationalGeneratorAbstract
 
     public Datasets applyCaseOnDatasets(Datasets datasets)
     {
+        DatasetsCaseConverter converter = new DatasetsCaseConverter();
         if (caseConversion() == CaseConversion.TO_UPPER)
         {
-            return applyCaseOnDatasets(datasets, String::toUpperCase);
+            return converter.applyCaseOnDatasets(datasets, String::toUpperCase);
         }
         if (caseConversion() == CaseConversion.TO_LOWER)
         {
-            return applyCaseOnDatasets(datasets, String::toLowerCase);
+            return converter.applyCaseOnDatasets(datasets, String::toLowerCase);
         }
         return datasets;
-    }
-
-    private Datasets applyCaseOnDatasets(Datasets datasets, Function<String, String> strategy)
-    {
-        Dataset main = applyCaseOnDataset(datasets.mainDataset(), strategy);
-        Dataset staging = applyCaseOnDataset(datasets.stagingDataset(), strategy);
-        Optional<Dataset> temp = datasets.tempDataset().map(dataset -> applyCaseOnDataset(dataset, strategy));
-        Optional<Dataset> tempWithDeleteIndicator = datasets.tempDatasetWithDeleteIndicator().map(dataset -> applyCaseOnDataset(dataset, strategy));
-        Optional<Dataset> stagingWithoutDuplicates = datasets.stagingDatasetWithoutDuplicates().map(dataset -> applyCaseOnDataset(dataset, strategy));
-        Optional<MetadataDataset> metadata = datasets.metadataDataset().map(metadataDataset -> applyCaseOnMetadataDataset(metadataDataset, strategy));
-        return Datasets.builder()
-            .mainDataset(main)
-            .stagingDataset(staging)
-            .tempDataset(temp)
-            .tempDatasetWithDeleteIndicator(tempWithDeleteIndicator)
-            .stagingDatasetWithoutDuplicates(stagingWithoutDuplicates)
-            .metadataDataset(metadata)
-            .build();
-    }
-
-    private MetadataDataset applyCaseOnMetadataDataset(MetadataDataset metadataDataset, Function<String, String> strategy)
-    {
-        return MetadataDataset.builder()
-            .metadataDatasetDatabaseName(metadataDataset.metadataDatasetDatabaseName().map(strategy))
-            .metadataDatasetGroupName(metadataDataset.metadataDatasetGroupName().map(strategy))
-            .metadataDatasetName(strategy.apply(metadataDataset.metadataDatasetName()))
-            .tableNameField(strategy.apply(metadataDataset.tableNameField()))
-            .batchStartTimeField(strategy.apply(metadataDataset.batchStartTimeField()))
-            .batchEndTimeField(strategy.apply(metadataDataset.batchEndTimeField()))
-            .batchStatusField(strategy.apply(metadataDataset.batchStatusField()))
-            .tableBatchIdField(strategy.apply(metadataDataset.tableBatchIdField()))
-            .build();
-    }
-
-    private Dataset applyCaseOnDataset(Dataset dataset, Function<String, String> strategy)
-    {
-        String newName = strategy.apply(dataset.datasetReference().name().orElseThrow(IllegalStateException::new));
-        Optional<String> newSchemaName = dataset.datasetReference().group().map(strategy);
-        Optional<String> newDatabaseName = dataset.datasetReference().database().map(strategy);
-
-        List<Field> newDatasetFields = new ArrayList<>();
-        for (Field field : dataset.schema().fields())
-        {
-            Field newField = field.withName(strategy.apply(field.name()));
-            newDatasetFields.add(newField);
-        }
-
-        List<Index> newDatasetIndices = new ArrayList<>();
-        for (Index index : dataset.schema().indexes())
-        {
-            List<String> indexColumnNames = new ArrayList<>();
-            for (String columnName : index.columns())
-            {
-                String newColumnName = strategy.apply(columnName);
-                indexColumnNames.add(newColumnName);
-            }
-            Index newIndex = index.withIndexName(strategy.apply(index.indexName())).withColumns(indexColumnNames);
-            newDatasetIndices.add(newIndex);
-        }
-
-        ColumnStoreSpecification newColumnStoreSpecification = null;
-        if (dataset.schema().columnStoreSpecification().isPresent())
-        {
-            ColumnStoreSpecification columnStoreSpecification = dataset.schema().columnStoreSpecification().get();
-            List<Field> newColumnStoreKeys = new ArrayList<>();
-            for (Field field : columnStoreSpecification.columnStoreKeys())
-            {
-                Field newField = field.withName(strategy.apply(field.name()));
-                newColumnStoreKeys.add(newField);
-            }
-            newColumnStoreSpecification = columnStoreSpecification.withColumnStoreKeys(newColumnStoreKeys);
-        }
-
-        ShardSpecification newShardSpecification = null;
-        if (dataset.schema().shardSpecification().isPresent())
-        {
-            ShardSpecification shardSpecification = dataset.schema().shardSpecification().get();
-            List<Field> newShardKeys = new ArrayList<>();
-            for (Field field : shardSpecification.shardKeys())
-            {
-                Field newField = field.withName(strategy.apply(field.name()));
-                newShardKeys.add(newField);
-            }
-            newShardSpecification = shardSpecification.withShardKeys(newShardKeys);
-        }
-
-        return DatasetDefinition.builder()
-            .name(newName)
-            .group(newSchemaName)
-            .database(newDatabaseName)
-            .schema(SchemaDefinition.builder()
-                .addAllFields(newDatasetFields)
-                .addAllIndexes(newDatasetIndices)
-                .columnStoreSpecification(newColumnStoreSpecification)
-                .shardSpecification(newShardSpecification)
-                .build())
-            .build();
     }
 }
