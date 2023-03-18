@@ -4,7 +4,6 @@
   "dependencies": [
     "platform",
     "platform_dsl_mapping",
-    "core",
-    "core_java_platform_binding"
+    "core"
   ]
 }
