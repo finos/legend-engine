@@ -203,7 +203,7 @@ function meta::external::store::elasticsearch::executionTest::testCase::execute(
       $f,
       [],
       ^Elasticsearch7ExecutionContext(),
-      $config.extension->concatenate(meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingExtensionsWithLegendJavaPlatformBinding([]))
+      $config.extension
   )->meta::json::parseJSON()->cast(@meta::json::JSONObject);
 
   let builderJson = $result->meta::json::getValue('builder')->toOne();

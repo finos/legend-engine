@@ -22,10 +22,8 @@ function meta::legend::execute(f: FunctionDefinition<Any>[1], vars: Pair<String,
     // generate plan
     let rawPlan = meta::pure::executionPlan::executionPlan($f, $context, $extensions);
 
-    // bind to java
-    let javaPlatformBindingId = meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId();
-    let javaPlatformBindingConfig = ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig();
-    let planBindToJava = $rawPlan->meta::pure::executionPlan::generatePlatformCode($javaPlatformBindingId, $javaPlatformBindingConfig, $extensions);
+    // bind to available local platform
+    let planBindToJava = $rawPlan->meta::pure::executionPlan::platformBinding::localBinding::bindTestPlanToPlatformLocally($extensions);
 
     // transform to vX_X_X
     let plan = $planBindToJava->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformPlan($extensions);
