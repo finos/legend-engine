@@ -111,8 +111,6 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
 
                     database._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                             ._rawType(context.pureModel.getType("meta::relational::metamodel::Database")));
-
-                    context.pureModel.storesIndex.put(context.pureModel.buildPackageString(srcDatabase._package, srcDatabase.name), database);
                     return database;
                 },
                 (Database srcDatabase, CompileContext context) ->

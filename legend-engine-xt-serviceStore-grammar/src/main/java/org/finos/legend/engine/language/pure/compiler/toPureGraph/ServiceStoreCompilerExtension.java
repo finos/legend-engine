@@ -64,7 +64,6 @@ public class ServiceStoreCompilerExtension implements IServiceStoreCompilerExten
                             pureServiceStore._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                                     ._rawType(context.pureModel.getType("meta::external::store::service::metamodel::ServiceStore")));
 
-                            context.pureModel.storesIndex.put(context.pureModel.buildPackageString(serviceStore._package, serviceStore.name), pureServiceStore);
                             HelperServiceStoreBuilder.compileAndAddSecuritySchemesToServiceStore(pureServiceStore, serviceStore.securitySchemes, context);
                             return pureServiceStore;
                         },
