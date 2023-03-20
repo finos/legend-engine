@@ -1,6 +1,6 @@
 {
   "name": "core",
-  "pattern": "(meta::json|meta::protocols|meta::external::shared::format|meta::pure|meta::alloy|meta::external::format::yaml|meta::legend)(::.*)?",
+  "pattern": "(meta::pure::metamodel::diagram|meta::pure::metamodel::dataSpace|meta::json|meta::protocols|meta::external::shared::format|meta::pure|meta::alloy|meta::external::format::yaml|meta::legend)(::.*)?",
   "dependencies": [
     "platform",
     "platform_functions",

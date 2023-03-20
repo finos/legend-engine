@@ -24,6 +24,10 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.mode
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.modelConnection.ModelConnectionParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.data.DataLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.data.DataParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.dataSpace.DataSpaceLexerGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.dataSpace.DataSpaceParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.diagram.DiagramLexerGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.diagram.DiagramParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.aggregationAware.AggregationAwareLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.aggregationAware.AggregationAwareParserGrammar;
@@ -70,6 +74,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStoreAssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.JsonModelConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.ModelChainConnection;
@@ -126,7 +131,9 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
     @Override
     public Iterable<? extends SectionParser> getExtraSectionParsers()
     {
-        return Lists.immutable.with(SectionParser.newParser("Data", CorePureGrammarParser::parseDataSection));
+        return Lists.immutable.with(
+                SectionParser.newParser("Data", CorePureGrammarParser::parseDataSection)
+        );
     }
 
     @Override

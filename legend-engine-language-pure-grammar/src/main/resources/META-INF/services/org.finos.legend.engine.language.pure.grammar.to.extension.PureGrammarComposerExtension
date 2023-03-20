@@ -1,1 +1,3 @@
 org.finos.legend.engine.language.pure.grammar.to.CorePureGrammarComposer
+org.finos.legend.engine.language.pure.grammar.to.DataSpaceGrammarComposerExtension
+org.finos.legend.engine.language.pure.grammar.to.DiagramGrammarComposerExtension
