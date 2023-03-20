@@ -1,0 +1,33 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::graphQL::metamodel::sdl::executable::*;
+import meta::external::query::graphQL::transformation::queryToPure::*;
+import meta::external::query::graphQL::transformation::introspection::*;
+import meta::external::query::graphQL::transformation::queryToPure::helpers::*;
+
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::helpers::testFieldPathsHelper():Boolean[1]
+{
+  let query = meta::legend::compileVS('#GQL{ query { person(firstName: "Abhishoya") { contact(number: "1") { name } firm(id: 1, legalName: "GS") { address(street: "1 Legend Street") { line1 } } } } }#')->cast(@meta::external::query::graphQL::metamodel::sdl::Document);
+  let selectionSet = $query->getSelectionSet();
+  assertEquals(['person', 'contact', 'contact_name', 'firm', 'firm_address', 'firm_address_line1'], $selectionSet->getFieldPathsFromSelectionSet('',true));
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::helpers::testFieldPathsHelperWithPrefix():Boolean[1]
+{
+  let query = meta::legend::compileVS('#GQL{ query { person(firstName: "Abhishoya") { firm(id: 1, legalName: "GS") { address(street: "1 Legend Street") { line1 } } } } }#')->cast(@meta::external::query::graphQL::metamodel::sdl::Document);
+  let selectionSet = $query->getSelectionSet();
+  assertEquals(['GQL_person', 'GQL_firm', 'GQL_firm_address', 'GQL_firm_address_line1'], $selectionSet->getFieldPathsFromSelectionSet('GQL_',true));
+}

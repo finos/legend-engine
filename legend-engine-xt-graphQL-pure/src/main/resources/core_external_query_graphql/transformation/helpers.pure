@@ -1,0 +1,78 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::external::query::graphQL::metamodel::sdl::*;
+import meta::external::query::graphQL::metamodel::sdl::value::*;
+import meta::external::query::graphQL::metamodel::sdl::executable::*;
+import meta::external::query::graphQL::transformation::queryToPure::*;
+import meta::external::query::graphQL::transformation::queryToPure::helpers::*;
+
+function <<access.private>> meta::external::query::graphQL::transformation::queryToPure::helpers::getRootParameters(property: QualifiedProperty<Any>[1],prefix:String[1]): VariableExpression[*]
+{
+  let params = $property.classifierGenericType.typeArguments.rawType->toOne()->cast(@FunctionType).parameters->tail();
+  $params->zip($params->evaluateAndDeactivate().name)->map(p|
+      let rawParam = $p.first;
+      let name = $prefix+$p.second;
+      ^$rawParam(name=$name);
+  );
+}
+
+function <<access.private>> meta::external::query::graphQL::transformation::queryToPure::helpers::getNestedParameters(property: AbstractProperty<Any>[1],prefix:String[1], fieldPathsFromSelectionSet: String[*]): VariableExpression[*]
+{
+  let rootParams = if($property->toOne()->instanceOf(QualifiedProperty) ,
+                    | $property->cast(@QualifiedProperty<Any>)->getRootParameters($prefix),
+                    | []);
+  let nestedParams = $property.genericType.rawType->toOne()->match([
+      p:PrimitiveType[1]    | [],
+      e:Enumeration<Any>[1] | [],
+      c:Class<Any>[1]       | $property.genericType.rawType->toOne()->cast(@Class<Any>)->allProperties()->filter(
+                                x|let pp = $prefix+$x.name->toOne(); $pp->in($fieldPathsFromSelectionSet);
+                              )->map(p|$p->getNestedParameters($prefix+$p.name->toOne()+'_',$fieldPathsFromSelectionSet))
+   ]);
+  $rootParams->concatenate($nestedParams);
+}
+
+function <<access.private>> meta::external::query::graphQL::transformation::queryToPure::helpers::getFieldPathsFromSelectionSet(selection: Selection[*],prefix:String[1],isRoot: Boolean[1]): String[*]
+{
+  $selection->map(s|$s->match(
+    [
+      field : Field[1] | let prefix1 = if($isRoot, |$prefix , |$prefix+$field.name+'_');
+                         $field.name->map(x|$prefix+$x)->concatenate(getFieldPathsFromSelectionSet($field.selectionSet,$prefix1,false));,
+      fragment: FragmentSpread[1] | [];
+    ]
+  ))->fold({p,a:String[*]|$a->concatenate($p)},[]);
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::helpers::getSelectionSet(query:Document[1]): Selection[*]
+{
+  $query.definitions->map(d|
+    $d->match([
+      f : FragmentDefinition[1]| [],
+      o : OperationDefinition[1]| $o.selectionSet;
+    ])
+  );
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::helpers::getUpdatedQualifiedProperty(qualifiedProperty: QualifiedProperty<Any>[1], selectionSet: Selection[*]): QualifiedProperty<Any>[1]
+{
+  let fieldPathsFromSelectionSet = $selectionSet->toOne()->getFieldPathsFromSelectionSet('',true);
+  let newParams = $qualifiedProperty.classifierGenericType.typeArguments.rawType->toOne()->cast(@FunctionType).parameters->first()->concatenate(
+                    $qualifiedProperty->getNestedParameters('', $fieldPathsFromSelectionSet)->cast(@VariableExpression)
+                  );
+  let classifierGenericType = $qualifiedProperty.classifierGenericType->toOne();
+  let typeArguments = $qualifiedProperty.classifierGenericType.typeArguments->toOne();
+  let rawType = $qualifiedProperty.classifierGenericType.typeArguments.rawType->toOne()->cast(@FunctionType);
+  ^$qualifiedProperty(classifierGenericType=^$classifierGenericType(typeArguments=^$typeArguments(rawType=^$rawType(parameters=$newParams))));
+}

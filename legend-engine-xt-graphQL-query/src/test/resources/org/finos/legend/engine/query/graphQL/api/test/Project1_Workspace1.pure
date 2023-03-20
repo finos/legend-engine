@@ -48,12 +48,19 @@ Class simple::model::Query
 Class simple::model::Firm
 {
   legalName: String[1];
+  employeesByFirstName(firstName: String[1]) { $this.employees->filter(e|$e.firstName == $firstName) }: simple::model::Person[*];
 }
 
 Class simple::model::Person
 {
   firstName: String[1];
   lastName: String[1];
+  address: Address[1];
+}
+
+Class <<meta::pure::profiles::temporal.bitemporal>> simple::model::Address
+{
+  line1: String[1];
 }
 
 Class <<meta::pure::profiles::temporal.bitemporal>> simple::model::AddressBiTemporal
@@ -130,7 +137,13 @@ Mapping simple::mapping::Map
   {
     firstName: [DB]PERSON_TABLE.FIRST_NAME,
     lastName: [DB]PERSON_TABLE.LAST_NAME,
-    employer: [DB]@PERSON_FIRM
+    employer: [DB]@PERSON_FIRM,
+    address: [DB]@PERSON_ADDRESS
+  }
+
+  Address : Relational
+  {
+    line1: [DB]ADDRESS_TABLE.LINE1
   }
 
   AddressBiTemporal : Relational

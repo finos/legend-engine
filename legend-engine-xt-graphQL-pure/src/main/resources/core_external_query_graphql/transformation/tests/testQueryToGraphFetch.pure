@@ -271,6 +271,7 @@ Class meta::external::query::graphQL::transformation::queryToPure::tests::model:
 {
   legalName: String[1];
   id: String[1];
+  employeesByFirstName(name: String[1]) {$this.employees->filter(e|$e.firstName == $name)}: Person[*];
 }
 
 Association meta::external::query::graphQL::transformation::queryToPure::tests::model::FIrm_Employee
@@ -294,6 +295,11 @@ Class meta::external::query::graphQL::transformation::queryToPure::tests::model:
   }: Person[*];
 
   personByName(name: String[1]){Person.all()->filter(p|$p.fullName == $name)->first()}: Person[0..1];
+
+  firms()
+  {
+    Firm.all()
+  }: Firm[*];
 }
 
 function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::tests::testConvertQueryWithOneParamToGraphFetch():Boolean[1]
@@ -332,4 +338,29 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
                '        }\n'+
                '    }\n' +
                '}}#', $pureGraphFetch->meta::pure::graphFetch::routing::asString(true));
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::tests::testConvertQueryWithNestedFilters():Boolean[1]
+{
+  let graphQLDocument = meta::legend::compileVS('#GQL{ query { firms { employeesByFirstName(firstName: "Abhishoya") { firstName } } } }#')->cast(@meta::external::query::graphQL::metamodel::sdl::Document);
+  let pureGraphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($graphQLDocument, Query);
+  assertEquals('#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Query {\n' +
+               '    firms() {\n' +
+               '        employeesByFirstName($employeesByFirstName_name) {\n' +
+               '            firstName\n'+
+               '        }\n'+
+               '    }\n' +
+               '}}#', $pureGraphFetch->meta::pure::graphFetch::routing::asString(true));
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::tests::testFunctionExpressionWithReprocessedVariables():Boolean[1]
+{
+  let graphQLDocument = meta::legend::compileVS('#GQL{ query { firms { employeesByFirstName(firstName: "Abhishoya") { firstName } } } }#')->cast(@meta::external::query::graphQL::metamodel::sdl::Document);
+  let rootUpdated = meta::external::query::graphQL::transformation::queryToPure::getClassWithUpdatedQualifiedProperty($graphQLDocument,Query);
+  
+  let graphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($graphQLDocument, $rootUpdated);
+  
+  let r = $graphFetch->meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree(true);
+  assertEquals('firms', $r->at(0).propertyName);
+  assertEquals('employeesByFirstName_name:String[1] | Class Firm.all() -> graphFetch(#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm {employeesByFirstName($employeesByFirstName_name) {firstName}}}#) -> serialize(#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm {employeesByFirstName($employeesByFirstName_name) {firstName}}}#);', $r->at(0).functionDef->meta::pure::router::printer::asString());
 }

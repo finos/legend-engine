@@ -12,16 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-
-
-
 ###Pure
 import meta::external::query::graphQL::metamodel::sdl::*;
 import meta::external::query::graphQL::metamodel::sdl::value::*;
 import meta::external::query::graphQL::metamodel::sdl::executable::*;
 import meta::external::query::graphQL::transformation::queryToPure::*;
+import meta::external::query::graphQL::transformation::queryToPure::helpers::*;
 import meta::pure::graphFetch::*;
+
+function meta::external::query::graphQL::transformation::queryToPure::getClassWithUpdatedQualifiedProperty(query:Document[1], root: Class<Any>[1]) : Class<Any>[1]
+{
+  let selectionSet = $query->getSelectionSet();
+  assert($selectionSet->size()==1, 'Selection set has more than one root query');
+  $selectionSet->map(s|$s->match(
+    [
+      field : Field[1] |
+                        let property = $root->meta::pure::functions::meta::allProperties()->filter(p|$p.name == $field.name);
+                        assert(!$property->isEmpty(), |'Property "'+$field.name+'" can\'t be found in the type '+$root->elementToPath());
+                        assert($property->toOne()->instanceOf(QualifiedProperty), |'Property "' + $field.name + '" not valid at root');
+                        let updatedProperty = getUpdatedQualifiedProperty($property->toOne()->cast(@QualifiedProperty<Any>), $selectionSet);
+                        let allQualifiedProperties = $root->meta::pure::functions::meta::allProperties()->filter(p|$p.name != $field.name)->concatenate($updatedProperty)->cast(@QualifiedProperty<Any>);
+                        ^$root(qualifiedProperties=$allQualifiedProperties);,
+      fragment: FragmentSpread[1] | $root;
+    ]
+  ))->toOne();
+}
 
 function meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure(query:Document[1], root: Class<Any>[1]) : RootGraphFetchTree<Any>[1]
 {
@@ -29,8 +44,8 @@ function meta::external::query::graphQL::transformation::queryToPure::graphQLExe
   let fragments = $query.definitions->map(d|
     $d->match([
       
-      f : FragmentDefinition[1]| pair($f.name, list($f.selectionSet->transformSelectionToPure($types->filter(c|$c.name == $f.typeCondition)->toOne()->cast(@Class<Any>))));,
-      o : OperationDefinition[1]| pair('__Query', list($o.selectionSet->transformSelectionToPure($root)));
+      f : FragmentDefinition[1]| pair($f.name, list($f.selectionSet->transformSelectionToPure($types->filter(c|$c.name == $f.typeCondition)->toOne()->cast(@Class<Any>),true,'')));,
+      o : OperationDefinition[1]| pair('__Query', list($o.selectionSet->transformSelectionToPure($root,true,'')));
     ])    
   )->newMap();
 
@@ -40,7 +55,6 @@ function meta::external::query::graphQL::transformation::queryToPure::graphQLExe
     subTrees = $fragments->get('__Query')->toOne().values->buildGraphFetchFromIntermediateNodes($fragments)
   );
 }
-
 
 Class <<access.private>> meta::external::query::graphQL::transformation::queryToPure::IntermediateNode
 {
@@ -58,7 +72,7 @@ Class <<access.private>> meta::external::query::graphQL::transformation::queryTo
 }
 
 
-function <<access.private>> meta::external::query::graphQL::transformation::queryToPure::transformSelectionToPure(selection:Selection[*], root:Class<Any>[1]) : meta::external::query::graphQL::transformation::queryToPure::IntermediateNode[*]
+function <<access.private>> meta::external::query::graphQL::transformation::queryToPure::transformSelectionToPure(selection:Selection[*], root:Class<Any>[1],isRoot: Boolean[1],prefix:String[1]) : meta::external::query::graphQL::transformation::queryToPure::IntermediateNode[*]
 {
   $selection->map(s|$s->match(
     [
@@ -70,13 +84,20 @@ function <<access.private>> meta::external::query::graphQL::transformation::quer
                                                     | $property->cast(@QualifiedProperty<Any>).classifierGenericType.typeArguments.rawType->toOne()->cast(@FunctionType).parameters->tail(),
                                                     |  []
                                            );
+                        
+                        let newParams = $params->zip($params->evaluateAndDeactivate().name)->map(p|
+                                          let rawParam = $p.first;
+                                          let name = if($isRoot,|$p.second,|$prefix+$field.name+'_'+$p.second);
+                                          ^$rawParam(name=$name);
+                                        );
+                        
                         ^meta::external::query::graphQL::transformation::queryToPure::IntermediatePropertyNode
                         (
                             propertyFetch = ^PropertyGraphFetchTree
                                           (
                                             property = $property->toOne(),
-                                            parameters = $params),
-                          children = if ($field.selectionSet->isEmpty(),|[],|$field.selectionSet->transformSelectionToPure($property->toOne()->functionReturnType().rawType->cast(@Class<Any>)->toOne()))
+                                            parameters = $newParams),
+                            children = if ($field.selectionSet->isEmpty(),|[],|$field.selectionSet->transformSelectionToPure($property->toOne()->functionReturnType().rawType->cast(@Class<Any>)->toOne(),false,if($isRoot,|'',|$field.name+'_')))
                         );,
       fragmentId : FragmentSpread[1] | ^meta::external::query::graphQL::transformation::queryToPure::IntermediateFragmentNode(name = $fragmentId.name);
     ]
@@ -100,6 +121,7 @@ function <<access.private>> meta::external::query::graphQL::transformation::quer
 
 
 ###Pure
+import meta::pure::runtime::*;
 import meta::external::query::graphQL::transformation::queryToPure::*;
 
 function meta::external::query::graphQL::transformation::queryToPure::getPlansFromGraphQL(
@@ -110,7 +132,10 @@ function meta::external::query::graphQL::transformation::queryToPure::getPlansFr
                                                                           extensions:meta::pure::extension::Extension[*]
                                                                       ):Pair<String, meta::pure::executionPlan::ExecutionPlan>[*]
 {
-  let graphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($query, $cl);
+  let rootUpdated = meta::external::query::graphQL::transformation::queryToPure::getClassWithUpdatedQualifiedProperty($query,$cl);
+  
+  let graphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($query, $rootUpdated);
+
   let res = $graphFetch->meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree(true);
   $res->map(r|
               pair(
@@ -133,10 +158,11 @@ function meta::external::query::graphQL::transformation::queryToPure::graphQLExe
                                                                           extensions:meta::pure::extension::Extension[*]
                                                                       ):meta::external::query::graphQL::transformation::queryToPure::NamedExecutionPlan[*]
 {
-  let pureWithParam =  meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($query, $cl);
-
-
-    let res = $pureWithParam->meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree(true);
+  let rootUpdated = meta::external::query::graphQL::transformation::queryToPure::getClassWithUpdatedQualifiedProperty($query,$cl);
+  
+  let pureWithParam =  meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($query, $rootUpdated);
+  
+  let res = $pureWithParam->meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree(true);
 
   $res->map(r|
               ^meta::external::query::graphQL::transformation::queryToPure::NamedExecutionPlan(
@@ -151,6 +177,8 @@ function meta::external::query::graphQL::transformation::queryToPure::graphQLExe
         );
 
 }
+
+
 Class meta::external::query::graphQL::transformation::queryToPure::NamedExecutionPlan
 {
   name : String[1];

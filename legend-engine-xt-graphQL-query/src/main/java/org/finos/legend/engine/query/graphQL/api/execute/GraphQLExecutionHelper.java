@@ -14,10 +14,14 @@
 
 package org.finos.legend.engine.query.graphQL.api.execute;
 
+import org.eclipse.collections.api.factory.Lists;
+import org.finos.legend.engine.language.graphQL.grammar.from.antlr4.GraphQLParser;
+import org.finos.legend.engine.protocol.graphQL.metamodel.executable.Argument;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.Field;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.FragmentSpread;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.InLineFragment;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.OperationDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.executable.Selection;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.SelectionVisitor;
 
 import org.finos.legend.engine.protocol.graphQL.metamodel.value.BooleanValue;
@@ -126,6 +130,24 @@ public class GraphQLExecutionHelper
             }
         })).collect(Collectors.toList()).get(0);
 
+    }
+
+    public static List<Argument> collectArguments(List<Selection> selectionSet, String prefix, Boolean isRoot)
+    {
+        List<Argument> arguments = Lists.mutable.empty();
+        selectionSet.forEach(selection ->
+        {
+            if (selection instanceof Field)
+            {
+                if (!isRoot)
+                {
+                    ((Field) selection).arguments.forEach(argument -> argument.name = prefix + ((Field) selection).name + '_' + argument.name);
+                }
+                arguments.addAll(((Field) selection).arguments);
+                arguments.addAll(collectArguments(((Field) selection).selectionSet, isRoot ? prefix : prefix + ((Field) selection).name + '_', false));
+            }
+        });
+        return arguments;
     }
 
 }

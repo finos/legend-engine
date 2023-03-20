@@ -105,6 +105,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecutionHelper.argumentValueToObject;
+import static org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecutionHelper.collectArguments;
 import static org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecutionHelper.extractFieldByName;
 import static org.finos.legend.engine.query.graphQL.api.execute.model.GraphQLCachableVisitorHelper.createCachableGraphQLQuery;
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
@@ -299,13 +300,14 @@ public class GraphQLExecute extends GraphQL
                             try
                             {
                                 Map<String, Result> parameterMap = new HashMap<>();
-                                extractFieldByName(graphQLQuery, p.propertyName).arguments.stream().forEach(a -> parameterMap.put(a.name, new ConstantResult(argumentValueToObject(a.value))));
+//                                extractFieldByName(graphQLQuery, p.propertyName).arguments.stream().forEach(a -> parameterMap.put(a.name, new ConstantResult(argumentValueToObject(a.value))));
+                                collectArguments(graphQLQuery.selectionSet,"",true).forEach(a -> parameterMap.put(a.name, new ConstantResult(argumentValueToObject(a.value))));
 
                                 generator.writeFieldName(p.propertyName);
                                 result = (JsonStreamingResult) planExecutor.execute(p.serializedPlan, parameterMap, null, profiles);
                                 result.getJsonStream().accept(generator);
                             }
-                            catch (IOException e)
+                            catch (Exception e)
                             {
                                 throw new RuntimeException(e);
                             }

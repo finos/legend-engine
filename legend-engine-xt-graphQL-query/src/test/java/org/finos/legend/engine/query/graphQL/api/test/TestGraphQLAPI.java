@@ -58,6 +58,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Rule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
@@ -101,8 +102,8 @@ public class TestGraphQLAPI
                 buildJsonHandler("/api/projects/Project2/workspaces/Workspace1/revisions/HEAD/upstreamProjects", "[]]"),
 
                 buildPMCDMetadataHandler("/api/projects/Project3/workspaces/Workspace1/pureModelContextData", "/org/finos/legend/engine/query/graphQL/api/test/Project3_Workspace1.pure"),
-                buildJsonHandler("/api/projects/Project3/workspaces/Workspace1/revisions/HEAD/upstreamProjects",  readModelContentFromResource("/org/finos/legend/engine/query/graphQL/api/test/Project3_upstreamProjects.json")),
-                buildPMCDMetadataHandler("/projects/org.finos.legend.graphql/models/versions/2.0.1/pureModelContextData","/org/finos/legend/engine/query/graphQL/api/test/Project4_Version_2.0.1.pure",new Protocol("pure", PureClientVersions.production),new PureModelContextPointer())
+                buildJsonHandler("/api/projects/Project3/workspaces/Workspace1/revisions/HEAD/upstreamProjects", readModelContentFromResource("/org/finos/legend/engine/query/graphQL/api/test/Project3_upstreamProjects.json")),
+                buildPMCDMetadataHandler("/projects/org.finos.legend.graphql/models/versions/2.0.1/pureModelContextData", "/org/finos/legend/engine/query/graphQL/api/test/Project4_Version_2.0.1.pure", new Protocol("pure", PureClientVersions.production), new PureModelContextPointer())
         });
         server.setHandler(handlerCollection);
         server.start();
@@ -142,6 +143,39 @@ public class TestGraphQLAPI
                 "{\"legalName\":\"Firm X\",\"employees\":[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"John\",\"lastName\":\"Hill\"},{\"firstName\":\"Anthony\",\"lastName\":\"Allen\"}]}," +
                 "{\"legalName\":\"Firm A\",\"employees\":[{\"firstName\":\"Fabrice\",\"lastName\":\"Roberts\"}]}," +
                 "{\"legalName\":\"Firm B\",\"employees\":[{\"firstName\":\"Oliver\",\"lastName\":\"Hill\"},{\"firstName\":\"David\",\"lastName\":\"Harris\"}]}" +
+                "]" +
+                "}" +
+                "}";
+        Assert.assertEquals(expected, responseAsString(response));
+    }
+
+    @Test
+    public void testGraphQLExecuteDevAPI_NestedFilters() throws Exception
+    {
+        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
+        PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
+        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
+        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> generatorExtensions.flatCollect(g -> g.getExtraExtensions(pm)), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
+        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
+        Query query = new Query();
+        query.query = "query Query {\n" +
+                "  allFirms {\n" +
+                "      legalName,\n" +
+                "      employeesByFirstName(firstName: \"Peter\") {\n" +
+                "        firstName,\n" +
+                "        lastName\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }";
+        Response response = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
+
+        String expected = "{" +
+                "\"data\":{" +
+                "\"allFirms\":[" +
+                "{\"legalName\":\"Firm X\",\"employeesByFirstName($employeesByFirstName_firstName)\":[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}]}," +
+                "{\"legalName\":\"Firm A\",\"employeesByFirstName($employeesByFirstName_firstName)\":[]}," +
+                "{\"legalName\":\"Firm B\",\"employeesByFirstName($employeesByFirstName_firstName)\":[]}" +
                 "]" +
                 "}" +
                 "}";
@@ -208,6 +242,43 @@ public class TestGraphQLAPI
         Response response = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
 
         String expected = "{\"data\":{\"addressesProcessingTemporal\":[{\"line1\":\"peter address\"},{\"line1\":\"John address\"},{\"line1\":\"John hill address\"}]}}";
+        Assert.assertEquals(expected, responseAsString(response));
+    }
+
+    @Test
+    @Ignore // TODO - Fails as date is not supported as an argument now
+    public void testGraphQLExecuteDevAPI_Milestoning() throws Exception
+    {
+        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
+        PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
+        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
+        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> generatorExtensions.flatCollect(g -> g.getExtraExtensions(pm)), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
+        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
+        Query query = new Query();
+        query.query = "query Query {\n" +
+                "  allFirms {\n" +
+                "      legalName,\n" +
+                "      employees {\n" +
+                "        firstName,\n" +
+                "        lastName\n" +
+                "        address(businessDate: \"13-02-2023\", processingDate: \"13-02-2023\"){\n" +
+                "          line1\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }";
+        Response response = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
+
+        String expected = "{" +
+                "\"data\":{" +
+                "\"allFirms\":[" +
+                "{\"legalName\":\"Firm X\",\"employees\":[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}]}," +
+                "{\"legalName\":\"Firm A\",\"employees\":[]}," +
+                "{\"legalName\":\"Firm B\",\"employees\":[]}" +
+                "]" +
+                "}" +
+                "}";
         Assert.assertEquals(expected, responseAsString(response));
     }
 
@@ -298,9 +369,9 @@ public class TestGraphQLAPI
                 "}";
         String expected3 = "{" +
                 "\"data\":{" +
-                    "\"personsByLastNames\":" + "{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}" +
+                "\"personsByLastNames\":" + "{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}" +
                 "}" +
-            "}";
+                "}";
         Response response3 = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
         Assert.assertEquals(expected3, responseAsString(response3));
         query.query = "query Query {\n" +
@@ -418,17 +489,17 @@ public class TestGraphQLAPI
                 "    firstName,\n" +
                 "    lastName\n" +
                 "  }\n" +
-            "}";
+                "}";
         Response response = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
 
         String expected = "{" +
                 "\"data\":{" +
-                    "\"selectEmployees\":[" +
-                        "{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}," +
-                        "{\"firstName\":\"John\",\"lastName\":\"Johnson\"}" +
-                    "]" +
+                "\"selectEmployees\":[" +
+                "{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}," +
+                "{\"firstName\":\"John\",\"lastName\":\"Johnson\"}" +
+                "]" +
                 "}" +
-            "}";
+                "}";
         Assert.assertEquals(expected, responseAsString(response));
     }
 
@@ -711,13 +782,13 @@ public class TestGraphQLAPI
     {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         Object entity = response.getEntity();
-        if (entity instanceof StreamingOutput)
+        if (entity instanceof ExceptionError)
         {
-            StreamingOutput output = (StreamingOutput) response.getEntity();
-            output.write(byteArrayOutputStream);
-            return byteArrayOutputStream.toString("UTF-8");
+            throw new RuntimeException(((ExceptionError) entity).getTrace());
         }
-        throw new RuntimeException(((ExceptionError) entity).getMessage());
+        StreamingOutput output = (StreamingOutput) response.getEntity();
+        output.write(byteArrayOutputStream);
+        return byteArrayOutputStream.toString("UTF-8");
     }
 
     private static List<ExecutionNode> allChildNodes(ExecutionNode node)
