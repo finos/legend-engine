@@ -110,6 +110,13 @@ jobs:
           path: summaries
           if_no_artifact_found: warn
           workflow_conclusion: ''
+      - name: Download Summary For Trino
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: database-trino-sql-generation-integration-test.yml
+          path: summaries
+          if_no_artifact_found: warn
+          workflow_conclusion: ''          
       - name: Print Summary
         run: |
           echo "Temp Dir " ${{ runner.temp }}
