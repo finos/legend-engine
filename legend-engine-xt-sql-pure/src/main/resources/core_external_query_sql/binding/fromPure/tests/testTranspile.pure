@@ -82,18 +82,6 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
 
-function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testTableFunc():Boolean[1]
-{
-  let sqlString = 'SELECT Boolean, table1.Integer FROM service(\'/service/service1\') AS table1';
-  let sqlTransformContext = $sqlString->processQuery();
-  let expected = {| FlatInput.all()->project(
-        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
-        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
-      ->restrict(['Boolean', 'Integer'])
-      };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
-}
-
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectQuotedSingleColumn():Boolean[1]
 {
   let sqlString = 'SELECT "Boolean", "Integer" FROM service."/service/service1"';
@@ -587,9 +575,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 //DATE_ADD
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDateAdd():Boolean[1]
 {
-  let sqlString = 'SELECT date_add(\'year\', 1, StrictDate) AS "YEAR", date_add(\'month\', 1, StrictDate) AS "MONTH", date_add(\'week\', 1, StrictDate) AS "WEEK", ' +
-                  'date_add(\'day\', 1, StrictDate) AS "DAY", date_add(\'hour\', 1, StrictDate) AS "HOUR", date_add(\'minute\', 1, StrictDate) AS "MINUTE", ' +
-                  'date_add(\'second\', 1, StrictDate) AS "SECOND", date_add(\'millisecond\', 1, StrictDate) AS "MILLISECOND", ' +
+  let sqlString = 'SELECT date_add(\'year\', 1, StrictDate) AS "YEAR", date_add(\'month\', 1, StrictDate) AS "MONTH", date_add(\'week\', 1, StrictDate) AS "WEEK", ' + 
+                  'date_add(\'day\', 1, StrictDate) AS "DAY", date_add(\'hour\', 1, StrictDate) AS "HOUR", date_add(\'minute\', 1, StrictDate) AS "MINUTE", ' + 
+                  'date_add(\'second\', 1, StrictDate) AS "SECOND", date_add(\'millisecond\', 1, StrictDate) AS "MILLISECOND", ' + 
                   'date_add(\'microsecond\', 1, StrictDate) AS "MICROSECOND", date_add(\'nanosecond\', 1, StrictDate) AS "NANOSECOND" FROM service."/service/service1"';
 
   let sqlTransformContext = $sqlString->processQuery();
@@ -671,7 +659,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testMathFunctions():Boolean[1]
 {
   let sqlString = 'SELECT abs(Integer) AS "ABS", acos(Integer) AS "ACOS", asin(Integer) AS "ASIN", atan(Integer) AS "ATAN", atan2(Integer, 1) AS "ATAN2", ' +
-                  'ceil(Integer) AS "CEIL", ceiling(Integer) AS "CEILING", cos(Integer) AS "COS", degrees(Integer) AS "DEGREES", div(Integer, 1) AS "DIV", exp(Integer) AS "EXP", floor(Float) AS "FLOOR", ln(Integer) AS "LOG", ' +
+                  'ceil(Integer) AS "CEIL", ceiling(Integer) AS "CEILING", cos(Integer) AS "COS", degrees(Integer) AS "DEGREES", exp(Integer) AS "EXP", floor(Float) AS "FLOOR", ln(Integer) AS "LOG", ' +
                   'mod(Integer, 1) AS "MOD", pi() AS "PI", power(Integer, 2) AS "POWER", radians(Integer) AS "RADIANS", round(Integer) AS "ROUND", round(Decimal, 1) AS "ROUND_DEC", ' +
                   'sin(Integer) AS "SIN", sqrt(Integer) AS "SQRT", tan(Integer) AS "TAN" FROM service."/service/service1"';
 
@@ -691,7 +679,6 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 col(row:TDSRow[1] | ceiling($row.getInteger('Integer')), 'CEILING'),
                 col(row:TDSRow[1] | cos($row.getInteger('Integer')), 'COS'),
                 col(row:TDSRow[1] | toDegrees($row.getInteger('Integer')), 'DEGREES'),
-                col(row:TDSRow[1] | $row.getInteger('Integer') / 1, 'DIV'),
                 col(row:TDSRow[1] | exp($row.getInteger('Integer')), 'EXP'),
                 col(row:TDSRow[1] | floor($row.getFloat('Float')), 'FLOOR'),
                 col(row:TDSRow[1] | log($row.getInteger('Integer')), 'LOG'),
@@ -723,7 +710,7 @@ function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure:
             ->groupBy('String', agg('SUM', row | $row.getInteger('Integer'), y | $y->sum()))
             ->olapGroupBy(['String'], asc('Integer'), y | $y->meta::pure::functions::math::olap::rowNumber(), 'ROW')
       };
-
+      
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
 
