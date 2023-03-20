@@ -16,6 +16,11 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
+import java.lang.reflect.Field;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Predicate;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.factory.Lists;
@@ -87,12 +92,6 @@ import org.finos.legend.pure.runtime.java.compiled.metadata.*;
 import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.reflect.Field;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.Predicate;
 
 public class PureModel implements IPureModel
 {
@@ -225,7 +224,7 @@ public class PureModel implements IPureModel
             this.extensions.sortExtraProcessors(pureModelContextDataIndex.stores.keysView()).forEach(p ->
             {
                 MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store> stores = pureModelContextDataIndex.stores.get(p);
-                stores.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
+                stores.forEach(el -> this.storesIndex.putIfAbsent(this.buildPackageString(el._package, el.name), (Store) visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el)))));
             });
             pureModelContextDataIndex.connections.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
             this.extensions.sortExtraProcessors(pureModelContextDataIndex.otherElementsByProcessor.keysView()).forEach(p ->
