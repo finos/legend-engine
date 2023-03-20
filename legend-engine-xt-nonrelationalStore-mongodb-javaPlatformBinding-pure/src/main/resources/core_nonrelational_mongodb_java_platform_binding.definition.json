@@ -1,6 +1,6 @@
 {
   "name": "core_nonrelational_mongodb_java_platform_binding",
-  "pattern": "(meta::external::store::mongodb::executionPlan::platformBinding::legendJava)(::.*)?",
+  "pattern": "(meta::external::store::mongodb::executionPlan::platformBinding)(::.*)?",
   "dependencies": [
     "platform",
     "platform_functions",
@@ -11,6 +11,7 @@
     "core_nonrelational_mongodb",
     "core_external_language_java",
     "core_java_platform_binding",
-    "core_external_format_json_java_platform_binding"
+    "core_external_format_json_java_platform_binding",
+    "core_external_compiler"
   ]
 }
