@@ -84,7 +84,7 @@ public class DefaultExecutionNodeContext implements ExecutionNodeContext
             }
             else if (clazz.equals(Long.class) && value instanceof String)
             {
-                return (T) Long.valueOf(Long.parseLong((String)value));
+                return (T) Long.valueOf((String)value);
             }
         }
         throw new IllegalArgumentException("Unable to convert " + result.getClass().getSimpleName() + " to " + TypeUtils.toString(clazz));

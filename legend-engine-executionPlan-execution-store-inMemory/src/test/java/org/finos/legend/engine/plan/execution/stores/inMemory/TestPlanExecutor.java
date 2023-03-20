@@ -21,6 +21,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
+import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamToJsonDefaultSerializer;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
@@ -32,6 +33,9 @@ import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemory;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemoryStoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.FakeRelationalStoreExecutorBuilder;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.FakeServiceStoreExecutorBuilder;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.junit.Assert;
 import org.junit.Test;
 import org.pac4j.core.profile.CommonProfile;
 
@@ -43,6 +47,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.function.BiFunction;
 
 import static org.junit.Assert.assertEquals;
@@ -142,6 +147,20 @@ public class TestPlanExecutor
 
         StoreExecutor inmemoryExecutor = extraExecutors.detect(storeExecutor -> storeExecutor instanceof InMemoryStoreExecutor);
         assertNotNull("failed to locate inmemory executor", inmemoryExecutor);
+    }
+
+    @Test
+    public void testIntegerParameterPassedAsString() throws Exception {
+        URL resource = TestPlanExecutor.class.getResource("/plans/plan2.json");
+        String json = new String(Files.readAllBytes(Paths.get(resource.toURI())), Charset.defaultCharset());
+        SingleExecutionPlan executionPlan = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(resource, SingleExecutionPlan.class);
+        Map<String, Result> vars = Maps.mutable.empty();
+        vars.put("id", new ConstantResult("1"));
+        Result result = PlanExecutor.newPlanExecutor(InMemory.build()).execute(executionPlan, vars, "user", null);
+        JsonStreamToJsonDefaultSerializer jsonStreamToJsonDefaultSerializer = new JsonStreamToJsonDefaultSerializer(((JsonStreamingResult) result));
+        OutputStream outputStream = new ByteArrayOutputStream();
+        jsonStreamToJsonDefaultSerializer.stream(outputStream);
+        assertNotNull(outputStream.toString());
     }
 
     @Test
