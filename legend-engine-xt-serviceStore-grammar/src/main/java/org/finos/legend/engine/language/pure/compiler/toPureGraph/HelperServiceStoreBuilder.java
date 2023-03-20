@@ -15,14 +15,13 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.language.pure.dsl.authentication.compiler.toPureGraph.IAuthenticationCompilerExtension;
+import org.eclipse.collections.impl.utility.MapIterate;
+import org.finos.legend.engine.language.pure.dsl.authentication.compiler.toPureGraph.HelperAuthenticationBuilder;
 import org.finos.legend.engine.language.pure.grammar.to.HelperServiceStoreGrammarComposer;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
@@ -72,7 +71,6 @@ import org.finos.legend.pure.generated.core_pure_model_modelUnit;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -227,19 +225,7 @@ public class HelperServiceStoreBuilder
 
     private static Map<String, Root_meta_pure_runtime_connection_authentication_AuthenticationSpecification> compileAuthenticationSpecifications(Map<String, AuthenticationSpecification> authenticationSpecificationMap, CompileContext context)
     {
-        List<Function2<AuthenticationSpecification, CompileContext, Root_meta_pure_runtime_connection_authentication_AuthenticationSpecification>> processors = ListIterate.flatCollect(IAuthenticationCompilerExtension.getExtensions(), ext -> ext.getExtraAuthenticationSpecificationProcessors());
-
-        return authenticationSpecificationMap.entrySet().stream().map(entry ->
-        {
-            String id = entry.getKey();
-            AuthenticationSpecification authenticationSpecification = entry.getValue();
-            return Tuples.pair(id, ListIterate
-                    .collect(processors, processor -> processor.value(authenticationSpecification, context))
-                    .select(Objects::nonNull)
-                    .getFirstOptional()
-                    .orElseThrow(() -> new EngineException("Can't compile Authnetication Specification : " + id, authenticationSpecification.sourceInformation, EngineErrorType.COMPILATION)));
-
-        }).collect(Collectors.toMap(pair -> pair.getOne(), pair -> pair.getTwo()));
+        return MapIterate.collectValues(authenticationSpecificationMap, (k, v) -> HelperAuthenticationBuilder.buildAuthenticationSpecification(v, context));
     }
 
     private static Root_meta_external_store_service_metamodel_ServiceGroup compileServiceGroup(ServiceGroup serviceGroup, Root_meta_external_store_service_metamodel_ServiceStore owner, Root_meta_external_store_service_metamodel_ServiceGroup parent, CompileContext context)
