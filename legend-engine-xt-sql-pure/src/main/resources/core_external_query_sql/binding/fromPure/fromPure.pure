@@ -33,14 +33,32 @@ function meta::external::query::sql::transformation::queryToPure::getPlansFromSQ
                                                                           extensions: meta::pure::extension::Extension[*]
                                                                       ): meta::pure::executionPlan::ExecutionPlan[1]
 {
+  let sqlTransformContext = processQuery($sources, $query, $extensions);
+  meta::pure::executionPlan::executionPlan($sqlTransformContext.lambda(), $extensions);
+}
+
+function meta::external::query::sql::transformation::queryToPure::getSchemaFromSQL(
+                                                                          sources: SQLSource[*],
+                                                                          query: meta::external::query::sql::metamodel::Node[1],
+                                                                          extensions: meta::pure::extension::Extension[*]
+                                                                      ): meta::pure::tds::TDSColumn[*]
+{
+  let sqlTransformContext = processQuery($sources, $query, $extensions);
+  $sqlTransformContext.columns();
+}
+
+function meta::external::query::sql::transformation::queryToPure::processQuery(
+                                                                          sources: SQLSource[*],
+                                                                          query: meta::external::query::sql::metamodel::Node[1],
+                                                                          extensions: meta::pure::extension::Extension[*]
+                                                                      ): SqlTransformContext[1]
+{
   let context = ^SqlTransformContext(
     sources = $sources,
     extensions = $extensions,
     aliases = ^Map<String, String>(),
     contexts = ^Map<String, SqlTransformContext>());
-  let sqlTransformContext = $query->cast(@Query)->processQuery($context);
-
-  meta::pure::executionPlan::executionPlan($sqlTransformContext.lambda(), $extensions);
+  $query->cast(@Query)->processQuery($context);
 }
 
 function meta::external::query::sql::transformation::queryToPure::processQuery(query: Query[1], context: SqlTransformContext[1]): SqlTransformContext[1]
