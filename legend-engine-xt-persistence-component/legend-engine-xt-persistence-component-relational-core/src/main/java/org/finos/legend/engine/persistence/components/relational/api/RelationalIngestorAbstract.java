@@ -171,8 +171,8 @@ public abstract class RelationalIngestorAbstract
 
     private List<IngestorResult> ingest(Connection connection, Datasets datasets, List<DataSplitRange> dataSplitRanges)
     {
-        IngestMode ingestModeWithCaseConversion = ApiUtils.applyCaseOnIngestMode(ingestMode(), caseConversion());
-        Datasets datasetsWithCaseConversion = ApiUtils.applyCaseOnDatasets(datasets, caseConversion());
+        IngestMode ingestModeWithCaseConversion = ApiUtils.applyCase(ingestMode(), caseConversion());
+        Datasets datasetsWithCaseConversion = ApiUtils.applyCase(datasets, caseConversion());
         Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(relationalSink(), transformOptions());
         Executor<SqlGen, TabularData, SqlPlan> executor = new RelationalExecutor(relationalSink(), JdbcHelper.of(connection));
 

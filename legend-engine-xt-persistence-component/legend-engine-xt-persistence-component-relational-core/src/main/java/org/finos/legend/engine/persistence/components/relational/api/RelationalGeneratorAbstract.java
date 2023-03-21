@@ -44,7 +44,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Immutable
@@ -157,8 +156,8 @@ public abstract class RelationalGeneratorAbstract
 
     GeneratorResult generateOperations(Datasets datasets, Resources resources)
     {
-        IngestMode ingestModeWithCaseConversion = ApiUtils.applyCaseOnIngestMode(ingestMode(), caseConversion());
-        Datasets datasetsWithCaseConversion = ApiUtils.applyCaseOnDatasets(datasets, caseConversion());
+        IngestMode ingestModeWithCaseConversion = ApiUtils.applyCase(ingestMode(), caseConversion());
+        Datasets datasetsWithCaseConversion = ApiUtils.applyCase(datasets, caseConversion());
         Dataset enrichedMainDataset = ApiUtils.deriveMainDatasetFromStaging(datasetsWithCaseConversion, ingestModeWithCaseConversion);
         Datasets enrichedDatasets = datasetsWithCaseConversion.withMainDataset(enrichedMainDataset);
         Planner planner = Planners.get(enrichedDatasets, ingestModeWithCaseConversion, plannerOptions());

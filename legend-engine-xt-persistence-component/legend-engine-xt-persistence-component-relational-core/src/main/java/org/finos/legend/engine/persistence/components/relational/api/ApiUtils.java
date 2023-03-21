@@ -38,7 +38,7 @@ public class ApiUtils
         return mainDataset;
     }
 
-    public static Datasets applyCaseOnDatasets(Datasets datasets, CaseConversion caseConversion)
+    public static Datasets applyCase(Datasets datasets, CaseConversion caseConversion)
     {
         DatasetsCaseConverter converter = new DatasetsCaseConverter();
         if (caseConversion == CaseConversion.TO_UPPER)
@@ -52,7 +52,7 @@ public class ApiUtils
         return datasets;
     }
 
-    public static IngestMode applyCaseOnIngestMode(IngestMode ingestMode, CaseConversion caseConversion)
+    public static IngestMode applyCase(IngestMode ingestMode, CaseConversion caseConversion)
     {
         if (caseConversion == CaseConversion.TO_UPPER)
         {

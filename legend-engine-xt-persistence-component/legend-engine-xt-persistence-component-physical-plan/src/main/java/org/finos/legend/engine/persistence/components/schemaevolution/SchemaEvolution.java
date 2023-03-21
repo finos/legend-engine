@@ -245,14 +245,18 @@ public class SchemaEvolution
 
     private void alterColumnWithNullable(Field newField, Dataset mainDataset, List<Operation> operations, Set<Field> modifiedFields)
     {
-        if (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.COLUMN_NULLABILITY_CHANGE))
+        // We do not allow changing nullability for PKs
+        if (!newField.primaryKey())
         {
-            operations.add(Alter.of(mainDataset, Alter.AlterOperation.NULLABLE_COLUMN, newField, Optional.empty()));
-            modifiedFields.add(newField);
-        }
-        else
-        {
-            throw new IncompatibleSchemaChangeException(String.format("Column \"%s\" couldn't be made nullable since user capability does not allow it", newField.name()));
+            if (schemaEvolutionCapabilitySet.contains(SchemaEvolutionCapability.COLUMN_NULLABILITY_CHANGE))
+            {
+                operations.add(Alter.of(mainDataset, Alter.AlterOperation.NULLABLE_COLUMN, newField, Optional.empty()));
+                modifiedFields.add(newField);
+            }
+            else
+            {
+                throw new IncompatibleSchemaChangeException(String.format("Column \"%s\" couldn't be made nullable since user capability does not allow it", newField.name()));
+            }
         }
     }
 
