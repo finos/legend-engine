@@ -227,11 +227,11 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
         Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithUpperCase(), metadataIngestSql.get(0));
 
-        String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `MYDB`.`STAGING` as stage";
-        String rowsUpdated = "SELECT COUNT(*) as `rowsUpdated` FROM `MYDB`.`MAIN` as sink WHERE sink.`BATCH_ID_OUT` = (SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE BATCH_METADATA.`TABLE_NAME` = 'MAIN')-1";
-        String rowsDeleted = "SELECT 0 as `rowsDeleted`";
-        String rowsInserted = "SELECT (SELECT COUNT(*) FROM `MYDB`.`MAIN` as sink WHERE sink.`BATCH_ID_IN` = (SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE BATCH_METADATA.`TABLE_NAME` = 'MAIN'))-(SELECT COUNT(*) FROM `MYDB`.`MAIN` as sink WHERE sink.`BATCH_ID_OUT` = (SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE BATCH_METADATA.`TABLE_NAME` = 'MAIN')-1) as `rowsInserted`";
-        String rowsTerminated = "SELECT 0 as `rowsTerminated`";
+        String incomingRecordCount = "SELECT COUNT(*) as `INCOMINGRECORDCOUNT` FROM `MYDB`.`STAGING` as stage";
+        String rowsUpdated = "SELECT COUNT(*) as `ROWSUPDATED` FROM `MYDB`.`MAIN` as sink WHERE sink.`BATCH_ID_OUT` = (SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE BATCH_METADATA.`TABLE_NAME` = 'MAIN')-1";
+        String rowsDeleted = "SELECT 0 as `ROWSDELETED`";
+        String rowsInserted = "SELECT (SELECT COUNT(*) FROM `MYDB`.`MAIN` as sink WHERE sink.`BATCH_ID_IN` = (SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE BATCH_METADATA.`TABLE_NAME` = 'MAIN'))-(SELECT COUNT(*) FROM `MYDB`.`MAIN` as sink WHERE sink.`BATCH_ID_OUT` = (SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE BATCH_METADATA.`TABLE_NAME` = 'MAIN')-1) as `ROWSINSERTED`";
+        String rowsTerminated = "SELECT 0 as `ROWSTERMINATED`";
 
         verifyStats(operations, incomingRecordCount, rowsUpdated, rowsDeleted, rowsInserted, rowsTerminated);
     }
