@@ -16,8 +16,8 @@
 package org.finos.legend.engine.query.sql.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
+
+import java.util.Objects;
 
 public class SchemaColumn
 {
@@ -47,20 +47,17 @@ public class SchemaColumn
         {
             return true;
         }
-
         if (o == null || getClass() != o.getClass())
         {
             return false;
         }
-
         SchemaColumn that = (SchemaColumn) o;
-
-        return new EqualsBuilder().append(name, that.name).append(type, that.type).isEquals();
+        return name.equals(that.name) && type.equals(that.type);
     }
 
     @Override
     public int hashCode()
     {
-        return new HashCodeBuilder(17, 37).append(name).append(type).toHashCode();
+        return Objects.hash(name, type);
     }
 }

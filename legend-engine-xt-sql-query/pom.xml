@@ -115,13 +115,6 @@
             <artifactId>javax.servlet-api</artifactId>
         </dependency>
 
-        <!-- COMMONS-LANG (Equals & Hashcode)-->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-        </dependency>
-        <!-- COMMONS-LANG -->
-
         <!-- ANNOTATIONS -->
         <dependency>
             <groupId>javax.ws.rs</groupId>
