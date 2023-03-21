@@ -122,7 +122,7 @@ public class SqlExecute
     @POST
     @ApiOperation(value = "Execute a SQL query in the context of a Mapping and a Runtime from a SDLC project")
     @Path("executeQueryString/{projectId}")
-    @Consumes({MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.TEXT_PLAIN})
     public Response executeSql(@Context HttpServletRequest request, @PathParam("projectId") String projectId, String sql, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo) throws Exception
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
@@ -148,7 +148,7 @@ public class SqlExecute
     @POST
     @ApiOperation(value = "Generate plans for a SQL query in the context of a Mapping and a Runtime from a SDLC project")
     @Path("generatePlanQueryString/{projectId}")
-    @Consumes({MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.TEXT_PLAIN})
     public Response generatePlan(@Context HttpServletRequest request, @PathParam("projectId") String projectId, String sql, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo) throws Exception
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
@@ -172,7 +172,7 @@ public class SqlExecute
     @POST
     @ApiOperation(value = "Get schema for a SQL query in the context of a Mapping and a Runtime from a SDLC project")
     @Path("getSchemaFromQueryString/{projectId}")
-    @Consumes({MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.TEXT_PLAIN})
     public Response getSchema(@Context HttpServletRequest request, @PathParam("projectId") String projectId, String sql, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo) throws Exception
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);

@@ -60,4 +60,13 @@ public class SchemaColumn
     {
         return Objects.hash(name, type);
     }
+
+    @Override
+    public String toString()
+    {
+        return "SchemaColumn{" +
+                "name='" + name + '\'' +
+                ", type='" + type + '\'' +
+                '}';
+    }
 }

@@ -18,6 +18,7 @@ package org.finos.legend.engine.query.sql.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
+import java.util.Objects;
 
 public class Schema
 {
@@ -31,5 +32,34 @@ public class Schema
     public List<SchemaColumn> getColumns()
     {
         return columns;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
+        Schema schema = (Schema) o;
+        return Objects.equals(columns, schema.columns);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(columns);
+    }
+
+    @Override
+    public String toString()
+    {
+        return "Schema{" +
+                "columns=" + columns +
+                '}';
     }
 }
