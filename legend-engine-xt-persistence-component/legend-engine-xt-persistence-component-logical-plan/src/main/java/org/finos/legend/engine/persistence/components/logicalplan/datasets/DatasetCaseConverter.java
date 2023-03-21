@@ -73,6 +73,23 @@ public class DatasetCaseConverter
             newShardSpecification = shardSpecification.withShardKeys(newShardKeys);
         }
 
+        if (dataset.datasetReference().alias().isPresent())
+        {
+            String alias = dataset.datasetReference().alias().get();
+            return DatasetDefinition.builder()
+                    .name(newName)
+                    .group(newSchemaName)
+                    .database(newDatabaseName)
+                    .alias(alias)
+                    .schema(SchemaDefinition.builder()
+                            .addAllFields(newDatasetFields)
+                            .addAllIndexes(newDatasetIndices)
+                            .columnStoreSpecification(newColumnStoreSpecification)
+                            .shardSpecification(newShardSpecification)
+                            .build())
+                    .build();
+        }
+
         return DatasetDefinition.builder()
             .name(newName)
             .group(newSchemaName)

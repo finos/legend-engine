@@ -21,6 +21,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
+import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
@@ -203,6 +204,38 @@ public class BaseTest
         return expectedStats;
     }
 
+    public IngestorResult executePlansAndVerifyForCaseConversion(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats) throws Exception
+    {
+        RelationalIngestor ingestor = RelationalIngestor.builder()
+                .ingestMode(ingestMode)
+                .relationalSink(H2Sink.get())
+                .executionTimestampClock(Clock.systemUTC())
+                .cleanupStagingData(options.cleanupStagingData())
+                .collectStatistics(options.collectStatistics())
+                .enableSchemaEvolution(options.enableSchemaEvolution())
+                .schemaEvolutionCapabilitySet(Collections.emptySet())
+                .caseConversion(CaseConversion.TO_UPPER)
+                .build();
+
+        IngestorResult result = ingestor.ingest(h2Sink.connection(), datasets);
+
+        Map<StatisticName, Object> actualStats = result.statisticByName();
+
+        // Verify the database data
+        List<Map<String, Object>> tableData = h2Sink.executeQuery("select * from \"TEST\".\"MAIN\"");
+        TestUtils.assertFileAndTableDataEquals(schema, expectedDataPath, tableData);
+
+        // Verify statistics
+        Assertions.assertEquals(expectedStats.size(), actualStats.size());
+        for (String statistic : expectedStats.keySet())
+        {
+            Assertions.assertEquals(expectedStats.get(statistic).toString(), actualStats.get(StatisticName.valueOf(statistic)).toString());
+        }
+
+        // Return result (including updated datasets)
+        return result;
+    }
+
     protected void loadBasicStagingData(String path) throws Exception
     {
         validateFileExists(path);
@@ -211,6 +244,16 @@ public class BaseTest
             "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", BIGINT), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE), digest" +
             " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, digest', NULL )";
         h2Sink.executeStatement(loadSql);
+    }
+
+    protected void loadBasicStagingDataInUpperCase(String path) throws Exception
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+                "INSERT INTO \"TEST\".\"staging\"(id, name, income, start_time ,expiry_date, digest) " +
+                "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", BIGINT), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE), digest" +
+                " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, digest', NULL )";
+        h2Sink.executeStatement(loadSql.toUpperCase());
     }
 
     protected void loadStagingDataForWithPartition(String path) throws Exception
@@ -271,6 +314,16 @@ public class BaseTest
             "SELECT CONVERT( \"index\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\"" +
             " FROM CSVREAD( '" + path + "', 'index, datetime, balance, digest', NULL )";
         h2Sink.executeStatement(loadSql);
+    }
+
+    protected void loadStagingDataForBitemporalFromOnlyWithUpperCase(String path) throws Exception
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+                "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest) " +
+                "SELECT CONVERT( \"index\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\"" +
+                " FROM CSVREAD( '" + path + "', 'index, datetime, balance, digest', NULL )";
+        h2Sink.executeStatement(loadSql.toUpperCase());
     }
 
     protected void loadStagingDataForBitemporalFromOnlyWithDeleteInd(String path) throws Exception

@@ -14,8 +14,14 @@
 
 package org.finos.legend.engine.persistence.components.testcases.ingestmode.nontemporal.derivation;
 
+import org.finos.legend.engine.persistence.components.ingestmode.IngestModeCaseConverter;
+import org.finos.legend.engine.persistence.components.ingestmode.NontemporalDelta;
+import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
+import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
+import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
 import org.finos.legend.engine.persistence.components.scenarios.NonTemporalDeltaScenarios;
 import org.finos.legend.engine.persistence.components.scenarios.TestScenario;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.finos.legend.engine.persistence.components.BaseTest.assertDerivedMainDataset;
@@ -30,6 +36,9 @@ public class NontemporalDeltaBasedDerivationTest
     {
         TestScenario scenario = scenarios.NO_AUDTING__NO_DATASPLIT();
         assertDerivedMainDataset(scenario);
+        NontemporalDelta mode = (NontemporalDelta) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
+        Assertions.assertEquals("DIGEST", mode.digestField());
+        Assertions.assertTrue(mode.auditing() instanceof NoAuditing);
     }
 
     @Test
@@ -37,6 +46,12 @@ public class NontemporalDeltaBasedDerivationTest
     {
         TestScenario scenario = scenarios.NO_AUDTING__NO_DATASPLIT__WITH_DELETE_INDICATOR();
         assertDerivedMainDataset(scenario);
+        NontemporalDelta mode = (NontemporalDelta) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
+        Assertions.assertEquals("DIGEST", mode.digestField());
+        Assertions.assertTrue(mode.auditing() instanceof NoAuditing);
+        Assertions.assertTrue(mode.mergeStrategy() instanceof DeleteIndicatorMergeStrategy);
+        DeleteIndicatorMergeStrategy mergeStrategy = (DeleteIndicatorMergeStrategy) mode.mergeStrategy();
+        Assertions.assertEquals("DELETE_INDICATOR", mergeStrategy.deleteField());
     }
 
     @Test
@@ -44,6 +59,10 @@ public class NontemporalDeltaBasedDerivationTest
     {
         TestScenario scenario = scenarios.NO_AUDTING__WITH_DATASPLIT();
         assertDerivedMainDataset(scenario);
+        NontemporalDelta mode = (NontemporalDelta) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
+        Assertions.assertTrue(mode.auditing() instanceof NoAuditing);
+        Assertions.assertEquals("DIGEST", mode.digestField());
+        Assertions.assertEquals("DATA_SPLIT", mode.dataSplitField().get());
     }
 
     @Test
@@ -51,6 +70,11 @@ public class NontemporalDeltaBasedDerivationTest
     {
         TestScenario scenario = scenarios.WITH_AUDTING__NO_DATASPLIT();
         assertDerivedMainDataset(scenario);
+        NontemporalDelta mode = (NontemporalDelta) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
+        Assertions.assertTrue(mode.auditing() instanceof DateTimeAuditing);
+        DateTimeAuditing auditing = (DateTimeAuditing) mode.auditing();
+        Assertions.assertEquals("BATCH_UPDATE_TIME", auditing.dateTimeField());
+        Assertions.assertEquals("DIGEST", mode.digestField());
     }
 
     @Test
@@ -58,5 +82,11 @@ public class NontemporalDeltaBasedDerivationTest
     {
         TestScenario scenario = scenarios.WITH_AUDTING__WITH_DATASPLIT();
         assertDerivedMainDataset(scenario);
+        NontemporalDelta mode = (NontemporalDelta) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
+        Assertions.assertTrue(mode.auditing() instanceof DateTimeAuditing);
+        DateTimeAuditing auditing = (DateTimeAuditing) mode.auditing();
+        Assertions.assertEquals("BATCH_UPDATE_TIME", auditing.dateTimeField());
+        Assertions.assertEquals("DIGEST", mode.digestField());
+        Assertions.assertEquals("DATA_SPLIT", mode.dataSplitField().get());
     }
 }

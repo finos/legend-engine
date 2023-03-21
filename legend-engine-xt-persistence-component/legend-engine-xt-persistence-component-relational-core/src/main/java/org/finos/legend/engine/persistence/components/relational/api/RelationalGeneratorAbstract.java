@@ -17,12 +17,9 @@ package org.finos.legend.engine.persistence.components.relational.api;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
-import org.finos.legend.engine.persistence.components.ingestmode.DeriveMainDatasetSchemaFromStaging;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetsCaseConverter;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.planner.Planner;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
 import org.finos.legend.engine.persistence.components.planner.Planners;
@@ -47,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Immutable
@@ -159,13 +157,15 @@ public abstract class RelationalGeneratorAbstract
 
     GeneratorResult generateOperations(Datasets datasets, Resources resources)
     {
-        Dataset enrichedMainDataset = deriveMainDatasetFromStaging(datasets, ingestMode());
-        Datasets enrichedDatasets = datasets.withMainDataset(enrichedMainDataset);
-        Planner planner = Planners.get(enrichedDatasets, ingestMode(), plannerOptions());
-        return generateOperations(enrichedDatasets, resources, planner);
+        IngestMode ingestModeWithCaseConversion = ApiUtils.applyCaseOnIngestMode(ingestMode(), caseConversion());
+        Datasets datasetsWithCaseConversion = ApiUtils.applyCaseOnDatasets(datasets, caseConversion());
+        Dataset enrichedMainDataset = ApiUtils.deriveMainDatasetFromStaging(datasetsWithCaseConversion, ingestModeWithCaseConversion);
+        Datasets enrichedDatasets = datasetsWithCaseConversion.withMainDataset(enrichedMainDataset);
+        Planner planner = Planners.get(enrichedDatasets, ingestModeWithCaseConversion, plannerOptions());
+        return generateOperations(enrichedDatasets, resources, planner, ingestModeWithCaseConversion);
     }
 
-    GeneratorResult generateOperations(Datasets datasets, Resources resources, Planner planner)
+    GeneratorResult generateOperations(Datasets datasets, Resources resources, Planner planner, IngestMode ingestMode)
     {
         Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(relationalSink(), transformOptions());
 
@@ -187,7 +187,7 @@ public abstract class RelationalGeneratorAbstract
         if (enableSchemaEvolution())
         {
             // Get logical plan and physical plan for schema evolution and update datasets
-            SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink(), ingestMode(), schemaEvolutionCapabilitySet());
+            SchemaEvolution schemaEvolution = new SchemaEvolution(relationalSink(), ingestMode, schemaEvolutionCapabilitySet());
             SchemaEvolutionResult schemaEvolutionResult = schemaEvolution.buildLogicalPlanForSchemaEvolution(datasets.mainDataset(), datasets.stagingDataset());
             LogicalPlan schemaEvolutionLogicalPlan = schemaEvolutionResult.logicalPlan();
 
@@ -195,7 +195,7 @@ public abstract class RelationalGeneratorAbstract
             schemaEvolutionDataset = Optional.of(schemaEvolutionResult.evolvedDataset());
 
             // update main dataset with evolved schema and re-initialize planner
-            planner = Planners.get(datasets.withMainDataset(schemaEvolutionDataset.get()), ingestMode(), plannerOptions());
+            planner = Planners.get(datasets.withMainDataset(schemaEvolutionDataset.get()), ingestMode, plannerOptions());
         }
 
         // ingest
@@ -231,30 +231,5 @@ public abstract class RelationalGeneratorAbstract
             .putAllPreIngestStatisticsSqlPlan(preIngestStatisticsSqlPlan)
             .putAllPostIngestStatisticsSqlPlan(postIngestStatisticsSqlPlan)
             .build();
-    }
-
-    public Dataset deriveMainDatasetFromStaging(Datasets datasets, IngestMode ingestMode)
-    {
-        Dataset mainDataset = datasets.mainDataset();
-        List<Field> mainDatasetFields = mainDataset.schema().fields();
-        if (mainDatasetFields == null || mainDatasetFields.isEmpty())
-        {
-            mainDataset = ingestMode.accept(new DeriveMainDatasetSchemaFromStaging(datasets.mainDataset(), datasets.stagingDataset()));
-        }
-        return mainDataset;
-    }
-
-    public Datasets applyCaseOnDatasets(Datasets datasets)
-    {
-        DatasetsCaseConverter converter = new DatasetsCaseConverter();
-        if (caseConversion() == CaseConversion.TO_UPPER)
-        {
-            return converter.applyCaseOnDatasets(datasets, String::toUpperCase);
-        }
-        if (caseConversion() == CaseConversion.TO_LOWER)
-        {
-            return converter.applyCaseOnDatasets(datasets, String::toLowerCase);
-        }
-        return datasets;
     }
 }

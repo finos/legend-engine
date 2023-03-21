@@ -14,8 +14,13 @@
 
 package org.finos.legend.engine.persistence.components.testcases.ingestmode.nontemporal.derivation;
 
+import org.finos.legend.engine.persistence.components.ingestmode.IngestModeCaseConverter;
+import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshot;
+import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
+import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
 import org.finos.legend.engine.persistence.components.scenarios.NontemporalSnapshotTestScenarios;
 import org.finos.legend.engine.persistence.components.scenarios.TestScenario;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.finos.legend.engine.persistence.components.BaseTest.assertDerivedMainDataset;
@@ -30,6 +35,8 @@ public class NontemporalSnapshotBasedDerivationTest
     {
         TestScenario scenario = scenarios.NO_AUDTING__NO_DATASPLIT();
         assertDerivedMainDataset(scenario);
+        NontemporalSnapshot mode = (NontemporalSnapshot) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
+        Assertions.assertTrue(mode.auditing() instanceof NoAuditing);
     }
 
     @Test
@@ -37,6 +44,9 @@ public class NontemporalSnapshotBasedDerivationTest
     {
         TestScenario scenario = scenarios.NO_AUDTING__WITH_DATASPLIT();
         assertDerivedMainDataset(scenario);
+        NontemporalSnapshot mode = (NontemporalSnapshot) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
+        Assertions.assertTrue(mode.auditing() instanceof NoAuditing);
+        Assertions.assertEquals("DATA_SPLIT", mode.dataSplitField().get());
     }
 
     @Test
@@ -44,6 +54,10 @@ public class NontemporalSnapshotBasedDerivationTest
     {
         TestScenario scenario = scenarios.WITH_AUDTING__NO_DATASPLIT();
         assertDerivedMainDataset(scenario);
+        NontemporalSnapshot mode = (NontemporalSnapshot) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
+        Assertions.assertTrue(mode.auditing() instanceof DateTimeAuditing);
+        DateTimeAuditing auditing = (DateTimeAuditing) mode.auditing();
+        Assertions.assertEquals("BATCH_UPDATE_TIME", auditing.dateTimeField());
     }
 
     @Test
@@ -51,6 +65,11 @@ public class NontemporalSnapshotBasedDerivationTest
     {
         TestScenario scenario = scenarios.WITH_AUDTING__WITH_DATASPLIT();
         assertDerivedMainDataset(scenario);
+        NontemporalSnapshot mode = (NontemporalSnapshot) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
+        Assertions.assertTrue(mode.auditing() instanceof DateTimeAuditing);
+        DateTimeAuditing auditing = (DateTimeAuditing) mode.auditing();
+        Assertions.assertEquals("BATCH_UPDATE_TIME", auditing.dateTimeField());
+        Assertions.assertEquals("DATA_SPLIT", mode.dataSplitField().get());
     }
 
 }

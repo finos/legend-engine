@@ -171,17 +171,19 @@ public abstract class RelationalIngestorAbstract
 
     private List<IngestorResult> ingest(Connection connection, Datasets datasets, List<DataSplitRange> dataSplitRanges)
     {
+        IngestMode ingestModeWithCaseConversion = ApiUtils.applyCaseOnIngestMode(ingestMode(), caseConversion());
+        Datasets datasetsWithCaseConversion = ApiUtils.applyCaseOnDatasets(datasets, caseConversion());
         Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(relationalSink(), transformOptions());
         Executor<SqlGen, TabularData, SqlPlan> executor = new RelationalExecutor(relationalSink(), JdbcHelper.of(connection));
 
         Resources.Builder resourcesBuilder = Resources.builder();
-        Datasets updatedDatasets = datasets;
+        Datasets updatedDatasets = datasetsWithCaseConversion;
 
         // import external dataset reference
         if (updatedDatasets.stagingDataset() instanceof ExternalDatasetReference)
         {
             // update staging dataset reference to imported dataset
-            updatedDatasets = importExternalDataset(ingestMode(), updatedDatasets, transformer, executor);
+            updatedDatasets = importExternalDataset(ingestModeWithCaseConversion, updatedDatasets, transformer, executor);
             resourcesBuilder.externalDatasetImported(true);
         }
 
@@ -193,7 +195,7 @@ public abstract class RelationalIngestorAbstract
 
         // generate sql plans
         RelationalGenerator generator = RelationalGenerator.builder()
-            .ingestMode(ingestMode())
+            .ingestMode(ingestModeWithCaseConversion)
             .relationalSink(relationalSink())
             .cleanupStagingData(cleanupStagingData())
             .collectStatistics(collectStatistics())
@@ -212,11 +214,11 @@ public abstract class RelationalIngestorAbstract
         }
         else
         {
-            updatedDatasets = updatedDatasets.withMainDataset(generator.deriveMainDatasetFromStaging(updatedDatasets, ingestMode()));
+            updatedDatasets = updatedDatasets.withMainDataset(ApiUtils.deriveMainDatasetFromStaging(updatedDatasets, ingestModeWithCaseConversion));
         }
 
-        Planner planner = Planners.get(updatedDatasets, ingestMode(), plannerOptions());
-        GeneratorResult generatorResult = generator.generateOperations(updatedDatasets, resourcesBuilder.build(), planner);
+        Planner planner = Planners.get(updatedDatasets, ingestModeWithCaseConversion, plannerOptions());
+        GeneratorResult generatorResult = generator.generateOperations(updatedDatasets, resourcesBuilder.build(), planner, ingestModeWithCaseConversion);
 
         // Create tables
         executor.executePhysicalPlan(generatorResult.preActionsSqlPlan());
@@ -231,12 +233,12 @@ public abstract class RelationalIngestorAbstract
             }
         }
         // Perform Ingestion
-        List<IngestorResult> result = performIngestion(updatedDatasets, transformer, planner, executor, generatorResult, dataSplitRanges);
+        List<IngestorResult> result = performIngestion(updatedDatasets, transformer, planner, executor, generatorResult, dataSplitRanges, ingestModeWithCaseConversion);
         return result;
     }
 
     private List<IngestorResult> performIngestion(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Planner planner, Executor<SqlGen,
-        TabularData, SqlPlan> executor, GeneratorResult generatorResult, List<DataSplitRange> dataSplitRanges)
+        TabularData, SqlPlan> executor, GeneratorResult generatorResult, List<DataSplitRange> dataSplitRanges, IngestMode ingestMode)
     {
         try
         {
@@ -248,7 +250,7 @@ public abstract class RelationalIngestorAbstract
             {
                 Optional<DataSplitRange> dataSplitRange = Optional.ofNullable(dataSplitsCount == 0 ? null : dataSplitRanges.get(dataSplitIndex));
                 // Extract the Placeholders values
-                Map<String, String> placeHolderKeyValues = extractPlaceHolderKeyValues(datasets, executor, planner, transformer, ingestMode(), dataSplitRange);
+                Map<String, String> placeHolderKeyValues = extractPlaceHolderKeyValues(datasets, executor, planner, transformer, ingestMode, dataSplitRange);
                 // Load main table, extract stats and update metadata table
                 Map<StatisticName, Object> statisticsResultMap = loadData(executor, generatorResult, placeHolderKeyValues);
                 IngestorResult result = IngestorResult.builder()

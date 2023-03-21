@@ -111,6 +111,57 @@ class AppendOnlyTest extends BaseTest
     }
 
     /*
+    Scenario: Test Append Only Logic with FilterDuplicates and No Auditing with Upper Case Optimizer
+    */
+    @Test
+    void testAppendOnlyWithFilterDuplicatesAndNoAuditingWithUpperCaseOptimizer() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
+        DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
+
+        // Create staging table
+        h2Sink.executeStatement("CREATE TABLE IF NOT EXISTS \"TEST\".\"STAGING\"(\"ID\" INTEGER NOT NULL,\"NAME\" VARCHAR(64) NOT NULL,\"INCOME\" BIGINT,\"START_TIME\" TIMESTAMP NOT NULL,\"EXPIRY_DATE\" DATE,\"DIGEST\" VARCHAR,PRIMARY KEY (\"ID\", \"START_TIME\"))");
+
+        // Generate the milestoning object
+        AppendOnly ingestMode = AppendOnly.builder()
+                .digestField(digestName)
+                .deduplicationStrategy(FilterDuplicates.builder().build())
+                .auditing(NoAuditing.builder().build())
+                .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        String[] schema = new String[]{idName.toUpperCase(), nameName.toUpperCase(), incomeName.toUpperCase(), startTimeName.toUpperCase(), expiryDateName.toUpperCase(), digestName.toUpperCase()};
+
+        // ------------ Perform incremental (append) milestoning Pass1 ------------------------
+        String dataPass1 = basePath + "input/vanilla_case/data_pass1.csv";
+        String expectedDataPass1 = basePath + "expected/vanilla_case/expected_pass1.csv";
+        // 1. Load staging table
+        loadBasicStagingDataInUpperCase(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = new HashMap<>();
+        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
+        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+
+        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
+
+        // 3. Assert that the staging table is NOT truncated
+        List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"STAGING\"");
+        Assertions.assertEquals(stagingTableList.size(), 3);
+
+        // ------------ Perform incremental (append) milestoning Pass2 ------------------------
+        String dataPass2 = basePath + "input/vanilla_case/data_pass2.csv";
+        String expectedDataPass2 = basePath + "expected/vanilla_case/expected_pass2.csv";
+        // 1. Load staging table
+        loadBasicStagingDataInUpperCase(dataPass2);
+        // 2. Execute plans and verify results
+        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
+    }
+
+    /*
     Scenario: test AppendOnly when staging data is imported along with Digest field population
     */
     @Test
@@ -303,5 +354,4 @@ class AppendOnlyTest extends BaseTest
 
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStatsList, dataSplitRanges, incrementalClock);
     }
-
 }

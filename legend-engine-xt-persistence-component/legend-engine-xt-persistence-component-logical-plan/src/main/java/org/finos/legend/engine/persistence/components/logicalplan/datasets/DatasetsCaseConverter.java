@@ -32,7 +32,17 @@ public class DatasetsCaseConverter
         Optional<Dataset> temp = datasets.tempDataset().map(dataset -> datasetCaseConverter.applyCaseOnDataset(dataset, strategy));
         Optional<Dataset> tempWithDeleteIndicator = datasets.tempDatasetWithDeleteIndicator().map(dataset -> datasetCaseConverter.applyCaseOnDataset(dataset, strategy));
         Optional<Dataset> stagingWithoutDuplicates = datasets.stagingDatasetWithoutDuplicates().map(dataset -> datasetCaseConverter.applyCaseOnDataset(dataset, strategy));
-        Optional<MetadataDataset> metadata = datasets.metadataDataset().map(metadataDataset -> metadataDatasetCaseConverter.applyCaseOnMetadataDataset(metadataDataset, strategy));
+        MetadataDataset metadataset;
+        if (datasets.metadataDataset().isPresent())
+        {
+            metadataset = datasets.metadataDataset().get();
+        }
+        else
+        {
+            metadataset = MetadataDataset.builder().build();
+        }
+
+        Optional<MetadataDataset> metadata = Optional.ofNullable(metadataDatasetCaseConverter.applyCaseOnMetadataDataset(metadataset, strategy));
         return Datasets.builder()
             .mainDataset(main)
             .stagingDataset(staging)
