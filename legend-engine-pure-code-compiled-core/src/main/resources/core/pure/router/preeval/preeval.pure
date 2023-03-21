@@ -802,6 +802,7 @@ function <<access.private>> meta::pure::router::preeval::stopPreeval(value : Any
   $value->match([
             p : String[*]| true,
             p : Float[*]| true,
+            p : Decimal[*] | true,
             p : Enum[*]| true,
             p : StrictDate[*]| true,
             p : LatestDate[*]| true,
