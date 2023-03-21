@@ -767,6 +767,35 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   assertLambdaJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSchemaService1():Boolean[1]
+{
+  let sqlString = 'SELECT * FROM service."/service/service1"';
+
+  let columns = $sqlString->processQuery(true).columns();
+  assertEquals('Boolean', $columns->at(0)->forceGetStringType());
+  assertEquals('Integer', $columns->at(1)->forceGetStringType());
+  assertEquals('Float',   $columns->at(2)->forceGetStringType());
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSchemaService2():Boolean[1]
+{
+  let sqlString = 'SELECT * FROM service."/service/service2"';
+
+  let columns = $sqlString->processQuery(true).columns();
+  assertEquals('Integer', $columns->at(0)->forceGetStringType());
+  assertEquals('Integer', $columns->at(1)->forceGetStringType());
+  assertEquals('String',  $columns->at(2)->forceGetStringType());
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSchemaService3():Boolean[1]
+{
+  let sqlString = 'SELECT * FROM service."/service/service3"';
+
+  let columns = $sqlString->processQuery(true).columns();
+  assertEquals('Integer', $columns->at(0)->forceGetStringType());
+  assertEquals('Integer', $columns->at(1)->forceGetStringType());
+  assertEquals('meta::external::query::sql::transformation::queryToPure::tests::MyEnum',  $columns->at(2)->forceGetStringType());
+}
 
 function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1]): SqlTransformContext[1]
 {
@@ -777,11 +806,20 @@ function meta::external::query::sql::transformation::queryToPure::tests::process
 {
   let query = meta::legend::compileVS('#SQL{' + $sql + '}#')->cast(@Query);
   let context = ^SqlTransformContext(
-    sources = [serviceToSource(Service1()), serviceToSource(Service2())],
+    sources = [
+      serviceToSource(Service1()),
+      serviceToSource(Service2()),
+      serviceToSource(Service3())
+    ],
     extensions = sqlExtensions(),
     scopeWithFrom = $scopeWithFrom,
     aliases = ^Map<String, String>(),
     contexts = ^Map<String, SqlTransformContext>());
 
   $query->processQuery($context);
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::forceGetStringType(col: TDSColumn[1]): String[1]
+{
+  $col.type->toOne()->meta::pure::functions::meta::elementToPath();
 }
