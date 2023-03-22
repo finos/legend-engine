@@ -34,11 +34,19 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-nonrelationalStore-mongodb-pure</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-nonrelationalStore-mongodb-protocol</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-nonrelationalStore-mongodb-grammar</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -74,6 +82,14 @@
         <!--        </dependency>-->
         <!-- ENGINE -->
 
+        <!-- ANTLR -->
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-runtime</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <!-- ANTLR -->
+
         <!-- Eclipse -->
         <!--                <dependency>-->
         <!--                    <groupId>org.eclipse.collections</groupId>-->
@@ -83,6 +99,9 @@
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
         </dependency>
+        <!-- Eclipse -->
+
+        <!-- Logger -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -91,7 +110,8 @@
         <!--            <groupId>org.slf4j</groupId>-->
         <!--            <artifactId>slf4j-log4j12</artifactId>-->
         <!--        </dependency>-->
-        <!-- ENGINE -->
+        <!-- Logger -->
+
 
         <!-- TEST -->
         <!--                <dependency>-->

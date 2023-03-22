@@ -17,99 +17,23 @@
 
 parser grammar MongoDBMappingParser;
 
-options { tokenVocab = MongoDBMappingLexer; }
+options { tokenVocab = MongoDBSchemaLexer; }
 
 unquotedIdentifier:                         VALID_STRING
 ;
 
-identifier:                                 unquotedIdentifier | MONGODB_FIELD_IDENTIFIER | STRING
+identifier:                                 unquotedIdentifier | mongodbIdentifier | STRING
 ;
 
-mapping
-        : classMapping
+mapping:                                    classMapping
 ;
 
 
 // Excluding association mapping for now
 
-classMapping:                               mappingFilter?
-                                            DISTINCT_CMD?
-                                            mappingPrimaryKey?
-                                            mappingMainCollection?
-                                            (propertyMapping (COMMA propertyMapping)*)?
+classMapping:                               DISTINCT_CMD?
                                             EOF
 ;
-mappingFilter:                              FILTER_CMD databasePointer identifier
-;
 
-mappingPrimaryKey:                          PRIMARY_KEY_CMD
-                                                PAREN_OPEN
-                                                    (booleanOperation (COMMA booleanOperation)*)?
-                                                PAREN_CLOSE
+mongodbIdentifier:                      unquotedIdentifier    //| QUOTED_STRING
 ;
-mappingMainCollection:                     MAIN_COLLECTION_CMD databasePointer mappingScopeInfo
-;
-mappingScopeInfo:                           identifier (DOT scopeInfo)?
-;
-
-
-
-propertyMapping:                            singlePropertyMapping | propertyMappingWithScope
-;
-propertyMappingWithScope:                   SCOPE PAREN_OPEN databasePointer mappingScopeInfo? PAREN_CLOSE
-                                                PAREN_OPEN
-                                                    singlePropertyMapping (COMMA singlePropertyMapping)*
-                                                PAREN_CLOSE
-;
-
-singlePropertyMapping:                      identifier
-                                            (
-                                                mongoDBPropertyMapping
-                                            )
-;
-
-mongoDBPropertyMapping:                     COLON booleanOperation
-;
-
-scopeInfo:                                  identifier (DOT identifier)?
-;
-databasePointer:                            BRACKET_OPEN qualifiedName BRACKET_CLOSE
-;
-//mongoDBIdentifier:                          VALID_STRING | MONGODB_FIELD_IDENTIFIER | QUOTED_STRING
-//;
-
-booleanOperation:                           atomicOperation booleanOperationRight?
-;
-booleanOperationRight:                      booleanOperator booleanOperation
-;
-booleanOperator:                            AND | OR
-;
-atomicOperation:                            (
-                                                fieldOperation
-                                                | constant
-                                            )
-                                            atomicOperationRight?
-;
-atomicOperationRight:                       (atomicOperator atomicOperation) | atomicSelfOperator
-;
-atomicOperator:                             EQ | NE | LT | LTE | GT | GTE
-;
-atomicSelfOperator:                         IF_NULL
-;
-constant:                                   STRING | NUMBER
-;
-fieldOperation:                            databasePointer? collectionFieldOperation
-;
-collectionFieldOperation:                   identifier (DOT scopeInfo)?
-;
-
-qualifiedName:                              (packagePath PATH_SEPARATOR)? identifier
-;
-packagePath:                                identifier (PATH_SEPARATOR identifier)*
-;
-
-// Since BOOLEAN and INTEGER overlap with VALID_STRING, we have to account for them
-// Also, here, we use `identifier` instead of VALID_STRING
-// because in the main grammar, we will take care of keywords overlapping VALID_STRING
-//word:                                           identifier | TRUE | FALSE | INT
-//;

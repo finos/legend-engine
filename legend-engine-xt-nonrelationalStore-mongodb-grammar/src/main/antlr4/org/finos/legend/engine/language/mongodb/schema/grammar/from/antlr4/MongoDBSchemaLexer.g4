@@ -17,6 +17,9 @@
 
 lexer grammar MongoDBSchemaLexer;
 
+import M3LexerGrammar;
+
+
 fragment ESC
    : '\\' (["\\/bfnrt] | UNICODE)
    ;
@@ -56,104 +59,52 @@ WS
    : [ \t\n\r] + -> skip
    ;
 
-
-
-BRACE_OPEN:                                 '{';
-BRACE_CLOSE:                                '}';
-BRACKET_OPEN:                               '[';
-BRACKET_CLOSE:                              ']';
-PAREN_OPEN:                                 '(';
-PAREN_CLOSE:                                ')';
-COLON:                                      ':';
-DOT:                                        '.';
-COMMA:                                      ',';
+//BRACE_OPEN:                                 '{';
+//BRACE_CLOSE:                                '}';
+//BRACKET_OPEN:                               '[';
+//BRACKET_CLOSE:                              ']';
+//PAREN_OPEN:                                 '(';
+//PAREN_CLOSE:                                ')';
+//COLON:                                      ':';
+//DOT:                                        '.';
+//COMMA:                                      ',';
 DOLLAR:                                     '$';
-PATH_SEPARATOR:                             '::';
+//PATH_SEPARATOR:                             '::';
 
-PLUS:                                       '+';
-STAR:                                       '*';
-MINUS:                                      '-';
-DIVIDE:                                     '/';
+//PLUS:                                       '+';
+//STAR:                                       '*';
+//MINUS:                                      '-';
+//DIVIDE:                                     '/';
 
-DATABASE:                                   '"database"';
-DATABASE_NAME:                              '"databaseName"';
-COLLECTIONS:                                '"collections"';
-COLLECTION_NAME:                            '"collectionName"';
-SCHEMAS:                                    '"schemas"';
-SCHEMA:                                     '"$schema"';
-OPTIONS:                                    '"options"';
-VALIDATOR:                                  '"validator"';
-VALIDATION_LEVEL:                           '"validationLevel"';
-VALIDATION_ACTION:                          '"validationAction"';
-ID:                                         '"$id"';
-REF:                                        '"$ref"';
-JSON_SCHEMA:                                '"$jsonSchema"';
-TITLE:                                      '"title"';
-DESCRIPTION:                                '"description"';
-BSONTYPE:                                   '"bsonType"';
-TYPE:                                       '"type"';
-PROPERTIES:                                 '"properties"';
-MAX_PROPERTIES:                             '"maxProperties"';
-MIN_PROPERTIES:                             '"minProperties"';
-REQUIRED:                                   '"required"';
-ITEMS:                                      '"items"';
-UNIQUE_ITEMS:                               '"uniqueItems"';
-MIN_ITEMS:                                  '"minItems"';
-MAX_ITEMS:                                  '"maxItems"';
-MINIMUM:                                    '"minimum"';
-MAXIMUM:                                    '"maximum"';
-MIN_LENGTH:                                 '"minLength"';
-MAX_LENGTH:                                 '"maxLength"';
-ADDITIONAL_PROPERTIES:                      '"additionalProperties"';
+DATABASE:                                   'Database';
+COLLECTION:                                 'Collection';
+JSON_SCHEMA:                                'jsonSchema';
+VALIDATION_LEVEL:                           'validationLevel';
+VALIDATION_ACTION:                          'validationAction';
+JOIN:                                       'Join';
+INCLUDE:                                    'include';
+
+ERROR:                                      'error'; //default
+WARN:                                       'warn';
+STRICT:                                     'strict'; // default
+MODERATE:                                   'moderate';
+
+
 TRUE:                                       'true';
 FALSE:                                      'false';
 NULL:                                       'null';
-ENUM:                                       '"enum"';
-ALL_OF:                                     '"allOf"';
-ANY_OF:                                     '"anyOf"';
-ONE_OF:                                     '"oneOf"';
 
 
 INVALID:                                    Invalid;
 
-// Fragments
-fragment ValidString:                       (Letter | Digit | '_' ) (Letter | Digit | '_')*
-;
 // Not using Field Identifer. REMOVE TBD
-fragment FieldIdentifier:                   ('$' | '$$') (Letter | Digit | '_' )*
-;
-fragment Letter:                            [A-Za-z]
-;
-fragment Digit:                             [0-9]
-;
-//fragment UNQOTEDSTRINGFRAGMENT:             (ESC | SAFECODEPOINT)*
+//fragment FieldIdentifier:                   ('$' | '$$') (Letter | Digit | '_' )*
 //;
-fragment STRINGFRAGMENT:                    '"' (ESC | SAFECODEPOINT)* '"'
-;
-
-STRING
-   : STRINGFRAGMENT
-   {setText(getText().substring(1, getText().length()-1));}
-;
-
-VALID_STRING:                               ValidString;
-
-
-//UNQUOTED_STRING
-//    : UNQOTEDSTRINGFRAGMENT
-//;
-
-//WORD
-// : ~[ \t\r\n[\]{}=,|&]+
-//;
-
-
-
-// --------------------------------------- INVALID -------------------------------------------
-
-// Add a rule for INVALID token to the very end of the lexer grammar to make sure your lexer handles all
-// input successfully in order to boost performance
-// See https://github.com/antlr/antlr4/issues/1540#issuecomment-268738030
 
 fragment Invalid:                       .
 ;
+
+FILTER_CMD:                                 '~filter';
+DISTINCT_CMD:                               '~distinct';
+MAIN_COLLECTION_CMD:                        '~mainCollection';
+PRIMARY_KEY_CMD:                            '~primaryKey';

@@ -17,48 +17,98 @@
 
 parser grammar MongoDBSchemaParser;
 
+import CoreParserGrammar;
+
 options { tokenVocab=MongoDBSchemaLexer; }
 
-keywords:                                   (DATABASE | DATABASE_NAME
-                                            | COLLECTIONS | COLLECTION_NAME
-                                            | SCHEMA | OPTIONS | VALIDATOR
-                                            | SCHEMAS
-                                            | VALIDATION_LEVEL | VALIDATION_ACTION
-                                            | ID | REF
-                                            | TITLE | DESCRIPTION
-                                            | TYPE | BSONTYPE
-                                            | PROPERTIES | REQUIRED
-                                            | UNIQUE_ITEMS | MIN_ITEMS | MAX_ITEMS | ITEMS
-                                            | MAXIMUM | MINIMUM
-                                            | MIN_LENGTH | MAX_LENGTH
-                                            | MAX_PROPERTIES | MIN_PROPERTIES
-                                            | ENUM | ALL_OF | ONE_OF | ANY_OF
-                                            | ADDITIONAL_PROPERTIES)
+unquotedIdentifier:                     VALID_STRING
+                                        | DATABASE | COLLECTION
+                                        | JSON_SCHEMA
+                                        | VALIDATION_LEVEL | VALIDATION_ACTION
+;
+
+identifier:                             unquotedIdentifier | STRING
+;
+
+definition:                             (database)*
+                                        EOF
+;
+database:                               DATABASE qualifiedName
+                                            PAREN_OPEN
+                                                 include*
+                                                    (
+                                                     collection
+                                                     | collectionView
+                                                     | join
+                                                     )*
+                                            PAREN_CLOSE
+;
+
+include:                                INCLUDE qualifiedName
+;
+
+collection:                             COLLECTION mongodbIdentifier
+                                            PAREN_OPEN
+                                                    validationLevel?
+                                                    validationAction?
+                                                    jsonSchema
+                                            PAREN_CLOSE
+;
+collectionView:                             COLLECTION mongodbIdentifier
+                                            PAREN_OPEN
+                                                    validationLevel?
+                                                    validationAction?
+                                                    jsonSchema
+                                            PAREN_CLOSE
+;
+
+join:                                       JOIN identifier PAREN_OPEN joinOperation PAREN_CLOSE
+;
+
+joinOperation:                          databasePointer? fieldPath EQUAL databasePointer? fieldPath
+;
+
+fieldPath:                              databasePointer? mongodbIdentifier DOT mongodbIdentifier
+;
+
+databasePointer:                        BRACKET_OPEN qualifiedName BRACKET_CLOSE
+;
+
+mongodbIdentifier:                      unquotedIdentifier    //| QUOTED_STRING
+;
+
+validationLevel:                        VALIDATION_LEVEL validationLevelValues COMMA
+;
+validationAction:                       VALIDATION_ACTION validationActionValues COMMA
+;
+validationLevelValues:                  STRICT | MODERATE
+;
+validationActionValues:                 ERROR  | WARN
+;
+
+
+jsonSchema:                             JSON_SCHEMA json
 ;
 
 json
-   : value EOF
-   ;
+   : value
+;
 
 obj
    : BRACE_OPEN pair (COMMA pair)* BRACE_CLOSE
    | BRACE_OPEN BRACE_CLOSE
-   ;
+;
 
 pair
-   : key ':' value
-   ;
+   : STRING ':' value
+;
 
-
-key
-   : (keywords | STRING)
-   ;
 
 
 arr
    : BRACKET_OPEN value (COMMA value)* BRACKET_CLOSE
    | BRACKET_OPEN BRACKET_CLOSE
-   ;
+;
 
 
 

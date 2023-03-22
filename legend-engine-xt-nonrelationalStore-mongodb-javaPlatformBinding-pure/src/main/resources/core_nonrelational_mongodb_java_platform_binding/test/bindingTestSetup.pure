@@ -76,21 +76,6 @@ function meta::external::store::mongodb::executionPlan::platformBinding::test::g
 }
 
 
-// ###ExternalFormat
-// Binding inheritance::store::FirmBinding
-// {
-//   contentType: 'application/json';
-//   modelIncludes: [
-//     inheritance::model::Firm,
-//     inheritance::model::Address,
-//     inheritance::model::AddressWithLines,
-//     inheritance::model::AddressLine,
-//     inheritance::model::StreetAddressLine,
-//     inheritance::model::CityAddressLine,
-//     inheritance::model::StateAddressLine
-//   ];
-// }
-
 function meta::external::store::mongodb::executionPlan::platformBinding::test::getCompiledElements() : meta::pure::metamodel::PackageableElement[*]
 {
   meta::legend::compile('###Relational\n' +
@@ -132,42 +117,32 @@ function meta::external::store::mongodb::executionPlan::platformBinding::test::g
       //'lastName: [meta::external::store::mongodb::executionPlan::platformBinding::test::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.LASTNAME,\n' +
       'firm: Binding meta::external::store::mongodb::executionPlan::platformBinding::test::store::FirmBinding : [meta::external::store::mongodb::executionPlan::platformBinding::test::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.FIRM_DETAILS\n' +
     '}\n' +
-  ')\n'
+  ')\n' +
+  '###Runtime\n' +
+  'Runtime meta::external::store::mongodb::executionPlan::platformBinding::test::runtime::SnowflakeRuntime\n' +
+  '{\n' +
+    'mappings :\n' +
+    '[\n' +
+      'meta::external::store::mongodb::executionPlan::platformBinding::test::mapping::SnowflakeMapping\n' +
+    '];\n' +
+    'connections :\n' +
+    '[\n' +
+        'meta::external::store::mongodb::executionPlan::platformBinding::test::store::SnowflakeDB :\n' +
+        '[\n' +
+            'connection_1 : #{\n' +
+                'RelationalDatabaseConnection {\n' +
+                    'store: meta::external::store::mongodb::executionPlan::platformBinding::test::store::SnowflakeDB;\n' +
+                    'type: Snowflake;\n' +
+                    'specification: LocalH2{};\n' +
+                    'auth: DefaultH2;\n' +
+                '}\n' +
+            '}#\n' +
+        ']\n' +
+    '];\n' +
+   '}'
   );
 }
 
-function meta::external::store::mongodb::executionPlan::platformBinding::test::getCompiledMapping(): PackageableElement[*]
-{
-  meta::legend::compile('###Mapping\n' +
-  'Mapping meta::external::store::mongodb::executionPlan::platformBinding::test::mapping::SnowflakeMapping\n' +
-  '(\n' +
-    'meta::external::store::mongodb::executionPlan::platformBinding::test::model::Person: Relational\n' +
-    '{\n' +
-      // '~primaryKey\n' +
-      // '(\n' +
-      //   '[meta::external::store::mongodb::executionPlan::platformBinding::test::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.ID\n' +
-      // ')\n' +
-      '~mainTable [meta::external::store::mongodb::executionPlan::platformBinding::test::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE\n' +
-      'firstName: [meta::external::store::mongodb::executionPlan::platformBinding::test::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.FIRSTNAME,\n' +
-      //'lastName: [meta::external::store::mongodb::executionPlan::platformBinding::test::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.LASTNAME,\n' +
-      //'firm: Binding meta::external::store::mongodb::executionPlan::platformBinding::test::store::FirmBinding : [meta::external::store::mongodb::executionPlan::platformBinding::test::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.FIRM_DETAILS\n' +
-    '}\n' +
-  ')\n');
-}
 
-// ###Mapping
-// Mapping meta::external::store::mongodb::executionPlan::platformBinding::test::mapping::SnowflakeMapping
-// (
-//   meta::external::store::mongodb::executionPlan::platformBinding::test::model::Person: Relational
-//   {
-//     ~primaryKey
-//     (
-//       [meta::external::store::mongodb::executionPlan::platformBinding::test::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.ID
-//     )
-//     ~mainTable [meta::external::store::mongodb::executionPlan::platformBinding::test::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE
-//     firstName: [meta::external::store::mongodb::executionPlan::platformBinding::test::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.FIRSTNAME,
-//     lastName: [meta::external::store::mongodb::executionPlan::platformBinding::test::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.LASTNAME,
-//     firm: Binding meta::external::store::mongodb::executionPlan::platformBinding::test::store::FirmBinding : [meta::external::store::mongodb::executionPlan::platformBinding::test::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.FIRM_DETAILS,
-//     //manager[simple_model_Person]: [simple::store::SnowflakeDB]@manager
-//   }
-// )
+
+

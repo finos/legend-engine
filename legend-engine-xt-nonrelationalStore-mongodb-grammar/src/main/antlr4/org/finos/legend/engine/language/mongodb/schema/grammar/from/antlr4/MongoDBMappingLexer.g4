@@ -17,7 +17,7 @@
 
 lexer grammar MongoDBMappingLexer;
 
-import MongoDBSchemaLexer;
+//import MongoDBSchemaLexer;
 
 VIEW:                                       'View';
 FILTER:                                     'Filter';
@@ -31,16 +31,16 @@ PRIMARY_KEY_CMD:                            '~primaryKey';
 SCOPE:                                      'scope';
 
 
-EQ:                                         '"' '$eq' '"' |  '$eq';
-GT:                                         '"' '$gt' '"'  |  '$gt';
-GTE:                                        '"' '$gte' '"' |  '$gte';
-LT:                                         '"' '$lt' '"'  |  '$lt';
-LTE:                                         '"' '$lte' '"' |  '$lte';
-NE:                                         '"' '$ne' '"' |  '$ne';
-IN:                                         '"' '$in' '"' |  '$in';
-NIN:                                        '"' '$nin' '"' |  '$nin';
-AND:                                        '"' '$and' '"' |  '$and';
-OR:                                         '"' '$or' '"' |  '$or';
-IF_NULL:                                    '"' '$ifNull' '"' | '$ifNull';
+//EQ:                                         '"' '$eq' '"' |  '$eq';
+//GT:                                         '"' '$gt' '"'  |  '$gt';
+//GTE:                                        '"' '$gte' '"' |  '$gte';
+//LT:                                         '"' '$lt' '"'  |  '$lt';
+//LTE:                                         '"' '$lte' '"' |  '$lte';
+//NE:                                         '"' '$ne' '"' |  '$ne';
+//IN:                                         '"' '$in' '"' |  '$in';
+//NIN:                                        '"' '$nin' '"' |  '$nin';
+//AND:                                        '"' '$and' '"' |  '$and';
+//OR:                                         '"' '$or' '"' |  '$or';
+//IF_NULL:                                    '"' '$ifNull' '"' | '$ifNull';
 
-MONGODB_FIELD_IDENTIFIER:                   '"$' (ESC | SAFECODEPOINT)* '"' | '$' (ESC | SAFECODEPOINT)*;
+//MONGODB_FIELD_IDENTIFIER:                   '"$' (ESC | SAFECODEPOINT)* '"' | '$' (ESC | SAFECODEPOINT)*;
