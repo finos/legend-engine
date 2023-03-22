@@ -325,8 +325,14 @@ public class TestQueryStoreManager
         Assert.assertEquals("1", lightQuery.id);
         Assert.assertEquals("query1", lightQuery.name);
         Assert.assertEquals("0.0.0", lightQuery.versionId);
-        Assert.assertNotNull(createdQuery.createdAt);
-        Assert.assertNotNull(createdQuery.lastUpdatedAt);
+        Assert.assertNotNull(lightQuery.createdAt);
+        Assert.assertNotNull(lightQuery.lastUpdatedAt);
+        Assert.assertNull(lightQuery.content);
+        Assert.assertNull(lightQuery.description);
+        Assert.assertNull(lightQuery.mapping);
+        Assert.assertNull(lightQuery.runtime);
+        Assert.assertNull(lightQuery.stereotypes);
+        Assert.assertNull(lightQuery.taggedValues);
     }
 
 
