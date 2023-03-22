@@ -104,7 +104,7 @@ public class QueryStoreManager
         query.runtime = document.getString("runtime");
         query.content = document.getString("content");
         query.owner = document.getString("owner");
-        query.lastUpdateAt = document.getLong("lastUpdateAt");
+        query.lastUpdatedAt = document.getLong("lastUpdatedAt");
         query.createdAt = document.getLong("createdAt");
         if (document.get("taggedValues") != null)
         {
@@ -235,9 +235,9 @@ public class QueryStoreManager
                             Filters.and(Filters.eq("stereotypes.profile", stereotype.profile), Filters.eq("stereotypes.value", stereotype.value)))));
         }
         return LazyIterate.collect(this.getQueryCollection()
-                .find(filters.isEmpty() ? EMPTY_FILTER : Filters.and(filters)).sort(searchSpecification.showLatestQueries != null && searchSpecification.showLatestQueries ? descending("lastUpdateAt") : EMPTY_FILTER)
+                .find(filters.isEmpty() ? EMPTY_FILTER : Filters.and(filters)).sort(searchSpecification.showLatestQueriesFirst != null && searchSpecification.showLatestQueriesFirst ? descending("lastUpdatedAt") : EMPTY_FILTER)
                 // NOTE: return a light version of the query to save bandwidth
-                .projection(Projections.include("id", "name", "versionId", "groupId", "artifactId", "owner", "createdAt", "lastUpdateAt"))
+                .projection(Projections.include("id", "name", "versionId", "groupId", "artifactId", "owner", "createdAt", "lastUpdatedAt"))
                 .limit(Math.min(MAX_NUMBER_OF_QUERIES, searchSpecification.limit == null ? Integer.MAX_VALUE : searchSpecification.limit)), QueryStoreManager::documentToQuery).toList();
     }
 
@@ -279,7 +279,7 @@ public class QueryStoreManager
             throw new ApplicationQueryException("Query with ID '" + query.id + "' already existed", Response.Status.BAD_REQUEST);
         }
         query.createdAt = Instant.now().toEpochMilli();
-        query.lastUpdateAt = query.createdAt;
+        query.lastUpdatedAt = query.createdAt;
         this.getQueryCollection().insertOne(queryToDocument(query));
         QueryEvent createdEvent = createEvent(query.id, QueryEvent.QueryEventType.CREATED);
         createdEvent.timestamp = query.createdAt;
@@ -314,10 +314,10 @@ public class QueryStoreManager
         }
         query.owner = currentUser;
         query.createdAt = currentQuery.createdAt;
-        query.lastUpdateAt = Instant.now().toEpochMilli();
+        query.lastUpdatedAt = Instant.now().toEpochMilli();
         this.getQueryCollection().findOneAndReplace(Filters.eq("id", queryId), queryToDocument(query));
         QueryEvent updatedEvent = createEvent(query.id, QueryEvent.QueryEventType.UPDATED);
-        updatedEvent.timestamp = query.lastUpdateAt;
+        updatedEvent.timestamp = query.lastUpdatedAt;
         this.getQueryEventCollection().insertOne(queryEventToDocument(updatedEvent));
         return query;
     }

@@ -47,7 +47,7 @@ public class TestQueryStoreManager
         public List<StereotypePtr> stereotypes;
         public Integer limit;
         public Boolean showCurrentUserQueriesOnly;
-        public Boolean showLatestQueries;
+        public Boolean showLatestQueriesFirst;
 
         TestQuerySearchSpecificationBuilder withSearchTerm(String searchTerm)
         {
@@ -85,9 +85,9 @@ public class TestQueryStoreManager
             return this;
         }
 
-        TestQuerySearchSpecificationBuilder withShowLatestQueries(Boolean showLatestQueries)
+        TestQuerySearchSpecificationBuilder withshowLatestQueriesFirst(Boolean showLatestQueriesFirst)
         {
-            this.showLatestQueries = showLatestQueries;
+            this.showLatestQueriesFirst = showLatestQueriesFirst;
             return this;
         }
 
@@ -100,7 +100,7 @@ public class TestQueryStoreManager
             searchSpecification.stereotypes = this.stereotypes;
             searchSpecification.limit = this.limit;
             searchSpecification.showCurrentUserQueriesOnly = this.showCurrentUserQueriesOnly;
-            searchSpecification.showLatestQueries = this.showLatestQueries;
+            searchSpecification.showLatestQueriesFirst = this.showLatestQueriesFirst;
             return searchSpecification;
         }
     }
@@ -325,6 +325,8 @@ public class TestQueryStoreManager
         Assert.assertEquals("1", lightQuery.id);
         Assert.assertEquals("query1", lightQuery.name);
         Assert.assertEquals("0.0.0", lightQuery.versionId);
+        Assert.assertNotNull(createdQuery.createdAt);
+        Assert.assertNotNull(createdQuery.lastUpdatedAt);
     }
 
 
@@ -478,6 +480,8 @@ public class TestQueryStoreManager
         Assert.assertEquals("runtime", createdQuery.runtime);
         Assert.assertEquals(0, createdQuery.stereotypes.size());
         Assert.assertEquals(0, createdQuery.taggedValues.size());
+        Assert.assertNotNull(createdQuery.createdAt);
+        Assert.assertEquals(createdQuery.createdAt, createdQuery.lastUpdatedAt);
 
     }
 
@@ -680,17 +684,17 @@ public class TestQueryStoreManager
     }
 
     @Test
-    public void testCreateSimpleQueryContainsTimeStamps() throws Exception
+    public void testCreateSimpleQueryContainsTimestamps() throws Exception
     {
         String currentUser = "testUser";
         Query newQuery = TestQueryBuilder.create("1", "query1", currentUser).build();
         Query createdQuery = queryStoreManager.createQuery(newQuery, currentUser);
-        Assert.assertNotNull(createdQuery.lastUpdateAt);
+        Assert.assertNotNull(createdQuery.lastUpdatedAt);
         Assert.assertNotNull(createdQuery.createdAt);
     }
 
     @Test
-    public void testGetLightQueriesContainTimeStamps() throws Exception
+    public void testGetLightQueriesContainTimestamps() throws Exception
     {
         String currentUser = "testUser";
         Query newQuery = TestQueryBuilder.create("1", "query1", currentUser).withGroupId("test.group").withArtifactId("test-artifact").build();
@@ -698,18 +702,18 @@ public class TestQueryStoreManager
         List<Query> queries = queryStoreManager.getQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser);
         Assert.assertEquals(1, queries.size());
         Query lightQuery = queries.get(0);
-        Assert.assertNotNull(lightQuery.lastUpdateAt);
+        Assert.assertNotNull(lightQuery.lastUpdatedAt);
         Assert.assertNotNull(lightQuery.createdAt);
     }
 
     @Test
-    public void testGetLightQueriesSortWithLastUpdateAt() throws Exception
+    public void testGetLightQueriesSortWithLastUpdatedAt() throws Exception
     {
         String currentUser = "testUser";
         queryStoreManager.createQuery(TestQueryBuilder.create("1", "query1", currentUser).build(), currentUser);
         queryStoreManager.createQuery(TestQueryBuilder.create("2", "query2", currentUser).build(), currentUser);
         queryStoreManager.updateQuery("2", TestQueryBuilder.create("2", "query", currentUser).build(), currentUser);
-        List<Query> queries = queryStoreManager.getQueries(new TestQuerySearchSpecificationBuilder().withShowLatestQueries(true).build(), currentUser);
+        List<Query> queries = queryStoreManager.getQueries(new TestQuerySearchSpecificationBuilder().withshowLatestQueriesFirst(true).build(), currentUser);
         Query lightQuery = queries.get(0);
         Assert.assertEquals("2", lightQuery.id);
     }
