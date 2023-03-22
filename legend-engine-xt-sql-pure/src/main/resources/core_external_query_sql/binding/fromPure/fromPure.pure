@@ -17,14 +17,31 @@ import meta::external::query::sql::transformation::queryToPure::*;
 import meta::legend::service::metamodel::*;
 import meta::pure::executionPlan::*;
 
+Class meta::external::query::sql::transformation::queryToPure::SQLSourceArgument
+{
+  name: String[0..1];
+  index: Integer[0..1];
+  value: Any[*];
+
+  matches(argument:SQLSourceArgument[1]) {
+    ($this.name->isNotEmpty() && $this.name == $argument.name && $this.value == $argument.value)
+    ||
+    ($this.name->isEmpty() && $this.index == $argument.index && $this.value == $argument.value)
+  }:Boolean[1];
+}
+
 Class meta::external::query::sql::transformation::queryToPure::SQLSource
 {
   type: String[1];
-  id: String[1];
   func:FunctionDefinition<Any>[1];
   mapping: meta::pure::mapping::Mapping[0..1];
   runtime: meta::pure::runtime::Runtime[0..1];
   executionOptions: ExecutionOption[*];
+  key: SQLSourceArgument[*];
+
+  matches(type:String[1], arguments:SQLSourceArgument[*]) {
+    $this.type == $type && $this.key->forAll(k | $arguments->exists(a | $a.matches($k)));
+  }:Boolean[1];
 }
 
 function meta::external::query::sql::transformation::queryToPure::getPlansFromSQL(
@@ -38,6 +55,7 @@ function meta::external::query::sql::transformation::queryToPure::getPlansFromSQ
     extensions = $extensions,
     aliases = ^Map<String, String>(),
     contexts = ^Map<String, SqlTransformContext>());
+
   let sqlTransformContext = $query->cast(@Query)->processQuery($context);
 
   meta::pure::executionPlan::executionPlan($sqlTransformContext.lambda(), $extensions);
@@ -129,7 +147,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::extractGroupByColumnNameFromExpression(expression:meta::external::query::sql::metamodel::Expression[1], select: Select[1]):String[1]
 {
   $expression->match([
-    i:IntegerLiteral[1] | 
+    i:IntegerLiteral[1] |
       let index = $i.value - 1; //0 index offset in sql is 1;
       assert($index < $select.selectItems->size(), 'No select column at index ' + $i.value->toString());
       assert($select.selectItems->at($index)->instanceOf(SingleColumn), 'select * not currently supported for index group by');
@@ -197,7 +215,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::isSelectItemAggregate(si: SelectItem[1]):Boolean[1]
 {
-  $si->instanceOf(SingleColumn) 
+  $si->instanceOf(SingleColumn)
   && $si->cast(@SingleColumn).expression->instanceOf(FunctionCall)
   && functionProcessor($si->cast(@SingleColumn).expression->cast(@FunctionCall).name).isAggregate
 }
@@ -393,11 +411,42 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   processQuery($tsq.query, $context);
 }
 
+function meta::external::query::sql::transformation::queryToPure::extractSourceArguments(expressions:meta::external::query::sql::metamodel::Expression[*]):SQLSourceArgument[*]
+{
+  $expressions->map(e | $e->extractSourceArgument($expressions->indexOf($e), []));
+}
+
+function meta::external::query::sql::transformation::queryToPure::extractSourceArgument(expression:meta::external::query::sql::metamodel::Expression[1], index:Integer[1], name:String[0..1]):SQLSourceArgument[0..1]
+{
+  $expression->match([
+    n:NamedArgumentExpression[1] | $n.expression->extractSourceArgument($index, $n.name),
+    s:StringLiteral[1] | ^SQLSourceArgument(value = $s.value, name = $name, index = $index),
+    i:IntegerLiteral[1] | ^SQLSourceArgument(value = $i.value, name = $name, index = $index),
+    d:DoubleLiteral[1] | ^SQLSourceArgument(value = $d.value, name = $name, index = $index),
+    l:LongLiteral[1] | ^SQLSourceArgument(value = $l.value, name = $name, index = $index),
+    n:NullLiteral[1] | ^SQLSourceArgument(name = $name, index = $index),
+    b:BooleanLiteral[1] | ^SQLSourceArgument(value = $b.value, name = $name, index = $index),
+    a:ArrayLiteral[1] | ^SQLSourceArgument(value = $a.values, name = $name, index = $index),
+    e:meta::external::query::sql::metamodel::Expression[1] | fail('only literal values supported'); [];
+  ]);
+}
+
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processTableFunction(tableFunc: TableFunction[1], context: SqlTransformContext[1]): SqlTransformContext[1]
 {
   debug('processTableFunction');
-  fail('Table Functions Not Yet Supported');
-  $context;
+
+  assertEquals(1, $tableFunc.functionCall.name.parts->size(), | 'table function cannot have multi part name');
+  assert($tableFunc.functionCall.arguments->size() > 0, | 'table func must have at least one argument');
+
+  let type = $tableFunc.functionCall.name.parts->at(0);
+  let arguments = $tableFunc.functionCall.arguments->extractSourceArguments();
+
+  let source = $context.source($type, $arguments);
+
+  //TODO handle multi expression
+  let expression = $source.func.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@FunctionExpression);
+
+  ^$context(expression = $expression, source = $source);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processTable(table: Table[1], context: SqlTransformContext[1]): SqlTransformContext[1]
@@ -410,12 +459,10 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let type = $table.name.parts->at(0);
   let id = $table.name.parts->at(1);
-  let source = $context.source($type, $id);
 
-  //TODO handle multi expression
-  let expression = $source.func.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@FunctionExpression);
-
-  ^$context(expression = $expression, source = $source);
+  processTableFunction(^TableFunction(functionCall = ^FunctionCall(name = ^QualifiedName(parts = $type),
+                                                                  distinct = false,
+                                                                  arguments = ^StringLiteral(value=$id, quoted = false))), $context);
 }
 
 //TODO we can be much smarter by understanding whether x-store is in play and not wrap if true.
@@ -766,8 +813,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   //if there is no column with the name, then fall back to process as function
   //TODO investigate if better way of identifying whether to use processAsIdentifier
-  if ($col->isNotEmpty(), 
-    | createTdsColumn($col.name->toOne(), $expContext.var, $context), 
+  if ($col->isNotEmpty(),
+    | createTdsColumn($col.name->toOne(), $expContext.var, $context),
     | processFunctionCall($f, ^$expContext(processFunctionCallAsIdentifier = false), $context));
 }
 
@@ -829,7 +876,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       processor('pi', pi__Float_1_, false),
       processor('power', pow_Number_1__Number_1__Number_1_, false),
       processor('radians', toRadians_Number_1__Float_1_, false),
-      processor('round', false, {args | 
+      processor('round', false, {args |
         assert(($args->size() == 1) || ($args->size() == 2), 'incorrect number of args for round');
         let func = if ($args->size() == 1, | round_Number_1__Integer_1_, | round_Decimal_1__Integer_1__Decimal_1_);
 
@@ -841,11 +888,11 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       processor('sum', sum_Number_MANY__Number_1_, true),
       processor('sqrt', sqrt_Number_1__Float_1_, false),
       processor('tan', tan_Number_1__Float_1_, false),
-      
+
 
       //STRING
       processor('char_length', length_String_1__Integer_1_, false),
-      processor('concat', joinStrings_String_MANY__String_1_, false),      
+      processor('concat', joinStrings_String_MANY__String_1_, false),
       processor('lower', toLower_String_1__String_1_, false),
       processor('regexp_like', matches_String_1__String_1__Boolean_1_, false),
       processor('replace', replace_String_1__String_1__String_1__String_1_, false),
@@ -860,7 +907,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
         assertEquals(2, $args->size(), 'incorrect number of args');
         let part = $args->at(0);
         let value = $part->reactivate()->toOne()->cast(@String);
-        
+
         let func = [
           pair('year', firstDayOfYear_Date_1__Date_1_),
           pair('quarter', firstDayOfQuarter_Date_1__StrictDate_1_),
@@ -870,7 +917,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
 
         sfe($func, $args->at(1));
       }),
-      processor('date_add', false, {args | 
+      processor('date_add', false, {args |
         assertEquals(3, $args->size(), 'incorrect number of args');
         let part = $args->at(0);
         let value = $part->reactivate()->toOne();
@@ -890,13 +937,13 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
 
         let unitSfe = sfe(extractEnumValue_Enumeration_1__String_1__T_1_, [iv(DurationUnit), iv($unit.name)]);
 
-        sfe(adjust_Date_1__Integer_1__DurationUnit_1__Date_1_, [$args->at(2), $args->at(1), $unitSfe]);        
+        sfe(adjust_Date_1__Integer_1__DurationUnit_1__Date_1_, [$args->at(2), $args->at(1), $unitSfe]);
       }),
       processor('date_part', false, {args |
         assertEquals(2, $args->size(), 'incorrect number of args');
         let part = $args->at(0);
         let value = $part->reactivate()->toOne()->cast(@String);
-        
+
         let func = [
           pair('year', year_Date_1__Integer_1_),
           pair('quarter', quarterNumber_Date_1__Integer_1_),
@@ -917,7 +964,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
 function meta::external::query::sql::transformation::queryToPure::processSubstring(args:ValueSpecification[*]):SimpleFunctionExpression[1]
 {
   assert($args->size() == 2 || $args->size() == 3, 'invalid number of args for substring');
-  
+
   let func = if ($args->size() == 2, | substring_String_1__Integer_1__String_1_, | substring_String_1__Integer_1__Integer_1__String_1_);
 
   sfe($func, $args);
@@ -1090,11 +1137,11 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
     $columns->filter(c|$c.name == $name || $c.name == $alias)->first();
   }: TDSColumn[0..1];
   lambda(){ ^LambdaFunction<{->TabularDataSet[1]}>(expressionSequence = $this.expression->toOne()) }: LambdaFunction<{->TabularDataSet[1]}>[1];
-  source(type:String[1], id:String[1]){
-      let source = $this.sources->filter(s | $s.type == $type && $s.id == $id);
+  source(type:String[1], arguments:SQLSourceArgument[*]){
+      let source = $this.sources->filter(s | $s.matches($type, $arguments));
 
-      assertNotEquals(0, $source->size(), 'No source found for type ' + $type + ' and id ' + $id);
-      assertFalse($source->size() > 1, 'Multiple sources found for type ' + $type + ' and id ' + $id);
+      assertNotEquals(0, $source->size(), 'No source found for type ' + $type);
+      assertFalse($source->size() > 1, 'Multiple sources found for type ' + $type);
 
       $source->toOne();
   }:SQLSource[1];
