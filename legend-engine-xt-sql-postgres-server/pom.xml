@@ -52,6 +52,15 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
         </dependency>
+
+        <!-- JACKSON -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+
+        <!-- JACKSON -->
+
         <!-- JDBC Handler -->
         <dependency>
             <groupId>org.postgresql</groupId>
