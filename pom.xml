@@ -2219,6 +2219,11 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-runtime-java-extension-store-rai</artifactId>
+                <version>${legend.pure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-m2-functions-pure</artifactId>
                 <version>${legend.pure.version}</version>
             </dependency>
@@ -2976,6 +2981,12 @@
                         <artifactId>jaxb-api</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalai-pure</artifactId>
+                <version>${project.version}</version>
             </dependency>
 
             <!-- Amazon AWS SDK Versioning -->

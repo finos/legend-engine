@@ -16,6 +16,7 @@ import meta::rel::utils::*;
 import meta::rel::utils::lang::*;
 import meta::rel::lib::*;
 import meta::rel::metamodel::*;
+import meta::pure::router::metamodel::*;
 
 /**
   * Abstract type representing PURE query expressions. Expressions evaluate to values.
@@ -411,7 +412,7 @@ function meta::rel::compile::ir::intoPExpr(spec: ValueSpecification[1]): Result<
 
 function meta::rel::compile::ir::intoPExpr(spec: ValueSpecification[1], set: RelSetImplementation[0..1]): Result<PExpr|0..1>[1] {
   $spec->match([
-    {routed: ExtendedRoutedValueSpecification[1] |
+    {routed: meta::pure::router::store::metamodel::StoreMappingRoutedValueSpecification[1] |
       $routed.sets
         ->first()
         ->okOr(| 'No set implementation supplied for value specification ' + $routed.id->quote())
@@ -440,7 +441,7 @@ function meta::rel::compile::ir::intoPExpr(func: FunctionExpression[1], set: Rel
           $func.parametersValues
             ->at(0)
             ->tryCast(@ExtendedRoutedValueSpecification)
-            ->andThen({paramSpec: ExtendedRoutedValueSpecification[1] |
+            ->andThen({paramSpec: RoutedValueSpecification[1] |
               $set
                 ->okOr(| 'No set specified for property ' + $name->quote())
                 ->andThen({set: RelSetImplementation[1] |
@@ -514,7 +515,7 @@ function meta::rel::compile::ir::intoPExpr(func: FunctionExpression[1], set: Rel
         case($other == getAll_Class_1__T_MANY_, {|
           $func.parametersValues
             ->at(0)
-            ->map(vs: ExtendedRoutedValueSpecification[1] |
+            ->map(vs: meta::pure::router::store::metamodel::StoreMappingRoutedValueSpecification[1] |
               $vs.sets
                 ->first()
                 ->okOr(| 'No set implementation supplied.')
@@ -603,7 +604,7 @@ function meta::rel::compile::ir::intoPExpr(func: FunctionExpression[1], set: Rel
                                         let next = 
                                           $set
                                             .parent
-                                            .classMappingById($type->elementToPath('_'))
+                                            ->meta::pure::mapping::classMappingById($type->elementToPath('_'))
                                             ->map(set | $set->cast(@RelSetImplementation));
                                         
                                         $expr->propertyAccess($property, $next);
@@ -861,7 +862,7 @@ function meta::rel::compile::ir::intoPExpr(func: FunctionExpression[1], set: Rel
                 });
             });
         }),
-        case($other == cast_Any_m__T_1__T_m_, {|
+        /*case($other == cast_Any_m__T_1__T_m_, {|
           $func.parametersValues
             ->at(0)
             ->intoPExpr()
@@ -895,7 +896,7 @@ function meta::rel::compile::ir::intoPExpr(func: FunctionExpression[1], set: Rel
                     })
                 });
             });
-        }),
+        }),*/ //TODO
         case($other == meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__String_1_, {|
           $func.parametersValues
             ->at(0)
@@ -921,7 +922,7 @@ function meta::rel::compile::ir::intoPExpr(func: FunctionExpression[1], set: Rel
               });
             });
         }),
-        case($other == meta::pure::functions::meta::extractEnumValue_Enumeration_1__String_1__T_1_, {|
+        case($other == meta::pure::functions::lang::extractEnumValue_Enumeration_1__String_1__T_1_, {|
           $func.parametersValues
             ->at(0)
             ->tryCast(@InstanceValue)
@@ -1037,7 +1038,7 @@ function meta::rel::compile::ir::intoScoped(spec: ValueSpecification[1], parent:
         })
         ->andThen(func: FunctionDefinition<Any>[1] | $func->intoScoped($parent));
     },
-    {spec: ExtendedRoutedValueSpecification[1] |
+    {spec: RoutedValueSpecification[1] |
       $spec.value
         ->tryCast(@FunctionRoutedValueSpecification)
         ->andThen({inner: FunctionRoutedValueSpecification[1] | $inner->intoScoped($parent)});

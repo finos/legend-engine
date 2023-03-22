@@ -1,0 +1,59 @@
+import json_showcase::*;
+import meta::rel::mapping::frontend::*;
+import meta::rel::runtime::*;
+import meta::rel::utils::*;
+
+Class json_showcase::Person {
+  firstName: String[1];
+  lastName: String[1];
+
+  firm: Firm[1];
+  address: Address[1];
+}
+
+Class json_showcase::Firm {
+  legalName: String[1];
+  state: String[1];
+}
+
+Class json_showcase::Address {
+  zip: String[1];
+  state: String[1];
+  country: String[1];
+}
+
+
+function json_showcase::doQuery(connection: meta::pure::runtime::Connection[1], query: FunctionDefinition<{->Any[*]}>[1]): Any[*] {  
+  let schema = $connection.element->cast(@RAISchema);
+
+  let runtime = ^meta::pure::runtime::Runtime(connections=$connection);
+
+  let result = execute(
+    $query,
+    $schema.mapping,
+    $runtime,
+    meta::rel::extension::defaultRAIExtension()//, debug()
+  );
+
+  $result.values;
+}
+
+function json_showcase::demo(): Any[*] {
+  let schema = RAISchema('json')
+    ->includeClass(Person)
+    ->includeClass(Firm)
+    ->includeClass(Address);
+
+
+  let rai = $schema
+    ->meta::rel::runtime::RAIConnection('azure-staging.relationalai.com', '443', 'https', 'json-demo-snowflake', 'gbrgr-dev', credentials());
+    //->meta::rel::runtime::TestConnection({source | println('Execution skipped (test connection).'); });
+
+  $rai
+    ->doQuery({| Person.all()})
+    ->inspect();
+}
+
+function go(): Any[*] {
+  json_showcase::demo();
+}

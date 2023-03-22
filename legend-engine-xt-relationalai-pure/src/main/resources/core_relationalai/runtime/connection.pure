@@ -56,7 +56,7 @@ function meta::rel::runtime::RAICloudCredentials(clientId: String[1], clientSecr
   RAICloudCredentials($clientId, $clientSecret, []);
 }
 
-function meta::rel::runtime::RAIConnection(
+/*function meta::rel::runtime::RAIConnection(
   schema: meta::rel::mapping::frontend::RAISchema[1],
   host: String[1], 
   port: String[1], 
@@ -66,7 +66,7 @@ function meta::rel::runtime::RAIConnection(
   credentials: RAICloudCredentials[0..1]
 ): RAIConnection[1] {
   RAIConnection($schema, $host, $port, $scheme, $database, $engine, $credentials);
-}
+}*/
 
 function meta::rel::runtime::RAIConnection(
   element: Any[1],

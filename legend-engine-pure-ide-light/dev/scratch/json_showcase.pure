@@ -1,0 +1,19 @@
+import json_showcase::*;
+import meta::rel::mapping::frontend::*;
+import meta::rel::runtime::*;
+import meta::rel::utils::*;
+
+/*function json_test::doQuery(connection: meta::pure::runtime::Connection[1], query: FunctionDefinition<{->Any[*]}>[1]): Any[*] {
+  let schema = $connection.element->cast(@RAISchema);
+
+  let runtime = ^meta::pure::runtime::Runtime(connections=$connection);
+
+  let result = execute(
+    $query,
+    $schema.mapping,
+    $runtime,
+    meta::rel::extension::defaultRAIExtension()//, debug()
+  );
+
+  $result.values;
+}*/

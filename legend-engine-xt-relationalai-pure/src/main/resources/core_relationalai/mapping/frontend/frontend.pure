@@ -94,7 +94,7 @@ function meta::rel::mapping::frontend::schema(property: Property<Nil,Any|*>[1], 
 }
 
 function meta::rel::mapping::frontend::includeClass(schema: RAISchema[1], class: Class<Any>[1]): RAISchema[1] {
-  if ($schema.mapping.classMappingByClass($class)->isEmpty(), {|
+  if ($schema.mapping->_classMappingByClass($class)->isEmpty(), {|
     let classRelation = $class->schema();
 
     let properties = $class

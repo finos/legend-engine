@@ -47,7 +47,7 @@ function meta::rel::utils::visitor::Visit(visited: Map<Any,Any>[1]): Visit[1] {
 }
 
 function meta::rel::utils::visitor::with(visit: Visit[1], values: Any[*]): Visit[1] {
-    ^$visit(values=$visit.values->concatenate($values));
+  ^$visit(values=$visit.values->concatenate($values));
 }
 
 function meta::rel::utils::visitor::hasVisited(visit: Visit[1], object: Any[1]): Boolean[1] {

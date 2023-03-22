@@ -144,7 +144,7 @@ function <<access.private>> meta::rel::mapping::execution(
               ], {|
                 // Handles case 1.
                 $mapping
-                  .classMappingByClass($class)
+                  ->meta::pure::mapping::_classMappingByClass($class)
                   ->okOr(| format('No class mapping found for `%s`', $class.name))
                   ->tryCastm(@RelSetImplementation)
                   ->them({sets: RelSetImplementation[*] | $sets->first()->toOne(); })
@@ -383,7 +383,7 @@ function meta::rel::mapping::getterOverrideMapped(o:Any[1], propertyMapping: met
   let extensions = $keyInformation.static.extensions;
   let runtime = $keyInformation.static.runtime;
 
-  let targetSet = $mapping.classMappingById($relProperty.targetSetImplementationId)->toOne()->cast(@RelSetImplementation);
+  let targetSet = $mapping->meta::pure::mapping::classMappingById($relProperty.targetSetImplementationId)->toOne()->cast(@RelSetImplementation);
   let connection = $keyInformation.sourceConnection->cast(@meta::rel::runtime::RAIConnection);
 
   let body = $relProperty.target
