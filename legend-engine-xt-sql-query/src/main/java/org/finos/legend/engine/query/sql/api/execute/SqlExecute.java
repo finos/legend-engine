@@ -27,11 +27,11 @@ import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.eclipse.collections.impl.utility.LazyIterate;
-import org.eclipse.collections.impl.utility.internal.IterableIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
@@ -48,8 +48,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.sql.metamodel.Node;
 import org.finos.legend.engine.protocol.sql.metamodel.Query;
 import org.finos.legend.engine.protocol.sql.metamodel.Translator;
-import org.finos.legend.engine.query.sql.model.Schema;
-import org.finos.legend.engine.query.sql.model.SchemaColumn;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
@@ -58,6 +56,7 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
+import org.finos.legend.pure.generated.Root_meta_external_query_sql_Schema;
 import org.finos.legend.pure.generated.Root_meta_external_query_sql_metamodel_Node;
 import org.finos.legend.pure.generated.Root_meta_external_query_sql_transformation_queryToPure_SQLSource;
 import org.finos.legend.pure.generated.Root_meta_external_query_sql_transformation_queryToPure_SQLSource_Impl;
@@ -65,7 +64,7 @@ import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureSi
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
-import org.finos.legend.pure.generated.Root_meta_pure_tds_TDSColumn;
+import org.finos.legend.pure.generated.core_external_format_json_toJSON;
 import org.finos.legend.pure.generated.core_external_query_sql_binding_fromPure_fromPure;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
@@ -87,7 +86,6 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import static org.finos.legend.engine.plan.execution.api.result.ResultManager.manageResult;
 import static org.finos.legend.engine.plan.generation.PlanGenerator.transformExecutionPlan;
-import static org.finos.legend.pure.generated.platform_pure_basics_meta_elementToPath.Root_meta_pure_functions_meta_elementToPath_Type_1__String_1_;
 
 @Api(tags = "SQL - Execution")
 @Path("sql/v1/execution")
@@ -177,7 +175,7 @@ public class SqlExecute
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
 
-        Schema schema = getSchema(request, projectId, sql, profiles);
+        String schema = getSchema(request, projectId, sql, profiles);
         return Response.ok().type(MediaType.APPLICATION_JSON_TYPE).entity(schema).build();
     }
 
@@ -189,7 +187,7 @@ public class SqlExecute
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
 
-        Schema schema = getSchema(request, projectId, query, profiles);
+        String schema = getSchema(request, projectId, query, profiles);
         return Response.ok().type(MediaType.APPLICATION_JSON_TYPE).entity(schema).build();
     }
 
@@ -213,13 +211,13 @@ public class SqlExecute
     }
 
 
-    private Schema getSchema(HttpServletRequest request, String projectId, String sql, MutableList<CommonProfile> profiles) throws PrivilegedActionException
+    private String getSchema(HttpServletRequest request, String projectId, String sql, MutableList<CommonProfile> profiles) throws PrivilegedActionException
     {
         Node node = parser.parseStatement(sql);
         return getSchema(request, projectId, node, profiles);
     }
 
-    private Schema getSchema(HttpServletRequest request, String projectId, Node node, MutableList<CommonProfile> profiles) throws PrivilegedActionException
+    private String getSchema(HttpServletRequest request, String projectId, Node node, MutableList<CommonProfile> profiles) throws PrivilegedActionException
     {
         PureModelContextData pureModelContextData = loadModelContextData(profiles, request, projectId);
         String clientVersion = PureClientVersions.production;
@@ -227,9 +225,8 @@ public class SqlExecute
         Root_meta_external_query_sql_metamodel_Node query = new Translator().translate(node, pureModel);
         RichIterable<? extends Root_meta_external_query_sql_transformation_queryToPure_SQLSource> sources = getSQLSources(pureModelContextData, pureModel);
 
-        RichIterable<? extends Root_meta_pure_tds_TDSColumn> tdsColumns = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_getSchemaFromSQL_SQLSource_MANY__Node_1__Extension_MANY__TDSColumn_MANY_(sources, query, extensions.apply(pureModel), pureModel.getExecutionSupport());
-        MutableList<SchemaColumn> columns = IterableIterate.collect(tdsColumns, c -> new SchemaColumn(c._name(), Root_meta_pure_functions_meta_elementToPath_Type_1__String_1_(c._type(), pureModel.getExecutionSupport())));
-        return new Schema(columns);
+        Root_meta_external_query_sql_Schema schema = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_getSchemaFromSQL_SQLSource_MANY__Node_1__Extension_MANY__Schema_1_(sources, query, extensions.apply(pureModel), pureModel.getExecutionSupport());
+        return serializeToJSON(schema, pureModel);
     }
 
     private RichIterable<? extends Root_meta_external_query_sql_transformation_queryToPure_SQLSource> getSQLSources(PureModelContextData pureModelContextData, PureModel pureModel)
@@ -300,6 +297,16 @@ public class SqlExecute
         {
             return manageResult(pm, result, format, LoggingEventType.EXECUTE_INTERACTIVE_ERROR);
         }
+    }
+
+    static String serializeToJSON(Object pureObject, PureModel pureModel)
+    {
+        return core_external_format_json_toJSON.Root_meta_json_toJSON_Any_MANY__Integer_$0_1$__Config_1__String_1_(
+                Lists.mutable.with(pureObject),
+                1000L,
+                core_external_format_json_toJSON.Root_meta_json_config_Boolean_1__Boolean_1__Boolean_1__Boolean_1__Config_1_(true, false, false, false, pureModel.getExecutionSupport()),
+                pureModel.getExecutionSupport()
+        );
     }
 
 }

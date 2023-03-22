@@ -771,30 +771,34 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 {
   let sqlString = 'SELECT * FROM service."/service/service1"';
 
-  let columns = $sqlString->processQuery(true).columns();
-  assertEquals('Boolean', $columns->at(0)->forceGetStringType());
-  assertEquals('Integer', $columns->at(1)->forceGetStringType());
-  assertEquals('Float',   $columns->at(2)->forceGetStringType());
+  let schema = $sqlString->processQuery(true).columns()->meta::external::query::sql::tdsColsToSchema();
+  assertEquals($schema.columns->at(0).name, 'Boolean');
+  assertEquals($schema.columns->at(0)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.Boolean);
+  assertEquals($schema.columns->at(1).name, 'Integer');
+  assertEquals($schema.columns->at(1)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.Integer);
+  assertEquals($schema.columns->at(2).name, 'Float');
+  assertEquals($schema.columns->at(2)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.Float);
+  assertEquals($schema.columns->at(3).name, 'Decimal');
+  assertEquals($schema.columns->at(3)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.Decimal);
+  assertEquals($schema.columns->at(4).name, 'StrictDate');
+  assertEquals($schema.columns->at(4)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.StrictDate);
+  assertEquals($schema.columns->at(5).name, 'DateTime');
+  assertEquals($schema.columns->at(5)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.DateTime);
+  assertEquals($schema.columns->at(6).name, 'String');
+  assertEquals($schema.columns->at(6)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.String);
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSchemaService2():Boolean[1]
 {
   let sqlString = 'SELECT * FROM service."/service/service2"';
 
-  let columns = $sqlString->processQuery(true).columns();
-  assertEquals('Integer', $columns->at(0)->forceGetStringType());
-  assertEquals('Integer', $columns->at(1)->forceGetStringType());
-  assertEquals('String',  $columns->at(2)->forceGetStringType());
-}
-
-function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSchemaService3():Boolean[1]
-{
-  let sqlString = 'SELECT * FROM service."/service/service3"';
-
-  let columns = $sqlString->processQuery(true).columns();
-  assertEquals('Integer', $columns->at(0)->forceGetStringType());
-  assertEquals('Integer', $columns->at(1)->forceGetStringType());
-  assertEquals('meta::external::query::sql::transformation::queryToPure::tests::MyEnum',  $columns->at(2)->forceGetStringType());
+  let schema = $sqlString->processQuery(true).columns()->meta::external::query::sql::tdsColsToSchema();
+  assertEquals($schema.columns->at(0).name, 'ID');
+  assertEquals($schema.columns->at(0)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.Integer);
+  assertEquals($schema.columns->at(1).name, 'Integer');
+  assertEquals($schema.columns->at(1)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.Integer);
+  assertEquals($schema.columns->at(2).name, 'String');
+  assertEquals($schema.columns->at(2)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.String);
 }
 
 function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1]): SqlTransformContext[1]

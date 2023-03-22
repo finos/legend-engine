@@ -20,16 +20,20 @@ import io.dropwizard.testing.junit.ResourceTestRule;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.list.mutable.FastList;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
+import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.query.sql.api.MockPac4jFeature;
-import org.finos.legend.engine.query.sql.model.Schema;
-import org.finos.legend.engine.query.sql.model.SchemaColumn;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.pure.generated.Root_meta_external_query_sql_PrimitiveValueSchemaColumn_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_query_sql_Schema;
+import org.finos.legend.pure.generated.Root_meta_external_query_sql_SchemaColumn;
+import org.finos.legend.pure.generated.Root_meta_external_query_sql_Schema_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Enum_Impl;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -49,6 +53,7 @@ public class SqlExecuteTest
 {
     @ClassRule
     public static final ResourceTestRule resources;
+    private static final PureModel pureModel;
 
 
     static
@@ -66,9 +71,10 @@ public class SqlExecuteTest
             String pureProject1 = ResourceHelpers.resourceFilePath("proj-1.pure");
             String pureProject1Contents = FileUtils.readFileToString(Paths.get(pureProject1).toFile(), Charset.defaultCharset());
 
-            PureModelContextData pureModelContextData2 = PureModelContextData.newBuilder().withOrigin(null).withSerializer(null).withPureModelContextData(PureGrammarParser.newInstance().parseModel(pureProject1Contents)).build();
+            PureModelContextData pureModelContextData1 = PureModelContextData.newBuilder().withOrigin(null).withSerializer(null).withPureModelContextData(PureGrammarParser.newInstance().parseModel(pureProject1Contents)).build();
 
-            doReturn(pureModelContextData2).when(resource).loadModelContextData(any(), eq(null), eq("SAMPLE-123"));
+            doReturn(pureModelContextData1).when(resource).loadModelContextData(any(), eq(null), eq("SAMPLE-123"));
+            pureModel = modelManager.loadModel(pureModelContextData1, PureClientVersions.production, null, "");
         }
         catch (PrivilegedActionException | IOException e)
         {
@@ -84,24 +90,30 @@ public class SqlExecuteTest
     @Test
     public void getSchemaFromQueryString()
     {
-        Schema actualSchema = resources.target("sql/v1/execution/getSchemaFromQueryString/SAMPLE-123")
+        String actualSchema = resources.target("sql/v1/execution/getSchemaFromQueryString/SAMPLE-123")
                 .request()
-                .post(Entity.text("SELECT * FROM service.\"/testService\"")).readEntity(Schema.class);
-        SchemaColumn col1 = new SchemaColumn("Id", "Integer");
-        SchemaColumn col2 = new SchemaColumn("Name", "String");
-        Schema expectedSchema = new Schema(FastList.newListWith(col1, col2));
+                .post(Entity.text("SELECT * FROM service.\"/testService\"")).readEntity(String.class);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum integerType = new Root_meta_pure_metamodel_type_Enum_Impl("Integer");
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum stringType = new Root_meta_pure_metamodel_type_Enum_Impl("String");
+        Root_meta_external_query_sql_SchemaColumn idColumn = new Root_meta_external_query_sql_PrimitiveValueSchemaColumn_Impl((String) null)._name("Id")._type(integerType);
+        Root_meta_external_query_sql_SchemaColumn nameColumn = new Root_meta_external_query_sql_PrimitiveValueSchemaColumn_Impl((String) null)._name("Name")._type(stringType);
+        Root_meta_external_query_sql_Schema schema = new Root_meta_external_query_sql_Schema_Impl((String) null)._columnsAdd(idColumn)._columnsAdd(nameColumn);
+        String expectedSchema = SqlExecute.serializeToJSON(schema, pureModel);
         Assert.assertEquals(expectedSchema, actualSchema);
     }
 
     @Test
     public void getSchemaFromQuery()
     {
-        Schema actualSchema = resources.target("sql/v1/execution/getSchemaFromQuery/SAMPLE-123")
+        String actualSchema = resources.target("sql/v1/execution/getSchemaFromQuery/SAMPLE-123")
                 .request()
-                .post(Entity.json("{ \"_type\": \"query\", \"orderBy\": [], \"queryBody\": { \"_type\": \"querySpecification\", \"from\": [ { \"_type\": \"table\", \"name\": { \"parts\": [ \"service\", \"/testService\" ] } } ], \"groupBy\": [], \"orderBy\": [], \"select\": { \"_type\": \"select\", \"distinct\": false, \"selectItems\": [ { \"_type\": \"allColumns\" } ] } } }")).readEntity(Schema.class);
-        SchemaColumn col1 = new SchemaColumn("Id", "Integer");
-        SchemaColumn col2 = new SchemaColumn("Name", "String");
-        Schema expectedSchema = new Schema(FastList.newListWith(col1, col2));
+                .post(Entity.json("{ \"_type\": \"query\", \"orderBy\": [], \"queryBody\": { \"_type\": \"querySpecification\", \"from\": [ { \"_type\": \"table\", \"name\": { \"parts\": [ \"service\", \"/testService\" ] } } ], \"groupBy\": [], \"orderBy\": [], \"select\": { \"_type\": \"select\", \"distinct\": false, \"selectItems\": [ { \"_type\": \"allColumns\" } ] } } }")).readEntity(String.class);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum integerType = new Root_meta_pure_metamodel_type_Enum_Impl("Integer");
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum stringType = new Root_meta_pure_metamodel_type_Enum_Impl("String");
+        Root_meta_external_query_sql_SchemaColumn idColumn = new Root_meta_external_query_sql_PrimitiveValueSchemaColumn_Impl((String) null)._name("Id")._type(integerType);
+        Root_meta_external_query_sql_SchemaColumn nameColumn = new Root_meta_external_query_sql_PrimitiveValueSchemaColumn_Impl((String) null)._name("Name")._type(stringType);
+        Root_meta_external_query_sql_Schema schema = new Root_meta_external_query_sql_Schema_Impl((String) null)._columnsAdd(idColumn)._columnsAdd(nameColumn);
+        String expectedSchema = SqlExecute.serializeToJSON(schema, pureModel);
         Assert.assertEquals(expectedSchema, actualSchema);
     }
 

@@ -41,10 +41,10 @@ function meta::external::query::sql::transformation::queryToPure::getSchemaFromS
                                                                           sources: SQLSource[*],
                                                                           query: meta::external::query::sql::metamodel::Node[1],
                                                                           extensions: meta::pure::extension::Extension[*]
-                                                                      ): meta::pure::tds::TDSColumn[*]
+                                                                      ): meta::external::query::sql::Schema[1]
 {
   let sqlTransformContext = processQuery($sources, $query, $extensions);
-  $sqlTransformContext.columns();
+  $sqlTransformContext.columns()->meta::external::query::sql::tdsColsToSchema();
 }
 
 function meta::external::query::sql::transformation::queryToPure::processQuery(
