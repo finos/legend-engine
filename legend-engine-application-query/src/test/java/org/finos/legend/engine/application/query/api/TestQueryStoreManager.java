@@ -47,6 +47,7 @@ public class TestQueryStoreManager
         public List<StereotypePtr> stereotypes;
         public Integer limit;
         public Boolean showCurrentUserQueriesOnly;
+        public Boolean showLatestQueriesFirst;
 
         TestQuerySearchSpecificationBuilder withSearchTerm(String searchTerm)
         {
@@ -84,6 +85,12 @@ public class TestQueryStoreManager
             return this;
         }
 
+        TestQuerySearchSpecificationBuilder withshowLatestQueriesFirst(Boolean showLatestQueriesFirst)
+        {
+            this.showLatestQueriesFirst = showLatestQueriesFirst;
+            return this;
+        }
+
         QuerySearchSpecification build()
         {
             QuerySearchSpecification searchSpecification = new QuerySearchSpecification();
@@ -93,6 +100,7 @@ public class TestQueryStoreManager
             searchSpecification.stereotypes = this.stereotypes;
             searchSpecification.limit = this.limit;
             searchSpecification.showCurrentUserQueriesOnly = this.showCurrentUserQueriesOnly;
+            searchSpecification.showLatestQueriesFirst = this.showLatestQueriesFirst;
             return searchSpecification;
         }
     }
@@ -311,20 +319,20 @@ public class TestQueryStoreManager
         queryStoreManager.createQuery(newQuery, currentUser);
         List<Query> queries = queryStoreManager.getQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser);
         Assert.assertEquals(1, queries.size());
-        Assert.assertEquals("{" +
-            "\"artifactId\":\"test-artifact\"," +
-            "\"content\":null," +
-            "\"description\":null," +
-            "\"groupId\":\"test.group\"," +
-            "\"id\":\"1\"," +
-            "\"mapping\":null," +
-            "\"name\":\"query1\"," +
-            "\"owner\":\"testUser\"," +
-            "\"runtime\":null," +
-            "\"stereotypes\":null," +
-            "\"taggedValues\":null," +
-            "\"versionId\":\"0.0.0\"" +
-            "}", objectMapper.writeValueAsString(queries.get(0)));
+        Query lightQuery = queries.get(0);
+        Assert.assertEquals("test-artifact", lightQuery.artifactId);
+        Assert.assertEquals("test.group", lightQuery.groupId);
+        Assert.assertEquals("1", lightQuery.id);
+        Assert.assertEquals("query1", lightQuery.name);
+        Assert.assertEquals("0.0.0", lightQuery.versionId);
+        Assert.assertNotNull(lightQuery.createdAt);
+        Assert.assertNotNull(lightQuery.lastUpdatedAt);
+        Assert.assertNull(lightQuery.content);
+        Assert.assertNull(lightQuery.description);
+        Assert.assertNull(lightQuery.mapping);
+        Assert.assertNull(lightQuery.runtime);
+        Assert.assertNull(lightQuery.stereotypes);
+        Assert.assertNull(lightQuery.taggedValues);
     }
 
 
@@ -478,20 +486,20 @@ public class TestQueryStoreManager
         String currentUser = "testUser";
         Query newQuery = TestQueryBuilder.create("1", "query1", currentUser).build();
         Query createdQuery = queryStoreManager.createQuery(newQuery, currentUser);
-        Assert.assertEquals("{" +
-            "\"artifactId\":\"test-artifact\"," +
-            "\"content\":\"content\"," +
-            "\"description\":\"description\"," +
-            "\"groupId\":\"test.group\"," +
-            "\"id\":\"1\"," +
-            "\"mapping\":\"mapping\"," +
-            "\"name\":\"query1\"," +
-            "\"owner\":\"" + currentUser + "\"," +
-            "\"runtime\":\"runtime\"," +
-            "\"stereotypes\":[]," +
-            "\"taggedValues\":[]," +
-            "\"versionId\":\"0.0.0\"" +
-            "}", objectMapper.writeValueAsString(createdQuery));
+        Assert.assertEquals("test-artifact", createdQuery.artifactId);
+        Assert.assertEquals("test.group", createdQuery.groupId);
+        Assert.assertEquals("1", createdQuery.id);
+        Assert.assertEquals("query1", createdQuery.name);
+        Assert.assertEquals("0.0.0", createdQuery.versionId);
+        Assert.assertEquals("content", createdQuery.content);
+        Assert.assertEquals("description", createdQuery.description);
+        Assert.assertEquals("mapping", createdQuery.mapping);
+        Assert.assertEquals("runtime", createdQuery.runtime);
+        Assert.assertEquals(0, createdQuery.stereotypes.size());
+        Assert.assertEquals(0, createdQuery.taggedValues.size());
+        Assert.assertNotNull(createdQuery.createdAt);
+        Assert.assertEquals(createdQuery.createdAt, createdQuery.lastUpdatedAt);
+
     }
 
     @Test
@@ -690,5 +698,40 @@ public class TestQueryStoreManager
         QueryEvent event2 = queryStoreManager.getQueryEvents("2", QueryEvent.QueryEventType.CREATED, null, null, null).get(0);
         Assert.assertEquals(3, queryStoreManager.getQueryEvents(null, null, event2.timestamp, null, null).size());
         Assert.assertEquals(4, queryStoreManager.getQueryEvents(null, null, null, event2.timestamp, null).size());
+    }
+
+    @Test
+    public void testCreateSimpleQueryContainsTimestamps() throws Exception
+    {
+        String currentUser = "testUser";
+        Query newQuery = TestQueryBuilder.create("1", "query1", currentUser).build();
+        Query createdQuery = queryStoreManager.createQuery(newQuery, currentUser);
+        Assert.assertNotNull(createdQuery.lastUpdatedAt);
+        Assert.assertNotNull(createdQuery.createdAt);
+    }
+
+    @Test
+    public void testGetLightQueriesContainTimestamps() throws Exception
+    {
+        String currentUser = "testUser";
+        Query newQuery = TestQueryBuilder.create("1", "query1", currentUser).withGroupId("test.group").withArtifactId("test-artifact").build();
+        queryStoreManager.createQuery(newQuery, currentUser);
+        List<Query> queries = queryStoreManager.getQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser);
+        Assert.assertEquals(1, queries.size());
+        Query lightQuery = queries.get(0);
+        Assert.assertNotNull(lightQuery.lastUpdatedAt);
+        Assert.assertNotNull(lightQuery.createdAt);
+    }
+
+    @Test
+    public void testGetLightQueriesSortWithLastUpdatedAt() throws Exception
+    {
+        String currentUser = "testUser";
+        queryStoreManager.createQuery(TestQueryBuilder.create("1", "query1", currentUser).build(), currentUser);
+        queryStoreManager.createQuery(TestQueryBuilder.create("2", "query2", currentUser).build(), currentUser);
+        queryStoreManager.updateQuery("2", TestQueryBuilder.create("2", "query", currentUser).build(), currentUser);
+        List<Query> queries = queryStoreManager.getQueries(new TestQuerySearchSpecificationBuilder().withshowLatestQueriesFirst(true).build(), currentUser);
+        Query lightQuery = queries.get(0);
+        Assert.assertEquals("2", lightQuery.id);
     }
 }

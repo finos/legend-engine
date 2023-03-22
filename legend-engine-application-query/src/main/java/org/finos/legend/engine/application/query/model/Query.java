@@ -30,9 +30,12 @@ public class Query
     public String mapping;
     public String runtime;
     public String content;
-    // We make it clear that we only allow a single owner
-    public String owner;
+    public Long lastUpdatedAt;
+    public Long createdAt;
 
     public List<TaggedValue> taggedValues;
     public List<StereotypePtr> stereotypes;
+
+    // We make it clear that we only allow a single owner
+    public String owner;
 }
