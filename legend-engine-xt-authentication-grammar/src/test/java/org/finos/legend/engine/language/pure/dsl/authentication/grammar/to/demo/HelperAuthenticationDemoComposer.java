@@ -15,11 +15,13 @@
 package org.finos.legend.engine.language.pure.dsl.authentication.grammar.to.demo;
 
 import org.finos.legend.engine.language.pure.dsl.authentication.grammar.to.AuthenticationSpecificationComposer;
+import org.finos.legend.engine.language.pure.dsl.authentication.grammar.to.IAuthenticationGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.demo.AuthenticationDemo;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertPath;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
 
 public class HelperAuthenticationDemoComposer
 {
@@ -31,12 +33,7 @@ public class HelperAuthenticationDemoComposer
     {
         return "AuthenticationDemo " + convertPath(authenticationDemo.getPath()) + "\n" +
                 "{\n" +
-                renderAuthenticationSpecification(authenticationDemo.authenticationSpecification, indentLevel, context) +
+                getTabString(indentLevel) + "authentication: " + IAuthenticationGrammarComposerExtension.renderAuthentication(authenticationDemo.authenticationSpecification, indentLevel, context) +
                 "}";
-    }
-
-    private static String renderAuthenticationSpecification(AuthenticationSpecification authenticationSpecification, int indentLevel, PureGrammarComposerContext context)
-    {
-        return authenticationSpecification.accept(new AuthenticationSpecificationComposer(indentLevel, context));
     }
 }

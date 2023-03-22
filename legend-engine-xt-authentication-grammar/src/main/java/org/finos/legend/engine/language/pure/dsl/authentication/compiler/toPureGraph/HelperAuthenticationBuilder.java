@@ -17,32 +17,17 @@ package org.finos.legend.engine.language.pure.dsl.authentication.compiler.toPure
 import java.util.Objects;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiKeyAuthenticationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecificationVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.EncryptedPrivateKeyPairAuthenticationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.GCPWIFWithAWSIdPAuthenticationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.UserPasswordAuthenticationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.CredentialVaultSecret;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.CredentialVaultSecretVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.EnvironmentCredentialVaultSecret;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.PropertiesFileSecret;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.SystemPropertiesSecret;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSSecretsManagerSecret;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_connection_authentication_ApiKeyAuthenticationSpecification_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_connection_authentication_AuthenticationSpecification;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_connection_authentication_CredentialVaultSecret;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_connection_authentication_EnvironmentSecret_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_connection_authentication_PropertiesFileSecret_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_connection_authentication_SystemPropertiesSecret_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_connection_authentication_UserPasswordAuthenticationSpecification_Impl;
+import org.finos.legend.pure.generated.*;
 
 public class HelperAuthenticationBuilder
 {
     public static Root_meta_pure_runtime_connection_authentication_AuthenticationSpecification buildAuthenticationSpecification(AuthenticationSpecification srcAuthSpec, CompileContext context)
     {
-        return IAuthenticationCompilerExtension.getExtensions().stream()
+        return IAuthenticationCompilerExtension.getExtensions(context)
                 .flatMap(x -> x.getExtraAuthenticationSpecificationProcessors().stream())
                 .map(x -> x.value(srcAuthSpec, context))
                 .filter(Objects::nonNull)
@@ -85,6 +70,12 @@ public class HelperAuthenticationBuilder
 
         @Override
         public Root_meta_pure_runtime_connection_authentication_AuthenticationSpecification visit(GCPWIFWithAWSIdPAuthenticationSpecification gcpwifWithAWSIdPAuthenticationSpecification)
+        {
+            throw new UnsupportedOperationException("TODO - epsstan");
+        }
+
+        @Override
+        public Root_meta_pure_runtime_connection_authentication_AuthenticationSpecification visit(AuthenticationSpecification catchAll)
         {
             throw new UnsupportedOperationException("TODO - epsstan");
         }

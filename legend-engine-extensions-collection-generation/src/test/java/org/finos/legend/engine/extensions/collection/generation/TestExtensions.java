@@ -248,7 +248,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.pure.dsl.persistence.cloud.grammar.from.PersistenceCloudParserExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.from.RelationalGrammarParserExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.service.grammar.from.ServiceParserExtension.class)
-                .with(org.finos.legend.engine.language.pure.dsl.authentication.grammar.from.demo.AuthenticationDemoParserExtension.class)
+                .with(org.finos.legend.engine.language.pure.dsl.authentication.grammar.from.AuthenticationGrammarParserExtension.class)
                 .with(org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLGrammarParserExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.from.ServiceStoreGrammarParserExtension.class)
                 .with(TextParserExtension.class);
@@ -272,7 +272,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.pure.dsl.service.grammar.to.ServiceGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.to.ServiceStoreGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLPureGrammarComposerExtension.class)
-                .with(org.finos.legend.engine.language.pure.dsl.authentication.grammar.to.demo.AuthenticationDemoComposerExtension.class)
+                .with(org.finos.legend.engine.language.pure.dsl.authentication.grammar.to.AuthenticationGrammarComposerExtension.class)
                 .with(TextGrammarComposerExtension.class);
     }
 
@@ -296,7 +296,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.SpannerCompilerExtension.class)
                 .with(org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.ServiceStoreCompilerExtension.class)
-                .with(org.finos.legend.engine.language.pure.dsl.authentication.compiler.toPureGraph.AuthenticationDemoCompilerExtension.class);
+                .with(org.finos.legend.engine.language.pure.dsl.authentication.compiler.toPureGraph.AuthenticationCompilerExtension.class);
     }
 
     protected Iterable<? extends Class<? extends PlanGeneratorExtension>> getExpectedPlanGeneratorExtensions()

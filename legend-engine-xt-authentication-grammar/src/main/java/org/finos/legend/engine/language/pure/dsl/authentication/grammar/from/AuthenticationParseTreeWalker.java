@@ -18,16 +18,9 @@ import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceI
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.authentication.AuthenticationParserGrammar;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiKeyAuthenticationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.EncryptedPrivateKeyPairAuthenticationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.GCPWIFWithAWSIdPAuthenticationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.UserPasswordAuthenticationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.CredentialVaultSecret;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSCredentials;
-import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 public class AuthenticationParseTreeWalker
 {
@@ -44,34 +37,6 @@ public class AuthenticationParseTreeWalker
     {
         this.walkerSourceInformation = walkerSourceInformation;
         this.context = context;
-    }
-
-    public AuthenticationSpecification visitAuthenticationSpecification(AuthenticationParserGrammar.AuthenticationContext ctx)
-    {
-        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-        AuthenticationParserGrammar.UserPasswordAuthenticationContext userPasswordAuthenticationContext = ctx.userPasswordAuthentication();
-        if (userPasswordAuthenticationContext != null)
-        {
-            return this.visitUserPasswordAuthentication(userPasswordAuthenticationContext);
-        }
-        AuthenticationParserGrammar.ApiKeyAuthenticationContext apiKeyAuthenticationContext = ctx.apiKeyAuthentication();
-        if (apiKeyAuthenticationContext != null)
-        {
-            return this.visitApiKeyAuthentication(apiKeyAuthenticationContext);
-        }
-        AuthenticationParserGrammar.EncryptedPrivateKeyAuthenticationContext encryptedPrivateKeyAuthenticationContext = ctx.encryptedPrivateKeyAuthentication();
-        if (encryptedPrivateKeyAuthenticationContext != null)
-        {
-            return this.visitEncryptedKeyPairAuthentication(encryptedPrivateKeyAuthenticationContext);
-        }
-
-        AuthenticationParserGrammar.GcpWIFWithAWSIdPAuthenticationContext gcpWIFWithAWSIdPAuthenticationContext = ctx.gcpWIFWithAWSIdPAuthentication();
-        if (gcpWIFWithAWSIdPAuthenticationContext != null)
-        {
-            return this.visitGcpWIFWithAWSIdPAuthenticationContext(gcpWIFWithAWSIdPAuthenticationContext);
-        }
-
-        throw new EngineException("Unsupported authentication", sourceInformation, EngineErrorType.PARSER);
     }
 
     public AuthenticationSpecification visitGcpWIFWithAWSIdPAuthenticationContext(AuthenticationParserGrammar.GcpWIFWithAWSIdPAuthenticationContext ctx)

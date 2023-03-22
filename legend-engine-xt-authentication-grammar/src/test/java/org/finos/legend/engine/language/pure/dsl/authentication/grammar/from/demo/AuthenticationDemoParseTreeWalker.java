@@ -14,8 +14,9 @@
 
 package org.finos.legend.engine.language.pure.dsl.authentication.grammar.from.demo;
 
+import java.util.function.Consumer;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.language.pure.dsl.authentication.grammar.from.AuthenticationParseTreeWalker;
+import org.finos.legend.engine.language.pure.dsl.authentication.grammar.from.IAuthenticationGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
@@ -24,15 +25,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.demo.AuthenticationDemo;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 
-import java.util.function.Consumer;
-
 public class AuthenticationDemoParseTreeWalker
 {
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final Consumer<PackageableElement> elementConsumer;
     private final ImportAwareCodeSection section;
     private final PureGrammarParserContext context;
-    private final AuthenticationParseTreeWalker authenticationParseTreeWalker;
 
     public AuthenticationDemoParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, ImportAwareCodeSection section, PureGrammarParserContext context)
     {
@@ -40,7 +38,6 @@ public class AuthenticationDemoParseTreeWalker
         this.elementConsumer = elementConsumer;
         this.section = section;
         this.context = context;
-        this.authenticationParseTreeWalker = new AuthenticationParseTreeWalker(walkerSourceInformation, context);
     }
 
     public void visit(AuthenticationParserGrammar.DefinitionContext ctx)
@@ -59,7 +56,7 @@ public class AuthenticationDemoParseTreeWalker
 
         // authentication
         AuthenticationParserGrammar.AuthenticationContext authenticationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.authentication(), "authentication", authenticationDemo.sourceInformation);
-        authenticationDemo.authenticationSpecification = authenticationParseTreeWalker.visitAuthenticationSpecification(authenticationContext);
+        authenticationDemo.authenticationSpecification = IAuthenticationGrammarParserExtension.parseAuthentication(authenticationContext.authenticationCode(), walkerSourceInformation, context);
 
         return authenticationDemo;
     }
