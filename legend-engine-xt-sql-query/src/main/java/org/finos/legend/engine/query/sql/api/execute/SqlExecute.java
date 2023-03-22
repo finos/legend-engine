@@ -22,15 +22,19 @@ import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.collection.MutableCollection;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.multimap.MutableMultimap;
 import org.eclipse.collections.impl.factory.Maps;
+import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
+import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
 import org.finos.legend.engine.language.sql.grammar.from.SQLGrammarParser;
+import org.finos.legend.engine.plan.execution.service.ServiceModeling;
 import org.finos.legend.engine.query.sql.api.sources.TableSourceExtractor;
 import org.finos.legend.engine.query.sql.api.sources.TableSource;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
@@ -46,6 +50,7 @@ import org.finos.legend.engine.protocol.sql.metamodel.Query;
 import org.finos.legend.engine.protocol.sql.metamodel.Statement;
 import org.finos.legend.engine.protocol.sql.metamodel.Translator;
 import org.finos.legend.engine.query.sql.api.sources.*;
+import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -97,6 +102,14 @@ public class SqlExecute
         this.routerExtensions = routerExtensions;
         this.transformers = transformers;
         this.providers = ListIterate.groupByUniqueKey(providers, SQLSourceProvider::getType);
+    }
+
+    public SqlExecute(ModelManager modelManager, PlanExecutor planExecutor,
+                      Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions,
+                      MutableList<PlanTransformer> transformers, MetaDataServerConfiguration metadataServer,
+                      DeploymentMode deploymentMode)
+    {
+        this(modelManager, planExecutor, extensions, FastList.newList(), transformers);
     }
 
     @POST
