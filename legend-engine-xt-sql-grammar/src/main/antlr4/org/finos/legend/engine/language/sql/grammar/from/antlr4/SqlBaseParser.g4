@@ -242,10 +242,19 @@ tableWithPartition
     : qname ( PARTITION OPEN_ROUND_BRACKET assignment ( COMMA assignment )* CLOSE_ROUND_BRACKET)?
     ;
 
+namedFunctionArg
+    : (name=ident) EQ GT valueExpression
+    ;
+
+functionArg
+    : valueExpression
+    | namedFunctionArg
+    ;
+
 table
     : qname                                                                          #tableName
     | qname OPEN_ROUND_BRACKET
-        valueExpression? (COMMA valueExpression)* CLOSE_ROUND_BRACKET                #tableFunction
+        functionArg? (COMMA functionArg)* CLOSE_ROUND_BRACKET                       #tableFunction
     ;
 
 aliasedColumns

@@ -15,167 +15,123 @@
 package org.finos.legend.engine.protocol.store.elasticsearch.specification.utils;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.BeanProperty;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.ser.ContextualSerializer;
 import java.io.IOException;
-import java.util.Iterator;
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.tuple.Tuples;
 
-public class ExternalTaggedUnionSerializer extends DictionarySerializer
+public class ExternalTaggedUnionSerializer extends JsonSerializer<Map<String, ?>> implements ContextualSerializer
 {
+    private final Field[] types;
+    private final boolean additionalProperties;
+
     @SuppressWarnings("UnusedDeclaration")
     public ExternalTaggedUnionSerializer()
     {
-
+        this(false, null);
     }
 
-    public ExternalTaggedUnionSerializer(BeanProperty property)
+    public ExternalTaggedUnionSerializer(boolean additionalProperties, Field[] types)
     {
-        super(property);
-    }
-
-    @Override
-    public JsonSerializer<?> createContextual(SerializerProvider prov, BeanProperty property) throws JsonMappingException
-    {
-        return new ExternalTaggedUnionSerializer(property);
+        this.additionalProperties = additionalProperties;
+        this.types = types;
     }
 
     @Override
-    protected ObjectNode addToSerialize(ObjectCodec codec, ObjectNode toSerialize, ObjectNode dictionaryEntry)
+    public JsonSerializer<?> createContextual(SerializerProvider prov, BeanProperty property)
     {
-        // if normal dictionary entry
-        if (dictionaryEntry.has("key"))
+        JavaType contentType = property.getType();
+        if (contentType.isMapLikeType())
         {
-            String key = dictionaryEntry.get("key").asText();
-            JsonNode rawValue = dictionaryEntry.get("value");
-            return process(codec, toSerialize, key, rawValue);
+            contentType = contentType.getContentType();
         }
-        // if additional properties dictionary entry
-        else if (this.isAdditionalProperties())
+        if (contentType.isCollectionLikeType())
         {
-            Map.Entry<String, JsonNode> next = dictionaryEntry.fields().next();
-            String key = next.getKey();
-            JsonNode rawValue = next.getValue();
-            return process(codec, toSerialize, key, rawValue);
+            contentType = contentType.getContentType();
         }
-
-        throw new IllegalStateException("Unexpected json to serialize: " + dictionaryEntry);
+        return new ExternalTaggedUnionSerializer(property.getName().equals("additionalProperties"), contentType.getRawClass().getDeclaredFields());
     }
 
-    private boolean isAdditionalProperties()
+    @Override
+    public boolean isEmpty(SerializerProvider provider, Map<String, ?> value)
     {
-        return this.property.getName().equals("additionalProperties");
+        return value == null || value.isEmpty();
     }
 
-    private static ObjectNode process(ObjectCodec codec, ObjectNode toSerialize, String key, JsonNode rawValue)
+    @Override
+    public void serialize(Map<String, ?> map, JsonGenerator gen, SerializerProvider serializers) throws IOException
     {
-        if (rawValue.isObject())
+        if (!this.additionalProperties)
         {
-            ObjectNode value = (ObjectNode) rawValue;
-            Pair<String, JsonNode> typeAndValue = extractTypeAndValue(value);
-            if (typeAndValue != null)
-            {
-                return toSerialize.set(typeAndValue.getOne() + '#' + key, typeAndValue.getTwo());
-            }
-            else
-            {
-                return toSerialize;
-            }
+            gen.writeStartObject();
         }
-        else
-        {
-            ArrayNode value = (ArrayNode) rawValue;
 
-            if (value.size() == 0)
+        for (Map.Entry<String, ?> entry : map.entrySet())
+        {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            process(serializers, gen, key, value);
+        }
+
+        if (!this.additionalProperties)
+        {
+            gen.writeEndObject();
+        }
+    }
+
+    private void process(SerializerProvider serializerProvider, JsonGenerator gen, String key, Object rawValue) throws IOException
+    {
+        try
+        {
+            if (rawValue instanceof List)
             {
-                // unknown type, so skip
-                return toSerialize;
-            }
-            else
-            {
-                ArrayNode unionValues = (ArrayNode) codec.createArrayNode();
-                String type = null;
-                for (JsonNode node : value)
+                Field type = null;
+
+                for (Field field : this.types)
                 {
-                    Pair<String, JsonNode> typeAndValue = extractTypeAndValue((ObjectNode) node);
-                    if (typeAndValue != null)
+                    for (Object arrayElement : (List<?>) rawValue)
                     {
-                        String entryType = typeAndValue.getOne();
-                        if (type == null)
+                        Object unionValue = field.get(arrayElement);
+                        if (unionValue != null)
                         {
-                            type = entryType;
+                            if (type == null)
+                            {
+                                type = field;
+                                gen.writeArrayFieldStart(type.getName() + '#' + key);
+                            }
+
+                            serializerProvider.defaultSerializeValue(unionValue, gen);
                         }
-                        else if (!entryType.equals(type))
-                        {
-                            throw new IllegalStateException("Does not support multiple types of external unions on same name");
-                        }
-                        unionValues.add(typeAndValue.getTwo());
+                    }
+
+                    if (type != null)
+                    {
+                        gen.writeEndArray();
+                        break;
                     }
                 }
-
-                return toSerialize.set(type + '#' + key, unionValues);
             }
-        }
-    }
-
-    private static Pair<String, JsonNode> extractTypeAndValue(ObjectNode value)
-    {
-        Iterator<Map.Entry<String, JsonNode>> fields = value.fields();
-        List<Map.Entry<String, JsonNode>> notNullFields = Lists.mutable.empty();
-        while (fields.hasNext())
-        {
-            Map.Entry<String, JsonNode> entry = fields.next();
-            if (!entry.getValue().isNull())
+            else
             {
-                notNullFields.add(entry);
+                for (Field field : this.types)
+                {
+                    Object union = field.get(rawValue);
+                    if (union != null)
+                    {
+                        serializerProvider.defaultSerializeField(field.getName() + '#' + key, union, gen);
+                        break;
+                    }
+                }
             }
         }
-
-        if (notNullFields.size() == 0)
+        catch (ReflectiveOperationException e)
         {
-            return null;
-        }
-        else if (notNullFields.size() == 1)
-        {
-            Map.Entry<String, JsonNode> nodeEntry = notNullFields.get(0);
-            String externalType = nodeEntry.getKey();
-            JsonNode unionValue = nodeEntry.getValue();
-            return Tuples.pair(externalType, unionValue);
-        }
-        else
-        {
-            throw new IllegalStateException("Union with more than one value? " + value);
-        }
-    }
-
-    protected void getWriteTree(JsonGenerator gen, ObjectNode toSerialize) throws IOException
-    {
-        // if additional property, we need to flat the structure so keys here are sibling to other keys
-        if (this.isAdditionalProperties())
-        {
-            Iterator<Map.Entry<String, JsonNode>> fields = toSerialize.fields();
-            while (fields.hasNext())
-            {
-                Map.Entry<String, JsonNode> next = fields.next();
-                String field = next.getKey();
-                JsonNode value = next.getValue();
-                gen.writeFieldName(field);
-                gen.writeTree(value);
-            }
-        }
-        else
-        {
-            super.getWriteTree(gen, toSerialize);
+            throw new RuntimeException(e);
         }
     }
 }

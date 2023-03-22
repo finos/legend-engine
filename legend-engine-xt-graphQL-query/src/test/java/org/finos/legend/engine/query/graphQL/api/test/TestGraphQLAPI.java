@@ -224,6 +224,58 @@ public class TestGraphQLAPI
                 "}";
         Response response2 = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
         Assert.assertEquals(expected2, responseAsString(response2));
+        query.query = "query Query {\n" +
+                "  personsByLastNames(lastNames: [\"Smith\"]) {\n" +
+                "     firstName,\n" +
+                "     lastName\n" +
+                "  }\n" +
+                "}";
+        String expected3 = "{" +
+                "\"data\":{" +
+                    "\"personsByLastNames\":" + "{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}" +
+                "}" +
+            "}";
+        Response response3 = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
+        Assert.assertEquals(expected3, responseAsString(response3));
+        query.query = "query Query {\n" +
+                "  personsByLastNames(lastNames: []) {\n" +
+                "     firstName,\n" +
+                "     lastName\n" +
+                "  }\n" +
+                "}";
+        String expected4 = "{" +
+                "\"data\":{" +
+                "\"personsByLastNames\":" + "[]" +
+                "}" +
+                "}";
+        Response response4 = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
+        Assert.assertEquals(expected4, responseAsString(response4));
+        query.query = "query Query {\n" +
+                "  personsByLastNames {\n" + // not providing array is treated the same way as providing an empty array
+                "     firstName,\n" +
+                "     lastName\n" +
+                "  }\n" +
+                "}";
+        String expected5 = "{" +
+                "\"data\":{" +
+                "\"personsByLastNames\":" + "[]" +
+                "}" +
+                "}";
+        Response response5 = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
+        Assert.assertEquals(expected5, responseAsString(response5));
+        query.query = "query Query {\n" +
+                "  personsByLastNames(lastNames: null) {\n" + // null is treated the same way as providing an empty array
+                "     firstName,\n" +
+                "     lastName\n" +
+                "  }\n" +
+                "}";
+        String expected6 = "{" +
+                "\"data\":{" +
+                "\"personsByLastNames\":" + "[]" +
+                "}" +
+                "}";
+        Response response6 = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
+        Assert.assertEquals(expected6, responseAsString(response6));
 
 
     }

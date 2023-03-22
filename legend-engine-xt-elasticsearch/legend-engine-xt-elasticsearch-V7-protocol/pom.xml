@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-elasticsearch</artifactId>
-        <version>4.4.2-SNAPSHOT</version>
+        <version>4.4.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -47,6 +47,25 @@
                                 <argument>${project.build.directory}/generated-sources/</argument>
                                 <argument />
                                 <argument>meta::external::store::elasticsearch::specification::metamodel::elasticsearchGenerator__JavaProtocolGenerator_1_</argument>
+                            </arguments>
+                            <classpathScope>test</classpathScope>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>generate metamodel</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <includePluginDependencies>true</includePluginDependencies>
+                            <mainClass>org.finos.legend.engine.protocol.generation.GenerateMetaClasses</mainClass>
+                            <arguments>
+                                <argument>meta::external::store::elasticsearch::v7::metamodel</argument>
+                                <argument>org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel</argument>
+                                <argument>${project.build.directory}/generated-sources/</argument>
+                                <argument>meta::external::store::elasticsearch::v7::metamodel::specification,meta::external::store::elasticsearch::v7::metamodel::executionPlan::ElasticsearchV7ExecutionActivity</argument>
+                                <argument>meta::external::store::elasticsearch::v7::metamodel::java::elasticsearchProtocolGenerator__JavaProtocolGenerator_1_</argument>
                             </arguments>
                             <classpathScope>test</classpathScope>
                         </configuration>
@@ -95,7 +114,15 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-elasticsearch-protocol-utils</artifactId>
-            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-authentication-protocol</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-protocol-pure</artifactId>
         </dependency>
 
         <!-- JACKSON -->
@@ -116,6 +143,11 @@
             <artifactId>jackson-core</artifactId>
         </dependency>
         <!-- JACKSON -->
+
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
 
         <!-- TEST -->
         <dependency>

@@ -43,14 +43,19 @@ import java.util.Optional;
 
 public abstract class CredentialProvider<SPEC extends AuthenticationSpecification, CRED extends Credential>
 {
+    private final Type[] types;
     protected FastList<IntermediationRule> intermediationRules = FastList.newList();
 
     public CredentialProvider()
     {
+        Type genericSuperClass = this.getClass().getGenericSuperclass();
+        ParameterizedType parameterizedType = (ParameterizedType) genericSuperClass;
+        this.types = parameterizedType.getActualTypeArguments();
     }
 
     public CredentialProvider(List<IntermediationRule> intermediationRules)
     {
+        this();
         this.intermediationRules.addAll(intermediationRules);
     }
 
@@ -78,31 +83,29 @@ public abstract class CredentialProvider<SPEC extends AuthenticationSpecificatio
 
     private Type[] actualTypeArguments()
     {
-        Type genericSuperClass = this.getClass().getGenericSuperclass();
-        ParameterizedType parameterizedType = (ParameterizedType) genericSuperClass;
-        return parameterizedType.getActualTypeArguments();
+        return this.types;
     }
 
-    public boolean consumesAuthenticationSpecification(Class<? extends AuthenticationSpecification> authenticationSpecificiationType)
+    private boolean consumesAuthenticationSpecification(Class<? extends AuthenticationSpecification> authenticationSpecificiationType)
     {
         return this.getAuthenticationSpecificationType().equals(authenticationSpecificiationType);
     }
 
-    public boolean producesOutputCredential(Class<? extends Credential> outputCredential)
+    private boolean producesOutputCredential(Class<? extends Credential> outputCredential)
     {
         return this.getOutputCredentialType().equals(outputCredential);
     }
 
-    public boolean hasRuleThatConsumesInputCredential(Class<? extends Credential> inputCredential)
+    private boolean hasRuleThatConsumesInputCredential(Class<? extends Credential> inputCredential)
     {
         Predicate<IntermediationRule> predicate = rule -> rule.consumesInputCredential(inputCredential);
         return !this.intermediationRules.select(predicate).isEmpty();
     }
 
-    public boolean hasRuleThatConsumesInputCredentials(ImmutableSet<? extends Class<? extends Credential>> inputCredentials)
+    public boolean accepts(Class<? extends AuthenticationSpecification> authenticationSpecificationType, ImmutableSet<? extends Class<? extends Credential>> inputCredentialTypes)
     {
-        Predicate<IntermediationRule> predicate = rule -> rule.consumesInputCredentials(inputCredentials);
-        return !this.intermediationRules.select(predicate).isEmpty();
+        return this.consumesAuthenticationSpecification(authenticationSpecificationType)
+                && inputCredentialTypes.anySatisfy(x -> this.producesOutputCredential(x) || this.hasRuleThatConsumesInputCredential(x));
     }
 
     /*
@@ -127,13 +130,13 @@ public abstract class CredentialProvider<SPEC extends AuthenticationSpecificatio
         return Optional.empty();
     }
 
-    protected Credential makeCredential(AuthenticationSpecification specification, Identity identity, Class<? extends Credential> outputCredentialType) throws Exception
+    protected CRED makeCredential(AuthenticationSpecification specification, Identity identity, Class<CRED> outputCredentialType) throws Exception
     {
-        ImmutableSet<? extends Class<? extends Credential>> identityCredentialTypes = FastList.newList(identity.getCredentials()).collect(credential -> credential.getClass()).toSet().toImmutable();
+        Optional<CRED> shortCircuitCredential = identity.getCredential(outputCredentialType);
 
-        if (identityCredentialTypes.contains(outputCredentialType))
+        if (shortCircuitCredential.isPresent())
         {
-           return identity.getCredential(outputCredentialType).get();
+           return shortCircuitCredential.get();
         }
 
         if (this.intermediationRules.isEmpty())
@@ -141,6 +144,8 @@ public abstract class CredentialProvider<SPEC extends AuthenticationSpecificatio
             String message = String.format("Cannot make credential for configuration of type '%s'. No intermediation rules have been configured", specification.getClass());
             throw new UnsupportedOperationException(message);
         }
+
+        ImmutableSet<? extends Class<? extends Credential>> identityCredentialTypes = identity.getCredentials().asLazy().collect(Credential::getClass).toSet().toImmutable();
 
         Optional<IntermediationRule> matchingRuleHolder = this.findMatchingRule(specification, identityCredentialTypes, outputCredentialType);
         if (!matchingRuleHolder.isPresent())
@@ -153,7 +158,7 @@ public abstract class CredentialProvider<SPEC extends AuthenticationSpecificatio
 
         IntermediationRule intermediationRule = matchingRuleHolder.get();
         Credential credential = (Credential) identity.getCredential(intermediationRule.getInputCredentialType()).get();
-        return intermediationRule.makeCredential(specification, credential, identity);
+        return outputCredentialType.cast(intermediationRule.makeCredential(specification, credential, identity));
     }
 
     public FastList<IntermediationRule> getIntermediationRules()

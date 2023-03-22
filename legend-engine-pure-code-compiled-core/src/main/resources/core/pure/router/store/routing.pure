@@ -230,7 +230,7 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
                                                | getRoutingStrategyFromMappingAndRuntime($fromMapping, $fromRuntime));
                 let newState               = ^$state(routingStrategy = $newRoutingStrategy);
 
-                let processedFunction      = routeFunctionExpressionFunctionDefinition($fe.parametersValues->at(0)->cast(@FunctionExpression).func, $fe.parametersValues->at(0)->cast(@FunctionExpression), $newState, $fromExecutionContext, $vars, $inScopeVars, $extensions, $debug);
+                let processedFunction      = routeFunctionExpression($fe.parametersValues->at(0)->cast(@FunctionExpression), $newState, $fromExecutionContext, $vars, $inScopeVars, $extensions, $debug);
                 let valueSpec              = $processedFunction.value;
                 let wrappedValueSpec       = $valueSpec->evaluateAndDeactivate()->match([
                                                           evs: ExtendedRoutedValueSpecification[1] | $evs,

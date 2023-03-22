@@ -15,11 +15,14 @@
 package org.finos.legend.engine.plan.execution.nodes.state;
 
 import io.opentracing.Span;
+import java.util.*;
+import java.util.stream.Collectors;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCache;
 import org.finos.legend.engine.plan.execution.concurrent.ConcurrentExecutionNodeExecutorPool;
@@ -34,13 +37,6 @@ import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.pac4j.core.profile.CommonProfile;
-
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.UUID;
 
 /**
  * copy method is used to create a copy of ExecutionState to be used in isolated/concurrent environment. Do update the copy method in case of any field addition.
@@ -73,6 +69,7 @@ public class ExecutionState
     public final List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> extraNodeExecutors;
     public final List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> extraSequenceNodeExecutors;
     public String sessionID;
+    private final CredentialProviderProvider credentialProviderProvider;
 
     public ExecutionState(ExecutionState state)
     {
@@ -98,14 +95,15 @@ public class ExecutionState
         this.extraNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraNodeExecutors);
         this.extraSequenceNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraSequenceNodeExecutors);
         this.sessionID = state.sessionID;
+        this.credentialProviderProvider = state.credentialProviderProvider;
     }
 
     public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed, long graphFetchBatchMemoryLimit)
     {
-        this(res, templateFunctions, extraStates, isJavaCompilationAllowed, graphFetchBatchMemoryLimit, null);
+        this(res, templateFunctions, extraStates, isJavaCompilationAllowed, graphFetchBatchMemoryLimit, null, null);
     }
 
-    public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed, long graphFetchBatchMemoryLimit, String sessionID)
+    public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed, long graphFetchBatchMemoryLimit, String sessionID, CredentialProviderProvider credentialProviderProvider)
     {
         this.inAllocation = false;
         this.inLake = false;
@@ -120,6 +118,7 @@ public class ExecutionState
         this.extraNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraNodeExecutors);
         this.extraSequenceNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraSequenceNodeExecutors);
         this.sessionID = sessionID;
+        this.credentialProviderProvider = credentialProviderProvider;
     }
 
     public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed)
@@ -137,7 +136,7 @@ public class ExecutionState
         Map<String, Result> resCopy = Maps.mutable.ofMap(this.res);
         List<? extends String> templateFunctionsCopy = Lists.mutable.ofAll(this.templateFunctions);
         List<? extends StoreExecutionState> extraStatesCopy = this.states.values().stream().map(StoreExecutionState::copy).collect(Collectors.toList());
-        ExecutionState copy = new ExecutionState(resCopy, templateFunctionsCopy, extraStatesCopy, this.isJavaCompilationAllowed, this.graphFetchBatchMemoryLimit, this.sessionID);
+        ExecutionState copy = new ExecutionState(resCopy, templateFunctionsCopy, extraStatesCopy, this.isJavaCompilationAllowed, this.graphFetchBatchMemoryLimit, this.sessionID, this.credentialProviderProvider);
 
         copy.activities = Lists.mutable.withAll(this.activities);
         copy.allocationNodeName = this.allocationNodeName;
@@ -298,4 +297,8 @@ public class ExecutionState
         this.sessionID = sessionID;
     }
 
+    public CredentialProviderProvider getCredentialProviderProvider()
+    {
+        return this.credentialProviderProvider;
+    }
 }

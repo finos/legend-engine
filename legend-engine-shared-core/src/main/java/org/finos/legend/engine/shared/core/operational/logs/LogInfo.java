@@ -15,6 +15,10 @@
 package org.finos.legend.engine.shared.core.operational.logs;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Date;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
@@ -25,12 +29,10 @@ import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.pac4j.core.profile.CommonProfile;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.Date;
-
 public class LogInfo
 {
+    private static final ObjectMapper OBJECT_MAPPER = ObjectMapperFactory.getNewStandardObjectMapper();
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss.SSS")
     public Date timeStamp;
     public DeploymentMode mode = DeploymentStateAndVersions.DEPLOYMENT_MODE;
@@ -43,7 +45,24 @@ public class LogInfo
     public String trace;
     public SourceInformation sourceInformation;
 
-    public LogInfo(Iterable<? extends CommonProfile> userProfiles, LoggingEventType eventType)
+    public LogInfo(ILoggingEventType eventType, String user, String message)
+    {
+        this.timeStamp = new Date();
+        this.user = user;
+        this.eventType = eventType.name();
+        this.message = message;
+    }
+
+    public LogInfo(ILoggingEventType eventType, String user, String message, long durationMs)
+    {
+        this.timeStamp = new Date();
+        this.user = user;
+        this.eventType = eventType.name();
+        this.message = message;
+        this.duration = durationMs;
+    }
+
+    public LogInfo(Iterable<? extends CommonProfile> userProfiles, ILoggingEventType eventType)
     {
         this.timeStamp = new Date();
         this.user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(userProfiles));
@@ -57,13 +76,13 @@ public class LogInfo
         this.eventType = eventType;
     }
 
-    public LogInfo(Iterable<? extends CommonProfile> userProfiles, LoggingEventType eventType, double duration)
+    public LogInfo(Iterable<? extends CommonProfile> userProfiles, ILoggingEventType eventType, double duration)
     {
         this(userProfiles, eventType);
         this.duration = duration;
     }
 
-    public LogInfo(Iterable<? extends CommonProfile> userProfiles, LoggingEventType eventType, String message)
+    public LogInfo(Iterable<? extends CommonProfile> userProfiles, ILoggingEventType eventType, String message)
     {
         this(userProfiles, eventType);
         this.message = message;
@@ -75,13 +94,13 @@ public class LogInfo
         this.message = message;
     }
 
-    public LogInfo(LoggingEventType eventType, String message)
+    public LogInfo(ILoggingEventType eventType, String message)
     {
         this(null, eventType);
         this.message = message;
     }
 
-    public LogInfo(Iterable<? extends CommonProfile> userProfiles, LoggingEventType eventType, Object info)
+    public LogInfo(Iterable<? extends CommonProfile> userProfiles, ILoggingEventType eventType, Object info)
     {
         this(userProfiles, eventType);
         this.info = info;
@@ -93,7 +112,7 @@ public class LogInfo
         this.info = info;
     }
 
-    public LogInfo(Iterable<? extends CommonProfile> userProfiles, LoggingEventType eventType, Object info, double duration)
+    public LogInfo(Iterable<? extends CommonProfile> userProfiles, ILoggingEventType eventType, Object info, double duration)
     {
         this(userProfiles, eventType, info);
         this.duration = duration;
@@ -105,7 +124,7 @@ public class LogInfo
         this.duration = duration;
     }
 
-    public LogInfo(Iterable<? extends CommonProfile> userProfiles, LoggingEventType eventType, Throwable t)
+    public LogInfo(Iterable<? extends CommonProfile> userProfiles, ILoggingEventType eventType, Throwable t)
     {
         this(userProfiles, eventType.toString(), t);
     }
@@ -133,7 +152,7 @@ public class LogInfo
     {
         try
         {
-            return ObjectMapperFactory.getNewStandardObjectMapper().writeValueAsString(this);
+            return OBJECT_MAPPER.writeValueAsString(this);
         }
         catch (Exception e)
         {

@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-elasticsearch</artifactId>
-        <version>4.4.2-SNAPSHOT</version>
+        <version>4.4.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -40,8 +40,17 @@
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-mapping-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-extension-dsl-mapping</artifactId>
+        </dependency>
         <!-- PURE -->
 
+        <!-- ENGINE -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-code-compiled-core</artifactId>
@@ -50,6 +59,23 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-platform-java</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-functions-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-dsl-mapping-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-authentication-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-javaGeneration-pure</artifactId>
+        </dependency>
+        <!-- ENGINE -->
 
         <dependency>
             <groupId>org.eclipse.collections</groupId>
@@ -87,7 +113,7 @@
                             <arguments>
                                 <argument>${project.basedir}/src/main/resources/core_elasticsearch_seven_metamodel/specification/schema-7.17.json</argument>
                                 <argument>meta::external::store::elasticsearch::v7::metamodel::specification</argument>
-                                <argument>indices.create,indices.delete,indices.get,index,search,count,open_point_in_time,close_point_in_time</argument>
+                                <argument>indices.create,indices.delete,indices.get,index,search,count,open_point_in_time,close_point_in_time,bulk</argument>
                                 <argument>${project.basedir}/src/main/resources/core_elasticsearch_seven_metamodel/specification/specification.pure</argument>
                             </arguments>
                             <classpathScope>test</classpathScope>
@@ -133,7 +159,17 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-authentication-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-javaGeneration-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
@@ -166,7 +202,17 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-authentication-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-javaGeneration-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
