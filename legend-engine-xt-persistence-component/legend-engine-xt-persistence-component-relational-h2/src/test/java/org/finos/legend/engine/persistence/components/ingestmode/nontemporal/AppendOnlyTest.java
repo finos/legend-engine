@@ -139,6 +139,10 @@ class AppendOnlyTest extends BaseTest
         String expectedDataPass1 = basePath + "expected/vanilla_case/expected_pass1.csv";
         // 1. Load staging table
         loadBasicStagingDataInUpperCase(dataPass1);
+
+        List<Map<String, Object>> stagingData = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
+        System.out.println(stagingData);
+
         // 2. Execute plans and verify results
         Map<String, Object> expectedStats = new HashMap<>();
         expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);

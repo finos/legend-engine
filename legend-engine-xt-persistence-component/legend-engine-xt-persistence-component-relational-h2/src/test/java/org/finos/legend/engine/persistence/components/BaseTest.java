@@ -220,9 +220,13 @@ public class BaseTest
         IngestorResult result = ingestor.ingest(h2Sink.connection(), datasets);
 
         Map<StatisticName, Object> actualStats = result.statisticByName();
+        System.out.println(">>> PRINTING FOR DEBUG >>");
+        System.out.println("stats: " + actualStats);
 
         // Verify the database data
         List<Map<String, Object>> tableData = h2Sink.executeQuery("select * from \"TEST\".\"MAIN\"");
+        System.out.println("tableData: " + tableData);
+
         TestUtils.assertFileAndTableDataEquals(schema, expectedDataPath, tableData);
 
         // Verify statistics
