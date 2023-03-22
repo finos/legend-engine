@@ -52,7 +52,7 @@ public class ElasticsearchCommands
     {
         Root_meta_pure_functions_io_http_URL_Impl url = new Root_meta_pure_functions_io_http_URL_Impl("esUrl");
         ElasticsearchContainer container = CONTAINERS.computeIfAbsent(imageTag, ElasticsearchCommands::createContainer);
-        url._host("localhost");
+        url._host(container.getHost());
         url._port(container.getMappedPort(9200));
         url._path("/");
         return url;
