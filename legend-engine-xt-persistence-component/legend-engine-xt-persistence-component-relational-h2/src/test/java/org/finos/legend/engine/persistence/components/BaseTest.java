@@ -220,12 +220,9 @@ public class BaseTest
         IngestorResult result = ingestor.ingest(h2Sink.connection(), datasets);
 
         Map<StatisticName, Object> actualStats = result.statisticByName();
-        System.out.println(">>> PRINTING FOR DEBUG >>");
-        System.out.println("stats: " + actualStats);
 
         // Verify the database data
         List<Map<String, Object>> tableData = h2Sink.executeQuery("select * from \"TEST\".\"MAIN\"");
-        System.out.println("tableData: " + tableData);
 
         TestUtils.assertFileAndTableDataEquals(schema, expectedDataPath, tableData);
 
@@ -253,11 +250,11 @@ public class BaseTest
     protected void loadBasicStagingDataInUpperCase(String path) throws Exception
     {
         validateFileExists(path);
-        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-                "INSERT INTO \"TEST\".\"staging\"(id, name, income, start_time ,expiry_date, digest) " +
-                "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", BIGINT), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE), digest" +
-                " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, digest', NULL )";
-        h2Sink.executeStatement(loadSql.toUpperCase());
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"STAGING\";" +
+                "INSERT INTO \"TEST\".\"STAGING\"(ID, NAME, INCOME, START_TIME ,EXPIRY_DATE, DIGEST) " +
+                "SELECT CONVERT( \"ID\",INT ), \"NAME\", CONVERT( \"INCOME\", BIGINT), CONVERT( \"START_TIME\", DATETIME), CONVERT( \"EXPIRY_DATE\", DATE), DIGEST" +
+                " FROM CSVREAD( '" + path + "', 'ID, NAME, INCOME, START_TIME, EXPIRY_DATE, DIGEST', NULL )";
+        h2Sink.executeStatement(loadSql);
     }
 
     protected void loadStagingDataForWithPartition(String path) throws Exception
@@ -323,11 +320,11 @@ public class BaseTest
     protected void loadStagingDataForBitemporalFromOnlyWithUpperCase(String path) throws Exception
     {
         validateFileExists(path);
-        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-                "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest) " +
-                "SELECT CONVERT( \"index\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\"" +
-                " FROM CSVREAD( '" + path + "', 'index, datetime, balance, digest', NULL )";
-        h2Sink.executeStatement(loadSql.toUpperCase());
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"STAGING\";" +
+                "INSERT INTO \"TEST\".\"STAGING\"(INDEX, DATETIME, BALANCE, DIGEST) " +
+                "SELECT CONVERT( \"INDEX\", INT), CONVERT( \"DATETIME\", DATETIME), CONVERT( \"BALANCE\", BIGINT), \"DIGEST\"" +
+                " FROM CSVREAD( '" + path + "', 'INDEX, DATETIME, BALANCE, DIGEST', NULL )";
+        h2Sink.executeStatement(loadSql);
     }
 
     protected void loadStagingDataForBitemporalFromOnlyWithDeleteInd(String path) throws Exception

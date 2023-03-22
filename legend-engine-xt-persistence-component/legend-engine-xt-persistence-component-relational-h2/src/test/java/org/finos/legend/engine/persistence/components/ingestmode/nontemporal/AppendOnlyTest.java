@@ -140,9 +140,6 @@ class AppendOnlyTest extends BaseTest
         // 1. Load staging table
         loadBasicStagingDataInUpperCase(dataPass1);
 
-        List<Map<String, Object>> stagingData = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
-        System.out.println(stagingData);
-
         // 2. Execute plans and verify results
         Map<String, Object> expectedStats = new HashMap<>();
         expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
@@ -150,10 +147,13 @@ class AppendOnlyTest extends BaseTest
         expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
         expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
 
+        List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"STAGING\"");
+        Assertions.assertEquals(stagingTableList.size(), 3);
+
         executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
 
         // 3. Assert that the staging table is NOT truncated
-        List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"STAGING\"");
+        stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"STAGING\"");
         Assertions.assertEquals(stagingTableList.size(), 3);
 
         // ------------ Perform incremental (append) milestoning Pass2 ------------------------
