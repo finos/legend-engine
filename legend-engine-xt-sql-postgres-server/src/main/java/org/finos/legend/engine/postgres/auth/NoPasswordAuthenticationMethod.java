@@ -19,8 +19,6 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 
 public class NoPasswordAuthenticationMethod implements AuthenticationMethod
 {
-    public static final String NAME = "NO_PASSWORD";
-
     private IdentityProvider identityProvider;
 
     public NoPasswordAuthenticationMethod(IdentityProvider identityProvider)
@@ -35,9 +33,9 @@ public class NoPasswordAuthenticationMethod implements AuthenticationMethod
     }
 
     @Override
-    public String name()
+    public AuthenticationMethodType name()
     {
-        return NAME;
+        return AuthenticationMethodType.NO_PASSWORD;
     }
 }
 

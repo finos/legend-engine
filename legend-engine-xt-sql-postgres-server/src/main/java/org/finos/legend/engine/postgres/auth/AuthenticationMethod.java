@@ -32,5 +32,5 @@ public interface AuthenticationMethod
     /**
      * @return unique name of the authentication method
      */
-    String name();
+    AuthenticationMethodType name();
 }

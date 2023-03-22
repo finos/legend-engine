@@ -21,6 +21,7 @@
 
 package org.finos.legend.engine.postgres;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -29,19 +30,15 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import org.apache.http.client.CookieStore;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.cookie.BasicClientCookie;
-import org.finos.legend.engine.postgres.auth.AnonymousIdentityProvider;
 import org.finos.legend.engine.postgres.auth.AuthenticationMethod;
 import org.finos.legend.engine.postgres.auth.AuthenticationProvider;
-import org.finos.legend.engine.postgres.auth.KerberosIdentityProvider;
-import org.finos.legend.engine.postgres.auth.NoPasswordAuthenticationMethod;
-import org.finos.legend.engine.postgres.auth.UsernamePasswordAuthenticationMethod;
-import org.finos.legend.engine.postgres.handler.legend.LegendSessionFactory;
-import org.finos.legend.engine.postgres.handler.legend.LegendTdsClient;
+import org.finos.legend.engine.postgres.config.Builder;
+import org.finos.legend.engine.postgres.config.ServerConfig;
 import org.finos.legend.engine.postgres.transport.Netty4OpenChannelsHandler;
 import org.slf4j.LoggerFactory;
 
@@ -118,44 +115,17 @@ public class PostgresServer
         return workerGroup;
     }
 
-    public static void main(String[] args)
+    public static void main(String[] args) throws Exception
     {
-        int port = 9998;
-        String protocol;
-        String legendHost;
-        String legendPort;
-        String projectId;
-        final AuthenticationMethod authenticationMethod;
+        //TODO ADD CLI
+        String configPath = args[0];
+        InputStream configStream = new FileInputStream(new File(configPath));
+        ObjectMapper objectMapper = new ObjectMapper();
+        ServerConfig serverConfig = objectMapper.readValue(configStream, ServerConfig.class);
+        SessionsFactory sessionFactory = Builder.buildSessionFactory(serverConfig);
+        AuthenticationMethod authenticationMethod = Builder.buildAuthenticationMethod(serverConfig);
 
-        CookieStore cookieStore = new BasicCookieStore();
-
-        boolean localDevelopment = false;
-
-        //TODO add configuration object....
-        //for local development
-        if (localDevelopment)
-        {
-            BasicClientCookie legendSdlcJsessionid = new BasicClientCookie("LEGEND_SDLC_JSESSIONID", "node01kj00ctfw9uo01axmpr6phouf51.node0");
-            legendSdlcJsessionid.setDomain("localhost");
-            cookieStore.addCookie(legendSdlcJsessionid);
-            protocol = "http";
-            legendHost = "localhost";
-            legendPort = "6300";
-            projectId = "SAMPLE-40302763";
-            authenticationMethod = new NoPasswordAuthenticationMethod(new AnonymousIdentityProvider());
-        }
-        else
-        {
-            protocol = "https";
-            legendHost = "localhost";
-            legendPort = "6300";
-            projectId = "PROD-65448";
-            authenticationMethod = new UsernamePasswordAuthenticationMethod(new KerberosIdentityProvider());
-        }
-
-
-        LegendTdsClient client = new LegendTdsClient(protocol, legendHost, legendPort, projectId, cookieStore);
-        new PostgresServer(port, new LegendSessionFactory(client), (user, connectionProperties) -> authenticationMethod).run();
+        new PostgresServer(serverConfig.getPort(), sessionFactory, (user, connectionProperties) -> authenticationMethod).run();
     }
 }
 

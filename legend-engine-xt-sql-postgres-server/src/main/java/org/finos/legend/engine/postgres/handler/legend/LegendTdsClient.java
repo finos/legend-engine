@@ -96,7 +96,6 @@ public class LegendTdsClient implements LegendExecutionClient
         try (CloseableHttpClient client = (CloseableHttpClient) HttpClientBuilder.getHttpClient(cookieStore))
         {
             String uri = protocol + "://" + this.host + ":" + this.port + "/api/sql/v1/execution/executeQueryString/" + this.projectId;
-            System.out.println(uri);
             HttpPost req = new HttpPost(uri);
 
             StringEntity stringEntity = new StringEntity(query);

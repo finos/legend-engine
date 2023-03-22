@@ -19,8 +19,6 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 
 public class UsernamePasswordAuthenticationMethod implements AuthenticationMethod
 {
-    public static final String NAME = "PASSWORD";
-
     private IdentityProvider identityProvider;
 
     public UsernamePasswordAuthenticationMethod(IdentityProvider identityProvider)
@@ -35,8 +33,8 @@ public class UsernamePasswordAuthenticationMethod implements AuthenticationMetho
     }
 
     @Override
-    public String name()
+    public AuthenticationMethodType name()
     {
-        return NAME;
+        return AuthenticationMethodType.PASSWORD;
     }
 }

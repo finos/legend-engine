@@ -14,17 +14,16 @@
 
 package org.finos.legend.engine.postgres.handler.legend;
 
+import java.security.PrivilegedAction;
+import java.sql.ParameterMetaData;
+import java.util.List;
+import javax.security.auth.Subject;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
 import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
-
-import java.security.PrivilegedAction;
-import java.sql.ParameterMetaData;
-import java.util.List;
-import javax.security.auth.Subject;
 
 public class LegendPreparedStatement implements PostgresPreparedStatement
 {
@@ -93,19 +92,21 @@ public class LegendPreparedStatement implements PostgresPreparedStatement
             LegendKerberosCredential credential = (LegendKerberosCredential) identity.getFirstCredential();
             return Subject.doAs(credential.getSubject(), (PrivilegedAction<Boolean>) () ->
             {
-                Pair<List<LegendColumn>, Iterable<TDSRow>> schemaAndResult = client.getSchemaAndExecuteQuery(query);
-                columns = schemaAndResult.getOne();
-                tdsRows = schemaAndResult.getTwo();
-                return true;
+                return executePrivate();
             });
         }
         else
         {
-            Pair<List<LegendColumn>, Iterable<TDSRow>> schemaAndResult = client.getSchemaAndExecuteQuery(query);
-            columns = schemaAndResult.getOne();
-            tdsRows = schemaAndResult.getTwo();
-            return true;
+            return executePrivate();
         }
+    }
+
+    private boolean executePrivate()
+    {
+        Pair<List<LegendColumn>, Iterable<TDSRow>> schemaAndResult = client.getSchemaAndExecuteQuery(query);
+        columns = schemaAndResult.getOne();
+        tdsRows = schemaAndResult.getTwo();
+        return true;
     }
 
     @Override

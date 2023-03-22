@@ -15,7 +15,6 @@
 package org.finos.legend.engine.postgres.handler.legend;
 
 import java.sql.SQLException;
-
 import org.finos.legend.engine.postgres.Session;
 import org.finos.legend.engine.postgres.SessionsFactory;
 import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
