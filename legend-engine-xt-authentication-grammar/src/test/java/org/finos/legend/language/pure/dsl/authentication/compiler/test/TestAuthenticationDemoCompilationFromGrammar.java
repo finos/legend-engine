@@ -50,13 +50,13 @@ public class TestAuthenticationDemoCompilationFromGrammar extends TestCompilatio
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
                 "  authentication: UserPassword\n" +
-                "  {\n" +
+                "  #{\n" +
                 "    username: 'alice';\n" +
                 "    password: PropertiesFileSecret\n" +
                 "    {\n" +
                 "      propertyName: 'property1';\n" +
                 "    }\n" +
-                "  }\n" +
+                "  }#\n" +
                 "}\n");
 
         PureModel pureModel = result.getTwo();

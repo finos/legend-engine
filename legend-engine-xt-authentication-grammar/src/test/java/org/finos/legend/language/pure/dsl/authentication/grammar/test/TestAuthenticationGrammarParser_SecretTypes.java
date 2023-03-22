@@ -45,13 +45,13 @@ public class TestAuthenticationGrammarParser_SecretTypes extends TestGrammarPars
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
                 "  authentication: UserPassword\n" +
-                "  {\n" +
+                "  #{\n" +
                 "    username: 'alice';\n" +
                 "    password: PropertiesFileSecret\n" +
                 "    {\n" +
                 "      propertyName: 'property1';\n" +
                 "    }\n" +
-                "  }\n" +
+                "  }#\n" +
                 "}\n");
     }
 
@@ -63,13 +63,13 @@ public class TestAuthenticationGrammarParser_SecretTypes extends TestGrammarPars
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
                 "  authentication: UserPassword\n" +
-                "  {\n" +
+                "  #{\n" +
                 "    username: 'alice';\n" +
                 "    password: EnvironmentSecret\n" +
                 "    {\n" +
                 "      envVariableName: 'env1';\n" +
                 "    }\n" +
-                "  }\n" +
+                "  }#\n" +
                 "}\n");
     }
 
@@ -81,13 +81,13 @@ public class TestAuthenticationGrammarParser_SecretTypes extends TestGrammarPars
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
                 "  authentication: UserPassword\n" +
-                "  {\n" +
+                "  #{\n" +
                 "    username: 'alice';\n" +
                 "    password: SystemPropertiesSecret\n" +
                 "    {\n" +
                 "      systemPropertyName: 'some.property';\n" +
                 "    }\n" +
-                "  }\n" +
+                "  }#\n" +
                 "}\n");
     }
 
@@ -99,7 +99,7 @@ public class TestAuthenticationGrammarParser_SecretTypes extends TestGrammarPars
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
                 "  authentication: UserPassword\n" +
-                "  {\n" +
+                "  #{\n" +
                 "    username: 'alice';\n" +
                 "    password: AWSSecretsManagerSecret\n" +
                 "    {\n" +
@@ -110,7 +110,7 @@ public class TestAuthenticationGrammarParser_SecretTypes extends TestGrammarPars
                 "      {\n" +
                 "      }" +
                 "    }\n" +
-                "  }\n" +
+                "  }#\n" +
                 "}\n");
     }
 
@@ -122,7 +122,7 @@ public class TestAuthenticationGrammarParser_SecretTypes extends TestGrammarPars
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
                 "  authentication: UserPassword\n" +
-                "  {\n" +
+                "  #{\n" +
                 "    username: 'alice';\n" +
                 "    password: AWSSecretsManagerSecret\n" +
                 "    {\n" +
@@ -141,7 +141,7 @@ public class TestAuthenticationGrammarParser_SecretTypes extends TestGrammarPars
                 "           }\n" +
                 "      }" +
                 "    }\n" +
-                "  }\n" +
+                "  }#\n" +
                 "}\n");
     }
 
@@ -153,7 +153,7 @@ public class TestAuthenticationGrammarParser_SecretTypes extends TestGrammarPars
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
                 "  authentication: UserPassword\n" +
-                "  {\n" +
+                "  #{\n" +
                 "    username: 'alice';\n" +
                 "    password: AWSSecretsManagerSecret\n" +
                 "    {\n" +
@@ -177,7 +177,7 @@ public class TestAuthenticationGrammarParser_SecretTypes extends TestGrammarPars
                 "           }" +
                 "      }" +
                 "    }\n" +
-                "  }\n" +
+                "  }#\n" +
                 "}\n");
     }
 }

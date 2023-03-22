@@ -59,10 +59,8 @@ public class AuthenticationDemoParserExtension implements IAuthenticationDemoPar
         CharStream input = CharStreams.fromString(sectionSourceCode.code);
         ParserErrorListener errorListener = new ParserErrorListener(sectionSourceCode.walkerSourceInformation, AuthenticationParserGrammar.VOCABULARY);
         AuthenticationLexerGrammar lexer = new AuthenticationLexerGrammar(input);
-        lexer.removeErrorListeners();
         lexer.addErrorListener(errorListener);
         AuthenticationParserGrammar parser = new AuthenticationParserGrammar(new CommonTokenStream(lexer));
-        parser.removeErrorListeners();
         parser.addErrorListener(errorListener);
         return new SourceCodeParserInfo(sectionSourceCode.code, input, sectionSourceCode.sourceInformation, sectionSourceCode.walkerSourceInformation, lexer, parser, parser.definition());
     }
