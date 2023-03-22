@@ -49,7 +49,7 @@ function <<test.Test>> meta::relational::tests::query::simple::testAll():Boolean
 function <<test.Test>> {meta::pure::executionPlan::profiles::serverVersion.start='vX_X_X'} meta::relational::tests::query::simple::testSQLComments():Boolean[1]
 {
    let result = execute(|Person.all(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
-   assert($result.activities->at(0)->cast(@RelationalActivity).comment->toOne()->meta::pure::functions::string::matches('-- \\{\"executionTraceID\" : \"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\"\\}'));
+   assert($result.activities->at(0)->cast(@RelationalActivity).comment->toOne()->meta::pure::functions::string::matches('-- \"executionTraceID\" : \"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\"'));
 }
 
 function meta::relational::tests::query::simple::getPersonNames( columnList:String[*] ):TabularDataSet[1]

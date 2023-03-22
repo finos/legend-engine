@@ -335,6 +335,18 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
                                                                  _type='dataType',
                                                                  dataType=$rt.type->elementToPath()
                                                               ),
+         tds:meta::pure::executionPlan::TDSResultType[1]|^meta::protocols::pure::vX_X_X::metamodel::executionPlan::TDSResultType
+                                                          (
+                                                              _type='tds',
+                                                              tdsColumns=$tds.tdsColumns->map(c|^meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSColumn
+                                                                                                (
+                                                                                                  name = $c.name,
+                                                                                                  doc = $c.documentation,
+                                                                                                  type = $c.type->toOne()->elementToPath(),
+                                                                                                  enumMapping = if($c.enumMappingId->isEmpty(),|[],|meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformEnumMapping($mapping->enumerationMappingByName($c.enumMappingId->toOne())->toOne()))
+                                                                                                )
+                                                                                          )
+                                                          ),                                                              
          rt:meta::pure::executionPlan::ResultType[1]|^meta::protocols::pure::vX_X_X::metamodel::executionPlan::DataTypeResultType
                                                       (
                                                          _type='dataType',

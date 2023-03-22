@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.protocol.store.elasticsearch.specification.utils;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -57,7 +58,7 @@ public class InternalTaggedUnionSerializationTest
         Union union = new Union();
         union.pojo_2 = new Pojo2();
         JsonNode node = OBJECT_MAPPER.valueToTree(union);
-        Assert.assertEquals("pojo_2", node.get("typeProp").asText());
+        Assert.assertEquals("pojoTwo", node.get("typeProp").asText());
         Union parsed = OBJECT_MAPPER.convertValue(node, Union.class);
         Assert.assertTrue(parsed.unionValue() instanceof Pojo2);
     }
@@ -69,7 +70,7 @@ public class InternalTaggedUnionSerializationTest
 
     public static class Pojo2
     {
-        public String typeProp = "pojo_2";
+        public String typeProp = "pojoTwo";
     }
 
     @JsonTypeName("typeProp")
@@ -77,6 +78,8 @@ public class InternalTaggedUnionSerializationTest
     public static class Union
     {
         public Pojo1 pojo_1;
+
+        @JsonProperty("pojoTwo")
         public Pojo2 pojo_2;
 
         @JsonValue

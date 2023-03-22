@@ -21,6 +21,7 @@ import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.plan.execution.result.ExecutionActivity;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.ResultVisitor;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutable;
 import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
@@ -41,7 +42,7 @@ import java.util.List;
 import java.util.TimeZone;
 import java.util.function.Consumer;
 
-public class SQLExecutionResult extends Result
+public class SQLExecutionResult extends Result implements StoreExecutable
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
 
@@ -61,7 +62,7 @@ public class SQLExecutionResult extends Result
     private final List<String> columnNames = FastList.newList();
     private final List<ResultColumn> resultColumns = FastList.newList();
     private final List<SQLResultColumn> sqlResultColumns;
-    private String sessionID;
+    private final String sessionID;
     public Span topSpan;
 
     public SQLExecutionResult(List<ExecutionActivity> activities, SQLExecutionNode SQLExecutionNode, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan)
@@ -245,6 +246,24 @@ public class SQLExecutionResult extends Result
 
         FastList.newListWith(this.resultSet, this.statement, this.connection).forEach((Procedure<AutoCloseable>) closingFunction::accept);
         super.close();
+    }
+
+    @Override
+    public void cancel()
+    {
+        try
+        {
+            if (!statement.isClosed())
+            {
+                statement.cancel();
+                LOGGER.info(new LogInfo(null, LoggingEventType.EXECUTABLE_CANCELLATION, "Successful cancellation of  RelationalResult " + sessionID).toString());
+
+            }
+        }
+        catch (Exception e)
+        {
+            LOGGER.error(new LogInfo(null, LoggingEventType.EXECUTABLE_CANCELLATION_ERROR, "Unable to cancel  RelationalResult  for session " + sessionID + " " + e.getMessage()).toString());
+        }
     }
 
 }

@@ -52,6 +52,11 @@ public class QueryStoreManager
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final Document EMPTY_FILTER = Document.parse("{}");
 
+    // NOTE: these are non-compilable profile and tag that we come up with for query
+    // so that it records the dataSpace it is created from
+    private static final String QUERY_PROFILE_PATH = "meta::pure::profiles::query";
+    private static final String QUERY_PROFILE_TAG_DATA_SPACE = "dataSpace";
+
     private final MongoClient mongoClient;
 
     public QueryStoreManager(MongoClient mongoClient)
@@ -258,6 +263,10 @@ public class QueryStoreManager
         Long count = this.getQueryCollection().countDocuments();
         QueryStoreStats storeStats = new QueryStoreStats();
         storeStats.setQueryCount(count);
+        List<Bson> filters =  new ArrayList<>();
+        filters.add(Filters.and(Filters.eq("taggedValues.tag.profile", QUERY_PROFILE_PATH), Filters.eq("taggedValues.tag.value", QUERY_PROFILE_TAG_DATA_SPACE)));
+        storeStats.setQueryCreatedFromDataSpaceCount(this.getQueryCollection()
+                .countDocuments(Filters.and(filters)));
         return storeStats;
     }
 

@@ -1,0 +1,247 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::*;
+import meta::pure::extension::*;
+import meta::pure::functions::io::http::*;
+import meta::pure::test::*;
+import meta::pure::store::*;
+import meta::pure::runtime::*;
+
+// todo generalize and remove imports - avoid reference to v7
+import meta::external::store::elasticsearch::v7::metamodel::executionPlan::context::*;
+import meta::external::store::elasticsearch::v7::metamodel::store::*;
+import meta::external::store::elasticsearch::v7::tds::*;
+// todo generalize and remove imports
+
+import meta::external::store::elasticsearch::executionTest::testCase::*;
+import meta::external::store::elasticsearch::executionTest::test::*;
+import meta::external::store::elasticsearch::executionTest::utils::*;
+
+Class meta::external::store::elasticsearch::executionTest::test::TestConfig
+{
+  tag: String[1];
+  store: Function<{String[1], Type[1]->Elasticsearch7Store[1]}>[1]; // todo generalize
+  connection: Function<{URL[1], Store[1]->Connection[1]}>[1];
+  extension: Extension[1];
+  indexRecordRequest: Function<{String[1], Any[*]->Any[*]}>[1];
+}
+
+function meta::external::store::elasticsearch::executionTest::test::collectTest(
+    tag: String[1],
+    store: Function<{String[1], Type[1]->Elasticsearch7Store[1]}>[1], // todo generalize
+    connection: Function<{URL[1], Store[1]->Connection[1]}>[1],
+    extension: Extension[1],
+    indexRecordRequest: Function<{String[1], Any[*]->Any[*]}>[1]
+  ): PureTestCollection[1]
+{
+  meta::pure::test::collectParameterizedTests(
+    meta::external::store::elasticsearch::executionTest::testCase,
+    $tag,
+    ^TestConfig(
+        tag = $tag,
+        store = $store,
+        connection = $connection,
+        extension = $extension,
+        indexRecordRequest = $indexRecordRequest
+      ),
+    [],
+    []
+  );
+}
+
+Class meta::external::store::elasticsearch::executionTest::testCase::OmdbRecord
+{
+  Title: String[1];
+  Director: String[1];
+}
+
+function meta::external::store::elasticsearch::executionTest::testCase::omdbCommonIndexRecords(): OmdbRecord[*]
+{
+  let records = [
+    ^OmdbRecord(Title = 'Iron Man', Director = 'Jon Favreau'),
+    ^OmdbRecord(Title = 'The Imitation Game', Director = 'Morten Tyldum'),
+    ^OmdbRecord(Title = 'The Bourne Identity', Director = 'Doug Liman'),
+    ^OmdbRecord(Title = 'American Gangster', Director = 'Ridley Scott'),
+    ^OmdbRecord(Title = 'Sherlock Holmes: A Game of Shadows', Director = 'Guy Ritchie'),
+    ^OmdbRecord(Title = 'Ghostbusters', Director = 'Ivan Reitman'),
+    ^OmdbRecord(Title = 'The Hitchhiker\'s Guide to the Galaxy', Director = 'Garth Jennings'),
+    ^OmdbRecord(Title = 'Inspector Gadget', Director = 'David Kellogg'),
+    ^OmdbRecord(Title = 'The Great Gatsby', Director = 'Baz Luhrmann'),
+    ^OmdbRecord(Title = 'Garfield 2', Director = 'Tim Hill')
+  ];
+}
+
+function <<paramTest.BeforePackage>> meta::external::store::elasticsearch::executionTest::testCase::startESCluster(config:TestConfig[1]):Boolean[1]
+{
+  $config.tag->startElasticsearchTestServer();
+  let commands = $config.indexRecordRequest->eval('omdb-common', omdbCommonIndexRecords())
+      ->map(c | $c->meta::json::toJSON(1000, meta::json::config(false, false, true, true)));
+  $commands->forAll({c | $config.tag->requestElasticsearchTestServer($c)->println(); true;});
+}
+
+function <<paramTest.AfterPackage>> meta::external::store::elasticsearch::executionTest::testCase::stopESCluster(config:TestConfig[1]):Boolean[1]
+{
+  $config.tag->stopElasticsearchTestServer();
+  true;
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch Keyword property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::testProjectKeyword(config:TestConfig[1]):Boolean[1]
+{
+  let url = $config.tag->meta::external::store::elasticsearch::executionTest::utils::startElasticsearchTestServer();
+  let store = $config.store->eval('omdb-common', OmdbRecord);
+  let runtime = ^Runtime(connections = $config.connection->eval($url, $store));
+
+  let tds = execute($config,
+      |indexToTDS($store, 'omdb-common')
+        ->from(EmptyMapping, $runtime)
+        ->project([^ColumnSpecification<TDSRow>(name = 'Title')])
+  );
+
+  let expected = ^TabularDataSet(
+    columns = ^TDSColumn(name = 'Title', type = String),
+    rows = [
+      ^TDSRow(values = ['Iron Man']),
+      ^TDSRow(values = ['The Imitation Game']),
+      ^TDSRow(values = ['The Bourne Identity']),
+      ^TDSRow(values = ['American Gangster']),
+      ^TDSRow(values = ['Sherlock Holmes: A Game of Shadows']),
+      ^TDSRow(values = ['Ghostbusters']),
+      ^TDSRow(values = ['The Hitchhiker\'s Guide to the Galaxy']),
+      ^TDSRow(values = ['Inspector Gadget']),
+      ^TDSRow(values = ['The Great Gatsby']),
+      ^TDSRow(values = ['Garfield 2'])
+    ]
+  );
+  
+  assertTdsEquivalent($expected, $tds);
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test equal filter on Elasticsearch Keyword property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::testEqualFilterKeyword(config:TestConfig[1]):Boolean[1]
+{
+  let url = $config.tag->meta::external::store::elasticsearch::executionTest::utils::startElasticsearchTestServer();
+  let store = $config.store->eval('omdb-common', OmdbRecord);
+  let runtime = ^Runtime(connections = $config.connection->eval($url, $store));
+
+  let tds = execute($config,
+      |indexToTDS($store, 'omdb-common')
+        ->from(EmptyMapping, $runtime)
+        ->filter(x | $x.getString('Title') == 'Iron Man')
+  );
+
+  let expected = ^TabularDataSet(
+    columns = [
+      ^TDSColumn(name = 'Title', type = String),
+      ^TDSColumn(name = 'Director', type = String)
+    ],
+    rows = [
+      ^TDSRow(values = ['Iron Man', 'Jon Favreau'])
+    ]
+  );
+  
+  assertTdsEquivalent($expected, $tds);
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test limit on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::testLimit(config:TestConfig[1]):Boolean[1]
+{
+  let url = $config.tag->meta::external::store::elasticsearch::executionTest::utils::startElasticsearchTestServer();
+  let store = $config.store->eval('omdb-common', OmdbRecord);
+  let runtime = ^Runtime(connections = $config.connection->eval($url, $store));
+
+  let result = execute($config,
+      |indexToTDS($store, 'omdb-common')
+        ->from(EmptyMapping, $runtime)
+        ->limit(3)
+  );
+
+  assertEquals(3, $result.rows->size()); 
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test drop on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::testDrop(config:TestConfig[1]):Boolean[1]
+{
+  let url = $config.tag->meta::external::store::elasticsearch::executionTest::utils::startElasticsearchTestServer();
+  let store = $config.store->eval('omdb-common', OmdbRecord);
+  let runtime = ^Runtime(connections = $config.connection->eval($url, $store));
+
+  let totalRows = omdbCommonIndexRecords()->size();
+
+  let result = execute($config,
+      |indexToTDS($store, 'omdb-common')
+        ->from(EmptyMapping, $runtime)
+        ->drop(3)
+  );
+
+  assertEquals($totalRows - 3, $result.rows->size());
+}
+
+function meta::external::store::elasticsearch::executionTest::testCase::execute(config: TestConfig[1], f: FunctionDefinition<Any>[1]): TabularDataSet[1]
+{
+  let result = meta::legend::execute(
+      $f,
+      [],
+      ^Elasticsearch7ExecutionContext(),
+      $config.extension
+  )->meta::json::parseJSON()->cast(@meta::json::JSONObject);
+
+  let builderJson = $result->meta::json::getValue('builder')->toOne();
+  let builder = $builderJson->meta::json::fromJSON(meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSBuilder)
+                              ->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSBuilder);
+  
+  let tdsColumns = $builder.columns->toIndexed()->map(c | ^TDSColumn(offset = $c.first, name=$c.second.name, type = $c.second.type->map(t | $t->stringToDataType())));
+
+  let rowsJson = $result->meta::json::getValue('result')
+                  ->cast(@meta::json::JSONObject)->toOne()->meta::json::getValue('rows')
+                  ->cast(@meta::json::JSONArray).values
+                  ->cast(@meta::json::JSONObject)->map(o | $o->meta::json::getValue('values'))
+                  ->cast(@meta::json::JSONArray);  
+
+
+  let tds = ^TabularDataSet(columns = $tdsColumns);
+  let rows = $rowsJson->map(r | ^TDSRow(parent = $tds, values = $r.values->toIndexed()->map(v | $v.second->meta::json::fromJSON($tdsColumns->at($v.first).type->toOne()))));         
+  ^$tds(rows = $rows);
+}
+
+// TODO move to a generic script for re-use (maybe as part of H2 upgrade)
+function meta::external::store::elasticsearch::executionTest::testCase::assertTdsEquivalent(tds: TabularDataSet[1], actual: TabularDataSet[1]): Boolean[1]
+{
+  let withOffset = ^$tds(
+    columns = $tds.columns->map(c | ^$c(offset = indexOf($tds.columns, $c)))
+  );
+
+  let expected = ^$withOffset(
+    rows = $withOffset.rows->map(r | ^$r(parent = $withOffset))
+  );
+  let expectedColumns = $expected.columns.name->sort();
+  let actualColumns = $actual.columns.name->sort();
+  assertEquals($expectedColumns, $actualColumns);
+  assertEquals(
+    $expected->sort($expectedColumns).rows->map(r | $expectedColumns->map(c | $r.get($c))), 
+    $actual->sort($actualColumns).rows->map(r | $actualColumns->map(c | $r.get($c)))
+  );
+}
+
+###Mapping
+Mapping meta::external::store::elasticsearch::executionTest::testCase::EmptyMapping()

@@ -72,7 +72,7 @@ public class GraphQLExecutionHelper
             @Override
             public Object visit(ListValue val)
             {
-                return val.values;
+                return val.values.stream().map(GraphQLExecutionHelper::argumentValueToObject).collect(Collectors.toList());
             }
 
             @Override

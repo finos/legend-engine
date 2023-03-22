@@ -298,7 +298,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByFunctions():Boolean[1]
 {
-  let sqlString = 'SELECT count(Integer) AS "count", SUM(Integer) AS "sum", avg(Integer) AS "avg" FROM service."/service/service1" GROUP BY String';
+  let sqlString = 'SELECT count(Integer) AS "count", SUM(Integer) AS "sum", avg(Integer) AS "avg", stddev_pop(Integer) AS "stdDevPop", stddev_samp(Integer) AS "stdDevSamp" FROM service."/service/service1" GROUP BY String';
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {| FlatInput.all()->project(
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
@@ -306,7 +306,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         )->groupBy('String', [
           agg('count', row | $row.getInteger('Integer'), y | $y->count()),
           agg('sum', row | $row.getInteger('Integer'), y | $y->sum()),
-          agg('avg', row | $row.getInteger('Integer'), y | $y->average())
+          agg('avg', row | $row.getInteger('Integer'), y | $y->average()),
+          agg('stdDevPop', row | $row.getInteger('Integer'), y | $y->stdDevPopulation()),
+          agg('stdDevSamp', row | $row.getInteger('Integer'), y | $y->stdDevSample())
         ])
       };
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
@@ -567,6 +569,148 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 col(row:TDSRow[1] | firstDayOfWeek($row.getStrictDate('StrictDate')), 'WEEK')
               ])
       };
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+}
+
+//DATE_ADD
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDateAdd():Boolean[1]
+{
+  let sqlString = 'SELECT date_add(\'year\', 1, StrictDate) AS "YEAR", date_add(\'month\', 1, StrictDate) AS "MONTH", date_add(\'week\', 1, StrictDate) AS "WEEK", ' + 
+                  'date_add(\'day\', 1, StrictDate) AS "DAY", date_add(\'hour\', 1, StrictDate) AS "HOUR", date_add(\'minute\', 1, StrictDate) AS "MINUTE", ' + 
+                  'date_add(\'second\', 1, StrictDate) AS "SECOND", date_add(\'millisecond\', 1, StrictDate) AS "MILLISECOND", ' + 
+                  'date_add(\'microsecond\', 1, StrictDate) AS "MICROSECOND", date_add(\'nanosecond\', 1, StrictDate) AS "NANOSECOND" FROM service."/service/service1"';
+
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->project([
+                col(row:TDSRow[1] | adjust($row.getStrictDate('StrictDate'), 1, DurationUnit.YEARS), 'YEAR'),
+                col(row:TDSRow[1] | adjust($row.getStrictDate('StrictDate'), 1, DurationUnit.MONTHS), 'MONTH'),
+                col(row:TDSRow[1] | adjust($row.getStrictDate('StrictDate'), 1, DurationUnit.WEEKS), 'WEEK'),
+                col(row:TDSRow[1] | adjust($row.getStrictDate('StrictDate'), 1, DurationUnit.DAYS), 'DAY'),
+                col(row:TDSRow[1] | adjust($row.getStrictDate('StrictDate'), 1, DurationUnit.HOURS), 'HOUR'),
+                col(row:TDSRow[1] | adjust($row.getStrictDate('StrictDate'), 1, DurationUnit.MINUTES), 'MINUTE'),
+                col(row:TDSRow[1] | adjust($row.getStrictDate('StrictDate'), 1, DurationUnit.SECONDS), 'SECOND'),
+                col(row:TDSRow[1] | adjust($row.getStrictDate('StrictDate'), 1, DurationUnit.MILLISECONDS), 'MILLISECOND'),
+                col(row:TDSRow[1] | adjust($row.getStrictDate('StrictDate'), 1, DurationUnit.MICROSECONDS), 'MICROSECOND'),
+                col(row:TDSRow[1] | adjust($row.getStrictDate('StrictDate'), 1, DurationUnit.NANOSECONDS), 'NANOSECOND')
+              ])
+      };
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+}
+
+//DATE_PART
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDatePart():Boolean[1]
+{
+  let sqlString = 'SELECT date_part(\'year\', StrictDate) AS "YEAR", date_part(\'quarter\', CAST(\'2023-01-01\' AS DATE)) AS "QUARTER", date_part(\'month\', StrictDate) AS "MONTH", date_part(\'week\', StrictDate) AS "WEEK", ' +
+                  'date_part(\'dow\', StrictDate) AS "DOW", date_part(\'day\', StrictDate) AS "DAY", date_part(\'hour\', StrictDate) AS "HOUR", date_part(\'minute\', StrictDate) AS "MINUTE", date_part(\'second\', StrictDate) AS "SECOND" FROM service."/service/service1"';
+
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->project([
+                col(row:TDSRow[1] | year($row.getStrictDate('StrictDate')), 'YEAR'),
+                col(row:TDSRow[1] | quarterNumber(parseDate('2023-01-01')), 'QUARTER'),
+                col(row:TDSRow[1] | monthNumber($row.getStrictDate('StrictDate')), 'MONTH'),
+                col(row:TDSRow[1] | weekOfYear($row.getStrictDate('StrictDate')), 'WEEK'),
+                col(row:TDSRow[1] | dayOfWeekNumber($row.getStrictDate('StrictDate')), 'DOW'),
+                col(row:TDSRow[1] | dayOfMonth($row.getStrictDate('StrictDate')), 'DAY'),
+                col(row:TDSRow[1] | hour($row.getStrictDate('StrictDate')), 'HOUR'),
+                col(row:TDSRow[1] | minute($row.getStrictDate('StrictDate')), 'MINUTE'),
+                col(row:TDSRow[1] | second($row.getStrictDate('StrictDate')), 'SECOND')
+              ])
+      };
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+}
+
+//STRING FUNCTIONS
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testStringFunctions():Boolean[1]
+{
+  let sqlString = 'SELECT regexp_like(String, \'test\') AS "MATCH", char_length(String) AS "LENGTH", upper(String) AS "UPPER", lower(String) AS "LOWER", replace(String, \'A\', \'a\') AS "REPLACE", ' +
+                  'starts_with(String, \'a\') AS "STARTSWITH", substring(String, 1) AS "SUBSTRING", substr(String, 1, 2) AS "SUBSTR" FROM service."/service/service1"';
+
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->project([
+                col(row:TDSRow[1] | matches($row.getString('String'), 'test'), 'MATCH'),
+                col(row:TDSRow[1] | length($row.getString('String')), 'LENGTH'),
+                col(row:TDSRow[1] | toUpper($row.getString('String')), 'UPPER'),
+                col(row:TDSRow[1] | toLower($row.getString('String')), 'LOWER'),
+                col(row:TDSRow[1] | replace($row.getString('String'), 'A', 'a'), 'REPLACE'),
+                col(row:TDSRow[1] | startsWith($row.getString('String'), 'a'), 'STARTSWITH'),
+                col(row:TDSRow[1] | substring($row.getString('String'), 1), 'SUBSTRING'),
+                col(row:TDSRow[1] | substring($row.getString('String'), 1, 2), 'SUBSTR')
+              ])
+      };
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+}
+
+//MATH FUNCTIONS
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testMathFunctions():Boolean[1]
+{
+  let sqlString = 'SELECT abs(Integer) AS "ABS", acos(Integer) AS "ACOS", asin(Integer) AS "ASIN", atan(Integer) AS "ATAN", atan2(Integer, 1) AS "ATAN2", ' +
+                  'ceil(Integer) AS "CEIL", ceiling(Integer) AS "CEILING", cos(Integer) AS "COS", degrees(Integer) AS "DEGREES", exp(Integer) AS "EXP", floor(Float) AS "FLOOR", ln(Integer) AS "LOG", ' +
+                  'mod(Integer, 1) AS "MOD", pi() AS "PI", power(Integer, 2) AS "POWER", radians(Integer) AS "RADIANS", round(Integer) AS "ROUND", round(Decimal, 1) AS "ROUND_DEC", ' +
+                  'sin(Integer) AS "SIN", sqrt(Integer) AS "SQRT", tan(Integer) AS "TAN" FROM service."/service/service1"';
+
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->project([
+                col(row:TDSRow[1] | abs($row.getInteger('Integer')), 'ABS'),
+                col(row:TDSRow[1] | acos($row.getInteger('Integer')), 'ACOS'),
+                col(row:TDSRow[1] | asin($row.getInteger('Integer')), 'ASIN'),
+                col(row:TDSRow[1] | atan($row.getInteger('Integer')), 'ATAN'),
+                col(row:TDSRow[1] | atan2($row.getInteger('Integer'), 1), 'ATAN2'),
+                col(row:TDSRow[1] | ceiling($row.getInteger('Integer')), 'CEIL'),
+                col(row:TDSRow[1] | ceiling($row.getInteger('Integer')), 'CEILING'),
+                col(row:TDSRow[1] | cos($row.getInteger('Integer')), 'COS'),
+                col(row:TDSRow[1] | toDegrees($row.getInteger('Integer')), 'DEGREES'),
+                col(row:TDSRow[1] | exp($row.getInteger('Integer')), 'EXP'),
+                col(row:TDSRow[1] | floor($row.getFloat('Float')), 'FLOOR'),
+                col(row:TDSRow[1] | log($row.getInteger('Integer')), 'LOG'),
+                col(row:TDSRow[1] | rem($row.getInteger('Integer'), 1), 'MOD'),
+                col(row:TDSRow[1] | pi(), 'PI'),
+                col(row:TDSRow[1] | pow($row.getInteger('Integer'), 2), 'POWER'),
+                col(row:TDSRow[1] | toRadians($row.getInteger('Integer')), 'RADIANS'),
+                col(row:TDSRow[1] | round($row.getInteger('Integer')), 'ROUND'),
+                col(row:TDSRow[1] | round($row.getDecimal('Decimal'), 1), 'ROUND_DEC'),
+                col(row:TDSRow[1] | sin($row.getInteger('Integer')), 'SIN'),
+                col(row:TDSRow[1] | sqrt($row.getInteger('Integer')), 'SQRT'),
+                col(row:TDSRow[1] | tan($row.getInteger('Integer')), 'TAN')
+              ])
+      };
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+}
+
+//WINDOW FUNCTIONS
+function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure::tests::testWindowFunctions():Boolean[1]
+{
+  let sqlString = 'SELECT String, sum(Integer) AS "SUM", row_number() OVER (PARTITION BY String ORDER BY Integer ASC) AS "ROW" FROM service."/service/service1"';
+
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->groupBy('String', agg('SUM', row | $row.getInteger('Integer'), y | $y->sum()))
+            ->olapGroupBy(['String'], asc('Integer'), y | $y->meta::pure::functions::math::olap::rowNumber(), 'ROW')
+      };
+      
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
 

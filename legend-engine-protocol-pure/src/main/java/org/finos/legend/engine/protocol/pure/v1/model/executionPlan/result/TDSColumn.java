@@ -26,6 +26,17 @@ public class TDSColumn
     public String relationalType;
     public Map<String, List<String>> enumMapping = Collections.emptyMap();
 
+    public TDSColumn()
+    {
+
+    }
+
+    public TDSColumn(String name, String type)
+    {
+        this.name = name;
+        this.type = type;
+    }
+
     public TDSColumn copyWithoutEnumMapping()
     {
         TDSColumn c = new TDSColumn();

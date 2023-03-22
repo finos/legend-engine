@@ -57,6 +57,14 @@ public class SQLGrammarComposer
             Tuples.pair(CurrentTimeType.DATE, "CURRENT_DATE")
     );
 
+    private final MutableMap<FrameBoundType, String> frameBoundType = UnifiedMap.newMapWith(
+            Tuples.pair(FrameBoundType.CURRENT_ROW, "CURRENT ROW"),
+            Tuples.pair(FrameBoundType.FOLLOWING, "FOLLOWING"),
+            Tuples.pair(FrameBoundType.PRECEDING, "PRECEDING"),
+            Tuples.pair(FrameBoundType.UNBOUNDED_FOLLOWING, "UNBOUNDED FOLLOWING"),
+            Tuples.pair(FrameBoundType.UNBOUNDED_PRECEDING, "UNBOUNDED PRECEDING")
+    );
+
     private SQLGrammarComposer()
     {
     }
@@ -86,7 +94,8 @@ public class SQLGrammarComposer
             public String visit(FunctionCall val)
             {
                 String args = visit(val.arguments, ", ");
-                return String.join(".", val.name.parts) + "(" + args + ")";
+                String window = val.window != null ? " OVER (" + visit(val.window) + ")" : "";
+                return String.join(".", val.name.parts) + "(" + args + ")" + window;
             }
 
             @Override
@@ -111,6 +120,32 @@ public class SQLGrammarComposer
             public String visit(WhenClause val)
             {
                 return "WHEN " + val.operand.accept(this) + " THEN " + val.result.accept(this);
+            }
+
+            @Override
+            public String visit(Window val)
+            {
+                if (val.windowRef != null)
+                {
+                    return val.windowRef;
+                }
+
+                String partitions = val.partitions != null && !val.partitions.isEmpty()
+                        ? "PARTITION BY " + visit(val.partitions, ", ")
+                        : "";
+                String orderBy = val.orderBy != null && !val.orderBy.isEmpty()
+                        ? " ORDER BY " + visit(val.orderBy, ", ")
+                        : "";
+
+                String frame = val.windowFrame != null ? visit(val.windowFrame) : "";
+
+                return partitions + orderBy + frame;
+            }
+
+            @Override
+            public String visit(WindowFrame val)
+            {
+                return val.mode.toString() + " BETWEEN " + visit(val.start) + " AND " + visit(val.end);
             }
 
             @Override
@@ -182,6 +217,14 @@ public class SQLGrammarComposer
             }
 
             @Override
+            public String visit(FrameBound val)
+            {
+                String expression = val.value != null ? visit(val.value) + " " : "";
+
+                return expression + frameBoundType.get(val.type);
+            }
+
+            @Override
             public String visit(InListExpression val)
             {
                 return visit(val.values, ", ");
@@ -246,6 +289,12 @@ public class SQLGrammarComposer
             public String visit(LongLiteral val)
             {
                 return Long.toString(val.value);
+            }
+
+            @Override
+            public String visit(NamedArgumentExpression val)
+            {
+                return val.name + " => " + val.expression.accept(this);
             }
 
             @Override
@@ -391,6 +440,12 @@ public class SQLGrammarComposer
             public String visit(Table val)
             {
                 return String.join(".", val.name.parts);
+            }
+
+            @Override
+            public String visit(TableFunction val)
+            {
+                return visit(val.functionCall);
             }
 
             @Override

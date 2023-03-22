@@ -451,3 +451,9 @@ function <<test.Test>> meta::relational::tests::query::filter::multipleFilters::
     assertEquals(['Peter Smith'], $result.values->map(p|$p.name)->makeString());
     assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME like \'Peter%\' and exists(select 1 from firmTable as "firmtable_0" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_0".ADDRESSID) where "addresstable_0".NAME = \'New York\' and "firmtable_0".ID = "root".FIRMID)', $result->sqlRemoveFormatting());
 }
+
+function <<test.ToFix>> meta::relational::tests::query::filter::subAggregation::testFilterWithSubAggregation():Boolean[1]
+{
+    let result = execute(|Firm.all()->filter(p | $p.employees->count() > 2), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+    assertEquals('Firm X', $result.values.legalName->makeString());
+}

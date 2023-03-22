@@ -64,12 +64,13 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::i
                                         isDeprecated = false,
                                         type = buildType($p, $res),
                                         args = if ($p->instanceOf(QualifiedProperty),
-                                                    |$p->functionType().parameters->evaluateAndDeactivate()->tail()->map(p|
+                                                    |$p->functionType().parameters->evaluateAndDeactivate()->tail()->map(parameter|
                                                                     ^__InputValue
                                                                     (
-                                                                      name=$p.name,
-                                                                      type=$res->get($p.genericType.rawType.name->toOne())->toOne())
-                                                                    ),
+                                                                      name=$parameter.name,
+                                                                      type=buildType($parameter,$res)
+                                                                    );
+                                                                  ),
                                                     |[]
                                                )
                                       );
@@ -81,6 +82,19 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::i
   );
 
   $res->values()->meta::pure::functions::collection::sortBy(t|$t.name->toOne());
+}
+
+function <<access.private>> meta::external::query::graphQL::binding::fromPure::introspection::buildType(parameter:VariableExpression[1], map:Map<String,__Type>[1]):__Type[1]
+{
+  let mul = $parameter.multiplicity;
+  let type = $map->get($parameter.genericType.rawType.name->toOne())->toOne();
+  if ($mul == ZeroOne,
+    | $type,
+    | if ($mul == PureOne,
+      | wrap($type, __TypeKind.NON_NULL),
+      | wrap($type, __TypeKind.LIST)
+    )
+  );
 }
 
 function <<access.private>> meta::external::query::graphQL::binding::fromPure::introspection::buildType(func:Function<Any>[1], map:Map<String,__Type>[1]):__Type[1]
