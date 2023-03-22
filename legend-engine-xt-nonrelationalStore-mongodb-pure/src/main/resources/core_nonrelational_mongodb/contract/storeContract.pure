@@ -45,7 +45,8 @@ function meta::external::store::mongodb::contract::mongoDBStoreContract(): Store
     supportsSetImplementation = s:SetImplementation[1]| $s->instanceOf(MongoDBSetImplementation) ||
                                                         $s->instanceOf(CrossSetImplementation) && $s->cast(@CrossSetImplementation).targetStore->instanceOf(MongoDatabase),
     resolveStoreFromSetImplementation = s:InstanceSetImplementation[1]|$s->meta::external::store::mongodb::contract::getStore(),
-    supports = meta::external::store::mongodb::contract::supports_FunctionExpression_1__Boolean_1_
+    supports = meta::external::store::mongodb::contract::supports_FunctionExpression_1__Boolean_1_,
+    extractSourceClassFromSetImplementation = [s: MongoDBSetImplementation[1]  | $s.class]
   )
 }
 

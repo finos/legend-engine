@@ -102,7 +102,8 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
     let binding = ^Binding(
       name        = 'SimpleTestBinding',
       package     = meta::external::format::json::executionPlan::test,
-      schemaSet   = getSimpleSchema(),
+      // do we need schemaSet?
+      //schemaSet   = getSimpleSchema(),
       contentType = 'application/json',
       modelUnit   = newModelUnit()->include([meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Person,meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Firm])
    );
@@ -151,13 +152,13 @@ function <<meta::pure::profiles::test.Test>> meta::external::store::mongodb::exe
 
 function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::getTestMongoPersonCollection(mongoDatabase : MongoDatabase[1]): meta::external::store::mongodb::metamodel::Collection[1]
 {
-    let first_name = ^meta::external::store::mongodb::metamodel::PropertyType(
-      key = 'first_name',
+    let firstName = ^meta::external::store::mongodb::metamodel::PropertyType(
+      key = 'firstName',
       value = ^meta::external::store::mongodb::metamodel::StringType()
     );
 
-    let last_name = ^meta::external::store::mongodb::metamodel::PropertyType(
-      key = 'last_name',
+    let lastName = ^meta::external::store::mongodb::metamodel::PropertyType(
+      key = 'lastName',
       value = ^meta::external::store::mongodb::metamodel::StringType()
     );
 
@@ -167,8 +168,8 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
     );
 
     let schema = ^meta::external::store::mongodb::metamodel::Schema(
-      properties = [$first_name, $last_name, $age],
-      required = ['first_name', 'last_name'],
+      properties = [$firstName, $lastName, $age],
+      required = ['firstName', 'lastName'],
       additionalPropertiesAllowed = true
     );
 
@@ -194,13 +195,13 @@ function  meta::external::store::mongodb::executionPlan::platformBinding::legend
 {
 
     // Map Fields to properties. create fields that correspond to collection representation
-    let first_name = ^meta::external::store::mongodb::metamodel::mapping::Field(
+    let firstName = ^meta::external::store::mongodb::metamodel::mapping::Field(
           dataType = ^meta::external::store::mongodb::metamodel::StringType(),
-          argumentExpression = ^FieldPathExpression(fieldPath='first_name')
+          argumentExpression = ^FieldPathExpression(fieldPath='firstName')
     );
-    let last_name = ^meta::external::store::mongodb::metamodel::mapping::Field(
+    let lastName = ^meta::external::store::mongodb::metamodel::mapping::Field(
           dataType = ^meta::external::store::mongodb::metamodel::StringType(),
-          argumentExpression = ^FieldPathExpression(fieldPath='last_name')
+          argumentExpression = ^FieldPathExpression(fieldPath='lastName')
     );
     let age = ^meta::external::store::mongodb::metamodel::mapping::Field(
           dataType = ^meta::external::store::mongodb::metamodel::IntType(),
@@ -212,29 +213,34 @@ function  meta::external::store::mongodb::executionPlan::platformBinding::legend
     );
 
     //Map the domain class attributes to fields created above
+    
     let personPropMappings = [
       ^meta::external::store::mongodb::metamodel::mapping::MongoDBPropertyMapping(
         property = $domainClass.properties->filter(p | $p.name == 'firstName')->toOne(),
         sourceSetImplementationId = 'person', targetSetImplementationId = '',
-        field = $first_name),
+        field = $firstName),
       ^meta::external::store::mongodb::metamodel::mapping::MongoDBPropertyMapping(
         property = $domainClass.properties->filter(p | $p.name == 'lastName')->toOne(),
         sourceSetImplementationId = 'person', targetSetImplementationId = '',
-        field = $last_name),
+        field = $lastName),
         ^meta::external::store::mongodb::metamodel::mapping::MongoDBPropertyMapping(
         property = $domainClass.properties->filter(p | $p.name == 'age')->toOne(),
         sourceSetImplementationId = 'person', targetSetImplementationId = '',
         field = $age)
    ];
    
+
+   let currentBinding = getSimpleBinding();
+   
    let mongoDbClassMapping = ^meta::external::store::mongodb::metamodel::pure::MongoDBSetImplementation(
     class=$domainClass,
     root=true,
     id='person',
     parent = meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::MongoDBTestMapping,
-    propertyMappings = $personPropMappings,
+    //propertyMappings = $personPropMappings,
     mainCollection = $personCollection,
-    stores = [$personCollection.owner]
+    stores = [$personCollection.owner],
+    binding = $currentBinding
    );
 
    let mongoTestMapping = ^meta::pure::mapping::Mapping(classMappings=[$mongoDbClassMapping], name='mongoDbClassMapping');
@@ -258,11 +264,11 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
         lastName
       }
     }#;
-
+/*
   let personQuery = {|Person.all()
       ->filter(y | ($y.lastName == 'Smith' && $y.firstName == 'Linda'))->graphFetch($personTree)->serialize($personTree)};
 
-
+*/
     let firmTree = #{
       meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Firm {
          legalName
@@ -291,7 +297,7 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
       )
     );
 
-    let result = execute($personQuery, $personMapping, $mongoRuntime, $mongoExtensions).values;
+    //let result = execute($personQuery, $personMapping, $mongoRuntime, $mongoExtensions).values;
     // TODO: Conver this to test + assert.
     true;
 

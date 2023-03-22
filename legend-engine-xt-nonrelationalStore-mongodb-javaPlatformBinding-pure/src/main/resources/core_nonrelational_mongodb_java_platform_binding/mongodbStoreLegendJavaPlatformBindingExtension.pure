@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
 import meta::external::store::mongodb::executionPlan::platformBinding::legendJava::graphFetch::*;
 import meta::external::language::java::metamodel::project::*;
 import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
@@ -39,15 +40,52 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
       // Node based extensions ------------------------------------------------------
 
       supportedExecutionNodes = [
-        MongoDBGraphFetchExecutionNode
+        MongoDBExecutionNode
       ],
+      adhocExtensions = [
 
-      updateGenerationContextForNode = {node: ExecutionNode[1], context: GenerationContext[1], path: String[1], extensions: Extension[*], debug: DebugContext[1] |
-         $node->match([
-            n: MongoDBGraphFetchExecutionNode[1]          | $n->prepareForMongoDBGraphFetch($path, $context, $debug),
-            n: ExecutionNode[1]                           | $context
-         ])
-      }
+         ^meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::LegendJavaInMemoryGraphFetchExtension
+         (
+          
+            filterCodeGenerator = {set: InstanceSetImplementation[1], src: Code[1], withoutFilter: Code[1..*], context: GenerationContext[1], debug:DebugContext[1] |
+               [
+                  rsi: MongoDBSetImplementation[1]  | $withoutFilter
+               ]
+            }
+            
+            ,
+            mappingTransformExtractors = [
+               {spm : MongoDBPropertyMapping[1] | let dummyLambda = {|'ok'};
+                                                      let gen = ^GenericType
+                                                                  (
+                                                                     rawType = LambdaFunction,
+                                                                     typeArguments = ^GenericType
+                                                                                       (
+                                                                                          rawType = ^meta::pure::metamodel::type::FunctionType
+                                                                                                   (
+                                                                                                      parameters = [],
+                                                                                                      returnType = $spm.property->functionReturnType(),
+                                                                                                      returnMultiplicity= $spm.property->functionReturnMultiplicity()
+                                                                                                   )
+                                                                                       )
+                                                                  );
+                                                      let exp = ^SimpleFunctionExpression(func = $spm.property,
+                                                                                          genericType = $spm.property.genericType,
+                                                                                          importGroup = system.children->at(0)->cast(@Package).children->at(0)->cast(@ImportGroup),
+                                                                                          multiplicity = $spm.property.multiplicity,
+                                                                                          parametersValues = ^VariableExpression(genericType=^GenericType(rawType = $spm.property.owner->cast(@meta::pure::metamodel::type::Class<Any>)), multiplicity = PureOne, name = 'src'),
+                                                                                          propertyName = ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = $spm.property.name));
+                                                      ^$dummyLambda(classifierGenericType = $gen, expressionSequence = $exp);}
+            ],
+
+            valueTransformerExtractors = [
+               spm : MongoDBPropertyMapping[1]           | []
+            ]
+            
+         )
+
+      ]
+
 
 
       // ------------------------------------------------------ Node based extensions
@@ -56,6 +94,7 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
 
 function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::mongoDBStoreExtensionsWithLegendJavaPlatformBinding(externalFormatDescriptors: meta::external::shared::format::executionPlan::platformBinding::legendJava::ExternalFormatLegendJavaPlatformBindingDescriptor[*]): Extension[*]
 {
+  //meta::external::format::json::executionPlan::platformBinding::legendJava::jsonSchemaJavaBindingDescriptor()
    meta::external::store::mongodb::extension::mongoDBExtensions()->concatenate(
       meta::pure::executionPlan::platformBinding::platformBindingExtension([
          meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([

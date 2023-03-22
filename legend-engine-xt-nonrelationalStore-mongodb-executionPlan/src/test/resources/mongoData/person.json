@@ -1,17 +1,17 @@
 {
   "insert": "person",
   "documents": [
-    { "first_name": "John", "last_name": "Doe",  "age": 20 },
-    { "first_name": "Jane", "last_name": "Doe", "age": 22 },
-    { "first_name": "Jane2", "last_name": "Doe", "age": 23 },
-    { "first_name": "Jane3", "last_name": "Doe", "age": 24 },
-    { "first_name": "Jane4", "last_name": "Doe", "age": 25 },
-    { "first_name": "Jane5", "last_name": "Doe", "age": 26 },
-    { "first_name": "Jane6", "last_name": "Doe", "age": 27 },
-    { "first_name": "Jane8", "last_name": "Doe", "age": 28 },
-    { "first_name": "Jane9", "last_name": "Doe", "age": 29 },
-    { "first_name": "Jane10", "last_name": "Doe", "age": 30 },
-    { "first_name": "Jane11", "last_name": "Doe", "age": 31 },
-    { "first_name": "Jane12", "last_name": "Doe", "age": 32 }
+    { "firstName": "John", "lastName": "Doe",  "age": 20 },
+    { "firstName": "Jane", "lastName": "Doe", "age": 22 },
+    { "firstName": "Jane2", "lastName": "Doe", "age": 23 },
+    { "firstName": "Jane3", "lastName": "Doe", "age": 24 },
+    { "firstName": "Jane4", "lastName": "Doe", "age": 25 },
+    { "firstName": "Jane5", "lastName": "Doe", "age": 26 },
+    { "firstName": "Jane6", "lastName": "Doe", "age": 27 },
+    { "firstName": "Jane8", "lastName": "Doe", "age": 28 },
+    { "firstName": "Jane9", "lastName": "Doe", "age": 29 },
+    { "firstName": "Jane10", "lastName": "Doe", "age": 30 },
+    { "firstName": "Jane11", "lastName": "Doe", "age": 31 },
+    { "firstName": "Jane12", "lastName": "Doe", "age": 32 }
   ]
 }

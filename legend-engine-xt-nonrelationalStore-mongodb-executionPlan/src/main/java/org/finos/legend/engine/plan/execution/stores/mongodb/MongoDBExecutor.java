@@ -32,13 +32,11 @@ import org.finos.legend.engine.plan.execution.stores.mongodb.auth.MongoDBStoreCo
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
 public class MongoDBExecutor
@@ -67,29 +65,23 @@ public class MongoDBExecutor
 
 
             // Loading with no iterator - TODO: Fix this up
-            // Document dbResult = mongoDatabase.runCommand(bsonCmd);
+            JSONArray jsonArray = new JSONArray();
 
             // using Collection and Iterator
-            List<String> result = new ArrayList<>();
             try (MongoCursor<Document> cursor = mongoDatabase.getCollection(bsonCmd.getString("aggregate"))
                     .aggregate(bsonCmd.getList("pipeline", Document.class))
                     .batchSize(DEFAULT_BATCH_SIZE).iterator())
             {
                 while (cursor.hasNext())
                 {
-                    String jsonResult = cursor.next().toJson();
+                    JSONObject jsonResult = new JSONObject(cursor.next().toJson());
+                    jsonArray.put(jsonResult);
+                    System.out.println("the mongo results are:");
                     System.out.println(jsonResult);
-                    result.add(jsonResult);
                 }
             }
 
-            // return results as InputStream
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(baos);
-            oos.writeObject(result);
-            oos.flush();
-            byte[] bytes = baos.toByteArray();
-            InputStream inputStream = new ByteArrayInputStream(bytes);
+            InputStream inputStream = new ByteArrayInputStream(jsonArray.toString().getBytes());
 
             return new InputStreamResult(inputStream);
 

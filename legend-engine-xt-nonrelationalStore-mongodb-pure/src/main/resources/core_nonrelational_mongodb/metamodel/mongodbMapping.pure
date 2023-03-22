@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::shared::format::binding::*;
 import meta::external::store::mongodb::metamodel::mapping::*;
 import meta::external::store::mongodb::metamodel::aggregation::*;
 import meta::external::store::mongodb::metamodel::*;
@@ -37,11 +38,11 @@ Class meta::external::store::mongodb::metamodel::mapping::MongoDBClassMapping
     mainCollection: Collection[1];
 }
 
+
 Class meta::external::store::mongodb::metamodel::mapping::MongoDBPropertyMapping extends meta::pure::mapping::PropertyMapping
 {
     field: meta::external::store::mongodb::metamodel::mapping::Field[1];   // exrpession or a path to a field ;   also need a collection name....
 }
-
 
 Class meta::external::store::mongodb::metamodel::mapping::Field
 {
@@ -59,6 +60,7 @@ Class meta::external::store::mongodb::metamodel::pure::MongoDBSetImplementation 
 {
     // Store comes from PropertyMapping
     mainCollection : Collection[1];
+    binding: Binding[1];
 }
 
 

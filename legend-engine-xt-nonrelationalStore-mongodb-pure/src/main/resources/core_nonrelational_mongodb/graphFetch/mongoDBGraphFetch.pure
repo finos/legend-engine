@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
+import meta::pure::graphFetch::*;
+import meta::pure::executionPlan::*;
 import meta::external::store::mongodb::metamodel::mapping::*;
 import meta::external::store::mongodb::graphFetch::executionPlan::*;
 import meta::external::store::mongodb::metamodel::aggregation::*;
@@ -24,6 +27,7 @@ import meta::pure::graphFetch::routing::*;
 import meta::pure::mapping::*;
 import meta::pure::graphFetch::executionPlan::*;
 import meta::external::store::mongodb::metamodel::pure::graphFetch::executionPlan::*;
+import meta::external::shared::format::executionPlan::*;
 
 function meta::external::store::mongodb::graphFetch::executionPlan::planRootGraphFetchExecutionMongoDb(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], clusteredTree: StoreMappingClusteredGraphFetchTree[1], orderedPaths: String[*], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: Extension[*], debug: DebugContext[1]): LocalGraphFetchExecutionNode[1]
 {
@@ -34,23 +38,37 @@ function meta::external::store::mongodb::graphFetch::executionPlan::planRootGrap
 
   let domainFieldsToProject = $rootTree.subTrees->cast(@meta::pure::graphFetch::PropertyGraphFetchTree).property->filter(x | $x->instanceOf(Property))->cast(@Property<Nil,Any|*>).name;
 
-  let storeFieldsToProject = $mapping.classMappings->cast(@MongoDBSetImplementation).propertyMappings
-    ->filter(p | $p->cast(@MongoDBPropertyMapping).property->cast(@Property<Nil,Any|*>).name->in($domainFieldsToProject))
-    ->map(p | $p->cast(@MongoDBPropertyMapping).field->cast(@Field).argumentExpression->cast(@FieldPathExpression).fieldPath);
-
-  let databaseCommand = $lhsFe->toDatabaseCommand($mapping, $sq.inScopeVars, $debug, $extensions)->cast(@DatabaseCommand)->filterOutProjectedFields($storeFieldsToProject);
+  let databaseCommand = $lhsFe->toDatabaseCommand($mapping, $sq.inScopeVars, $debug, $extensions)->cast(@DatabaseCommand)->filterOutProjectedFields($domainFieldsToProject);
 
   let connection = $runtime->toOne()->connectionByElement($store)->cast(@MongoDBConnection);
 
-  ^RootMongoDBGraphFetchExecutionNode(
+  let binding = $mapping.classMappings->cast(@MongoDBSetImplementation).binding->toOne();
+  
+
+  ^InMemoryRootGraphFetchExecutionNode(
     resultType = $rootTree->resultTypeFromGraphFetchTree(),
     nodeIndex = 0,
     graphFetchTree = $rootTree,
+    checked = $checked,
     executionNodes = [
-      ^MongoDBExecutionNode(
-        resultType = ^meta::pure::executionPlan::ResultType(type = Any),
-        databaseCommand = $databaseCommand,
-        connection = $connection
+      ^ExternalFormatInternalizeExecutionNode(
+        resultType = ^PartialClassResultType(
+                            type = $rootTree.class->toOne(),
+                            propertiesWithParameters = $rootTree.subTrees->cast(@PropertyGraphFetchTree)->map(x | $x->map(x | ^PropertyWithParameters(property = $x.property, parameters = $x.parameters)))
+                          ),
+        // Do we need config??
+        //config = $config,
+        checked = $checked,
+        enableConstraints = false,
+        tree = $rootTree,
+        binding = $binding,
+        executionNodes = [
+          ^MongoDBExecutionNode(
+            resultType = ^meta::pure::executionPlan::ResultType(type = Any),
+            databaseCommand = $databaseCommand,
+            connection = $connection
+          )
+        ]
       )
     ]
   );

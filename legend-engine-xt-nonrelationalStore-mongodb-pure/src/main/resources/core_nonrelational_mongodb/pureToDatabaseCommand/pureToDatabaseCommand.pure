@@ -77,8 +77,8 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
 
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::getFieldPathForPropertyNameAndMapping(propertyName: String[1], mapping: Mapping[1]): String[1]
 {
-  let mongoDbPropertyMapping = $mapping.classMappings->cast(@MongoDBSetImplementation).propertyMappings->filter(x | $x.property.name == $propertyName)->toOne();
-  '$' + $mongoDbPropertyMapping->cast(@MongoDBPropertyMapping).field.argumentExpression->cast(@FieldPathExpression).fieldPath;
+  let domainClassProperty = $mapping.classMappings->cast(@MongoDBSetImplementation).class.properties->filter(x | $x.name == $propertyName).name->toOne();
+  '$' + $domainClassProperty;
 }
 
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::processInstanceValue(i: InstanceValue[1], databaseCommand: DatabaseCommand[1], mapping: Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]): MongoDBOperationElement[1]
@@ -155,16 +155,15 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
 {
   let setImplementation = $functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->toOne();
   let collectionName = $setImplementation->cast(@MongoDBSetImplementation).mainCollection->cast(@Collection).name;
-  let projectedKeys = getProjectKeyValuesForMongoDBPropertyMappings($setImplementation->cast(@MongoDBSetImplementation).propertyMappings->cast(@MongoDBPropertyMapping));
+  let projectedKeys = getProjectKeyValuesForDomainClassProperties($setImplementation->cast(@MongoDBSetImplementation).class.properties);
   let result = ^$databaseCommand(collectionName=$collectionName, aggregationPipeline=^AggregationPipeline(stages=^ProjectStage(projections=$projectedKeys)));
   $result;
 }
 
-function meta::external::store::mongodb::functions::pureToDatabaseCommand::getProjectKeyValuesForMongoDBPropertyMappings(propertyMappings: MongoDBPropertyMapping[*]): ObjectQueryExpression[1]
+function meta::external::store::mongodb::functions::pureToDatabaseCommand::getProjectKeyValuesForDomainClassProperties(properties: Property<Any, Any|*>[*]): ObjectQueryExpression[1]
 {
-  let keyValues = $propertyMappings->map(k |
-    let field = $k.field.argumentExpression->cast(@FieldPathExpression).fieldPath;
-    ^QueryExprKeyValue(key=^FieldPathExpression(fieldPath=$field), value=^LiteralValue(value=^IntTypeValue(value=1)));
+  let keyValues = $properties->map(k |
+    ^QueryExprKeyValue(key=^FieldPathExpression(fieldPath=$k.name->toOne()), value=^LiteralValue(value=^IntTypeValue(value=1)));
   );
   ^ObjectQueryExpression(keyValues=$keyValues);
 }
