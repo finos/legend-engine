@@ -12,11 +12,12 @@ identifier:                      VALID_STRING
 
 // ----------------------------- SERVICE STORE SECURITY SCHEME-----------------------------
 
-httpSecurityScheme:                         SIMPLE_HTTP_SECURITY_SCHEME
+httpSecurityScheme:                         HTTP_SECURITY_SCHEME
                                             BRACE_OPEN
-                                                   ( scheme
-                                                     | bearerFormat
-                                                   )*
+                                            (
+                                                scheme
+                                                | bearerFormat
+                                            )*
                                             BRACE_CLOSE
 ;
 
@@ -28,10 +29,10 @@ bearerFormat:                               BEARER_FORMAT COLON STRING SEMI_COLO
 
 apiKeySecurityScheme:                       API_KEY_SECURITY_SCHEME
                                             BRACE_OPEN
-                                                (
-                                                    location
-                                                    | keyname
-                                                )*
+                                            (
+                                                location
+                                                | keyname
+                                            )*
                                             BRACE_CLOSE
 ;
 

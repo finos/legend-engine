@@ -29,6 +29,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.s
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -68,13 +69,17 @@ public class ServiceStoreConnectionParseTreeWalker
             //TODO: Make sure order of authSpecs in Map is same as in grammar
             connectionValue.authenticationSpecifications = ListIterate.collect(authContext.authSpecificationObject(), this::visitAuthentication).stream().collect(Collectors.toMap(Pair::getOne, Pair::getTwo, (u, v) -> u, LinkedHashMap::new));
         }
+        else
+        {
+            connectionValue.authenticationSpecifications = new HashMap<>();
+        }
     }
 
-    private Pair<String, AuthenticationSpecification> visitAuthentication(ServiceStoreConnectionParserGrammar.AuthSpecificationObjectContext ctx)
+    private Pair<String, AuthenticationSpecification> visitAuthentication(ServiceStoreConnectionParserGrammar.AuthSpecificationObjectContext authSpecificationObjectContext)
     {
-        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(authSpecificationObjectContext);
 
-        ServiceStoreConnectionParserGrammar.SingleAuthSpecificationContext specContext = ctx.singleAuthSpecification();
+        ServiceStoreConnectionParserGrammar.SingleAuthSpecificationContext specContext = authSpecificationObjectContext.singleAuthSpecification();
         SpecificationSourceCode code = new SpecificationSourceCode(
                 specContext.getText(),
                 specContext.authSpecificationType().getText(),
@@ -84,15 +89,10 @@ public class ServiceStoreConnectionParseTreeWalker
 
 
         List<IAuthenticationGrammarParserExtension> extensions = IAuthenticationGrammarParserExtension.getExtensions();
-        AuthenticationSpecification spec = IAuthenticationGrammarParserExtension.process(code, ListIterate.flatCollect(extensions, IAuthenticationGrammarParserExtension::getExtraAuthenticationParsers));
+        AuthenticationSpecification authenticationSpec = IAuthenticationGrammarParserExtension.process(code, ListIterate.flatCollect(extensions, IAuthenticationGrammarParserExtension::getExtraAuthenticationParsers));
 
-        if (spec == null)
-        {
-            throw new EngineException("Unsupported syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-        }
-
-        String securitySchemeId = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
-        return Tuples.pair(securitySchemeId, spec);
+        String securitySchemeId = PureGrammarParserUtility.fromIdentifier(authSpecificationObjectContext.qualifiedName().identifier());
+        return Tuples.pair(securitySchemeId, authenticationSpec);
     }
 
     private void validateUrl(String url, SourceInformation sourceInformation)

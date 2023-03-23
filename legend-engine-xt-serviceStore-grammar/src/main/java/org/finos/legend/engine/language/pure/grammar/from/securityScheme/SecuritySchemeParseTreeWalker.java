@@ -13,10 +13,10 @@
 // limitations under the License.
 
 
-package org.finos.legend.engine.language.pure.grammar.from.connection.authentication;
+package org.finos.legend.engine.language.pure.grammar.from.securityScheme;
 
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
-import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.authentication.SecuritySchemeParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.securityScheme.SecuritySchemeParserGrammar;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ApiKeySecurityScheme;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.HttpSecurityScheme;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.HttpSecurityScheme.Scheme;

@@ -47,7 +47,8 @@ public class TestServiceStoreSecuritySchemesCompilationFromGrammar extends TestC
                 "ServiceStore meta::external::store::service::showcase::store::TradeProductServiceStore\n" +
                 "(\n" +
                 "   description : 'Showcase Service Store';\n" +
-                "   securitySchemes : {\n" +
+                "   securitySchemes : " +
+                "   {\n" +
                 "       http : Http\n" +
                 "       {\n" +
                 "          scheme : 'basic';\n" +
@@ -59,28 +60,30 @@ public class TestServiceStoreSecuritySchemesCompilationFromGrammar extends TestC
                 "{\n" +
                 "    store   : meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
                 "    baseUrl : 'http://127.0.0.1:53008';\n" +
-                "    auth: {\n" +
-                "        http     : UserPassword\n" +
-                "                   {\n" +
-                "                       username : 'username';\n" +
-                "                       password : PropertiesFileSecret\n" +
-                "                       {\n" +
-                "                           propertyName : 'ref1';\n" +
-                "                       }\n" +
-                "                   }" +
+                "    auth: " +
+                "    {\n" +
+                "        http : UserPassword\n" +
+                "        {\n" +
+                "           username : 'username';\n" +
+                "           password : PropertiesFileSecret\n" +
+                "           {\n" +
+                "               propertyName : 'ref1';\n" +
+                "           }\n" +
+                "        }" +
                 "    };\n" +
                 "}");
     }
 
     @Test
-    public void testApiKeySecurityScheme() throws Exception
+    public void testApiKeySecuritySchemeWithCookieLocation() throws Exception
     {
 
         test("###ServiceStore\n" +
                 "ServiceStore meta::external::store::service::showcase::store::TradeProductServiceStore\n" +
                 "(\n" +
                 "   description : 'Showcase Service Store';\n" +
-                "   securitySchemes : {\n" +
+                "   securitySchemes : " +
+                "   {\n" +
                 "       api : ApiKey\n" +
                 "       {\n" +
                 "           location : 'cookie';\n" +
@@ -93,16 +96,91 @@ public class TestServiceStoreSecuritySchemesCompilationFromGrammar extends TestC
                 "{\n" +
                 "    store   : meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
                 "    baseUrl : 'http://127.0.0.1:53008';\n" +
-                "    auth: {\n" +
-                "        api     : ApiKey\n" +
-                "                   {\n" +
-                "                       location : 'header';\n" +
-                "                       keyName : 'key1';\n" +
-                "                       value : SystemPropertiesSecret\n" +
-                "                       {\n" +
-                "                           systemPropertyName : 'reference1';\n" +
-                "                       }\n" +
-                "                   }" +
+                "    auth: " +
+                "    {\n" +
+                "       api : ApiKey\n" +
+                "       {\n" +
+                "           location : 'cookie';\n" +
+                "           keyName : 'key1';\n" +
+                "           value : SystemPropertiesSecret\n" +
+                "           {\n" +
+                "               systemPropertyName : 'reference1';\n" +
+                "           }\n" +
+                "       }" +
+                "    };\n" +
+                "}");
+    }
+
+    @Test
+    public void testApiKeySecuritySchemeWithHeaderLocation() throws Exception
+    {
+
+        test("###ServiceStore\n" +
+                "ServiceStore meta::external::store::service::showcase::store::TradeProductServiceStore\n" +
+                "(\n" +
+                "   description : 'Showcase Service Store';\n" +
+                "   securitySchemes : " +
+                "   {\n" +
+                "       api : ApiKey\n" +
+                "       {\n" +
+                "           location : 'header';\n" +
+                "           keyName : 'key1';\n" +
+                "       }" +
+                "   };\n" +
+                ")\n" +
+                "###Connection\n" +
+                "ServiceStoreConnection meta::external::store::service::showcase::connection::serviceStoreConnection\n" +
+                "{\n" +
+                "    store   : meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
+                "    baseUrl : 'http://127.0.0.1:53008';\n" +
+                "    auth: " +
+                "    {\n" +
+                "       api : ApiKey\n" +
+                "       {\n" +
+                "           location : 'header';\n" +
+                "           keyName : 'key1';\n" +
+                "           value : SystemPropertiesSecret\n" +
+                "           {\n" +
+                "               systemPropertyName : 'reference1';\n" +
+                "           }\n" +
+                "       }" +
+                "    };\n" +
+                "}");
+    }
+
+    @Test
+    public void testApiKeySecuritySchemeWithQueryLocation() throws Exception
+    {
+
+        test("###ServiceStore\n" +
+                "ServiceStore meta::external::store::service::showcase::store::TradeProductServiceStore\n" +
+                "(\n" +
+                "   description : 'Showcase Service Store';\n" +
+                "   securitySchemes : " +
+                "   {\n" +
+                "       api : ApiKey\n" +
+                "       {\n" +
+                "           location : 'query';\n" +
+                "           keyName : 'key1';\n" +
+                "       }" +
+                "   };\n" +
+                ")\n" +
+                "###Connection\n" +
+                "ServiceStoreConnection meta::external::store::service::showcase::connection::serviceStoreConnection\n" +
+                "{\n" +
+                "    store   : meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
+                "    baseUrl : 'http://127.0.0.1:53008';\n" +
+                "    auth: " +
+                "    {\n" +
+                "       api : ApiKey\n" +
+                "       {\n" +
+                "           location : 'query';\n" +
+                "           keyName : 'key1';\n" +
+                "           value : SystemPropertiesSecret\n" +
+                "           {\n" +
+                "               systemPropertyName : 'reference1';\n" +
+                "           }\n" +
+                "       }" +
                 "    };\n" +
                 "}");
     }
@@ -115,16 +193,17 @@ public class TestServiceStoreSecuritySchemesCompilationFromGrammar extends TestC
                 "{\n" +
                 "    store   : meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
                 "    baseUrl : 'http://127.0.0.1:53008';\n" +
-                "    auth: {\n" +
-                "        api     : ApiKey\n" +
-                "                   {\n" +
-                "                       location : 'header';\n" +
-                "                       keyName : 'key1';\n" +
-                "                       value : SystemPropertiesSecret\n" +
-                "                       {\n" +
-                "                           systemPropertyName : 'reference1';\n" +
-                "                       }\n" +
-                "                   }" +
+                "    auth: " +
+                "    {\n" +
+                "       api : ApiKey\n" +
+                "       {\n" +
+                "           location : 'header';\n" +
+                "           keyName : 'key1';\n" +
+                "           value : SystemPropertiesSecret\n" +
+                "           {\n" +
+                "               systemPropertyName : 'reference1';\n" +
+                "           }\n" +
+                "       }" +
                 "    };\n" +
                 "}\n\n" +
                 "###ServiceStore\n" +

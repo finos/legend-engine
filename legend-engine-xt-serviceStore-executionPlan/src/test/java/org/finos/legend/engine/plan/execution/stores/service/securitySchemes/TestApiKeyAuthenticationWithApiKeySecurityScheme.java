@@ -33,61 +33,37 @@ public class TestApiKeyAuthenticationWithApiKeySecurityScheme extends ServiceSto
     {
         setupServer("securitySchemes");
 
-        String serviceStore =
-                "###ServiceStore\n" +
-                        "ServiceStore meta::external::store::service::showcase::store::TradeProductServiceStore\n" +
-                        "(\n" +
-                        "   description : 'Showcase Service Store';\n" +
-                        "   securitySchemes : {\n" +
-                        "       api1 : ApiKey\n" +
-                        "               {\n" +
-                        "                   location : 'cookie';\n" +
-                        "                   keyName : 'apiKey1';\n" +
-                        "               }\n" +
-                        "   };\n" +
-                        "   ServiceGroup TradeServices\n" +
-                        "   (\n" +
-                        "      path : '/trades';\n" +
-                        "\n" +
-                        "      Service AllTradeService\n" +
-                        "            (\n" +
-                        "               path : '/allTradesService2';\n" +
-                        "               method : GET;\n" +
-                        "               security : [api1];\n" +
-                        "               response : [meta::external::store::service::showcase::domain::S_Trade <- meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding];\n" +
-                        "            )\n" +
-                        "   )  \n" +
-                        ")";
-
         String serviceStoreConnection = "###Connection\n" +
                 "ServiceStoreConnection meta::external::store::service::showcase::connection::serviceStoreConnection\n" +
                 "{\n" +
                 "    store   : meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
-                "    baseUrl : 'http://127.0.0.1:port';\n" +
-                "    auth    : {\n" +
-                "                 api1  : ApiKey\n" +
-                "                 {\n" +
-                "                    location : 'header';\n" +
-                "                    keyName : 'key1';\n" +
-                "                    value : SystemPropertiesSecret\n" +
-                "                    {\n" +
-                "                        systemPropertyName : 'property1';\n" +
-                "                    }\n" +
-                "                 }\n" +
-                "            };\n" +
+                "    baseUrl : 'http://127.0.0.1:" + getPort() + "';\n" +
+                "    auth    : " +
+                "    {\n" +
+                "       api1  : ApiKey\n" +
+                "       {\n" +
+                "           location : 'cookie';\n" +
+                "           keyName : 'key1';\n" +
+                "           value : apiValue" +
+                "       }\n" +
+                "    };\n" +
                 "}";
 
-        pureGrammar = serviceStore + "\n\n" + serviceStoreConnection.replace("port", String.valueOf(getPort())) + "\n\n" + ServiceStoreTestUtils.readGrammarFromPureFile("/securitySchemes/testGrammar.pure");
+        pureGrammar = ServiceStoreTestUtils.readGrammarFromPureFile("/securitySchemes/testGrammarWithApiKeySecurityScheme.pure") + "\n\n" + serviceStoreConnection;
     }
 
     @Test
-    public void testAuthentication()
+    public void testApiKeyAuthenticationWithSystemPropertiesSecret()
     {
         // Set the value of the api key in the system properties
         System.setProperty("property1", "value1");
         try
         {
-            SingleExecutionPlan plan = buildPlanForQuery(pureGrammar);
+            String secret =  "SystemPropertiesSecret\n" +
+                             "{\n" +
+                             "   systemPropertyName : 'property1';\n" +
+                             "}\n";
+            SingleExecutionPlan plan = buildPlanForQuery(pureGrammar.replace("apiValue",secret));
             String result = executePlan(plan);
             Assert.assertEquals("{\"builder\":{\"_type\":\"json\"},\"values\":[{\"s_tradeId\":\"1\",\"s_traderDetails\":\"abc:F_Name_1:L_Name_1\",\"s_tradeDetails\":\"30:100\"},{\"s_tradeId\":\"2\",\"s_traderDetails\":\"abc:F_Name_1:L_Name_1\",\"s_tradeDetails\":\"31:200\"},{\"s_tradeId\":\"3\",\"s_traderDetails\":\"abc:F_Name_2:L_Name_2\",\"s_tradeDetails\":\"30:300\"},{\"s_tradeId\":\"4\",\"s_traderDetails\":\"abc:F_Name_2:L_Name_2\",\"s_tradeDetails\":\"31:400\"}]}", result);
         }
@@ -95,5 +71,17 @@ public class TestApiKeyAuthenticationWithApiKeySecurityScheme extends ServiceSto
         {
             System.clearProperty("property1");
         }
+    }
+
+    @Test
+    public void testApiKeyAuthenticationWithPropertiesFileSecret()
+    {
+        String secret =  "PropertiesFileSecret\n" +
+                         "{\n" +
+                         "   propertyName: 'property1';\n" +
+                         "}\n";
+        SingleExecutionPlan plan = buildPlanForQuery(pureGrammar.replace("apiValue",secret));
+        String result = executePlan(plan);
+        Assert.assertEquals("{\"builder\":{\"_type\":\"json\"},\"values\":[{\"s_tradeId\":\"1\",\"s_traderDetails\":\"abc:F_Name_1:L_Name_1\",\"s_tradeDetails\":\"30:100\"},{\"s_tradeId\":\"2\",\"s_traderDetails\":\"abc:F_Name_1:L_Name_1\",\"s_tradeDetails\":\"31:200\"},{\"s_tradeId\":\"3\",\"s_traderDetails\":\"abc:F_Name_2:L_Name_2\",\"s_tradeDetails\":\"30:300\"},{\"s_tradeId\":\"4\",\"s_traderDetails\":\"abc:F_Name_2:L_Name_2\",\"s_tradeDetails\":\"31:400\"}]}", result);
     }
 }

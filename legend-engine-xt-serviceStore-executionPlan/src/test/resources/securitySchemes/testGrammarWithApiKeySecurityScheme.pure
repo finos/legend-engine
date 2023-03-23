@@ -63,9 +63,34 @@ Runtime meta::external::store::service::showcase::runtime::ServiceStoreRuntime
     ];
 }
 
+###ServiceStore
+ServiceStore meta::external::store::service::showcase::store::TradeProductServiceStore
+(
+    description : 'Showcase Service Store';
+    securitySchemes :
+    {
+        api1 : ApiKey
+        {
+            location : 'cookie';
+            keyName : 'apiKey1';
+        }
+    };
+    ServiceGroup TradeServices
+    (
+        path : '/trades';
+
+        Service AllTradeService
+        (
+            path : '/allTradesService2';
+            method : GET;
+            security : [api1];
+            response : [meta::external::store::service::showcase::domain::S_Trade <- meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding];
+        )
+    )
+)
+
 ###Pure
 function showcase::query(): Any[1]
 {
    {|meta::external::store::service::showcase::domain::S_Trade.all()->graphFetch(#{meta::external::store::service::showcase::domain::S_Trade {s_tradeId,s_traderDetails,s_tradeDetails}}#)->serialize(#{meta::external::store::service::showcase::domain::S_Trade {s_tradeId,s_traderDetails,s_tradeDetails}}#)};
-
 }

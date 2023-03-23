@@ -20,11 +20,10 @@ import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.ServiceStoreParserGrammar;
-import org.finos.legend.engine.language.pure.grammar.from.connection.authentication.SecuritySchemeSourceCode;
+import org.finos.legend.engine.language.pure.grammar.from.securityScheme.SecuritySchemeSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.language.pure.grammar.from.extensions.IServiceStoreGrammarParserExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
@@ -55,7 +54,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.s
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServicePtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceStore;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceStoreElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SingleSecuritySchemeRequirement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.StringTypeReference;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.TypeReference;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
@@ -63,7 +61,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lam
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.PropertyPathElement;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_connection_authentication_AuthenticationSpecification;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -116,6 +113,10 @@ public class ServiceStoreParseTreeWalker
             MutableList<Pair<String, SecurityScheme>> securitySchemeList = ListIterate.collect(securitySchemeCtx.securitySchemeObject(), this::visitSecuritySchemeObject);
             validateSecuritySchemes(securitySchemeList, serviceStore.sourceInformation);
             securitySchemeMap = securitySchemeList.stream().collect(Collectors.toMap(pair -> pair.getOne(), pair -> pair.getTwo()));
+        }
+        else
+        {
+            securitySchemeMap = new HashMap<>();
         }
 
         serviceStore.elements = ListIterate.collect(ctx.serviceStoreElement(), this::visitServiceStoreElement);
@@ -174,11 +175,6 @@ public class ServiceStoreParseTreeWalker
 
         List<IServiceStoreGrammarParserExtension> extensions = IServiceStoreGrammarParserExtension.getExtensions();
         SecurityScheme securityScheme = IServiceStoreGrammarParserExtension.process(code, ListIterate.flatCollect(extensions, IServiceStoreGrammarParserExtension::getExtraSecuritySchemesParsers));
-
-        if (securityScheme == null)
-        {
-            throw new EngineException("Unsupported syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-        }
 
         String id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
         return Tuples.pair(id, securityScheme);

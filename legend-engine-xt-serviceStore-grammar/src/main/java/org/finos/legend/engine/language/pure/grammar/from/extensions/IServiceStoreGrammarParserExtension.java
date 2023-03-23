@@ -14,21 +14,13 @@
 
 package org.finos.legend.engine.language.pure.grammar.from.extensions;
 
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.Lexer;
-import org.antlr.v4.runtime.Parser;
-import org.antlr.v4.runtime.TokenStream;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.language.pure.grammar.from.ParserErrorListener;
 import org.finos.legend.engine.language.pure.grammar.from.SpecificationSourceCode;
-import org.finos.legend.engine.language.pure.grammar.from.connection.authentication.SecuritySchemeSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
+import org.finos.legend.engine.language.pure.grammar.from.securityScheme.SecuritySchemeSourceCode;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecurityScheme;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecuritySchemeRequirement;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -62,12 +54,6 @@ public interface IServiceStoreGrammarParserExtension extends PureGrammarParserEx
         return Collections.emptyList();
     }
 
-    @Deprecated
-    default List<Function<SpecificationSourceCode, AuthenticationSpecification>> getExtraAuthenticationParsers()
-    {
-        return Collections.emptyList();
-    }
-
     static <T extends SpecificationSourceCode, U> U process(T code, List<Function<T, U>> processors, String type)
     {
         return ListIterate
@@ -76,19 +62,4 @@ public interface IServiceStoreGrammarParserExtension extends PureGrammarParserEx
                 .getFirstOptional()
                 .orElseThrow(() -> new EngineException("Unsupported " + type + " type '" + code.getType() + "'", code.getSourceInformation(), EngineErrorType.PARSER));
     }
-
-    static <P extends Parser, V> V parse(SpecificationSourceCode code, Function<CharStream, Lexer> lexerFunc, Function<TokenStream, P> parserFunc, Function<P, V> transformer)
-    {
-        CharStream input = CharStreams.fromString(code.getCode());
-        ParserErrorListener errorListener = new ParserErrorListener(code.getWalkerSourceInformation());
-        Lexer lexer = lexerFunc.apply(input);
-        P parser = parserFunc.apply(new CommonTokenStream(lexer));
-        lexer.removeErrorListeners();
-        lexer.addErrorListener(errorListener);
-        parser.removeErrorListeners();
-        parser.addErrorListener(errorListener);
-        return transformer.apply(parser);
-    }
-
-
 }

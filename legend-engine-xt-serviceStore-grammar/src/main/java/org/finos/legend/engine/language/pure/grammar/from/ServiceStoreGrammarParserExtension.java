@@ -24,13 +24,13 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.ServiceStoreLex
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.ServiceStoreParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.ServiceStoreConnectionLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.ServiceStoreConnectionParserGrammar;
-import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.authentication.SecuritySchemeLexerGrammar;
-import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.authentication.SecuritySchemeParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.securityScheme.SecuritySchemeLexerGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.securityScheme.SecuritySchemeParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionValueSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.connection.ServiceStoreConnectionParseTreeWalker;
-import org.finos.legend.engine.language.pure.grammar.from.connection.authentication.SecuritySchemeParseTreeWalker;
-import org.finos.legend.engine.language.pure.grammar.from.connection.authentication.SecuritySchemeSourceCode;
+import org.finos.legend.engine.language.pure.grammar.from.securityScheme.SecuritySchemeParseTreeWalker;
+import org.finos.legend.engine.language.pure.grammar.from.securityScheme.SecuritySchemeSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.data.ServiceStoreEmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.ConnectionValueParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.MappingElementParser;

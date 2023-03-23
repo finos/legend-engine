@@ -16,16 +16,13 @@ package org.finos.legend.engine.language.pure.grammar.to;
 
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
-import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
-import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.eclipse.collections.impl.utility.MapIterate;
 import org.finos.legend.engine.language.pure.dsl.authentication.grammar.to.IAuthenticationGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.connection.ServiceStoreConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.LocalMappingProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.RootServiceStoreClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.ServiceMapping;
@@ -72,19 +69,19 @@ public class HelperServiceStoreGrammarComposer
             builder.append("description : ").append("'").append(serviceStore.description).append("'").append(";\n\n");
         }
 
-        renderSecuritySchemesMap(serviceStore.securitySchemes, builder, PureGrammarComposerContext.Builder.newInstance().withIndentation(baseIndentation).build());
+        renderSecuritySchemesMap(serviceStore.securitySchemes, builder, baseIndentation);
         renderServiceStoreElements(serviceStore.elements, builder, baseIndentation);
 
         builder.append(")");
         return builder.toString();
     }
 
-    public static void renderSecuritySchemesMap(Map<String, SecurityScheme> securitySchemes, StringBuilder builder, PureGrammarComposerContext context)
+    public static void renderSecuritySchemesMap(Map<String, SecurityScheme> securitySchemes, StringBuilder builder, int baseIndentation)
     {
-        builder.append(context.getIndentationString()).append(PureGrammarComposerUtility.getTabString(1)).append("securitySchemes ").append(": ").append("{\n");
+        builder.append(getTabString(baseIndentation)).append("securitySchemes ").append(":\n").append(getTabString(baseIndentation)).append("{\n");
         if (securitySchemes != null && !securitySchemes.isEmpty())
         {
-            builder.append(PureGrammarComposerUtility.getTabString(2)).append(MapIterate.toListOfPairs(securitySchemes).collect(pair -> renderSecurityScheme(pair.getOne(), pair.getTwo(), context)).makeString(",\n" + getTabString(2))).append("\n");
+            builder.append(getTabString(baseIndentation)).append(MapIterate.toListOfPairs(securitySchemes).collect(pair -> renderSecurityScheme(pair.getOne(), pair.getTwo(), baseIndentation + 1)).makeString(",\n" + getTabString(2))).append("\n");
         }
         builder.append(getTabString()).append("};\n");
     }
@@ -230,11 +227,12 @@ public class HelperServiceStoreGrammarComposer
         return builder.toString();
     }
 
-    private static String renderSecurityScheme(String id, SecurityScheme securityScheme, PureGrammarComposerContext context)
+    private static String renderSecurityScheme(String id, SecurityScheme securityScheme, int baseIndentation)
     {
-        List<Function3<String, SecurityScheme, PureGrammarComposerContext, String>> processors = ListIterate.flatCollect(IServiceStoreGrammarComposerExtension.getExtensions(), ext -> ext.getExtraSecuritySchemesComposers());
+        List<Function2<SecurityScheme, Integer, String>> processors = ListIterate.flatCollect(IServiceStoreGrammarComposerExtension.getExtensions(), ext -> ext.getExtraSecuritySchemesComposers());
 
-        return ListIterate.collect(processors, processor -> processor.value(id, securityScheme, context))
+        return getTabString(1) + id + " : "  +
+                ListIterate.collect(processors, processor -> processor.value(securityScheme, baseIndentation))
                 .select(Objects::nonNull)
                 .getFirstOptional()
                 .orElseThrow(() -> new EngineException("Unsupported securityScheme - " + securityScheme.getClass().getSimpleName(), securityScheme.sourceInformation, EngineErrorType.PARSER));

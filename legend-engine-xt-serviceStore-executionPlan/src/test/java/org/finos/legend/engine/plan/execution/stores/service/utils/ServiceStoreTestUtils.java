@@ -25,6 +25,7 @@ import org.finos.legend.authentication.intermediationrule.IntermediationRuleProv
 import org.finos.legend.authentication.intermediationrule.impl.ApiKeyFromVaultRule;
 import org.finos.legend.authentication.intermediationrule.impl.UserPasswordFromVaultRule;
 import org.finos.legend.authentication.vault.CredentialVaultProvider;
+import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
 import org.finos.legend.authentication.vault.impl.SystemPropertiesCredentialVault;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
@@ -59,6 +60,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Map;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 public class ServiceStoreTestUtils
@@ -142,8 +144,11 @@ public class ServiceStoreTestUtils
 
     public static CredentialProviderProvider configureCredentialProviders()
     {
+        Properties properties = new Properties();
+        properties.setProperty("property1", "value1");
         CredentialVaultProvider credentialVaultProvider = CredentialVaultProvider.builder()
                 .with(new SystemPropertiesCredentialVault())
+                .with(new PropertiesFileCredentialVault(properties))
                 .build();
 
         IntermediationRuleProvider intermediationRuleProvider = IntermediationRuleProvider.builder()

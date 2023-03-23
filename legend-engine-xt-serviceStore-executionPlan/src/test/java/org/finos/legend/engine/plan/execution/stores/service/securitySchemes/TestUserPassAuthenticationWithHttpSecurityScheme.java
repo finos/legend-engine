@@ -34,54 +34,29 @@ public class TestUserPassAuthenticationWithHttpSecurityScheme extends ServiceSto
     {
         setupServer("securitySchemes");
 
-        String serviceStore =
-                "###ServiceStore\n" +
-                        "ServiceStore meta::external::store::service::showcase::store::TradeProductServiceStore\n" +
-                        "(\n" +
-                        "   description : 'Showcase Service Store';\n" +
-                        "   securitySchemes : {\n" +
-                        "       http : Http\n" +
-                        "               {\n" +
-                        "                   scheme : 'basic';\n" +
-                        "               }\n" +
-                        "   };\n" +
-                        "   ServiceGroup TradeServices\n" +
-                        "   (\n" +
-                        "      path : '/trades';\n" +
-                        "\n" +
-                        "      Service AllTradeService\n" +
-                        "            (\n" +
-                        "               path : '/allTradesService';\n" +
-                        "               method : GET;\n" +
-                        "               security : [http];\n" +
-                        "               response : [meta::external::store::service::showcase::domain::S_Trade <- meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding];\n" +
-                        "            )\n" +
-                        "   )  \n" +
-                        ")";
-
         String serviceStoreConnection = "###Connection\n" +
                 "ServiceStoreConnection meta::external::store::service::showcase::connection::serviceStoreConnection\n" +
                 "{\n" +
                 "    store   : meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
-                "    baseUrl : 'http://127.0.0.1:port';\n" +
-                "    auth    : {\n" +
-                "                 http  : UserPassword\n" +
-                "                 {\n" +
-                "                    username : 'username';\n" +
-                "                    password : SystemPropertiesSecret\n" +
-                "                    {\n" +
-                "                        systemPropertyName : 'property1';\n" +
-                "                    }\n" +
-                "                 }\n" +
-                "            };\n" +
+                "    baseUrl : 'http://127.0.0.1:" + getPort() + "';\n" +
+                "    auth    : " +
+                "    {\n" +
+                "       http : UserPassword\n" +
+                "       {\n" +
+                "           username : 'username';\n" +
+                "           password : SystemPropertiesSecret\n" +
+                "           {\n" +
+                "               systemPropertyName : 'property1';\n" +
+                "           }\n" +
+                "       }\n" +
+                "    };\n" +
                 "}";
 
-        pureGrammar = serviceStore + "\n\n" + serviceStoreConnection.replace("port", String.valueOf(getPort())) + "\n\n" + ServiceStoreTestUtils.readGrammarFromPureFile("/securitySchemes/testGrammar.pure");
-
+        pureGrammar = ServiceStoreTestUtils.readGrammarFromPureFile("/securitySchemes/testGrammarWithHttpSecurityScheme.pure") + "\n\n" + serviceStoreConnection;
     }
 
     @Test
-    public void testAuthentication()
+    public void testUserPassAuthentication()
     {
         // Set the value of the password in the system properties
         System.setProperty("property1", "password");

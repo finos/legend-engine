@@ -19,7 +19,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,7 +26,7 @@ public class ServiceStore extends Store
 {
     @JsonAlias({"description", "docLink"})
     public String description;
-    public Map<String, SecurityScheme> securitySchemes = new HashMap<>();
+    public Map<String, SecurityScheme> securitySchemes;
     public List<ServiceStoreElement> elements = Collections.emptyList();
 
     @Override

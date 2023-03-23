@@ -26,7 +26,8 @@ public class TestServiceStoreAuthGrammarRoundtrip extends TestGrammarRoundtrip.T
         test("###ServiceStore\n" +
                 "ServiceStore meta::external::store::service::showcase::store::TradeProductServiceStore\n" +
                 "(\n" +
-                "  securitySchemes : {\n" +
+                "  securitySchemes : " +
+                "  {\n" +
                 "    http : Http\n" +
                 "    {\n" +
                 "        scheme : 'basic';\n" +
@@ -38,7 +39,8 @@ public class TestServiceStoreAuthGrammarRoundtrip extends TestGrammarRoundtrip.T
                 "{\n" +
                 "  store: meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
                 "  baseUrl: 'http://127.0.0.1:53008';\n" +
-                "  auth: {\n" +
+                "  auth: " +
+                "  {\n" +
                 "    http : UserPassword\n" +
                 "    {\n" +
                 "      username: 'username';\n" +
@@ -58,7 +60,8 @@ public class TestServiceStoreAuthGrammarRoundtrip extends TestGrammarRoundtrip.T
         test("###ServiceStore\n" +
                 "ServiceStore meta::external::store::service::showcase::store::TradeProductServiceStore\n" +
                 "(\n" +
-                "  securitySchemes : {\n" +
+                "  securitySchemes : " +
+                "  {\n" +
                 "    api : ApiKey\n" +
                 "    {\n" +
                 "        location : 'cookie';\n" +
@@ -75,7 +78,8 @@ public class TestServiceStoreAuthGrammarRoundtrip extends TestGrammarRoundtrip.T
                 "{\n" +
                 "  store: meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
                 "  baseUrl: 'http://127.0.0.1:53008';\n" +
-                "  auth: {\n" +
+                "  auth: " +
+                "  {\n" +
                 "    api : ApiKey\n" +
                 "    {\n" +
                 "      location: 'header';\n" +
@@ -104,7 +108,8 @@ public class TestServiceStoreAuthGrammarRoundtrip extends TestGrammarRoundtrip.T
         test("###ServiceStore\n" +
                 "ServiceStore meta::external::store::service::showcase::store::TradeProductServiceStore\n" +
                 "(\n" +
-                "  securitySchemes : {\n" +
+                "  securitySchemes : " +
+                "  {\n" +
                 "    api : ApiKey\n" +
                 "    {\n" +
                 "        location : 'cookie';\n" +
@@ -117,7 +122,8 @@ public class TestServiceStoreAuthGrammarRoundtrip extends TestGrammarRoundtrip.T
                 "{\n" +
                 "  store: meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
                 "  baseUrl: 'http://127.0.0.1:53008';\n" +
-                "  auth: {\n" +
+                "  auth: " +
+                "  {\n" +
                 "    api : ApiKey\n" +
                 "    {\n" +
                 "      location: 'header';\n" +
