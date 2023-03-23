@@ -17,6 +17,12 @@ Class demo::employee
 {
   id: Integer[1];
   name: String[1];
+  type: demo::employeeType[1];
+}
+
+Enum demo::employeeType
+{
+    Type1, Type2
 }
 
 ###Service
@@ -35,11 +41,13 @@ Service demo::H2DemoService
     query: |demo::employee.all()->project(
   [
     x|$x.id,
-    x|$x.name
+    x|$x.name,
+    x|$x.type
   ],
   [
     'Id',
-    'Name'
+    'Name',
+    'Employee Type'
   ]
 );
     mapping: demo::DemoRelationalMapping;
