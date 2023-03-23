@@ -105,6 +105,7 @@ public class Session implements AutoCloseable
 
         Portal portal = new Portal(portalName, preparedStmt, resultFormatCodes);
         portals.put(portalName, portal);
+        //TODO HANDLE THIS USE CASE
 /*        if (oldPortal != null) {
             // According to the wire protocol spec named portals should be removed explicitly and only
             // unnamed portals are implicitly closed/overridden.
@@ -117,7 +118,8 @@ public class Session implements AutoCloseable
         {
             try
             {
-                preparedStatement.setObject(i, params.get(i));
+                //prepared statement parameters start with 1
+                preparedStatement.setObject(i+1, params.get(i));
             }
             catch (Exception e)
             {

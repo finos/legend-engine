@@ -58,7 +58,7 @@ public class JDBCSessionFactory implements SessionsFactory
             @Override
             public PostgresPreparedStatement prepareStatement(String query) throws SQLException
             {
-                return new JDBCPostgresPreparedStatement(getConnection().prepareStatement(query));
+                return new JDBCPostgresPreparedStatement(getConnection().prepareStatement(convertToJDBC(query)));
             }
 
             @Override
@@ -67,6 +67,13 @@ public class JDBCSessionFactory implements SessionsFactory
                 return new JDBCPostgresStatement(getConnection().createStatement());
             }
         });
+    }
+
+
+    //Convert Postgres Prepared Statement Parameters "$1,$2..." to JDBC "?, ?"
+    private static String convertToJDBC(String query)
+    {
+        return query.replaceAll("\\$\\d+", "?");
     }
 
 
