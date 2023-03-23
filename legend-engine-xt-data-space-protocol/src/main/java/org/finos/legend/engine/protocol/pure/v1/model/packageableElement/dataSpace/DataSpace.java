@@ -37,10 +37,16 @@ public class DataSpace extends PackageableElement
 
     public String title;
     public String description;
+
+    // TODO: we should consider making pointers to diagram richer so we can add more
+    // metadata for diagrams
     public List<PackageableElementPointer> featuredDiagrams;
 
     // For now, these can only include classes, enumerations, associations
     public List<PackageableElementPointer> elements;
+
+    // NOTE: this is subjected to change depending on how we want to embed executables information
+    public List<DataSpaceExecutable> executables;
 
     public DataSpaceSupportInfo supportInfo;
 
