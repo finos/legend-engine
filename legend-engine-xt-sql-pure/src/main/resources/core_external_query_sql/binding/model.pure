@@ -94,7 +94,7 @@ function meta::external::query::sql::tdsColsToSchema(cols: TDSColumn[*]): meta::
     ->map(c:TDSColumn[1] | $c.type)
     ->filter(t:DataType[1] | $t->instanceOf(Enumeration))
     ->map(e:DataType[1] | $e->cast(@Enumeration<Any>))
-    ->map(e:Enumeration<Any>[1] | ^meta::external::query::sql::Enum(type=$e->meta::pure::functions::meta::elementToPath(), values=meta::external::query::sql::transformation::queryToPure::tests::MyEnum->enumValues()->map( v:Enum[1]   | $v->id())))
+    ->map(e:Enumeration<Any>[1] | ^meta::external::query::sql::Enum(type=$e->meta::pure::functions::meta::elementToPath(), values=$e->enumValues()->map( v:Enum[1]   | $v->id())))
     ->distinct();
   ^meta::external::query::sql::Schema(columns=$schemaCols, enums=$enums);
 }
