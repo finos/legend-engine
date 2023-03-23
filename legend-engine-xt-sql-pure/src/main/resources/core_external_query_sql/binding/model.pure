@@ -32,7 +32,7 @@ Class meta::external::query::sql::EnumValueSchemaColumn extends meta::external::
 Class meta::external::query::sql::Schema
 {
   columns: meta::external::query::sql::SchemaColumn[*];
-  enums: Enumeration<Any>[*];
+  enums: meta::external::query::sql::Enum[*];
 }
 
 Enum meta::external::query::sql::PrimitiveType
@@ -47,6 +47,12 @@ Enum meta::external::query::sql::PrimitiveType
   Date,
   Integer,
   Decimal
+}
+
+Class meta::external::query::sql::Enum
+{
+  type: String[1];
+  values: String[*];
 }
 
 function meta::external::query::sql::stringToPrimitiveType(dt : String[1]) : meta::external::query::sql::PrimitiveType[1]
@@ -88,6 +94,7 @@ function meta::external::query::sql::tdsColsToSchema(cols: TDSColumn[*]): meta::
     ->map(c:TDSColumn[1] | $c.type)
     ->filter(t:DataType[1] | $t->instanceOf(Enumeration))
     ->map(e:DataType[1] | $e->cast(@Enumeration<Any>))
+    ->map(e:Enumeration<Any>[1] | ^meta::external::query::sql::Enum(type=$e->meta::pure::functions::meta::elementToPath(), values=meta::external::query::sql::transformation::queryToPure::tests::MyEnum->enumValues()->map( v:Enum[1]   | $v->id())))
     ->distinct();
   ^meta::external::query::sql::Schema(columns=$schemaCols, enums=$enums);
 }
