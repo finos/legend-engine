@@ -1,1 +1,3 @@
 org.finos.legend.engine.protocol.pure.v1.CorePureProtocolExtension
+org.finos.legend.engine.protocol.pure.v1.DataSpaceProtocolExtension
+org.finos.legend.engine.protocol.pure.v1.DiagramProtocolExtension

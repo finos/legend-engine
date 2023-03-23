@@ -38,7 +38,6 @@
                     <repositories>
                         <repository>platform</repository>
                         <repository>core</repository>
-                        <repository>core_diagram_metamodel</repository>
                         <repository>core_diagram</repository>
                     </repositories>
                     <extraRepositories>
@@ -140,10 +139,6 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-platform-functions-java</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-diagram-pure-metamodel</artifactId>
         </dependency>
         <!-- ENGINE -->
 
