@@ -34,7 +34,6 @@ import io.netty.channel.EventLoop;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
-
 import java.net.SocketAddress;
 import java.util.ArrayDeque;
 import java.util.concurrent.atomic.AtomicReference;

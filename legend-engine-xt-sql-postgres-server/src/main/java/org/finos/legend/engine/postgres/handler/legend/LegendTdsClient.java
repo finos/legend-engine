@@ -18,6 +18,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import java.util.Collections;
+import java.util.List;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -30,11 +32,9 @@ import org.eclipse.collections.impl.utility.internal.IterableIterate;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
 
-import java.util.Collections;
-import java.util.List;
-
 public class LegendTdsClient implements LegendExecutionClient
 {
+    private final String protocol;
     private final String host;
     private final String port;
     private final String projectId;
@@ -42,8 +42,10 @@ public class LegendTdsClient implements LegendExecutionClient
     private static final ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
 
 
-    public LegendTdsClient(String host, String port, String projectId, CookieStore cookieStore)
+    public LegendTdsClient(String protocol, String host, String port, String projectId, CookieStore cookieStore)
     {
+
+        this.protocol = protocol;
         this.host = host;
         this.port = port;
         this.projectId = projectId;
@@ -91,14 +93,18 @@ public class LegendTdsClient implements LegendExecutionClient
     private JsonNode executeQueryApi(String query)
     {
         System.out.println("executing query " + query);
-        try (CloseableHttpClient client = (CloseableHttpClient) HttpClientBuilder.getHttpClient(this.cookieStore))
+        try (CloseableHttpClient client = (CloseableHttpClient) HttpClientBuilder.getHttpClient(cookieStore))
         {
-            HttpPost req = new HttpPost("http://" + this.host + ":" + this.port + "/api/sql/v1/execution/execute/" + this.projectId);
+            String uri = protocol + "://" + this.host + ":" + this.port + "/api/sql/v1/execution/executeQueryString/" + this.projectId;
+            HttpPost req = new HttpPost(uri);
+
             StringEntity stringEntity = new StringEntity(query);
             stringEntity.setContentType("application/json");
             req.setEntity(stringEntity);
+
             try (CloseableHttpResponse res = client.execute(req))
             {
+
                 System.out.println(res.getStatusLine());
                 JsonNode response = mapper.readValue(res.getEntity().getContent(), JsonNode.class);
 

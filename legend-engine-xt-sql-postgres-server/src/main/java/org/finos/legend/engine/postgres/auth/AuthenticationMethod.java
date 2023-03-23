@@ -15,6 +15,7 @@
 package org.finos.legend.engine.postgres.auth;
 
 import org.finos.legend.engine.postgres.ConnectionProperties;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 public interface AuthenticationMethod
 {
@@ -26,10 +27,10 @@ public interface AuthenticationMethod
      * @throws RuntimeException if the authentication failed
      */
 
-    User authenticate(String userName, String passwd, ConnectionProperties connProperties);
+    Identity authenticate(String userName, SecureString passwd, ConnectionProperties connProperties);
 
     /**
      * @return unique name of the authentication method
      */
-    String name();
+    AuthenticationMethodType name();
 }

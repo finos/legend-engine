@@ -23,8 +23,12 @@ package org.finos.legend.engine.postgres;
 
 import java.util.ArrayList;
 import java.util.List;
-import static org.finos.legend.engine.postgres.QueryStringSplitter.CommentType.*;
-import static org.finos.legend.engine.postgres.QueryStringSplitter.QuoteType.*;
+import static org.finos.legend.engine.postgres.QueryStringSplitter.CommentType.LINE;
+import static org.finos.legend.engine.postgres.QueryStringSplitter.CommentType.MULTI_LINE;
+import static org.finos.legend.engine.postgres.QueryStringSplitter.CommentType.NO;
+import static org.finos.legend.engine.postgres.QueryStringSplitter.QuoteType.DOUBLE;
+import static org.finos.legend.engine.postgres.QueryStringSplitter.QuoteType.NONE;
+import static org.finos.legend.engine.postgres.QueryStringSplitter.QuoteType.SINGLE;
 
 /**
  * Splits a query string by semicolon into multiple statements.

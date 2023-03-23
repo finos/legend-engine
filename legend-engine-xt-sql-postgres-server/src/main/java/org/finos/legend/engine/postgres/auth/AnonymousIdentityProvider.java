@@ -14,8 +14,15 @@
 
 package org.finos.legend.engine.postgres.auth;
 
-public interface User
-{
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential;
 
-    String name();
+
+public class AnonymousIdentityProvider implements IdentityProvider
+{
+    @Override
+    public Identity getIdentityForPassword(String userName, SecureString passwd)
+    {
+        return new Identity(userName, new AnonymousCredential());
+    }
 }

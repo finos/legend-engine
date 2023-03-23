@@ -14,21 +14,16 @@
 
 package org.finos.legend.engine.postgres.handler.legend;
 
-import org.finos.legend.engine.postgres.handler.PostgresResultSet;
-import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
-
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import java.time.format.ResolverStyle;
 import java.time.temporal.TemporalAccessor;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
+import org.finos.legend.engine.postgres.handler.PostgresResultSet;
+import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 
 public class LegendResultSet implements PostgresResultSet

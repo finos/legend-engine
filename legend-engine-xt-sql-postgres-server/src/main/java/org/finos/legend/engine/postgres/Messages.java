@@ -25,17 +25,16 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
-import org.finos.legend.engine.postgres.handler.PostgresResultSet;
-import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
-import org.finos.legend.engine.postgres.types.PGType;
-import org.finos.legend.engine.postgres.types.PGTypes;
-import org.slf4j.Logger;
-
 import java.nio.charset.StandardCharsets;
 import java.sql.ParameterMetaData;
 import java.util.List;
 import java.util.Locale;
 import java.util.SortedSet;
+import org.finos.legend.engine.postgres.handler.PostgresResultSet;
+import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
+import org.finos.legend.engine.postgres.types.PGType;
+import org.finos.legend.engine.postgres.types.PGTypes;
+import org.slf4j.Logger;
 
 /**
  * Regular data packet is in the following format:

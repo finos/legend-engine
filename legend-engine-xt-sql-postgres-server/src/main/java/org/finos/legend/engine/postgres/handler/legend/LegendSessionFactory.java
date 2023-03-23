@@ -14,14 +14,13 @@
 
 package org.finos.legend.engine.postgres.handler.legend;
 
+import java.sql.SQLException;
 import org.finos.legend.engine.postgres.Session;
 import org.finos.legend.engine.postgres.SessionsFactory;
-import org.finos.legend.engine.postgres.auth.User;
 import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
 import org.finos.legend.engine.postgres.handler.PostgresStatement;
 import org.finos.legend.engine.postgres.handler.SessionHandler;
-
-import java.sql.SQLException;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 public class LegendSessionFactory implements SessionsFactory
 {
@@ -34,7 +33,7 @@ public class LegendSessionFactory implements SessionsFactory
     }
 
     @Override
-    public Session createSession(String defaultSchema, User authenticatedUser)
+    public Session createSession(String defaultSchema, Identity identity)
             throws Exception
     {
         return new Session(new SessionHandler()
@@ -42,13 +41,13 @@ public class LegendSessionFactory implements SessionsFactory
             @Override
             public PostgresPreparedStatement prepareStatement(String query) throws SQLException
             {
-                return new LegendPreparedStatement(query, legendExecutionClient);
+                return new LegendPreparedStatement(query, legendExecutionClient, identity);
             }
 
             @Override
             public PostgresStatement createStatement() throws SQLException
             {
-                return new LegendStatement(legendExecutionClient);
+                return new LegendStatement(legendExecutionClient, identity);
             }
         });
     }

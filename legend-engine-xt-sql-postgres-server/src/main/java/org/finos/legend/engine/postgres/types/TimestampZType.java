@@ -24,11 +24,10 @@ package org.finos.legend.engine.postgres.types;
 /*import io.crate.metadata.CoordinatorTxnCtx;
 import io.crate.types.DataTypes;*/
 
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 final class TimestampZType extends BaseTimestampType
 {
