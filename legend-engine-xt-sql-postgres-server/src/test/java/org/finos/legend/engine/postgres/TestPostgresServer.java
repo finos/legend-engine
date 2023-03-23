@@ -16,16 +16,16 @@ package org.finos.legend.engine.postgres;
 
 import io.netty.channel.Channel;
 import io.netty.channel.nio.NioEventLoopGroup;
-
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
+import org.finos.legend.engine.postgres.auth.AuthenticationProvider;
 
 public class TestPostgresServer extends PostgresServer
 {
 
-    public TestPostgresServer(int port, SessionsFactory sessionsFactory)
+    public TestPostgresServer(int port, SessionsFactory sessionsFactory, AuthenticationProvider authenticationProvider)
     {
-        super(port, sessionsFactory);
+        super(port, sessionsFactory, authenticationProvider);
     }
 
     public void startUp()

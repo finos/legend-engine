@@ -1,0 +1,13 @@
+{
+  "port": 9998,
+  "authenticationMethod": "PASSWORD",
+  "identityType": "KERBEROS",
+  "handler": {
+    "protocol": "http",
+    "host": "localhost",
+    "port": "123",
+    "projectId": "project",
+    "sessionCookie": "cookie",
+    "type": "LEGEND"
+  }
+}

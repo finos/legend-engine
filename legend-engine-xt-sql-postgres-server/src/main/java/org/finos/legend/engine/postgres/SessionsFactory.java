@@ -14,11 +14,11 @@
 
 package org.finos.legend.engine.postgres;
 
-import org.finos.legend.engine.postgres.auth.User;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 public interface SessionsFactory
 {
 
-    Session createSession(String defaultSchema, User authenticatedUser) throws Exception;
+    Session createSession(String defaultSchema, Identity identity) throws Exception;
 
 }

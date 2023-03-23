@@ -23,7 +23,6 @@ package org.finos.legend.engine.postgres.types;
 
 import com.google.common.primitives.Bytes;
 import io.netty.buffer.ByteBuf;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

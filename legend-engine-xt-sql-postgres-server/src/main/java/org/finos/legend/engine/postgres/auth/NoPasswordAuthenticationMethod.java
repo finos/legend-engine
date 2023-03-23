@@ -17,20 +17,25 @@ package org.finos.legend.engine.postgres.auth;
 import org.finos.legend.engine.postgres.ConnectionProperties;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
-public interface AuthenticationMethod
+public class NoPasswordAuthenticationMethod implements AuthenticationMethod
 {
+    private IdentityProvider identityProvider;
 
-    /**
-     * @param userName the userName sent with the startup message
-     * @param passwd   the password in clear-text or null
-     * @return the user or null; null should be handled as if it's a "guest" user
-     * @throws RuntimeException if the authentication failed
-     */
+    public NoPasswordAuthenticationMethod(IdentityProvider identityProvider)
+    {
+        this.identityProvider = identityProvider;
+    }
 
-    Identity authenticate(String userName, SecureString passwd, ConnectionProperties connProperties);
+    @Override
+    public Identity authenticate(String userName, SecureString passwd, ConnectionProperties connProperties)
+    {
+        return identityProvider.getIdentityForPassword(userName, passwd);
+    }
 
-    /**
-     * @return unique name of the authentication method
-     */
-    AuthenticationMethodType name();
+    @Override
+    public AuthenticationMethodType name()
+    {
+        return AuthenticationMethodType.NO_PASSWORD;
+    }
 }
+

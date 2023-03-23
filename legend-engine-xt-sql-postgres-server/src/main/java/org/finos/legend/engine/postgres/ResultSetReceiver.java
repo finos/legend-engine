@@ -22,10 +22,9 @@
 package org.finos.legend.engine.postgres;
 
 import io.netty.channel.Channel;
+import java.util.List;
 import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.types.PGType;
-
-import java.util.List;
 
 class ResultSetReceiver
 {

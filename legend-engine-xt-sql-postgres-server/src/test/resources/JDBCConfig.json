@@ -1,0 +1,11 @@
+{
+  "port": 9998,
+  "authenticationMethod": "NO_PASSWORD",
+  "identityType": "ANONYMOUS",
+  "handler": {
+    "connectionString": "jdbc:postgresql://localhost:5432/postgres",
+    "user": "postgres",
+    "password": "password",
+    "type": "JDBC"
+  }
+}

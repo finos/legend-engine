@@ -12,23 +12,17 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package org.finos.legend.engine.postgres.types;
+package org.finos.legend.engine.postgres.config;
 
-import java.nio.charset.StandardCharsets;
-import junit.framework.TestCase;
-import org.junit.Test;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-public class TimestampTypeTest extends TestCase
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = LegendHandlerConfig.class, name = "LEGEND"),
+        @JsonSubTypes.Type(value = JDBCHandlerConfig.class, name = "JDBC")
+})
+public interface HandlerConfig
 {
-    @Test
-    public void testEncodeAsUTF8Text()
-    {
-        assertEquals("2023-02-20 00:00:00.000+00",
-                new String(TimestampType.INSTANCE.encodeAsUTF8Text(1676851200000L), StandardCharsets.UTF_8));
-        assertEquals("0667-01-01 00:00:00.000+00 BC",
-                new String(TimestampType.INSTANCE.encodeAsUTF8Text(-83184105600000L), StandardCharsets.UTF_8));
-    }
-
-
-
+    HandlerType getType();
 }

@@ -14,23 +14,16 @@
 
 package org.finos.legend.engine.postgres.auth;
 
-public enum Protocol
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.DefaultIdentityFactory;
+import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
+
+
+public class KerberosIdentityProvider implements IdentityProvider
 {
-
-    POSTGRES("pg"),
-    HTTP("http"),
-    TRANSPORT("transport");
-
-    private final String protocolName;
-
-    Protocol(String protocolName)
-    {
-        this.protocolName = protocolName;
-    }
-
     @Override
-    public String toString()
+    public Identity getIdentityForPassword(String userName, SecureString passwd)
     {
-        return protocolName;
+        return DefaultIdentityFactory.INSTANCE.makeIdentity(SubjectTools.getSubjectFromUsernamePassword(userName, passwd.getChars()));
     }
 }
