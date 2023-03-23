@@ -88,7 +88,6 @@
         <module>legend-engine-xt-json-model</module>
         <module>legend-engine-xt-json-runtime</module>
         <module>legend-engine-external-format-jsonSchema</module>
-        <module>legend-engine-xt-json-protocol</module>
         <module>legend-engine-xt-json-pure</module>
 
         <module>legend-engine-xt-haskell-grammar</module>
@@ -635,7 +634,7 @@
                                 <requireJavaVersion>
                                     <version>${maven.enforcer.requireJavaVersion}</version>
                                 </requireJavaVersion>
-                                <dependencyConvergence />
+                                <dependencyConvergence/>
                                 <bannedDependencies>
                                     <excludes>
                                         <exclude>log4j</exclude>
@@ -1127,12 +1126,6 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-xml-pure</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-json-protocol</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
