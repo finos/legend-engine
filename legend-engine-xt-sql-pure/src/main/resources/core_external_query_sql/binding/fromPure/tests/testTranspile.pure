@@ -871,6 +871,19 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   assertEquals($schema.columns->at(2)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.String);
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSchemaService3():Boolean[1]
+{
+  let sqlString = 'SELECT * FROM service."/service/service3"';
+
+  let schema = $sqlString->processQuery(true).columns()->meta::external::query::sql::tdsColsToSchema();
+  assertEquals($schema.columns->at(0).name, 'ID');
+  assertEquals($schema.columns->at(0)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.Integer);
+  assertEquals($schema.columns->at(1).name, 'Integer');
+  assertEquals($schema.columns->at(1)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.Integer);
+  assertEquals($schema.columns->at(2).name, 'The Enum Value');
+  assertEquals($schema.columns->at(2)->cast(@meta::external::query::sql::EnumValueSchemaColumn).type, meta::external::query::sql::transformation::queryToPure::tests::MyEnum->meta::pure::functions::meta::elementToPath());
+}
+
 function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1]): SqlTransformContext[1]
 {
   processQuery($sql, false);
