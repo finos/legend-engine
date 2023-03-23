@@ -400,7 +400,6 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
                 LOGGER.error("error closing connection", e);
             }
         }
-        super.close();
     }
 
     public List<TDSColumn> getTdsColumns()
