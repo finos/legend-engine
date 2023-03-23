@@ -318,7 +318,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         // Analytics
         environment.jersey().register(new MappingAnalytics(modelManager));
         environment.jersey().register(new DiagramAnalytics(modelManager));
-        environment.jersey().register(new DataSpaceAnalytics(modelManager));
+        environment.jersey().register(new DataSpaceAnalytics(modelManager, generatorExtensions));
         environment.jersey().register(new LineageAnalytics(modelManager));
 
         // Testable

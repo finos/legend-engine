@@ -36,6 +36,11 @@ public class PackageableElementPointer
         this.path = path;
     }
 
+    public PackageableElementPointer(String path)
+    {
+        this.path = path;
+    }
+
     @Override
     public String toString()
     {

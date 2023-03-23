@@ -64,6 +64,10 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-data-space-protocol</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-executionPlan-generation</artifactId>
+        </dependency>
         <!-- ENGINE -->
 
         <!-- ANNOTATIONS -->
