@@ -856,6 +856,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   assertEquals($schema.columns->at(5)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.DateTime);
   assertEquals($schema.columns->at(6).name, 'String');
   assertEquals($schema.columns->at(6)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.String);
+  assertEmpty($schema.enums);
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSchemaService2():Boolean[1]
@@ -869,6 +870,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   assertEquals($schema.columns->at(1)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.Integer);
   assertEquals($schema.columns->at(2).name, 'String');
   assertEquals($schema.columns->at(2)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.String);
+  assertEmpty($schema.enums);
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSchemaService3():Boolean[1]
@@ -882,6 +884,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   assertEquals($schema.columns->at(1)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.Integer);
   assertEquals($schema.columns->at(2).name, 'The Enum Value');
   assertEquals($schema.columns->at(2)->cast(@meta::external::query::sql::EnumValueSchemaColumn).type, meta::external::query::sql::transformation::queryToPure::tests::MyEnum->meta::pure::functions::meta::elementToPath());
+  $schema->meta::json::toJSON()->println();
+  assertEquals($schema.enums->at(0), meta::external::query::sql::transformation::queryToPure::tests::MyEnum);
+  
 }
 
 function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1]): SqlTransformContext[1]

@@ -32,6 +32,7 @@ Class meta::external::query::sql::EnumValueSchemaColumn extends meta::external::
 Class meta::external::query::sql::Schema
 {
   columns: meta::external::query::sql::SchemaColumn[*];
+  enums: Enumeration<Any>[*];
 }
 
 Enum meta::external::query::sql::PrimitiveType
@@ -82,6 +83,11 @@ function meta::external::query::sql::tdsColToSchemaCol(col: TDSColumn[1]): meta:
 
 function meta::external::query::sql::tdsColsToSchema(cols: TDSColumn[*]): meta::external::query::sql::Schema[1]
 {
-  let schemaCols = $cols->map(v:TDSColumn[1]|$v->meta::external::query::sql::tdsColToSchemaCol());
-  ^meta::external::query::sql::Schema(columns=$schemaCols);
+  let schemaCols = $cols->map(v:TDSColumn[1]  | $v->meta::external::query::sql::tdsColToSchemaCol());
+  let enums = $cols
+    ->map(c:TDSColumn[1] | $c.type)
+    ->filter(t:DataType[1] | $t->instanceOf(Enumeration))
+    ->map(e:DataType[1] | $e->cast(@Enumeration<Any>))
+    ->distinct();
+  ^meta::external::query::sql::Schema(columns=$schemaCols, enums=$enums);
 }
