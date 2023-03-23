@@ -15,6 +15,16 @@
 import meta::pure::metamodel::diagram::*;
 import meta::pure::metamodel::dataSpace::*;
 
+Profile meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo
+{
+    stereotypes: [
+        Verified
+    ];
+    tags: [
+        deprecationNotice
+    ];
+}
+
 Class meta::pure::metamodel::dataSpace::DataSpace extends PackageableElement
 {
   executionContexts: DataSpaceExecutionContext[1..*];
