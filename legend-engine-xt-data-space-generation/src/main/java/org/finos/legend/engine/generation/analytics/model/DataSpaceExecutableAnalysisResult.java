@@ -21,6 +21,6 @@ public class DataSpaceExecutableAnalysisResult
     public String title;
     public String description;
     public String executable;
-    // TODO: how do we handle multi-execution, should we allow specifying the key here?
+    public DataSpaceExecutableInfo info;
     public ResultType resultType;
 }

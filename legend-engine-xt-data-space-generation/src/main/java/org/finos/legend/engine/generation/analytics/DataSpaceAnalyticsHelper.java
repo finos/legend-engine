@@ -29,6 +29,7 @@ import org.finos.legend.engine.generation.analytics.model.DataSpaceEnumerationDo
 import org.finos.legend.engine.generation.analytics.model.DataSpaceExecutableAnalysisResult;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceExecutionContextAnalysisResult;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceModelDocumentationEntry;
+import org.finos.legend.engine.generation.analytics.model.DataSpaceServiceExecutableInfo;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceStereotypeInfo;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceTaggedValueInfo;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
@@ -228,6 +229,10 @@ public class DataSpaceAnalyticsHelper
                         executableAnalysisResult.title = executable._title();
                         executableAnalysisResult.description = executable._description();
                         executableAnalysisResult.executable = HelperModelBuilder.getElementFullPath(executable._executable(), pureModel.getExecutionSupport());
+
+                        DataSpaceServiceExecutableInfo serviceExecutableInfo = new DataSpaceServiceExecutableInfo();
+                        serviceExecutableInfo.pattern = service._pattern();
+                        executableAnalysisResult.info = serviceExecutableInfo;
 
                         executableAnalysisResult.resultType = PlanGenerator.generateExecutionPlanDebug(
                                 (LambdaFunction<?>) execution._func(),
