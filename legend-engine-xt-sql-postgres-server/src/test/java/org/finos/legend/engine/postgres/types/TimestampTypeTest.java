@@ -14,11 +14,9 @@
 
 package org.finos.legend.engine.postgres.types;
 
+import java.nio.charset.StandardCharsets;
 import junit.framework.TestCase;
 import org.junit.Test;
-
-import java.nio.charset.StandardCharsets;
-import java.sql.Timestamp;
 
 public class TimestampTypeTest extends TestCase
 {

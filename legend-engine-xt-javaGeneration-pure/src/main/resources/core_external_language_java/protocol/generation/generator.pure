@@ -139,6 +139,11 @@ function meta::protocols::generation::java::defaultPostProcessClass(c: meta::pur
 
 function meta::protocols::generation::java::jacksonPostProcessClass(c: meta::pure::metamodel::type::Class<Any>[1], cls: meta::external::language::java::metamodel::Class[1], conventions: Conventions[1], ge: JavaProtocolGenerator[1]): meta::external::language::java::metamodel::Class[*]
 {
+  jacksonPostProcessClass($c, $cls, $conventions, $ge, '_type');
+}
+
+function meta::protocols::generation::java::jacksonPostProcessClass(c: meta::pure::metamodel::type::Class<Any>[1], cls: meta::external::language::java::metamodel::Class[1], conventions: Conventions[1], ge: JavaProtocolGenerator[1], typeProperty: String[1]): meta::external::language::java::metamodel::Class[*]
+{
   let base = defaultPostProcessClass($c, $cls, $conventions, $ge);
 
   let rawType = $c.generalizations.general.rawType;
@@ -148,16 +153,17 @@ function meta::protocols::generation::java::jacksonPostProcessClass(c: meta::pur
   let withJackson = if ($isTopClass,
     | $base->annotate(^meta::external::language::java::metamodel::annotations::json::JsonTypeInfo(
                     use = ^meta::external::language::java::metamodel::annotations::json::EnumValue(value='JsonTypeInfo.Id.NAME'),
-                    property = '_type'
+                    property = $typeProperty
                 )
             )
             ->annotate(^meta::external::language::java::metamodel::annotations::json::JsonSubTypes(
                           subTypes=[
                                 $children->map(c|
                                   let javaType = pureTypeToJavaType($conventions, $c, PureOne);
-                                  ^meta::external::language::java::metamodel::annotations::json::JsonSubType(
+                                    ^meta::external::language::java::metamodel::annotations::json::JsonSubType(
                                       value=$javaType->cast(@meta::external::language::java::metamodel::Class)->meta::external::language::java::serialization::qualifiedClassName(),
-                                      name=$c.name->meta::pure::functions::string::toLowerFirstCharacter()->toOne());
+                                      name=$c.name->meta::pure::functions::string::toLowerFirstCharacter()->toOne()
+                                    );
                                 )
                               ]
                            )
@@ -227,4 +233,3 @@ function <<access.private>> meta::protocols::generation::java::findChildren(p:me
   let children = $p.specializations.specific->cast(@meta::pure::metamodel::type::Class<Any>);
   $children->concatenate($children->map(c|$c->findChildren($conventions)));
 }
-

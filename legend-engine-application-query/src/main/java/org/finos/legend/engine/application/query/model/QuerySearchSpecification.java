@@ -27,4 +27,8 @@ public class QuerySearchSpecification
     public List<StereotypePtr> stereotypes;
     public Integer limit;
     public Boolean showCurrentUserQueriesOnly;
+    // TODO: consider doing more complicated filtering/sorting by time
+    // e.g. we can also allow finding queries with `since ... until` for
+    // lastUpdatedAt and createdAt timestamp
+    public Boolean showLatestQueriesFirst;
 }

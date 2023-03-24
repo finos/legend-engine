@@ -34,6 +34,8 @@ import java.util.BitSet;
 
 public class SQLGrammarParser
 {
+    private static final SqlVisitor sqlVisitor = new SqlVisitor();
+
     private SQLGrammarParser()
     {
     }
@@ -129,6 +131,6 @@ public class SQLGrammarParser
 
     private Node visitStatement(SqlBaseParser.SingleStatementContext statement)
     {
-        return new SqlVisitor().visitSingleStatement(statement);
+        return sqlVisitor.visitSingleStatement(statement);
     }
 }

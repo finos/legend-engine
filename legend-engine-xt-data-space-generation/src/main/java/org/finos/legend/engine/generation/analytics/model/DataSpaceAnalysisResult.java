@@ -40,5 +40,7 @@ public class DataSpaceAnalysisResult
     public PureModelContextData model;
 
     public List<String> elements = Collections.emptyList();
+
+    public List<DataSpaceExecutableAnalysisResult> executables = Collections.emptyList();
     public List<DataSpaceModelDocumentationEntry> elementDocs = Collections.emptyList();
 }

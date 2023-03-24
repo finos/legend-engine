@@ -17,6 +17,7 @@ package org.finos.legend.engine.generation.analytics;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.external.shared.format.imports.PureModelContextDataGenerator;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceAnalysisResult;
@@ -24,18 +25,27 @@ import org.finos.legend.engine.generation.analytics.model.DataSpaceAssociationDo
 import org.finos.legend.engine.generation.analytics.model.DataSpaceBasicDocumentationEntry;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceClassDocumentationEntry;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceEnumerationDocumentationEntry;
+import org.finos.legend.engine.generation.analytics.model.DataSpaceExecutableAnalysisResult;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceExecutionContextAnalysisResult;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceModelDocumentationEntry;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceStereotypeInfo;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceTaggedValueInfo;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.plan.generation.PlanGenerator;
+import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
+import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.analytics.model.MappingModelCoverageAnalysisResult;
+import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.BaseExecutionContext;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.pure.generated.Root_meta_analytics_mapping_modelCoverage_MappingModelCoverageAnalysisResult;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureSingleExecution;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpace;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceAnalysisResult;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceAssociationDocumentationEntry;
@@ -48,12 +58,18 @@ import org.finos.legend.pure.generated.core_analytics_mapping_modelCoverage_seri
 import org.finos.legend.pure.generated.core_data_space_analytics_analytics;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
+import org.slf4j.Logger;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.ServiceLoader;
 
 public class DataSpaceAnalyticsHelper
 {
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+
     private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
 
     private static DataSpaceBasicDocumentationEntry buildBasicDocumentationEntry(Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceBasicDocumentationEntry entry)
@@ -65,6 +81,11 @@ public class DataSpaceAnalyticsHelper
     }
 
     public static DataSpaceAnalysisResult analyzeDataSpace(Root_meta_pure_metamodel_dataSpace_DataSpace dataSpace, PureModel pureModel, DataSpace dataSpaceProtocol, PureModelContextData pureModelContextData, String clientVersion)
+    {
+        return analyzeDataSpace(dataSpace, pureModel, dataSpaceProtocol, pureModelContextData, clientVersion, Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class)));
+    }
+
+    public static DataSpaceAnalysisResult analyzeDataSpace(Root_meta_pure_metamodel_dataSpace_DataSpace dataSpace, PureModel pureModel, DataSpace dataSpaceProtocol, PureModelContextData pureModelContextData, String clientVersion, MutableList<PlanGeneratorExtension> generatorExtensions)
     {
         Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceAnalysisResult analysisResult = core_data_space_analytics_analytics.Root_meta_pure_metamodel_dataSpace_analytics_analyzeDataSpace_DataSpace_1__PackageableRuntime_MANY__DataSpaceAnalysisResult_1_(
                 dataSpace,
@@ -176,6 +197,55 @@ public class DataSpaceAnalyticsHelper
             ed.docs = new ArrayList<>(elementDoc._docs().toList());
             return ed;
         });
+
+        // executables
+        result.executables = Lists.mutable.empty();
+        if (dataSpaceProtocol.executables != null)
+        {
+            dataSpaceProtocol.executables.forEach((executable) ->
+            {
+                PackageableElement executableElement = null;
+                try
+                {
+                    executableElement = pureModel.getPackageableElement(executable.executable.path, executable.executable.sourceInformation);
+                }
+                catch (Exception e)
+                {
+                    // do nothing - this should be handled by compiler when the work for executable is done
+                }
+
+                // NOTE: until the work on executable completes, we can switch over instead of using service like this
+                if (executableElement instanceof Root_meta_legend_service_metamodel_Service)
+                {
+                    Root_meta_legend_service_metamodel_Service service = (Root_meta_legend_service_metamodel_Service) executableElement;
+
+                    // NOTE: right now we only support service with single execution for simplicity
+                    if (service._execution() instanceof Root_meta_legend_service_metamodel_PureSingleExecution)
+                    {
+                        Root_meta_legend_service_metamodel_PureSingleExecution execution = ((Root_meta_legend_service_metamodel_PureSingleExecution) service._execution());
+
+                        DataSpaceExecutableAnalysisResult executableAnalysisResult = new DataSpaceExecutableAnalysisResult();
+                        executableAnalysisResult.title = executable.title;
+                        executableAnalysisResult.description = executable.description;
+
+                        executableAnalysisResult.resultType = PlanGenerator.generateExecutionPlanDebug(
+                                (LambdaFunction<?>) execution._func(),
+                                execution._mapping(),
+                                execution._runtime(),
+                                HelperValueSpecificationBuilder.processExecutionContext(new BaseExecutionContext(), pureModel.getContext()),
+                                pureModel,
+                                PureClientVersions.production,
+                                PlanPlatform.JAVA,
+                                null,
+                                generatorExtensions.flatCollect(e -> e.getExtraExtensions(pureModel)),
+                                generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers)
+                        ).plan.rootExecutionNode.resultType;
+
+                        result.executables.add(executableAnalysisResult);
+                    }
+                }
+            });
+        }
 
         // support
         result.supportInfo = dataSpaceProtocol.supportInfo;

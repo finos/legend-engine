@@ -5,6 +5,7 @@
 **/surefire-reports-aggregate
 **/dependency-reduced-pom.xml
 **/*.tokens
+**/*.patch
 
 # VS Code ignores
 .vscode

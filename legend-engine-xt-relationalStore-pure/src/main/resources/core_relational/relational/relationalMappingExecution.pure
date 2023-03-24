@@ -316,7 +316,7 @@ function meta::relational::mapping::execution(store: Database[1], f:FunctionExpr
 
 function meta::relational::mapping::sqlCommentPureExecution(): String[1]
 {
-  '-- {"executionTraceID" : "' + meta::pure::runtime::generateGuid() + '"}';
+  '-- "executionTraceID" : "' + meta::pure::runtime::generateGuid() + '"';
 }
 
 function meta::relational::mapping::executeQuery(sql:String[1], query:SQLQuery[0..1], paths: Pair<String, PathInformation>[*], connection : DatabaseConnection[1], runtime: Runtime[1], class:Type[0..1], ext:RoutedValueSpecification[0..1], m: Mapping[1], sqlGenerationTimeInNanoSecond:Integer[0..1], g_queryTimeOutInSeconds: Integer[0..1], exeCtx:ExecutionContext[1], extensions: Extension[*], debug:DebugContext[1]):Result<Any|*>[1]

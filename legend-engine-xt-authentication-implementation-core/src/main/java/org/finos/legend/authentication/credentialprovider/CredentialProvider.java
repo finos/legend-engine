@@ -104,8 +104,8 @@ public abstract class CredentialProvider<SPEC extends AuthenticationSpecificatio
 
     public boolean accepts(Class<? extends AuthenticationSpecification> authenticationSpecificationType, ImmutableSet<? extends Class<? extends Credential>> inputCredentialTypes)
     {
-        return inputCredentialTypes.anySatisfy(x ->
-                this.consumesAuthenticationSpecification(authenticationSpecificationType) && (this.producesOutputCredential(x) || this.hasRuleThatConsumesInputCredential(x)));
+        return this.consumesAuthenticationSpecification(authenticationSpecificationType)
+                && inputCredentialTypes.anySatisfy(x -> this.producesOutputCredential(x) || this.hasRuleThatConsumesInputCredential(x));
     }
 
     /*

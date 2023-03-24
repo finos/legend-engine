@@ -52,6 +52,18 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
                 "    model::Class1,\n" +
                 "    model::Class2\n" +
                 "  ];\n" +
+                "  executables:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      title: 'Exec 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      executable: model::SomeExec1;\n" +
+                "    },\n" +
+                "    {\n" +
+                "      title: 'Exec 2';\n" +
+                "      executable: model::SomeExec2;\n" +
+                "    }\n" +
+                "  ];\n" +
                 "  supportInfo: Email {\n" +
                 "    address: 'someEmail@test.org';\n" +
                 "  };\n" +

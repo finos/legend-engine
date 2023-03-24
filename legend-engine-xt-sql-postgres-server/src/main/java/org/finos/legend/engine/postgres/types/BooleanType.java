@@ -23,7 +23,6 @@ package org.finos.legend.engine.postgres.types;
 
 import com.google.common.collect.ImmutableList;
 import io.netty.buffer.ByteBuf;
-
 import java.nio.ByteBuffer;
 import java.util.Collection;
 

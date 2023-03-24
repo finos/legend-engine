@@ -1,0 +1,1079 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::PropertyDiagram(width=0.0, height=0.0)
+{
+    TypeView cview_1(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::PropertyBase,
+        position=(377.00000, -589.00000),
+        width=242.48047,
+        height=114.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_2(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::AggregateMetricDoubleProperty,
+        position=(-584.13965, -599.25000),
+        width=246.47656,
+        height=86.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_3(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::ConstantKeywordProperty,
+        position=(-584.73965, -505.65000),
+        width=242.48047,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_6(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::FieldAliasProperty,
+        position=(1457.26035, -583.45000),
+        width=242.48047,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::DenseVectorProperty,
+        position=(1449.06035, -494.25000),
+        width=265.72217,
+        height=114.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_7(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::FlattenedProperty,
+        position=(1174.26035, -435.05000),
+        width=250.46289,
+        height=184.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_8(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::HistogramProperty,
+        position=(890.46035, -368.65000),
+        width=242.48047,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_4(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::CorePropertyBase,
+        position=(379.79368, -255.65000),
+        width=240.47656,
+        height=86.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_9(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::JoinProperty,
+        position=(590.26035, -367.85000),
+        width=240.47656,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_10(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::PercolatorProperty,
+        position=(173.06035, -367.25000),
+        width=240.47656,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_11(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::RankFeatureProperty,
+        position=(-102.73965, -377.85000),
+        width=240.47656,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_12(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::RankFeaturesProperty,
+        position=(-408.93965, -409.05000),
+        width=240.47656,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_13(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::DocValuesPropertyBase,
+        position=(379.06035, -67.78333),
+        width=240.47656,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_19(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::BooleanProperty,
+        position=(-577.57457, 24.30556),
+        width=240.47656,
+        height=114.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_20(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::CompletionProperty,
+        position=(-586.37457, 153.10556),
+        width=257.19287,
+        height=142.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_21(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::DateNanosProperty,
+        position=(-578.37457, 408.57222),
+        width=240.47656,
+        height=142.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_18(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::BinaryProperty,
+        position=(-566.73965, 329.48333),
+        width=240.47656,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_22(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::DateProperty,
+        position=(-585.30790, 576.30556),
+        width=240.47656,
+        height=170.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_25(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::GeoShapeProperty,
+        position=(1489.39210, -23.36111),
+        width=240.48828,
+        height=156.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_24(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::GeoPointProperty,
+        position=(1236.05876, 54.97222),
+        width=240.48828,
+        height=100.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_23(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::DynamicProperty,
+        position=(1572.22543, 141.63889),
+        width=240.47656,
+        height=352.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_26(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::IpProperty,
+        position=(1304.55876, 282.80556),
+        width=242.48047,
+        height=114.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_28(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Murmur3HashProperty,
+        position=(-322.51699, 562.82071),
+        width=242.48047,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_27(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::KeywordProperty,
+        position=(1538.95876, 518.43889),
+        width=250.46289,
+        height=170.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_34(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::VersionProperty,
+        position=(1281.49210, 544.27222),
+        width=240.47656,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_14(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::NestedProperty,
+        position=(799.23813, -183.53889),
+        width=246.47656,
+        height=100.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_15(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::ObjectProperty,
+        position=(-33.71743, -147.42778),
+        width=246.47656,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_17(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::TextProperty,
+        position=(-566.85076, -290.67222),
+        width=318.91748,
+        height=254.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_16(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::SearchAsYouTypeProperty,
+        position=(1458.43813, -277.73889),
+        width=240.47656,
+        height=170.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_32(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::ShapeProperty,
+        position=(200.97462, 393.34115),
+        width=240.48828,
+        height=142.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_30(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::PointProperty,
+        position=(-57.69528, 474.36057),
+        width=240.48828,
+        height=100.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_36(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::ScaledFloatNumberProperty,
+        position=(-15.45484, 650.76160),
+        width=240.47656,
+        height=100.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_35(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::WildcardProperty,
+        position=(542.96653, 442.53394),
+        width=240.47656,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_39(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::ByteNumberProperty,
+        position=(1.37795, 808.88458),
+        width=240.47656,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_40(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::DoubleNumberProperty,
+        position=(-19.29087, 897.98922),
+        width=240.47656,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_42(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::HalfFloatNumberProperty,
+        position=(287.68863, 1012.48760),
+        width=240.47656,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_41(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::FloatNumberProperty,
+        position=(31.94969, 1001.71090),
+        width=240.47656,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_43(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::IntegerNumberProperty,
+        position=(589.71668, 992.16398),
+        width=240.47656,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_44(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::LongNumberProperty,
+        position=(705.95185, 908.99246),
+        width=240.47656,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_45(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::ShortNumberProperty,
+        position=(711.74473, 807.71953),
+        width=240.47656,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_37(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::UnsignedLongNumberProperty,
+        position=(683.11905, 664.04747),
+        width=240.47656,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_29(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::NumberPropertyBase,
+        position=(361.25687, 654.49603),
+        width=240.47656,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_38(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::StandardNumberProperty,
+        position=(362.76954, 804.64941),
+        width=240.47656,
+        height=86.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_33(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::TokenCountProperty,
+        position=(981.21711, 469.53533),
+        width=246.17139,
+        height=128.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_31(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::RangePropertyBase,
+        position=(960.81158, 717.03571),
+        width=241.15039,
+        height=86.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_46(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::DateRangeProperty,
+        position=(1383.98852, 720.56743),
+        width=241.15039,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_47(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::DoubleRangeProperty,
+        position=(1382.82348, 809.11112),
+        width=241.15039,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_48(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::FloatRangeProperty,
+        position=(1361.85260, 882.50918),
+        width=241.15039,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_49(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::IntegerRangeProperty,
+        position=(1283.79435, 953.57714),
+        width=241.15039,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_50(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::IpRangeProperty,
+        position=(1170.78464, 1018.81986),
+        width=241.15039,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_51(
+        type=meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::LongRangeProperty,
+        position=(970.39629, 953.57714),
+        width=241.15039,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_2,
+        target=cview_1,
+        points=[(-460.90137,-556.25000),(498.24024,-532.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_3,
+        target=cview_1,
+        points=[(-463.49942,-469.65000),(498.24024,-532.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_2(
+        source=cview_4,
+        target=cview_1,
+        points=[(500.03196,-212.65000),(498.24024,-532.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_3(
+        source=cview_5,
+        target=cview_1,
+        points=[(1581.92143,-437.25000),(498.24024,-532.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_4(
+        source=cview_6,
+        target=cview_1,
+        points=[(1578.50058,-547.45000),(498.24024,-532.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_5(
+        source=cview_7,
+        target=cview_1,
+        points=[(1299.49180,-343.05000),(498.24024,-532.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_6(
+        source=cview_8,
+        target=cview_1,
+        points=[(1011.70058,-332.65000),(498.24024,-532.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_7(
+        source=cview_9,
+        target=cview_1,
+        points=[(710.49863,-331.85000),(498.24024,-532.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_8(
+        source=cview_10,
+        target=cview_1,
+        points=[(293.29863,-338.25000),(498.24024,-532.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_9(
+        source=cview_11,
+        target=cview_1,
+        points=[(17.49863,-341.85000),(498.24024,-532.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_10(
+        source=cview_12,
+        target=cview_1,
+        points=[(-288.70137,-380.05000),(498.24024,-532.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_11(
+        source=cview_13,
+        target=cview_4,
+        points=[(499.29863,-38.78333),(500.03196,-212.65000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_12(
+        source=cview_14,
+        target=cview_4,
+        points=[(922.47641,-133.53889),(500.03196,-212.65000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_13(
+        source=cview_15,
+        target=cview_4,
+        points=[(89.52085,-111.42778),(500.03196,-212.65000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_14(
+        source=cview_16,
+        target=cview_4,
+        points=[(1578.67641,-192.73889),(500.03196,-212.65000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_15(
+        source=cview_17,
+        target=cview_4,
+        points=[(-407.39202,-163.67222),(500.03196,-212.65000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_16(
+        source=cview_18,
+        target=cview_13,
+        points=[(-446.50137,358.48333),(499.29863,-38.78333)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_17(
+        source=cview_19,
+        target=cview_13,
+        points=[(-457.33629,81.30556),(499.29863,-38.78333)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_18(
+        source=cview_20,
+        target=cview_13,
+        points=[(-457.77814,224.10556),(499.29863,-38.78333)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_19(
+        source=cview_21,
+        target=cview_13,
+        points=[(-458.13629,479.57222),(499.29863,-38.78333)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_20(
+        source=cview_22,
+        target=cview_13,
+        points=[(-465.06962,661.30556),(499.29863,-38.78333)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_21(
+        source=cview_23,
+        target=cview_13,
+        points=[(1692.46371,317.63889),(499.29863,-38.78333)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_22(
+        source=cview_24,
+        target=cview_13,
+        points=[(1356.30290,104.97222),(499.29863,-38.78333)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_23(
+        source=cview_25,
+        target=cview_13,
+        points=[(1609.63624,54.63889),(499.29863,-38.78333)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_24(
+        source=cview_26,
+        target=cview_13,
+        points=[(1425.79900,339.80556),(499.29863,-38.78333)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_25(
+        source=cview_27,
+        target=cview_13,
+        points=[(1664.19021,603.43889),(499.29863,-38.78333)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_26(
+        source=cview_28,
+        target=cview_13,
+        points=[(-201.27676,591.82071),(499.29863,-38.78333)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_27(
+        source=cview_29,
+        target=cview_13,
+        points=[(481.49515,690.49603),(499.29863,-38.78333)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_28(
+        source=cview_30,
+        target=cview_13,
+        points=[(62.54886,524.36057),(499.29863,-38.78333)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_29(
+        source=cview_31,
+        target=cview_13,
+        points=[(1081.38677,760.03571),(499.29863,-38.78333)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_30(
+        source=cview_32,
+        target=cview_13,
+        points=[(321.21876,464.34115),(499.29863,-38.78333)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_31(
+        source=cview_33,
+        target=cview_13,
+        points=[(1104.30280,533.53533),(499.29863,-38.78333)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_32(
+        source=cview_34,
+        target=cview_13,
+        points=[(1401.73038,573.27222),(499.29863,-38.78333)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_33(
+        source=cview_35,
+        target=cview_13,
+        points=[(663.20481,478.53394),(499.29863,-38.78333)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_34(
+        source=cview_36,
+        target=cview_29,
+        points=[(104.78344,700.76160),(481.49515,690.49603)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_35(
+        source=cview_37,
+        target=cview_29,
+        points=[(803.35733,700.04747),(481.49515,690.49603)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_36(
+        source=cview_38,
+        target=cview_29,
+        points=[(483.00782,847.64941),(481.49515,690.49603)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_37(
+        source=cview_39,
+        target=cview_38,
+        points=[(121.61623,844.88458),(483.00782,847.64941)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_38(
+        source=cview_40,
+        target=cview_38,
+        points=[(100.94741,933.98922),(483.00782,847.64941)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_39(
+        source=cview_41,
+        target=cview_38,
+        points=[(152.18797,1037.71090),(483.00782,847.64941)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_40(
+        source=cview_42,
+        target=cview_38,
+        points=[(407.92691,1048.48760),(483.00782,847.64941)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_41(
+        source=cview_43,
+        target=cview_38,
+        points=[(709.95496,1028.16398),(483.00782,847.64941)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_42(
+        source=cview_44,
+        target=cview_38,
+        points=[(826.19013,944.99246),(483.00782,847.64941)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_43(
+        source=cview_45,
+        target=cview_38,
+        points=[(831.98301,843.71953),(483.00782,847.64941)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_44(
+        source=cview_46,
+        target=cview_31,
+        points=[(1504.56372,756.56743),(1081.38677,760.03571)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_45(
+        source=cview_47,
+        target=cview_31,
+        points=[(1503.39867,838.11112),(1081.38677,760.03571)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_46(
+        source=cview_48,
+        target=cview_31,
+        points=[(1482.42780,911.50918),(1081.38677,760.03571)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_47(
+        source=cview_49,
+        target=cview_31,
+        points=[(1404.36955,982.57714),(1081.38677,760.03571)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_48(
+        source=cview_50,
+        target=cview_31,
+        points=[(1291.35984,1047.81986),(1081.38677,760.03571)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_49(
+        source=cview_51,
+        target=cview_31,
+        points=[(1090.97149,982.57714),(1081.38677,760.03571)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+}

@@ -14,9 +14,8 @@
 
 package org.finos.legend.engine.postgres;
 
-import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
-
 import java.sql.ParameterMetaData;
+import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
 
 public class DescribeResult
 {

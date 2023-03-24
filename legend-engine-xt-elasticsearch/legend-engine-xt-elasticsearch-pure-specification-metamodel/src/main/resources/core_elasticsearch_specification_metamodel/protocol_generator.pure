@@ -47,8 +47,7 @@ function <<access.private>> meta::external::store::elasticsearch::specification:
 
 function meta::external::store::elasticsearch::specification::metamodel::configureConventions(purePackage: Package[1], javaPackage: String[1], ge: JavaProtocolGenerator[1]): Conventions[1]
 {
-  let defaultConventions = defaultConfigureConventions($purePackage, $javaPackage, $ge)
-                 ->configureConventionsWithCoreProtocolClasses();
+  let defaultConventions = defaultConfigureConventions($purePackage, $javaPackage, $ge);
   let profile = '%s::ESProfile'->format($purePackage->elementToPath())->pathToElement()->cast(@Profile);
   ^$defaultConventions(defaultClassPurpose = ^ElasticsearchPurpose(profile = $profile));
 }
@@ -84,7 +83,20 @@ function meta::external::store::elasticsearch::specification::metamodel::postPro
 
 function meta::external::store::elasticsearch::specification::metamodel::generateClassField(p: Property<Nil, Any | *>[1], c: Conventions[1], ge: JavaProtocolGenerator[1]): Field[1]
 {
-  let field = defaultGenerateClassField($p, $c, $ge);
+  if ($p.genericType.rawType == Map,
+      |        
+        let keyType = pureTypeToJavaType($c, $p.genericType.typeArguments->at(0), PureOne);
+        let valueIsList = $p.genericType.typeArguments->at(1).rawType == List;
+        let pureValueType = $valueIsList->if(|$p.genericType.typeArguments->at(1).typeArguments->at(0), |$p.genericType.typeArguments->at(1));
+        let valueType = pureTypeToJavaType($c, $pureValueType, $valueIsList->if(|ZeroMany, |PureOne));
+        let defaultValueJava = j_new(javaHashMap($keyType, $valueType), j_int(0)); 
+        javaField('public', javaMap($keyType, $valueType), $p.name->toOne()->sanitizeIdentifier(), $defaultValueJava)
+          ->addAnnotation(^meta::external::language::java::metamodel::annotations::json::JsonInclude(value = ^meta::external::language::java::metamodel::annotations::json::EnumValue(value='JsonInclude.Include.NON_EMPTY')));
+        ,
+      |
+        // ignore empty lists
+        defaultGenerateClassField($p, $c, $ge)->map(f | if($p->functionReturnMultiplicity()->isToMany(), |$f->addAnnotation(^meta::external::language::java::metamodel::annotations::json::JsonInclude(value = ^meta::external::language::java::metamodel::annotations::json::EnumValue(value='JsonInclude.Include.NON_EMPTY'))), |$f))
+    );
 }
 
 function meta::external::store::elasticsearch::specification::metamodel::generateClassFieldMethods(prop: Property<Nil, Any | *>[1], field: Field[1], c: Conventions[1], ge: JavaProtocolGenerator[1]): Function<{meta::external::language::java::metamodel::Class[1]->Method[*]}>[1]
@@ -93,65 +105,23 @@ function meta::external::store::elasticsearch::specification::metamodel::generat
     // if the property is additional property, means that the object have unknown key names, and need to serialize as map
     if($prop->hasStereotype('AdditionalProperty', $c->esProfile()),
       |
-        let entryValueType = $prop->functionReturnType().typeArguments->at(0).rawType;
-        let isExternalTaggedValue = $entryValueType->isNotEmpty() && $entryValueType->toOne()->hasStereotype('ExternalTagged', $c->esProfile());
-
-        let fieldType = $field.type->cast(@meta::external::language::java::metamodel::ParameterizedType);
-        let dictionaryClassName = $fieldType.rawType->cast(@meta::external::language::java::metamodel::Class).simpleName;
-        let additionalPropertiesRawType = if($prop.multiplicity->hasToOneUpperBound(), |$fieldType.typeArguments->at(0), |$fieldType.typeArguments->at(0)->cast(@meta::external::language::java::metamodel::ParameterizedType).typeArguments->at(0));
-        let additionalPropertiesType = if($dictionaryClassName == 'DictionaryEntryMultiValue', |javaList($additionalPropertiesRawType), |$additionalPropertiesRawType);
-        let anyGetterReturnType = javaMap(javaString(), $additionalPropertiesType);
+        let entryValueType = if ($prop->functionReturnType().typeArguments->at(1).rawType == List,
+                |$prop->functionReturnType().typeArguments->at(1).typeArguments.rawType,
+                |$prop->functionReturnType().typeArguments->at(1).rawType
+              );
+        
+        let anyGetterReturnType = $field.type->cast(@meta::external::language::java::metamodel::ParameterizedType);
 
         // generate a "any getter" that returns a Map<String, object>
-        let anyGetterCode = if($prop.multiplicity->hasToOneUpperBound(),
-          |
-            let lambdaX = j_parameter($field.type, 'x');
-            javaOptional()
-              ->j_invoke('ofNullable', j_this($javaClass)->j_field($field.name), javaOptional($field.type))
-              ->j_invoke('map', j_lambda($lambdaX, javaCollections()->j_invoke('singletonMap', [$lambdaX->j_field('key', javaString()), $lambdaX->j_field('value', $additionalPropertiesType)], $anyGetterReturnType)), javaOptional($anyGetterReturnType))
-              ->j_invoke('orElseGet', javaCollections()->j_methodReference('emptyMap', javaFunctionType([], javaMap(javaString(), $additionalPropertiesType))), $anyGetterReturnType)
-              ->j_return();,
-          |
-            let lambdaX = j_parameter($fieldType.typeArguments->at(0), 'x');
-            j_this($javaClass)->j_field($field.name)
-              ->j_streamOf()
-              ->j_invoke('collect', javaCollectors()->j_invoke('toMap', [j_lambda($lambdaX, $lambdaX->j_field('key', javaString())), j_lambda($lambdaX, $lambdaX->j_field('value', $additionalPropertiesType))], javaCollector()), $anyGetterReturnType)
-              ->j_return();
-            
-        );
+        let anyGetter = javaMethod('public', $anyGetterReturnType, 'additionalProperties', [], j_this($javaClass)->j_field($field.name)->j_return());
 
-        let anyGetter = javaMethod('public', $anyGetterReturnType, 'additionalProperties', [], $anyGetterCode);
-
-        let keyParamDef = javaParam(javaString(), 'key');
+        let keyParamDef = javaParam($anyGetterReturnType.typeArguments->at(0), 'key');
         let keyParam = j_parameter($keyParamDef);
-        let valueParamDef = javaParam($additionalPropertiesType, 'value');
+        let valueParamDef = javaParam($anyGetterReturnType.typeArguments->at(1), 'value');
         let valueParam = j_parameter($valueParamDef);
 
         // generate a "any setter" to complement the "any getter"
-        let anySetterCode = if ($prop.multiplicity->hasToOneUpperBound(),
-          |
-            // do we need to verify if this is called multiple times?
-            let classField = j_this($javaClass)->j_field($field.name);
-            let newEntry = j_assign($classField, j_new($fieldType, []));
-            let keyAssing = j_assign($classField->j_field('key', javaString()), $keyParam);
-            let valueAssing = j_assign($classField->j_field('value', $additionalPropertiesType), $valueParam);
-            j_block([$newEntry, $keyAssing, $valueAssing]);,
-          |
-            let newEntryParam = j_parameter($fieldType.typeArguments->at(0), 'newEntry');
-            let var = $newEntryParam->j_declare(j_new($fieldType.typeArguments->at(0), []));
-            let keyAssign = j_assign($newEntryParam->j_field('key', javaString()), $keyParam);
-            let valueAssign = j_assign($newEntryParam->j_field('value', $additionalPropertiesType), $valueParam);         
-
-            let assignToList = j_assign(j_this($javaClass)->j_field($field.name), 
-              javaStream()
-                ->j_invoke('concat', [j_streamOf(j_this($javaClass)->j_field($field.name)), j_streamOf($newEntryParam)], javaStream($fieldType.typeArguments->at(0)))
-                ->j_invoke('collect', javaCollectors()->j_invoke('toList', [], javaCollector()), $field.type)
-            );
-
-            j_block([$var, $keyAssign, $valueAssign, $assignToList]);
-        );
-
-        let anySetter = javaMethod('public', javaVoid(), 'additionalProperties', [$keyParamDef, $valueParamDef], $anySetterCode);
+        let anySetter = javaMethod('public', javaVoid(), 'additionalProperties', [$keyParamDef, $valueParamDef], j_this($javaClass)->j_field($field.name)->j_invoke('put', [$keyParam, $valueParam]));
 
         [$anyGetter, $anySetter];,
       |
@@ -162,7 +132,7 @@ function meta::external::store::elasticsearch::specification::metamodel::generat
 
 function meta::external::store::elasticsearch::specification::metamodel::postProcessClass(c: meta::pure::metamodel::type::Class<Any>[1], clsTmp: meta::external::language::java::metamodel::Class[1], conventions: Conventions[1], ge: JavaProtocolGenerator[1]): meta::external::language::java::metamodel::Class[*]
 {
-  let baseClasses = jacksonPostProcessClass($c, $clsTmp, $conventions, $ge);
+  let baseClasses = jacksonPostProcessClass($c, $clsTmp, $conventions, $ge, '_pure_protocol_type');
 
   let otherCls = $baseClasses->filter(c | $c.simpleName != $clsTmp.simpleName);
   let cls = $baseClasses->filter(c | $c.simpleName == $clsTmp.simpleName)->toOne();
@@ -189,7 +159,7 @@ function <<access.private>> meta::external::store::elasticsearch::specification:
     ->j_invoke(javaObject(), 'of', $javaClass.fields->map(f | j_this($javaClass)->j_field($f.name)), javaStream(javaObject()))
     ->js_filter(javaClass('org.finos.legend.engine.protocol.store.elasticsearch.specification.utils.TaggedUnionUtils')->j_methodReference('nonEmpty', javaFunctionType(javaObject(), javaBoolean())))
     ->js_resolve(javaObject())
-    ->j_return();  
+    ->j_return();
   let method = javaMethod('public', javaObject(), 'unionValue', [], $pickFirstNotNullCode);
   let unionClass = $javaClass->addMethod($method);
 }
@@ -244,7 +214,11 @@ function <<access.private>> meta::external::store::elasticsearch::specification:
     // additional properties need special handling for any getter and any setter annotations
     if($prop->hasStereotype('AdditionalProperty', $conventions->esProfile()),
       |
-        let entryValueType = $prop->functionReturnType().typeArguments->at(0).rawType;
+        let entryValueType = if ($prop->functionReturnType().typeArguments->at(1).rawType == List,
+                |$prop->functionReturnType().typeArguments->at(1).typeArguments.rawType,
+                |$prop->functionReturnType().typeArguments->at(1).rawType
+              );
+        
         let isExternalTaggedValue = $entryValueType->isNotEmpty() && $entryValueType->toOne()->hasStereotype('ExternalTagged', $conventions->esProfile());
 
         let anyGetter = $javaClass.methods->filter(m | $m.name == 'additionalProperties' && $m.returnType != javaVoid())->toOne();
@@ -274,7 +248,7 @@ function <<access.private>> meta::external::store::elasticsearch::specification:
             ->map(m | if ($isExternalTaggedValue,
                 |$m->addAnnotation(^meta::external::language::java::metamodel::annotations::json::JsonDeserialize(
                     keyUsing = javaClass('org.finos.legend.engine.protocol.store.elasticsearch.specification.utils.ExternalTaggedUnionKeyDeserializer'),
-                    contentUsing = javaClass('org.finos.legend.engine.protocol.store.elasticsearch.specification.utils.ExternalTaggedUnionDeserializer')
+                    contentUsing = javaClass('org.finos.legend.engine.protocol.store.elasticsearch.specification.utils.ExternalTaggedUnionContentDeserializer')
                   )),
                 |$m
               )
@@ -290,16 +264,22 @@ function <<access.private>> meta::external::store::elasticsearch::specification:
             $cls->addField(
               $field->addAnnotation(^meta::external::language::java::metamodel::annotations::json::JsonProperty(value = $name->toOne()))
             );,
-          | 
-            $cls
+          | if ($prop.name == '_pure_protocol_type',
+               |$cls->addField($field->addAnnotation(^meta::external::language::java::metamodel::annotations::json::JsonIgnore())),
+               |$cls
+             )
         );
 
-        let propClassName = $prop->functionReturnType().rawType.name;
+        let propClass = $prop->functionReturnType().rawType;
 
         // if property are dictionary, annotate accordant to handle as Map's
-        let handlingDictionaryEntries = if ($propClassName->in(['DictionaryEntrySingleValue', 'DictionaryEntryMultiValue']),
+        let handlingDictionaryEntries = if ($propClass == Map,
           |
-            let entryValueType = $prop->functionReturnType().typeArguments->at(0).rawType;
+            let entryValueType = if ($prop->functionReturnType().typeArguments->at(1).rawType == List,
+                |$prop->functionReturnType().typeArguments->at(1).typeArguments.rawType,
+                |$prop->functionReturnType().typeArguments->at(1).rawType
+              );
+
             if ($entryValueType->isNotEmpty() && $entryValueType->toOne()->hasStereotype('ExternalTagged', $conventions->esProfile()),
               |
                 // externally tagged required slightly different behavior
@@ -312,28 +292,10 @@ function <<access.private>> meta::external::store::elasticsearch::specification:
                       ^meta::external::language::java::metamodel::annotations::json::JsonDeserialize(
                         using = javaClass('org.finos.legend.engine.protocol.store.elasticsearch.specification.utils.ExternalTaggedUnionDeserializer')
                       )
-                    // we default to empty list, hence ensure EMPTY should be "null"
-                    )->addAnnotation(
-                    ^meta::external::language::java::metamodel::annotations::json::JsonInclude(
-                      value = ^meta::external::language::java::metamodel::annotations::json::EnumValue(value='JsonInclude.Include.NON_EMPTY'))
                     )
                   );,
               |
-                $mixInWithPropName->addField(
-                  $field->addAnnotation(
-                    ^meta::external::language::java::metamodel::annotations::json::JsonSerialize(
-                      using = javaClass('org.finos.legend.engine.protocol.store.elasticsearch.specification.utils.DictionarySerializer')
-                    )
-                  )->addAnnotation(
-                    ^meta::external::language::java::metamodel::annotations::json::JsonDeserialize(
-                      using = javaClass('org.finos.legend.engine.protocol.store.elasticsearch.specification.utils.DictionaryDeserializer')
-                    )
-                  // we default to empty list, hence ensure EMPTY should be "null"
-                  )->addAnnotation(
-                  ^meta::external::language::java::metamodel::annotations::json::JsonInclude(
-                    value = ^meta::external::language::java::metamodel::annotations::json::EnumValue(value='JsonInclude.Include.NON_EMPTY'))
-                  )
-                )
+                $mixInWithPropName
             );,
           |
             $mixInWithPropName
@@ -374,10 +336,8 @@ function meta::external::store::elasticsearch::specification::metamodel::finaliz
                                 ->map(mixInClass | $mapper->j_invoke('addMixIn', [j_field($mixInClass, 'MIX_IN'), j_classField($mixInClass)], $objectMapperClass)))
                   ->concatenate(j_return($mapper));
   
-  let utilsPkg = $c.typeAndPackageNameStrategy->toOne()->eval('%s::DictionaryEntryMultiValue'->format($c->esProfile().package->toOne()->elementToPath())->pathToElement()->cast(@meta::pure::metamodel::type::Type), $c).first;
-
   // finish configuring the object mapper utility
-  let jsonHelper = javaClass('public', $utilsPkg->javaPackage(), 'ElasticsearchObjectMapperProvider')
+  let jsonHelper = javaClass('public', $c.basePackageName->javaPackage(), 'ElasticsearchObjectMapperProvider')
     ->addField({cls|javaField(['public', 'static'],  $objectMapperClass, 'OBJECT_MAPPER', $cls->j_invoke('objectMapper',[], $objectMapperClass))})
     ->addMethod(javaMethod(['private', 'static'], $objectMapperClass, 'objectMapper', [], j_block($mixInInvocations)));
 

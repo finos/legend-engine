@@ -38,6 +38,18 @@ public class TestSQLRoundTrip
     }
 
     @Test
+    public void testSelectStarFromNoParamTableFunc()
+    {
+        check("SELECT * FROM table()");
+    }
+
+    @Test
+    public void testSelectStarFromTableFuncWithParams()
+    {
+        check("SELECT * FROM table(1, a => 1, b => [1, 2, 3])");
+    }
+
+    @Test
     public void testSelectColumns()
     {
         check("SELECT col1, col2 FROM table");
@@ -216,6 +228,12 @@ public class TestSQLRoundTrip
     public void testCurrentTIme()
     {
         check("SELECT CURRENT_TIME, CURRENT_TIMESTAMP, CURRENT_DATE FROM table");
+    }
+
+    @Test
+    public void testWindowFunc()
+    {
+        check("SELECT *, ROW_NUMBER() OVER (PARTITION BY group ORDER BY price ASC) FROM table");
     }
 
     private void fail(String sql, int start, int end, String message)

@@ -104,6 +104,11 @@ Class meta::external::query::sql::metamodel::Table extends meta::external::query
   name: meta::external::query::sql::metamodel::QualifiedName[1];
 }
 
+Class meta::external::query::sql::metamodel::TableFunction extends meta::external::query::sql::metamodel::QueryBody
+{
+  functionCall: meta::external::query::sql::metamodel::FunctionCall[1];
+}
+
 Class meta::external::query::sql::metamodel::Expression extends meta::external::query::sql::metamodel::Node
 {
 }
@@ -145,6 +150,12 @@ Class meta::external::query::sql::metamodel::ArrayLiteral extends meta::external
 
 Class meta::external::query::sql::metamodel::NullLiteral extends meta::external::query::sql::metamodel::Literal
 {
+}
+
+Class meta::external::query::sql::metamodel::NamedArgumentExpression extends meta::external::query::sql::metamodel::Expression
+{
+  name: String[1];
+  expression: meta::external::query::sql::metamodel::Expression[1];
 }
 
 Class meta::external::query::sql::metamodel::SortItem extends meta::external::query::sql::metamodel::Node
@@ -207,6 +218,7 @@ Class meta::external::query::sql::metamodel::FunctionCall extends meta::external
   distinct: Boolean[1];
   arguments: meta::external::query::sql::metamodel::Expression[*];
   filter: meta::external::query::sql::metamodel::Expression[0..1];
+  window: meta::external::query::sql::metamodel::Window[0..1];
 }
 
 Class meta::external::query::sql::metamodel::SimpleCaseExpression extends meta::external::query::sql::metamodel::Expression
@@ -281,6 +293,34 @@ Class meta::external::query::sql::metamodel::InPredicate extends meta::external:
 {
   value: meta::external::query::sql::metamodel::Expression[1];
   valueList: meta::external::query::sql::metamodel::Expression[1];
+}
+
+Class meta::external::query::sql::metamodel::Window extends meta::external::query::sql::metamodel::Statement
+{
+  windowRef: String[0..1];
+  partitions: meta::external::query::sql::metamodel::Expression[*];
+  orderBy: meta::external::query::sql::metamodel::SortItem[*];
+  windowFrame: meta::external::query::sql::metamodel::WindowFrame[0..1];
+}
+
+Class meta::external::query::sql::metamodel::WindowFrame extends meta::external::query::sql::metamodel::Node
+{
+  mode: meta::external::query::sql::metamodel::WindowFrameMode[1];
+  start: meta::external::query::sql::metamodel::FrameBound[1];
+  end: meta::external::query::sql::metamodel::FrameBound[0..1];
+}
+
+Enum meta::external::query::sql::metamodel::WindowFrameMode {
+  RANGE, ROWS
+}
+Enum meta::external::query::sql::metamodel::FrameBoundType {
+  UNBOUNDED_PRECEDING, PRECEDING, CURRENT_ROW, FOLLOWING, UNBOUNDED_FOLLOWING
+}
+
+Class meta::external::query::sql::metamodel::FrameBound extends meta::external::query::sql::metamodel::Node
+{
+  type: meta::external::query::sql::metamodel::FrameBoundType[1];
+  value: meta::external::query::sql::metamodel::Expression[0..1];
 }
 
 Enum meta::external::query::sql::metamodel::TrimMode

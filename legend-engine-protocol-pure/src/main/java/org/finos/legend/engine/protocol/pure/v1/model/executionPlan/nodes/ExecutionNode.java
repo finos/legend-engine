@@ -71,7 +71,10 @@ public abstract class ExecutionNode
     public PlatformImplementation implementation;
     public boolean authDependent;
 
-    public abstract <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor);
+    public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)
+    {
+        return executionNodeVisitor.visit(this);
+    }
 
     @JsonIgnore
     public RichIterable<ExecutionNode> executionNodes()

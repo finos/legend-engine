@@ -20,12 +20,14 @@ import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.api.analytics.model.DataSpaceAnalysisInput;
 import org.finos.legend.engine.generation.analytics.DataSpaceAnalyticsHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperDataSpaceBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
+import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
@@ -47,6 +49,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.List;
+import java.util.ServiceLoader;
 
 @Api(tags = "Analytics - Model")
 @Path("pure/v1/analytics/dataSpace")
@@ -55,10 +59,18 @@ public class DataSpaceAnalytics
     private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
 
     private final ModelManager modelManager;
+    private final MutableList<PlanGeneratorExtension> generatorExtensions;
 
     public DataSpaceAnalytics(ModelManager modelManager)
     {
         this.modelManager = modelManager;
+        this.generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
+    }
+
+    public DataSpaceAnalytics(ModelManager modelManager, MutableList<PlanGeneratorExtension> generatorExtensions)
+    {
+        this.modelManager = modelManager;
+        this.generatorExtensions = generatorExtensions;
     }
 
     @POST
@@ -79,7 +91,7 @@ public class DataSpaceAnalytics
         {
             try
             {
-                return ManageConstantResult.manageResult(profiles, DataSpaceAnalyticsHelper.analyzeDataSpace(dataSpace, pureModel, (DataSpace) dataSpaceProtocol, pureModelContextData, input.clientVersion), objectMapper);
+                return ManageConstantResult.manageResult(profiles, DataSpaceAnalyticsHelper.analyzeDataSpace(dataSpace, pureModel, (DataSpace) dataSpaceProtocol, pureModelContextData, input.clientVersion, this.generatorExtensions), objectMapper);
             }
             catch (Exception e)
             {
