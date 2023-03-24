@@ -62,7 +62,8 @@ Class meta::pure::metamodel::dataSpace::DataSpaceExecutable
 {
   title: String[1];
   description: String[0..1];
-  executable: String[1]; // TODO: when executable is ready, we can change this into Executable and potentially do analytics generation in Pure
+  // here we scan for Service and Executable
+  executable: PackageableElement[1];
 }
 
 Class << typemodifiers.abstract >> meta::pure::metamodel::dataSpace::DataSpaceSupportInfo {

@@ -211,24 +211,13 @@ public class DataSpaceAnalyticsHelper
 
         // executables
         result.executables = Lists.mutable.empty();
-        if (dataSpaceProtocol.executables != null)
+        if (dataSpace._executables() != null)
         {
-            dataSpaceProtocol.executables.forEach((executable) ->
+            dataSpace._executables().forEach((executable) ->
             {
-                PackageableElement executableElement = null;
-                try
+                if (executable._executable() instanceof Root_meta_legend_service_metamodel_Service)
                 {
-                    executableElement = pureModel.getPackageableElement(executable.executable.path, executable.executable.sourceInformation);
-                }
-                catch (Exception e)
-                {
-                    // do nothing - this should be handled by compiler when the work for executable is done
-                }
-
-                // NOTE: until the work on executable completes, we can switch over instead of using service like this
-                if (executableElement instanceof Root_meta_legend_service_metamodel_Service)
-                {
-                    Root_meta_legend_service_metamodel_Service service = (Root_meta_legend_service_metamodel_Service) executableElement;
+                    Root_meta_legend_service_metamodel_Service service = (Root_meta_legend_service_metamodel_Service) executable._executable();
 
                     // NOTE: right now we only support service with single execution for simplicity
                     if (service._execution() instanceof Root_meta_legend_service_metamodel_PureSingleExecution)
@@ -236,9 +225,9 @@ public class DataSpaceAnalyticsHelper
                         Root_meta_legend_service_metamodel_PureSingleExecution execution = ((Root_meta_legend_service_metamodel_PureSingleExecution) service._execution());
 
                         DataSpaceExecutableAnalysisResult executableAnalysisResult = new DataSpaceExecutableAnalysisResult();
-                        executableAnalysisResult.title = executable.title;
-                        executableAnalysisResult.description = executable.description;
-                        executableAnalysisResult.executable = executable.executable.path;
+                        executableAnalysisResult.title = executable._title();
+                        executableAnalysisResult.description = executable._description();
+                        executableAnalysisResult.executable = HelperModelBuilder.getElementFullPath(executable._executable(), pureModel.getExecutionSupport());
 
                         executableAnalysisResult.resultType = PlanGenerator.generateExecutionPlanDebug(
                                 (LambdaFunction<?>) execution._func(),
@@ -256,6 +245,7 @@ public class DataSpaceAnalyticsHelper
                         result.executables.add(executableAnalysisResult);
                     }
                 }
+                // TODO: when Executable is ready, we will handle it here
             });
         }
 

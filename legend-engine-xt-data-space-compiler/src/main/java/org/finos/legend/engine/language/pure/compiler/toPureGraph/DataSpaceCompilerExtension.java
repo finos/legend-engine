@@ -125,7 +125,7 @@ public class DataSpaceCompilerExtension implements CompilerExtension
                         return new Root_meta_pure_metamodel_dataSpace_DataSpaceExecutable_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceExecutable"))
                                 ._title(executable.title)
                                 ._description(executable.description)
-                                ._executable(executable.executable.path);
+                                ._executable(context.pureModel.getPackageableElement(executable.executable.path, executable.executable.sourceInformation));
                     }) : null);
 
                     // diagrams
