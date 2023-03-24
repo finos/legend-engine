@@ -30,7 +30,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPl
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.engine.shared.javaCompiler.ClassPathFilter;
-import org.finos.legend.engine.shared.javaCompiler.CompositeClassPathFilter;
+import org.finos.legend.engine.shared.javaCompiler.ClassPathFilters;
 import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
 import org.finos.legend.engine.shared.javaCompiler.JavaVersion;
@@ -38,6 +38,7 @@ import org.finos.legend.engine.shared.javaCompiler.SingleFileCompiler;
 import org.finos.legend.engine.shared.javaCompiler.StringJavaSource;
 import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -49,7 +50,7 @@ import java.util.stream.Collectors;
 
 public class JavaHelper
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = LoggerFactory.getLogger("Alloy Execution Server");
     private static final String DEFAULT_EXECUTION_METHOD_NAME = "execute";
 
     private JavaHelper()
@@ -94,7 +95,7 @@ public class JavaHelper
     {
         List<ClassPathFilter> filters = Lists.mutable.of(new ExecutionPlanDependenciesFilter());
         ExecutionPlanJavaCompilerExtensionLoader.extensions().forEach(ext -> filters.add(ext.getExtraClassPathFilter()));
-        return new EngineJavaCompiler(JavaVersion.JAVA_8, new CompositeClassPathFilter(filters));
+        return new EngineJavaCompiler(JavaVersion.JAVA_8, ClassPathFilters.any(filters));
     }
 
     private static EngineJavaCompiler compilePlanFast(SingleExecutionPlan singleExecutionPlan) throws JavaCompileException, IOException, CompileException

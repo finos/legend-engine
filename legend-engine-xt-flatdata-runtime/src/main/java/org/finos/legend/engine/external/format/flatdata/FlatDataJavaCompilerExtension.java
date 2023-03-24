@@ -36,8 +36,8 @@ import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataTem
 import org.finos.legend.engine.external.format.flatdata.write.IFlatDataSerializeExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.compilation.GeneratePureConfig;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionPlanJavaCompilerExtension;
-import org.finos.legend.engine.shared.javaCompiler.ClassListFilter;
 import org.finos.legend.engine.shared.javaCompiler.ClassPathFilter;
+import org.finos.legend.engine.shared.javaCompiler.ClassPathFilters;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -75,7 +75,7 @@ public class FlatDataJavaCompilerExtension implements ExecutionPlanJavaCompilerE
     @Override
     public ClassPathFilter getExtraClassPathFilter()
     {
-        return new ClassListFilter(DEPENDENCIES.values());
+        return ClassPathFilters.fromClasses(DEPENDENCIES.values());
     }
 
     /**
