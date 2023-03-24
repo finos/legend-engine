@@ -14,17 +14,12 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import java.util.List;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
-@JsonSubTypes({
-        @JsonSubTypes.Type(value = DataSpaceSupportEmail.class, name = "email"),
-        @JsonSubTypes.Type(value = DataSpaceSupportCombinedInfo.class, name = "combined")
-})
-public abstract class DataSpaceSupportInfo
+public class DataSpaceSupportCombinedInfo extends DataSpaceSupportInfo
 {
-    public String documentationUrl;
-    public SourceInformation sourceInformation;
+    public List<String> emails;
+    public String website;
+    public String faqUrl;
+    public String supportUrl;
 }

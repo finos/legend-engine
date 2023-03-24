@@ -24,31 +24,31 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import java.util.Collections;
 import java.util.List;
 
-// NOTE: since we removed artifactId, groupId, versionId, we need this flag
-// once we can truly remove those fields, we will be able to take this out
+// NOTE: since we deprecated and removed fields such as artifactId, groupId, versionId,
+// we need this flag to be backward compatible once we can be sure that those fields are eradicated,
+// we will be able to take this out
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DataSpace extends PackageableElement
 {
     public List<StereotypePtr> stereotypes = Collections.emptyList();
     public List<TaggedValue> taggedValues = Collections.emptyList();
 
-    public List<DataSpaceExecutionContext> executionContexts;
-    public String defaultExecutionContext;
-
     public String title;
     public String description;
 
-    // TODO: we should consider making pointers to diagram richer so we can add more
-    // metadata for diagrams
-    public List<PackageableElementPointer> featuredDiagrams;
+    public List<DataSpaceExecutionContext> executionContexts;
+    public String defaultExecutionContext;
 
     // For now, these can only include classes, enumerations, associations
     public List<PackageableElementPointer> elements;
-
-    // NOTE: this is subjected to change depending on how we want to embed executables information
     public List<DataSpaceExecutable> executables;
+    public List<DataSpaceDiagram> diagrams;
 
     public DataSpaceSupportInfo supportInfo;
+
+    @Deprecated
+    // NOTE: this field will be deprecated, we should consider adding this to the list of diagrams during deserialization phase
+    public List<PackageableElementPointer> featuredDiagrams;
 
     @Override
     public <T> T accept(PackageableElementVisitor<T> visitor)

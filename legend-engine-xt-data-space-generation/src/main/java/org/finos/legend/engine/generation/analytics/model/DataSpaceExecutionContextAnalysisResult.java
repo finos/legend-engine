@@ -21,6 +21,7 @@ import java.util.List;
 public class DataSpaceExecutionContextAnalysisResult
 {
     public String name;
+    public String title;
     public String description;
     public String mapping;
     public List<String> compatibleRuntimes;
