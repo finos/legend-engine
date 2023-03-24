@@ -14,35 +14,24 @@
 
 package org.finos.legend.engine.shared.javaCompiler;
 
-import org.eclipse.collections.api.set.MutableSet;
-import org.eclipse.collections.impl.set.mutable.UnifiedSet;
-
 class MemoryClassLoader extends ClassLoader
 {
     private final MemoryFileManager manager;
-    private final MutableSet<String> names = UnifiedSet.newSet();
 
-    MemoryClassLoader(MemoryFileManager manager, ClassLoader cl)
+    MemoryClassLoader(MemoryFileManager manager, ClassLoader parent)
     {
-        super(cl);
+        super(parent);
         this.manager = manager;
     }
 
     @Override
-    protected Class findClass(String name) throws ClassNotFoundException
+    protected Class<?> findClass(String name) throws ClassNotFoundException
     {
-        synchronized (this.manager)
+        ClassJavaSource mc = this.manager.getClassJavaSourceByName(name);
+        if (mc != null)
         {
-            if (!this.names.contains(name))
-            {
-                ClassJavaSource mc = this.manager.getClassJavaSourceByName(name);
-                if (mc != null)
-                {
-                    this.names.add(name);
-                    byte[] array = mc.getBytes();
-                    return this.defineClass(name, array, 0, array.length);
-                }
-            }
+            byte[] array = mc.getBytes();
+            return defineClass(name, array, 0, array.length);
         }
         return super.findClass(name);
     }
