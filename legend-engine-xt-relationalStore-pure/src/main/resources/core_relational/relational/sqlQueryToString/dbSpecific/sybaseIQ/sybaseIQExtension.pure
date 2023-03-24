@@ -4,7 +4,6 @@ import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::runtime::*;
-import meta::relational::metamodel::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
 
@@ -33,9 +32,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sybas
       columnNameToIdentifier = columnNameToIdentifierForSybaseIQ_String_1__DbConfig_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
-      ddlCommandsTranslator = getDDLCommandsTranslatorDefault(),
-      ddlCommandsTranslatorForTempTable = getDDLCommandsTranslatorForTempTable__RelationalDDLCommandsTranslator_1_,
-      getDefaultTempTableIsolationStrategy = getDefaultTempTableIsolationStrategy__TempTableIsolationStrategy_1_
+      ddlCommandsTranslator = getDDLCommandsTranslatorDefault()
    );
 }
 
@@ -612,33 +609,4 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sybas
    'xlock',
    'xml'
    ]
-}
-
-function meta::relational::functions::sqlQueryToString::sybaseIQ::getDefaultTempTableIsolationStrategy(): meta::pure::alloy::connections::alloy::isolation::TempTableIsolationStrategy[1]
-{
-  ^meta::pure::alloy::connections::alloy::isolation::DefaultIsolationStrategy();
-}
-
-function meta::relational::functions::sqlQueryToString::sybaseIQ::translateCreateTableStatementForTempTable(c:CreateTableSQL[1], dbConfig: DbConfig[1]): String[*]
-{
-  'DECLARE LOCAL TEMPORARY TABLE ' + $c.table->toOne().name + '( [' + $c.table.columns->cast(@Column).name->toOne() + '] ' + $c.table.columns->cast(@Column).type->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText() + ') ON COMMIT PRESERVE ROWS;';
-}
-
-function meta::relational::functions::sqlQueryToString::sybaseIQ::translateDropTableStatementForTempTable(d:DropTableSQL[1]): String[*]
-{
-  'Drop table if exists ' + $d.table->toOne().name + ';';
-}
-
-function meta::relational::functions::sqlQueryToString::sybaseIQ::translateLoadStatementForTempTable(l:LoadTableSQL[1], dbConfig: DbConfig[1]): String[*]
-{
-  'load table ' + $l.table->toOne().name +'( ['+ $l.table.columns->cast(@Column).name->toOne() + '] null(blanks) USING CLIENT FILE \'' + $l.csvFileLocationVarPlaceHolder->toOne() + '\' FORMAT BCP \nwith checkpoint on \nquotes on\nescapes off \ndelimited by \',\' \nROW DELIMITED BY \'\r\n\';';
-}
-
-function meta::relational::functions::sqlQueryToString::sybaseIQ::getDDLCommandsTranslatorForTempTable(): RelationalDDLCommandsTranslator[1]
-{
-  ^RelationalDDLCommandsTranslator(
-                createTable = translateCreateTableStatementForTempTable_CreateTableSQL_1__DbConfig_1__String_MANY_,
-                dropTable = translateDropTableStatementForTempTable_DropTableSQL_1__String_MANY_,
-                loadTable =  translateLoadStatementForTempTable_LoadTableSQL_1__DbConfig_1__String_MANY_
-              );
 }

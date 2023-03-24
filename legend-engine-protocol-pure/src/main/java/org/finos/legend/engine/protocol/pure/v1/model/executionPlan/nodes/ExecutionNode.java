@@ -52,8 +52,8 @@ import java.util.List;
         @JsonSubTypes.Type(value = ErrorExecutionNode.class, name = "error"),
         @JsonSubTypes.Type(value = GraphFetchM2MExecutionNode.class, name = "graphFetchM2M"),
         @JsonSubTypes.Type(value = GraphFetchExecutionNode.class, name = "graphFetchExecutionNode"),
-        @JsonSubTypes.Type(value = StoreMappingGlobalGraphFetchExecutionNode.class, name = "globalGraphFetchExecutionNode"),
         @JsonSubTypes.Type(value = StoreMappingGlobalGraphFetchExecutionNode.class, name = "storeMappingGlobalGraphFetchExecutionNode"),
+        @JsonSubTypes.Type(value = StoreMappingGlobalGraphFetchExecutionNode.class, name = "globalGraphFetchExecutionNode"),
         @JsonSubTypes.Type(value = PlatformGlobalGraphFetchExecutionNode.class, name = "platformGlobalGraphFetchExecutionNode"),
         @JsonSubTypes.Type(value = PlatformPrimitiveQualifierLocalGraphFetchExecutionNode.class, name = "platformPrimitiveQualifierLocalGraphFetchExecutionNode"),
         @JsonSubTypes.Type(value = FreeMarkerConditionalExecutionNode.class, name = "freeMarkerConditionalExecutionNode"),
@@ -71,7 +71,10 @@ public abstract class ExecutionNode
     public PlatformImplementation implementation;
     public boolean authDependent;
 
-    public abstract <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor);
+    public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)
+    {
+        return executionNodeVisitor.visit(this);
+    }
 
     @JsonIgnore
     public RichIterable<ExecutionNode> executionNodes()

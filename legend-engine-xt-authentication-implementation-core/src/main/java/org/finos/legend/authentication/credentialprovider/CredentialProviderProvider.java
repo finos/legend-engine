@@ -14,18 +14,23 @@
 
 package org.finos.legend.authentication.credentialprovider;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import org.eclipse.collections.api.block.predicate.Predicate;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
+import org.finos.legend.authentication.credentialprovider.impl.UserPasswordCredentialProvider;
 import org.finos.legend.authentication.intermediationrule.IntermediationRule;
 import org.finos.legend.authentication.intermediationrule.IntermediationRuleProvider;
+import org.finos.legend.authentication.intermediationrule.impl.UserPasswordFromVaultRule;
+import org.finos.legend.authentication.vault.CredentialVaultProvider;
+import org.finos.legend.authentication.vault.impl.EnvironmentCredentialVault;
+import org.finos.legend.authentication.vault.impl.SystemPropertiesCredentialVault;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
-
-import java.util.List;
-import java.util.Optional;
 
 /*
     A CredentialProviderProvider provides CredentialProviders.
@@ -60,9 +65,21 @@ public class CredentialProviderProvider
 
     private void configureProvider(CredentialProvider credentialProvider)
     {
+        if (this.intermediationRuleProvider != null)
+        {
+            this.configureProviderWithExternalRules(credentialProvider);
+        }
+        else
+        {
+            this.credentialProviders.add(credentialProvider);
+        }
+    }
+
+    private void configureProviderWithExternalRules(CredentialProvider credentialProvider)
+    {
         FastList<IntermediationRule> rules = this.intermediationRuleProvider.getRules();
         Class<? extends AuthenticationSpecification> authenticationSpecificationType = credentialProvider.getAuthenticationSpecificationType();
-        Class<? extends Credential> outputCredentialType = credentialProvider.getOutputCredentialType();
+        Class outputCredentialType = credentialProvider.getOutputCredentialType();
 
         Predicate<IntermediationRule> predicate = rule -> rule.consumesAuthenticationSpecification(authenticationSpecificationType) && rule.producesOutputCredential(outputCredentialType);
         FastList<IntermediationRule> matchingRules = rules.select(predicate);
@@ -75,17 +92,9 @@ public class CredentialProviderProvider
 
     public Optional<CredentialProvider> findMatchingCredentialProvider(Class<? extends AuthenticationSpecification> AuthenticationSpecificationType, ImmutableSet<? extends Class<? extends Credential>> inputCredentialTypes)
     {
-        Predicate<CredentialProvider> predicate =
-                        credentialProvider ->
-                                credentialProvider.consumesAuthenticationSpecification(AuthenticationSpecificationType) &&
-                                credentialProvider.hasRuleThatConsumesInputCredentials(inputCredentialTypes);
+        Predicate<CredentialProvider> predicate = credentialProvider -> credentialProvider.accepts(AuthenticationSpecificationType, inputCredentialTypes);
 
-        FastList<CredentialProvider> matchingProviders = this.credentialProviders.select(predicate);
-        if (matchingProviders.isEmpty())
-        {
-            return Optional.empty();
-        }
-        return Optional.of(matchingProviders.get(0));
+        return this.credentialProviders.stream().filter(predicate).findAny();
     }
 
     public FastList<CredentialProvider> getConfiguredCredentialProviders()
@@ -96,6 +105,25 @@ public class CredentialProviderProvider
     public static Builder builder()
     {
         return new Builder();
+    }
+
+    /**
+     * Builds a basic provider provider with well known cred providers that dotn required external configurations
+     *
+     * @return configured default provider provider
+     */
+    public static CredentialProviderProvider defaultProviderProvider()
+    {
+        CredentialVaultProvider vaultProvider = CredentialVaultProvider.builder()
+                .with(new SystemPropertiesCredentialVault())
+                .with(new EnvironmentCredentialVault())
+                .build();
+
+        return CredentialProviderProvider.builder()
+                .with(new UserPasswordCredentialProvider(Collections.singletonList(new UserPasswordFromVaultRule(vaultProvider))))
+//                .with(new ApikeyCredentialProvider(Collections.singletonList(new ApiKeyFromVaultRule(vaultProvider))))
+//                .with(new PrivateKeyCredentialProvider(Collections.singletonList(new EncryptedPrivateKeyFromVaultRule(vaultProvider))))
+                .build();
     }
 
     public static class Builder

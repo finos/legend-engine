@@ -73,7 +73,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
    //this gets used if a property accesses the result of a merged class
    let subMergeMethods  =  $propertySubtree->map(st |let prop = $st.property->cast(@Property<Nil,Any|*>);
                                                         let set = $initialNode.graphFetchTree.sets->cast(@InstanceSetImplementation)->toOne();
-                                                        let propertyMapping = $set.propertyMappingsByPropertyName($prop.name->toOne())->head();
+                                                        let propertyMapping = $set->_propertyMappingsByPropertyName($prop.name->toOne())->head();
                                                         let possibleMergeForSet = $propertyMapping->MergeOperationForProperty();
 
                                                        if($propertyMapping->isNotEmpty() && $possibleMergeForSet ->isNotEmpty(),
@@ -107,7 +107,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
                                                                              ->js_filter(j_lambda($interfaceGraphParameter, $interfaceGraphParameter->j_instanceof($setGraphIMPL )   ))
                                                                              ->js_filter(j_lambda($setGraphParameter, $setGraphParameter->j_invoke($conventions->getterName('setId$'), [], javaString())->j_eq(j_string($set.id->toOne()))))->js_resolve($setGraphIMPL));
                                                    let propertyValues = $propertySubtree->map({st |let prop = $st.property->cast(@Property<Nil,Any|*>); 
-                                                                                                    let propertyMapping = $set.propertyMappingsByPropertyName($prop.name->toOne())->head();
+                                                                                                    let propertyMapping = $set->_propertyMappingsByPropertyName($prop.name->toOne())->head();
                                                                                                     let possibleMergeForSet = $propertyMapping->MergeOperationForProperty();
 
                                                                                                     if($propertyMapping->isEmpty()  || $possibleMergeForSet->isNotEmpty(),

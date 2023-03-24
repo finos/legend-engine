@@ -586,8 +586,11 @@ Class meta::pure::persistence::metamodel::PersistenceTest extends meta::pure::te
   isTestDataFromServiceOutput : Boolean[0..1];
 }
 
-Class meta::pure::persistence::metamodel::PersistenceTestBatch extends meta::pure::test::TestBatch
+Class meta::pure::persistence::metamodel::PersistenceTestBatch
 {
+  id         : String[1];
+  batchId    : Integer[1];
+  assertions : meta::pure::test::assertion::TestAssertion[*];
   testData   : meta::pure::persistence::metamodel::TestData[1];
 }
 

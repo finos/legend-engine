@@ -29,14 +29,16 @@ public class TestSemiStructuredInheritanceMapping extends AbstractTestSemiStruct
     public void testSemiStructuredPropertyAccessAtBaseClass()
     {
         String snowflakePlan = this.buildExecutionPlanString("inheritance::semiStructuredPropertyAccessAtBaseClass__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
-        String snowflakeExpected = "Relational\n" +
-                "(\n" +
-                "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address Name, String, \"\", \"\")]\n" +
-                "  resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Address Name\", \"\")]\n" +
-                "  sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['address']['name']::varchar as \"Firm Address Name\" from PERSON_SCHEMA.PERSON_TABLE as \"root\"\n" +
-                "  connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
-                ")\n";
-        Assert.assertEquals(snowflakeExpected, snowflakePlan);
+        String snowflakeExpected =
+                "    Relational\n" +
+                "    (\n" +
+                "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address Name, String, \"\", \"\")]\n" +
+                "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Address Name\", \"\")]\n" +
+                "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['address']['name']::varchar as \"Firm Address Name\" from PERSON_SCHEMA.PERSON_TABLE as \"root\"\n" +
+                "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
+                "    )\n";
+        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address Name, String, \"\", \"\")]\n";
+        Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
 
         String h2Result = this.executeFunction("inheritance::semiStructuredPropertyAccessAtBaseClass__TabularDataSet_1_", h2Mapping, h2Runtime);
         Assert.assertEquals("Peter,A1\n" +
@@ -52,14 +54,16 @@ public class TestSemiStructuredInheritanceMapping extends AbstractTestSemiStruct
     public void testSemiStructuredPropertyAccessAtSubClass()
     {
         String snowflakePlan = this.buildExecutionPlanString("inheritance::semiStructuredPropertyAccessAtSubClass__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
-        String snowflakeExpected = "Relational\n" +
-                "(\n" +
-                "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, \"\", \"\")]\n" +
-                "  resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Address 0 Line No\", \"\")]\n" +
-                "  sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['address']['lines'][0]['lineno'] as \"Firm Address 0 Line No\" from PERSON_SCHEMA.PERSON_TABLE as \"root\"\n" +
-                "  connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
-                ")\n";
-        Assert.assertEquals(snowflakeExpected, snowflakePlan);
+        String snowflakeExpected =
+                "    Relational\n" +
+                "    (\n" +
+                "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, \"\", \"\")]\n" +
+                "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Address 0 Line No\", \"\")]\n" +
+                "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['address']['lines'][0]['lineno'] as \"Firm Address 0 Line No\" from PERSON_SCHEMA.PERSON_TABLE as \"root\"\n" +
+                "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
+                "    )\n";
+        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, \"\", \"\")]\n";
+        Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
 
         String h2Result = this.executeFunction("inheritance::semiStructuredPropertyAccessAtSubClass__TabularDataSet_1_", h2Mapping, h2Runtime);
         Assert.assertEquals("Peter,1\n" +
@@ -71,19 +75,20 @@ public class TestSemiStructuredInheritanceMapping extends AbstractTestSemiStruct
                 "David,1\n", h2Result.replace("\r\n", "\n"));
     }
 
-
     @Test
     public void testSemiStructuredPropertyAccessAtSubClassNested()
     {
         String snowflakePlan = this.buildExecutionPlanString("inheritance::semiStructuredPropertyAccessAtSubClassNested__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
-        String snowflakeExpected = "Relational\n" +
-                "(\n" +
-                "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, \"\", \"\"), (Firm Address Street, String, \"\", \"\"), (Firm Address City, String, \"\", \"\"), (Firm Address State, String, \"\", \"\")]\n" +
-                "  resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Address 0 Line No\", \"\"), (\"Firm Address Street\", \"\"), (\"Firm Address City\", \"\"), (\"Firm Address State\", \"\")]\n" +
-                "  sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['address']['lines'][0]['lineno'] as \"Firm Address 0 Line No\", \"root\".FIRM_DETAILS['address']['lines'][0]['street']::varchar as \"Firm Address Street\", \"root\".FIRM_DETAILS['address']['lines'][1]['city']::varchar as \"Firm Address City\", \"root\".FIRM_DETAILS['address']['lines'][2]['state']::varchar as \"Firm Address State\" from PERSON_SCHEMA.PERSON_TABLE as \"root\"\n" +
-                "  connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
-                ")\n";
-        Assert.assertEquals(snowflakeExpected, snowflakePlan);
+        String snowflakeExpected =
+                "    Relational\n" +
+                "    (\n" +
+                "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, \"\", \"\"), (Firm Address Street, String, \"\", \"\"), (Firm Address City, String, \"\", \"\"), (Firm Address State, String, \"\", \"\")]\n" +
+                "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Address 0 Line No\", \"\"), (\"Firm Address Street\", \"\"), (\"Firm Address City\", \"\"), (\"Firm Address State\", \"\")]\n" +
+                "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['address']['lines'][0]['lineno'] as \"Firm Address 0 Line No\", \"root\".FIRM_DETAILS['address']['lines'][0]['street']::varchar as \"Firm Address Street\", \"root\".FIRM_DETAILS['address']['lines'][1]['city']::varchar as \"Firm Address City\", \"root\".FIRM_DETAILS['address']['lines'][2]['state']::varchar as \"Firm Address State\" from PERSON_SCHEMA.PERSON_TABLE as \"root\"\n" +
+                "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
+                "    )\n";
+        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, \"\", \"\"), (Firm Address Street, String, \"\", \"\"), (Firm Address City, String, \"\", \"\"), (Firm Address State, String, \"\", \"\")]\n";
+        Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
 
         String h2Result = this.executeFunction("inheritance::semiStructuredPropertyAccessAtSubClassNested__TabularDataSet_1_", h2Mapping, h2Runtime);
         Assert.assertEquals("Peter,1,s1,c1,s1\n" +
@@ -99,14 +104,16 @@ public class TestSemiStructuredInheritanceMapping extends AbstractTestSemiStruct
     public void testSemiStructuredPropertyAccessAtSubClassNestedUsingProjectWithFunctions()
     {
         String snowflakePlan = this.buildExecutionPlanString("inheritance::semiStructuredPropertyAccessAtSubClassNestedUsingProjectWithFunctions__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
-        String snowflakeExpected = "Relational\n" +
-                "(\n" +
-                "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, \"\", \"\"), (Firm Address Street, String, \"\", \"\"), (Firm Address City, String, \"\", \"\"), (Firm Address State, String, \"\", \"\")]\n" +
-                "  resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Address 0 Line No\", \"\"), (\"Firm Address Street\", \"\"), (\"Firm Address City\", \"\"), (\"Firm Address State\", \"\")]\n" +
-                "  sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['address']['lines'][0]['lineno'] as \"Firm Address 0 Line No\", \"root\".FIRM_DETAILS['address']['lines'][0]['street']::varchar as \"Firm Address Street\", \"root\".FIRM_DETAILS['address']['lines'][1]['city']::varchar as \"Firm Address City\", \"root\".FIRM_DETAILS['address']['lines'][2]['state']::varchar as \"Firm Address State\" from PERSON_SCHEMA.PERSON_TABLE as \"root\"\n" +
-                "  connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
-                ")\n";
-        Assert.assertEquals(snowflakeExpected, snowflakePlan);
+        String snowflakeExpected =
+                "    Relational\n" +
+                "    (\n" +
+                "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, \"\", \"\"), (Firm Address Street, String, \"\", \"\"), (Firm Address City, String, \"\", \"\"), (Firm Address State, String, \"\", \"\")]\n" +
+                "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Address 0 Line No\", \"\"), (\"Firm Address Street\", \"\"), (\"Firm Address City\", \"\"), (\"Firm Address State\", \"\")]\n" +
+                "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['address']['lines'][0]['lineno'] as \"Firm Address 0 Line No\", \"root\".FIRM_DETAILS['address']['lines'][0]['street']::varchar as \"Firm Address Street\", \"root\".FIRM_DETAILS['address']['lines'][1]['city']::varchar as \"Firm Address City\", \"root\".FIRM_DETAILS['address']['lines'][2]['state']::varchar as \"Firm Address State\" from PERSON_SCHEMA.PERSON_TABLE as \"root\"\n" +
+                "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
+                "    )\n";
+        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, \"\", \"\"), (Firm Address Street, String, \"\", \"\"), (Firm Address City, String, \"\", \"\"), (Firm Address State, String, \"\", \"\")]\n";
+        Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
 
         String h2Result = this.executeFunction("inheritance::semiStructuredPropertyAccessAtSubClassNestedUsingProjectWithFunctions__TabularDataSet_1_", h2Mapping, h2Runtime);
         Assert.assertEquals("Peter,1,s1,c1,s1\n" +
@@ -116,6 +123,8 @@ public class TestSemiStructuredInheritanceMapping extends AbstractTestSemiStruct
                 "Fabrice,1,s2,c2,\n" +
                 "Oliver,1,s3,,\n" +
                 "David,1,s3,,\n", h2Result.replace("\r\n", "\n"));
+
+        Assert.assertEquals("[PERSON_TABLE.FIRM_DETAILS <TableAliasColumn>, PERSON_TABLE.FIRSTNAME <TableAliasColumn>]", this.scanColumns("inheritance::semiStructuredPropertyAccessAtSubClassNestedUsingProjectWithFunctions__TabularDataSet_1_", h2Mapping));
     }
 
     public String modelResourcePath()

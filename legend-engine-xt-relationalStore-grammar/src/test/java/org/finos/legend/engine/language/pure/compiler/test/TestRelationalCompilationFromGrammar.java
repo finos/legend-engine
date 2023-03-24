@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.compiler.test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRelationalBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
@@ -33,6 +34,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 public class TestRelationalCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
 {
@@ -264,14 +266,12 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
     @Test
     public void testRelationalDatabaseFail()
     {
-        try
-        {
-            PureModel dbIncModel = test(DB_DUP_INC).getTwo();
-        }
-        catch (AssertionError e)
-        {
-            Assert.assertEquals("expected no warnings but found [COMPILATION error: Duplicate column definitions [FIRSTNAME, LASTNAME] in table: personTable, COMPILATION error: Duplicate column definitions [ADDRESSID, LEGALNAME] in table: firmTable, COMPILATION error: Duplicate column definitions [LEGALNAME] in table: otherFirmTable]", e.getMessage());
-        }
+        MutableList<String> warnings = Lists.mutable.empty();
+        warnings.add("COMPILATION error at [4:5-212]: Duplicate column definitions [FIRSTNAME, LASTNAME] in table: personTable");
+        warnings.add("COMPILATION error at [7:5-152]: Duplicate column definitions [ADDRESSID, LEGALNAME] in table: firmTable");
+        warnings.add("COMPILATION error at [9:5-107]: Duplicate column definitions [LEGALNAME] in table: otherFirmTable");
+        PureModel dbIncModel = test(DB_DUP_INC, null, warnings).getTwo();
+
     }
 
     @Test
@@ -2068,4 +2068,112 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
 
     }
 
+    @Test
+    public void testForMultipleRelationalConnections()
+    {
+        test("###Relational\n" +
+                "Database relational::graphFetch::dbInc\n" +
+                "(\n" +
+                "  Table firmTable\n" +
+                "  (\n" +
+                "    FirmCode INTEGER PRIMARY KEY,\n" +
+                "    FirmName VARCHAR(200)\n" +
+                "  )\n" +
+                ")\n" +
+                "\n" +
+                "###Pure\n" +
+                "Class relational::graphFetch::Target_Firm\n" +
+                "{\n" +
+                "  firmName: String[1];\n" +
+                "  firmCode: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class relational::graphFetch::Firm\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "  id: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping relational::graphFetch::Relational_Mapping\n" +
+                "(\n" +
+                "  *relational::graphFetch::Firm: Relational\n" +
+                "  {\n" +
+                "    ~primaryKey\n" +
+                "    (\n" +
+                "      [relational::graphFetch::dbInc]firmTable.FirmCode\n" +
+                "    )\n" +
+                "    ~mainTable [relational::graphFetch::dbInc]firmTable\n" +
+                "    name: [relational::graphFetch::dbInc]firmTable.FirmName,\n" +
+                "    id: [relational::graphFetch::dbInc]firmTable.FirmCode\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "Mapping relational::graphFetch::M2M_Mapping\n" +
+                "(\n" +
+                "  relational::graphFetch::Target_Firm: Pure\n" +
+                "  {\n" +
+                "    ~src relational::graphFetch::Firm\n" +
+                "    firmName: $src.name->toUpper(),\n" +
+                "    firmCode: $src.id\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "###Connection\n" +
+                "RelationalDatabaseConnection relational::graphFetch::RelationalConnection\n" +
+                "{\n" +
+                "  store: relational::graphFetch::dbInc;\n" +
+                "  type: H2;\n" +
+                "  specification: LocalH2\n" +
+                "  {\n" +
+                "    testDataSetupSqls: [\n" +
+                "      'Drop table if exists firmTable;\\nCreate Table firmTable(FirmCode INT, FirmName VARCHAR(200));\\nInsert into firmTable (FirmCode, FirmName) values (101,\\'finos\\');\\nInsert into firmTable (FirmCode, FirmName) values (200,\\'goldman_Sachs\\');'\n" +
+                "      ];\n" +
+                "  };\n" +
+                "  auth: DefaultH2;\n" +
+                "}\n" +
+                "\n" +
+                "RelationalDatabaseConnection relational::graphFetch::SecondRelationalConnection\n" +
+                "{\n" +
+                "  store: relational::graphFetch::dbInc;\n" +
+                "  type: H2;\n" +
+                "  specification: LocalH2\n" +
+                "  {\n" +
+                "    testDataSetupSqls: [\n" +
+                "      'Drop table if exists firmTable;\\nCreate Table firmTable(FirmCode INT, FirmName VARCHAR(200));\\nInsert into firmTable (FirmCode, FirmName) values (001,\\'Alloy_Engineering\\');\\nInsert into firmTable (FirmCode, FirmName) values (102,\\'legend-engine\\');\\n'\n" +
+                "      ];\n" +
+                "  };\n" +
+                "  auth: DefaultH2;\n" +
+                "}\n" +
+                "\n" +
+                "ModelChainConnection relational::graphFetch::OneMappingConnection\n" +
+                "{\n" +
+                "  mappings: [\n" +
+                "    relational::graphFetch::Relational_Mapping\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime relational::graphFetch::ModelChainConnectionRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    relational::graphFetch::M2M_Mapping\n" +
+                "  ];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    relational::graphFetch::dbInc:\n" +
+                "    [\n" +
+                "      connection_2: relational::graphFetch::RelationalConnection,\n" +
+                "      connection_3: relational::graphFetch::SecondRelationalConnection\n" +
+                "    ],\n" +
+                "    ModelStore:\n" +
+                "    [\n" +
+                "      connection_1: relational::graphFetch::OneMappingConnection\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n",null, Collections.singletonList("COMPILATION error at [97:21-70]: Multiple RelationalDatabaseConnections are Not Supported for the same Store - relational::graphFetch::dbInc"));
+    }
 }

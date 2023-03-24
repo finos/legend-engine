@@ -1,0 +1,6 @@
+{
+  "_type" : "databaseCommand",
+  "aggregate": "firm",
+  "pipeline": [],
+  "cursor": {}
+}

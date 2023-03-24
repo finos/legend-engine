@@ -19,7 +19,7 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.eclipse.collections.api.block.function.Function;
 import org.finos.legend.engine.language.pure.grammar.from.ParserErrorListener;
-import org.finos.legend.engine.language.pure.grammar.from.SourceCodeParserInfo;
+import org.finos.legend.engine.language.pure.grammar.from.PureIslandGrammarSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.authentication.AuthenticationLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.authentication.AuthenticationParserGrammar;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
@@ -30,93 +30,58 @@ import java.util.List;
 
 public class AuthenticationGrammarParserExtension implements IAuthenticationGrammarParserExtension
 {
-    public static final String NAME = "Authentication";
-
-    public List<Function<SpecificationSourceCode, AuthenticationSpecification>> getExtraAuthenticationParsers()
+    public List<Function<PureIslandGrammarSourceCode, AuthenticationSpecification>> getExtraAuthenticationParsers()
     {
         return Collections.singletonList(code ->
         {
-            SourceCodeParserInfo parserInfo = getParserInfo(code);
-            AuthenticationParseTreeWalker walker = new AuthenticationParseTreeWalker(parserInfo.walkerSourceInformation);
-            switch (code.getType())
+            AuthenticationParseTreeWalker walker = new AuthenticationParseTreeWalker(code.walkerSourceInformation);
+            switch (code.type)
             {
                 case "ApiKey":
-                    return parseAuthentication(code, p -> walker.visitApiKeyAuthentication(p.apiKeyAuthentication()));
+                    return parse(code, p -> walker.visitApiKeyAuthentication(p.apiKeyAuthentication()));
                 case "UserPassword":
-                    return parseAuthentication(code, p -> walker.visitUserPasswordAuthentication(p.userPasswordAuthentication()));
+                    return parse(code, p -> walker.visitUserPasswordAuthentication(p.userPasswordAuthentication()));
                 case "EncryptedPrivateKey":
-                    return parseAuthentication(code, p -> walker.visitEncryptedKeyPairAuthentication(p.encryptedPrivateKeyAuthentication()));
+                    return parse(code, p -> walker.visitEncryptedKeyPairAuthentication(p.encryptedPrivateKeyAuthentication()));
                 case "GCPWIFWithAWSIdP":
-                    return parseAuthentication(code, p -> walker.visitGcpWIFWithAWSIdPAuthenticationContext(p.gcpWIFWithAWSIdPAuthentication()));
+                    return parse(code, p -> walker.visitGcpWIFWithAWSIdPAuthenticationContext(p.gcpWIFWithAWSIdPAuthentication()));
                 default:
                     return null;
             }
         });
     }
 
-    public List<Function<SpecificationSourceCode, CredentialVaultSecret>> getExtraCredentialVaultSecretParsers()
+    public List<Function<PureIslandGrammarSourceCode, CredentialVaultSecret>> getExtraCredentialVaultSecretParsers()
     {
         return Collections.singletonList(code ->
         {
-            SourceCodeParserInfo parserInfo = getParserInfo(code);
-            CredentialVaultSecretParseTreeWalker walker = new CredentialVaultSecretParseTreeWalker(parserInfo.walkerSourceInformation);
-            switch (code.getType())
+            CredentialVaultSecretParseTreeWalker walker = new CredentialVaultSecretParseTreeWalker(code.walkerSourceInformation);
+            switch (code.type)
             {
                 case "PropertiesFileSecret":
-                    return parseSecret(code, p -> walker.visitPropertiesFileSecret(p.propertiesSecret()));
+                    return parse(code, p -> walker.visitPropertiesFileSecret(p.propertiesSecret()));
                 case "EnvironmentSecret":
-                    return parseSecret(code, p -> walker.visitEnvironmentSecret(p.environmentSecret()));
+                    return parse(code, p -> walker.visitEnvironmentSecret(p.environmentSecret()));
                 case "SystemPropertiesSecret":
-                    return parseSecret(code, p -> walker.visitSystemPropertiesSecret(p.systemPropertiesSecret()));
+                    return parse(code, p -> walker.visitSystemPropertiesSecret(p.systemPropertiesSecret()));
                 case "AWSSecretsManagerSecret":
-                    return parseSecret(code, p -> walker.visitAwsSecretsManagerCredentialVaultSecret(p.awsSecretsManagerSecret()));
+                    return parse(code, p -> walker.visitAwsSecretsManagerCredentialVaultSecret(p.awsSecretsManagerSecret()));
                 default:
                     return null;
             }
         });
     }
 
-    private AuthenticationSpecification parseAuthentication(SpecificationSourceCode code, Function<AuthenticationParserGrammar, AuthenticationSpecification> func)
+    private <T> T parse(PureIslandGrammarSourceCode code, Function<AuthenticationParserGrammar, T> func)
     {
-        CharStream input = CharStreams.fromString(code.getCode());
-        ParserErrorListener errorListener = new ParserErrorListener(code.getWalkerSourceInformation());
+        CharStream input = CharStreams.fromString(code.code);
+        ParserErrorListener errorListener = new ParserErrorListener(code.walkerSourceInformation, AuthenticationLexerGrammar.VOCABULARY);
         AuthenticationLexerGrammar lexer = new AuthenticationLexerGrammar(input);
         AuthenticationParserGrammar parser = new AuthenticationParserGrammar(new CommonTokenStream(lexer));
 
-        lexer.removeErrorListeners();
         lexer.addErrorListener(errorListener);
-        parser.removeErrorListeners();
         parser.addErrorListener(errorListener);
 
         return func.apply(parser);
     }
-
-    private CredentialVaultSecret parseSecret(SpecificationSourceCode code, Function<AuthenticationParserGrammar, CredentialVaultSecret> func)
-    {
-        CharStream input = CharStreams.fromString(code.getCode());
-        ParserErrorListener errorListener = new ParserErrorListener(code.getWalkerSourceInformation());
-        AuthenticationLexerGrammar lexer = new AuthenticationLexerGrammar(input);
-        AuthenticationParserGrammar parser = new AuthenticationParserGrammar(new CommonTokenStream(lexer));
-
-        lexer.removeErrorListeners();
-        lexer.addErrorListener(errorListener);
-        parser.removeErrorListeners();
-        parser.addErrorListener(errorListener);
-
-        return func.apply(parser);
-    }
-
-    private static SourceCodeParserInfo getParserInfo(SpecificationSourceCode specificationSourceCode)
-    {
-        CharStream input = CharStreams.fromString(specificationSourceCode.getCode());
-        ParserErrorListener errorListener = new ParserErrorListener(specificationSourceCode.getWalkerSourceInformation());
-        AuthenticationLexerGrammar lexer = new AuthenticationLexerGrammar(input);
-        lexer.removeErrorListeners();
-        lexer.addErrorListener(errorListener);
-        AuthenticationParserGrammar parser = new AuthenticationParserGrammar(new CommonTokenStream(lexer));
-        parser.removeErrorListeners();
-        parser.addErrorListener(errorListener);
-        return new SourceCodeParserInfo(specificationSourceCode.getCode(), input, specificationSourceCode.getSourceInformation(), specificationSourceCode.getWalkerSourceInformation(), lexer, parser, null);
-    }
-
 }

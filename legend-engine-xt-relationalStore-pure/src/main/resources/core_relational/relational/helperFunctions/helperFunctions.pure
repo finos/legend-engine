@@ -74,7 +74,7 @@ function <<access.private>> meta::relational::runtime::extractDBs(m:meta::pure::
 {
    $m.includes.included->map(i|$i->extractDBs($topMapping))
    ->concatenate(
-      $m.classMappings->filter(r|$r->instanceOf(meta::relational::mapping::RootRelationalInstanceSetImplementation))->cast(@meta::relational::mapping::RootRelationalInstanceSetImplementation).mainTableAlias.database->map(n|$topMapping.resolveStore($n)->cast(@Database))
+      $m.classMappings->filter(r|$r->instanceOf(meta::relational::mapping::RootRelationalInstanceSetImplementation))->cast(@meta::relational::mapping::RootRelationalInstanceSetImplementation).mainTableAlias.database->map(n|$topMapping->resolveStore($n)->cast(@Database))
    )->removeDuplicates();
 }
 
@@ -216,7 +216,7 @@ function meta::relational::mapping::findPropertyMapping(property:AbstractPropert
 {
    let propertyName = $property.name->toOne();
    let propertyMappings = if($currentPropertyMapping->size() >= 1  && $currentPropertyMapping->at(0)->instanceOf(EmbeddedRelationalInstanceSetImplementation),
-         | let embeddedPropertyMapping = $currentPropertyMapping->cast(@EmbeddedRelationalInstanceSetImplementation)->map(c|$c.propertyMappingsByPropertyName($propertyName));
+         | let embeddedPropertyMapping = $currentPropertyMapping->cast(@EmbeddedRelationalInstanceSetImplementation)->map(c|$c->_propertyMappingsByPropertyName($propertyName));
 
            let result = if( !$embeddedPropertyMapping->isEmpty()
                          ,|$embeddedPropertyMapping
@@ -225,7 +225,7 @@ function meta::relational::mapping::findPropertyMapping(property:AbstractPropert
                            ,| // this should only been done in the builder but will refactor as part of other fixes;
                               $currentPropertyMapping
                               ->filter(c | $c->match([
-                                 is: InlineEmbeddedRelationalInstanceSetImplementation[1] | $is.parent.classMappingById($is.inlineSetImplementationId)->toOne().class->_subTypeOf($propertyOwnerClass),
+                                 is: InlineEmbeddedRelationalInstanceSetImplementation[1] | $is.parent->classMappingById($is.inlineSetImplementationId)->toOne().class->_subTypeOf($propertyOwnerClass),
                                  a: Any[1] | true
                               ]))
                               ->map(c | $c->cast(@EmbeddedRelationalInstanceSetImplementation)->propertyMappingsByPropertyName($propertyName));
@@ -238,13 +238,13 @@ function meta::relational::mapping::findPropertyMapping(property:AbstractPropert
          ,
          | let propMappings = if (!$propertyMappingFromRouter->isEmpty() && $propertyMappingFromRouter.property->removeDuplicates() == $property,
                  |$propertyMappingFromRouter->map(pm | $pm->meta::pure::router::routing::reprocessAggregationAwarePropertyMapping()),
-                 |let rootClassMapping = $mapping.rootClassMappingByClass($propertyOwnerClass)->potentiallyResolveOperation($mapping);
+                 |let rootClassMapping = $mapping->rootClassMappingByClass($propertyOwnerClass)->potentiallyResolveOperation($mapping);
                   let classMapping = if($rootClassMapping->isEmpty() && $propertyOwnerClass->instanceOf(MappingClass),
-                                        | $mapping.classMappings()->filter(x | $x->instanceOf(InstanceSetImplementation) && $x->cast(@InstanceSetImplementation).mappingClass == $propertyOwnerClass),
+                                        | $mapping->classMappings()->filter(x | $x->instanceOf(InstanceSetImplementation) && $x->cast(@InstanceSetImplementation).mappingClass == $propertyOwnerClass),
                                         | $rootClassMapping);
                      assertSize($classMapping, 1, | 'The system can\'t find a mapping ('+$classMapping->size()->toString()+') for the class \''+$propertyOwnerClass->elementToPath()+'\' in the mapping \''+$mapping->elementToPath()+'\'');
                      let setImpls = $classMapping->resolveOperation($mapping);
-                     let result = $setImpls->map(s|$s.propertyMappingsByPropertyName($propertyName))->map(pm | $pm->meta::pure::router::routing::reprocessAggregationAwarePropertyMapping());
+                     let result = $setImpls->map(s|$s->_propertyMappingsByPropertyName($propertyName))->map(pm | $pm->meta::pure::router::routing::reprocessAggregationAwarePropertyMapping());
                      assert(!$result->isEmpty(), | 'The system can\'t find a mapping for the property \''+$propertyOwnerClass->elementToPath()+'.'+$propertyName+'\' in the mapping \''+$mapping->elementToPath()+'\'');
                      $result;
               );
@@ -267,7 +267,7 @@ function meta::relational::mapping::findPropertyMapping(property:AbstractPropert
 
 function meta::relational::mapping::dataTypePropertyMappings(impl:RelationalInstanceSetImplementation[1]):PropertyMapping[*]
 {
-   $impl.allPropertyMappings()->map(pm | $pm.property->genericType().typeArguments->at(1).rawType->toOne()->match([
+   $impl->allPropertyMappings()->map(pm | $pm.property->genericType().typeArguments->at(1).rawType->toOne()->match([
                                               d : meta::pure::metamodel::type::DataType[1] | $pm,
                                               a : Any[1] | []
                                              ]))
@@ -277,24 +277,24 @@ function meta::relational::mapping::dataTypePropertyMappings(impl:RelationalInst
 function meta::relational::mapping::resolvePrimaryKey(rsi: RelationalInstanceSetImplementation[1]):RelationalOperationElement[*]
 {
    $rsi->match([
-      ersi: EmbeddedRelationalInstanceSetImplementation[1] | $ersi.setMappingOwner.resolvePrimaryKey(),
-      rrsi: RootRelationalInstanceSetImplementation[1]     | $rrsi.resolvePrimaryKey()
+      ersi: EmbeddedRelationalInstanceSetImplementation[1] | $ersi.setMappingOwner->resolvePrimaryKey(),
+      rrsi: RootRelationalInstanceSetImplementation[1]     | $rrsi->resolvePrimaryKey()
    ])
 }
 
 function meta::relational::mapping::resolveMainTable(rsi: RelationalInstanceSetImplementation[1]):Table[1]
 {
    $rsi->match([
-      ersi: EmbeddedRelationalInstanceSetImplementation[1] | $ersi.setMappingOwner.mainTable(),
-      rrsi: RootRelationalInstanceSetImplementation[1]     | $rrsi.mainTable()
+      ersi: EmbeddedRelationalInstanceSetImplementation[1] | $ersi.setMappingOwner->mainTable(),
+      rrsi: RootRelationalInstanceSetImplementation[1]     | $rrsi->mainTable()
    ])
 }
 
 function meta::relational::mapping::resolveMainRelation(rsi: RelationalInstanceSetImplementation[1]):Relation[1]
 {
    $rsi->match([
-      ersi: EmbeddedRelationalInstanceSetImplementation[1] | $ersi.setMappingOwner.mainRelation(),
-      rrsi: RootRelationalInstanceSetImplementation[1]     | $rrsi.mainRelation()
+      ersi: EmbeddedRelationalInstanceSetImplementation[1] | $ersi.setMappingOwner->mainRelation(),
+      rrsi: RootRelationalInstanceSetImplementation[1]     | $rrsi->mainRelation()
    ])
 }
 

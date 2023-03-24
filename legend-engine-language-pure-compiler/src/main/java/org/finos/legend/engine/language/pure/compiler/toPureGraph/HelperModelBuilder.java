@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import java.util.Collections;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.procedure.Procedure;
 import org.eclipse.collections.impl.factory.Lists;
@@ -32,6 +33,7 @@ import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_modelToModel_ModelStore_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_constraint_Constraint_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_TaggedValue_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_property_DefaultValue_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_property_Property_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_property_QualifiedProperty_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_FunctionType_Impl;
@@ -39,7 +41,6 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_Ge
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_ClassConstraintValueSpecificationContext_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_ExpressionSequenceValueSpecificationContext_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl;
-import org.finos.legend.pure.generated.platform_pure_corefunctions_meta;
 import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningFunctions;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner;
@@ -63,6 +64,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static org.finos.legend.pure.generated.platform_pure_basics_meta_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_;
+
 public class HelperModelBuilder
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
@@ -71,9 +74,17 @@ public class HelperModelBuilder
     {
         return property ->
         {
+            Root_meta_pure_metamodel_function_property_DefaultValue_Impl defaultValue = null;
+            if (property.defaultValue != null)
+            {
+                LambdaFunction<?> lambdaFunction = HelperValueSpecificationBuilder.buildLambda(Collections.singletonList(property.defaultValue.value), Collections.emptyList(), context);
+                defaultValue = new Root_meta_pure_metamodel_function_property_DefaultValue_Impl((String)null);
+                defaultValue._functionDefinition(lambdaFunction);
+            }
             GenericType returnGenericType = context.resolveGenericType(property.type, property.propertyTypeSourceInformation);
             return new Root_meta_pure_metamodel_function_property_Property_Impl<>(property.name)
                     ._name(property.name)
+                    ._defaultValue(defaultValue)
                     ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::metamodel::function::property::Property"))._typeArguments(Lists.fixedSize.of(genericType, returnGenericType))._multiplicityArgumentsAdd(context.pureModel.getMultiplicity(property.multiplicity)))
                     ._genericType(returnGenericType)
                     ._multiplicity(context.pureModel.getMultiplicity(property.multiplicity))
@@ -366,6 +377,13 @@ public class HelperModelBuilder
         return property;
     }
 
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> getAssociationPropertyClass(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association _association, final String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation, CompileContext context)
+    {
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> property = _association._properties().detect(p -> !name.equals(p.getName()));
+        Assert.assertTrue(property != null, () -> "Can't find associated property of property '" + name + "' in association '" + (getElementFullPath(_association, context.pureModel.getExecutionSupport())) + "'", sourceInformation, EngineErrorType.COMPILATION);
+        return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?>) property._genericType()._rawType();
+    }
+
     public static AbstractProperty<?> getOwnedAppliedProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation, CompiledExecutionSupport executionSupport)
     {
         return HelperModelBuilder.getOwnedAppliedProperty(_class, null, name, sourceInformation, executionSupport);
@@ -503,6 +521,6 @@ public class HelperModelBuilder
             return "ModelStore";
         }
         // TODO: we might want to fix a bugs here where if we pass in element without ID/package + name, we might get `cannot cast a collection of multiplicity [0] to [1]` or so
-        return platform_pure_corefunctions_meta.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(element, executionSupport);
+        return Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(element, executionSupport);
     }
 }

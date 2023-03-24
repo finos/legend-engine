@@ -22,6 +22,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
 import org.finos.legend.engine.plan.dependencies.store.serviceStore.IServiceParametersResolutionExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionNodeJavaPlatformHelper;
@@ -29,6 +30,7 @@ import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
+import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.plan.execution.stores.service.ServiceExecutor;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AggregationAwareExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AllocationExecutionNode;
@@ -93,7 +95,8 @@ public class ServiceExecutionNodeExecutor implements ExecutionNodeVisitor<Result
                 String processedUrl = ServiceExecutor.getProcessedUrl(node.url, node.params, mappedParameters, this.executionState);
                 List<Header> headers = ServiceExecutor.getProcessedHeaders(node.params, mappedParameters, this.executionState);
                 StringEntity requestBodyEntity = ServiceExecutor.getRequestBodyEntity(node.requestBodyDescription, this.executionState);
-                return ServiceExecutor.executeHttpService(processedUrl, headers, requestBodyEntity, node.method, node.mimeType, node.securitySchemes, this.profiles);
+                CredentialProviderProvider credentialProviderProvider = ((ServiceStoreExecutionState) executionState.getStoreExecutionState(StoreType.Service)).getCredentialProviderProvider();
+                return new ServiceExecutor(credentialProviderProvider).executeHttpService(processedUrl, headers, requestBodyEntity, node.method, node.mimeType, node.securitySchemes,node.authenticationSchemes, this.profiles);
             }
         }
         else if (executionNode instanceof ServiceParametersResolutionExecutionNode)

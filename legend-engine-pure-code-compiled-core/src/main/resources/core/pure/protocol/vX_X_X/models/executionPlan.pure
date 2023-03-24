@@ -31,7 +31,6 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::ExecutionNode
    resultType : ResultType[1];
    resultSizeRange : meta::protocols::pure::vX_X_X::metamodel::domain::Multiplicity[0..1];
    requiredVariableInputs : meta::protocols::pure::vX_X_X::metamodel::executionPlan::VariableInput[*];
-   isChildrenExecutionParallelizable: Boolean[0..1];
    executionNodes : ExecutionNode[*];
    implementation : meta::protocols::pure::vX_X_X::metamodel::executionPlan::PlatformImplementation[0..1];
    authDependent: Boolean[0..1];
@@ -57,6 +56,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::PureExpressionPla
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::PlatformUnionExecutionNode extends ExecutionNode
 {
+  isChildrenExecutionParallelizable: Boolean[0..1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::PlatformMergeExecutionNode extends ExecutionNode
@@ -247,14 +247,6 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::VoidResultType ex
 {
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::LazyVoidResultType extends ResultType
-{
-}
-
-Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::UpdateNodeResultType extends ResultType
-{
-}
-
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::ClassResultType extends ResultType
 {
    class : String[1];
@@ -312,6 +304,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::SDLC
 
 Class meta::protocols::pure::vX_X_X::metamodel::PureSDLC extends meta::protocols::pure::vX_X_X::metamodel::SDLC
 {
+   overrideUrl : String[0..1];
    packageableElementPointers : meta::protocols::pure::vX_X_X::metamodel::PackageableElementPointer[*];
 }
 

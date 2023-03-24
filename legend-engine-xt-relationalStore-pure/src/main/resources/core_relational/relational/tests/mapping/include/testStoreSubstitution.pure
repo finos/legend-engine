@@ -13,14 +13,15 @@
 // limitations under the License.
 
 import meta::relational::tests::*;
+import meta::pure::mapping::*;
 
 function <<test.Test>> meta::relational::tests::mapping::include::testStoreSubstitution():Boolean[1]
 {
-   assertIs(dbInc, simpleRelationalMappingInc.resolveStore(dbInc));
-   assertIs(db, simpleRelationalMappingInc.resolveStore(db));
+   assertIs(dbInc, simpleRelationalMappingInc->resolveStore(dbInc));
+   assertIs(db, simpleRelationalMappingInc->resolveStore(db));
 
-   assertIs(db, simpleRelationalMapping.resolveStore(dbInc));
-   assertIs(db, simpleRelationalMapping.resolveStore(db));
+   assertIs(db, simpleRelationalMapping->resolveStore(dbInc));
+   assertIs(db, simpleRelationalMapping->resolveStore(db));
 }
 
 

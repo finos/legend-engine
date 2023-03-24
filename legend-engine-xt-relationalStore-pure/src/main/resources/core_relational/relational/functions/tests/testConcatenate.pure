@@ -166,7 +166,7 @@ function <<test.Test>> meta::relational::tests::projection::function::concatenat
    let result = execute(|NewTrade.all()->project([t | $t.id, t | $t.accountOrganizationalEntity.name], ['Trade ID', 'OE']), testEmbeddedMapping, testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertEquals([1, 'OE 1', 2, 'OE 2'], $result.values.rows.values);
-   assertSameSQL('select "root".ID as "Trade ID", "unionalias_0"."EXTERNALACCOUNTEA_OE_NAME" as "OE" from CONCATENATE.TRADE as "root" left outer join (select "subaccount_0".ID as ID, null as EA_ID, "subaccount_0".OE_NAME as "EXTERNALACCOUNTEA_OE_NAME" from CONCATENATE.SUBACCOUNT as "subaccount_0" UNION ALL select null as ID, "externalaccount_0".EA_ID as EA_ID, "externalaccount_0".EA_OE_NAME as "EXTERNALACCOUNTEA_OE_NAME" from CONCATENATE.EXTERNALACCOUNT as "externalaccount_0") as "unionalias_0" on ("root".EXTERNALACCOUNT_ID = "unionalias_0".EA_ID or "root".SUBACCOUNT_ID = "unionalias_0".ID)', $result);
+   assertSameSQL('select "root".ID as "Trade ID", "unionalias_0"."SUBACCOUNTOE_NAME_EXTERNALACCOUNTEA_OE_NAME" as "OE" from CONCATENATE.TRADE as "root" left outer join (select "subaccount_0".ID as ID, null as EA_ID, "subaccount_0".OE_NAME as "SUBACCOUNTOE_NAME_EXTERNALACCOUNTEA_OE_NAME" from CONCATENATE.SUBACCOUNT as "subaccount_0" UNION ALL select null as ID, "externalaccount_0".EA_ID as EA_ID, "externalaccount_0".EA_OE_NAME as "SUBACCOUNTOE_NAME_EXTERNALACCOUNTEA_OE_NAME" from CONCATENATE.EXTERNALACCOUNT as "externalaccount_0") as "unionalias_0" on ("root".EXTERNALACCOUNT_ID = "unionalias_0".EA_ID or "root".SUBACCOUNT_ID = "unionalias_0".ID)', $result);
 }
 
 

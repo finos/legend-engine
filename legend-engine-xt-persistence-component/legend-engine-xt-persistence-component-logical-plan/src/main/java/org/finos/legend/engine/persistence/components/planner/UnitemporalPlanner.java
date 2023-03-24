@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.planner;
 
 import org.finos.legend.engine.persistence.components.common.Datasets;
+import org.finos.legend.engine.persistence.components.common.OptimizationFilter;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAbstract;
@@ -54,6 +55,7 @@ import java.util.Map;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_INSERTED;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_UPDATED;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_TERMINATED;
+import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.SUPPORTED_DATA_TYPES_FOR_OPTIMIZATION_COLUMNS;
 
 abstract class UnitemporalPlanner extends Planner
 {
@@ -120,6 +122,20 @@ abstract class UnitemporalPlanner extends Planner
         if (!values.contains(valueToCheck))
         {
             throw new IllegalArgumentException(errorMessage);
+        }
+    }
+
+    protected void validateOptimizationFilters(List<OptimizationFilter> optimizationFilters, Dataset dataset)
+    {
+        for (OptimizationFilter filter: optimizationFilters)
+        {
+            Field filterField = dataset.schema().fields().stream()
+                    .filter(field -> field.name().equalsIgnoreCase(filter.fieldName()))
+                    .findFirst().orElseThrow(() -> new IllegalStateException(String.format("Optimization filter [%s] not found in Staging Schema", filter.fieldName())));
+            if (!SUPPORTED_DATA_TYPES_FOR_OPTIMIZATION_COLUMNS.contains(filterField.type().dataType()))
+            {
+                throw new IllegalStateException(String.format("Optimization filter's data type [%s] is not supported", filterField.type().dataType()));
+            }
         }
     }
 

@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.extensions.collection.generation;
 
-import java.util.Set;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
@@ -23,6 +22,7 @@ import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
 import org.finos.legend.engine.generation.DataSpaceAnalyticsArtifactGenerationExtension;
+import org.finos.legend.engine.generation.SearchDocumentArtifactGenerationExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.ArtifactGenerationExtension;
@@ -101,7 +101,7 @@ public class TestExtensions
     @Test
     public void testCodeRepositories()
     {
-        Assert.assertEquals(Lists.mutable.withAll(getExpectedCodeRepositories()).sortThis(), CodeRepositoryProviderHelper.findCodeRepositories().collect(CodeRepository::getName, Lists.mutable.empty()).sortThis());
+        Assert.assertEquals(Lists.mutable.withAll(getExpectedCodeRepositories()).sortThis(), CodeRepositoryProviderHelper.findCodeRepositories().collect(CodeRepository::getName, Lists.mutable.empty()).select(c -> !c.startsWith("platform_")).sortThis());
     }
 
     @Test
@@ -114,7 +114,7 @@ public class TestExtensions
         Assert.assertEquals(Lists.fixedSize.empty(), Iterate.reject(expectedRepos, allSpecNames::contains, Lists.mutable.empty()));
 
         MutableSet<String> specNames = Iterate.collect(DistributedMetadataSpecification.loadSpecifications(classLoader, expectedRepos), DistributedMetadataSpecification::getName, Sets.mutable.empty());
-        Assert.assertEquals(Sets.mutable.withAll(expectedRepos).with("platform"), specNames);
+        Assert.assertEquals(Sets.mutable.withAll(expectedRepos).with("platform"), specNames.select(c -> !c.startsWith("platform_")));
     }
 
     @Test
@@ -212,13 +212,12 @@ public class TestExtensions
                 .with(org.finos.legend.engine.protocol.pure.v1.RelationalProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.BigQueryProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.SpannerProtocolExtension.class)
+                .with(org.finos.legend.engine.protocol.pure.v1.TrinoProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.ServiceProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.ServiceStoreProtocolExtension.class)
+                .with(org.finos.legend.engine.protocol.pure.v1.AuthenticationProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.TextProtocolExtension.class)
-                .with(org.finos.legend.engine.external.format.flatdata.FlatDataProtocolExtension.class)
-                .with(org.finos.legend.engine.external.format.json.JsonProtocolExtension.class)
-                .with(org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLPureProtocolExtension.class)
-                .with(org.finos.legend.engine.external.format.xml.XmlProtocolExtension.class);
+                .with(org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLPureProtocolExtension.class);
     }
 
     protected Iterable<? extends Class<? extends GenerationExtension>> getExpectedGenerationExtensions()
@@ -249,6 +248,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.pure.dsl.persistence.cloud.grammar.from.PersistenceCloudParserExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.from.RelationalGrammarParserExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.service.grammar.from.ServiceParserExtension.class)
+                .with(org.finos.legend.engine.language.pure.dsl.authentication.grammar.from.AuthenticationGrammarParserExtension.class)
                 .with(org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLGrammarParserExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.from.ServiceStoreGrammarParserExtension.class)
                 .with(TextParserExtension.class);
@@ -269,9 +269,11 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.pure.grammar.to.RelationalGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.to.BigQueryGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.to.SpannerGrammarComposerExtension.class)
+                .with(org.finos.legend.engine.language.pure.grammar.to.TrinoGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.service.grammar.to.ServiceGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.to.ServiceStoreGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLPureGrammarComposerExtension.class)
+                .with(org.finos.legend.engine.language.pure.dsl.authentication.grammar.to.AuthenticationGrammarComposerExtension.class)
                 .with(TextGrammarComposerExtension.class);
     }
 
@@ -293,8 +295,10 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.RelationalCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.BigQueryCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.SpannerCompilerExtension.class)
+                .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.TrinoCompilerExtension.class)
                 .with(org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLCompilerExtension.class)
-                .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.ServiceStoreCompilerExtension.class);
+                .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.ServiceStoreCompilerExtension.class)
+                .with(org.finos.legend.engine.language.pure.dsl.authentication.compiler.toPureGraph.AuthenticationCompilerExtension.class);
     }
 
     protected Iterable<? extends Class<? extends PlanGeneratorExtension>> getExpectedPlanGeneratorExtensions()
@@ -321,7 +325,8 @@ public class TestExtensions
     {
         // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
         return Lists.mutable.<Class<? extends ArtifactGenerationExtension>>empty()
-                .with(DataSpaceAnalyticsArtifactGenerationExtension.class);
+                .with(DataSpaceAnalyticsArtifactGenerationExtension.class)
+                .with(SearchDocumentArtifactGenerationExtension.class);
     }
 
     protected Iterable<String> getExpectedCodeRepositories()
@@ -329,9 +334,13 @@ public class TestExtensions
         // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
         return Lists.mutable.<String>empty()
                 .with("core")
+                .with("core_analytics_lineage")
                 .with("core_analytics_mapping")
+                .with("core_analytics_search")
                 .with("core_data_space")
+                .with("core_data_space_metamodel")
                 .with("core_diagram")
+                .with("core_diagram_metamodel")
                 .with("core_external_format_avro")
                 .with("core_external_format_rosetta")
                 .with("core_external_language_morphir")
@@ -350,8 +359,10 @@ public class TestExtensions
                 .with("core_relational")
                 .with("core_relational_bigquery")
                 .with("core_relational_spanner")
+                .with("core_relational_trino")
                 .with("core_servicestore")
-                .with("core_text")
+                .with("core_authentication")
+                .with("core_text_metamodel")
                 .with("core_external_language_java")
                 .with("core_java_platform_binding")
                 .with("core_relational_java_platform_binding")

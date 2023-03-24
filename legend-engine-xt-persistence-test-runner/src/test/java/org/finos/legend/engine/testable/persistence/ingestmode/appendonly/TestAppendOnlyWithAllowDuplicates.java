@@ -17,8 +17,8 @@ package org.finos.legend.engine.testable.persistence.ingestmode.appendonly;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertPass;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.EqualToJsonAssertFail;
-import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestFailed;
-import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestPassed;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecutionStatus;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.testable.persistence.ingestmode.TestPersistenceBase;
 import org.junit.Assert;
@@ -35,8 +35,9 @@ public class TestAppendOnlyWithAllowDuplicates extends TestPersistenceBase
         String persistenceSpec = readPureCode(path);
         TestResult result = testPersistence(persistenceSpec).results.get(0);
 
-        assertTrue(result instanceof TestPassed);
-        Assert.assertEquals("test::TestPersistence", ((TestPassed) result).testable);
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
     }
 
     @Test
@@ -46,8 +47,9 @@ public class TestAppendOnlyWithAllowDuplicates extends TestPersistenceBase
         String persistenceSpec = readPureCode(path);
         TestResult result = testPersistence(persistenceSpec).results.get(0);
 
-        assertTrue(result instanceof TestPassed);
-        Assert.assertEquals("test::TestPersistence", ((TestPassed) result).testable);
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
     }
 
     @Test
@@ -57,9 +59,10 @@ public class TestAppendOnlyWithAllowDuplicates extends TestPersistenceBase
         String persistenceSpec = readPureCode(path);
         TestResult result = testPersistence(persistenceSpec).results.get(0);
 
-        assertTrue(result instanceof TestFailed);
-        Assert.assertEquals("test::TestPersistence", ((TestFailed) result).testable);
-        TestFailed testFailed = (TestFailed) result;
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.FAIL, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
+        TestExecuted testFailed = (TestExecuted) result;
         EqualToJsonAssertFail batch1Status = (EqualToJsonAssertFail) testFailed.assertStatuses.get(0);
         AssertPass batch2Status = (AssertPass) testFailed.assertStatuses.get(1);
 
@@ -77,9 +80,10 @@ public class TestAppendOnlyWithAllowDuplicates extends TestPersistenceBase
         String persistenceSpec = readPureCode(path);
         TestResult result = testPersistence(persistenceSpec).results.get(0);
 
-        assertTrue(result instanceof TestFailed);
-        Assert.assertEquals("test::TestPersistence", ((TestFailed) result).testable);
-        TestFailed testFailed = (TestFailed) result;
+        assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.FAIL, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("test::TestPersistence", result.testable);
+        TestExecuted testFailed = (TestExecuted) result;
         AssertFail batch1Status = (AssertFail) testFailed.assertStatuses.get(0);
         Assert.assertTrue(batch1Status.message.contains("Unexpected close marker '}'"));
     }

@@ -27,44 +27,95 @@ public interface ExecutionNodeVisitor<T>
     T visit(ExecutionNode executionNode);
 
     // Flow
-    T visit(SequenceExecutionNode sequenceExecutionNode);
+    default T visit(SequenceExecutionNode sequenceExecutionNode)
+    {
+        throw new RuntimeException("Not implemented!");
+    }
 
-    T visit(MultiResultSequenceExecutionNode multiResultSequenceExecutionNode);
+    default T visit(MultiResultSequenceExecutionNode multiResultSequenceExecutionNode)
+    {
+        throw new RuntimeException("Not implemented!");
+    }
 
-    T visit(FreeMarkerConditionalExecutionNode localGraphFetchExecutionNode);
+    default T visit(FreeMarkerConditionalExecutionNode localGraphFetchExecutionNode)
+    {
+        throw new RuntimeException("Not implemented!");
+    }
 
-    T visit(AllocationExecutionNode allocationExecutionNode);
+    default T visit(AllocationExecutionNode allocationExecutionNode)
+    {
+        throw new RuntimeException("Not implemented!");
+    }
 
-    T visit(ErrorExecutionNode errorExecutionNode);
+    default T visit(ErrorExecutionNode errorExecutionNode)
+    {
+        throw new RuntimeException("Not implemented!");
+    }
 
-    T visit(FunctionParametersValidationNode functionParametersValidationNode);
+    default T visit(FunctionParametersValidationNode functionParametersValidationNode)
+    {
+        throw new RuntimeException("Not implemented!");
+    }
 
     // Shared GraphFetch Superstructure
     @Deprecated
-    T visit(GraphFetchExecutionNode graphFetchExecutionNode);
+    default T visit(GraphFetchExecutionNode graphFetchExecutionNode)
+    {
+        throw new RuntimeException("Not implemented!");
+    }
 
-    T visit(StoreMappingGlobalGraphFetchExecutionNode storeMappingGlobalGraphFetchExecutionNode);
+    default T visit(StoreMappingGlobalGraphFetchExecutionNode storeMappingGlobalGraphFetchExecutionNode)
+    {
+        throw new RuntimeException("Not implemented!");
+    }
 
-    T visit(LocalGraphFetchExecutionNode localGraphFetchExecutionNode);
+    default T visit(LocalGraphFetchExecutionNode localGraphFetchExecutionNode)
+    {
+        throw new RuntimeException("Not implemented!");
+    }
 
     // InMemory
     @Deprecated
-    T visit(GraphFetchM2MExecutionNode graphFetchM2MExecutionNode);
+    default T visit(GraphFetchM2MExecutionNode graphFetchM2MExecutionNode)
+    {
+        throw new RuntimeException("Not implemented!");
+    }
 
-    T visit(StoreStreamReadingExecutionNode storeStreamReadingExecutionNode);
+    default T visit(StoreStreamReadingExecutionNode storeStreamReadingExecutionNode)
+    {
+        throw new RuntimeException("Not implemented!");
+    }
 
-    T visit(InMemoryRootGraphFetchExecutionNode inMemoryRootGraphFetchExecutionNode);
+    default T visit(InMemoryRootGraphFetchExecutionNode inMemoryRootGraphFetchExecutionNode)
+    {
+        throw new RuntimeException("Not implemented!");
+    }
 
-    T visit(InMemoryCrossStoreGraphFetchExecutionNode inMemoryCrossStoreGraphFetchExecutionNode);
+    default T visit(InMemoryCrossStoreGraphFetchExecutionNode inMemoryCrossStoreGraphFetchExecutionNode)
+    {
+        throw new RuntimeException("Not implemented!");
+    }
 
-    T visit(InMemoryPropertyGraphFetchExecutionNode inMemoryPropertyGraphFetchExecutionNode);
+    default T visit(InMemoryPropertyGraphFetchExecutionNode inMemoryPropertyGraphFetchExecutionNode)
+    {
+        throw new RuntimeException("Not implemented!");
+    }
 
     // Aggregation Aware
-    T visit(AggregationAwareExecutionNode aggregationAwareExecutionNode);
+    default T visit(AggregationAwareExecutionNode aggregationAwareExecutionNode)
+    {
+        throw new RuntimeException("Not implemented!");
+    }
 
     // Constant
-    T visit(ConstantExecutionNode constantExecutionNode);
+    default T visit(ConstantExecutionNode constantExecutionNode)
+    {
+        throw new RuntimeException("Not implemented!");
+    }
 
     // Replace with Serialization
-    T visit(PureExpressionPlatformExecutionNode pureExpressionPlatformExecutionNode);
+    default T visit(PureExpressionPlatformExecutionNode pureExpressionPlatformExecutionNode)
+    {
+        throw new RuntimeException("Not implemented!");
+    }
 }

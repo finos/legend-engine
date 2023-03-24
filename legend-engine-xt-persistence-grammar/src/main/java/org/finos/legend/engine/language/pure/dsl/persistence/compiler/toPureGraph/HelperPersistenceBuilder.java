@@ -92,6 +92,7 @@ import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_ConnectionTestData;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_ConnectionTestData_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceTest;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceTestBatch;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceTestBatch_Impl;
@@ -209,7 +210,7 @@ public class HelperPersistenceBuilder
         return sink.accept(new SinkBuilder(context));
     }
 
-    public static RichIterable<? extends Test> buildTests(Persistence persistence, CompileContext context)
+    public static RichIterable<? extends Test> buildTests(Persistence persistence, Root_meta_pure_persistence_metamodel_Persistence purePersistence, CompileContext context)
     {
         if (persistence.tests == null)
         {
@@ -224,15 +225,15 @@ public class HelperPersistenceBuilder
             throw new EngineException("Multiple persistenceTest found with ids : '" + String.join(",", duplicateTestIds) + "'", persistence.sourceInformation, EngineErrorType.COMPILATION);
         }
 
-        return ListIterate.collect(persistence.tests, test -> buildPersistenceTest(test, persistence, context));
+        return ListIterate.collect(persistence.tests, test -> buildPersistenceTest(test, persistence, purePersistence, context));
     }
 
-    private static Root_meta_pure_persistence_metamodel_PersistenceTest buildPersistenceTest(PersistenceTest test, Persistence persistence, CompileContext context)
+    private static Root_meta_pure_persistence_metamodel_PersistenceTest buildPersistenceTest(PersistenceTest test, Persistence persistence, Root_meta_pure_persistence_metamodel_Persistence purePersistence, CompileContext context)
     {
         Root_meta_pure_persistence_metamodel_PersistenceTest purePersistenceTest = new Root_meta_pure_persistence_metamodel_PersistenceTest_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::PersistenceTest"));
         purePersistenceTest._id(test.id);
         purePersistenceTest._isTestDataFromServiceOutput(test.isTestDataFromServiceOutput);
-
+        purePersistenceTest._testable(purePersistence);
         if (test.testBatches != null)
         {
             List<String> testBatchIds = ListIterate.collect(test.testBatches, testBatch -> testBatch.id);

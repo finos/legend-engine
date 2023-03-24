@@ -46,7 +46,7 @@ function meta::pure::metamodel::serialization::grammar::printValueSpecification(
     $v->match(  [  f:FunctionExpression[1] |$f->meta::pure::metamodel::serialization::grammar::removeAutomap()->cast(@FunctionExpression)->printPropertyOrFunctionExpression( $space),
                     i:InstanceValue[1] | printInstanceValue($i, $space),
                     v:VariableExpression[1] | '$' + $v.name,
-                    a:Any[1] | $space+'UNKNOWN ' + $a->type()->toOne()->id() + '\n'
+                    a:Any[1] | 'UNKNOWN ' + $a->type()->toOne()->id()
                 ]
              )
 }
@@ -62,7 +62,9 @@ function <<access.private>> meta::pure::metamodel::serialization::grammar::remov
                                                  |  ^$fe(parametersValues=$fe.parametersValues->at(0)->meta::pure::metamodel::serialization::grammar::removeAutomap()->concatenate( $fe.parametersValues->tail()))
                                                 );
 
-                                           ,| ^$fe(parametersValues=$fe.parametersValues->at(0)->meta::pure::metamodel::serialization::grammar::removeAutomap()->concatenate( $fe.parametersValues->tail()))
+                                           ,| if ($fe.parametersValues->isNotEmpty(),
+                                                | ^$fe(parametersValues=$fe.parametersValues->at(0)->meta::pure::metamodel::serialization::grammar::removeAutomap()->concatenate( $fe.parametersValues->tail())),
+                                                | $fe)
                                       ),
                v:ValueSpecification[1] |  $v]);
 }

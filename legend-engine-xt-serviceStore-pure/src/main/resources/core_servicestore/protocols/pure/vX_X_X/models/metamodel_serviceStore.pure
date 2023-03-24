@@ -15,8 +15,9 @@ import meta::protocols::pure::vX_X_X::metamodel::store::service::*;
 
 Class meta::protocols::pure::vX_X_X::metamodel::store::service::ServiceStore extends meta::protocols::pure::vX_X_X::metamodel::store::Store
 {
-   description : String[0..1];
-   elements    : ServiceStoreElement[*];
+   description     : String[0..1];
+   securitySchemes : Map<String,SecurityScheme>[1];
+   elements        : ServiceStoreElement[*];
 }
 
 Class <<typemodifiers.abstract>> meta::protocols::pure::vX_X_X::metamodel::store::service::ServiceStoreElement
@@ -38,7 +39,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::store::service::Service extends 
    method      : String[1];
    parameters  : ServiceParameter[*];
    response    : ComplexTypeReference[1];
-   security    : SecurityScheme[*];
+   security    : SecuritySchemeRequirement[*];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::store::service::ServiceParameter
@@ -91,6 +92,18 @@ Class meta::protocols::pure::vX_X_X::metamodel::store::service::SerializationFor
 Class <<typemodifiers.abstract>> meta::protocols::pure::vX_X_X::metamodel::store::service::SecurityScheme
 {
    _type    : String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::store::service::HttpSecurityScheme extends meta::protocols::pure::vX_X_X::metamodel::store::service::SecurityScheme
+{
+   scheme       : String[1];
+   bearerFormat : String[0..1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::store::service::ApiKeySecurityScheme extends meta::protocols::pure::vX_X_X::metamodel::store::service::SecurityScheme
+{
+   location : String[1];
+   keyName  : String[1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::store::service::ServiceGroupPtr
@@ -155,4 +168,20 @@ Class meta::protocols::pure::vX_X_X::metamodel::store::service::mapping::Service
 Class meta::protocols::pure::vX_X_X::metamodel::store::service::mapping::ServiceRequestBodyBuildInfo
 {
    transform        : Lambda[1];
+}
+
+Class <<typemodifiers.abstract>> meta::protocols::pure::vX_X_X::metamodel::store::service::SecuritySchemeRequirement
+{
+    _type : String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::store::service::SingleSecuritySchemeRequirement extends meta::protocols::pure::vX_X_X::metamodel::store::service::SecuritySchemeRequirement
+{
+    id               : String[1];
+    securityScheme   : SecurityScheme[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::store::service::MultiSecuritySchemeRequirement extends meta::protocols::pure::vX_X_X::metamodel::store::service::SecuritySchemeRequirement
+{
+    securitySchemes  : SingleSecuritySchemeRequirement[*];
 }

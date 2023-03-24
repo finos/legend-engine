@@ -6,7 +6,7 @@ import meta::external::language::haskell::transformation::fromPure::*;
 import meta::external::language::haskell::format::*;
 import meta::external::shared::format::transformation::fromPure::*;
 
-Class meta::external::language::haskell::format::HaskellSchema extends meta::external::shared::format::metamodel::SchemaDetail
+Class meta::external::language::haskell::format::HaskellSchema
 {
   module : meta::external::language::haskell::metamodel::HaskellModule[1];
 }

@@ -58,7 +58,10 @@ public enum DataType
     BOOL,
     LONGTEXT,
     TEXT,
-    JSON;
+    JSON,
+    VARIANT,
+    MAP,
+    ARRAY;
 
     public static boolean isStringDatatype(DataType type)
     {

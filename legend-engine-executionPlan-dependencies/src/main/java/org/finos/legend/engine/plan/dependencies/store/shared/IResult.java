@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.plan.dependencies.store.shared;
 
-public interface IResult
+public interface IResult extends AutoCloseable
 {
     void close();
 }

@@ -43,7 +43,7 @@ function meta::pure::mapping::xStore::crossGetterOverride(o:Any[1], property:Pro
        | $dataPayload.static.systemMapping.localGetterOverrideNonMapped->toOne()->eval($o, $property),
        | let sourceSys = $dataPayload.static.extensions->meta::pure::extension::storeContractForSetImplementation($source->toOne());
          let propertyMappings = $source->toOne()->match([e:EmbeddedSetImplementation[1]|$e->meta::pure::mapping::propertyMappingsByPropertyName($property.name->toOne()),
-                                                         s:PropertyMappingsImplementation[1]|$s.propertyMappingsByPropertyName($property.name->toOne())
+                                                         s:PropertyMappingsImplementation[1]|$s->_propertyMappingsByPropertyName($property.name->toOne())
                                                         ]);
          if ($propertyMappings->isEmpty(),
              | if($sourceSys.localGetterOverrideNonMapped->isEmpty(),
@@ -51,7 +51,7 @@ function meta::pure::mapping::xStore::crossGetterOverride(o:Any[1], property:Pro
                   |$sourceSys.localGetterOverrideNonMapped->toOne()->eval($o, $property);
                );,
              | $propertyMappings->map(
-                                       p|let target = $dataPayload.static.mapping.classMappingById($p.targetSetImplementationId)->toOne();
+                                       p|let target = $dataPayload.static.mapping->classMappingById($p.targetSetImplementationId)->toOne();
                                          let targetSys = $dataPayload.static.extensions->meta::pure::extension::_storeContractForSetImplementation($target);
                                          if ($sourceSys.id == $targetSys.id,
                                             |$targetSys.localGetterOverrideMapped->toOne()->eval($o, $p),
@@ -70,8 +70,8 @@ function meta::pure::mapping::xStore::performXStoreQuery(o:Any[1], p:PropertyMap
    print(if(!$debug.debug, |'',
             | $debug.space+'\nBuilding XStore query for property:\''+$p.property.name->toOne()+'\' ['+$p.sourceSetImplementationId+'->'+$p.targetSetImplementationId+']\n'));
    
-   let sourceSetImpl = $objectInfo.static.mapping.classMappingById($p.sourceSetImplementationId)->cast(@InstanceSetImplementation);
-   let targetSetImpl = $objectInfo.static.mapping.classMappingById($p.targetSetImplementationId)->cast(@InstanceSetImplementation);
+   let sourceSetImpl = $objectInfo.static.mapping->classMappingById($p.sourceSetImplementationId)->cast(@InstanceSetImplementation);
+   let targetSetImpl = $objectInfo.static.mapping->classMappingById($p.targetSetImplementationId)->cast(@InstanceSetImplementation);
    let sourceType = ^GenericType(rawType=if($sourceSetImpl.mappingClass->isEmpty(),|$sourceSetImpl.class, |$sourceSetImpl.mappingClass->toOne()));
    let returnType = ^GenericType(rawType=if($targetSetImpl.mappingClass->isEmpty(),|$targetSetImpl.class, |$targetSetImpl.mappingClass->toOne()));
    let returnMultiplicity = $p.property.classifierGenericType.multiplicityArguments->at(0);
@@ -83,7 +83,7 @@ function meta::pure::mapping::xStore::performXStoreQuery(o:Any[1], p:PropertyMap
       runtime = $objectInfo.static.runtime,
       mapping = $objectInfo.static.mapping,
       executionContext = $objectInfo.static.exeCtx,
-      sets = $objectInfo.static.mapping.classMappingById($p.targetSetImplementationId),
+      sets = $objectInfo.static.mapping->classMappingById($p.targetSetImplementationId),
       value = ^SimpleFunctionExpression
               (
                  func = filter_T_MANY__Function_1__T_MANY_,
@@ -100,7 +100,7 @@ function meta::pure::mapping::xStore::performXStoreQuery(o:Any[1], p:PropertyMap
                                           runtime = $objectInfo.static.runtime,
                                           mapping = $objectInfo.static.mapping,
                                           executionContext = $objectInfo.static.exeCtx,
-                                          sets = $objectInfo.static.mapping.classMappingById($p.targetSetImplementationId),
+                                          sets = $objectInfo.static.mapping->classMappingById($p.targetSetImplementationId),
                                           value = ^SimpleFunctionExpression
                                                   (
                                                      func = getAll_Class_1__T_MANY_,
@@ -116,7 +116,7 @@ function meta::pure::mapping::xStore::performXStoreQuery(o:Any[1], p:PropertyMap
                                                                            runtime = $objectInfo.static.runtime,
                                                                            mapping = $objectInfo.static.mapping,
                                                                            executionContext = $objectInfo.static.exeCtx,
-                                                                           sets = $objectInfo.static.mapping.classMappingById($p.targetSetImplementationId),
+                                                                           sets = $objectInfo.static.mapping->classMappingById($p.targetSetImplementationId),
                                                                            value = ^InstanceValue
                                                                                    (
                                                                                        genericType = ^GenericType(rawType=Class, typeArguments=$sourceType),

@@ -14,6 +14,9 @@
 
 package org.finos.legend.engine.language.pure.compiler.test.fromGrammar;
 
+import java.util.Collections;
+
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 import org.junit.Test;
 
@@ -73,7 +76,7 @@ public class TestRuntimeCompilationFromGrammar extends TestCompilationFromGramma
                 "  mappings:\n" +
                 "  [\n" +
                 "  ];\n" +
-                "}\n", "COMPILATION error at [15:1-20:1]: Runtime must cover at least one mapping");
+                "}\n", null, Lists.mutable.with("COMPILATION error at [15:1-20:1]: Runtime must cover at least one mapping"));
         // Unknown connection pointer
         test(resource +
                 "###Runtime\n" +
@@ -148,8 +151,11 @@ public class TestRuntimeCompilationFromGrammar extends TestCompilationFromGramma
         test("Class meta::mySimpleClass\n" +
                 "{\n" +
                 "  name: String[1];\n" +
-                "}\n" +
-                "\n\n" +
+                "}\n\n" +
+                "Class meta::mySimpleClass2\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n\n" +
                 "###Mapping\n" +
                 "Mapping meta::mySimpleMapping\n" +
                 "(\n" +
@@ -173,7 +179,7 @@ public class TestRuntimeCompilationFromGrammar extends TestCompilationFromGramma
                 "    JsonModelConnection\n" +
                 "    {\n" +
                 // check import resolution for embedded connections in runtime
-                "      class: mySimpleClass;\n" +
+                "      class: mySimpleClass2;\n" +
                 "      url: 'my_url';\n" +
                 "    }\n" +
                 "  }#\n" +
@@ -184,5 +190,262 @@ public class TestRuntimeCompilationFromGrammar extends TestCompilationFromGramma
                 "  [mySimpleMapping\n" +
                 "  ];\n" +
                 "}\n");
+    }
+
+    @Test
+    public void testForMultipleMappingsinOneConnnection()
+    {
+        test("###Pure\n" +
+                "Class humanResourceModel::students\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class humanResourceModel::class\n" +
+                "{\n" +
+                "  studentname: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class humanResourceModel::school\n" +
+                "{\n" +
+                "  studentname: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class humanResourceModel::student\n" +
+                "{\n" +
+                "  firstName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping humanResourceModel::M2M_Mapping\n" +
+                "(\n" +
+                "  *humanResourceModel::school: Pure\n" +
+                "  {\n" +
+                "    ~src humanResourceModel::class\n" +
+                "    studentname: $src.studentname\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "Mapping humanResourceModel::M2M_Mapping2\n" +
+                "(\n" +
+                "  *humanResourceModel::class: Pure\n" +
+                "  {\n" +
+                "    ~src humanResourceModel::students\n" +
+                "    studentname: $src.name->toUpper()\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "Mapping humanResourceModel::M2M_Mapping3\n" +
+                "(\n" +
+                "  *humanResourceModel::student: Pure\n" +
+                "  {\n" +
+                "    ~src humanResourceModel::students\n" +
+                "    firstName: $src.name->substring(0, $src.name->indexOf(' '))\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "###Connection\n" +
+                "ModelChainConnection humanResourceModel::M2MModelChainConnection\n" +
+                "{\n" +
+                "  mappings: [\n" +
+                "    humanResourceModel::M2M_Mapping2,\n" +
+                "    humanResourceModel::M2M_Mapping3\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "JsonModelConnection humanResourceModel::JsonModelConnection\n" +
+                "{\n" +
+                "  class: humanResourceModel::students;\n" +
+                "  url: 'data:application/json,{\"name\": \"John Johnson\"}';\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime humanResourceModel::M2MModelRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    humanResourceModel::M2M_Mapping\n" +
+                "  ];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    ModelStore:\n" +
+                "    [\n" +
+                "      connection_1: humanResourceModel::M2MModelChainConnection\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}",null,Collections.singletonList("COMPILATION error at [51:1-57:1]: Multiple Mappings within the same Model Chain Connection are Not Supported"));
+    }
+
+    @Test
+    public void testForMultipleModelChainConnectionsWithinSameStore()
+    {
+        test("###Pure\n" +
+                "Class humanResourceModel::students\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class humanResourceModel::class\n" +
+                "{\n" +
+                "  studentname: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class humanResourceModel::school\n" +
+                "{\n" +
+                "  studentname: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class humanResourceModel::student\n" +
+                "{\n" +
+                "  firstName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping humanResourceModel::M2M_Mapping\n" +
+                "(\n" +
+                "  *humanResourceModel::school: Pure\n" +
+                "  {\n" +
+                "    ~src humanResourceModel::class\n" +
+                "    studentname: $src.studentname\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "Mapping humanResourceModel::M2M_Mapping2\n" +
+                "(\n" +
+                "  *humanResourceModel::class: Pure\n" +
+                "  {\n" +
+                "    ~src humanResourceModel::students\n" +
+                "    studentname: $src.name->toUpper()\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "Mapping humanResourceModel::M2M_Mapping3\n" +
+                "(\n" +
+                "  *humanResourceModel::student: Pure\n" +
+                "  {\n" +
+                "    ~src humanResourceModel::students\n" +
+                "    firstName: $src.name->substring(0, $src.name->indexOf(' '))\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "###Connection\n" +
+                "ModelChainConnection humanResourceModel::M2MModelChainConnection\n" +
+                "{\n" +
+                "  mappings: [\n" +
+                "    humanResourceModel::M2M_Mapping3\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "ModelChainConnection humanResourceModel::M2MModelChainConnection2\n" +
+                "{\n" +
+                "  mappings: [\n" +
+                "    humanResourceModel::M2M_Mapping3\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "JsonModelConnection humanResourceModel::JsonModelConnection\n" +
+                "{\n" +
+                "  class: humanResourceModel::students;\n" +
+                "  url: 'data:application/json,{\"name\": \"John Johnson\"}';\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime humanResourceModel::M2MModelRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    humanResourceModel::M2M_Mapping\n" +
+                "  ];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    ModelStore:\n" +
+                "    [\n" +
+                "      connection_1: humanResourceModel::M2MModelChainConnection,\n" +
+                "      connection_2: humanResourceModel::M2MModelChainConnection2\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}",null, Collections.singletonList("COMPILATION error at [84:21-64]: Multiple ModelChainConnections are Not Supported for the same Runtime."));
+    }
+
+    @Test
+    public void testToCheckForMultipleModelConnectionsForSameSourceClass()
+    {
+        test("###Pure\n" +
+                "Class modelToModel::test::Firm\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class modelToModel::test::_Firm\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class modelToModel::test::__Firm\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping modelToModel::test::BridgeToDestMapping\n" +
+                "(\n" +
+                "  modelToModel::test::Firm: Pure\n" +
+                "  {\n" +
+                "    ~src modelToModel::test::_Firm\n" +
+                "    name: '|' + $src.name + '|'\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "Mapping modelToModel::test::SrcToBridgeMapping\n" +
+                "(\n" +
+                "  modelToModel::test::_Firm: Pure\n" +
+                "  {\n" +
+                "    ~src modelToModel::test::__Firm\n" +
+                "    name: '$' + $src.name + '$'\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Connection\n" +
+                "ModelChainConnection modelToModel::test::OneMappingConnection\n" +
+                "{\n" +
+                "  mappings: [\n" +
+                "    modelToModel::test::SrcToBridgeMapping\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "XmlModelConnection modelToModel::test::XmlConnection\n" +
+                "{\n" +
+                "  class: modelToModel::test::__Firm;\n" +
+                "  url: 'data:application/xml,<__Firm><name>FirmB</name></__Firm>';\n" +
+                "}\n" +
+                "\n" +
+                "JsonModelConnection modelToModel::test::JsonConnection\n" +
+                "{\n" +
+                "  class: modelToModel::test::__Firm;\n" +
+                "  url: 'data:application/json,{\"name\":\"FirmA\"}';\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime modelToModel::test::DemoM2MModelChainConnectionRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    modelToModel::test::BridgeToDestMapping\n" +
+                "  ];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    ModelStore:\n" +
+                "    [\n" +
+                "      connection_1: modelToModel::test::OneMappingConnection,\n" +
+                "      connection_2: modelToModel::test::JsonConnection,\n" +
+                "      connection_3: modelToModel::test::XmlConnection\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}",null,Collections.singletonList("COMPILATION error at [72:21-53]: Multiple Connections available for Source Class - __Firm"));
     }
 }

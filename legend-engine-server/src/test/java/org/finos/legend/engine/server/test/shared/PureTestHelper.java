@@ -27,11 +27,11 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.list.primitive.LongList;
 import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.collections.impl.list.mutable.FastList;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.server.Server;
 import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
-import org.finos.legend.pure.configuration.PureRepositoriesExternal;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.m3.navigation.Instance;
@@ -50,11 +50,11 @@ import org.finos.legend.pure.runtime.java.compiled.compiler.JavaCompilerState;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledProcessorSupport;
 import org.finos.legend.pure.runtime.java.compiled.execution.ConsoleCompiled;
+import org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtensionLoader;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.FunctionProcessor;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.IdBuilder;
 import org.finos.legend.pure.runtime.java.compiled.metadata.ClassCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.FunctionCache;
-import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
 import org.junit.Ignore;
 
 import java.io.InputStream;
@@ -214,7 +214,7 @@ public class PureTestHelper
     {
         return new CompiledExecutionSupport(
                 new JavaCompilerState(null, PureTestHelper.class.getClassLoader()),
-                new CompiledProcessorSupport(PureTestHelper.class.getClassLoader(), MetadataLazy.fromClassLoader(PureTestHelper.class.getClassLoader(), CodeRepositoryProviderHelper.findCodeRepositories().collect(CodeRepository::getName)), Sets.mutable.empty()),
+                new CompiledProcessorSupport(PureTestHelper.class.getClassLoader(), PureModel.METADATA_LAZY, Sets.mutable.empty()),
                 null,
                 new CodeStorage()
                 {
@@ -344,7 +344,8 @@ public class PureTestHelper
                 new FunctionCache(),
                 new ClassCache(),
                 null,
-                Sets.mutable.empty()
+                Sets.mutable.empty(),
+                CompiledExtensionLoader.extensions()
         );
     }
 
@@ -367,16 +368,17 @@ public class PureTestHelper
 
         return new CompiledExecutionSupport(
                 new JavaCompilerState(null, PureTestHelper.class.getClassLoader()),
-                new CompiledProcessorSupport(PureTestHelper.class.getClassLoader(), MetadataLazy.fromClassLoader(PureTestHelper.class.getClassLoader(), CodeRepositoryProviderHelper.findCodeRepositories().collect(CodeRepository::getName)), Sets.mutable.empty()),
+                new CompiledProcessorSupport(PureTestHelper.class.getClassLoader(), PureModel.METADATA_LAZY, Sets.mutable.empty()),
                 null,
-                new PureCodeStorage(null, new VersionControlledClassLoaderCodeStorage(PureTestHelper.class.getClassLoader(), PureRepositoriesExternal.repositories(), null)),
+                new PureCodeStorage(null, new VersionControlledClassLoaderCodeStorage(PureTestHelper.class.getClassLoader(), CodeRepositoryProviderHelper.findCodeRepositories(true), null)),
                 null,
                 null,
                 console,
                 new FunctionCache(),
                 new ClassCache(),
                 null,
-                Sets.mutable.empty()
+                Sets.mutable.empty(),
+                CompiledExtensionLoader.extensions()
         );
     }
 

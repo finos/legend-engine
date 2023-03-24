@@ -101,7 +101,7 @@ public class ServiceGrammarComposerExtension implements PureGrammarComposerExten
             serviceBuilder.append(String.join(",\n", ListIterate.collect(service.testSuites, testSuite -> HelperServiceGrammarComposer.renderServiceTestSuite(testSuite, context)))).append("\n");
             serviceBuilder.append(getTabString()).append("]\n");
         }
-        if (service.test != null)
+        if (service.test != null && !HelperServiceGrammarComposer.isServiceTestEmpty(service.test))
         {
             serviceBuilder.append(getTabString()).append("test: ");
             serviceBuilder.append(HelperServiceGrammarComposer.renderServiceTest(service.test, context));

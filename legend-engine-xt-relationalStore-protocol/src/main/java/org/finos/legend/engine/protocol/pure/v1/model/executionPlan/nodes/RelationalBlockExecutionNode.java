@@ -14,12 +14,12 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
+import java.util.Collections;
+import java.util.List;
 
 public class RelationalBlockExecutionNode extends SequenceExecutionNode
 {
-    public DatabaseConnection connection;
-    public FinallyExecutionNode finallyExecutionNode;
+    public List<ExecutionNode> finallyExecutionNodes = Collections.emptyList();
 
     @Override
     public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)

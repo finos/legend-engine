@@ -26,6 +26,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.JsonModelConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.XmlModelConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
@@ -43,16 +44,13 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Collectors;
@@ -243,13 +241,79 @@ public class TestM2MGrammarCompileAndExecute
         assertEquals("{\"builder\":{\"_type\":\"json\"},\"values\":{\"name\":\"Doe\"}}", json);
     }
 
+    @Test
+    public void testM2MEnumMappingWithSpecialCharacters() throws IOException
+    {
+        PureModelContextData contextData = PureGrammarParser.newInstance().parseModel("" +
+                "Class test::SourceClass\n" +
+                "{\n" +
+                "   enum : test::SourceEnum[1];\n" +
+                "}" +
+                "\n" +
+                "Class test::TargetClass\n" +
+                "{\n" +
+                "   enum: test::TargetEnum[1];\n" +
+                "}" +
+                "\n" +
+                "Enum test::SourceEnum\n" +
+                "{\n" +
+                "   'Source Enum@$#_*[]{}()'\n" +
+                "}" +
+                "\n" +
+                "Enum test::TargetEnum\n" +
+                "{\n" +
+                "   'Target Enum@$#_*[]{}()'\n" +
+                "}" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::testMapping\n" +
+                "(\n" +
+                "   test::TargetClass : Pure\n" +
+                "   {\n" +
+                "     ~src test::SourceClass\n" +
+                "     enum : EnumerationMapping enumMapping : $src.enum\n" +
+                "   }\n" +
+                "   test::TargetEnum : EnumerationMapping enumMapping\n" +
+                "   {\n" +
+                "     'Target Enum@$#_*[]{}()' : [test::SourceEnum.'Source Enum@$#_*[]{}()'] \n" +
+                "   }\n" +
+                ")\n"
+        );
+
+        ClassInstance fetchTree = rootGFT("test::TargetClass", propertyGFT("enum"));
+        Lambda lambda = lambda(apply(SERIALIZE, apply(GRAPH_FETCH, apply(GET_ALL, clazz("test::TargetClass")), fetchTree), fetchTree));
+
+        ExecuteInput jsonInput = new ExecuteInput();
+        jsonInput.clientVersion = "vX_X_X";
+        jsonInput.model = contextData;
+        jsonInput.mapping = "test::testMapping";
+        jsonInput.function = lambda;
+        jsonInput.runtime = runtimeValue(jsonModelConnection("test::SourceClass", "{\"enum\": \"Source Enum@$#_*[]{}()\"}"));
+        jsonInput.context = context();
+        String jsonResult1 = responseAsString(runTest(jsonInput));
+        assertEquals("{\"builder\":{\"_type\":\"json\"},\"values\":{\"enum\":\"Target Enum@$#_*[]{}()\"}}", jsonResult1);
+
+        String xmlSourceData =
+                "<SourceClass>" +
+                "<enum>Source Enum@$#_*[]{}()</enum>" +
+                "</SourceClass>";
+        ExecuteInput input = new ExecuteInput();
+        input.clientVersion = "vX_X_X";
+        input.model = contextData;
+        input.mapping = "test::testMapping";
+        input.function = lambda;
+        input.runtime = runtimeValue(xmlModelConnection("test::SourceClass", xmlSourceData));
+        input.context = context();
+        String jsonResult2 = responseAsString(runTest(input));
+        assertEquals("{\"builder\":{\"_type\":\"json\"},\"values\":{\"enum\":\"Target Enum@$#_*[]{}()\"}}", jsonResult2);
+    }
+
     private Response runTest(ExecuteInput input)
     {
         ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
         PlanExecutor executor = PlanExecutor.newPlanExecutor(InMemory.build());
-        HttpServletRequest request = (HttpServletRequest) Proxy.newProxyInstance(getClass().getClassLoader(), new java.lang.Class<?>[] {HttpServletRequest.class}, new TestExecutionUtility.ReflectiveInvocationHandler(new TestExecutionUtility.Request()));
         //Should use: core_pure_extensions_extension.Root_meta_pure_extension_defaultExtensions__Extension_MANY_(modelManager.)
-        Response result = new Execute(modelManager, executor, (PureModel pureModel) -> core_java_platform_binding_legendJavaPlatformBinding_store_m2m_m2mLegendJavaPlatformBindingExtension.Root_meta_pure_mapping_modelToModel_executionPlan_platformBinding_legendJava_inMemoryExtensionsWithLegendJavaPlatformBinding__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers).execute(request, input, SerializationFormat.defaultFormat, null, null);
+        Response result = new Execute(modelManager, executor, (PureModel pureModel) -> core_java_platform_binding_legendJavaPlatformBinding_store_m2m_m2mLegendJavaPlatformBindingExtension.Root_meta_pure_mapping_modelToModel_executionPlan_platformBinding_legendJava_inMemoryExtensionsWithLegendJavaPlatformBinding__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers).execute(TestExecutionUtility.buildMockRequest(), input, SerializationFormat.defaultFormat, null, null);
         Assert.assertEquals(200, result.getStatus());
         return result;
     }
@@ -307,6 +371,15 @@ public class TestM2MGrammarCompileAndExecute
         connection.element = "ModelStore";
         connection._class = clazz;
         connection.url = "data:application/json," + data;
+        return connection;
+    }
+
+    private XmlModelConnection xmlModelConnection(String clazz, String data)
+    {
+        XmlModelConnection connection = new XmlModelConnection();
+        connection.element = "ModelStore";
+        connection._class = clazz;
+        connection.url = "data:application/xml," + data;
         return connection;
     }
 

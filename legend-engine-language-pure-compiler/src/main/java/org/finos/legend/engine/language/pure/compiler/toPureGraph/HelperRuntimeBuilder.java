@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
@@ -26,12 +27,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime_Impl;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelToModel.PureInstanceSetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
+import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -39,9 +40,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.finos.legend.pure.generated.platform_dsl_mapping_functions_Mapping.Root_meta_pure_mapping__allClassMappingsRecursive_Mapping_1__SetImplementation_MANY_;
+
 public class HelperRuntimeBuilder
 {
-    public static Store getConnectionStore(org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection connection)
+    public static Store getConnectionStore(Root_meta_pure_runtime_Connection connection)
     {
         Object store = connection._element();
         if (store instanceof Store)
@@ -55,7 +58,7 @@ public class HelperRuntimeBuilder
     {
         Set<String> mappedStores = new HashSet<>();
         mappings.forEach(mapping ->
-                ListIterate.forEach(mapping._allClassMappingsRecursive(context.pureModel.getExecutionSupport()).toList(), setImplementation ->
+                ListIterate.forEach(Root_meta_pure_mapping__allClassMappingsRecursive_Mapping_1__SetImplementation_MANY_(mapping, context.pureModel.getExecutionSupport()).toList(), setImplementation ->
                 {
                     if (setImplementation instanceof PureInstanceSetImplementation && ((PureInstanceSetImplementation) setImplementation)._srcClass() != null)
                     {
@@ -66,7 +69,7 @@ public class HelperRuntimeBuilder
         return mappedStores;
     }
 
-    public static void checkRuntimeMappingCoverage(org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime pureRuntime, List<Mapping> mappings, CompileContext context, SourceInformation sourceInformation)
+    public static void checkRuntimeMappingCoverage(Root_meta_pure_runtime_Runtime pureRuntime, List<Mapping> mappings, CompileContext context, SourceInformation sourceInformation)
     {
         Set<String> mappedStores = getAllMapStorePathsFromMappings(mappings, context);
         ListIterate.forEach(pureRuntime._connections().toList(), connection ->
@@ -88,23 +91,25 @@ public class HelperRuntimeBuilder
         // TODO?: drill down for model store to detect when a class has not been mapped?
         if (!mappedStores.isEmpty())
         {
-            throw new EngineException("Runtime does not cover store(s) '"
+            context.pureModel.addWarnings(Lists.mutable.with(new Warning(sourceInformation, "Runtime does not cover store(s) '"
                     + StringUtils.join(new ArrayList<>(mappedStores), "', '")
-                    + "' in mapping(s) '" + StringUtils.join(mappings.stream().map(mapping -> HelperModelBuilder.getElementFullPath(mapping, context.pureModel.getExecutionSupport())).collect(Collectors.toList()), "', '") + "'",
-                    sourceInformation, EngineErrorType.COMPILATION);
+                    + "' in mapping(s) '" + StringUtils.join(mappings.stream().map(mapping -> HelperModelBuilder.getElementFullPath(mapping, context.pureModel.getExecutionSupport())).collect(Collectors.toList())))));
         }
     }
 
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime buildEngineRuntime(EngineRuntime engineRuntime, CompileContext context)
+    public static Root_meta_pure_runtime_Runtime buildEngineRuntime(EngineRuntime engineRuntime, CompileContext context)
     {
         if (engineRuntime.mappings.isEmpty())
         {
-            throw new EngineException("Runtime must cover at least one mapping", engineRuntime.sourceInformation, EngineErrorType.COMPILATION);
+            context.pureModel.addWarnings(Lists.mutable.with(new Warning(engineRuntime.sourceInformation, "Runtime must cover at least one mapping")));
         }
         // verify if each mapping associated with the PackageableRuntime exists
-        List<Mapping> mappings = engineRuntime.mappings.stream().map(mappingPointer -> context.resolveMapping(mappingPointer.path, mappingPointer.sourceInformation)).collect(Collectors.toList());
+        List<Mapping> mappings = engineRuntime.mappings.isEmpty() ? Lists.mutable.empty() : engineRuntime.mappings.stream().map(mappingPointer -> context.resolveMapping(mappingPointer.path, mappingPointer.sourceInformation)).collect(Collectors.toList());
         // build connections
         List<Connection> connections = new ArrayList<>();
+        List<CoreInstance> visitedSourceClasses = new ArrayList<>();
+        List<CoreInstance> visitedConnectionTypes = new ArrayList<>();
+        List<String> visitedStores = new ArrayList<>();
         Set<String> ids = new HashSet<>();
         ListIterate.forEach(engineRuntime.connections, storeConnections ->
         {
@@ -152,11 +157,43 @@ public class HelperRuntimeBuilder
             });
         });
         // convert EngineRuntime with connection as a map indexes by store to Pure runtime which only contains an array of connections
-        org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime pureRuntime = new Root_meta_pure_runtime_Runtime_Impl("Root::meta::pure::runtime::Runtime");
+        Root_meta_pure_runtime_Runtime pureRuntime = new Root_meta_pure_runtime_Runtime_Impl("Root::meta::pure::runtime::Runtime");
         ListIterate.forEach(connections, connection ->
         {
-            final org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection pureConnection = connection.accept(new ConnectionFirstPassBuilder(context));
+            final Root_meta_pure_runtime_Connection pureConnection = connection.accept(new ConnectionFirstPassBuilder(context));
             connection.accept(new ConnectionSecondPassBuilder(context, pureConnection));
+
+            if (pureConnection instanceof Root_meta_pure_mapping_modelToModel_JsonModelConnection || pureConnection instanceof Root_meta_pure_mapping_modelToModel_XmlModelConnection)
+            {
+                if (visitedSourceClasses.contains(pureConnection.getValueForMetaPropertyToOne("class")) && visitedStores.contains(HelperModelBuilder.getElementFullPath((PackageableElement) pureConnection._element(),context.pureModel.getExecutionSupport())))
+                {
+                    context.pureModel.addWarnings(Lists.mutable.with(new Warning(connection.sourceInformation, "Multiple Connections available for Source Class - " + pureConnection.getValueForMetaPropertyToOne("class"))));
+                }
+                else
+                {
+                    visitedSourceClasses.add(pureConnection.getValueForMetaPropertyToOne("class"));
+                }
+            }
+            else
+            {
+                if (visitedConnectionTypes.contains(pureConnection.getClassifier()) && visitedStores.contains(HelperModelBuilder.getElementFullPath((PackageableElement) pureConnection._element(),context.pureModel.getExecutionSupport())))
+                {
+                    if (pureConnection instanceof Root_meta_pure_mapping_modelToModel_ModelChainConnection)
+                    {
+                        context.pureModel.addWarnings(Lists.mutable.with(new Warning(connection.sourceInformation, "Multiple " + pureConnection.getClassifier() + "s are Not Supported for the same Runtime.")));
+                    }
+                    else
+                    {
+                        context.pureModel.addWarnings(Lists.mutable.with(new Warning(connection.sourceInformation, "Multiple " + pureConnection.getClassifier() + "s are Not Supported for the same Store - " + HelperModelBuilder.getElementFullPath((PackageableElement) pureConnection._element(),context.pureModel.getExecutionSupport()))));
+                    }
+                }
+                else
+                {
+                    visitedConnectionTypes.add(pureConnection.getClassifier());
+                }
+            }
+
+            visitedStores.add(HelperModelBuilder.getElementFullPath((PackageableElement) pureConnection._element(),context.pureModel.getExecutionSupport()));
             pureRuntime._connectionsAdd(pureConnection);
         });
         // verify runtime mapping coverage
@@ -164,7 +201,7 @@ public class HelperRuntimeBuilder
         return pureRuntime;
     }
 
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime buildPureRuntime(Runtime runtime, CompileContext context)
+    public static Root_meta_pure_runtime_Runtime buildPureRuntime(Runtime runtime, CompileContext context)
     {
         if (runtime == null)
         {
@@ -173,10 +210,10 @@ public class HelperRuntimeBuilder
         if (runtime instanceof LegacyRuntime)
         {
             LegacyRuntime legacyRuntime = (LegacyRuntime) runtime;
-            org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime pureRuntime = new Root_meta_pure_runtime_Runtime_Impl("Root::meta::pure::runtime::Runtime");
+            Root_meta_pure_runtime_Runtime pureRuntime = new Root_meta_pure_runtime_Runtime_Impl("Root::meta::pure::runtime::Runtime");
             ListIterate.forEach(legacyRuntime.connections, connection ->
             {
-                final org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection pureConnection = connection.accept(new ConnectionFirstPassBuilder(context));
+                final Root_meta_pure_runtime_Connection pureConnection = connection.accept(new ConnectionFirstPassBuilder(context));
                 connection.accept(new ConnectionSecondPassBuilder(context, pureConnection));
                 pureRuntime._connectionsAdd(pureConnection);
             });

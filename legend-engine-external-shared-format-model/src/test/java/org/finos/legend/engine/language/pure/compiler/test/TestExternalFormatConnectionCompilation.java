@@ -20,7 +20,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_executionPlan_ExternalFormatConnection;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_executionPlan_UrlStreamExternalSource;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -127,7 +127,7 @@ public class TestExternalFormatConnectionCompilation
                         "    ]\n" +
                         "  ];\n" +
                         "}\n");
-        Runtime runtime = compiledGraph.getTwo().getRuntime("test::runtime");
+        Root_meta_pure_runtime_Runtime runtime = compiledGraph.getTwo().getRuntime("test::runtime");
         Root_meta_external_shared_format_executionPlan_ExternalFormatConnection connection = (Root_meta_external_shared_format_executionPlan_ExternalFormatConnection) runtime._connections().toList().get(0);
         Assert.assertTrue(connection._externalSource() instanceof Root_meta_external_shared_format_executionPlan_UrlStreamExternalSource);
         Assert.assertEquals("executor:default", ((Root_meta_external_shared_format_executionPlan_UrlStreamExternalSource) connection._externalSource())._url());

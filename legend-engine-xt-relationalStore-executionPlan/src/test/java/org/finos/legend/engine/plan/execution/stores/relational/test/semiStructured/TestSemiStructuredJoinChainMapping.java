@@ -26,28 +26,34 @@ public class TestSemiStructuredJoinChainMapping extends AbstractTestSemiStructur
     public void testSingleJoinInChain()
     {
         String snowflakePlan = this.buildExecutionPlanString("joinChain::singleJoinInChain__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
-        String snowflakeExpected = "Relational\n" +
-                "(\n" +
-                "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Manager Firm Legal Name, String, \"\", \"\")]\n" +
-                "  resultColumns = [(\"First Name\", VARCHAR(100)), (\"Manager Firm Legal Name\", \"\")]\n" +
-                "  sql = select \"root\".FIRSTNAME as \"First Name\", \"person_table_1\".FIRM_DETAILS['legalName']::varchar as \"Manager Firm Legal Name\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" left outer join PERSON_SCHEMA.PERSON_TABLE as \"person_table_1\" on (\"root\".MANAGERID = \"person_table_1\".ID)\n" +
-                "  connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
-                ")\n";
-        Assert.assertEquals(snowflakeExpected, snowflakePlan);
+        String snowflakeExpected =
+                "    Relational\n" +
+                "    (\n" +
+                "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Manager Firm Legal Name, String, \"\", \"\")]\n" +
+                "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Manager Firm Legal Name\", \"\")]\n" +
+                "      sql = select \"root\".FIRSTNAME as \"First Name\", \"person_table_1\".FIRM_DETAILS['legalName']::varchar as \"Manager Firm Legal Name\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" left outer join PERSON_SCHEMA.PERSON_TABLE as \"person_table_1\" on (\"root\".MANAGERID = \"person_table_1\".ID)\n" +
+                "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
+                "    )\n";
+        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Manager Firm Legal Name, String, \"\", \"\")]\n";
+        Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
 
     @Test
     public void testMultipleJoinsInChain()
     {
         String snowflakePlan = this.buildExecutionPlanString("joinChain::multipleJoinsInChain__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
-        String snowflakeExpected = "Relational\n" +
-                "(\n" +
-                "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Manager Firm Legal Name, String, \"\", \"\"), (Manager Manager Firm Legal Name, String, \"\", \"\"), (Manager Manager Firm Legal Name Dup1, String, \"\", \"\"), (Manager Manager Firm Legal Name Dup2, String, \"\", \"\")]\n" +
-                "  resultColumns = [(\"First Name\", VARCHAR(100)), (\"Manager Firm Legal Name\", \"\"), (\"Manager Manager Firm Legal Name\", \"\"), (\"Manager Manager Firm Legal Name Dup1\", \"\"), (\"Manager Manager Firm Legal Name Dup2\", \"\")]\n" +
-                "  sql = select \"root\".FIRSTNAME as \"First Name\", \"person_table_1\".FIRM_DETAILS['legalName']::varchar as \"Manager Firm Legal Name\", \"person_table_2\".FIRM_DETAILS['legalName']::varchar as \"Manager Manager Firm Legal Name\", \"person_table_3\".FIRM_DETAILS['legalName']::varchar as \"Manager Manager Firm Legal Name Dup1\", \"person_table_5\".FIRM_DETAILS['legalName']::varchar as \"Manager Manager Firm Legal Name Dup2\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" left outer join PERSON_SCHEMA.PERSON_TABLE as \"person_table_1\" on (\"root\".MANAGERID = \"person_table_1\".ID) left outer join PERSON_SCHEMA.PERSON_TABLE as \"person_table_2\" on (\"person_table_1\".MANAGERID = \"person_table_2\".ID) left outer join PERSON_SCHEMA.PERSON_TABLE as \"person_table_3\" on (\"person_table_1\".MANAGERID = \"person_table_3\".ID) left outer join PERSON_SCHEMA.PERSON_TABLE as \"person_table_4\" on (\"root\".MANAGERID = \"person_table_4\".ID) left outer join PERSON_SCHEMA.PERSON_TABLE as \"person_table_5\" on (\"person_table_4\".MANAGERID = \"person_table_5\".ID)\n" +
-                "  connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
-                ")\n";
-        Assert.assertEquals(snowflakeExpected, snowflakePlan);
+        String snowflakeExpected =
+                "    Relational\n" +
+                "    (\n" +
+                "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Manager Firm Legal Name, String, \"\", \"\"), (Manager Manager Firm Legal Name, String, \"\", \"\"), (Manager Manager Firm Legal Name Dup1, String, \"\", \"\"), (Manager Manager Firm Legal Name Dup2, String, \"\", \"\")]\n" +
+                "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Manager Firm Legal Name\", \"\"), (\"Manager Manager Firm Legal Name\", \"\"), (\"Manager Manager Firm Legal Name Dup1\", \"\"), (\"Manager Manager Firm Legal Name Dup2\", \"\")]\n" +
+                "      sql = select \"root\".FIRSTNAME as \"First Name\", \"person_table_1\".FIRM_DETAILS['legalName']::varchar as \"Manager Firm Legal Name\", \"person_table_2\".FIRM_DETAILS['legalName']::varchar as \"Manager Manager Firm Legal Name\", \"person_table_3\".FIRM_DETAILS['legalName']::varchar as \"Manager Manager Firm Legal Name Dup1\", \"person_table_5\".FIRM_DETAILS['legalName']::varchar as \"Manager Manager Firm Legal Name Dup2\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" left outer join PERSON_SCHEMA.PERSON_TABLE as \"person_table_1\" on (\"root\".MANAGERID = \"person_table_1\".ID) left outer join PERSON_SCHEMA.PERSON_TABLE as \"person_table_2\" on (\"person_table_1\".MANAGERID = \"person_table_2\".ID) left outer join PERSON_SCHEMA.PERSON_TABLE as \"person_table_3\" on (\"person_table_1\".MANAGERID = \"person_table_3\".ID) left outer join PERSON_SCHEMA.PERSON_TABLE as \"person_table_4\" on (\"root\".MANAGERID = \"person_table_4\".ID) left outer join PERSON_SCHEMA.PERSON_TABLE as \"person_table_5\" on (\"person_table_4\".MANAGERID = \"person_table_5\".ID)\n" +
+                "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
+                "    )\n";
+        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Manager Firm Legal Name, String, \"\", \"\"), (Manager Manager Firm Legal Name, String, \"\", \"\"), (Manager Manager Firm Legal Name Dup1, String, \"\", \"\"), (Manager Manager Firm Legal Name Dup2, String, \"\", \"\")]\n";
+        Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
+
+        Assert.assertEquals("[PERSON_TABLE.FIRM_DETAILS <RelationalOperationElementWithJoin>, PERSON_TABLE.FIRSTNAME <TableAliasColumn>, PERSON_TABLE.ID <JoinTreeNode>, PERSON_TABLE.MANAGERID <JoinTreeNode>]", this.scanColumns("joinChain::multipleJoinsInChain__TabularDataSet_1_", snowflakeMapping));
     }
 
     public String modelResourcePath()

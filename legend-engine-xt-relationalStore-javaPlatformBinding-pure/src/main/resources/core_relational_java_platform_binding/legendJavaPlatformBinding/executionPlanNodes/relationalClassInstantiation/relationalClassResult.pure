@@ -62,7 +62,7 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       
       {relationalSets: RelationalInstanceSetImplementation[*] | 
          /* Relational */
-         let setToPropertyMappingsMap = newMap($relationalSets->map(rs | pair($rs, list($rs.allPropertyMappings()->filter(pm | $pm.property->instanceOf(Property) && $pm.property->genericType().typeArguments->at(1).rawType->toOne()->instanceOf(meta::pure::metamodel::type::DataType))))));
+         let setToPropertyMappingsMap = newMap($relationalSets->map(rs | pair($rs, list($rs->allPropertyMappings()->filter(pm | $pm.property->instanceOf(Property) && $pm.property->genericType().typeArguments->at(1).rawType->toOne()->instanceOf(meta::pure::metamodel::type::DataType))))));
          generateImplementionForRelationalSetImpls($relationalSets, $setToPropertyMappingsMap, $path, $resultClass, $context, $debug);
       },
 
@@ -86,7 +86,7 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
 
       {relationalSets: RelationalInstanceSetImplementation[*] |
          /* Relational */
-         let setToPropertyMappingsMap = newMap($relationalSets->map(rs | pair($rs, list($rs.allPropertyMappings()->filter(pm | $pm.property->instanceOf(Property) && $pm.property->genericType().typeArguments->at(1).rawType->toOne()->instanceOf(meta::pure::metamodel::type::DataType))->filter(x | $x.property->in($properties))))));
+         let setToPropertyMappingsMap = newMap($relationalSets->map(rs | pair($rs, list($rs->allPropertyMappings()->filter(pm | $pm.property->instanceOf(Property) && $pm.property->genericType().typeArguments->at(1).rawType->toOne()->instanceOf(meta::pure::metamodel::type::DataType))->filter(x | $x.property->in($properties))))));
          generateImplementionForRelationalSetImpls($relationalSets, $setToPropertyMappingsMap, $path, $resultClass, $context, $debug);
       },
       
@@ -402,7 +402,7 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
                       '                    {\n'+
                       '                        throw new RuntimeException("Enumeration mapping failure. Cannot find transformation for source value \'" + r + "\' for enumeration property \'' + $propertyName + '\' of type ' + $propertyType->elementToPath() + ' in enumeration mapping ' + $currentPropertyMapping.transformer->cast(@EnumerationMapping<Any>).name->toOne() + '.");\n'+
                       '                    }\n'+
-                      '                    res = Enum.valueOf(' + $javaEnumeration->typeToString() + '.class, transformedR);\n'+
+                      '                    res = ' + $javaEnumeration->typeToString() + '.getEnumFromPureName(transformedR);\n'+
                       '                }\n'+
                       '                return res;\n'+
                       '            }\n'+

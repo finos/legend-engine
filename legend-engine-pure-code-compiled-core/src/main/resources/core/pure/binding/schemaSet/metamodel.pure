@@ -23,7 +23,7 @@ Class meta::external::shared::format::metamodel::Schema
 {
    id         : String[0..1];
    location   : String[0..1];
-   detail     : SchemaDetail[1];
+   detail     : Any[1];
 }
 
 Association meta::external::shared::format::metamodel::SchemaSetMembers
@@ -31,8 +31,3 @@ Association meta::external::shared::format::metamodel::SchemaSetMembers
    set        : SchemaSet[1];
    schemas    : Schema[*];
 }
-
-Class meta::external::shared::format::metamodel::SchemaDetail
-{
-}
-

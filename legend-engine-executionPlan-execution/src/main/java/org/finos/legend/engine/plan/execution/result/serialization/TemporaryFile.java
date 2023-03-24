@@ -27,6 +27,8 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.SecureRandom;
+import java.util.Random;
 
 public class TemporaryFile implements Closeable
 {
@@ -35,6 +37,14 @@ public class TemporaryFile implements Closeable
     private String fileName;
     public Path path;
     private final String tempPath;
+    private static Random random = new SecureRandom();
+
+    public TemporaryFile(String tempPath)
+    {
+        this.tempPath = tempPath;
+        this.fileName = randomString(8) + ".txt"; //we probably want a better way to do this
+        this.path = Paths.get(this.getTemporaryPathForFile());
+    }
 
     public TemporaryFile(String tempPath, String fileName)
     {
@@ -59,6 +69,17 @@ public class TemporaryFile implements Closeable
         {
             source.stream(outputStream);
         }
+    }
+
+    private String randomString(int len)
+    {
+        final String AB = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+        StringBuilder sb = new StringBuilder(len);
+        for (int i = 0; i < len; i++)
+        {
+            sb.append(AB.charAt(random.nextInt(AB.length())));
+        }
+        return sb.toString();
     }
 
     @Override

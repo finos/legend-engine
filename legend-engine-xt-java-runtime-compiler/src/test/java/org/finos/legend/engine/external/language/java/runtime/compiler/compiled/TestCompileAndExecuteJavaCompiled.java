@@ -15,7 +15,6 @@
 package org.finos.legend.engine.external.language.java.runtime.compiler.compiled;
 
 import org.finos.legend.engine.external.language.java.runtime.compiler.AbstractTestCompileAndExecuteJava;
-import org.finos.legend.pure.generated.CoreJavaModelFactoryRegistry;
 import org.finos.legend.pure.runtime.java.compiled.execution.FunctionExecutionCompiledBuilder;
 import org.junit.BeforeClass;
 
@@ -24,7 +23,7 @@ public class TestCompileAndExecuteJavaCompiled extends AbstractTestCompileAndExe
     @BeforeClass
     public static void setUp()
     {
-        setUpRuntime(new FunctionExecutionCompiledBuilder().build(), getCodeStorage(), CoreJavaModelFactoryRegistry.REGISTRY, getOptions(), getExtra());
+        setUpRuntime(new FunctionExecutionCompiledBuilder().build(), getCodeStorage(), null, getOptions(), getExtra());
         runtime.loadAndCompileSystem();
     }
 }

@@ -22,11 +22,19 @@ import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
+import org.finos.legend.engine.plan.execution.result.Result;
+import org.finos.legend.engine.plan.execution.result.graphFetch.GraphFetchResult;
+import org.finos.legend.engine.plan.execution.result.json.JsonStreamToJsonDefaultSerializer;
+import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
+import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
+import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.AlloyTestServer;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreState;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
+import org.finos.legend.engine.plan.execution.stores.relational.result.SQLExecutionResult;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToJsonDefaultSerializer;
+import org.finos.legend.engine.plan.execution.stores.relational.test.full.functions.in.TestPlanExecutionForIn;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
@@ -59,6 +67,11 @@ public class TestExecutionPlan extends AlloyTestServer
         statement.execute("Create Table PersonSet2 (ID INT, lastName_s2 VARCHAR(200), FirmID INT, ADDRESSID INT);");
         statement.execute("insert into PersonSet2 (ID, lastName_s2, FirmID, ADDRESSID) values (1, 'Smith', 1, 1);");
         statement.execute("insert into PersonSet2 (ID, lastName_s2, FirmID, ADDRESSID) values (2, 'Johnson', 1, 1);");
+
+        statement.execute("Drop table if exists PERSON;");
+        statement.execute("Create Table PERSON(fullName VARCHAR(100) NOT NULL,firmName VARCHAR(100) NULL,addressName VARCHAR(100) NULL,birthTime TIMESTAMP NULL, PRIMARY KEY(fullName));");
+        statement.execute("insert into PERSON (fullName,firmName,addressName,birthTime) values ('P1','F1','A1','2020-12-12 20:00:00');");
+        statement.execute("insert into PERSON (fullName,firmName,addressName,birthTime) values ('P2','F2','A2','2020-12-13 20:00:00');");
     }
 
     @Test
@@ -431,6 +444,39 @@ public class TestExecutionPlan extends AlloyTestServer
         Assert.assertEquals("{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"xx\",\"type\":\"EmployeeType\",\"relationalType\":\"VARCHAR(20)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".type as \\\"xx\\\" from employeeTable as \\\"root\\\"\"}], \"result\" : {\"columns\" : [\"xx\"], \"rows\" : [{\"values\": [\"CONTRACT\"]},{\"values\": [\"FULL_TIME\"]},{\"values\": [\"CONTRACT\"]}]}}", result.flush(new RelationalResultToJsonDefaultSerializer(result)));
     }
 
+    @Test
+    public void testSqlComments() throws JsonProcessingException
+    {
+        String fetchFunction = "###Pure\n" +
+                "function test::fetch(): Any[1]\n" +
+                "{\n" +
+                "  {| test::Person.all()\n" +
+                "                        ->project([x | $x.fullName], ['fullName'])}\n" +
+                "}";
+        SingleExecutionPlan plan = super.buildPlan(TestPlanExecutionForIn.LOGICAL_MODEL + TestPlanExecutionForIn.STORE_MODEL + TestPlanExecutionForIn.MAPPING + TestPlanExecutionForIn.RUNTIME + fetchFunction, null);
+        RelationalResult result = (RelationalResult) planExecutor.execute(plan);
+        Assert.assertTrue(((RelationalExecutionActivity) result.activities.get(0)).comment.matches("-- \"executionTraceID\" : \"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\""));
+        Assert.assertTrue(result.executedSQl.matches("-- \"executionTraceID\" : \"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\"\nselect \"root\".fullName as \"fullName\" from PERSON as \"root\""));
+        String expected = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\"\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[{\"values\":[\"P1\"]},{\"values\":[\"P2\"]}]}}";
+        Assert.assertEquals(expected, RelationalResultToJsonDefaultSerializer.removeComment(result.flush(new RelationalResultToJsonDefaultSerializer(result))));
+    }
+
+    @Test
+    public void testSqlCommentsGraphFetch()
+    {
+        String fetchFunction = "###Pure\n" +
+                "function test::fetch(): Any[1]\n" +
+                "{\n" +
+                "  {| test::Person.all()\n" +
+                "     ->graphFetch(#{test::Person{fullName}}#)->serialize(#{test::Person{fullName}}#)}\n" +
+                "}";
+        SingleExecutionPlan plan = super.buildPlan(TestPlanExecutionForIn.LOGICAL_MODEL + TestPlanExecutionForIn.STORE_MODEL + TestPlanExecutionForIn.MAPPING + TestPlanExecutionForIn.RUNTIME + fetchFunction, null);
+        JsonStreamingResult result = (JsonStreamingResult) planExecutor.execute(plan);
+        Result graphFetchResult = ((GraphFetchResult) ((StreamingObjectResult) result.getChildResult()).getChildResult()).getRootResult();
+        Assert.assertTrue(((RelationalExecutionActivity) graphFetchResult.activities.get(0)).comment.matches("-- \"executionTraceID\" : \"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\""));
+        Assert.assertTrue(((SQLExecutionResult) graphFetchResult).getExecutedSql().matches("-- \"executionTraceID\" : \"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\"\nselect \"root\".fullName as \"pk_0\", \"root\".fullName as \"fullName\" from PERSON as \"root\""));
+        Assert.assertEquals("{\"builder\":{\"_type\":\"json\"},\"values\":[{\"fullName\":\"P1\"},{\"fullName\":\"P2\"}]}", result.flush(new JsonStreamToJsonDefaultSerializer(result)));
+    }
 
     @Test
     public void testUnion() throws Exception

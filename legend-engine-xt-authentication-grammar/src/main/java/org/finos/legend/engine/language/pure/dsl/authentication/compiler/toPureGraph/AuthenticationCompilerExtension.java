@@ -16,8 +16,8 @@ package org.finos.legend.engine.language.pure.dsl.authentication.compiler.toPure
 
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
@@ -32,6 +32,11 @@ import java.util.Objects;
 
 public class AuthenticationCompilerExtension implements IAuthenticationCompilerExtension
 {
+    @Override
+    public CompilerExtension build()
+    {
+        return new AuthenticationCompilerExtension();
+    }
 
     @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
@@ -59,13 +64,13 @@ public class AuthenticationCompilerExtension implements IAuthenticationCompilerE
 
     private static Root_meta_pure_runtime_connection_authentication_CredentialVaultSecret buildSecret(CredentialVaultSecret credentialVaultSecret, CompileContext context)
     {
-        List<Function2<CredentialVaultSecret, CompileContext, Root_meta_pure_runtime_connection_authentication_CredentialVaultSecret>> processors = ListIterate.flatCollect(IAuthenticationCompilerExtension.getExtensions(), ext -> ext.getExtraCredentialVaultSecretProcessors());
-
-        return ListIterate
-                .collect(processors, processor -> processor.value(credentialVaultSecret, context))
-                .select(Objects::nonNull)
-                .getFirstOptional()
-                .orElseThrow(() -> new EngineException("Can't compile credential Vault secret ", EngineErrorType.COMPILATION));
+        return IAuthenticationCompilerExtension.getExtensions(context)
+                .map(IAuthenticationCompilerExtension::getExtraCredentialVaultSecretProcessors)
+                .flatMap(List::stream)
+                .map(processor -> processor.value(credentialVaultSecret, context))
+                .filter(Objects::nonNull)
+                .findAny()
+                .orElseThrow(() -> new EngineException("Can't compile credential Vault secret ", credentialVaultSecret.sourceInformation, EngineErrorType.COMPILATION));
 
     }
 

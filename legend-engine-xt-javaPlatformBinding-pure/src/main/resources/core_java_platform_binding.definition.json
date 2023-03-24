@@ -1,5 +1,12 @@
 {
     "name" : "core_java_platform_binding",
     "pattern" : "(meta::pure::executionPlan::platformBinding::legendJava|meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava|meta::external::shared::format::executionPlan::platformBinding::legendJava)(::.*)?",
-    "dependencies" : ["platform", "core", "core_external_language_java"]
+    "dependencies": [
+        "platform",
+        "platform_functions",
+        "platform_dsl_mapping",
+        "platform_dsl_graph",
+        "core",
+        "core_external_language_java"
+    ]
 }

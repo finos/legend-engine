@@ -211,6 +211,15 @@ Class <<access.private>> meta::external::format::avro::generation::tests::Dec
 {
    dec: Decimal[0..1];
 }
+Class <<access.private>> meta::external::format::avro::generation::tests::Empty
+{
+}
+
+function <<test.Test>> meta::external::format::avro::generation::tests::emptyClass(): Boolean[1]
+{
+   let schema = classToAvroSchema(Empty, ^AvroConfig())->meta::external::format::avro::serialization::avroSchemaToJSON()->toCompactJSONString();
+   assertEquals('{"type":"record","name":"Empty","namespace":"meta.external.format.avro.generation.tests","fields":[]}', $schema);
+}
 
 function <<test.Test>> meta::external::format::avro::generation::tests::simpleToOneStringProperty(): Boolean[1]
 {

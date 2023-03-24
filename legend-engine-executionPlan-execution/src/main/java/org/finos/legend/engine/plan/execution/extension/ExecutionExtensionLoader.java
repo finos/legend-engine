@@ -55,10 +55,7 @@ public class ExecutionExtensionLoader
                 }
                 return extensions;
             }
-            else
-            {
-                return existing;
-            }
+            return existing;
         });
     }
 }

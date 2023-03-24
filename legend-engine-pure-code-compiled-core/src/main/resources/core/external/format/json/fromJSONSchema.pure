@@ -36,13 +36,14 @@ Class meta::json::schema::fromSchema::SchemaInput
 }
 
 function meta::json::schema::fromSchema::JSONSchemaToPure(schemas:SchemaInput[*]):PackageableElement[*]
-{
+{ 
    let processed = $schemas->map(s|$s->processSchema(false));  
-   let subSchemas = $processed->map(s|$s->extractSubSchemas()); 
+   let subSchemas = $processed->map(s|$s->extractSubSchemas($processed)); 
+
+
    let allSchemas = $processed->concatenate($subSchemas)->filter(s|$s.schemaType!=SchemaType.collection);
    let processedWithSuperType = $allSchemas->JSONSchemaSuperTypes();
    let prefix = if($schemas.pathPrefix->first()->isEmpty(),| 'generated',|$schemas.pathPrefix->at(0));
-   
    let extendedProfile =    $processedWithSuperType.extendedTags->distinct()->createProfile($prefix);
    let pathSchemas = $processedWithSuperType->map(s | pair($s.fileName->refToFullPath([]),$s);)->newMap();
    $pathSchemas->values()->map(s | let parsedFileName =  $s.fileName->refToFullPath([]);  
@@ -98,9 +99,9 @@ function <<access.private>> meta::json::schema::fromSchema::deReferenceElement(e
     
 }
 
-function <<access.private>> meta::json::schema::fromSchema::extractSubSchemas(schema:ProcessedSchema[1]):ProcessedSchema[*]
-{   
-   
+function <<access.private>> meta::json::schema::fromSchema::extractSubSchemas(schema:ProcessedSchema[1],allSchemas:ProcessedSchema[*]):ProcessedSchema[*]
+{  
+  
    $schema.embeddedSchemas->cast(@JSONObject).keyValuePairs->map(kv | let fileName=if($schema.pathPrefix->isEmpty(),
                                                                                                |'',
                                                                                                |if($kv.key.value->contains('::'),
@@ -110,22 +111,33 @@ function <<access.private>> meta::json::schema::fromSchema::extractSubSchemas(sc
                                                                                                   )
                                                                                                );
                                                                     let final=  $fileName  +$kv.key.value->refToFullPath([]);
-                                                                   processSchema($final,$kv.value->cast(@JSONObject) ,[]  ,true);
+
+                                                                   if($final->in($allSchemas.fileName->map(f|'/'+$f)),
+                                                                        |[],
+                                                                        |processSchema($final,$kv.value->cast(@JSONObject) ,[]  ,true);
+                                                                    );    
                                                       );
 }
 
 function <<access.private>> meta::json::schema::fromSchema::extractEmbeddedSchema(rootSchema:JSONObject[1]):JSONObject[0..1]
 {   
       let definitions = $rootSchema.keyValuePairs->getValueForKey('definitions')->cast(@JSONObject);
-
+      let defs = $rootSchema.keyValuePairs->getValueForKey('$defs')->cast(@JSONObject);
+      
       if($definitions->size()== 1,
            | $definitions->toOne(),
-           | let components = $rootSchema.keyValuePairs->getValueForKey('components')->cast(@JSONObject);
-             if($components->isNotEmpty(),
-                |let schemas = $components.keyValuePairs->getValueForKey('schemas')->cast(@JSONObject);
-                 if($schemas->isNotEmpty(),
-                    |$schemas->toOne(),
-                    |[]);,|[]););
+           | if ($defs->size() ==1,
+                  |$defs->toOne(),
+                  | let components = $rootSchema.keyValuePairs->getValueForKey('components')->cast(@JSONObject);
+                  if($components->isNotEmpty(),
+                      |let schemas = $components.keyValuePairs->getValueForKey('schemas')->cast(@JSONObject);
+                        if($schemas->isNotEmpty(),
+                           |$schemas->toOne(),
+                           |[]);,
+                       |[]
+                      );
+                );
+      );        
                
        }
 
@@ -141,10 +153,10 @@ function <<access.private>> meta::json::schema::fromSchema::processSchema(schema
 
 function <<access.private>> meta::json::schema::fromSchema::processSchema(fileName:String[1],parsedSchema:JSONObject[1],prefix:String[0..1],embedded:Boolean[1]):ProcessedSchema[1]
 {
-   
+
    let allOf=  $parsedSchema.keyValuePairs->getValueForKey('allOf');
   
-   
+
    let updatedSchema = if($allOf->isNotEmpty() && $allOf->toOne()->instanceOf(JSONArray) && $allOf->toOne()->cast(@JSONArray)->extractObjectFromColletion()->isNotEmpty(),
                               |   let allOfWithoutObject=  $allOf->toOne()->cast(@JSONArray).values->filter(v|$v->instanceOf(JSONObject))->cast(@JSONObject)->filter(v|!$v->JSONSchemaIsObject());  
                                   let updatedSchema =  $allOf->toOne()->cast(@JSONArray)->extractObjectFromColletion()->toOne();
@@ -177,12 +189,14 @@ function <<access.private>> meta::json::schema::fromSchema::processSchema(fileNa
                            |$refs->map(r|$r->cast(@JSONString).value->refToFullPath($fileName));,
                            |[]);,
                        | [] );
-                               
+
     let subTypeRefs =  if($parsedSchema.keyValuePairs->getValueForKey('anyOf')->isNotEmpty(),
                            |$parsedSchema.keyValuePairs->getValueForKey('anyOf'),
                            | if($parsedSchema.keyValuePairs->getValueForKey('oneOf')->isNotEmpty(),
                                |$parsedSchema.keyValuePairs->getValueForKey('oneOf'),
                                |[]));
+
+
     let subTypes = if($subTypeRefs->isNotEmpty() && $subTypeRefs->toOne()->instanceOf(JSONArray),
                       | let refs = $subTypeRefs->cast(@JSONArray).values->map(v |$v->cast(@JSONObject).keyValuePairs->getValueForKey('$ref'));
                         if($refs->isNotEmpty(),
@@ -192,7 +206,6 @@ function <<access.private>> meta::json::schema::fromSchema::processSchema(fileNa
    let properties = $updatedSchema.keyValuePairs->getValueForKey('properties');
 
    let extendedTags = $updatedSchema->getExtendedTags('')->distinct();
-   
 
    ^ProcessedSchema( fileName=$fileName,
                      pathPrefix=if($embedded,|[],|$prefix),
@@ -279,7 +292,7 @@ function <<access.private>> meta::json::schema::fromSchema::typeValues(schema:JS
 
 function <<access.private>> meta::json::schema::fromSchema::JSONSchemaSuperTypes(schemas:ProcessedSchema[*]):ProcessedSchema[*]
 {
-   $schemas->map(s  |   let rootTypes = $s->getRootSuperTypes($schemas,[]); 
+   $schemas->map(s  |   let rootTypes = $s->getRootSuperTypes($schemas,[]);  
                     ^$s(rootSuperTypes=$rootTypes );
               
               );
@@ -619,13 +632,19 @@ function  <<access.private>> meta::json::schema::fromSchema::fragmentToValueSpec
                                                                                                      |$FunctionConstraintMap->get($formatElement->toOne()->cast(@JSONString).value);  ,                                      
                                                                                                       |[]); 
                                                                   let onlyHasType = $o.keyValuePairs->filter(k|$k.key.value->in($FunctionConstraintMap->keys()))->size()==1 && $formatConstraint->isEmpty();
+                                                                  let additionalProperties =  $o.keyValuePairs->filter(k| $k.key.value =='additionalProperties'  ).value ; //treat a ref inside anyOf/additionalProperties like an instanceOf
+                                                                  let additionalPropertiesRef =   if($additionalProperties->isNotEmpty()  && $additionalProperties->at(0)->instanceOf(JSONObject) && $key->in(['anyOf','oneOf'])
+                                                                                                        ,| $additionalProperties->cast(@JSONObject).keyValuePairs->getValueForKey('$ref');
+                                                                                                        , | []   );
                                                                   let filteredKVPInit = $o.keyValuePairs->filter(k|$k.key.value->in($FunctionConstraintMap->keys()->remove('type') ) 
                                                                                                                     || ( $generateInstance && $k.key.value=='type'  ) 
                                                                                                                     || ( $onlyHasType && $k.key.value=='type'  )
-                                                                                                                    ||  $formatConstraint->isNotEmpty() && $k.key.value=='format' );// filter out what we don't handle here
+                                                                                                                    ||  $formatConstraint->isNotEmpty() && $k.key.value=='format' 
+                                                                                                                    || $additionalPropertiesRef->isNotEmpty())
+                                                                                                                    ;// filter out what we don't handle here
                                                                   let filteredKVP = if($filteredKVPInit.key.value->containsAll(['type','anyOf']) &&  $filteredKVPInit->filter(k|$k.key.value=='anyOf').value->fragmentType()==Any ,
                                                                                        |$filteredKVPInit->filter(k|$k.key.value=='anyOf'),
-                                                                                       |if($o->fragmentIsArrayType() || $key=='items',
+                                                                                       |if($o->fragmentIsArrayType() || $key=='items' || $additionalPropertiesRef->isNotEmpty(),
                                                                                            |$filteredKVPInit->filter(k|!$k.key.value=='type'),
                                                                                            |$filteredKVPInit )->cast(@JSONKeyValue);
                                                                                        ); 
@@ -641,13 +660,14 @@ function  <<access.private>> meta::json::schema::fromSchema::fragmentToValueSpec
                                                                                                                                                  ^$lambdaES(parametersValues=$params); 
                                                                                                                    },$processedKVP->last());,   
                                                                                          |$processedKVP);,       
-
                                                                                   |  
-
                                                                                      let kvp = $filteredKVP->toOne();
                                                                                       if($kvp.key.value=='$ref' ,
                                                                                             | $kvp.value->fragmentToValueSpecifcation($kvp.key.value,$ownerFileName,$pathPrefix,$property,$generateInstance,$formatElement,$rootProperty,$pathSchemas);,
-                                                                                            |if($kvp.key.value=='format',
+                                                                                            |if($kvp.key.value == 'additionalProperties' && $additionalPropertiesRef->isNotEmpty(),  
+                                                                                                | $kvp.value->fragmentToValueSpecifcation($kvp.key.value,$ownerFileName,$pathPrefix,$property,$generateInstance,$formatElement,$rootProperty,$pathSchemas);,
+
+                                                                                                |if($kvp.key.value=='format',
                                                                                                    | $kvp.value->fragmentToValueSpecifcation($kvp.value->cast(@JSONString).value->toOne(),$ownerFileName,$pathPrefix,$property,$generateInstance,$formatElement,$rootProperty,$pathSchemas);,                                                                                         
                                                                                                    | let lambda = $FunctionConstraintMap->get($kvp.key.value->toOne());
                                                                                                      let lambdaEs = $lambda.expressionSequence->toOne()->evaluateAndDeactivate()->cast(@FunctionExpression);
@@ -672,6 +692,7 @@ function  <<access.private>> meta::json::schema::fromSchema::fragmentToValueSpec
 
                                                                                                                   );
                                                                                                         );              
+                                                                                                );
                                                                                                );    
                                                                                          );   
                                                                                        
@@ -796,13 +817,17 @@ function meta::json::schema::fromSchema::typeFullPath(fileName:String[1],pathPre
 
 
 function <<access.private>> meta::json::schema::fromSchema::JSONSchemaToClass(fileName:String[1],processedSchema:ProcessedSchema[1],pathSchemas:Map<String,ProcessedSchema>[1],pathPrefix:String[0..1],extendedProfile:Profile[0..1], strict:Boolean[1]):Class<Any>[1]
-{
+  { 
+
     let parsed = $processedSchema.parsedSchema;
     let javaType = $parsed.keyValuePairs->getValueForKey('javaType')->cast(@JSONString).value->first();
 
-    let noadditionalProps = $parsed.keyValuePairs->getValueForKey('additionalProperties')->cast(@JSONBoolean).value->first();
-    let properties = $parsed.keyValuePairs->getValueForKey('properties')->cast(@JSONObject).keyValuePairs;
+    let noadditionalPropsObject = $parsed.keyValuePairs->getValueForKey('additionalProperties');
+    let noadditionalProps=  if( $noadditionalPropsObject->isNotEmpty() && $noadditionalPropsObject->at(0)->instanceOf(JSONBoolean), | $noadditionalPropsObject->cast(@JSONBoolean).value->first(),|[]);
     
+    
+    let properties = $parsed.keyValuePairs->getValueForKey('properties')->cast(@JSONObject).keyValuePairs;
+
     let discriminatorPropertyName = if($parsed.keyValuePairs->getValueForKey('discriminator')->isNotEmpty(),
                                          | let property = $parsed.keyValuePairs->getValueForKey('discriminator')->cast(@JSONObject).keyValuePairs->getValueForKey('propertyName');
                                            if($property->isNotEmpty(),
@@ -923,7 +948,6 @@ function <<access.private>> meta::json::schema::fromSchema::JSONSchemaToProperty
      
    
     let typeValue = $propertyKVP->getValueForKey('type')->cast(@JSONString).value;
-
     let propertyObject = $property->propertyObject($ownerClass,$strict);
      
     let ref = if($propertyAllOf->isNotEmpty(),
@@ -1130,6 +1154,7 @@ function <<access.private>> meta::json::schema::fromSchema::getTypesFromFragment
 function <<access.private>> meta::json::schema::fromSchema::refToPath(ref:String[1],parentPath:String[1],pathSchemas:Map<String,ProcessedSchema>[1],pathPrefix:String[0..1]):Type[1]
 { 
    let fullPath = $ref->refToFullPath($parentPath); 
+
    let schemaForPath= $pathSchemas->get($fullPath);
    if($schemaForPath->isEmpty(),
       |Any,
@@ -1168,7 +1193,7 @@ meta::json::schema::fromSchema::refToFullPath(ref:String[1],parentPath:String[0.
 {    
       //References that are a Pure Path (my::class) are taken as is and considered to already be fully qualified
       //References to an embedded  component or definition schema will use the calculated path of the file of the reference if the pure path is not specified in the reference
-     let schemaRef = if($ref->contains('components/schemas'),|'components/schemas',| 'definitions');
+     let schemaRef = if($ref->contains('components/schemas'),|'components/schemas',| if( $ref->contains('$defs'),| '$defs',|'definitions'));
      let isSelfReference = $ref->equal('#') ;
      let isRoot = $ref->startsWith('#'); 
      let hasPath = $ref->contains('::');

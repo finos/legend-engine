@@ -61,7 +61,8 @@
     },
     "alloy" : {
       "host": "127.0.0.1",
-      "port": 8075
+      "port": 6200,
+      "prefix": "/depot/api"
     }
   },
   "temporarytestdb": {

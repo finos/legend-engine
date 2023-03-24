@@ -7,7 +7,7 @@ options
     tokenVocab = AuthenticationLexerGrammar;
 }
 
-identifier:                      VALID_STRING
+identifier:                      VALID_STRING | STRING | USER_PASSWORD_AUTHENTICATION | API_KEY_AUTHENTICATION | ENCRYPTED_PRIVATE_KEY_AUTHENTICATION | GCP_WIF_AWS_IDP_AUTHENTICATION
 ;
 
 // -------------------------------------- DEFINITION --------------------------------------
@@ -37,23 +37,19 @@ authenticationDemo:     AUTHENTICATION_DEMO qualifiedName
 
 // -------------------------------------- Authentication --------------------------------------
 
-authentication:     AUTHENTICATION_DEMO_AUTHENTICATION COLON (
-                        userPasswordAuthentication |
-                        apiKeyAuthentication |
-                        encryptedPrivateKeyAuthentication |
-                        gcpWIFWithAWSIdPAuthentication
-                    )
+authentication:     AUTHENTICATION_DEMO_AUTHENTICATION COLON authenticationCode
+;
+
+authenticationCode: identifier ISLAND_OPEN islandContent
 ;
 
 // -------------------------------------- UserPasswordAuthentication --------------------------------------
 
-userPasswordAuthentication:     USER_PASSWORD_AUTHENTICATION
-                                BRACE_OPEN
-                                (
+userPasswordAuthentication:     (
                                     userPasswordAuthentication_username |
                                     userPasswordAuthentication_password
                                 )*
-                                BRACE_CLOSE
+                                EOF
 ;
 
 
@@ -65,14 +61,12 @@ userPasswordAuthentication_password:    USER_PASSWORD_AUTHENTICATION_PASSWORD CO
 
 // -------------------------------------- APIKeyAuthentication --------------------------------------
 
-apiKeyAuthentication :     API_KEY_AUTHENTICATION
-                                BRACE_OPEN
-                                (
+apiKeyAuthentication :          (
                                     apiKeyAuthentication_keyName |
                                     apiKeyAuthentication_location |
                                     apiKeyAuthentication_value
                                 )*
-                                BRACE_CLOSE
+                                EOF
 ;
 
 
@@ -87,14 +81,12 @@ apiKeyAuthentication_value:    API_KEY_AUTHENTICATION_VALUE COLON secret_value
 
 // -------------------------------------- Encrypted Private Key Authentication --------------------------------------
 
-encryptedPrivateKeyAuthentication :     ENCRYPTED_PRIVATE_KEY_AUTHENTICATION
-                                BRACE_OPEN
-                                (
+encryptedPrivateKeyAuthentication :     (
                                     encryptedPrivateKeyAuthentication_userName |
                                     encryptedPrivateKeyAuthentication_privateKey |
                                     encryptedPrivateKeyAuthentication_passphrase
                                 )*
-                                BRACE_CLOSE
+                                EOF
 ;
 
 encryptedPrivateKeyAuthentication_userName:     ENCRYPTED_PRIVATE_KEY_USERNAME COLON STRING SEMI_COLON
@@ -109,14 +101,12 @@ encryptedPrivateKeyAuthentication_passphrase:    ENCRYPTED_PRIVATE_KEY_PASSPHRAS
 
 // -------------------------------------- GCP WIF With AWS IdP Authentication --------------------------------------
 
-gcpWIFWithAWSIdPAuthentication : GCP_WIF_AWS_IDP_AUTHENTICATION
-                                BRACE_OPEN
-                                (
+gcpWIFWithAWSIdPAuthentication : (
                                     gcpWIFWithAWSIdPAuthentication_serviceAccountEmail |
                                     gcpWIFWithAWSIdPAuthentication_awsIdp |
                                     gcpWIFWithAWSIdPAuthentication_gcpWorkload
                                 )*
-                                BRACE_CLOSE
+                                EOF
 ;
 
 gcpWIFWithAWSIdPAuthentication_serviceAccountEmail: GCP_WIF_AWS_IDP_AUTHENTICATION_SERVICEACCOUNT COLON STRING SEMI_COLON

@@ -82,6 +82,7 @@ public class RelationalStoreExecutorBuilder implements StoreExecutorBuilder
             // TODO : Implement more strict validation when the flow provider feature is fully rolled out
             return Optional.empty();
         }
+        flowProviderConfiguration.credentialProviderProvider = relationalExecutionConfig.getCredentialProviderProvider();
         Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder = DatabaseAuthenticationFlowProviderSelector.getProvider(flowProviderClass.getCanonicalName());
         DatabaseAuthenticationFlowProvider flowProvider = flowProviderHolder.orElseThrow(() -> new RuntimeException(String.format("Database authentication provider not found in the classpath. Provider class-%s", flowProviderClass.getCanonicalName())));
         if (flowProviderConfiguration != null)

@@ -10,3 +10,6 @@ packagePath:                                    identifier (PATH_SEPARATOR ident
 // because in the main grammar, we will take care of keywords overlapping VALID_STRING
 word:                                           identifier | BOOLEAN | INTEGER
 ;
+
+islandContent:                              (ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END)*
+;

@@ -262,14 +262,15 @@ Class
   meta::json::schema::tests::constraints::ClassWithConstraints
 [
    simple: $this.simple->constraintFunctionSimpleNumber(),
-   complex: $this.complex->constraintFunctionComplex() && $this.complex->makeString()->isNoShorterThan(4),
+   complex: $this.complex->constraintFunctionComplex() && $this.complex->makeString()->isNoShorterThan(4) ,
   duplicateConstraint: $this.duplicateConstraint->toOne() ->instanceOf(String),
    inLine : $this.inLine->toOne()->instanceOf(String) || $this.inLine->toOne()->instanceOf(Number),
    constant: $this.constant=='constantValue',
    number:( ($this.number>10) && ($this.number < 15)) || (( $this.number >= 0 )&& ( $this.number <=2)),
    dateOrString: if( $this.dateOrString->isNotEmpty(),| $this.dateOrString->toOne()->instanceOf(String) || $this.dateOrString->toOne()->instanceOf(StrictDate),|true),
     manyString:    $this.manyString->forAll(v |$v->isNoShorterThan(4) && $v->isNoLongerThan(10) && $v->constraintRegEXFn())  && $this.manyString->isDistinct() ,
-   uuid: $this.uuidProperty->isUUID()
+   uuid: $this.uuidProperty->isUUID(),
+   ignore:  $this.ignoredQualifiedProperty('ignore Me')->isNoShorterThan(4)
 ]
 {
    constant:String[0..1];
@@ -288,7 +289,7 @@ Class
    <<meta::json::schema::JSONSchemaTypeExtension.array>> forcedArrayOptional:String[0..1];
   <<meta::json::schema::JSONSchemaTypeExtension.array>> forcedArrayRequired:String[0..1];
   <<meta::json::schema::JSONSchemaTypeExtension.object>> objectType : meta::pure::metamodel::type::Any[0..1];
-
+  ignoredQualifiedProperty(r:String[1]) {$r}:String[1];
 
 }
 

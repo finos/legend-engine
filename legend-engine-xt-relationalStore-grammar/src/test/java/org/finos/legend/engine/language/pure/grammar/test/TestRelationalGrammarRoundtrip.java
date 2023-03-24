@@ -337,6 +337,23 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
     }
 
     @Test
+    public void testRelationalDatabaseViewWithFirstJoin()
+    {
+        test("###Relational\n" +
+                "Database sample::test\n" +
+                "(\n" +
+                "  Schema SomeView\n" +
+                "  (\n" +
+                "    View TEST_JOIN\n" +
+                "    (\n" +
+                "      id: SomeView.test.prop PRIMARY KEY,\n" +
+                "      join_test: ([sample::test] (INNER) @TestDemographics > (INNER) [sample::test]@sites > (INNER) [sample::test]@sites)\n" +
+                "    )\n" +
+                "  )\n" +
+                ")\n");
+    }
+
+    @Test
     public void testRelationalOperations()
     {
         String unformatted = "###Relational\n" +

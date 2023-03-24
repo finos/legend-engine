@@ -45,15 +45,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSp
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
 import org.finos.legend.engine.shared.core.function.Function4;
 import org.finos.legend.engine.shared.core.function.Procedure3;
-import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
-import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionOption;
-import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_TestAssertion;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection;
 
 import java.util.Collections;
 import java.util.List;
@@ -106,12 +103,12 @@ public interface CompilerExtension
         return Collections.emptyList();
     }
 
-    default List<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, CompileContext, Connection>> getExtraConnectionValueProcessors()
+    default List<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, CompileContext, Root_meta_pure_runtime_Connection>> getExtraConnectionValueProcessors()
     {
         return Collections.emptyList();
     }
 
-    default List<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, Connection, CompileContext>> getExtraConnectionSecondPassProcessors()
+    default List<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, Root_meta_pure_runtime_Connection, CompileContext>> getExtraConnectionSecondPassProcessors()
     {
         return Collections.emptyList();
     }
@@ -152,7 +149,7 @@ public interface CompilerExtension
         return Collections.emptyList();
     }
 
-    default List<Function2<ExecutionContext, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.ExecutionContext>> getExtraExecutionContextProcessors()
+    default List<Function2<ExecutionContext, CompileContext, Root_meta_pure_runtime_ExecutionContext>> getExtraExecutionContextProcessors()
     {
         return Collections.emptyList();
     }
@@ -198,5 +195,10 @@ public interface CompilerExtension
     default List<Function3<TestAssertion, CompileContext, ProcessingContext, Root_meta_pure_test_assertion_TestAssertion>> getExtraTestAssertionProcessors()
     {
         return Collections.emptyList();
+    }
+
+    default CompilerExtension build()
+    {
+        throw new RuntimeException("CompilerExtension build method is not implement for " + this.getClass().getSimpleName());
     }
 }

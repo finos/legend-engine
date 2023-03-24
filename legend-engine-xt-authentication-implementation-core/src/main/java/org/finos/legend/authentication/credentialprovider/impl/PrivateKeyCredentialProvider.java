@@ -15,12 +15,24 @@
 package org.finos.legend.authentication.credentialprovider.impl;
 
 import org.finos.legend.authentication.credentialprovider.CredentialProvider;
+import org.finos.legend.authentication.intermediationrule.IntermediationRule;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.EncryptedPrivateKeyPairAuthenticationSpecification;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.PrivateKeyCredential;
 
+import java.util.List;
+
 public class PrivateKeyCredentialProvider extends CredentialProvider<EncryptedPrivateKeyPairAuthenticationSpecification, PrivateKeyCredential>
 {
+    public PrivateKeyCredentialProvider()
+    {
+    }
+
+    public PrivateKeyCredentialProvider(List<IntermediationRule> intermediationRules)
+    {
+        super(intermediationRules);
+    }
+
     @Override
     public PrivateKeyCredential makeCredential(EncryptedPrivateKeyPairAuthenticationSpecification AuthenticationSpecification, Identity identity) throws Exception
     {

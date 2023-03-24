@@ -29,28 +29,34 @@ import meta::pure::model::unit::*;
 
 Class meta::external::shared::format::ExternalFormatContract<T>
 [
-  externalFormatMetamodelType : checkSuperType($this.externalFormatMetamodel, SchemaDetail)
+  sourceRecordSerializeTreeProvidedForCheckedResult
+  (
+    ~function: !$this.internalizeReturnsChecked || $this.sourceRecordSerializeTree->isNotEmpty()
+    ~enforcementLevel: Error
+    ~message: 'External Format needs to provide serialized tree structure for its source record, if it returns checked result for internalize'
+  )   
 ]
 {
-   id                               : String[1];   
-   contentTypes                     : String[*];
-   
-   externalFormatMetamodel          : Class<T>[1];
+  id                               : String[1];   
+  contentTypes                     : String[*];
+  
+  externalFormatMetamodel          : Class<T>[1];
 
-   externalFormatToPureDescriptor   : ExternalFormatToPureDescriptor<SchemaToModelConfiguration>[0..1];
-   externalFormatFromPureDescriptor : ExternalFormatFromPureDescriptor<ModelToSchemaConfiguration>[0..1];
-   externalFormatBindingValidator   : Function<{Binding[1] -> BindingDetail[1]}>[0..1];
-   validateBinding(binding:Binding[1])
-   {
-      if($this.externalFormatBindingValidator->isEmpty(),
-         | fail('External Format - ' + $this.id + ' does not support binding validation');@BindingDetail;,
-         | $this.externalFormatBindingValidator->toOne()->eval($binding););
-   }:BindingDetail[1];
+  externalFormatToPureDescriptor   : ExternalFormatToPureDescriptor<SchemaToModelConfiguration>[0..1];
+  externalFormatFromPureDescriptor : ExternalFormatFromPureDescriptor<ModelToSchemaConfiguration>[0..1];
+  externalFormatBindingValidator   : Function<{Binding[1] -> BindingDetail[1]}>[0..1];
+  validateBinding(binding:Binding[1])
+  {
+    if($this.externalFormatBindingValidator->isEmpty(),
+        | fail('External Format - ' + $this.id + ' does not support binding validation');@BindingDetail;,
+        | $this.externalFormatBindingValidator->toOne()->eval($binding););
+  }:BindingDetail[1];
 
-   externalizeConfig                : Class<ExternalFormatExternalizeConfig>[0..1];
-   internalizeConfig                : Class<ExternalFormatInternalizeConfig>[0..1];
-   
-   sourceRecordTree                 : RootGraphFetchTree<Any>[0..1];
+  externalizeConfig                : Class<ExternalFormatExternalizeConfig>[0..1];
+  internalizeConfig                : Class<ExternalFormatInternalizeConfig>[0..1];
+
+  internalizeReturnsChecked        : Boolean[1] = false;              // By default we assume external format would NOT wrap internalize response into checked structure
+  sourceRecordSerializeTree        : RootGraphFetchTree<Any>[0..1];   // If external Format choses to return checked wrapped response for internalize, it needs to provide serialized representation of its source record metamodel
 }
 
 Class meta::external::shared::format::ExternalFormatToPureDescriptor<U>

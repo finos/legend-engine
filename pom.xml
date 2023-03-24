@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>3.34.2-SNAPSHOT</version>
+    <version>4.4.5-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -40,9 +40,7 @@
         <module>legend-engine-xt-authentication-implementation-core</module>
         <module>legend-engine-xt-authentication-implementation-vault-aws</module>
         <module>legend-engine-xt-authentication-implementation-gcp-federation</module>
-        <module>legend-engine-xt-authentication-example</module>
-
-        <module>legend-engine-test-reports</module>
+        <module>legend-engine-xt-authentication-experimental</module>
 
         <module>legend-engine-xt-graphQL-grammar</module>
         <module>legend-engine-xt-graphQL-grammar-integration</module>
@@ -62,6 +60,7 @@
         <module>legend-engine-xt-persistence-protocol</module>
         <module>legend-engine-xt-persistence-pure</module>
         <module>legend-engine-xt-persistence-test-runner</module>
+        <module>legend-engine-xt-persistence-api</module>
 
         <module>legend-engine-xt-persistence-cloud-grammar</module>
         <module>legend-engine-xt-persistence-cloud-protocol</module>
@@ -80,18 +79,15 @@
         <module>legend-engine-xt-xml-runtime</module>
         <module>legend-engine-xt-xml-shared</module>
         <module>legend-engine-xt-xml-pure</module>
-        <module>legend-engine-xt-xml-protocol</module>
 
         <module>legend-engine-xt-flatdata-model</module>
         <module>legend-engine-xt-flatdata-shared</module>
         <module>legend-engine-xt-flatdata-runtime</module>
-        <module>legend-engine-xt-flatdata-protocol</module>
         <module>legend-engine-xt-flatdata-pure</module>
 
         <module>legend-engine-xt-json-model</module>
         <module>legend-engine-xt-json-runtime</module>
         <module>legend-engine-external-format-jsonSchema</module>
-        <module>legend-engine-xt-json-protocol</module>
         <module>legend-engine-xt-json-pure</module>
 
         <module>legend-engine-xt-haskell-grammar</module>
@@ -136,6 +132,12 @@
         <module>legend-engine-xt-relationalStore-athena-protocol</module>
         <module>legend-engine-xt-relationalStore-athena-pure</module>
 
+        <module>legend-engine-xt-relationalStore-trino-execution</module>
+        <module>legend-engine-xt-relationalStore-trino-execution-tests</module>
+        <module>legend-engine-xt-relationalStore-trino-grammar</module>
+        <module>legend-engine-xt-relationalStore-trino-protocol</module>
+        <module>legend-engine-xt-relationalStore-trino-pure</module>
+
         <module>legend-engine-xt-avro</module>
         <module>legend-engine-xt-avro-pure</module>
 
@@ -148,17 +150,19 @@
         <module>legend-engine-xt-text-grammar</module>
         <module>legend-engine-xt-text-compiler</module>
         <module>legend-engine-xt-text-protocol</module>
-        <module>legend-engine-xt-text-pure</module>
+        <module>legend-engine-xt-text-pure-metamodel</module>
 
+        <module>legend-engine-xt-diagram-api</module>
+        <module>legend-engine-xt-diagram-pure</module>
         <module>legend-engine-xt-diagram-grammar</module>
         <module>legend-engine-xt-diagram-compiler</module>
         <module>legend-engine-xt-diagram-protocol</module>
-        <module>legend-engine-xt-diagram-pure</module>
-        <module>legend-engine-xt-diagram-api</module>
+        <module>legend-engine-xt-diagram-pure-metamodel</module>
 
         <module>legend-engine-xt-data-space-grammar</module>
         <module>legend-engine-xt-data-space-compiler</module>
         <module>legend-engine-xt-data-space-protocol</module>
+        <module>legend-engine-xt-data-space-pure-metamodel</module>
         <module>legend-engine-xt-data-space-pure</module>
         <module>legend-engine-xt-data-space-generation</module>
         <module>legend-engine-xt-data-space-api</module>
@@ -170,7 +174,18 @@
         <module>legend-engine-xt-analytics-lineage-api</module>
         <module>legend-engine-xt-analytics-lineage-pure</module>
 
+        <module>legend-engine-xt-analytics-search-pure</module>
+        <module>legend-engine-xt-analytics-search-generation</module>
+
         <module>legend-engine-pure-code-compiled-core</module>
+        <module>legend-engine-pure-platform-java</module>
+        <module>legend-engine-pure-platform-functions-java</module>
+        <module>legend-engine-pure-platform-dsl-path-java</module>
+        <module>legend-engine-pure-platform-dsl-graph-java</module>
+        <module>legend-engine-pure-platform-dsl-mapping-java</module>
+        <module>legend-engine-pure-platform-dsl-diagram-java</module>
+        <module>legend-engine-pure-platform-store-relational-java</module>
+        <module>legend-engine-pure-platform-functions-json-java</module>
 
         <module>legend-engine-xt-changetoken-pure</module>
         <module>legend-engine-xt-changetoken-compiler</module>
@@ -215,15 +230,11 @@
         <module>legend-engine-shared-javaCompiler</module>
         <module>legend-engine-services-model</module>
         <module>legend-engine-services-model-api</module>
-        <module>legend-engine-server</module>
-        <module>legend-engine-test-server-shared</module>
-        <module>legend-engine-server-integration-tests</module>
-        <module>legend-engine-extensions-collection-execution</module>
-        <module>legend-engine-extensions-collection-generation</module>
         <module>legend-engine-testable</module>
         <module>legend-engine-executionPlan-execution-authorizer</module>
         <module>legend-engine-xt-relationalStore-executionPlan-authorizer</module>
         <module>legend-engine-xt-javaGeneration-pure</module>
+        <module>legend-engine-xt-javaGeneration-featureBased-pure</module>
         <module>legend-engine-xt-javaPlatformBinding-pure</module>
         <module>legend-engine-xt-java-runtime-compiler</module>
         <module>legend-engine-xt-flatdata-javaPlatformBinding-pure</module>
@@ -237,15 +248,31 @@
         <module>legend-engine-xt-sql-grammar</module>
         <module>legend-engine-xt-sql-protocol</module>
         <module>legend-engine-xt-sql-compiler</module>
+        <module>legend-engine-pure-runtime-execution</module>
         <module>legend-engine-xt-sql-grammar-integration</module>
         <module>legend-engine-xt-sql-query</module>
         <module>legend-engine-xt-sql-pure</module>
+        <module>legend-engine-xt-sql-postgres-server</module>
+        <module>legend-engine-xt-elasticsearch</module>
+        <module>legend-engine-xt-nonrelationalStore-mongodb-pure</module>
+        <module>legend-engine-xt-nonrelationalStore-mongodb-grammar</module>
+        <module>legend-engine-xt-nonrelationalStore-mongodb-protocol</module>
+        <module>legend-engine-xt-nonrelationalStore-mongodb-grammar-integration</module>
+
+        <!-- NOTE: Do not change the ordering of this block, we want to build these modules last -->
+        <module>legend-engine-test-reports</module>
+        <module>legend-engine-server</module>
+        <module>legend-engine-test-server-shared</module>
+        <module>legend-engine-server-integration-tests</module>
+        <module>legend-engine-extensions-collection-execution</module>
+        <module>legend-engine-extensions-collection-generation</module>
+        <!-- NOTE: Do not change the ordering of this block, we want to build these modules last -->
     </modules>
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>3.8.3</legend.pure.version>
-        <legend.shared.version>0.22.5</legend.shared.version>
+        <legend.pure.version>4.3.2</legend.pure.version>
+        <legend.shared.version>0.23.3</legend.shared.version>
 
         <!-- SONAR -->
         <sonar.projectKey>legend-engine</sonar.projectKey>
@@ -270,18 +297,19 @@
         <maven.compiler.release>8</maven.compiler.release>
         <maven.enforcer.requireJavaVersion>[11.0.10,12)</maven.enforcer.requireJavaVersion>
         <project.build.outputTimestamp>1674482618</project.build.outputTimestamp>
+        <surefire.vm.params>-XX:SoftRefLRUPolicyMSPerMB=1</surefire.vm.params>
 
         <!-- Databases -->
         <hikaricp.version>4.0.3</hikaricp.version>
         <h2.version>1.4.200</h2.version>
         <snowflake.version>3.13.5</snowflake.version>
-        <databricks.version>2.6.25</databricks.version>
+        <databricks.version>2.6.27</databricks.version>
         <redshiftJDBC.version>2.0.0.3</redshiftJDBC.version>
         <postgres.version>9.4.1208.jre7</postgres.version>
 
         <!-- Dependency versions -->
         <junit.version>4.13.1</junit.version>
-        <mockito-core.version>2.28.2</mockito-core.version>
+        <mockito-core.version>4.4.0</mockito-core.version>
         <eclipsecollections.version>10.2.0</eclipsecollections.version>
         <jackson.version>2.10.5</jackson.version>
         <jackson.databind.version>2.10.5.1</jackson.databind.version>
@@ -300,8 +328,10 @@
         <commons-text.version>1.10.0</commons-text.version>
         <freemarker.version>2.3.30</freemarker.version>
         <opentracing.version>0.32.0</opentracing.version>
+        <opentracing.contrib.version>0.3.0</opentracing.contrib.version>
         <prometheus.version>0.8.1</prometheus.version>
         <httpclient.version>4.5.13</httpclient.version>
+        <httpasyncclient.version>4.1.5</httpasyncclient.version>
         <httpcore.version>4.4.13</httpcore.version>
         <janino.version>3.1.0</janino.version>
         <github.classgraph.version>4.8.25</github.classgraph.version>
@@ -319,6 +349,7 @@
         <dropwizard.version>1.3.29</dropwizard.version>
         <dropwizard-swagger.version>1.3.17-1</dropwizard-swagger.version>
         <dropwizard.metrics.version>4.1.16</dropwizard.metrics.version>
+        <hk2.version>2.5.0-b32</hk2.version>
         <guava.version>30.0-jre</guava.version>
         <jsonunit.version>2.17.0</jsonunit.version>
         <janino.version>3.1.0</janino.version>
@@ -349,6 +380,7 @@
         <build-helper.maven.plugin.version>3.2.0</build-helper.maven.plugin.version>
         <dockerfile.maven.plugin.version>1.4.13</dockerfile.maven.plugin.version>
         <maven.plugin.puppycrawl.version>8.25</maven.plugin.puppycrawl.version>
+        <testcontainers.version>1.17.6</testcontainers.version>
     </properties>
 
     <scm>
@@ -405,7 +437,7 @@
                 </plugin>
                 <plugin>
                     <groupId>org.finos.legend.pure</groupId>
-                    <artifactId>legend-pure-maven-java-compiled</artifactId>
+                    <artifactId>legend-pure-maven-generation-java</artifactId>
                     <version>${legend.pure.version}</version>
                 </plugin>
                 <plugin>
@@ -480,7 +512,7 @@
                 </plugin>
                 <plugin>
                     <groupId>org.finos.legend.pure</groupId>
-                    <artifactId>legend-pure-maven-compilation-par</artifactId>
+                    <artifactId>legend-pure-maven-generation-par</artifactId>
                     <version>${legend.pure.version}</version>
                 </plugin>
             </plugins>
@@ -530,6 +562,7 @@
                     <reportsDirectory>
                         ${project.parent.basedir}/legend-engine-test-reports/surefire-reports-aggregate
                     </reportsDirectory>
+                    <argLine>${argLine} ${surefire.vm.params}</argLine>
                 </configuration>
             </plugin>
             <plugin>
@@ -716,7 +749,7 @@
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-authentication-example</artifactId>
+                <artifactId>legend-engine-xt-authentication-experimental</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -774,6 +807,11 @@
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-pure-runtime-compiler</artifactId>
                 <type>test-jar</type>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-runtime-execution</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -915,6 +953,32 @@
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-trino-execution</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-trino-execution-tests</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-trino-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-trino-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-trino-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-serviceStore-grammar</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1026,11 +1090,6 @@
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-flatdata-protocol</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-flatdata-model</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1052,11 +1111,6 @@
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-xml-protocol</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-xml-model</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1073,12 +1127,6 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-xml-pure</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-json-protocol</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -1184,10 +1232,20 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-text-pure</artifactId>
+                <artifactId>legend-engine-xt-text-pure-metamodel</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-diagram-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-diagram-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-diagram-compiler</artifactId>
@@ -1205,12 +1263,7 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-diagram-pure</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-diagram-api</artifactId>
+                <artifactId>legend-engine-xt-diagram-pure-metamodel</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -1238,6 +1291,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-data-space-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-data-space-pure-metamodel</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -1272,6 +1330,18 @@
                 <artifactId>legend-engine-xt-analytics-mapping-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-search-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-search-generation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-daml-pure</artifactId>
@@ -1300,6 +1370,12 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-executionPlan-execution</artifactId>
+                <type>test-jar</type>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-executionPlan-execution-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1320,7 +1396,8 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-relationalStore-executionPlan-connection-authentication-default</artifactId>
+                <artifactId>legend-engine-xt-relationalStore-executionPlan-connection-authentication-default
+                </artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -1532,6 +1609,56 @@
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-platform-java</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-platform-dsl-diagram-java</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-platform-dsl-graph-java</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-platform-dsl-path-java</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-platform-dsl-mapping-java</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-platform-functions-java</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-runtime-java-extension-functions</artifactId>
+                <version>${legend.pure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-platform-functions-json-java</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-platform-store-relational-java</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-runtime-java-extension-functions-shared-conversion</artifactId>
+                <version>${legend.pure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-pure-code-compiled-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1635,17 +1762,37 @@
                 <artifactId>legend-engine-xt-sql-grammar-integration</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-sql-postgres-server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-nonrelationalStore-mongodb-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-nonrelationalStore-mongodb-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-nonrelationalStore-mongodb-grammar-integration</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-nonrelationalStore-mongodb-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <!-- ENGINE -->
 
             <!-- PURE -->
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-m4</artifactId>
-                <version>${legend.pure.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-configuration-external</artifactId>
                 <version>${legend.pure.version}</version>
             </dependency>
             <dependency>
@@ -1737,27 +1884,47 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-runtime-java-extension-external-json</artifactId>
+                <artifactId>legend-pure-runtime-java-extension-functions-json</artifactId>
                 <version>${legend.pure.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-m3-platform</artifactId>
+                <artifactId>legend-pure-m2-dsl-path-pure</artifactId>
                 <version>${legend.pure.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-m3-dsl-path</artifactId>
+                <artifactId>legend-pure-m2-dsl-path-grammar</artifactId>
                 <version>${legend.pure.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-m2-dsl-mapping</artifactId>
+                <artifactId>legend-pure-m2-dsl-mapping-pure</artifactId>
                 <version>${legend.pure.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-m2-dsl-diagram</artifactId>
+                <artifactId>legend-pure-m2-dsl-diagram-pure</artifactId>
+                <version>${legend.pure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-m2-dsl-diagram-grammar</artifactId>
+                <version>${legend.pure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-m2-dsl-mapping-grammar</artifactId>
+                <version>${legend.pure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-runtime-java-extension-dsl-diagram</artifactId>
+                <version>${legend.pure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-runtime-java-extension-dsl-graph</artifactId>
                 <version>${legend.pure.version}</version>
             </dependency>
             <dependency>
@@ -1767,12 +1934,27 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-m3-dsl-graph</artifactId>
+                <artifactId>legend-pure-runtime-java-extension-dsl-path</artifactId>
                 <version>${legend.pure.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-m2-store-relational</artifactId>
+                <artifactId>legend-pure-m2-dsl-graph-pure</artifactId>
+                <version>${legend.pure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-m2-dsl-graph-grammar</artifactId>
+                <version>${legend.pure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-m2-store-relational-pure</artifactId>
+                <version>${legend.pure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-m2-store-relational-grammar</artifactId>
                 <version>${legend.pure.version}</version>
             </dependency>
             <dependency>
@@ -1782,17 +1964,12 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-m2-external-json</artifactId>
+                <artifactId>legend-pure-m2-functions-pure</artifactId>
                 <version>${legend.pure.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-code-compiled-platform-java</artifactId>
-                <version>${legend.pure.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-code-compiled-tests</artifactId>
+                <artifactId>legend-pure-m2-functions-json-pure</artifactId>
                 <version>${legend.pure.version}</version>
             </dependency>
             <dependency>
@@ -1987,6 +2164,11 @@
                 <version>${opentracing.version}</version>
             </dependency>
             <dependency>
+                <groupId>io.opentracing.contrib</groupId>
+                <artifactId>opentracing-concurrent</artifactId>
+                <version>${opentracing.contrib.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>io.zipkin.reporter2</groupId>
                 <artifactId>zipkin-reporter</artifactId>
                 <version>${zipkin.reporter.version}</version>
@@ -2138,13 +2320,29 @@
             <dependency>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>hk2-locator</artifactId>
-                <version>2.5.0-b32</version>
+                <version>${hk2.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.javassist</groupId>
                         <artifactId>javassist</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.hk2</groupId>
+                <artifactId>hk2-api</artifactId>
+                <version>${hk2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.hk2.external</groupId>
+                <artifactId>javax.inject</artifactId>
+                <version>${hk2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.dropwizard</groupId>
+                <artifactId>dropwizard-testing</artifactId>
+                <version>${dropwizard.version}</version>
+                <scope>test</scope>
             </dependency>
             <!-- DROPWIZARD -->
 
@@ -2169,6 +2367,12 @@
             </dependency>
             <!-- JSON-UNIT -->
 
+            <dependency>
+                <groupId>org.objenesis</groupId>
+                <artifactId>objenesis</artifactId>
+                <version>3.2</version>
+                <scope>test</scope>
+            </dependency>
             <dependency>
                 <groupId>org.hamcrest</groupId>
                 <artifactId>hamcrest-core</artifactId>
@@ -2246,6 +2450,22 @@
                         <artifactId>commons-logging</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpasyncclient</artifactId>
+                <version>${httpasyncclient.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpcore-nio</artifactId>
+                <version>${httpcore.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
@@ -2382,17 +2602,17 @@
             <dependency>
                 <groupId>org.testcontainers</groupId>
                 <artifactId>testcontainers</artifactId>
-                <version>1.16.3</version>
+                <version>${testcontainers.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.testcontainers</groupId>
                 <artifactId>mssqlserver</artifactId>
-                <version>1.16.3</version>
+                <version>${testcontainers.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.testcontainers</groupId>
                 <artifactId>postgresql</artifactId>
-                <version>1.16.3</version>
+                <version>${testcontainers.version}</version>
             </dependency>
             <!-- Test Containers -->
 
@@ -2404,6 +2624,11 @@
             <dependency>
                 <groupId>org.glassfish.jersey.core</groupId>
                 <artifactId>jersey-common</artifactId>
+                <version>${jersey.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.core</groupId>
+                <artifactId>jersey-server</artifactId>
                 <version>${jersey.version}</version>
             </dependency>
             <dependency>

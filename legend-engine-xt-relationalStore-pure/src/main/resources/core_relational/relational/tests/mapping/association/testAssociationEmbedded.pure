@@ -61,7 +61,7 @@ function <<test.Test>> meta::relational::tests::mapping::association::embedded::
 
 function <<test.Test>> meta::relational::tests::mapping::association::embedded::testPersonToFirmLocationsInlineEmbedded():Boolean[1]
 {
-   let result1 = execute(|Person.all()->project([p|$p.lastName,p|$p.firm.legalName, p|$p.firm.address.location.place], ['name', 'firm', 'location']), associationMappingInlinedEmbedded, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
+   let result1 = execute(|Person.all()->project([p|$p.lastName,p|$p.firm.legalName, p|$p.firm.address.location.place], ['name', 'firm', 'location']), associationMappingInlinedEmbedded, testRuntime(), meta::relational::extension::relationalExtensions(), debug()).values->at(0);
    assertEquals(3, $result1.rows->size());
    assertSameElements(['Smith Firm X Loc 1', 'Johnson Firm X Loc 1', 'Roberts Firm A Loc 2'], $result1.rows->map(r|$r.getString('name')+' '+$r.getString('firm')->toString()+ ' ' +$r.getString('location')));
 }

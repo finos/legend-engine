@@ -21,17 +21,31 @@ import org.finos.legend.engine.external.format.xml.shared.datatypes.SimpleTypeHa
 import org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataAdder;
 import org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataObjectAdder;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 public class AddEnumToObject<T, V extends Enum<?>> implements ValueProcessor<T>
 {
     private final SimpleTypeHandler<String> handler;
     private final Class<V> clazz;
     private final ExternalDataObjectAdder<T, V> dataAdder;
+    private final Method getNameMethod;
+    private final V[] enumConstants;
 
     public AddEnumToObject(ExternalDataAdder<T> dataAdder, SimpleTypeHandler<String> handler, Class<V> clazz)
     {
         this.dataAdder = (ExternalDataObjectAdder<T, V>) dataAdder;
         this.handler = handler;
         this.clazz = clazz;
+        try
+        {
+            this.getNameMethod = clazz.getMethod("getName");
+        }
+        catch (NoSuchMethodException e)
+        {
+            throw new RuntimeException("getName does not exist in : " + clazz.getSimpleName(), e);
+        }
+        this.enumConstants = clazz.getEnumConstants();
     }
 
     @Override
@@ -39,11 +53,18 @@ public class AddEnumToObject<T, V extends Enum<?>> implements ValueProcessor<T>
     {
         String text = handler.parse(rawValue);
         V value = null;
-        for (V v : clazz.getEnumConstants())
+        for (V v : enumConstants)
         {
-            if (XmlUtils.lenientMatch(v.name(), text))
+            try
             {
-                value = v;
+                if (XmlUtils.lenientMatch((String) getNameMethod.invoke(v), text))
+                {
+                    value = v;
+                }
+            }
+            catch (IllegalAccessException | InvocationTargetException e)
+            {
+                throw new RuntimeException("Not able to execute getName() on Enum " + clazz.getSimpleName(), e);
             }
         }
         if (value == null)

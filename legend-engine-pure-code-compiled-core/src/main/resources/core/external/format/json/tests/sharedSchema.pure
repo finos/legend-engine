@@ -107,6 +107,34 @@ Class <<temporal.bitemporal>>  meta::json::schema::tests::BiTemporalFirm
 
 }
 
+Class  meta::json::schema::tests::Car extends meta::json::schema::tests::WheeledVehicle
+{
+   driver:String[1]; 
+
+}
+Class  meta::json::schema::tests::Truck extends meta::json::schema::tests::WheeledVehicle
+{
+   weight:Integer[1]; 
+
+}
+
+
+Class  meta::json::schema::tests::WheeledVehicle extends meta::json::schema::tests::Vehicle
+{
+   wheels:Integer[1]; 
+
+}
+Class  meta::json::schema::tests::Vehicle
+{
+   id:Integer[1]; 
+   similarVehiciles:meta::json::schema::tests::Vehicle[*];
+   
+}
+
+Class  meta::json::schema::tests::Road
+{
+   vehicles:meta::json::schema::tests::Vehicle[*]; 
+ }
 
 function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0'}  meta::json::schema::tests::roundTrip::typeInclusionForConstraintFunctions():Boolean[1]
 {
@@ -150,9 +178,8 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
   let fileMap = [schemaInput('/ClassWithFunctionReferences.json', $jsonschemaclass,$prefix),
                    schemaInput('/functionWithStringType.json', $jsonschemafunc,$prefix)]; 
   let generatedClassFromJSON =  $fileMap->JSONSchemaToPure()->filter(p|$p.name=='ClassWithFunctionReferences')->toOne();
-
   assert(jsonEquivalent(meta::json::schema::tests::ClassWithFunctionReferences->toSerializer()->parseJSON(),$generatedClassFromJSON->toOne()->toSerializer()->parseJSON()));
-      testfromJSONSchema(meta::json::schema::tests::ClassWithFunctionReferences,$generatedClassFromJSON);
+  testfromJSONSchema(meta::json::schema::tests::ClassWithFunctionReferences,$generatedClassFromJSON);
 
 }
 
@@ -160,11 +187,11 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
 
 function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0'}  meta::json::schema::tests::roundTrip::testCustomProfile():Boolean[1]
 {
-   
+
   let generatedJSONFromClassOpenAPI = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::json::schema::tests::ClassWithCustomProfiles,meta::json::schema::tests::profile],
                                                          useConstraints = true ,includeAllRelatedTypes=false,generateConstraintFunctionSchemas=true,schemaSpecification=JSONSchemaSpecification.OPEN_API_V3_0_3 ));
-  
-   
+
+
    let jsonSchemaOpenAPI  = ' {\n' +
         '  "x-customStereoType1": true,\n' +
         '  "description": "A simple description",\n' +
@@ -193,23 +220,23 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
         '}';
           assert(jsonEquivalent($jsonSchemaOpenAPI->parseJSON(),$generatedJSONFromClassOpenAPI.content->toOne()->parseJSON()));
 
-   
-   
-      
+
+
+
     let prefix = 'meta::json::schema::tests';
-    let fileMap = [schemaInput('/ClassWithCustomProfiles.json', $jsonSchemaOpenAPI,$prefix)]; 
-    let generatedClassFromJSON =  $fileMap->JSONSchemaToPure(); 
+    let fileMap = [schemaInput('/ClassWithCustomProfiles.json', $jsonSchemaOpenAPI,$prefix)];
+    let generatedClassFromJSON =  $fileMap->JSONSchemaToPure();
      //should return  a Profile the schemas
-   
+
    let generatedClassOpenAPI  = $generatedClassFromJSON->filter(p|$p.name=='ClassWithCustomProfiles')->toOne();
    let generatedProfileOpenAPI  = $generatedClassFromJSON->filter(p|$p.name=='GeneratedProfile')->toOne();
    testfromJSONSchema(meta::json::schema::tests::ClassWithCustomProfiles,$generatedClassFromJSON);
     testfromJSONSchema(meta::json::schema::tests::profile::GeneratedProfile,$generatedClassFromJSON);
-  
-      
+
+
    let generatedJSONFromClassDraft07 = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::json::schema::tests::ClassWithCustomProfiles,meta::json::schema::tests::profile],
                                                          useConstraints = true ,includeAllRelatedTypes=false,generateConstraintFunctionSchemas=true ));
-   
+
    let jsonSchemaDraft07  = ' {\n' +
         '  "customStereoType1": true,\n' +
         '  "description": "A simple description",\n' +
@@ -237,24 +264,24 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
         '  },\n' +
         '  "customTag1": 10\n' +
         '}';
-   
+
    assert(jsonEquivalent($jsonSchemaDraft07->parseJSON(),$generatedJSONFromClassDraft07.content->toOne()->parseJSON()));
-  let fileMapDraft07 = [schemaInput('/ClassWithCustomProfiles.json', $jsonSchemaDraft07,$prefix)]; 
-  let generatedClassFromJSONDraft07 =  $fileMapDraft07->JSONSchemaToPure(); 
+  let fileMapDraft07 = [schemaInput('/ClassWithCustomProfiles.json', $jsonSchemaDraft07,$prefix)];
+  let generatedClassFromJSONDraft07 =  $fileMapDraft07->JSONSchemaToPure();
   let generatedClassDraft07  = $generatedClassFromJSON->filter(p|$p.name=='ClassWithCustomProfiles')->toOne();
   let generatedProfileDraft07  = $generatedClassFromJSON->filter(p|$p.name=='GeneratedProfile')->toOne();
 
    testfromJSONSchema(meta::json::schema::tests::ClassWithCustomProfiles,$generatedClassFromJSON);
    testfromJSONSchema(meta::json::schema::tests::profile::GeneratedProfile,$generatedClassFromJSON);
 
-   
+
 }
 
 function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0'}  meta::json::schema::tests::roundTrip::testforceFunctionToObject():Boolean[1]
 {
-   
+
      let generatedJSONFromElement = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::json::schema::tests::functionForcedToObject_Any_$0_1$__Boolean_1_],
-                                                          useConstraints = true ,includeAllRelatedTypes=false,generateConstraintFunctionSchemas=true ));  
+                                                          useConstraints = true ,includeAllRelatedTypes=false,generateConstraintFunctionSchemas=true ));
    let jsonSchema  = '{' +
 '  "anyOf": [' +
 '    {' +
@@ -269,18 +296,18 @@ function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.st
 '  "$schema": "http:\/\/json-schema.org\/draft-07\/schema#",' +
 '  "description": "Generate an object tag where there typically would not be any"' +
 '}';
-  
+
    assert(jsonEquivalent($jsonSchema->parseJSON(),$generatedJSONFromElement.content->toOne()->parseJSON()));
     let prefix = 'meta::json::schema::tests';
-    let fileMap = [schemaInput('/functionForcedToObject.json', $jsonSchema,$prefix)]; 
-    let generatedElementFromJSON =  $fileMap->JSONSchemaToPure(); 
+    let fileMap = [schemaInput('/functionForcedToObject.json', $jsonSchema,$prefix)];
+    let generatedElementFromJSON =  $fileMap->JSONSchemaToPure();
    testfromJSONSchema(meta::json::schema::tests::functionForcedToObject_Any_$0_1$__Boolean_1_,$generatedElementFromJSON);
 }
 
 function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0'}  meta::json::schema::tests::roundTrip::testinLineFunctions():Boolean[1]
 {
      let generatedJSONFromElement = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[ meta::json::schema::tests::ClassWithInLineFunctions],
-                                                          useConstraints = true ,includeAllRelatedTypes=false,generateConstraintFunctionSchemas=true ));  
+                                                          useConstraints = true ,includeAllRelatedTypes=false,generateConstraintFunctionSchemas=true ));
    let jsonSchema  = '{' +
                      '  "$schema": "http:\/\/json-schema.org\/draft-07\/schema#",' +
                      '  "title": "meta::json::schema::tests::ClassWithInLineFunctions",' +
@@ -334,13 +361,13 @@ function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.st
                      '"integer"' +
                      '  ]' +
                      '}' ;
-    
+
 
 
    assert(jsonEquivalent($jsonSchema->parseJSON(),$generatedJSONFromElement.content->toOne()->parseJSON()));
    let prefix = 'meta::json::schema::tests';
-   let fileMap = [schemaInput('/ClassWithInLineFunctions.json', $jsonSchema,$prefix)]; 
-   let generatedElementFromJSON =  $fileMap->JSONSchemaToPure(); 
+   let fileMap = [schemaInput('/ClassWithInLineFunctions.json', $jsonSchema,$prefix)];
+   let generatedElementFromJSON =  $fileMap->JSONSchemaToPure();
    meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::ClassWithInLineFunctions,$generatedElementFromJSON);
 
 }
@@ -454,14 +481,14 @@ function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.st
 {
      let collectWithNoRelatedTypes = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[ meta::json::schema::tests::SimpleClass,meta::json::schema::tests::ClassWithFunctionReferences],
                                                           useConstraints = true ,includeAllRelatedTypes=false,generateConstraintFunctionSchemas=true,createSchemaCollection=true ));
-  
+
       let collectWithRelatedTypes = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[ meta::json::schema::tests::SimpleClass,meta::json::schema::tests::ClassWithFunctionReferences],
-                                                          useConstraints = true ,includeAllRelatedTypes=true,generateConstraintFunctionSchemas=true,createSchemaCollection=true )); 
- 
+                                                          useConstraints = true ,includeAllRelatedTypes=true,generateConstraintFunctionSchemas=true,createSchemaCollection=true ));
+
       let collectOpenAPI = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[ meta::json::schema::tests::SimpleClass,meta::json::schema::tests::ClassWithFunctionReferences],
-                                                          useConstraints = true ,includeAllRelatedTypes=true,generateConstraintFunctionSchemas=true,createSchemaCollection=true,schemaSpecification=JSONSchemaSpecification.OPEN_API_V3_0_3 )); 
+                                                          useConstraints = true ,includeAllRelatedTypes=true,generateConstraintFunctionSchemas=true,createSchemaCollection=true,schemaSpecification=JSONSchemaSpecification.OPEN_API_V3_0_3 ));
       let collectOpenAPIYAML = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[ meta::json::schema::tests::SimpleClass,meta::json::schema::tests::ClassWithFunctionReferences],
-                                                          useConstraints = true ,includeAllRelatedTypes=true,generateConstraintFunctionSchemas=true,createSchemaCollection=true,schemaSpecification=JSONSchemaSpecification.OPEN_API_V3_0_3_YAML )); 
+                                                          useConstraints = true ,includeAllRelatedTypes=true,generateConstraintFunctionSchemas=true,createSchemaCollection=true,schemaSpecification=JSONSchemaSpecification.OPEN_API_V3_0_3_YAML ));
       let expectedOpenAPIYAML = 'components: \n' +
                                  '  schemas: \n' +
                                  '    meta::json::schema::tests::ClassWithFunctionReferences: \n' +
@@ -499,9 +526,9 @@ function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.st
                                  '    meta::json::schema::tests::functionWithStringType: \n' +
                                  '      pattern: "test"\n' +
                                  '      type: "string"';
-   
-   
-   
+
+
+
 
     let expectedOPenAPI = '{' +
                         '  "components":   {' +
@@ -561,9 +588,9 @@ function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.st
                         '    }' +
                         '  }' +
                         '}' ;
-  
-   
-  
+
+
+
    let expectedStandardJSONSchema= '{' +
                                        '  "definitions":   {' +
                                        '    "meta::json::schema::tests::ClassWithFunctionReferences":     {' +
@@ -623,8 +650,8 @@ function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.st
                                        '    }' +
                                        '  }' +
                                        '}';
-   
-   
+
+
       let ImportedCollectionNoPath= '{' +
                                        '  "definitions":   {' +
                                        '    "ClassWithFunctionReferences":     {' +
@@ -703,7 +730,6 @@ function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.st
    assert($OpenAPINoPaths->size()==4);
    assert($mergedPaths->size()==4);
 
-   meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::ClassWithFunctionReferences,$standardSchema);
    meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::functionWithStringType_String_$0_1$__Boolean_1_,$standardSchema);
    meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::SimpleClass2,$standardSchema);
    meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::SimpleClass,$standardSchema);
@@ -719,11 +745,12 @@ function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.st
    meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::functionWithStringType_String_$0_1$__Boolean_1_,$OpenAPINoPaths);
    meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::SimpleClass2,$OpenAPINoPaths);
    meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::SimpleClass,$OpenAPINoPaths);
-   
+
    meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::ClassWithFunctionReferences,$mergedPaths);
    meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::functionWithStringType_String_$0_1$__Boolean_1_,$mergedPaths);
    meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::SimpleClass2,$mergedPaths);
    meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::SimpleClass,$mergedPaths);
+   meta::json::schema::fromSchema::tests::testfromJSONSchema(meta::json::schema::tests::ClassWithFunctionReferences,$standardSchema,true);
 
 }
 
@@ -778,13 +805,13 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
 
 function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0'}  meta::json::schema::tests::roundTrip::testMilestoneAnnotation():Boolean[1]
 {
-   
-   let generatedJSONFromElement = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::json::schema::tests::BiTemporalPerson],
-                                                          includeAllRelatedTypes=true ));  
 
-   
+   let generatedJSONFromElement = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::json::schema::tests::BiTemporalPerson],
+                                                          includeAllRelatedTypes=true ));
+
+
    let generatedJSONFromElementWithMilestone = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::json::schema::tests::BiTemporalPerson],
-                                                          includeAllRelatedTypes=false,generateMilestoneProperties=true ));  
+                                                          includeAllRelatedTypes=false,generateMilestoneProperties=true ));
 
 
    let jsonSchema  =         '{\n' +
@@ -862,4 +889,595 @@ let jsonSchemaWithMilestone = '        {\n' +
    assert(jsonEquivalent($jsonSchemaWithMilestone->parseJSON(),$generatedJSONFromElementWithMilestone.content->toOne()->parseJSON()));
 
    assert(jsonEquivalent($jsonSchema->parseJSON(),$generatedJSONFromElement.content->toOne()->parseJSON()));
+}
+
+
+
+function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0'}  meta::json::schema::tests::roundTrip::testInheritenceOptions():Boolean[1]
+{
+
+
+  let includeAny2019 = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::json::schema::tests::Car],
+                                                         generateAnyOfSubType=true, schemaSpecification=JSONSchemaSpecification.JSON_SCHEMA_2019_09 ));
+
+  let includeAny07 = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::json::schema::tests::Car],
+                                                         generateAnyOfSubType=true, schemaSpecification=JSONSchemaSpecification.JSON_SCHEMA_DRAFT_07 ));
+
+  let includeAny2019Exepected  = '{\n' +
+                                '  "$schema": "http:\/\/json-schema.org\/draft\/2019-09\/schema",\n' +
+                                '  "title": "meta::json::schema::tests::Car",\n' +
+                                '  "allOf": [\n' +
+                                '    {\n' +
+                                '      "$ref": "#\/$defs\/meta::json::schema::tests::WheeledVehicle"\n' +
+                                '    }\n' +
+                                '  ],\n' +
+                                '  "type": "object",\n' +
+                                '  "properties":   {\n' +
+                                '    "driver":     {\n' +
+                                '      "type": "string"\n' +
+                                '    }\n' +
+                                '  },\n' +
+                                '  "anyOf": [\n' +
+                                '    {\n' +
+                                '      "title": "meta::json::schema::tests::Car",\n' +
+                                '      "type": "object",\n' +
+                                '      "properties":       {\n' +
+                                '        "driver":         {\n' +
+                                '          "type": "string"\n' +
+                                '        },\n' +
+                                '        "wheels":         {\n' +
+                                '          "type": "integer"\n' +
+                                '        },\n' +
+                                '        "id":         {\n' +
+                                '          "type": "integer"\n' +
+                                '        },\n' +
+                                '        "similarVehiciles":         {\n' +
+                                '          "type": "array",\n' +
+                                '          "items":           {\n' +
+                                '            "$ref": "#\/$defs\/meta::json::schema::tests::Vehicle"\n' +
+                                '          }\n' +
+                                '        }\n' +
+                                '      },\n' +
+                                '      "required": [\n' +
+                                '"driver",\n' +
+                                '"wheels",\n' +
+                                '"id"\n' +
+                                '      ],\n' +
+                                '      "unevaluatedProperties": false\n' +
+                                '    }\n' +
+                                '  ],\n' +
+                                '  "required": [\n' +
+                                '"driver"\n' +
+                                '  ],\n' +
+                                '  "$defs":   {\n' +
+                                '    "meta::json::schema::tests::Truck":     {\n' +
+                                '      "$schema": "http:\/\/json-schema.org\/draft\/2019-09\/schema",\n' +
+                                '      "title": "meta::json::schema::tests::Truck",\n' +
+                                '      "allOf": [\n' +
+                                '        {\n' +
+                                '          "$ref": "#\/$defs\/meta::json::schema::tests::WheeledVehicle"\n' +
+                                '        }\n' +
+                                '      ],\n' +
+                                '      "type": "object",\n' +
+                                '      "anyOf": [\n' +
+                                '        {\n' +
+                                '          "title": "meta::json::schema::tests::Truck",\n' +
+                                '          "type": "object",\n' +
+                                '          "properties":           {\n' +
+                                '            "weight":             {\n' +
+                                '              "type": "integer"\n' +
+                                '            },\n' +
+                                '            "wheels":             {\n' +
+                                '              "type": "integer"\n' +
+                                '            },\n' +
+                                '            "id":             {\n' +
+                                '              "type": "integer"\n' +
+                                '            },\n' +
+                                '            "similarVehiciles":             {\n' +
+                                '              "type": "array",\n' +
+                                '              "items":               {\n' +
+                                '                "$ref": "#\/$defs\/meta::json::schema::tests::Vehicle"\n' +
+                                '              }\n' +
+                                '            }\n' +
+                                '          },\n' +
+                                '          "required": [\n' +
+                                '"weight",\n' +
+                                '"wheels",\n' +
+                                '"id"\n' +
+                                '          ],\n' +
+                                '          "unevaluatedProperties": false\n' +
+                                '        }\n' +
+                                '      ],\n' +
+                                '      "required": [\n' +
+                                '"weight"\n' +
+                                '      ]\n' +
+                                '    },\n' +
+                                '    "meta::json::schema::tests::Vehicle":     {\n' +
+                                '      "$schema": "http:\/\/json-schema.org\/draft\/2019-09\/schema",\n' +
+                                '      "title": "meta::json::schema::tests::Vehicle",\n' +
+                                '      "type": "object",\n' +
+                                '      "anyOf": [\n' +
+                                '        {\n' +
+                                '          "title": "meta::json::schema::tests::WheeledVehicle",\n' +
+                                '          "type": "object",\n' +
+                                '          "properties":           {\n' +
+                                '            "wheels":             {\n' +
+                                '              "type": "integer"\n' +
+                                '            },\n' +
+                                '            "id":             {\n' +
+                                '              "type": "integer"\n' +
+                                '            },\n' +
+                                '            "similarVehiciles":             {\n' +
+                                '              "type": "array",\n' +
+                                '              "items":               {\n' +
+                                '                "$ref": "#\/$defs\/meta::json::schema::tests::Vehicle"\n' +
+                                '              }\n' +
+                                '            }\n' +
+                                '          },\n' +
+                                '          "required": [\n' +
+                                '"wheels",\n' +
+                                '"id"\n' +
+                                '          ],\n' +
+                                '          "unevaluatedProperties": false\n' +
+                                '        },\n' +
+                                '        {\n' +
+                                '          "title": "meta::json::schema::tests::Car",\n' +
+                                '          "type": "object",\n' +
+                                '          "properties":           {\n' +
+                                '            "driver":             {\n' +
+                                '              "type": "string"\n' +
+                                '            },\n' +
+                                '            "wheels":             {\n' +
+                                '              "type": "integer"\n' +
+                                '            },\n' +
+                                '            "id":             {\n' +
+                                '              "type": "integer"\n' +
+                                '            },\n' +
+                                '            "similarVehiciles":             {\n' +
+                                '              "type": "array",\n' +
+                                '              "items":               {\n' +
+                                '                "$ref": "#\/$defs\/meta::json::schema::tests::Vehicle"\n' +
+                                '              }\n' +
+                                '            }\n' +
+                                '          },\n' +
+                                '          "required": [\n' +
+                                '"driver",\n' +
+                                '"wheels",\n' +
+                                '"id"\n' +
+                                '          ],\n' +
+                                '          "unevaluatedProperties": false\n' +
+                                '        },\n' +
+                                '        {\n' +
+                                '          "title": "meta::json::schema::tests::Truck",\n' +
+                                '          "type": "object",\n' +
+                                '          "properties":           {\n' +
+                                '            "weight":             {\n' +
+                                '              "type": "integer"\n' +
+                                '            },\n' +
+                                '            "wheels":             {\n' +
+                                '              "type": "integer"\n' +
+                                '            },\n' +
+                                '            "id":             {\n' +
+                                '              "type": "integer"\n' +
+                                '            },\n' +
+                                '            "similarVehiciles":             {\n' +
+                                '              "type": "array",\n' +
+                                '              "items":               {\n' +
+                                '                "$ref": "#\/$defs\/meta::json::schema::tests::Vehicle"\n' +
+                                '              }\n' +
+                                '            }\n' +
+                                '          },\n' +
+                                '          "required": [\n' +
+                                '"weight",\n' +
+                                '"wheels",\n' +
+                                '"id"\n' +
+                                '          ],\n' +
+                                '          "unevaluatedProperties": false\n' +
+                                '        },\n' +
+                                '        {\n' +
+                                '          "title": "meta::json::schema::tests::Vehicle",\n' +
+                                '          "type": "object",\n' +
+                                '          "properties":           {\n' +
+                                '            "id":             {\n' +
+                                '              "type": "integer"\n' +
+                                '            },\n' +
+                                '            "similarVehiciles":             {\n' +
+                                '              "type": "array",\n' +
+                                '              "items":               {\n' +
+                                '                "$ref": "#\/$defs\/meta::json::schema::tests::Vehicle"\n' +
+                                '              }\n' +
+                                '            }\n' +
+                                '          },\n' +
+                                '          "required": [\n' +
+                                '"id"\n' +
+                                '          ],\n' +
+                                '          "unevaluatedProperties": false\n' +
+                                '        }\n' +
+                                '      ],\n' +
+                                '      "required": [\n' +
+                                '"id"\n' +
+                                '      ]\n' +
+                                '    },\n' +
+                                '    "meta::json::schema::tests::WheeledVehicle":     {\n' +
+                                '      "$schema": "http:\/\/json-schema.org\/draft\/2019-09\/schema",\n' +
+                                '      "title": "meta::json::schema::tests::WheeledVehicle",\n' +
+                                '      "allOf": [\n' +
+                                '        {\n' +
+                                '          "$ref": "#\/$defs\/meta::json::schema::tests::Vehicle"\n' +
+                                '        }\n' +
+                                '      ],\n' +
+                                '      "type": "object",\n' +
+                                '      "anyOf": [\n' +
+                                '        {\n' +
+                                '          "title": "meta::json::schema::tests::Car",\n' +
+                                '          "type": "object",\n' +
+                                '          "properties":           {\n' +
+                                '            "driver":             {\n' +
+                                '              "type": "string"\n' +
+                                '            },\n' +
+                                '            "wheels":             {\n' +
+                                '              "type": "integer"\n' +
+                                '            },\n' +
+                                '            "id":             {\n' +
+                                '              "type": "integer"\n' +
+                                '            },\n' +
+                                '            "similarVehiciles":             {\n' +
+                                '              "type": "array",\n' +
+                                '              "items":               {\n' +
+                                '                "$ref": "#\/$defs\/meta::json::schema::tests::Vehicle"\n' +
+                                '              }\n' +
+                                '            }\n' +
+                                '          },\n' +
+                                '          "required": [\n' +
+                                '"driver",\n' +
+                                '"wheels",\n' +
+                                '"id"\n' +
+                                '          ],\n' +
+                                '          "unevaluatedProperties": false\n' +
+                                '        },\n' +
+                                '        {\n' +
+                                '          "title": "meta::json::schema::tests::Truck",\n' +
+                                '          "type": "object",\n' +
+                                '          "properties":           {\n' +
+                                '            "weight":             {\n' +
+                                '              "type": "integer"\n' +
+                                '            },\n' +
+                                '            "wheels":             {\n' +
+                                '              "type": "integer"\n' +
+                                '            },\n' +
+                                '            "id":             {\n' +
+                                '              "type": "integer"\n' +
+                                '            },\n' +
+                                '            "similarVehiciles":             {\n' +
+                                '              "type": "array",\n' +
+                                '              "items":               {\n' +
+                                '                "$ref": "#\/$defs\/meta::json::schema::tests::Vehicle"\n' +
+                                '              }\n' +
+                                '            }\n' +
+                                '          },\n' +
+                                '          "required": [\n' +
+                                '"weight",\n' +
+                                '"wheels",\n' +
+                                '"id"\n' +
+                                '          ],\n' +
+                                '          "unevaluatedProperties": false\n' +
+                                '        },\n' +
+                                '        {\n' +
+                                '          "title": "meta::json::schema::tests::WheeledVehicle",\n' +
+                                '          "type": "object",\n' +
+                                '          "properties":           {\n' +
+                                '            "wheels":             {\n' +
+                                '              "type": "integer"\n' +
+                                '            },\n' +
+                                '            "id":             {\n' +
+                                '              "type": "integer"\n' +
+                                '            },\n' +
+                                '            "similarVehiciles":             {\n' +
+                                '              "type": "array",\n' +
+                                '              "items":               {\n' +
+                                '                "$ref": "#\/$defs\/meta::json::schema::tests::Vehicle"\n' +
+                                '              }\n' +
+                                '            }\n' +
+                                '          },\n' +
+                                '          "required": [\n' +
+                                '"wheels",\n' +
+                                '"id"\n' +
+                                '          ],\n' +
+                                '          "unevaluatedProperties": false\n' +
+                                '        }\n' +
+                                '      ],\n' +
+                                '      "required": [\n' +
+                                '"wheels"\n' +
+                                '      ]\n' +
+                                '    }\n' +
+                                '  }\n' +
+                                '}';
+
+
+                        let includeAny07expected = '{\n' +
+                                                    '  "$schema": "http:\/\/json-schema.org\/draft-07\/schema#",\n' +
+                                                    '  "title": "meta::json::schema::tests::Car",\n' +
+                                                    '  "allOf": [\n' +
+                                                    '    {\n' +
+                                                    '      "$ref": "#\/definitions\/meta::json::schema::tests::WheeledVehicle"\n' +
+                                                    '    }\n' +
+                                                    '  ],\n' +
+                                                    '  "type": "object",\n' +
+                                                    '  "properties":   {\n' +
+                                                    '    "driver":     {\n' +
+                                                    '      "type": "string"\n' +
+                                                    '    }\n' +
+                                                    '  },\n' +
+                                                    '  "anyOf": [\n' +
+                                                    '    {\n' +
+                                                    '      "title": "meta::json::schema::tests::Car",\n' +
+                                                    '      "type": "object",\n' +
+                                                    '      "properties":       {\n' +
+                                                    '        "driver":         {\n' +
+                                                    '          "type": "string"\n' +
+                                                    '        },\n' +
+                                                    '        "wheels":         {\n' +
+                                                    '          "type": "integer"\n' +
+                                                    '        },\n' +
+                                                    '        "id":         {\n' +
+                                                    '          "type": "integer"\n' +
+                                                    '        },\n' +
+                                                    '        "similarVehiciles":         {\n' +
+                                                    '          "type": "array",\n' +
+                                                    '          "items":           {\n' +
+                                                    '            "$ref": "#\/definitions\/meta::json::schema::tests::Vehicle"\n' +
+                                                    '          }\n' +
+                                                    '        }\n' +
+                                                    '      },\n' +
+                                                    '      "required": [\n' +
+                                                    '"driver",\n' +
+                                                    '"wheels",\n' +
+                                                    '"id"\n' +
+                                                    '      ]\n' +
+                                                    '    }\n' +
+                                                    '  ],\n' +
+                                                    '  "required": [\n' +
+                                                    '"driver"\n' +
+                                                    '  ],\n' +
+                                                    '  "definitions":   {\n' +
+                                                    '    "meta::json::schema::tests::Truck":     {\n' +
+                                                    '      "$schema": "http:\/\/json-schema.org\/draft-07\/schema#",\n' +
+                                                    '      "title": "meta::json::schema::tests::Truck",\n' +
+                                                    '      "allOf": [\n' +
+                                                    '        {\n' +
+                                                    '          "$ref": "#\/definitions\/meta::json::schema::tests::WheeledVehicle"\n' +
+                                                    '        }\n' +
+                                                    '      ],\n' +
+                                                    '      "type": "object",\n' +
+                                                    '      "anyOf": [\n' +
+                                                    '        {\n' +
+                                                    '          "title": "meta::json::schema::tests::Truck",\n' +
+                                                    '          "type": "object",\n' +
+                                                    '          "properties":           {\n' +
+                                                    '            "weight":             {\n' +
+                                                    '              "type": "integer"\n' +
+                                                    '            },\n' +
+                                                    '            "wheels":             {\n' +
+                                                    '              "type": "integer"\n' +
+                                                    '            },\n' +
+                                                    '            "id":             {\n' +
+                                                    '              "type": "integer"\n' +
+                                                    '            },\n' +
+                                                    '            "similarVehiciles":             {\n' +
+                                                    '              "type": "array",\n' +
+                                                    '              "items":               {\n' +
+                                                    '                "$ref": "#\/definitions\/meta::json::schema::tests::Vehicle"\n' +
+                                                    '              }\n' +
+                                                    '            }\n' +
+                                                    '          },\n' +
+                                                    '          "required": [\n' +
+                                                    '"weight",\n' +
+                                                    '"wheels",\n' +
+                                                    '"id"\n' +
+                                                    '          ]\n' +
+                                                    '        }\n' +
+                                                    '      ],\n' +
+                                                    '      "required": [\n' +
+                                                    '"weight"\n' +
+                                                    '      ]\n' +
+                                                    '    },\n' +
+                                                    '    "meta::json::schema::tests::Vehicle":     {\n' +
+                                                    '      "$schema": "http:\/\/json-schema.org\/draft-07\/schema#",\n' +
+                                                    '      "title": "meta::json::schema::tests::Vehicle",\n' +
+                                                    '      "type": "object",\n' +
+                                                    '      "anyOf": [\n' +
+                                                    '        {\n' +
+                                                    '          "title": "meta::json::schema::tests::WheeledVehicle",\n' +
+                                                    '          "type": "object",\n' +
+                                                    '          "properties":           {\n' +
+                                                    '            "wheels":             {\n' +
+                                                    '              "type": "integer"\n' +
+                                                    '            },\n' +
+                                                    '            "id":             {\n' +
+                                                    '              "type": "integer"\n' +
+                                                    '            },\n' +
+                                                    '            "similarVehiciles":             {\n' +
+                                                    '              "type": "array",\n' +
+                                                    '              "items":               {\n' +
+                                                    '                "$ref": "#\/definitions\/meta::json::schema::tests::Vehicle"\n' +
+                                                    '              }\n' +
+                                                    '            }\n' +
+                                                    '          },\n' +
+                                                    '          "required": [\n' +
+                                                    '"wheels",\n' +
+                                                    '"id"\n' +
+                                                    '          ]\n' +
+                                                    '        },\n' +
+                                                    '        {\n' +
+                                                    '          "title": "meta::json::schema::tests::Car",\n' +
+                                                    '          "type": "object",\n' +
+                                                    '          "properties":           {\n' +
+                                                    '            "driver":             {\n' +
+                                                    '              "type": "string"\n' +
+                                                    '            },\n' +
+                                                    '            "wheels":             {\n' +
+                                                    '              "type": "integer"\n' +
+                                                    '            },\n' +
+                                                    '            "id":             {\n' +
+                                                    '              "type": "integer"\n' +
+                                                    '            },\n' +
+                                                    '            "similarVehiciles":             {\n' +
+                                                    '              "type": "array",\n' +
+                                                    '              "items":               {\n' +
+                                                    '                "$ref": "#\/definitions\/meta::json::schema::tests::Vehicle"\n' +
+                                                    '              }\n' +
+                                                    '            }\n' +
+                                                    '          },\n' +
+                                                    '          "required": [\n' +
+                                                    '"driver",\n' +
+                                                    '"wheels",\n' +
+                                                    '"id"\n' +
+                                                    '          ]\n' +
+                                                    '        },\n' +
+                                                    '        {\n' +
+                                                    '          "title": "meta::json::schema::tests::Truck",\n' +
+                                                    '          "type": "object",\n' +
+                                                    '          "properties":           {\n' +
+                                                    '            "weight":             {\n' +
+                                                    '              "type": "integer"\n' +
+                                                    '            },\n' +
+                                                    '            "wheels":             {\n' +
+                                                    '              "type": "integer"\n' +
+                                                    '            },\n' +
+                                                    '            "id":             {\n' +
+                                                    '              "type": "integer"\n' +
+                                                    '            },\n' +
+                                                    '            "similarVehiciles":             {\n' +
+                                                    '              "type": "array",\n' +
+                                                    '              "items":               {\n' +
+                                                    '                "$ref": "#\/definitions\/meta::json::schema::tests::Vehicle"\n' +
+                                                    '              }\n' +
+                                                    '            }\n' +
+                                                    '          },\n' +
+                                                    '          "required": [\n' +
+                                                    '"weight",\n' +
+                                                    '"wheels",\n' +
+                                                    '"id"\n' +
+                                                    '          ]\n' +
+                                                    '        },\n' +
+                                                    '        {\n' +
+                                                    '          "title": "meta::json::schema::tests::Vehicle",\n' +
+                                                    '          "type": "object",\n' +
+                                                    '          "properties":           {\n' +
+                                                    '            "id":             {\n' +
+                                                    '              "type": "integer"\n' +
+                                                    '            },\n' +
+                                                    '            "similarVehiciles":             {\n' +
+                                                    '              "type": "array",\n' +
+                                                    '              "items":               {\n' +
+                                                    '                "$ref": "#\/definitions\/meta::json::schema::tests::Vehicle"\n' +
+                                                    '              }\n' +
+                                                    '            }\n' +
+                                                    '          },\n' +
+                                                    '          "required": [\n' +
+                                                    '"id"\n' +
+                                                    '          ]\n' +
+                                                    '        }\n' +
+                                                    '      ],\n' +
+                                                    '      "required": [\n' +
+                                                    '"id"\n' +
+                                                    '      ]\n' +
+                                                    '    },\n' +
+                                                    '    "meta::json::schema::tests::WheeledVehicle":     {\n' +
+                                                    '      "$schema": "http:\/\/json-schema.org\/draft-07\/schema#",\n' +
+                                                    '      "title": "meta::json::schema::tests::WheeledVehicle",\n' +
+                                                    '      "allOf": [\n' +
+                                                    '        {\n' +
+                                                    '          "$ref": "#\/definitions\/meta::json::schema::tests::Vehicle"\n' +
+                                                    '        }\n' +
+                                                    '      ],\n' +
+                                                    '      "type": "object",\n' +
+                                                    '      "anyOf": [\n' +
+                                                    '        {\n' +
+                                                    '          "title": "meta::json::schema::tests::Car",\n' +
+                                                    '          "type": "object",\n' +
+                                                    '          "properties":           {\n' +
+                                                    '            "driver":             {\n' +
+                                                    '              "type": "string"\n' +
+                                                    '            },\n' +
+                                                    '            "wheels":             {\n' +
+                                                    '              "type": "integer"\n' +
+                                                    '            },\n' +
+                                                    '            "id":             {\n' +
+                                                    '              "type": "integer"\n' +
+                                                    '            },\n' +
+                                                    '            "similarVehiciles":             {\n' +
+                                                    '              "type": "array",\n' +
+                                                    '              "items":               {\n' +
+                                                    '                "$ref": "#\/definitions\/meta::json::schema::tests::Vehicle"\n' +
+                                                    '              }\n' +
+                                                    '            }\n' +
+                                                    '          },\n' +
+                                                    '          "required": [\n' +
+                                                    '"driver",\n' +
+                                                    '"wheels",\n' +
+                                                    '"id"\n' +
+                                                    '          ]\n' +
+                                                    '        },\n' +
+                                                    '        {\n' +
+                                                    '          "title": "meta::json::schema::tests::Truck",\n' +
+                                                    '          "type": "object",\n' +
+                                                    '          "properties":           {\n' +
+                                                    '            "weight":             {\n' +
+                                                    '              "type": "integer"\n' +
+                                                    '            },\n' +
+                                                    '            "wheels":             {\n' +
+                                                    '              "type": "integer"\n' +
+                                                    '            },\n' +
+                                                    '            "id":             {\n' +
+                                                    '              "type": "integer"\n' +
+                                                    '            },\n' +
+                                                    '            "similarVehiciles":             {\n' +
+                                                    '              "type": "array",\n' +
+                                                    '              "items":               {\n' +
+                                                    '                "$ref": "#\/definitions\/meta::json::schema::tests::Vehicle"\n' +
+                                                    '              }\n' +
+                                                    '            }\n' +
+                                                    '          },\n' +
+                                                    '          "required": [\n' +
+                                                    '"weight",\n' +
+                                                    '"wheels",\n' +
+                                                    '"id"\n' +
+                                                    '          ]\n' +
+                                                    '        },\n' +
+                                                    '        {\n' +
+                                                    '          "title": "meta::json::schema::tests::WheeledVehicle",\n' +
+                                                    '          "type": "object",\n' +
+                                                    '          "properties":           {\n' +
+                                                    '            "wheels":             {\n' +
+                                                    '              "type": "integer"\n' +
+                                                    '            },\n' +
+                                                    '            "id":             {\n' +
+                                                    '              "type": "integer"\n' +
+                                                    '            },\n' +
+                                                    '            "similarVehiciles":             {\n' +
+                                                    '              "type": "array",\n' +
+                                                    '              "items":               {\n' +
+                                                    '                "$ref": "#\/definitions\/meta::json::schema::tests::Vehicle"\n' +
+                                                    '              }\n' +
+                                                    '            }\n' +
+                                                    '          },\n' +
+                                                    '          "required": [\n' +
+                                                    '"wheels",\n' +
+                                                    '"id"\n' +
+                                                    '          ]\n' +
+                                                    '        }\n' +
+                                                    '      ],\n' +
+                                                    '      "required": [\n' +
+                                                    '"wheels"\n' +
+                                                    '      ]\n' +
+                                                    '    }\n' +
+                                                    '  }\n' +
+                                                    '}';
+
+
+      assert(jsonEquivalent($includeAny2019Exepected->parseJSON(),$includeAny2019.content->toOne()->parseJSON()));
+      assert(jsonEquivalent($includeAny07expected->parseJSON(),$includeAny07.content->toOne()->parseJSON()));
+
+   
 }

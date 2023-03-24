@@ -21,6 +21,7 @@ import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.plan.execution.result.ExecutionActivity;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.ResultVisitor;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutable;
 import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
@@ -41,7 +42,7 @@ import java.util.List;
 import java.util.TimeZone;
 import java.util.function.Consumer;
 
-public class SQLExecutionResult extends Result
+public class SQLExecutionResult extends Result implements StoreExecutable
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
 
@@ -61,33 +62,36 @@ public class SQLExecutionResult extends Result
     private final List<String> columnNames = FastList.newList();
     private final List<ResultColumn> resultColumns = FastList.newList();
     private final List<SQLResultColumn> sqlResultColumns;
-
+    private final String sessionID;
     public Span topSpan;
 
     public SQLExecutionResult(List<ExecutionActivity> activities, SQLExecutionNode SQLExecutionNode, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan)
     {
-        super("success", activities);
+        this(activities, SQLExecutionNode, databaseType, databaseTimeZone, connection, profiles, temporaryTables, topSpan, null);
+    }
 
+    public SQLExecutionResult(List<ExecutionActivity> activities, SQLExecutionNode SQLExecutionNode, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan, String sessionID)
+    {
+        super("success", activities);
         this.SQLExecutionNode = SQLExecutionNode;
         this.databaseType = databaseType;
         this.databaseTimeZone = databaseTimeZone;
         this.calendar = new GregorianCalendar(TimeZone.getTimeZone(databaseTimeZone));
         this.temporaryTables = temporaryTables;
-
         this.topSpan = topSpan;
-
+        this.sessionID = sessionID;
         try
         {
             this.connection = connection;
             this.statement = connection.createStatement();
-
             if (DatabaseType.MemSQL.name().equals(databaseType))
             {
                 this.statement.setFetchSize(100);
             }
 
             long start = System.currentTimeMillis();
-            String sql = ((RelationalExecutionActivity) activities.get(activities.size() - 1)).sql;
+            RelationalExecutionActivity activity = ((RelationalExecutionActivity) activities.get(activities.size() - 1));
+            String sql = activity.comment != null ? activity.comment.concat("\n").concat(activity.sql) : activity.sql;
             LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, sql).toString());
             this.resultSet = this.statement.executeQuery(sql);
             LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_STOP, (double) System.currentTimeMillis() - start).toString());
@@ -203,6 +207,11 @@ public class SQLExecutionResult extends Result
         return resultColumn.getTransformedValue(this.getResultSet(), calendar);
     }
 
+    public String getSessionID()
+    {
+        return this.sessionID;
+    }
+
     @Override
     public void close()
     {
@@ -237,4 +246,23 @@ public class SQLExecutionResult extends Result
 
         FastList.newListWith(this.resultSet, this.statement, this.connection).forEach((Procedure<AutoCloseable>) closingFunction::accept);
     }
+
+    @Override
+    public void cancel()
+    {
+        try
+        {
+            if (!statement.isClosed())
+            {
+                statement.cancel();
+                LOGGER.info(new LogInfo(null, LoggingEventType.EXECUTABLE_CANCELLATION, "Successful cancellation of  RelationalResult " + sessionID).toString());
+
+            }
+        }
+        catch (Exception e)
+        {
+            LOGGER.error(new LogInfo(null, LoggingEventType.EXECUTABLE_CANCELLATION_ERROR, "Unable to cancel  RelationalResult  for session " + sessionID + " " + e.getMessage()).toString());
+        }
+    }
+
 }

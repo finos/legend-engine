@@ -90,9 +90,33 @@ function meta::pure::changetoken::tests::getVersions2():Versions[1]
   ); 
 }
 
+// This is test Versions: ChangeFieldType from Integer[1] to String[1]
+function meta::pure::changetoken::tests::getVersions3():Versions[1]
+{
+  ^Versions(
+    versions=[
+      ^Version( // base version
+        version='ftdm:abcdefg123'
+      ),
+      ^Version(
+        version='ftdm:abcdefg456',
+        prevVersion='ftdm:abcdefg123',
+        changeTokens=[
+          ^ChangeFieldType(
+            class='meta::pure::changetoken::tests::SampleClass',
+            fieldName='abc',
+            oldFieldType='Integer[1]',
+            newFieldType='String[1]'
+          )
+        ]
+      )
+    ]
+  ); 
+}
+
 function <<test.Test>> meta::pure::changetoken::tests::testGenerateCast():Boolean[1]
 {
-  let project = generateCast('meta::pure::changetoken:tests::getVersions2', 'TestCastFunction');
+  let project = generateCast('meta::pure::changetoken:tests::getVersions3', 'TestCastFunction');
   printProject($project);
   assertInstanceOf($project, Project);
 }

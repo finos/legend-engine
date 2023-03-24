@@ -36,6 +36,12 @@ public class EmbeddedPureCompilerExtension implements CompilerExtension
     }
 
     @Override
+    public CompilerExtension build()
+    {
+        return new EmbeddedPureCompilerExtension();
+    }
+
+    @Override
     public Map<String, Function3<Object, CompileContext, ProcessingContext, ValueSpecification>> getExtraClassInstanceProcessors()
     {
         return Maps.mutable.with("Test", (obj, context, processingContext) ->

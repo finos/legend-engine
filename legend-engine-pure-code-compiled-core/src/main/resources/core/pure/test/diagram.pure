@@ -37,34 +37,22 @@ Diagram meta::pure::test::MetaModelDiagram(width=0.0, height=0.0)
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_4(
-        type=meta::pure::test::AtomicTest,
-        position=(1205.00000, 345.00000),
-        width=179.96191,
-        height=58.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_3(
-        type=meta::pure::test::TestSuite,
-        position=(972.00000, 345.00000),
-        width=137.15967,
-        height=58.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
     TypeView cview_2(
         type=meta::pure::test::Test,
         position=(1124.00000, 209.00000),
-        width=83.55615,
+        width=127.38965,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_21(
+        type=meta::pure::test::AtomicTest,
+        position=(1243.17143, 353.09795),
+        width=97.38477,
         height=44.00000,
         stereotypesVisible=true,
         attributesVisible=true,
@@ -73,11 +61,23 @@ Diagram meta::pure::test::MetaModelDiagram(width=0.0, height=0.0)
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_8(
-        type=meta::pure::test::result::TestResult,
-        position=(489.48096, 204.00000),
-        width=120.63818,
-        height=58.00000,
+    TypeView cview_20(
+        type=meta::pure::test::TestSuite,
+        position=(1012.17143, 356.20356),
+        width=97.38477,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_17(
+        type=meta::pure::test::result::TestExecuted,
+        position=(3.13431, 425.47795),
+        width=241.06885,
+        height=44.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
@@ -87,7 +87,7 @@ Diagram meta::pure::test::MetaModelDiagram(width=0.0, height=0.0)
 
     TypeView cview_9(
         type=meta::pure::test::result::TestError,
-        position=(323.48096, 320.00000),
+        position=(336.07982, 423.98578),
         width=120.86914,
         height=44.00000,
         stereotypesVisible=true,
@@ -97,33 +97,9 @@ Diagram meta::pure::test::MetaModelDiagram(width=0.0, height=0.0)
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_10(
-        type=meta::pure::test::result::TestFailed,
-        position=(450.48096, 321.00000),
-        width=202.78906,
-        height=44.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_11(
-        type=meta::pure::test::result::TestPassed,
-        position=(675.48096, 324.00000),
-        width=85.81250,
-        height=30.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
     TypeView cview_12(
         type=meta::pure::test::assertion::AssertionStatus,
-        position=(497.48096, 421.00000),
+        position=(-330.75212, 418.16095),
         width=112.02148,
         height=58.00000,
         stereotypesVisible=true,
@@ -135,7 +111,7 @@ Diagram meta::pure::test::MetaModelDiagram(width=0.0, height=0.0)
 
     TypeView cview_13(
         type=meta::pure::test::assertion::AssertFail,
-        position=(410.48096, 529.00000),
+        position=(-220.97545, 547.54602),
         width=120.86914,
         height=44.00000,
         stereotypesVisible=true,
@@ -145,21 +121,9 @@ Diagram meta::pure::test::MetaModelDiagram(width=0.0, height=0.0)
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_14(
-        type=meta::pure::test::assertion::AssertPass,
-        position=(573.48096, 533.00000),
-        width=85.37891,
-        height=30.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
     TypeView cview_15(
         type=meta::pure::test::assertion::EqualToJsonAssertFail,
-        position=(393.48096, 636.00000),
+        position=(-236.24221, 648.27613),
         width=152.47461,
         height=58.00000,
         stereotypesVisible=true,
@@ -169,10 +133,34 @@ Diagram meta::pure::test::MetaModelDiagram(width=0.0, height=0.0)
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_16(
-        type=meta::pure::test::result::AtomicTestId,
-        position=(288.48096, 205.00000),
-        width=142.24072,
+    TypeView cview_14(
+        type=meta::pure::test::assertion::AssertPass,
+        position=(-397.90568, 546.45197),
+        width=85.37891,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_23(
+        type=meta::pure::test::AtomicTest,
+        position=(-375.82857, 214.09795),
+        width=179.96191,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_22(
+        type=meta::pure::test::result::TestResult,
+        position=(186.17143, 218.09795),
+        width=120.64893,
         height=58.00000,
         stereotypesVisible=true,
         attributesVisible=true,
@@ -181,11 +169,11 @@ Diagram meta::pure::test::MetaModelDiagram(width=0.0, height=0.0)
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_1(
+    TypeView cview_19(
         type=meta::pure::test::Testable,
-        position=(803.00000, 210.00000),
-        width=87.64893,
-        height=44.00000,
+        position=(864.17143, 221.20356),
+        width=67.79492,
+        height=30.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
@@ -194,24 +182,6 @@ Diagram meta::pure::test::MetaModelDiagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     GeneralizationView gview_0(
-        source=cview_3,
-        target=cview_2,
-        points=[(1040.57983,374.00000),(1165.77808,231.00000)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
-
-    GeneralizationView gview_1(
-        source=cview_4,
-        target=cview_2,
-        points=[(1294.98096,374.00000),(1165.77808,231.00000)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
-
-    GeneralizationView gview_2(
         source=cview_6,
         target=cview_5,
         points=[(1460.71899,509.00000),(1556.04639,375.00000)],
@@ -220,7 +190,7 @@ Diagram meta::pure::test::MetaModelDiagram(width=0.0, height=0.0)
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_3(
+    GeneralizationView gview_1(
         source=cview_7,
         target=cview_5,
         points=[(1662.36475,508.00000),(1556.04639,375.00000)],
@@ -229,65 +199,74 @@ Diagram meta::pure::test::MetaModelDiagram(width=0.0, height=0.0)
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
+    GeneralizationView gview_2(
+        source=cview_13,
+        target=cview_12,
+        points=[(-160.54088,569.54602),(-274.74138,447.16095)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_3(
+        source=cview_14,
+        target=cview_12,
+        points=[(-355.21623,561.45197),(-274.74138,447.16095)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
     GeneralizationView gview_4(
-        source=cview_9,
-        target=cview_8,
-        points=[(383.91553,342.00000),(549.80005,233.00000)],
+        source=cview_15,
+        target=cview_13,
+        points=[(-160.00491,677.27613),(-160.54088,569.54602)],
         label='',
         color=#000000,
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
     GeneralizationView gview_5(
-        source=cview_10,
-        target=cview_8,
-        points=[(551.87549,343.00000),(549.80005,233.00000)],
+        source=cview_20,
+        target=cview_2,
+        points=[(1060.86381,378.20356),(1187.69483,238.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
     GeneralizationView gview_6(
-        source=cview_11,
-        target=cview_8,
-        points=[(718.38721,339.00000),(549.80005,233.00000)],
+        source=cview_21,
+        target=cview_2,
+        points=[(1291.86381,375.09795),(1187.69483,238.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
     GeneralizationView gview_7(
-        source=cview_13,
-        target=cview_12,
-        points=[(470.91553,551.00000),(553.49170,450.00000)],
+        source=cview_17,
+        target=cview_22,
+        points=[(123.66874,447.47795),(246.49589,247.09795)],
         label='',
         color=#000000,
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
     GeneralizationView gview_8(
-        source=cview_14,
-        target=cview_12,
-        points=[(616.17041,548.00000),(553.49170,450.00000)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
-
-    GeneralizationView gview_9(
-        source=cview_15,
-        target=cview_13,
-        points=[(469.71826,665.00000),(470.91553,551.00000)],
+        source=cview_9,
+        target=cview_22,
+        points=[(396.51439,445.98578),(246.49589,247.09795)],
         label='',
         color=#000000,
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
     PropertyView pview_0(
-        property=meta::pure::test::Testable.tests,
-        source=cview_1,
-        target=cview_2
-,        points=[(846.82446,232.00000),(1165.77808,231.00000)],
+        property=meta::pure::test::result::TestExecuted.assertStatuses,
+        source=cview_17,
+        target=cview_12,
+        points=[(123.66873,447.47795),(-274.74138,447.16095)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -298,10 +277,10 @@ Diagram meta::pure::test::MetaModelDiagram(width=0.0, height=0.0)
         lineStyle=SIMPLE)
 
     PropertyView pview_1(
-        property=meta::pure::test::TestSuite.tests,
-        source=cview_3,
-        target=cview_4
-,        points=[(1040.57983,374.00000),(1294.98096,374.00000)],
+        property=meta::pure::test::Testable.tests,
+        source=cview_19,
+        target=cview_2,
+        points=[(898.06889,236.20356),(1187.69483,238.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -313,9 +292,9 @@ Diagram meta::pure::test::MetaModelDiagram(width=0.0, height=0.0)
 
     PropertyView pview_2(
         property=meta::pure::test::AtomicTest.assertions,
-        source=cview_4,
-        target=cview_5
-,        points=[(1294.98096,374.00000),(1556.04639,375.00000)],
+        source=cview_21,
+        target=cview_5,
+        points=[(1291.86381,375.09795),(1556.04639,375.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -326,38 +305,10 @@ Diagram meta::pure::test::MetaModelDiagram(width=0.0, height=0.0)
         lineStyle=SIMPLE)
 
     PropertyView pview_3(
-        property=meta::pure::test::result::TestResult.testable,
-        source=cview_8,
-        target=cview_1
-,        points=[(549.80005,233.00000),(846.82446,232.00000)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
-
-    PropertyView pview_4(
-        property=meta::pure::test::result::TestFailed.assertStatuses,
-        source=cview_10,
-        target=cview_12
-,        points=[(551.87549,343.00000),(553.49170,450.00000)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
-
-    PropertyView pview_5(
-        property=meta::pure::test::result::TestResult.id,
-        source=cview_8,
-        target=cview_16
-,        points=[(549.80005,233.00000),(359.60132,234.00000)],
+        property=meta::pure::test::result::TestResult.test,
+        source=cview_22,
+        target=cview_23,
+        points=[(246.49589,247.09795),(-285.84761,250.09795)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),

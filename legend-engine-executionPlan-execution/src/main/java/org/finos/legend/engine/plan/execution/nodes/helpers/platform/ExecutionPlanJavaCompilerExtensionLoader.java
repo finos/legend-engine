@@ -14,16 +14,19 @@
 
 package org.finos.legend.engine.plan.execution.nodes.helpers.platform;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ExecutionPlanJavaCompilerExtensionLoader
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static AtomicReference<List<ExecutionPlanJavaCompilerExtension>> EXTENSIONS = new AtomicReference<>();
 
     public static void logExtensionList()
     {
@@ -35,19 +38,26 @@ public class ExecutionPlanJavaCompilerExtensionLoader
 
     public static List<ExecutionPlanJavaCompilerExtension> extensions()
     {
-        List<ExecutionPlanJavaCompilerExtension> extensions = Lists.mutable.empty();
-        for (ExecutionPlanJavaCompilerExtension extension : ServiceLoader.load(ExecutionPlanJavaCompilerExtension.class))
+        return EXTENSIONS.updateAndGet(extensions ->
         {
-            try
+            if (extensions == null)
             {
-                extensions.add(extension);
+                MutableList<ExecutionPlanJavaCompilerExtension> result = Lists.mutable.empty();
+                for (ExecutionPlanJavaCompilerExtension extension : ServiceLoader.load(ExecutionPlanJavaCompilerExtension.class))
+                {
+                    try
+                    {
+                        result.add(extension);
+                    }
+                    catch (Throwable throwable)
+                    {
+                        LOGGER.error("Failed to load Engine Java Compiler extension '" + extension.getClass().getSimpleName() + "'");
+                    }
+                }
+                return result;
             }
-            catch (Throwable throwable)
-            {
-                LOGGER.error("Failed to load Engine Java Compiler extension '" + extension.getClass().getSimpleName() + "'");
-            }
-        }
-        return extensions;
+            return extensions;
+        });
     }
 
 }

@@ -64,20 +64,21 @@ class SelectExpressionTest
     }
 
     @Test
-    void genSqlForSimpleSelectStar()
+    void genSqlForSimpleSelectStarWithLimit()
     {
         Table table = new Table("mydb", null, "mytable", null, BaseTest.QUOTE_IDENTIFIER);
 
-        SelectExpression selectExpression =
+        SelectStatement selectStatement =
             new SelectStatement(
                 null,
                 Collections.singletonList(new All(BaseTest.QUOTE_IDENTIFIER)),
                 Collections.singletonList(table),
                 null,
                 Collections.emptyList());
+        selectStatement.setLimit(10);
 
-        String sql1 = BaseTest.genSqlIgnoringErrors(selectExpression);
-        String expected = "SELECT * FROM \"mydb\".\"mytable\"";
+        String sql1 = BaseTest.genSqlIgnoringErrors(selectStatement);
+        String expected = "SELECT * FROM \"mydb\".\"mytable\" LIMIT 10";
         assertEquals(expected, sql1);
     }
 

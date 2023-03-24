@@ -40,7 +40,7 @@ function meta::external::shared::format::transformation::tests::exampleFormatCon
 }
 
 // Example Schema Metamodel
-Class meta::external::shared::format::transformation::tests::ExampleSchema extends SchemaDetail
+Class meta::external::shared::format::transformation::tests::ExampleSchema
 {
 
 }

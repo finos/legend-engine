@@ -31,6 +31,7 @@ import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.LazyIterate;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -54,16 +55,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.exe
 import org.finos.legend.engine.shared.core.function.Function4;
 import org.finos.legend.engine.shared.core.function.Procedure3;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
-import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionOption;
-import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_TestAssertion;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.MappingValidatorContext;
 
 import org.slf4j.Logger;
@@ -105,8 +103,8 @@ public class CompilerExtensions
     private final ImmutableList<Procedure3<AggregationAwareClassMapping, Mapping, CompileContext>> extraAggregationAwareClassMappingFirstPassProcessors;
     private final ImmutableList<Procedure3<AggregationAwareClassMapping, Mapping, CompileContext>> extraAggregationAwareClassMappingSecondPassProcessors;
     private final ImmutableList<Function3<AssociationMapping, Mapping, CompileContext, AssociationImplementation>> extraAssociationMappingProcessors;
-    private final ImmutableList<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, CompileContext, Connection>> extraConnectionValueProcessors;
-    private final ImmutableList<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, Connection, CompileContext>> extraConnectionSecondPassProcessors;
+    private final ImmutableList<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, CompileContext, Root_meta_pure_runtime_Connection>> extraConnectionValueProcessors;
+    private final ImmutableList<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, Root_meta_pure_runtime_Connection, CompileContext>> extraConnectionSecondPassProcessors;
     private final ImmutableList<Procedure2<InputData, CompileContext>> extraMappingTestInputDataProcessors;
     private final ImmutableList<Function<Handlers, List<FunctionHandlerDispatchBuilderInfo>>> extraFunctionHandlerDispatchBuilderInfoCollectors;
     private final ImmutableList<Function<Handlers, List<FunctionExpressionBuilderRegistrationInfo>>> extraFunctionExpressionBuilderRegistrationInfoCollectors;
@@ -114,7 +112,7 @@ public class CompilerExtensions
     private final ImmutableList<Function4<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification, CompileContext, List<String>, ProcessingContext, ValueSpecification>> extraValueSpecificationProcessors;
     private final ImmutableList<Function3<LambdaFunction, CompileContext, ProcessingContext, LambdaFunction>> extraLambdaPostProcessors;
     private final ImmutableList<Procedure2<PackageableElement, MutableMap<String, String>>> extraStoreStatBuilders;
-    private final ImmutableList<Function2<ExecutionContext, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.ExecutionContext>> extraExecutionContextProcessors;
+    private final ImmutableList<Function2<ExecutionContext, CompileContext, Root_meta_pure_runtime_ExecutionContext>> extraExecutionContextProcessors;
     private final ImmutableList<Procedure<Procedure2<String, List<String>>>> extraElementForPathToElementRegisters;
     private final ImmutableList<Procedure3<SetImplementation, Set<String>, CompileContext>> extraSetImplementationSourceScanners;
     private final ImmutableList<Procedure2<PureModel, PureModelContextData>> extraPostValidators;
@@ -238,12 +236,12 @@ public class CompilerExtensions
         return this.extraAssociationMappingProcessors.castToList();
     }
 
-    public List<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, CompileContext, Connection>> getExtraConnectionValueProcessors()
+    public List<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, CompileContext, Root_meta_pure_runtime_Connection>> getExtraConnectionValueProcessors()
     {
         return this.extraConnectionValueProcessors.castToList();
     }
 
-    public List<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, Connection, CompileContext>> getExtraConnectionSecondPassProcessors()
+    public List<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, Root_meta_pure_runtime_Connection, CompileContext>> getExtraConnectionSecondPassProcessors()
     {
         return this.extraConnectionSecondPassProcessors.castToList();
     }
@@ -283,7 +281,7 @@ public class CompilerExtensions
         return this.extraStoreStatBuilders.castToList();
     }
 
-    public List<Function2<ExecutionContext, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.ExecutionContext>> getExtraExecutionContextProcessors()
+    public List<Function2<ExecutionContext, CompileContext, Root_meta_pure_runtime_ExecutionContext>> getExtraExecutionContextProcessors()
     {
         return this.extraExecutionContextProcessors.castToList();
     }
@@ -446,14 +444,14 @@ public class CompilerExtensions
 
     public static CompilerExtensions fromAvailableExtensions()
     {
-        return fromExtensions(ServiceLoader.load(CompilerExtension.class));
+        return fromExtensions(ListIterate.collect(CompilerExtensionLoader.extensions(), CompilerExtension::build));
     }
 
     public static void logAvailableExtensions()
     {
         if (LOGGER.isDebugEnabled())
         {
-            LOGGER.debug(LazyIterate.collect(ServiceLoader.load(CompilerExtension.class), extension -> "- " + extension.getClass().getSimpleName()).makeString("Compiler extension(s) loaded:\n", "\n", ""));
+            LOGGER.debug(LazyIterate.collect(CompilerExtensionLoader.extensions(), extension -> "- " + extension.getClass().getSimpleName()).makeString("Compiler extension(s) loaded:\n", "\n", ""));
         }
     }
 

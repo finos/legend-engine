@@ -65,7 +65,7 @@ function <<test.Test>> meta::relational::tests::mapping::subType::testProjectSub
 
 function <<test.Test>> meta::relational::tests::mapping::subType::testSubTypeMappingValidWhenMappedExplicitly():Boolean[1]
 {
-   let cm = meta::relational::tests::mapping::subType::SubTypeMappingValidWhenMappedExplicitly.classMappingByClass(meta::relational::tests::mapping::subType::MyProduct)->filter(s|$s.root == true);
+   let cm = meta::relational::tests::mapping::subType::SubTypeMappingValidWhenMappedExplicitly->_classMappingByClass(meta::relational::tests::mapping::subType::MyProduct)->filter(s|$s.root == true);
    assertSize($cm, 1);
    let result = execute(|CreditRating.all()->project([r| $r.product.rating.description], ['description']), SubTypeMappingValidWhenMappedExplicitly, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "product_rating_1".RATING as "description" from PRODUCT_RATING as "root" left outer join productSchema.productTable as "producttable_0" on ("producttable_0".ID = "root".PRODUCT_ID) left outer join PRODUCT_RATING as "product_rating_1" on ("producttable_0".ID = "product_rating_1".PRODUCT_ID)', $result);

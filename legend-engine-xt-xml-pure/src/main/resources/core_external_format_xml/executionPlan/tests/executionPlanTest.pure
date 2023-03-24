@@ -30,105 +30,127 @@ import meta::pure::runtime::*;
 
 Class meta::external::format::xml::executionPlan::test::Person
 {
-   firstName : String[1];
-   lastName  : String[1];
+  firstName : String[1];
+  lastName  : String[1];
+}
+
+Class meta::external::format::xml::executionPlan::test::TargetPerson
+{
+  fullName : String[1];
+}
+
+function meta::external::format::xml::executionPlan::test::getTestBinding(): Binding[1]
+{
+  let schemaSet = ^SchemaSet(
+    name    = 'TestSchema',
+    package = meta::external::format::xml::executionPlan::test,
+    format  = 'XSD',
+    schemas = ^Schema(
+        id      = 'default.xsd',
+        detail  = ^XsdSchema(
+          items = [
+              ^XsdElement(
+                name=^QName(localPart='person', namespace=''),
+                minOccurs=1,
+                maxOccurs=1,
+                type=^XsdComplexType(
+                    particle=^XsdSequence(
+                      minOccurs=1,
+                      maxOccurs=1,
+                      items = [
+                          ^XsdElement(name=^QName(localPart='firstName', namespace=''), typeName=xsType('string'), minOccurs=1, maxOccurs=1),
+                          ^XsdElement(name=^QName(localPart='lastName', namespace=''), typeName=xsType('string'), minOccurs=1, maxOccurs=1)
+                      ]
+                    )
+                )
+              )
+          ]
+        )
+    )
+  );
+   
+  ^Binding(
+    name      = 'TestBinding',
+    package   = meta::external::format::xml::executionPlan::test,
+    schemaSet = $schemaSet,
+    contentType = 'application/xml',
+    modelUnit = newModelUnit()->include(Person)
+  );
 }
 
 function <<meta::pure::profiles::test.Test>> meta::external::format::xml::executionPlan::test::xmlNodes(): Boolean[1]
 {
-   let extensions = meta::external::shared::format::externalFormatExtension()->concatenate(meta::external::format::xml::extension::xsdFormatExtension());
-   
-   let schemaSet = ^SchemaSet(
-      name    = 'TestSchema',
-      package = meta::external::format::xml::executionPlan::test,
-      format  = 'XSD',
-      schemas = ^Schema(
-         id      = 'default.xsd',
-         detail  = ^XsdSchema(
-            items = [
-               ^XsdElement(
-                  name=^QName(localPart='person', namespace=''),
-                  minOccurs=1,
-                  maxOccurs=1,
-                  type=^XsdComplexType(
-                     particle=^XsdSequence(
-                        minOccurs=1,
-                        maxOccurs=1,
-                        items = [
-                           ^XsdElement(name=^QName(localPart='firstName', namespace=''), typeName=xsType('string'), minOccurs=1, maxOccurs=1),
-                           ^XsdElement(name=^QName(localPart='lastName', namespace=''), typeName=xsType('string'), minOccurs=1, maxOccurs=1)
-                        ]
-                     )
-                  )
-               )
-            ]
-         )
-      )
-   );
-   
-   let binding = ^Binding(
-      name      = 'TestBinding',
-      package   = meta::external::format::xml::executionPlan::test,
-      schemaSet = $schemaSet,
-      contentType = 'application/xml',
-      modelUnit = newModelUnit()->include(Person)
-   );
-   
-   let tree = #{Person {firstName, lastName}}#;
+  let extensions = meta::external::shared::format::externalFormatExtension()->concatenate(meta::external::format::xml::extension::xsdFormatExtension());
 
-   let plan = executionPlan(
-      data:ByteStream[1]|Person->internalize($binding, $data)->graphFetchChecked($tree)->externalize($binding),
-      ^ExecutionContext(),
-      $extensions,
-      noDebug()
-   );
+  let binding = getTestBinding();
+  
+  let tree = #{Person {firstName, lastName}}#;
 
-   let planString = $plan->planToString(false, $extensions);
-   
-   let expected = 'Sequence\n' +
-                  '(\n' +
-                  '  type = String\n' +
-                  '  resultSizeRange = 1\n' +
-                  '  (\n' +
-                  '    FunctionParametersValidationNode\n' +
-                  '    (\n' +
-                  '      functionParameters = [data:ByteStream[1]]\n' +
-                  '    )\n' +
-                  '    ExternalFormat_Externalize\n' +
-                  '    (\n' +
-                  '      type = String\n' +
-                  '      resultSizeRange = 1\n' +
-                  '      checked = true\n' +
-                  '      binding = meta::external::format::xml::executionPlan::test::TestBinding\n' +
-                  '\n' +
-                  '      (\n' +
-                  '        ExternalFormat_Internalize\n' +
-                  '        (\n' +
-                  '          type = Class[impls=]\n' +
-                  '          resultSizeRange = *\n' +
-                  '          binding = meta::external::format::xml::executionPlan::test::TestBinding[application/xml]\n' +
-                  '          enableConstraints = true\n' +
-                  '          checked = true\n' +
-                  '          graphFetchTree = #{meta::external::format::xml::executionPlan::test::Person{firstName,lastName}}#\n' +
-                  '\n' +
-                  '          (\n' +
-                  '            VariableResolution\n' +
-                  '            (\n' +
-                  '              type = ByteStream\n' +
-                  '              varName = data\n' +
-                  '\n' +
-                  '            )\n' +
-                  '          )\n' +
-                  '        )\n' +
-                  '      )\n' +
-                  '    )\n' +
-                  '  )\n' +
-                  ')\n';
+  let plan = executionPlan(
+    data:ByteStream[1]|Person->internalize($binding, $data)->graphFetchChecked($tree)->externalize($binding),
+    ^ExecutionContext(),
+    $extensions,
+    noDebug()
+  );
 
-   assertEquals($expected, $planString);   
+  let planString = $plan->planToString(false, $extensions);
+  
+  let expected = 'Sequence\n' +
+                '(\n' +
+                '  type = String\n' +
+                '  resultSizeRange = 1\n' +
+                '  (\n' +
+                '    FunctionParametersValidationNode\n' +
+                '    (\n' +
+                '      functionParameters = [data:ByteStream[1]]\n' +
+                '    )\n' +
+                '    ExternalFormat_Externalize\n' +
+                '    (\n' +
+                '      type = String\n' +
+                '      resultSizeRange = 1\n' +
+                '      checked = true\n' +
+                '      binding = meta::external::format::xml::executionPlan::test::TestBinding\n' +
+                '\n' +
+                '      (\n' +
+                '        ExternalFormat_Internalize\n' +
+                '        (\n' +
+                '          type = Class[impls=]\n' +
+                '          resultSizeRange = *\n' +
+                '          binding = meta::external::format::xml::executionPlan::test::TestBinding[application/xml]\n' +
+                '          enableConstraints = true\n' +
+                '          checked = true\n' +
+                '          graphFetchTree = #{meta::external::format::xml::executionPlan::test::Person{firstName,lastName}}#\n' +
+                '\n' +
+                '          (\n' +
+                '            VariableResolution\n' +
+                '            (\n' +
+                '              type = ByteStream\n' +
+                '              varName = data\n' +
+                '\n' +
+                '            )\n' +
+                '          )\n' +
+                '        )\n' +
+                '      )\n' +
+                '    )\n' +
+                '  )\n' +
+                ')\n';
+
+  assertEquals($expected, $planString);   
 }
 
 function meta::external::format::xml::executionPlan::test::xsType(type: String[1]): QName[1]
 {
    ^QName(localPart=$type, namespace='http://www.w3.org/2001/XMLSchema');
 }
+
+###Mapping
+import meta::external::format::xml::executionPlan::test::*;
+
+Mapping meta::external::format::xml::executionPlan::test::M2MMapping
+(
+  TargetPerson: Pure
+  {
+    ~src Person
+    fullName : $src.firstName + ' ' + $src.lastName;
+  }
+)

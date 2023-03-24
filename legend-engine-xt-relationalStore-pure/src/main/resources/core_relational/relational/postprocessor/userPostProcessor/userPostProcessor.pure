@@ -24,7 +24,7 @@ function meta::relational::mapping::userPlanPostProcessors(result:PostProcessorR
    let postProcessorResult = if($postProcessorsWithParameters->isNotEmpty(),
                                 | $postProcessorsWithParameters->fold({i, prevResult|let struct = $i.postProcessor->cast(@ConcreteFunctionDefinition<{->PostProcessor[1]}>)->eval();
                                                                        let res = $struct.sqlQueryPostProcessorForPlan->cast(@ConcreteFunctionDefinition<{SQLQuery[1], Mapping[0..1], Runtime[1], Database[0..1], ExecutionContext[1], PostProcessorParameter[*]->PostProcessorResult[1]}>)->toOne()->eval($prevResult.query,$m,$runtime->toOne(),$store,$exeCtx,$i.parameters)->toOne();
-                                                                       ^$prevResult(query = $res.query, templateFunctions = $prevResult.templateFunctions->concatenate($res.templateFunctions),executionNodes =$prevResult.executionNodes->concatenate( $res.executionNodes), postExecutionNodes=$prevResult.postExecutionNodes->concatenate($res.postExecutionNodes), finallyExecutionNode = $prevResult.finallyExecutionNode->concatenate($res.finallyExecutionNode));},
+                                                                       ^$prevResult(query = $res.query, templateFunctions = $prevResult.templateFunctions->concatenate($res.templateFunctions),executionNodes =$prevResult.executionNodes->concatenate( $res.executionNodes), postExecutionNodes=$prevResult.postExecutionNodes->concatenate($res.postExecutionNodes));},
                                                                        $result),
                                 |$result;
                              );

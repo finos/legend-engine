@@ -24,7 +24,8 @@ import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest_Legacy;
-import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestPassed;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecutionStatus;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
@@ -59,10 +60,11 @@ public class TestMappingTestRunner
         List<TestResult> mappingTestResults = mappingTestableRunnerExtension.executeAllTest(mappingToTest, pureModelWithReferenceData, modelDataWithReferenceData);
 
         Assert.assertEquals(1, mappingTestResults.size());
-        Assert.assertTrue(mappingTestResults.get(0) instanceof TestPassed);
-        Assert.assertEquals("execution::RelationalMapping", ((TestPassed) mappingTestResults.get(0)).testable);
-        Assert.assertEquals("testSuite1", ((TestPassed) mappingTestResults.get(0)).atomicTestId.testSuiteId);
-        Assert.assertEquals("test1", ((TestPassed) mappingTestResults.get(0)).atomicTestId.atomicTestId);
+        Assert.assertTrue(mappingTestResults.get(0) instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) mappingTestResults.get(0)).testExecutionStatus);
+        Assert.assertEquals("execution::RelationalMapping", mappingTestResults.get(0).testable);
+        Assert.assertEquals("testSuite1", mappingTestResults.get(0).testSuiteId);
+        Assert.assertEquals("test1", mappingTestResults.get(0).atomicTestId);
     }
 
     //Legacy mapping test runner tests

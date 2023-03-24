@@ -31,6 +31,7 @@ function meta::external::language::java::factory::javaSystem():                 
 function meta::external::language::java::factory::javaStringBuilder():                 meta::external::language::java::metamodel::Class[1] { javaClass('java.lang.StringBuilder'); }
 function meta::external::language::java::factory::javaAppendable():                    meta::external::language::java::metamodel::Class[1] { javaClass('java.lang.Appendable'); }
 function meta::external::language::java::factory::javaClassType():                     meta::external::language::java::metamodel::Class[1] { javaClass('java.lang.Class'); }
+function meta::external::language::java::factory::javaNullPointerException():          meta::external::language::java::metamodel::Class[1] { javaClass('java.lang.NullPointerException'); }
 
 function meta::external::language::java::factory::javaReflectType():           meta::external::language::java::metamodel::Class[1] { javaClass('java.lang.reflect.Type'); }
 function meta::external::language::java::factory::javaReflectMethod():         meta::external::language::java::metamodel::Class[1] { javaClass('java.lang.reflect.Method'); }
@@ -1650,6 +1651,16 @@ function meta::external::language::java::factory::j_double(literal:String[1]):Co
    ^Literal(literal=$literal, type=javaDouble());
 }
 
+function meta::external::language::java::factory::j_bigDecimal(literal:String[1]):Code[1]
+{
+   ^Literal(literal=$literal, type=javaBigDecimal());
+}
+
+function meta::external::language::java::factory::j_bigDecimal(d:Decimal[1]):Code[1]
+{
+   ^Literal(literal=$d->toString(), type=javaBigDecimal());
+}
+
 function meta::external::language::java::factory::j_box(expression:Code[1]):Code[1]
 {
    if($expression.type == javaBoolean(),
@@ -2146,7 +2157,7 @@ function meta::external::language::java::factory::js_map(stream: Code[1], func: 
       | $map->js_flatMap(j_methodReference(javaClass('java.util.Collection'), 'stream', javaFunctionType($funcReturn, javaStream($funcReturn->elementTypeOfJavaList())))),
       {|
          let cannotBeNull = $funcType.nullResultPossible->isFalse() || $funcReturn->isJavaPrimitive();
-         let x = j_parameter($funcReturn, 'x');
+         let x = j_parameter($funcReturn, '$x');
          if($cannotBeNull, | $map, |$map->js_filter(j_lambda($x, $x->j_ne(j_null()))));
       }
    );

@@ -45,4 +45,10 @@ public class GraphQLCompilerExtension implements CompilerExtension
                         ._values(Lists.mutable.with(new org.finos.legend.engine.protocol.graphQL.metamodel.Translator().translate((Document) obj, context.pureModel)))
         );
     }
+
+    @Override
+    public CompilerExtension build()
+    {
+        return new GraphQLCompilerExtension();
+    }
 }

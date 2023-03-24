@@ -32,7 +32,7 @@ function <<test.Test>> meta::pure::persistence::test::validateTarget_tdsService_
 function <<test.Test>> meta::pure::persistence::test::validateServiceAndTarget_tdsService_flatPersistence(): Boolean[1]
 {
   let persistence = TdsServiceWithFlatPersistence();
-  let result = validateServiceAndTarget($persistence.service, $persistence.persister->cast(@BatchPersister).targetShape);
+  let result = validateServiceAndTarget($persistence.service, $persistence.persister->cast(@BatchPersister).targetShape, extensions());
   assert($result.valid());
 }
 
@@ -46,7 +46,7 @@ function <<test.Test>> meta::pure::persistence::test::validateTarget_tdsService_
 function <<test.Test>> meta::pure::persistence::test::validateServiceAndTarget_tdsService_multiFlatPersistence(): Boolean[1]
 {
   let persistence = TdsServiceWithMultiFlatPersistence();
-  let result = validateServiceAndTarget($persistence.service, $persistence.persister->cast(@BatchPersister).targetShape);
+  let result = validateServiceAndTarget($persistence.service, $persistence.persister->cast(@BatchPersister).targetShape, extensions());
   assert($result.invalid());
   assertEq('Multi flat target requires a service that ends with a "graphFetch()->serialize()" expression that has 1) only complex properties off the root node and 2) only primitive properties off nodes at depth 1', $result.reasons->at(0));
 }
@@ -65,7 +65,7 @@ function <<test.Test>> meta::pure::persistence::test::validateTarget_flatM2mServ
 function <<test.Test>> meta::pure::persistence::test::validateServiceAndTarget_flatM2mService_flatPersistence(): Boolean[1]
 {
   let persistence = FlatM2mServiceWithFlatPersistence();
-  let result = validateServiceAndTarget($persistence.service, $persistence.persister->cast(@BatchPersister).targetShape);
+  let result = validateServiceAndTarget($persistence.service, $persistence.persister->cast(@BatchPersister).targetShape, extensions());
   assert($result.valid());
 }
 
@@ -79,7 +79,7 @@ function <<test.Test>> meta::pure::persistence::test::validateTarget_flatM2mServ
 function <<test.Test>> meta::pure::persistence::test::validateServiceAndTarget_flatM2mService_multiFlatPersistence(): Boolean[1]
 {
   let persistence = FlatM2mServiceWithMultiFlatPersistence();
-  let result = validateServiceAndTarget($persistence.service, $persistence.persister->cast(@BatchPersister).targetShape);
+  let result = validateServiceAndTarget($persistence.service, $persistence.persister->cast(@BatchPersister).targetShape, extensions());
   assert($result.invalid());
   assertEq('Multi flat target requires a service that ends with a "graphFetch()->serialize()" expression that has 1) only complex properties off the root node and 2) only primitive properties off nodes at depth 1', $result.reasons->at(0));
 }
@@ -98,7 +98,7 @@ function <<test.Test>> meta::pure::persistence::test::validateTarget_nestedM2mSe
 function <<test.Test>> meta::pure::persistence::test::validateServiceAndTarget_nestedM2mService_flatPersistence(): Boolean[1]
 {
   let persistence = NestedM2mServiceWithFlatPersistence();
-  let result = validateServiceAndTarget($persistence.service, $persistence.persister->cast(@BatchPersister).targetShape);
+  let result = validateServiceAndTarget($persistence.service, $persistence.persister->cast(@BatchPersister).targetShape, extensions());
   assert($result.invalid());
   assertEq('Flat target requires a service that returns a TDS or ends with a "graphFetch()->serialize()" expression that has only primitive properties off the root node', $result.reasons->at(0));
 }
@@ -113,7 +113,7 @@ function <<test.Test>> meta::pure::persistence::test::validateTarget_nestedM2mSe
 function <<test.Test>> meta::pure::persistence::test::validateServiceAndTarget_nestedM2mService_multiFlatPersistence(): Boolean[1]
 {
   let persistence = NestedM2mServiceWithMultiFlatPersistence();
-  let result = validateServiceAndTarget($persistence.service, $persistence.persister->cast(@BatchPersister).targetShape);
+  let result = validateServiceAndTarget($persistence.service, $persistence.persister->cast(@BatchPersister).targetShape, extensions());
   assert($result.valid());
 }
 
@@ -245,6 +245,7 @@ function meta::pure::persistence::test::RelationalConnection(): Connection[1]
 
 ###Pure
 import meta::legend::service::metamodel::*;
+
 import meta::pure::mapping::*;
 import meta::pure::persistence::metamodel::*;
 import meta::pure::persistence::metamodel::notifier::*;
@@ -291,7 +292,7 @@ function meta::pure::persistence::test::TdsService(): Service[1]
     test = ^SingleExecutionTest(
       data = '',
       asserts = ^TestContainer(assert = x:Result<Any|m>[1] | true)),
-    tests = ^ServiceTest(id = 'test1', assertions = ^EqualTo(id = 'assertion1', expected = ''))
+      tests = ^ServiceTest(id = 'test1', assertions = ^EqualTo(id = 'assertion1', expected = ''), testable = @meta::pure::test::Testable)
   );
 }
 
@@ -449,7 +450,7 @@ function meta::pure::persistence::test::FlatM2mService(): Service[1]
     test = ^SingleExecutionTest(
       data = '',
       asserts = ^TestContainer(assert = x:Result<Any|m>[1] | true)),
-    tests = ^ServiceTest(id = 'test1', assertions = ^EqualTo(id = 'assertion1', expected = ''))
+      tests = ^ServiceTest(id = 'test1', assertions = ^EqualTo(id = 'assertion1', expected = ''), testable = @meta::pure::test::Testable)
   );
 }
 
@@ -542,7 +543,11 @@ Mapping meta::pure::persistence::test::NestedM2mMapping
 )
 
 ###Pure
+import meta::external::shared::format::*;
+
 import meta::legend::service::metamodel::*;
+
+import meta::pure::extension::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::*;
 import meta::pure::mapping::modelToModel::*;
@@ -558,6 +563,8 @@ import meta::pure::persistence::metamodel::persister::targetshape::*;
 import meta::pure::persistence::metamodel::trigger::*;
 import meta::pure::runtime::*;
 import meta::pure::test::assertion::*;
+
+import meta::relational::extension::*;
 
 function meta::pure::persistence::test::NestedM2mRuntime(): Runtime[1]
 {
@@ -642,7 +649,7 @@ function meta::pure::persistence::test::NestedM2mService(): Service[1]
     test = ^SingleExecutionTest(
       data = '',
       asserts = ^TestContainer(assert = x:Result<Any|m>[1] | true)),
-    tests = ^ServiceTest(id = 'test1', assertions = ^EqualTo(id = 'assertion1', expected = ''))
+      tests = ^ServiceTest(id = 'test1', assertions = ^EqualTo(id = 'assertion1', expected = ''), testable = @meta::pure::test::Testable)
   );
 }
 
@@ -704,4 +711,9 @@ function meta::pure::persistence::test::NestedM2mServiceWithMultiFlatPersistence
     ),
     notifier = ^Notifier(notifyees = [])
   );
+}
+
+function meta::pure::persistence::validation::extensions(): Extension[*]
+{
+  defaultExtensions()->add(externalFormatExtension())->concatenate(relationalExtensions());
 }
