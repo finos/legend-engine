@@ -127,7 +127,7 @@ DataSpace <<doc.deprecated>> {meta::pure::profiles::enterprise.taxonomyNodes = '
   };
 }
 
-DataSpace <<meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.Verified>> model::animal::AnimalDS
+DataSpace <<meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.Verified>> model::animal::AnimalDS2
 {
   executionContexts:
   [
@@ -159,6 +159,49 @@ DataSpace <<meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.Verified>>
     address: 'someEmail@test.org';
   };
 }
+
+DataSpace <<meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.Verified>> model::animal::AnimalDS
+{
+  executionContexts:
+  [
+    {
+      name: 'dummyContext';
+      title: 'Haha Nice';
+      description: 'An important execution context';
+      mapping: model::dummyMapping;
+      defaultRuntime: model::dummyRuntime;
+    },
+    {
+      name: 'dummyContext2';
+      mapping: model::dummyMapping2;
+      defaultRuntime: model::dummyRuntime;
+    },
+    {
+      name: 'dummyContext3';
+      mapping: model::dummyMapping2;
+      defaultRuntime: model::dummyRuntime2;
+    }
+  ];
+  defaultExecutionContext: 'dummyContext';
+  description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
+  diagrams:
+  [
+    {
+      title: 'Diag 1';
+      description: 'Some diagram description';
+      diagram: model::animal::AnimalDiagram;
+    },
+    {
+      title: 'Diag 2';
+      description: 'Some more diagram description';
+      diagram: model::GeneralDiagram;
+    }
+  ];
+  supportInfo: Email {
+    address: 'someEmail@test.org';
+  };
+}
+
 
 
 ###Pure

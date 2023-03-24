@@ -12,16 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace;
+package org.finos.legend.engine.generation.analytics.model;
 
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.ResultType;
 
-public class DataSpaceExecutable
+public class DataSpaceDiagramAnalysisResult
 {
-    // NOTE: this is subjected to change depending on how we want to embed executables information
     public String title;
     public String description;
-    public PackageableElementPointer executable;
-    public SourceInformation sourceInformation;
+    public String diagram;
 }

@@ -29,7 +29,7 @@ function meta::pure::metamodel::dataSpace::analytics::analyzeDataSpace(dataSpace
 {
   ^DataSpaceAnalysisResult
   (
-    diagramModels = meta::pure::metamodel::diagram::analytics::modelCoverage::getDiagramModelCoverage($dataSpace.featuredDiagrams),
+    diagramModels = meta::pure::metamodel::diagram::analytics::modelCoverage::getDiagramModelCoverage($dataSpace.featuredDiagrams->concatenate($dataSpace.diagrams.diagram)->removeDuplicates()),
     executionContexts = analyzeDataSpaceExecutionContexts($dataSpace, $allAvailableRuntimes),
     elementDocs = getModelsDoc($dataSpace)
   );

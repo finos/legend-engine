@@ -133,6 +133,46 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
                 "  ];\n" +
                 "}\n", "PARSER error at [14:5-16:5]: Field 'executable' is required");
 
+        // Diagrams
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  diagrams:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      diagram: model::MyDiagra;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n", "PARSER error at [14:5-16:5]: Field 'title' is required");
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  diagrams:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      title: 'Diag 1';\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n", "PARSER error at [14:5-16:5]: Field 'diagram' is required");
+
         // Support
         test("###DataSpace\n" +
                 "DataSpace model::dataSpace" +
@@ -148,7 +188,7 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
                 "    }\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
-                "}\n", "PARSER error at [2:1-14:1]: Field 'address' is required");
+                "}\n", "PARSER error at [3:16-4:3]: Field 'address' is required");
     }
 
     @Test
@@ -445,6 +485,109 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
                 "    address: 'someEmail@test.org';\n" +
                 "    address: 'someEmail@test.org';\n" +
                 "  };\n" +
-                "}\n", "PARSER error at [2:1-17:1]: Field 'address' should be specified only once");
+                "}\n", "PARSER error at [13:16-16:3]: Field 'address' should be specified only once");
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  supportInfo: Email {\n" +
+                "    address: 'someEmail@test.org';\n" +
+                "    documentationUrl: 'https://example.com';\n" +
+                "    documentationUrl: 'https://example.com';\n" +
+                "  };\n" +
+                "}\n", "PARSER error at [13:16-17:3]: Field 'documentationUrl' should be specified only once");
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  supportInfo: Combined {\n" +
+                "    documentationUrl: 'https://example.com';\n" +
+                "    documentationUrl: 'https://example.com';\n" +
+                "  };\n" +
+                "}\n", "PARSER error at [13:16-16:3]: Field 'documentationUrl' should be specified only once");
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  supportInfo: Combined {\n" +
+                "    website: 'https://example.com';\n" +
+                "    website: 'https://example.com';\n" +
+                "  };\n" +
+                "}\n", "PARSER error at [13:16-16:3]: Field 'website' should be specified only once");
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  supportInfo: Combined {\n" +
+                "    faqUrl: 'https://example.com';\n" +
+                "    faqUrl: 'https://example.com';\n" +
+                "  };\n" +
+                "}\n", "PARSER error at [13:16-16:3]: Field 'faqUrl' should be specified only once");
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  supportInfo: Combined {\n" +
+                "    supportUrl: 'https://example.com';\n" +
+                "    supportUrl: 'https://example.com';\n" +
+                "  };\n" +
+                "}\n", "PARSER error at [13:16-16:3]: Field 'supportUrl' should be specified only once");
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  supportInfo: Combined {\n" +
+                "    emails: [];\n" +
+                "    emails: [];\n" +
+                "  };\n" +
+                "}\n", "PARSER error at [13:16-16:3]: Field 'emails' should be specified only once");
     }
 }

@@ -17,11 +17,10 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSp
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 
-public class DataSpaceExecutable
+public class DataSpaceDiagram
 {
-    // NOTE: this is subjected to change depending on how we want to embed executables information
     public String title;
     public String description;
-    public PackageableElementPointer executable;
+    public PackageableElementPointer diagram;
     public SourceInformation sourceInformation;
 }

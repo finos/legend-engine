@@ -343,5 +343,37 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "  defaultExecutionContext: 'Context 1';\n" +
                 "  featuredDiagrams: [model::SomeDiagram];\n" +
                 "}\n", "COMPILATION error at [29:22-39]: Can't find diagram 'model::SomeDiagram'");
+
+        test("###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  diagrams: [{ title: 'MyDiag'; diagram: model::SomeDiagram; }];\n" +
+                "}\n", "COMPILATION error at [29:33-60]: Can't find diagram 'model::SomeDiagram'");
     }
 }
