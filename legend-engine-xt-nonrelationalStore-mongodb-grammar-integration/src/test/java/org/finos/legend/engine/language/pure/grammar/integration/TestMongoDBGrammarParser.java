@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.pure.grammar.from;
+package org.finos.legend.engine.language.pure.grammar.integration;
 
 import org.antlr.v4.runtime.Vocabulary;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
@@ -37,4 +37,6 @@ public class TestMongoDBGrammarParser extends TestGrammarParser.TestGrammarParse
                 "(\n" +
                 ")\n";
     }
+
 }
+

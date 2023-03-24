@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.pure.grammar.from;
+package org.finos.legend.engine.language.pure.grammar.from.deserializer;
 
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.BaseTypeVisitor;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.ObjectType;

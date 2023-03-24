@@ -37,6 +37,13 @@ public class MongoDBSchemaJsonComposer
         return new MongoDBSchemaJsonComposer();
     }
 
+    public String renderMongoDatabase(MongoDatabase database)
+    {
+        int baseIndentation = 1;
+
+        return "";
+    }
+
     public String renderDocument(MongoDatabase database)
     {
         return this.visit(database);

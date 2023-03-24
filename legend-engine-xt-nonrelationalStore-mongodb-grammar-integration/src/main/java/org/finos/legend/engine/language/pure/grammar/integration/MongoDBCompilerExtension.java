@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.pure.compiler.toPureGraph;
+package org.finos.legend.engine.language.pure.grammar.integration;
 
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.extensions.IMongoDBStoreCompilerExtension;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
+import org.finos.legend.engine.language.pure.grammar.integration.extensions.IMongoDBStoreCompilerExtension;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDatabase;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;

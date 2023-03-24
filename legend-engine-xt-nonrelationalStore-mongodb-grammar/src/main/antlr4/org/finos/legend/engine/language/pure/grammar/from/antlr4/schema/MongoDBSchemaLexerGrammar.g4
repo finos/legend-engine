@@ -33,11 +33,13 @@ fragment HEX
    : [0-9a-fA-F]
    ;
 
-
 fragment SAFECODEPOINT
    : ~ ["\\\u0000-\u001F]
    ;
 
+QUOTED_STRING
+   : '"' (ESC | SAFECODEPOINT)* '"'
+   ;
 
 NUMBER
    : '-'? INT ('.' [0-9] +)? EXP?
@@ -63,8 +65,8 @@ WS
 //BRACE_CLOSE:                                '}';
 //BRACKET_OPEN:                               '[';
 //BRACKET_CLOSE:                              ']';
-PAREN_OPEN:                                 '(';
-PAREN_CLOSE:                                ')';
+//PAREN_OPEN:                                 '(';
+//PAREN_CLOSE:                                ')';
 //COLON:                                      ':';
 //DOT:                                        '.';
 //COMMA:                                      ',';
@@ -94,12 +96,13 @@ TRUE:                                       'true';
 FALSE:                                      'false';
 NULL:                                       'null';
 
+//INVALID:                                    Invalid;
 
-INVALID:                                    Invalid;
+
 
 // Not using Field Identifer. REMOVE TBD
 //fragment FieldIdentifier:                   ('$' | '$$') (Letter | Digit | '_' )*
 //;
 
-fragment Invalid:                       .
-;
+//fragment Invalid:                       .
+//;

@@ -22,8 +22,6 @@ options { tokenVocab = MongoDBMappingLexerGrammar; }
 unquotedIdentifier:                         VALID_STRING
 ;
 
-identifier:                                 unquotedIdentifier | mongodbIdentifier | STRING
-;
 
 mapping:                                    classMapping
 ;

@@ -251,6 +251,7 @@
         <module>legend-engine-xt-elasticsearch</module>
         <module>legend-engine-xt-nonrelationalStore-mongodb-pure</module>
         <module>legend-engine-xt-nonrelationalStore-mongodb-grammar</module>
+        <module>legend-engine-xt-nonrelationalStore-mongodb-grammar-integration</module>
         <module>legend-engine-xt-nonrelationalStore-mongodb-protocol</module>
         <module>legend-engine-xt-nonrelationalStore-mongodb-executionPlan</module>
         <module>legend-engine-xt-nonrelationalStore-mongodb-compiler</module>
@@ -1750,6 +1751,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-nonrelationalStore-mongodb-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-nonrelationalStore-mongodb-grammar-integration</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

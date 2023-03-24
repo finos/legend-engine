@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import org.eclipse.collections.api.factory.Lists;
-import org.finos.legend.engine.language.pure.grammar.from.ObjectTypeImpl;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.ArrayType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.BaseType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.BinaryType;
@@ -224,7 +223,8 @@ public class MongoDBSchemaDeserializer extends StdDeserializer<MongoDatabase>
         return validator;
     }
 
-    private JsonSchemaExpression getSchemaExpression(JsonParser jsonParser) throws IOException
+    // This function is also used by legend engine/pure parser to convert the mongo-schema-string to schema object
+    public JsonSchemaExpression getSchemaExpression(JsonParser jsonParser) throws IOException
     {
         JsonSchemaExpression schemaExpression = new JsonSchemaExpression();
 

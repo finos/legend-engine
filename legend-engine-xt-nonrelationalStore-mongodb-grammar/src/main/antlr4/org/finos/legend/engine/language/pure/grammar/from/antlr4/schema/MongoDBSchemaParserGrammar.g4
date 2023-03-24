@@ -21,6 +21,7 @@ import M3ParserGrammar;
 
 options { tokenVocab = MongoDBSchemaLexerGrammar; }
 
+
 unquotedIdentifier:                     VALID_STRING
                                         | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE
                                         | BYTE_STREAM_FUNCTION  //ABOVE FROM M3LEXER
@@ -32,7 +33,7 @@ unquotedIdentifier:                     VALID_STRING
                                         | TRUE | FALSE | NULL
 ;
 
-identifier:                             unquotedIdentifier | STRING
+identifier:                             unquotedIdentifier | QUOTED_STRING
 ;
 
 definition:                             (mongodb)*
@@ -41,30 +42,30 @@ definition:                             (mongodb)*
 
 mongodb:                               DATABASE qualifiedName
                                             PAREN_OPEN
-//                                                 include*
-//                                                    (
-//                                                     collection
-//                                                     | collectionView
-//                                                     | join
-//                                                     )*
+                                                 include*
+                                                    (
+                                                        collection
+                                                        | collectionView
+                                                        | join
+                                                    )*
                                             PAREN_CLOSE
 ;
 
-include:                                INCLUDE qualifiedName
+include:                                    INCLUDE qualifiedName
 ;
 
-collection:                             COLLECTION mongodbIdentifier
+collection:                             COLLECTION identifier
                                             PAREN_OPEN
                                                     validationLevel?
                                                     validationAction?
                                                     jsonSchema
                                             PAREN_CLOSE
 ;
-collectionView:                             COLLECTION mongodbIdentifier
+collectionView:                             COLLECTION identifier
                                             PAREN_OPEN
                                                     validationLevel?
                                                     validationAction?
-                                                    jsonSchema
+                                                    //jsonSchema?
                                             PAREN_CLOSE
 ;
 
@@ -74,18 +75,16 @@ join:                                       JOIN identifier PAREN_OPEN joinOpera
 joinOperation:                          databasePointer? fieldPath EQUAL databasePointer? fieldPath
 ;
 
-fieldPath:                              databasePointer? mongodbIdentifier DOT mongodbIdentifier
+fieldPath:                              databasePointer? identifier DOT identifier
 ;
 
 databasePointer:                        BRACKET_OPEN qualifiedName BRACKET_CLOSE
 ;
 
-mongodbIdentifier:                      unquotedIdentifier    //| QUOTED_STRING
-;
 
-validationLevel:                        VALIDATION_LEVEL validationLevelValues COMMA
+validationLevel:                        VALIDATION_LEVEL COLON validationLevelValues SEMI_COLON
 ;
-validationAction:                       VALIDATION_ACTION validationActionValues COMMA
+validationAction:                       VALIDATION_ACTION COLON validationActionValues SEMI_COLON
 ;
 validationLevelValues:                  STRICT | MODERATE
 ;
@@ -93,7 +92,7 @@ validationActionValues:                 ERROR  | WARN
 ;
 
 
-jsonSchema:                             JSON_SCHEMA json
+jsonSchema:                             JSON_SCHEMA COLON json SEMI_COLON
 ;
 
 json
@@ -106,7 +105,7 @@ obj
 ;
 
 pair
-   : STRING ':' value
+   : QUOTED_STRING COLON value
 ;
 
 
@@ -119,7 +118,7 @@ arr
 
 
 value
-   : STRING
+   : QUOTED_STRING
    | NUMBER
    | obj
    | arr

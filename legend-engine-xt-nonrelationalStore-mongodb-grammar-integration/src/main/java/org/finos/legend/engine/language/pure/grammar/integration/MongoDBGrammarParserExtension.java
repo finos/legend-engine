@@ -12,15 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.pure.grammar.from;
+package org.finos.legend.engine.language.pure.grammar.integration;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.finos.legend.engine.language.pure.grammar.from.ParserErrorListener;
+import org.finos.legend.engine.language.pure.grammar.from.SectionSourceCode;
+import org.finos.legend.engine.language.pure.grammar.from.SourceCodeParserInfo;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.schema.MongoDBSchemaLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.schema.MongoDBSchemaParserGrammar;
-import org.finos.legend.engine.language.pure.grammar.from.extensions.IMongoDBGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
+import org.finos.legend.engine.language.pure.grammar.integration.extensions.IMongoDBGrammarParserExtension;
+import org.finos.legend.engine.language.pure.grammar.integration.util.MongoDBSchemaParseTreeWalker;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
 
 import java.util.Collections;

@@ -78,64 +78,15 @@
         <!-- ENGINE -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-compiler</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-protocol</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-nonrelationalStore-mongodb-protocol</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-grammar</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-nonrelationalStore-mongodb-pure</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-protocol-pure</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-platform-dsl-mapping-java</artifactId>
-        </dependency>
-        <!-- ENGINE -->
 
-        <!-- Pure -->
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.pure</groupId>-->
-<!--            <artifactId>legend-pure-m4</artifactId>-->
-<!--        </dependency>-->
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m3-core</artifactId>
-        </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.pure</groupId>-->
-<!--            <artifactId>legend-pure-m2-dsl-mapping-pure</artifactId>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.pure</groupId>-->
-<!--            <artifactId>legend-pure-m2-dsl-path-pure</artifactId>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.pure</groupId>-->
-<!--            <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.pure</groupId>-->
-<!--            <artifactId>legend-pure-runtime-java-extension-dsl-mapping</artifactId>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.pure</groupId>-->
-<!--            <artifactId>legend-pure-runtime-java-extension-dsl-path</artifactId>-->
-<!--        </dependency>-->
-        <!-- Pure -->
+
+        <!-- ENGINE -->
 
         <!-- ECLIPSE COLLECTIONS -->
         <dependency>
@@ -157,7 +108,6 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
-
         <!-- JACKSON -->
 
         <!-- ANTLR -->
@@ -189,34 +139,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-grammar</artifactId>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-compiler</artifactId>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-external-shared-format-model</artifactId>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-flatdata-model</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-json-model</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- TEST -->

@@ -12,19 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.pure.grammar.to.extensions;
+package org.finos.legend.engine.language.pure.grammar.integration.extensions;
 
 import org.eclipse.collections.api.factory.Lists;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
+import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 
 import java.util.List;
 import java.util.ServiceLoader;
 
-public interface IMongoDBCompilerExtension extends CompilerExtension
+public interface IMongoDBGrammarComposerExtension extends PureGrammarComposerExtension
 {
-    static List<IMongoDBCompilerExtension> getExtensions()
+    static List<IMongoDBGrammarComposerExtension> getExtensions()
     {
-        return Lists.mutable.withAll(ServiceLoader.load(IMongoDBCompilerExtension.class));
+        return Lists.mutable.withAll(ServiceLoader.load(IMongoDBGrammarComposerExtension.class));
     }
-
 }
+
+
