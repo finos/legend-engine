@@ -27,42 +27,58 @@ Profile meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo
 
 Class meta::pure::metamodel::dataSpace::DataSpace extends PackageableElement
 {
-  executionContexts: DataSpaceExecutionContext[1..*];
-  defaultExecutionContext: DataSpaceExecutionContext[1];
-
-  featuredDiagrams: Diagram[*];
   title: String[0..1];
   description: String[0..1];
 
-  elements: PackageableElement[*];
+  executionContexts: DataSpaceExecutionContext[1..*];
+  defaultExecutionContext: DataSpaceExecutionContext[1];
 
+  diagrams: DataSpaceDiagram[*];
+  elements: PackageableElement[*];
   executables: DataSpaceExecutable[*];
 
   supportInfo: DataSpaceSupportInfo[0..1];
 
-  // Test data is a good way to help users understand data better
-  // and could do some trial with the data without any authentication
-  // testData: String[*];
+  << doc.deprecated >> featuredDiagrams: Diagram[*];
 }
 
 Class meta::pure::metamodel::dataSpace::DataSpaceExecutionContext
 {
   name: String[1];
+  title: String[0..1];
   description: String[0..1];
   mapping: meta::pure::mapping::Mapping[1];
   defaultRuntime: meta::pure::runtime::PackageableRuntime[1];
+}
+
+Class meta::pure::metamodel::dataSpace::DataSpaceDiagram
+{
+  title: String[1];
+  description: String[0..1];
+  diagram: Diagram[1];
 }
 
 Class meta::pure::metamodel::dataSpace::DataSpaceExecutable
 {
   title: String[1];
   description: String[0..1];
-  executable: String[1]; // TODO: when executable is ready, we can change this into Executable and potentially do analytics generation in Pure
+  // here we scan for Service and Executable
+  executable: PackageableElement[1];
 }
 
-Class << typemodifiers.abstract >> meta::pure::metamodel::dataSpace::DataSpaceSupportInfo {}
+Class << typemodifiers.abstract >> meta::pure::metamodel::dataSpace::DataSpaceSupportInfo {
+  documentationUrl: String[0..1];
+}
 
 Class meta::pure::metamodel::dataSpace::DataSpaceSupportEmail extends DataSpaceSupportInfo
 {
   address: String[1];
+}
+
+Class meta::pure::metamodel::dataSpace::DataSpaceSupportCombinedInfo extends DataSpaceSupportInfo
+{
+  emails: String[*];
+  website: String[0..1];
+  faqUrl: String[0..1];
+  supportUrl: String[0..1];
 }

@@ -24,6 +24,7 @@ import org.finos.legend.engine.generation.analytics.model.DataSpaceAnalysisResul
 import org.finos.legend.engine.generation.analytics.model.DataSpaceAssociationDocumentationEntry;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceBasicDocumentationEntry;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceClassDocumentationEntry;
+import org.finos.legend.engine.generation.analytics.model.DataSpaceDiagramAnalysisResult;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceEnumerationDocumentationEntry;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceExecutableAnalysisResult;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceExecutionContextAnalysisResult;
@@ -62,7 +63,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Lambda
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.ServiceLoader;
 
@@ -123,6 +123,7 @@ public class DataSpaceAnalyticsHelper
             Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceExecutionContextAnalysisResult executionContextAnalysisResult = analysisResult._executionContexts().detect(context -> context._name().equals(executionContext._name()));
             DataSpaceExecutionContextAnalysisResult excResult = new DataSpaceExecutionContextAnalysisResult();
             excResult.name = executionContext._name();
+            excResult.title = executionContext._title();
             excResult.description = executionContext._description();
             excResult.mapping = HelperModelBuilder.getElementFullPath(executionContext._mapping(), pureModel.getExecutionSupport());
             excResult.defaultRuntime = HelperModelBuilder.getElementFullPath(executionContext._defaultRuntime(), pureModel.getExecutionSupport());
@@ -140,7 +141,15 @@ public class DataSpaceAnalyticsHelper
         result.defaultExecutionContext = dataSpace._defaultExecutionContext()._name();
 
         // diagrams
-        result.featuredDiagrams = dataSpace._featuredDiagrams() != null ? dataSpace._featuredDiagrams().toList().collect(diagram -> HelperModelBuilder.getElementFullPath(diagram, pureModel.getExecutionSupport())) : Lists.mutable.empty();
+        result.featuredDiagrams = dataSpace._featuredDiagrams() != null ? dataSpace._featuredDiagrams().collect(diagram -> HelperModelBuilder.getElementFullPath(diagram, pureModel.getExecutionSupport())).toList() : Lists.mutable.empty();
+        result.diagrams = dataSpace._diagrams() != null ? ListIterate.collect(dataSpace._diagrams().toList(), diagram ->
+        {
+            DataSpaceDiagramAnalysisResult diagramAnalysisResult = new DataSpaceDiagramAnalysisResult();
+            diagramAnalysisResult.title = diagram._title();
+            diagramAnalysisResult.description = diagram._description();
+            diagramAnalysisResult.diagram = HelperModelBuilder.getElementFullPath(diagram._diagram(), pureModel.getExecutionSupport());
+            return diagramAnalysisResult;
+        }) : Lists.mutable.empty();
         // NOTE: right now, we only build and do analysis for featured diagrams
         Root_meta_pure_metamodel_diagram_analytics_modelCoverage_DiagramModelCoverageAnalysisResult diagramAnalysisResult = analysisResult._diagramModels();
         PureModelContextData classes = PureModelContextDataGenerator.generatePureModelContextDataFromClasses(diagramAnalysisResult._classes(), clientVersion, pureModel.getExecutionSupport());
@@ -148,8 +157,10 @@ public class DataSpaceAnalyticsHelper
         PureModelContextData _profiles = PureModelContextDataGenerator.generatePureModelContextDataFromProfile((RichIterable<Profile>) diagramAnalysisResult._profiles(), clientVersion, pureModel.getExecutionSupport());
         PureModelContextData associations = PureModelContextDataGenerator.generatePureModelContextDataFromAssociations(diagramAnalysisResult._associations(), clientVersion, pureModel.getExecutionSupport());
         PureModelContextData.Builder builder = PureModelContextData.newBuilder();
-        List<String> featuredDiagramPaths = dataSpace._featuredDiagrams() != null ? dataSpace._featuredDiagrams().collect(diagram -> HelperModelBuilder.getElementFullPath(diagram, pureModel.getExecutionSupport())).toList() : Lists.mutable.empty();
-        pureModelContextData.getElements().stream().filter(el -> featuredDiagramPaths.contains(el.getPath())).forEach(builder::addElement);
+        // add diagrams to model
+        List<String> allDiagramPaths = ListIterate.collect(result.diagrams, diagram -> diagram.diagram);
+        allDiagramPaths.addAll(result.featuredDiagrams);
+        pureModelContextData.getElements().stream().filter(el -> allDiagramPaths.contains(el.getPath())).forEach(builder::addElement);
         result.model = builder.build().combine(classes).combine(enums).combine(_profiles).combine(associations);
 
         // elements
@@ -200,24 +211,13 @@ public class DataSpaceAnalyticsHelper
 
         // executables
         result.executables = Lists.mutable.empty();
-        if (dataSpaceProtocol.executables != null)
+        if (dataSpace._executables() != null)
         {
-            dataSpaceProtocol.executables.forEach((executable) ->
+            dataSpace._executables().forEach((executable) ->
             {
-                PackageableElement executableElement = null;
-                try
+                if (executable._executable() instanceof Root_meta_legend_service_metamodel_Service)
                 {
-                    executableElement = pureModel.getPackageableElement(executable.executable.path, executable.executable.sourceInformation);
-                }
-                catch (Exception e)
-                {
-                    // do nothing - this should be handled by compiler when the work for executable is done
-                }
-
-                // NOTE: until the work on executable completes, we can switch over instead of using service like this
-                if (executableElement instanceof Root_meta_legend_service_metamodel_Service)
-                {
-                    Root_meta_legend_service_metamodel_Service service = (Root_meta_legend_service_metamodel_Service) executableElement;
+                    Root_meta_legend_service_metamodel_Service service = (Root_meta_legend_service_metamodel_Service) executable._executable();
 
                     // NOTE: right now we only support service with single execution for simplicity
                     if (service._execution() instanceof Root_meta_legend_service_metamodel_PureSingleExecution)
@@ -225,8 +225,9 @@ public class DataSpaceAnalyticsHelper
                         Root_meta_legend_service_metamodel_PureSingleExecution execution = ((Root_meta_legend_service_metamodel_PureSingleExecution) service._execution());
 
                         DataSpaceExecutableAnalysisResult executableAnalysisResult = new DataSpaceExecutableAnalysisResult();
-                        executableAnalysisResult.title = executable.title;
-                        executableAnalysisResult.description = executable.description;
+                        executableAnalysisResult.title = executable._title();
+                        executableAnalysisResult.description = executable._description();
+                        executableAnalysisResult.executable = HelperModelBuilder.getElementFullPath(executable._executable(), pureModel.getExecutionSupport());
 
                         executableAnalysisResult.resultType = PlanGenerator.generateExecutionPlanDebug(
                                 (LambdaFunction<?>) execution._func(),
@@ -244,11 +245,16 @@ public class DataSpaceAnalyticsHelper
                         result.executables.add(executableAnalysisResult);
                     }
                 }
+                // TODO: when Executable is ready, we will handle it here
             });
         }
 
         // support
         result.supportInfo = dataSpaceProtocol.supportInfo;
+        if (result.supportInfo != null)
+        {
+            result.supportInfo.sourceInformation = null;
+        }
 
         return result;
     }

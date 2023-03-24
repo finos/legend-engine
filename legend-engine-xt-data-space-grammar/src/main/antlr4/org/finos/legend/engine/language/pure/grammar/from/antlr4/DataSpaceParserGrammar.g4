@@ -19,18 +19,26 @@ identifier:                         VALID_STRING | STRING
                                     | DATA_SPACE_DEFAULT_EXECUTION_CONTEXT
                                     | DATA_SPACE_MAPPING
                                     | DATA_SPACE_DEFAULT_RUNTIME
-                                    | DATA_SPACE_FEATURED_DIAGRAMS
+                                    | DATA_SPACE_DIAGRAMS
+                                    | DATA_SPACE_DIAGRAM
                                     | DATA_SPACE_ELEMENTS
                                     | DATA_SPACE_EXECUTABLES
                                     | DATA_SPACE_EXECUTABLE
                                     | DATA_SPACE_SUPPORT_INFO
+                                    | DATA_SPACE_SUPPORT_DOC_URL
                                     | DATA_SPACE_SUPPORT_EMAIL
                                     | DATA_SPACE_SUPPORT_EMAIL_ADDRESS
+                                    | DATA_SPACE_SUPPORT_COMBINED_INFO
+                                    | DATA_SPACE_SUPPORT_EMAILS
+                                    | DATA_SPACE_SUPPORT_WEBSITE
+                                    | DATA_SPACE_SUPPORT_FAQ_URL
+                                    | DATA_SPACE_SUPPORT_SUPPORT_URL
 
                                     // deprecated
                                     | DATA_SPACE_GROUP_ID
                                     | DATA_SPACE_ARTIFACT_ID
                                     | DATA_SPACE_VERSION_ID
+                                    | DATA_SPACE_FEATURED_DIAGRAMS
 ;
 
 // -------------------------------------- DEFINITION --------------------------------------
@@ -45,7 +53,7 @@ dataSpaceElement:                   DATA_SPACE stereotypes? taggedValues? qualif
                                                 | defaultExecutionContext
                                                 | title
                                                 | description
-                                                | featuredDiagrams
+                                                | diagrams
                                                 | elements
                                                 | executables
                                                 | supportInfo
@@ -54,6 +62,7 @@ dataSpaceElement:                   DATA_SPACE stereotypes? taggedValues? qualif
                                                 | groupId
                                                 | artifactId
                                                 | versionId
+                                                | featuredDiagrams
                                             )*
                                         BRACE_CLOSE
 ;
@@ -76,6 +85,7 @@ executionContexts:                  DATA_SPACE_EXECUTION_CONTEXTS COLON BRACKET_
 executionContext:                   BRACE_OPEN
                                         (
                                             executionContextName
+                                            | executionContextTitle
                                             | executionContextDescription
                                             | executionContextMapping
                                             | executionContextDefaultRuntime
@@ -83,6 +93,8 @@ executionContext:                   BRACE_OPEN
                                     BRACE_CLOSE
 ;
 executionContextName:               DATA_SPACE__NAME COLON STRING SEMI_COLON
+;
+executionContextTitle:              DATA_SPACE__TITLE COLON STRING SEMI_COLON
 ;
 executionContextDescription:        DATA_SPACE__DESCRIPTION COLON STRING SEMI_COLON
 ;
@@ -93,8 +105,23 @@ executionContextDefaultRuntime:     DATA_SPACE_DEFAULT_RUNTIME COLON qualifiedNa
 defaultExecutionContext:            DATA_SPACE_DEFAULT_EXECUTION_CONTEXT COLON STRING SEMI_COLON
 ;
 
-featuredDiagrams:                   DATA_SPACE_FEATURED_DIAGRAMS COLON BRACKET_OPEN ( qualifiedName (COMMA qualifiedName)* )? BRACKET_CLOSE SEMI_COLON
+diagrams:                           DATA_SPACE_DIAGRAMS COLON BRACKET_OPEN ( diagram (COMMA diagram)* )? BRACKET_CLOSE SEMI_COLON
 ;
+diagram:                            BRACE_OPEN
+                                        (
+                                            diagramTitle
+                                            | diagramDescription
+                                            | diagramPath
+                                        )*
+                                    BRACE_CLOSE
+;
+diagramTitle:                       DATA_SPACE__TITLE COLON STRING SEMI_COLON
+;
+diagramDescription:                 DATA_SPACE__DESCRIPTION COLON STRING SEMI_COLON
+;
+diagramPath:                        DATA_SPACE_DIAGRAM COLON qualifiedName SEMI_COLON
+;
+
 
 elements:                           DATA_SPACE_ELEMENTS COLON BRACKET_OPEN ( qualifiedName (COMMA qualifiedName)* )? BRACKET_CLOSE SEMI_COLON
 ;
@@ -116,14 +143,47 @@ executableDescription:              DATA_SPACE__DESCRIPTION COLON STRING SEMI_CO
 executablePath:                     DATA_SPACE_EXECUTABLE COLON qualifiedName SEMI_COLON
 ;
 
+// NOTE: we would need to potentially come up with extension mechanism later
+// if we are to support more types of support info
 supportInfo:                        DATA_SPACE_SUPPORT_INFO COLON
-                                        DATA_SPACE_SUPPORT_EMAIL BRACE_OPEN
-                                           (
-                                               supportEmail
-                                           )*
-                                        BRACE_CLOSE SEMI_COLON
+                                        (
+                                            supportEmail
+                                            | supportCombinedInfo
+                                        )
+                                    SEMI_COLON
 ;
-supportEmail:                       DATA_SPACE_SUPPORT_EMAIL_ADDRESS COLON STRING SEMI_COLON
+
+supportDocumentationUrl:            DATA_SPACE_SUPPORT_DOC_URL COLON STRING SEMI_COLON
+;
+supportEmail:                       DATA_SPACE_SUPPORT_EMAIL
+                                        BRACE_OPEN
+                                            (
+                                                supportDocumentationUrl
+                                                | supportEmailAddress
+                                            )*
+                                        BRACE_CLOSE
+;
+supportEmailAddress:                DATA_SPACE_SUPPORT_EMAIL_ADDRESS COLON STRING SEMI_COLON
+;
+
+supportCombinedInfo:                DATA_SPACE_SUPPORT_COMBINED_INFO
+                                        BRACE_OPEN
+                                            (
+                                                supportDocumentationUrl
+                                                | combinedInfoEmails
+                                                | combinedInfoWebsite
+                                                | combinedInfoFaqUrl
+                                                | combinedInfoSupportUrl
+                                            )*
+                                        BRACE_CLOSE
+;
+combinedInfoEmails:                 DATA_SPACE_SUPPORT_EMAILS COLON BRACKET_OPEN ( STRING (COMMA STRING)* )? BRACKET_CLOSE SEMI_COLON
+;
+combinedInfoWebsite:                DATA_SPACE_SUPPORT_WEBSITE COLON STRING SEMI_COLON
+;
+combinedInfoFaqUrl:                 DATA_SPACE_SUPPORT_FAQ_URL COLON STRING SEMI_COLON
+;
+combinedInfoSupportUrl:             DATA_SPACE_SUPPORT_SUPPORT_URL COLON STRING SEMI_COLON
 ;
 
 
@@ -134,4 +194,7 @@ groupId:                            DATA_SPACE_GROUP_ID COLON STRING SEMI_COLON
 artifactId:                         DATA_SPACE_ARTIFACT_ID COLON STRING SEMI_COLON
 ;
 versionId:                          DATA_SPACE_VERSION_ID COLON STRING SEMI_COLON
+;
+
+featuredDiagrams:                   DATA_SPACE_FEATURED_DIAGRAMS COLON BRACKET_OPEN ( qualifiedName (COMMA qualifiedName)* )? BRACKET_CLOSE SEMI_COLON
 ;
