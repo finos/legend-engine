@@ -61,9 +61,47 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
    );
 }
 
+function meta::external::store::mongodb::functions::pureToDatabaseCommand::processSimpleFunctionExpression(functionExpression: FunctionExpression[1], index: Integer[1]): ValueSpecification[*]
+{
+  $functionExpression.parametersValues->at($index)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).parametersValues;
+}
+
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::processEqual(functionExpression: FunctionExpression[1], databaseCommand: DatabaseCommand[1], mapping: Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]): EqOperatorExpression[1]
 {
-  let fieldPath = getFieldPathForPropertyNameAndMapping($functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name->toOne(), $mapping);
+  //println('$functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value');
+  //println($functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).parametersValues, 8);
+
+  let parameterValues = processSimpleFunctionExpression($functionExpression, 0);
+  let firstParameterValue = $parameterValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value;
+
+  let path = if($firstParameterValue->instanceOf(VariableExpression),
+    | 
+      let root = $functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name->toOne();,
+    | 
+      let root = $functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name->toOne();
+      let embedded = $functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).parametersValues->at(1)->cast(@StoreMappingRoutedValueSpecification).value->cast(@FunctionRoutedValueSpecification).originalFunction->cast(@LambdaFunction<Any>).expressionSequence->cast(@SimpleFunctionExpression).func.name->toOne();
+      $root + '.' + $embedded;
+  );
+
+  let fieldPath = getFieldPathForPropertyNameAndMapping($path, $mapping);
+
+  /*
+  println('param values?');
+  println($functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value); // the value here is a variableExpression, on the nested is a simpleFunctionExpression
+  
+  println('the root element is');
+  println($functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name->toOne());
+
+  println('the root element when embedded is used is');
+  println($functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name->toOne());
+
+  println('the embedded element is');
+  println($functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).parametersValues->at(1)->cast(@StoreMappingRoutedValueSpecification).value->cast(@FunctionRoutedValueSpecification).originalFunction->cast(@LambdaFunction<Any>).expressionSequence->cast(@SimpleFunctionExpression).func.name->toOne());
+  */
+
+  //let fieldPath = getFieldPathForPropertyNameAndMapping($functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name->toOne(), $mapping);
+  //println('fieldPath');
+  //println($functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value);
   let leftSide = ^FieldPathExpression(fieldPath=$fieldPath);
   let rightSide = processInstanceValue($functionExpression.parametersValues->at(1)->cast(@InstanceValue), $databaseCommand, $mapping, $inScopeVars, $debug)->cast(@LiteralValue);
   ^EqOperatorExpression(expressions=[$leftSide, $rightSide]);
@@ -77,8 +115,20 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
 
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::getFieldPathForPropertyNameAndMapping(propertyName: String[1], mapping: Mapping[1]): String[1]
 {
-  let domainClassProperty = $mapping.classMappings->cast(@MongoDBSetImplementation).class.properties->filter(x | $x.name == $propertyName).name->toOne();
-  '$' + $domainClassProperty;
+  /*
+  println('$propertyName');
+  println($propertyName);
+  let domainClassProperty = $mapping.classMappings->map(x | $x->match([
+      m: MongoDBSetImplementation[1]          | $m.class.properties->filter(x | $x.name == $propertyName).name->toOne(),
+      e: EmbeddedMongoDBSetImplementation[1]  | println($e); 'test';
+    ])
+  );
+
+  println('domainClassProperty');
+  println($domainClassProperty);
+  '$' + $domainClassProperty->toOne();
+  */
+  '$' + $propertyName;
 }
 
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::processInstanceValue(i: InstanceValue[1], databaseCommand: DatabaseCommand[1], mapping: Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]): MongoDBOperationElement[1]
@@ -89,6 +139,11 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
       let fe = $i.values->cast(@LambdaFunction<Any>).expressionSequence->cast(@SimpleFunctionExpression);
       processFunctionExpression($fe->toOne(), $databaseCommand, $mapping, $inScopeVars, $debug);
   ]);
+}
+
+function meta::external::store::mongodb::functions::pureToDatabaseCommand::processSimpleFunctionExpression(sfe: SimpleFunctionExpression[1], databaseCommand: DatabaseCommand[1], mapping: Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]): MongoDBOperationElement[1]
+{
+  $sfe.parametersValues->at(0)->processValueSpecification($databaseCommand, $mapping, $inScopeVars, $debug);
 }
 
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::processValueSpecification(vs:ValueSpecification[1], databaseCommand:DatabaseCommand[1], mapping: Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]): MongoDBOperationElement[1]
@@ -188,6 +243,7 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::getSu
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_, second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processAnd_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__AndOperatorExpression_1_),
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::or_Boolean_1__Boolean_1__Boolean_1_, second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processOr_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__OrOperatorExpression_1_),
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_, second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processNoOp_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__MongoDBOperationElement_1_),
-      ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::collection::map_T_MANY__Function_1__V_MANY_, second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processNoOp_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__MongoDBOperationElement_1_)
+      ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::collection::map_T_MANY__Function_1__V_MANY_, second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processNoOp_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__MongoDBOperationElement_1_),
+      ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::collection::map_T_m__Function_1__V_m_, second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processNoOp_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__MongoDBOperationElement_1_)
    ])
 }

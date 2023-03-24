@@ -49,7 +49,8 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
           
             filterCodeGenerator = {set: InstanceSetImplementation[1], src: Code[1], withoutFilter: Code[1..*], context: GenerationContext[1], debug:DebugContext[1] |
                [
-                  rsi: MongoDBSetImplementation[1]  | $withoutFilter
+                  mdsi: MongoDBSetImplementation[1]  | $withoutFilter,
+                  emsi: EmbeddedMongoDBSetImplementation[1]  | $withoutFilter
                ]
             }
             
@@ -75,11 +76,33 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
                                                                                           multiplicity = $spm.property.multiplicity,
                                                                                           parametersValues = ^VariableExpression(genericType=^GenericType(rawType = $spm.property.owner->cast(@meta::pure::metamodel::type::Class<Any>)), multiplicity = PureOne, name = 'src'),
                                                                                           propertyName = ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = $spm.property.name));
+                                                      ^$dummyLambda(classifierGenericType = $gen, expressionSequence = $exp);},
+                {epm : EmbeddedMongoDBSetImplementation[1] | let dummyLambda = {|'ok'};
+                                                      let gen = ^GenericType
+                                                                  (
+                                                                     rawType = LambdaFunction,
+                                                                     typeArguments = ^GenericType
+                                                                                       (
+                                                                                          rawType = ^meta::pure::metamodel::type::FunctionType
+                                                                                                   (
+                                                                                                      parameters = [],
+                                                                                                      returnType = $epm.property->functionReturnType(),
+                                                                                                      returnMultiplicity= $epm.property->functionReturnMultiplicity()
+                                                                                                   )
+                                                                                       )
+                                                                  );
+                                                      let exp = ^SimpleFunctionExpression(func = $epm.property,
+                                                                                          genericType = $epm.property.genericType,
+                                                                                          importGroup = system.children->at(0)->cast(@Package).children->at(0)->cast(@ImportGroup),
+                                                                                          multiplicity = $epm.property.multiplicity,
+                                                                                          parametersValues = ^VariableExpression(genericType=^GenericType(rawType = $epm.property.owner->cast(@meta::pure::metamodel::type::Class<Any>)), multiplicity = PureOne, name = 'src'),
+                                                                                          propertyName = ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = $epm.property.name));
                                                       ^$dummyLambda(classifierGenericType = $gen, expressionSequence = $exp);}
             ],
 
             valueTransformerExtractors = [
-               spm : MongoDBPropertyMapping[1]           | []
+               spm : MongoDBPropertyMapping[1]           | [],
+               epm : EmbeddedMongoDBSetImplementation[1] | []
             ]
             
          )

@@ -38,10 +38,16 @@ Class meta::external::store::mongodb::metamodel::mapping::MongoDBClassMapping
     mainCollection: Collection[1];
 }
 
+Class meta::external::store::mongodb::metamodel::mapping::EmbeddedMongoDBSetImplementation extends EmbeddedSetImplementation
+{
+  // Store comes from PropertyMapping
+    mainCollection : Collection[1];
+    binding: Binding[1];
+}
 
 Class meta::external::store::mongodb::metamodel::mapping::MongoDBPropertyMapping extends meta::pure::mapping::PropertyMapping
 {
-    field: meta::external::store::mongodb::metamodel::mapping::Field[1];   // exrpession or a path to a field ;   also need a collection name....
+    field: meta::external::store::mongodb::metamodel::mapping::Field[0..1];   // exrpession or a path to a field ;   also need a collection name....
 }
 
 Class meta::external::store::mongodb::metamodel::mapping::Field
@@ -61,6 +67,10 @@ Class meta::external::store::mongodb::metamodel::pure::MongoDBSetImplementation 
     // Store comes from PropertyMapping
     mainCollection : Collection[1];
     binding: Binding[1];
+
+    getStore() {
+      $this.mainCollection.owner->toOne()
+    }: MongoDatabase[1];
 }
 
 
