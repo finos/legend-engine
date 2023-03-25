@@ -59,7 +59,7 @@
       "host": "127.0.0.1",
       "port": 8080
     },
-    "alloy" : {
+    "alloy": {
       "host": "127.0.0.1",
       "port": 6200,
       "prefix": "/depot/api"
@@ -80,5 +80,11 @@
   },
   "errorhandlingconfiguration": {
     "enabled": true
-  }
+  },
+  "vaults": [
+    {
+      "_type": "property",
+      "location": "legend-engine-server/src/test/resources/org/finos/legend/engine/server/test/query.properties"
+    }
+  ]
 }

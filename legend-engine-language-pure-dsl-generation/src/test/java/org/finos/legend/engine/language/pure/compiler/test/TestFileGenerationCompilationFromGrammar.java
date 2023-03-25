@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.language.pure.compiler.test;
 
+import org.junit.Test;
+
 public class TestFileGenerationCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
 {
     @Override
@@ -34,4 +36,28 @@ public class TestFileGenerationCompilationFromGrammar extends TestCompilationFro
     {
         return "COMPILATION error at [5:1-8:1]: Duplicated element 'anything::somethingelse'";
     }
+
+    @Test
+    public void testFaultySchemaGenerationCompilation()
+    {
+        test(
+            "###FileGeneration\n" +
+            "SchemaGeneration generation::MySchemaGeneration\n" +
+            "{\n" +
+             "format: 'JSON';\n" +
+            " modelIncludes: [meta::MyClass];\n" +
+            "}\n", "COMPILATION error at [2:1-6:1]: Can't find the packageable element 'meta::MyClass'");
+
+        test(
+            "Class model::MyClass {}\n"
+                + "###FileGeneration\n" +
+                "SchemaGeneration generation::MySchemaGeneration\n" +
+                "{\n" +
+                "format: 'JSON';\n" +
+                " modelIncludes: [model::MyClass];\n" +
+                " modelExcludes: [model::MyClassA];\n" +
+                "}\n", "COMPILATION error at [3:1-8:1]: Can't find the packageable element 'model::MyClassA'");
+    }
+
+
 }

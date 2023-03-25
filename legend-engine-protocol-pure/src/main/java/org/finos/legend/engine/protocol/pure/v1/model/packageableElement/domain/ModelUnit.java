@@ -16,9 +16,11 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain
 
 import java.util.ArrayList;
 import java.util.List;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
 public class ModelUnit
 {
     public List<String> packageableElementIncludes = new ArrayList<>();
     public List<String> packageableElementExcludes = new ArrayList<>();
+    public SourceInformation sourceInformation;
 }

@@ -40,7 +40,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ModelUnit;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.ConfigurationProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.schemaGeneration.SchemaGenerationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -107,6 +106,7 @@ public class FileGenerationParseTreeWalker
         FileGenerationParserGrammar.ModelIncludesContext modelIncludesContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.modelIncludes(), "modelIncludes", sourceInformation);
         FileGenerationParserGrammar.ModelExcludesContext modelExcludesContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.modelExcludes(), "modelExcludes", sourceInformation);
         ModelUnit modelUnit = new ModelUnit();
+        modelUnit.sourceInformation = walkerSourceInformation.getSourceInformation(modelExcludesContext);
         if (modelIncludesContext != null)
         {
             modelUnit.packageableElementIncludes = modelIncludesContext.qualifiedName().stream().map(this::processQualifiedName).collect(Collectors.toList());
