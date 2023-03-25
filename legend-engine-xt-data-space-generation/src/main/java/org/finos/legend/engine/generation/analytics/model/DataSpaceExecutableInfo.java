@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2022 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,13 +14,13 @@
 
 package org.finos.legend.engine.generation.analytics.model;
 
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.ResultType;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-public class DataSpaceExecutableAnalysisResult
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = DataSpaceServiceExecutableInfo.class, name = "service"),
+})
+public abstract class DataSpaceExecutableInfo
 {
-    public String title;
-    public String description;
-    public String executable;
-    public DataSpaceExecutableInfo info;
-    public ResultType resultType;
 }
