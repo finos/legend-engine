@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-persistence-component</artifactId>
-        <version>4.4.5</version>
+        <version>4.4.6-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -84,8 +84,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-  <scm>
-    <tag>legend-engine-4.4.5</tag>
-  </scm>
 </project>
