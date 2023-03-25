@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-elasticsearch</artifactId>
-        <version>4.4.5-SNAPSHOT</version>
+        <version>4.4.5</version>
     </parent>
 
     <artifactId>legend-engine-xt-elasticsearch-protocol-utils</artifactId>
@@ -43,4 +43,8 @@
 
     </dependencies>
 
+
+  <scm>
+    <tag>legend-engine-4.4.5</tag>
+  </scm>
 </project>
