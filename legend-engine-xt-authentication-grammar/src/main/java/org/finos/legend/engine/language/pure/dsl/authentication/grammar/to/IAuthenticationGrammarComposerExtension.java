@@ -17,8 +17,8 @@ package org.finos.legend.engine.language.pure.dsl.authentication.grammar.to;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.BiFunction;
 import java.util.stream.Stream;
+import org.eclipse.collections.api.block.function.Function3;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
@@ -34,12 +34,12 @@ public interface IAuthenticationGrammarComposerExtension extends PureGrammarComp
                 .map(IAuthenticationGrammarComposerExtension.class::cast);
     }
 
-    default List<BiFunction<AuthenticationSpecification, Integer, String>> getExtraAuthenticationSpecificationComposers()
+    default List<Function3<AuthenticationSpecification, Integer, PureGrammarComposerContext, String>> getExtraAuthenticationSpecificationComposers()
     {
         return Collections.emptyList();
     }
 
-    default List<BiFunction<CredentialVaultSecret, Integer, String>> getExtraCredentialVaultSecretComposers()
+    default List<Function3<CredentialVaultSecret, Integer, PureGrammarComposerContext, String>> getExtraCredentialVaultSecretComposers()
     {
         return Collections.emptyList();
     }
@@ -49,7 +49,7 @@ public interface IAuthenticationGrammarComposerExtension extends PureGrammarComp
         return IAuthenticationGrammarComposerExtension.getExtensions(context)
                 .map(IAuthenticationGrammarComposerExtension::getExtraAuthenticationSpecificationComposers)
                 .flatMap(List::stream)
-                .map(x -> x.apply(authenticationSpecification, indentLevel))
+                .map(x -> x.value(authenticationSpecification, indentLevel, context))
                 .filter(Objects::nonNull)
                 .findAny()
                 .orElseThrow(() -> new EngineException("No renderer found for " + authenticationSpecification.getClass()));
