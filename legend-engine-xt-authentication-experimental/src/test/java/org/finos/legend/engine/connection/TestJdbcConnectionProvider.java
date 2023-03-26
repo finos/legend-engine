@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.connection;
 
+import java.sql.Connection;
+import java.util.Properties;
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
 import org.finos.legend.authentication.credentialprovider.impl.UserPasswordCredentialProvider;
 import org.finos.legend.authentication.intermediationrule.IntermediationRuleProvider;
@@ -28,14 +30,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authent
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.PropertiesFileSecret;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential;
-import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.h2.tools.Server;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.sql.Connection;
-import java.util.Properties;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -46,8 +44,7 @@ public class TestJdbcConnectionProvider
     @Before
     public void setup() throws Exception
     {
-        int port = DynamicPortGenerator.generatePort();
-        this.h2Server = Server.createTcpServer("-ifNotExists", "-tcpPort", String.valueOf(port)).start();
+        this.h2Server = Server.createTcpServer("-ifNotExists", "-tcpPort", "0").start();
     }
 
     @After
