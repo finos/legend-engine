@@ -18,25 +18,25 @@ Class meta::external::store::elasticsearch::v7::metamodel::store::Elasticsearch7
   indexUniqueName: $this.indices->map(i | $i.indexName)->distinct()->size() ==  $this.indices->size()
 ]
 {
-  indices: meta::external::store::elasticsearch::v7::metamodel::store::Elasticsearch7StoreIndexMapping[*];
+  indices: meta::external::store::elasticsearch::v7::metamodel::store::Elasticsearch7StoreIndex[*];
 
   index(name: String[1])
   {
     $this.indices->filter(i | $i.indexName == $name)->head();
-  }: meta::external::store::elasticsearch::v7::metamodel::store::Elasticsearch7StoreIndexMapping[0..1];
+  }: meta::external::store::elasticsearch::v7::metamodel::store::Elasticsearch7StoreIndex[0..1];
 }
 
-Class meta::external::store::elasticsearch::v7::metamodel::store::Elasticsearch7StoreIndexMapping
+Class meta::external::store::elasticsearch::v7::metamodel::store::Elasticsearch7StoreIndex
 [
   hasProperties: $this.properties->size() > 0,
   noDuplicatedProperties: $this.properties.propertyName->removeDuplicates()->size() == $this.properties->size()
 ]
 {
   indexName: String[1];
-  properties: meta::external::store::elasticsearch::v7::metamodel::store::Elasticsearch7StoreIndexMappingProperty[*];
+  properties: meta::external::store::elasticsearch::v7::metamodel::store::Elasticsearch7StoreIndexProperty[*];
 }
 
-Class meta::external::store::elasticsearch::v7::metamodel::store::Elasticsearch7StoreIndexMappingProperty
+Class meta::external::store::elasticsearch::v7::metamodel::store::Elasticsearch7StoreIndexProperty
 {
   propertyName: String[1];
   property: meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property[1];

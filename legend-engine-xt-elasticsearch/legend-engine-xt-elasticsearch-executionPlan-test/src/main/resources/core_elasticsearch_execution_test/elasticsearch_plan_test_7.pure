@@ -84,9 +84,9 @@ function <<access.private>> meta::external::store::elasticsearch::executionTest:
 {
     let mapping = $type->mapping();
 
-    let index = ^Elasticsearch7StoreIndexMapping(
+    let index = ^Elasticsearch7StoreIndex(
         indexName = $name,
-        properties = $mapping.properties->toOne()->keyValues()->map(x | ^Elasticsearch7StoreIndexMappingProperty(propertyName = $x.first, property = $x.second))
+        properties = $mapping.properties->toOne()->keyValues()->map(x | ^Elasticsearch7StoreIndexProperty(propertyName = $x.first, property = $x.second))
     );
 
     let store = ^Elasticsearch7Store(
