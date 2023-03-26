@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.extensions.collection.execution;
 
+import java.util.Collections;
+import java.util.ServiceLoader;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.MutableSet;
@@ -34,39 +36,50 @@ import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStore
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Collections;
-import java.util.ServiceLoader;
-
 public class TestExtensions
 {
     @Test
     public void testExecutionExtensions()
     {
-        MutableList<Class<? extends ExecutionExtension>> expectedExtensions = Lists.mutable.<Class<? extends ExecutionExtension>>empty()
+        assertHasExtensions(expectedExecutionExtensions(), ExecutionExtension.class);
+    }
+
+    protected MutableList<Class<? extends ExecutionExtension>> expectedExecutionExtensions()
+    {
+        return Lists.mutable.<Class<? extends ExecutionExtension>>empty()
                 .with(RelationalExecutionExtension.class)
                 .with(ExternalFormatExecutionExtension.class)
-                .with(ServiceStoreExecutionExtension.class);
-        assertHasExtensions(expectedExtensions, ExecutionExtension.class);
+                .with(ServiceStoreExecutionExtension.class)
+                .with(org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.Elasticsearch7ExecutionExtension.class);
     }
 
     @Test
     public void testExternalFormatRuntimeExtensions()
     {
-        MutableList<Class<? extends ExternalFormatRuntimeExtension>> expectedExtensions = Lists.mutable.<Class<? extends ExternalFormatRuntimeExtension>>empty()
+        assertHasExtensions(expectedExternalFormatRuntimeExtensions(), ExternalFormatRuntimeExtension.class);
+    }
+
+    protected MutableList<Class<? extends ExternalFormatRuntimeExtension>> expectedExternalFormatRuntimeExtensions()
+    {
+        return Lists.mutable.<Class<? extends ExternalFormatRuntimeExtension>>empty()
                 .with(FlatDataRuntimeExtension.class)
                 .with(JsonSchemaRuntimeExtension.class)
                 .with(XsdRuntimeExtension.class);
-        assertHasExtensions(expectedExtensions, ExternalFormatRuntimeExtension.class);
     }
 
     @Test
     public void testStoreExecutorBuilderExtensions()
     {
-        MutableList<Class<? extends StoreExecutorBuilder>> expectedExtensions = Lists.mutable.<Class<? extends StoreExecutorBuilder>>empty()
+        assertHasExtensions(expectedStoreExecutorBuilderExtensions(), StoreExecutorBuilder.class);
+    }
+
+    protected MutableList<Class<? extends StoreExecutorBuilder>> expectedStoreExecutorBuilderExtensions()
+    {
+        return Lists.mutable.<Class<? extends StoreExecutorBuilder>>empty()
                 .with(InMemoryStoreExecutorBuilder.class)
                 .with(RelationalStoreExecutorBuilder.class)
-                .with(ServiceStoreExecutorBuilder.class);
-        assertHasExtensions(expectedExtensions, StoreExecutorBuilder.class);
+                .with(ServiceStoreExecutorBuilder.class)
+                .with(org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.plugin.ElasticsearchV7StoreExecutorBuilder.class);
     }
 
     @Test
