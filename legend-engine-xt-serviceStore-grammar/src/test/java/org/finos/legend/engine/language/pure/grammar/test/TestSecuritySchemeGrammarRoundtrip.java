@@ -16,7 +16,7 @@ package org.finos.legend.engine.language.pure.grammar.test;
 
 import org.junit.Test;
 
-public class TestServiceStoreAuthGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
+public class TestSecuritySchemeGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
 
     @Test

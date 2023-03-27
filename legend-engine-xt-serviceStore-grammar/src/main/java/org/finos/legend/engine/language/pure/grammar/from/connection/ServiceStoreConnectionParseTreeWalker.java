@@ -71,7 +71,7 @@ public class ServiceStoreConnectionParseTreeWalker
         }
         else
         {
-            connectionValue.authenticationSpecifications = new HashMap<>();
+            connectionValue.authenticationSpecifications = new LinkedHashMap<>();
         }
     }
 

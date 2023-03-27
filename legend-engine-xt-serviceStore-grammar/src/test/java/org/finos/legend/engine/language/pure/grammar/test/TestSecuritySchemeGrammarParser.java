@@ -21,7 +21,7 @@ import org.junit.Test;
 
 import java.util.List;
 
-public class TestServiceStoreAuthGrammarParser extends TestGrammarParser.TestGrammarParserTestSuite
+public class TestSecuritySchemeGrammarParser extends TestGrammarParser.TestGrammarParserTestSuite
 {
 
     @Override
@@ -133,6 +133,29 @@ public class TestServiceStoreAuthGrammarParser extends TestGrammarParser.TestGra
                 "   };\n" +
                 ")\n" +
                 "\n", "PARSER error at [2:1-16:1]: Security schemes should have unique ids. Multiple schemes found with ids - [api]");
+    }
+
+    @Test
+    public void testMultipleSecuritySchemes()
+    {
+        test("###ServiceStore\n" +
+                "ServiceStore meta::external::store::service::showcase::store::TradeProductServiceStore\n" +
+                "(\n" +
+                "   description : 'Showcase Service Store';\n" +
+                "   securitySchemes : " +
+                "   {\n" +
+                "       http : Http\n" +
+                "       {\n" +
+                "           scheme : 'basic';\n" +
+                "       },\n" +
+                "       api : ApiKey\n" +
+                "       {\n" +
+                "           location : 'cookie';\n" +
+                "           keyName : 'key2';\n" +
+                "       }" +
+                "   };\n" +
+                ")\n" +
+                "\n");
     }
 
 }

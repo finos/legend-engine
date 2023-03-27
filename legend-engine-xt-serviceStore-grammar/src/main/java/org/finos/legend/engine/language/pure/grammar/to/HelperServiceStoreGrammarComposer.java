@@ -50,6 +50,7 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.language.pure.grammar.from.ServiceStoreParseTreeWalker.SERVICE_MAPPING_PATH_PREFIX;
@@ -240,10 +241,10 @@ public class HelperServiceStoreGrammarComposer
 
     private static String renderAuthenticationSpecification(String id, AuthenticationSpecification authenticationSpec, int baseIndentation)
     {
-        List<Function2<AuthenticationSpecification, Integer, String>> processors = ListIterate.flatCollect(IAuthenticationGrammarComposerExtension.getExtensions(), ext -> ext.getExtraAuthenticationSpecificationComposers());
+        List<BiFunction<AuthenticationSpecification, Integer, String>> processors = ListIterate.flatCollect(IAuthenticationGrammarComposerExtension.getExtensions(), ext -> ext.getExtraAuthenticationSpecificationComposers());
 
         return getTabString(1) + id + " : "  +
-                ListIterate.collect(processors, processor -> processor.value(authenticationSpec, baseIndentation))
+                ListIterate.collect(processors, processor -> processor.apply(authenticationSpec, baseIndentation))
                 .select(Objects::nonNull)
                 .getFirstOptional()
                 .orElseThrow(() -> new EngineException("Unsupported authenticationSpec corresponding to securityScheme - " + id, authenticationSpec.sourceInformation, EngineErrorType.PARSER));
