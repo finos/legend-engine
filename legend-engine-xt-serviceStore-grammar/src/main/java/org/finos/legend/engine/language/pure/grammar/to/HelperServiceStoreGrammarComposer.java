@@ -78,12 +78,12 @@ public class HelperServiceStoreGrammarComposer
 
     public static void renderSecuritySchemesMap(Map<String, SecurityScheme> securitySchemes, StringBuilder builder, int baseIndentation)
     {
-        builder.append(getTabString(baseIndentation)).append("securitySchemes ").append(":\n").append(getTabString(baseIndentation)).append("{\n");
         if (securitySchemes != null && !securitySchemes.isEmpty())
         {
+            builder.append(getTabString(baseIndentation)).append("securitySchemes ").append(":\n").append(getTabString(baseIndentation)).append("{\n");
             builder.append(getTabString(baseIndentation)).append(MapIterate.toListOfPairs(securitySchemes).collect(pair -> renderSecurityScheme(pair.getOne(), pair.getTwo(), baseIndentation + 1)).makeString(",\n" + getTabString(2))).append("\n");
+            builder.append(getTabString(baseIndentation)).append("};\n");
         }
-        builder.append(getTabString()).append("};\n");
     }
 
     public static String renderAuthenticationSpecificationsMap(Map<String,AuthenticationSpecification> authenticationSpecifications, PureGrammarComposerContext context)
@@ -96,7 +96,7 @@ public class HelperServiceStoreGrammarComposer
                             .collect(Collectors.joining(",\n" + getTabString(1))) +
                     "\n" + context.getIndentationString() + getTabString() + "};";
         }
-        return "auth: {\n" + context.getIndentationString() + getTabString() + "};";
+        return null;
     }
 
     private static void renderServiceStoreElements(List<ServiceStoreElement> elements, StringBuilder builder, int baseIndentation)
