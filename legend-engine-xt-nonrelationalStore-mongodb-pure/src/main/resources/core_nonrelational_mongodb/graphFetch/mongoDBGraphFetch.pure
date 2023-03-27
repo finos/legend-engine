@@ -46,16 +46,18 @@ function meta::external::store::mongodb::graphFetch::executionPlan::planRootGrap
   let binding = $mapping.classMappings->at(0)->cast(@MongoDBSetImplementation)->at(0).binding->toOne();
   
   ^InMemoryRootGraphFetchExecutionNode(
-    resultType = $rootTree->resultTypeFromGraphFetchTree(),
+    resultType = ^ClassResultType(type=$rootTree.class->toOne()),
     nodeIndex = 0,
     graphFetchTree = $rootTree,
     checked = $checked,
+    children = $rootTree->generateInMemoryChildGraphNodes($rootTree->nodePathName(), $orderedPaths, $debug),
     executionNodes = [
       ^ExternalFormatInternalizeExecutionNode(
         resultType = ^PartialClassResultType(
                             type = $rootTree.class->toOne(),
                             propertiesWithParameters = $rootTree.subTrees->cast(@PropertyGraphFetchTree)->map(x | $x->map(x | ^PropertyWithParameters(property = $x.property, parameters = $x.parameters)))
                           ),
+                          
         checked = $checked,
         enableConstraints = false,
         tree = $rootTree,

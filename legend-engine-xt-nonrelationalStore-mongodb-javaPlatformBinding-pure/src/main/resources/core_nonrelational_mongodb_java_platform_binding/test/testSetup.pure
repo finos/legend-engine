@@ -44,8 +44,8 @@ Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava
 
 Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Firm
 {
-  legalName : String[1];
-  address: String[1];
+  legalName : String[0..1];
+  address: String[0..1];
 }
 
 Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Address

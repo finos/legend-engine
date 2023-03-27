@@ -14,6 +14,9 @@
 
 package org.finos.legend.engine.plan.execution.stores.mongodb;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
@@ -32,8 +35,6 @@ import org.finos.legend.engine.plan.execution.stores.mongodb.auth.MongoDBStoreCo
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -65,7 +66,8 @@ public class MongoDBExecutor
 
 
             // Loading with no iterator - TODO: Fix this up
-            JSONArray jsonArray = new JSONArray();
+            ObjectMapper mapper = new ObjectMapper();
+            ArrayNode arrayNode = mapper.createArrayNode();
 
             // using Collection and Iterator
             try (MongoCursor<Document> cursor = mongoDatabase.getCollection(bsonCmd.getString("aggregate"))
@@ -74,14 +76,12 @@ public class MongoDBExecutor
             {
                 while (cursor.hasNext())
                 {
-                    JSONObject jsonResult = new JSONObject(cursor.next().toJson());
-                    jsonArray.put(jsonResult);
-                    System.out.println("the mongo results are:");
-                    System.out.println(jsonResult);
+                    JsonNode jsonNode = mapper.readTree(cursor.next().toJson());
+                    arrayNode.add(jsonNode);
                 }
             }
 
-            InputStream inputStream = new ByteArrayInputStream(jsonArray.toString().getBytes());
+            InputStream inputStream = new ByteArrayInputStream(arrayNode.toString().getBytes());
 
             return new InputStreamResult(inputStream);
 
