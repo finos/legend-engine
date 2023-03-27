@@ -24,7 +24,6 @@ package org.finos.legend.engine.postgres.types;
 import com.google.common.collect.ImmutableMap;
 import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
-
 import java.sql.Types;
 import java.util.HashSet;
 import java.util.Locale;

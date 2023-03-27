@@ -1,0 +1,52 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::toString::*;
+import meta::pure::extension::*;
+import meta::external::store::elasticsearch::v7::metamodel::executionPlan::*;
+
+Class meta::external::store::elasticsearch::v7::metamodel::executionPlan::Elasticsearch7RequestExecutionNode extends meta::pure::executionPlan::ExecutionNode
+{
+   connection : meta::external::store::elasticsearch::v7::metamodel::runtime::Elasticsearch7StoreConnection[1];
+   request    : meta::external::store::elasticsearch::v7::metamodel::specification::types::RequestBase[1];
+   metadata   : meta::external::store::elasticsearch::v7::metamodel::executionPlan::RequestResultMetadata[1];
+}
+
+Class meta::external::store::elasticsearch::v7::metamodel::executionPlan::context::Elasticsearch7ExecutionContext extends meta::pure::runtime::ExecutionContext
+{
+
+}
+
+Class <<typemodifiers.abstract>> meta::external::store::elasticsearch::v7::metamodel::executionPlan::RequestResultMetadata
+{   
+   
+}
+
+Class meta::external::store::elasticsearch::v7::metamodel::executionPlan::tds::TDSMetadata extends meta::external::store::elasticsearch::v7::metamodel::executionPlan::RequestResultMetadata
+{   
+   columnResultPaths: meta::external::store::elasticsearch::v7::metamodel::executionPlan::tds::TDSColumnResultPath[1..*];
+}
+
+
+Class meta::external::store::elasticsearch::v7::metamodel::executionPlan::tds::TDSColumnResultPath
+{     
+  index: Integer[1];
+  resultPath: meta::external::store::elasticsearch::v7::metamodel::tds::ResultPath[1];
+}
+
+Class meta::external::store::elasticsearch::v7::metamodel::executionPlan::ElasticsearchV7ExecutionActivity extends meta::pure::mapping::Activity
+{
+  esRequest: String[1];
+  uri: String[1];
+}

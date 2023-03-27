@@ -44,13 +44,13 @@ public class TestAuthenticationGrammarParser_AuthenticationTypes extends TestGra
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
                 "  authentication: UserPassword\n" +
-                "  {\n" +
+                "  #{\n" +
                 "    username: 'alice';\n" +
                 "    password: PropertiesFileSecret\n" +
                 "    {\n" +
                 "      propertyName: 'property1';\n" +
                 "    }\n" +
-                "  }\n" +
+                "  }#\n" +
                 "}\n");
     }
 
@@ -62,14 +62,14 @@ public class TestAuthenticationGrammarParser_AuthenticationTypes extends TestGra
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
                 "  authentication: ApiKey\n" +
-                "  {\n" +
+                "  #{\n" +
                 "    location: 'header';\n" +
                 "    keyName: 'key1';\n" +
                 "    value: PropertiesFileSecret\n" +
                 "    {\n" +
                 "      propertyName: 'property1';\n" +
                 "    }\n" +
-                "  }\n" +
+                "  }#\n" +
                 "}\n");
     }
 
@@ -81,7 +81,7 @@ public class TestAuthenticationGrammarParser_AuthenticationTypes extends TestGra
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
                 "  authentication: EncryptedPrivateKey\n" +
-                "  {\n" +
+                "  #{\n" +
                 "    userName: 'alice';\n" +
                 "    privateKey: PropertiesFileSecret\n" +
                 "    {\n" +
@@ -91,7 +91,7 @@ public class TestAuthenticationGrammarParser_AuthenticationTypes extends TestGra
                 "    {\n" +
                 "      propertyName: 'property1';\n" +
                 "    }\n" +
-                "  }\n" +
+                "  }#\n" +
                 "}\n");
     }
 
@@ -103,7 +103,7 @@ public class TestAuthenticationGrammarParser_AuthenticationTypes extends TestGra
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
                 "  authentication: GCPWIFWithAWSIdP\n" +
-                "  {\n" +
+                "  #{\n" +
                 "    serviceAccountEmail: 'a@b.com';\n" +
                 "    idP: AWSIdP\n" +
                 "    {\n" +
@@ -128,7 +128,7 @@ public class TestAuthenticationGrammarParser_AuthenticationTypes extends TestGra
                 "      providerId: 'provider1';\n" +
                 "      poolId: 'pool1';\n" +
                 "    }\n" +
-                "  }\n" +
+                "  }#\n" +
                 "}\n");
     }
 }

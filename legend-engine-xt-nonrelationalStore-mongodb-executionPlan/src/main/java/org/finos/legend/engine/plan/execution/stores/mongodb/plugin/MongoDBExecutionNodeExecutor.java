@@ -19,7 +19,7 @@ import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
-import org.finos.legend.engine.language.mongodb.schema.grammar.to.MongoDBQueryJsonComposer;
+import org.finos.legend.engine.language.pure.grammar.to.MongoDBQueryJsonComposer;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.stores.StoreType;

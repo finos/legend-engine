@@ -15,15 +15,6 @@
 package org.finos.legend.engine.postgres;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import org.apache.http.client.CookieStore;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.finos.legend.engine.postgres.handler.legend.LegendSessionFactory;
-import org.finos.legend.engine.postgres.handler.legend.LegendTdsClient;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.DriverManager;
@@ -35,7 +26,22 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.TimeZone;
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import org.apache.http.client.CookieStore;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.finos.legend.engine.postgres.auth.AnonymousIdentityProvider;
+import org.finos.legend.engine.postgres.auth.NoPasswordAuthenticationMethod;
+import org.finos.legend.engine.postgres.handler.legend.LegendSessionFactory;
+import org.finos.legend.engine.postgres.handler.legend.LegendTdsClient;
+import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static org.finos.legend.engine.postgres.handler.legend.LegendResultSet.TIMESTAMP_FORMATTER;
@@ -51,11 +57,12 @@ public class PostgresServerTypeMappingTest
     public static void setUpClass() throws Exception
     {
         CookieStore cookieStore = new BasicCookieStore();
-        LegendTdsClient client = new LegendTdsClient("localhost", "" + wireMockRule.port(), "SAMPLE-123", cookieStore);
+        CloseableHttpClient httpClient = (CloseableHttpClient) HttpClientBuilder.getHttpClient(cookieStore);
+        LegendTdsClient client = new LegendTdsClient("http", "localhost", "" + wireMockRule.port(), "SAMPLE-123", new BasicCookieStore());
         LegendSessionFactory legendSessionFactory = new LegendSessionFactory(client);
-        testPostgresServer = new TestPostgresServer(0, legendSessionFactory);
+        testPostgresServer = new TestPostgresServer(0, legendSessionFactory, (user, connectionProperties) -> new NoPasswordAuthenticationMethod(new AnonymousIdentityProvider()));
         testPostgresServer.startUp();
-        wireMockRule.stubFor(post(urlEqualTo("/api/sql/v1/execution/execute/SAMPLE-123"))
+        wireMockRule.stubFor(post(urlEqualTo("/api/sql/v1/execution/executeQueryString/SAMPLE-123"))
                 .willReturn(aResponse()
                         .withBody("{}"))
         );
@@ -141,7 +148,7 @@ public class PostgresServerTypeMappingTest
     {
 
         String message = buildLegendResponseMessage(legendDataType, legendValue);
-        wireMockRule.stubFor(post(urlEqualTo("/api/sql/v1/execution/execute/SAMPLE-123"))
+        wireMockRule.stubFor(post(urlEqualTo("/api/sql/v1/execution/executeQueryString/SAMPLE-123"))
                 .withRequestBody(equalTo("SELECT * FROM service.\"/testData\""))
                 .willReturn(aResponse().withBody(message))
         );

@@ -20,40 +20,15 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import net.javacrumbs.jsonunit.JsonMatchers;
+import org.eclipse.collections.api.factory.Maps;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.search.ResponseBody;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.search.SearchRequestBody;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.indices.create.CreateRequestBody;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.indices.types.IndexSettings;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.CoordsGeoBounds;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.FieldSort;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.FieldValue;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.GeoBounds;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.GeoHashLocation;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.GeoLocation;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.LatLonGeoLocation;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.SortCombinations;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.SortOptions;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.SortOrder;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.Time;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.TopLeftBottomRightGeoBounds;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.TopRightBottomLeftGeoBounds;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.WktGeoBounds;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.Aggregate;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.AggregationContainer;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.MaxAggregate;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.MaxAggregation;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.SamplerAggregate;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.SignificantStringTermsAggregate;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.mapping.IntegerNumberProperty;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.mapping.KeywordProperty;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.mapping.Property;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.mapping.TextProperty;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.mapping.TypeMapping;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.querydsl.DateDecayFunction;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.querydsl.DecayFunction;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.querydsl.DecayPlacement;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.querydsl.GeoDecayFunction;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.querydsl.NumericDecayFunction;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.*;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.*;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.mapping.*;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.querydsl.*;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -82,14 +57,12 @@ public class TestElasticsearchProtocol
     @Test
     public void testDictionariesAsMaps() throws JsonProcessingException
     {
-        DictionaryEntrySingleValue<AggregationContainer> aggregation = new DictionaryEntrySingleValue<>();
-        aggregation.key = "max_price";
-        aggregation.value = new AggregationContainer();
-        aggregation.value.max = new MaxAggregation();
-        aggregation.value.max.field = "price";
+        AggregationContainer value = new AggregationContainer();
+        value.max = new MaxAggregation();
+        value.max.field = "price";
 
         SearchRequestBody searchRequestBody = new SearchRequestBody();
-        searchRequestBody.aggregations = Collections.singletonList(aggregation);
+        searchRequestBody.aggregations = Collections.singletonMap("max_price", value);
 
         String expectedJson =
                 "{\n" +
@@ -105,14 +78,12 @@ public class TestElasticsearchProtocol
     public void testExternallyTaggedVariants() throws JsonProcessingException
     {
         // externally tagged variants are ones with 'type#name' in keys, like aggregation results
-        DictionaryEntrySingleValue<Aggregate> aggEntry = new DictionaryEntrySingleValue<>();
-        aggEntry.key = "max_price";
-        aggEntry.value = new Aggregate();
-        aggEntry.value.max = new MaxAggregate();
-        aggEntry.value.max.value = 200.0;
+        Aggregate value = new Aggregate();
+        value.max = new MaxAggregate();
+        value.max.value = 200.0;
 
         ResponseBody<Object> responseBody = new ResponseBody<>();
-        responseBody.aggregations = Collections.singletonList(aggEntry);
+        responseBody.aggregations = Collections.singletonMap("max_price", value);
 
         String expectedJson =
                 "{\n" +
@@ -134,29 +105,23 @@ public class TestElasticsearchProtocol
     public void testInternallyTaggedVariants() throws JsonProcessingException
     {
         // internally tagged variants are ones with 'type' on the json, like Property
-        DictionaryEntrySingleValue<Property> integerProp = new DictionaryEntrySingleValue<>();
-        integerProp.key = "age";
-        integerProp.value = new Property();
-        integerProp.value.integer = new IntegerNumberProperty();
-        integerProp.value.integer.type = "integer";
+        Property ageValue = new Property();
+        ageValue.integer = new IntegerNumberProperty();
+        ageValue.integer.type = "integer";
 
-        DictionaryEntrySingleValue<Property> keywordProp = new DictionaryEntrySingleValue<>();
-        keywordProp.key = "email";
-        keywordProp.value = new Property();
-        keywordProp.value.keyword = new KeywordProperty();
-        keywordProp.value.keyword.type = "keyword";
+        Property emailValue = new Property();
+        emailValue.keyword = new KeywordProperty();
+        emailValue.keyword.type = "keyword";
 
-        DictionaryEntrySingleValue<Property> textProp = new DictionaryEntrySingleValue<>();
-        textProp.key = "name";
-        textProp.value = new Property();
-        textProp.value.text = new TextProperty();
-        textProp.value.text.type = "text";
+        Property nameValue = new Property();
+        nameValue.text = new TextProperty();
+        nameValue.text.type = "text";
 
         TypeMapping mappings = new TypeMapping();
-        mappings.properties = Arrays.asList(
-                integerProp,
-                keywordProp,
-                textProp
+        mappings.properties = Maps.fixedSize.of(
+                "age", ageValue,
+                "email", emailValue,
+                "name", nameValue
         );
 
         CreateRequestBody createRequest = new CreateRequestBody();
@@ -181,11 +146,10 @@ public class TestElasticsearchProtocol
     {
         SortCombinations postDateSort = new SortCombinations();
         postDateSort.options = new SortOptions();
-        postDateSort.options.__additionalProperty = new DictionaryEntrySingleValue<>();
-        postDateSort.options.__additionalProperty.key = "post_date";
-        postDateSort.options.__additionalProperty.value = new FieldSort();
-        postDateSort.options.__additionalProperty.value.order = SortOrder.asc;
-        postDateSort.options.__additionalProperty.value.format = "strict_date_optional_time_nanos";
+        FieldSort fieldSort = new FieldSort();
+        fieldSort.order = SortOrder.asc;
+        fieldSort.format = "strict_date_optional_time_nanos";
+        postDateSort.options.__additionalProperty.put("post_date", fieldSort);
 
         SearchRequestBody searchRequestBody = new SearchRequestBody();
         searchRequestBody.sort = Collections.singletonList(postDateSort);
@@ -205,16 +169,8 @@ public class TestElasticsearchProtocol
     {
         IndexSettings indexSettings = new IndexSettings();
         indexSettings.analyze_max_token_count = 5L;
-        indexSettings.__additionalProperties = Arrays.asList(
-                new DictionaryEntrySingleValue<>(),
-                new DictionaryEntrySingleValue<>()
-        );
-
-        indexSettings.__additionalProperties.get(0).key = "prop1";
-        indexSettings.__additionalProperties.get(0).value = "value1";
-
-        indexSettings.__additionalProperties.get(1).key = "prop2";
-        indexSettings.__additionalProperties.get(1).value = 1234;
+        indexSettings.__additionalProperties.put("prop1", "value1");
+        indexSettings.__additionalProperties.put("prop2", 1234);
 
         String expectedJson =
                 "{\n" +
@@ -339,29 +295,26 @@ public class TestElasticsearchProtocol
     {
         DecayFunction decayFunction1 = new DecayFunction();
         decayFunction1.date = new DateDecayFunction();
-        decayFunction1.date.__additionalProperty = new DictionaryEntrySingleValue<>();
-        decayFunction1.date.__additionalProperty.key = "field";
-        decayFunction1.date.__additionalProperty.value = new DecayPlacement<>();
-        decayFunction1.date.__additionalProperty.value.origin = "0";
-        decayFunction1.date.__additionalProperty.value.scale = new Time();
-        decayFunction1.date.__additionalProperty.value.scale.offset = 1234L;
+        DecayPlacement<String, Time> decayPlacement1 = new DecayPlacement<>();
+        decayPlacement1.origin = "0";
+        decayPlacement1.scale = new Time();
+        decayPlacement1.scale.offset = 1234L;
+        decayFunction1.date.__additionalProperty.put("field", decayPlacement1);
 
         DecayFunction decayFunction2 = new DecayFunction();
         decayFunction2.numeric = new NumericDecayFunction();
-        decayFunction2.numeric.__additionalProperty = new DictionaryEntrySingleValue<>();
-        decayFunction2.numeric.__additionalProperty.key = "field2";
-        decayFunction2.numeric.__additionalProperty.value = new DecayPlacement<>();
-        decayFunction2.numeric.__additionalProperty.value.origin = 1.2;
-        decayFunction2.numeric.__additionalProperty.value.scale = 1.3;
+        DecayPlacement<Double, Double> decayPlacement2 = new DecayPlacement<>();
+        decayPlacement2.origin = 1.2;
+        decayPlacement2.scale = 1.3;
+        decayFunction2.numeric.__additionalProperty.put("field2", decayPlacement2);
 
         DecayFunction decayFunction3 = new DecayFunction();
         decayFunction3.geo = new GeoDecayFunction();
-        decayFunction3.geo.__additionalProperty = new DictionaryEntrySingleValue<>();
-        decayFunction3.geo.__additionalProperty.key = "field3";
-        decayFunction3.geo.__additionalProperty.value = new DecayPlacement<>();
-        decayFunction3.geo.__additionalProperty.value.origin = new GeoLocation();
-        decayFunction3.geo.__additionalProperty.value.origin.text = "geo-location";
-        decayFunction3.geo.__additionalProperty.value.scale = "scale";
+        DecayPlacement<GeoLocation, String> decayPlacement3 = new DecayPlacement<>();
+        decayPlacement3.origin = new GeoLocation();
+        decayPlacement3.origin.text = "geo-location";
+        decayPlacement3.scale = "scale";
+        decayFunction3.geo.__additionalProperty.put("field3", decayPlacement3);
 
         List<DecayFunction> decayFunctions = Arrays.asList(
                 decayFunction1,
@@ -401,22 +354,19 @@ public class TestElasticsearchProtocol
         ResponseBody<Object> responseBody = new ResponseBody<>();
         responseBody.took = 0L;
         responseBody.timed_out = false;
-        responseBody.aggregations = Collections.singletonList(
-                new DictionaryEntrySingleValue<>()
-        );
 
-        responseBody.aggregations.get(0).key = "sample";
-        responseBody.aggregations.get(0).value = new Aggregate();
-        responseBody.aggregations.get(0).value.sampler = new SamplerAggregate();
-        responseBody.aggregations.get(0).value.sampler.doc_count = 200;
-        responseBody.aggregations.get(0).value.sampler.__additionalProperties = Collections.singletonList(
-                new DictionaryEntrySingleValue<>()
-        );
-        responseBody.aggregations.get(0).value.sampler.__additionalProperties.get(0).key = "keywords";
-        responseBody.aggregations.get(0).value.sampler.__additionalProperties.get(0).value = new Aggregate();
-        responseBody.aggregations.get(0).value.sampler.__additionalProperties.get(0).value.sigsterms = new SignificantStringTermsAggregate();
-        responseBody.aggregations.get(0).value.sampler.__additionalProperties.get(0).value.sigsterms.doc_count = 200L;
-        responseBody.aggregations.get(0).value.sampler.__additionalProperties.get(0).value.sigsterms.bg_count = 650L;
+        Aggregate aggregate = new Aggregate();
+        aggregate.sampler = new SamplerAggregate();
+        aggregate.sampler.doc_count = 200;
+
+        responseBody.aggregations.put("sample", aggregate);
+
+        Aggregate innerAggregate = new Aggregate();
+        innerAggregate.sigsterms = new SignificantStringTermsAggregate();
+        innerAggregate.sigsterms.doc_count = 200L;
+        innerAggregate.sigsterms.bg_count = 650L;
+
+        aggregate.sampler.__additionalProperties.put("keywords", innerAggregate);
 
         String expectedJson =
                 "{\n" +

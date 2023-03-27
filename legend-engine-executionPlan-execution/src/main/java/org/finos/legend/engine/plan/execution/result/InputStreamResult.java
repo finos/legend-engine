@@ -14,29 +14,24 @@
 
 package org.finos.legend.engine.plan.execution.result;
 
-import org.eclipse.collections.api.factory.Lists;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.List;
 import org.finos.legend.engine.plan.execution.result.builder.Builder;
 import org.finos.legend.engine.plan.execution.result.builder.stream.StreamBuilder;
-import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
-import org.finos.legend.engine.plan.execution.result.serialization.Serializer;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.List;
-
-public class InputStreamResult extends StreamingResult
+public class InputStreamResult extends Result
 {
-    private InputStream inputStream;
+    private final InputStream inputStream;
 
     public InputStreamResult(InputStream inputStream)
     {
-        super(Lists.mutable.empty());
-        this.inputStream = inputStream;
+        this(inputStream, Collections.emptyList());
     }
 
     public InputStreamResult(InputStream inputStream, List<ExecutionActivity> activities)
     {
-        super(activities);
+        super("success", activities);
         this.inputStream = inputStream;
     }
 
@@ -52,26 +47,6 @@ public class InputStreamResult extends StreamingResult
 
     @Override
     public <V> V accept(ResultVisitor<V> resultVisitor)
-    {
-        return resultVisitor.visit(this);
-    }
-
-    public void stream(OutputStream outputStream, SerializationFormat format)
-    {
-        throw new UnsupportedOperationException("Streaming InputStreamResult result is not supported. Please raise a issue with dev team");
-    }
-
-    public void stream(OutputStream outputStream, Serializer serializer)
-    {
-        throw new UnsupportedOperationException("Streaming InputStreamResult result is not supported. Please raise a issue with dev team");
-    }
-
-    public String flush(Serializer serializer)
-    {
-        throw new UnsupportedOperationException("Streaming InputStreamResult result is not supported. Please raise a issue with dev team");
-    }
-
-    public Serializer getSerializer(SerializationFormat format)
     {
         throw new UnsupportedOperationException("Streaming InputStreamResult result is not supported. Please raise a issue with dev team");
     }

@@ -12,6 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+Class meta::protocols::generation::java::tests::model::exclude::ToExclude
+{
+
+}
+
+Class meta::protocols::generation::java::tests::model::exclude::a::ToExclude
+{
+
+}
+
+Class meta::protocols::generation::java::tests::model::exclude::b::a::ToExclude
+{
+
+}
+
 Class meta::protocols::generation::java::tests::model::store::Store extends meta::pure::store::Store
 {
   // sample store to test proper protocol inheritance
@@ -123,7 +138,7 @@ Class meta::protocols::generation::java::tests::model::scalar::String extends me
 
 function <<test.Test>> meta::protocols::generation::java::tests::testTranslatorJavaGeneration():Boolean[1]
 {
-  let sources = meta::protocols::generation::java::translation::generateTranslation('meta::protocols::generation::java::tests::model', 'org.finos', [], [])->map(p | $p->meta::external::language::java::metamodel::project::allClasses()->map(cl | meta::external::language::java::serialization::newStringifier($p)->meta::external::language::java::serialization::ofClass($cl->meta::external::language::java::factory::inferImports())))->sort();
+  let sources = meta::protocols::generation::java::translation::generateTranslation('meta::protocols::generation::java::tests::model', 'org.finos', 'meta::protocols::generation::java::tests::model::exclude', [])->map(p | $p->meta::external::language::java::metamodel::project::allClasses()->map(cl | meta::external::language::java::serialization::newStringifier($p)->meta::external::language::java::serialization::ofClass($cl->meta::external::language::java::factory::inferImports())))->sort();
   assertEquals(1, $sources->size());
   assertEquals( 'package org.finos;\n' +
                 '\n' +
@@ -502,7 +517,7 @@ function meta::protocols::generation::java::tests::protocolJavaGenerationExtensi
 
 function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJavaGeneration():Boolean[1]
 {
-  let sources = meta::protocols::generation::java::generateProtocolClasses('meta::protocols::generation::java::tests::model', 'org.finos', [], 'meta::protocols::generation::java::tests::protocolJavaGenerationExtensionForTest__JavaProtocolGenerator_1_')
+  let sources = meta::protocols::generation::java::generateProtocolClasses('meta::protocols::generation::java::tests::model', 'org.finos', 'meta::protocols::generation::java::tests::model::exclude', 'meta::protocols::generation::java::tests::protocolJavaGenerationExtensionForTest__JavaProtocolGenerator_1_')
         ->map(p | $p->meta::external::language::java::metamodel::project::allClasses()->sortBy(c | $c.simpleName)->map(cl | meta::external::language::java::serialization::newStringifier($p)->meta::external::language::java::serialization::ofClass($cl->meta::external::language::java::factory::inferImports())));
 
   assertEquals(22, $sources->size());

@@ -27,6 +27,7 @@ import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.utility.ArrayIterate;
@@ -55,6 +56,7 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
+import org.finos.legend.pure.generated.Root_meta_external_query_sql_Schema;
 import org.finos.legend.pure.generated.Root_meta_external_query_sql_metamodel_Node;
 import org.finos.legend.pure.generated.Root_meta_external_query_sql_transformation_queryToPure_SQLSource;
 import org.finos.legend.pure.generated.Root_meta_external_query_sql_transformation_queryToPure_SQLSource_Impl;
@@ -62,14 +64,13 @@ import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureSi
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
+import org.finos.legend.pure.generated.core_external_format_json_toJSON;
 import org.finos.legend.pure.generated.core_external_query_sql_binding_fromPure_fromPure;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
 
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import javax.security.auth.Subject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -81,6 +82,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import static org.finos.legend.engine.plan.execution.api.result.ResultManager.manageResult;
 import static org.finos.legend.engine.plan.generation.PlanGenerator.transformExecutionPlan;
 
@@ -91,12 +94,14 @@ public class SqlExecute
 {
 
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server - SQL");
+    private static final SQLGrammarParser parser = SQLGrammarParser.newInstance();
     private final ModelManager modelManager;
     private final PlanExecutor planExecutor;
     private final Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions;
     private final MutableList<PlanTransformer> transformers;
     private final MetaDataServerConfiguration metadataServer;
     private final ServiceModeling serviceModeling;
+    private final ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
 
 
     public SqlExecute(ModelManager modelManager, PlanExecutor planExecutor,
@@ -109,13 +114,13 @@ public class SqlExecute
         this.extensions = extensions;
         this.transformers = transformers;
         this.metadataServer = metadataServer;
-        this.serviceModeling = new ServiceModeling(modelManager, deploymentMode,planExecutor);
+        this.serviceModeling = new ServiceModeling(modelManager, deploymentMode, planExecutor);
     }
 
     @POST
     @ApiOperation(value = "Execute a SQL query in the context of a Mapping and a Runtime from a SDLC project")
     @Path("executeQueryString/{projectId}")
-    @Consumes({MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.TEXT_PLAIN})
     public Response executeSql(@Context HttpServletRequest request, @PathParam("projectId") String projectId, String sql, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo) throws Exception
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
@@ -141,7 +146,7 @@ public class SqlExecute
     @POST
     @ApiOperation(value = "Generate plans for a SQL query in the context of a Mapping and a Runtime from a SDLC project")
     @Path("generatePlanQueryString/{projectId}")
-    @Consumes({MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.TEXT_PLAIN})
     public Response generatePlan(@Context HttpServletRequest request, @PathParam("projectId") String projectId, String sql, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo) throws Exception
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
@@ -162,9 +167,32 @@ public class SqlExecute
         return Response.ok().type(MediaType.APPLICATION_JSON_TYPE).entity(singleExecutionPlan).build();
     }
 
+    @POST
+    @ApiOperation(value = "Get schema for a SQL query in the context of a Mapping and a Runtime from a SDLC project")
+    @Path("getSchemaFromQueryString/{projectId}")
+    @Consumes({MediaType.TEXT_PLAIN})
+    public Response getSchema(@Context HttpServletRequest request, @PathParam("projectId") String projectId, String sql, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo) throws Exception
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+
+        String schema = getSchema(request, projectId, sql, profiles);
+        return Response.ok().type(MediaType.APPLICATION_JSON_TYPE).entity(schema).build();
+    }
+
+    @POST
+    @ApiOperation(value = "Get schema for a SQL query in the context of a Mapping and a Runtime from a SDLC project")
+    @Path("getSchemaFromQuery/{projectId}")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response getSchema(@Context HttpServletRequest request, @PathParam("projectId") String projectId, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo) throws Exception
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+
+        String schema = getSchema(request, projectId, query, profiles);
+        return Response.ok().type(MediaType.APPLICATION_JSON_TYPE).entity(schema).build();
+    }
+
     private SingleExecutionPlan generateQueryPlan(HttpServletRequest request, String projectId, String sql, MutableList<CommonProfile> profiles) throws PrivilegedActionException
     {
-        SQLGrammarParser parser = SQLGrammarParser.newInstance();
         Node node = parser.parseStatement(sql);
         return generateQueryPlan(request, projectId, node, profiles);
     }
@@ -176,17 +204,39 @@ public class SqlExecute
         String clientVersion = PureClientVersions.production;
         PureModel pureModel = this.modelManager.loadModel(pureModelContextData, clientVersion, profiles, "");
         Root_meta_external_query_sql_metamodel_Node query = new Translator().translate(node, pureModel);
+        RichIterable<? extends Root_meta_external_query_sql_transformation_queryToPure_SQLSource> sources = getSQLSources(pureModelContextData, pureModel);
 
+        Root_meta_pure_executionPlan_ExecutionPlan plan = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_getPlansFromSQL_SQLSource_MANY__Node_1__Extension_MANY__ExecutionPlan_1_(sources, query, extensions.apply(pureModel), pureModel.getExecutionSupport());
+        return transformExecutionPlan(plan, pureModel, clientVersion, profiles, extensions.apply(pureModel), transformers);
+    }
+
+
+    private String getSchema(HttpServletRequest request, String projectId, String sql, MutableList<CommonProfile> profiles) throws PrivilegedActionException
+    {
+        Node node = parser.parseStatement(sql);
+        return getSchema(request, projectId, node, profiles);
+    }
+
+    private String getSchema(HttpServletRequest request, String projectId, Node node, MutableList<CommonProfile> profiles) throws PrivilegedActionException
+    {
+        PureModelContextData pureModelContextData = loadModelContextData(profiles, request, projectId);
+        String clientVersion = PureClientVersions.production;
+        PureModel pureModel = this.modelManager.loadModel(pureModelContextData, clientVersion, profiles, "");
+        Root_meta_external_query_sql_metamodel_Node query = new Translator().translate(node, pureModel);
+        RichIterable<? extends Root_meta_external_query_sql_transformation_queryToPure_SQLSource> sources = getSQLSources(pureModelContextData, pureModel);
+
+        Root_meta_external_query_sql_Schema schema = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_getSchemaFromSQL_SQLSource_MANY__Node_1__Extension_MANY__Schema_1_(sources, query, extensions.apply(pureModel), pureModel.getExecutionSupport());
+        return serializeToJSON(schema, pureModel);
+    }
+
+    private RichIterable<? extends Root_meta_external_query_sql_transformation_queryToPure_SQLSource> getSQLSources(PureModelContextData pureModelContextData, PureModel pureModel)
+    {
         MutableList<Root_meta_legend_service_metamodel_Service> services = LazyIterate.select(pureModelContextData.getElements(), e -> e instanceof Service)
                 .collect(e -> (Service) e)
                 .collect(e -> serviceModeling.compileService(e, pureModel.getContext(e)))
                 .toList();
 
-        RichIterable<? extends Root_meta_external_query_sql_transformation_queryToPure_SQLSource> sources = toSources(services);
-
-        Root_meta_pure_executionPlan_ExecutionPlan plan = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_getPlansFromSQL_SQLSource_MANY__Node_1__Extension_MANY__ExecutionPlan_1_(sources, query, extensions.apply(pureModel), pureModel.getExecutionSupport());
-        SingleExecutionPlan singleExecutionPlan = transformExecutionPlan(plan, pureModel, clientVersion, profiles, extensions.apply(pureModel), transformers);
-        return singleExecutionPlan;
+        return toSources(services);
     }
 
     private RichIterable<? extends Root_meta_external_query_sql_transformation_queryToPure_SQLSource> toSources(MutableList<Root_meta_legend_service_metamodel_Service> services)
@@ -229,7 +279,6 @@ public class SqlExecute
             HttpGet req = new HttpGet("http://" + metadataServer.getSdlc().host + ":" + metadataServer.getSdlc().port + "/api/projects/" + project + "/pureModelContextData");
             try (CloseableHttpResponse res = client.execute(req))
             {
-                ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
                 return mapper.readValue(res.getEntity().getContent(), PureModelContextData.class);
             }
         }
@@ -248,6 +297,16 @@ public class SqlExecute
         {
             return manageResult(pm, result, format, LoggingEventType.EXECUTE_INTERACTIVE_ERROR);
         }
+    }
+
+    static String serializeToJSON(Object pureObject, PureModel pureModel)
+    {
+        return core_external_format_json_toJSON.Root_meta_json_toJSON_Any_MANY__Integer_$0_1$__Config_1__String_1_(
+                Lists.mutable.with(pureObject),
+                1000L,
+                core_external_format_json_toJSON.Root_meta_json_config_Boolean_1__Boolean_1__Boolean_1__Boolean_1__Config_1_(true, false, false, false, pureModel.getExecutionSupport()),
+                pureModel.getExecutionSupport()
+        );
     }
 
 }

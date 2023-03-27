@@ -106,7 +106,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
     public Span topSpan;
 
     private final SQLResultDBColumnsMetaData resultDBColumnsMetaData;
-    private String sessionID;
+    private final String sessionID;
     public MutableList<SetImplTransformers> setTransformers = Lists.mutable.empty();
 
     public Builder builder;
@@ -400,7 +400,6 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
                 LOGGER.error("error closing connection", e);
             }
         }
-        super.close();
     }
 
     public List<TDSColumn> getTdsColumns()
@@ -656,7 +655,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
         }
         catch (Exception e)
         {
-            LOGGER.info(new LogInfo(null, LoggingEventType.EXECUTABLE_CANCELLATION_ERROR, "Unable to cancel  RelationalResult  for session " + sessionID + " " + e.getMessage()).toString());
+            LOGGER.error(new LogInfo(null, LoggingEventType.EXECUTABLE_CANCELLATION_ERROR, "Unable to cancel  RelationalResult  for session " + sessionID + " " + e.getMessage()).toString());
         }
     }
 }

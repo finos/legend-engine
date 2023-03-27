@@ -61,6 +61,12 @@ Class meta::pure::router::preeval::tests::Person
   activeEmployment: Boolean[0..1];
 }
 
+Class meta::pure::router::preeval::tests::FinancialInstrument
+{
+  id : Integer[1];
+  price : Decimal[1];
+}
+
 Class <<typemodifiers.abstract>> meta::pure::router::preeval::tests::BaseAccount
 {
   id: Integer[1];
@@ -1201,6 +1207,25 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting_consta
   };
 
     assertRoundTrip($newLambda, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testDecimalType():Boolean[1]
+{
+  let input = {|meta::pure::router::preeval::tests::FinancialInstrument.all()
+                  ->project([
+                              col(f:meta::pure::router::preeval::tests::FinancialInstrument[1]|$f.price, 'price'),
+                              col(f:meta::pure::router::preeval::tests::FinancialInstrument[1]|parseDecimal('3.14D'), 'decimal_constant_col')
+                  ])
+              };
+
+  let expected = {|meta::pure::router::preeval::tests::FinancialInstrument.all()
+                  ->project([
+                      ^BasicColumnSpecification<meta::pure::router::preeval::tests::FinancialInstrument>(name = 'price', func={f:meta::pure::router::preeval::tests::FinancialInstrument[1]| $f.price }),
+                      ^BasicColumnSpecification<meta::pure::router::preeval::tests::FinancialInstrument>(name = 'decimal_constant_col', func={f:meta::pure::router::preeval::tests::FinancialInstrument[1]| 3.14})
+                    ])                    
+                  };  
+
+  assertRoundTrip($input,$expected);
 }
 
 function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting_castEmptyCollection():Boolean[1]

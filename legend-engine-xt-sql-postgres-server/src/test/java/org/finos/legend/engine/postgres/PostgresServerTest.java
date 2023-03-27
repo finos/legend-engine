@@ -15,23 +15,25 @@
 package org.finos.legend.engine.postgres;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import org.apache.http.client.CookieStore;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.finos.legend.engine.postgres.handler.legend.LegendSessionFactory;
-import org.finos.legend.engine.postgres.handler.legend.LegendTdsClient;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-
+import org.apache.http.client.CookieStore;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.finos.legend.engine.postgres.auth.AnonymousIdentityProvider;
+import org.finos.legend.engine.postgres.auth.NoPasswordAuthenticationMethod;
+import org.finos.legend.engine.postgres.handler.legend.LegendSessionFactory;
+import org.finos.legend.engine.postgres.handler.legend.LegendTdsClient;
+import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
@@ -48,15 +50,17 @@ public class PostgresServerTest
     public static void setUp()
     {
         CookieStore cookieStore = new BasicCookieStore();
-        LegendTdsClient client = new LegendTdsClient("localhost", "" + wireMockRule.port(), "SAMPLE-123", cookieStore);
+        CloseableHttpClient httpClient = (CloseableHttpClient) HttpClientBuilder.getHttpClient(cookieStore);
+        LegendTdsClient client = new LegendTdsClient("http", "localhost", "" + wireMockRule.port(), "SAMPLE-123", new BasicCookieStore());
         LegendSessionFactory legendSessionFactory = new LegendSessionFactory(client);
-        testPostgresServer = new TestPostgresServer(0, legendSessionFactory);
+
+        testPostgresServer = new TestPostgresServer(0, legendSessionFactory, (user, connectionProperties) -> new NoPasswordAuthenticationMethod(new AnonymousIdentityProvider()));
         testPostgresServer.startUp();
-        wireMockRule.stubFor(post(urlEqualTo("/api/sql/v1/execution/execute/SAMPLE-123"))
+        wireMockRule.stubFor(post(urlEqualTo("/api/sql/v1/execution/executeQueryString/SAMPLE-123"))
                 .willReturn(aResponse()
                         .withBody("{}"))
         );
-        wireMockRule.stubFor(post(urlEqualTo("/api/sql/v1/execution/execute/SAMPLE-123"))
+        wireMockRule.stubFor(post(urlEqualTo("/api/sql/v1/execution/executeQueryString/SAMPLE-123"))
                 .withRequestBody(equalTo("SELECT * FROM service.\"/personService\""))
                 .willReturn(aResponse()
                         .withBody("{ \"builder\": { \"_type\": \"tdsBuilder\", \"columns\": [ { \"name\": \"Age\", \"type\": \"Integer\", \"relationalType\": \"INTEGER\" }, { \"name\": \"First Name\", \"type\": \"String\", \"relationalType\": \"VARCHAR(200)\" }, { \"name\": \"Last Name\", \"type\": \"String\", \"relationalType\": \"VARCHAR(200)\" } ] }, \"activities\": [ { \"_type\": \"relational\", \"sql\": \"select \\\"root\\\".AGE as \\\"Age\\\", \\\"root\\\".FIRSTNAME as \\\"First Name\\\", \\\"root\\\".LASTNAME as \\\"Last Name\\\" from personTable as \\\"root\\\"\" } ], \"result\": { \"columns\": [ \"Age\", \"First Name\", \"Last Name\" ], \"rows\": [ { \"values\": [ 23, \"Peter\", \"Smith\" ] }, { \"values\": [ 30, \"Leonid\", \"Shtivelman\" ] }, { \"values\": [ 25, \"Vignesh\", \"Manickavasagam\" ] }, { \"values\": [ 31, \"Andrew\", \"Ormerod\" ] }, { \"values\": [ 32, \"Pierre\", \"De Belen\" ] } ] } }")

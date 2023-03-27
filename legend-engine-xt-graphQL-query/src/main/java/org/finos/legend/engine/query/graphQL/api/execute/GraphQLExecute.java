@@ -32,6 +32,8 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
+import org.finos.legend.engine.plan.execution.result.ConstantResult;
+import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
@@ -296,11 +298,11 @@ public class GraphQLExecute extends GraphQL
                             JsonStreamingResult result = null;
                             try
                             {
-                                Map<String, Object> parameterMap = new HashMap<>();
-                                extractFieldByName(graphQLQuery, p.propertyName).arguments.stream().forEach(a -> parameterMap.put(a.name, argumentValueToObject(a.value)));
+                                Map<String, Result> parameterMap = new HashMap<>();
+                                extractFieldByName(graphQLQuery, p.propertyName).arguments.stream().forEach(a -> parameterMap.put(a.name, new ConstantResult(argumentValueToObject(a.value))));
 
                                 generator.writeFieldName(p.propertyName);
-                                result = (JsonStreamingResult) planExecutor.execute(p.serializedPlan, parameterMap);
+                                result = (JsonStreamingResult) planExecutor.execute(p.serializedPlan, parameterMap, null, profiles);
                                 result.getJsonStream().accept(generator);
                             }
                             catch (IOException e)

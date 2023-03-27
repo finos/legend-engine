@@ -14,7 +14,8 @@
 
 package org.finos.legend.engine.shared.core.operational.logs;
 
-public enum LoggingEventType
+@Deprecated
+public enum LoggingEventType implements ILoggingEventType
 {
     SERVER_START,
 
