@@ -28,5 +28,4 @@ public interface IMongoDBStoreCompilerExtension extends CompilerExtension
         return Lists.mutable.withAll(ServiceLoader.load(IMongoDBStoreCompilerExtension.class));
     }
 
-
 }

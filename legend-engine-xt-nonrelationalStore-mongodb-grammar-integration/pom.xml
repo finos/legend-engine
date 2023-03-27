@@ -26,6 +26,23 @@
     <packaging>jar</packaging>
     <name>Legend Engine - XT - Non-Relational Store - MongoDB - Grammar Integration</name>
 
+    <build><plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+                <execution>
+                    <id>dependency-analyze</id>
+                    <configuration>
+                        <!-- The dependency plugin analyzer raises these as false positives -->
+                        <ignoredUnusedDeclaredDependencies>
+                            <dependency>org.finos.legend.pure:legend-pure-runtime-java-engine-compiled</dependency>
+                        </ignoredUnusedDeclaredDependencies>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins></build>
     <dependencies>
         <!-- ENGINE -->
         <dependency>
@@ -58,19 +75,30 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-protocol-pure</artifactId>
+            <artifactId>legend-engine-shared-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-shared-core</artifactId>
+            <artifactId>legend-engine-protocol</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-java</artifactId>
+        </dependency>
         <!-- ENGINE -->
 
         <!-- Pure -->
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m3-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-mapping-pure</artifactId>
         </dependency>
         <!-- Pure -->
 
@@ -132,6 +160,23 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-language-pure-grammar</artifactId>
             <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-compiler</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-external-shared-format-model</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-json-model</artifactId>
             <scope>test</scope>
         </dependency>
         <!--            <groupId>org.finos.legend.pure</groupId>-->

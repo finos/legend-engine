@@ -33,7 +33,6 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.IntType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.LongType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MaxKeyType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MinKeyType;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDatabase;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoIndex;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.ObjectIdType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.ObjectType;
@@ -45,6 +44,7 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.StringType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.TimeStampType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.Validator;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.JsonSchemaExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDatabase;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -344,7 +344,7 @@ public class MongoDBSchemaDeserializer extends StdDeserializer<MongoDatabase>
                     processStringTypeFields(objectNode, strType);
                     return strType;
                 case "object":
-                    ObjectType objType = new ObjectTypeImpl();
+                    ObjectType objType = new ObjectType();
                     processObjectTypeFields(objectNode, objType);
                     return objType;
                 case "array":
