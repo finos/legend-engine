@@ -236,7 +236,7 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "    response : ExampleClass <- tests::store::exampleBinding;\n" +
                 "    security : [INVALID];\n" +
                 "  )\n" +
-                ")\n", "PARSER error at [13:17-23]: Unsupported SecurityScheme - INVALID");
+                ")\n", "PARSER error at [13:17-23]: INVALID security scheme not defined");
 
         // Invalid method
         test("###ServiceStore\n" +

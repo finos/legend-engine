@@ -97,7 +97,7 @@ public class HelperServiceStoreGrammarComposer
                             .collect(Collectors.joining(",\n" + getTabString(1))) +
                     "\n" + context.getIndentationString() + getTabString() + "};";
         }
-        return null;
+        return "";
     }
 
     private static void renderServiceStoreElements(List<ServiceStoreElement> elements, StringBuilder builder, int baseIndentation)
