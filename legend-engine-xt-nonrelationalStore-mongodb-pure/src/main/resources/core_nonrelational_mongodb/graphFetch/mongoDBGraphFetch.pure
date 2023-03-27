@@ -74,12 +74,12 @@ function meta::external::store::mongodb::graphFetch::executionPlan::planRootGrap
 
 function meta::external::store::mongodb::graphFetch::executionPlan::getSubTreeProperties(subTrees: RoutedPropertyGraphFetchTree[*]): String[*]
 {
-  let propertiesToProject = $subTrees->fold({s, acc |
+  $subTrees->fold({s, acc |
     let propertyName = $s.property.name->toOne();
     let path = $s.propertyMapping->match([
       m: MongoDBPropertyMapping[1]           | $propertyName,
       e: EmbeddedMongoDBSetImplementation[1] |
-        let subProperties = getSubTreeProperties($s.subTrees->cast(@RoutedPropertyGraphFetchTree)); //$propertyTree.subTrees->at(0)->cast(@RoutedPropertyGraphFetchTree).property.name->toOne();
+        let subProperties = getSubTreeProperties($s.subTrees->cast(@RoutedPropertyGraphFetchTree));
         $subProperties->map(p | $propertyName + '.' + $p);
     ]);
     $acc->concatenate($path);

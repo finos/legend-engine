@@ -117,7 +117,6 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
 
 function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::mongoDBStoreExtensionsWithLegendJavaPlatformBinding(externalFormatDescriptors: meta::external::shared::format::executionPlan::platformBinding::legendJava::ExternalFormatLegendJavaPlatformBindingDescriptor[*]): Extension[*]
 {
-  //meta::external::format::json::executionPlan::platformBinding::legendJava::jsonSchemaJavaBindingDescriptor()
    meta::external::store::mongodb::extension::mongoDBExtensions()->concatenate(
       meta::pure::executionPlan::platformBinding::platformBindingExtension([
          meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([

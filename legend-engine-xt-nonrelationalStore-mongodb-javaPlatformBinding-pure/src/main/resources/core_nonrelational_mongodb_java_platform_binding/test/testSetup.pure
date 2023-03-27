@@ -25,6 +25,7 @@ import meta::external::format::json::metamodel::*;
 import meta::external::shared::format::metamodel::*;
 import meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::*;
 import meta::pure::runtime::connection::authentication::*;
+import meta::external::store::mongodb::metamodel::pure::*;
 
 
 Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::TestSchema
@@ -44,6 +45,7 @@ Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava
 Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Firm
 {
   legalName : String[1];
+  address: String[1];
 }
 
 Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Address
@@ -167,17 +169,22 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
       value = ^meta::external::store::mongodb::metamodel::StringType()
     );
 
+    let address = ^meta::external::store::mongodb::metamodel::PropertyType(
+      key = 'address',
+      value = ^meta::external::store::mongodb::metamodel::StringType()
+    );
+
     let firm = ^meta::external::store::mongodb::metamodel::PropertyType(
       key = 'firm',
       value = ^meta::external::store::mongodb::metamodel::ObjectType(
-        properties=[$legalName],
-        required = ['legalName'],
+        properties=[$legalName, $address],
+        required = ['legalName', 'address'],
         additionalPropertiesAllowed = true
       )
     );
 
     let schema = ^meta::external::store::mongodb::metamodel::Schema(
-      properties = [$firstName, $lastName, $age, $legalName, $firm],
+      properties = [$firstName, $lastName, $age, $legalName, $firm, $address],
       required = ['firstName', 'lastName', 'firm'],
       additionalPropertiesAllowed = true
     );
@@ -220,7 +227,7 @@ function  meta::external::store::mongodb::executionPlan::platformBinding::legend
     );
     let firm = ^meta::external::store::mongodb::metamodel::mapping::Field(
           dataType = ^meta::external::store::mongodb::metamodel::ObjectType(
-            required = ['legalName'],
+            required = ['legalName', 'address'],
             properties = [$personCollection.validator.validatorExpression->cast(@JsonSchemaExpression).schemaExpression.properties->at(4)],
             additionalPropertiesAllowed = true
           ),
@@ -229,11 +236,18 @@ function  meta::external::store::mongodb::executionPlan::platformBinding::legend
     let legalName = ^meta::external::store::mongodb::metamodel::mapping::Field(
           dataType = ^meta::external::store::mongodb::metamodel::StringType(),
           argumentExpression = ^FieldPathExpression(fieldPath='firm.legalName'));
+
+    let address = ^meta::external::store::mongodb::metamodel::mapping::Field(
+          dataType = ^meta::external::store::mongodb::metamodel::StringType(),
+          argumentExpression = ^FieldPathExpression(fieldPath='firm.address'));
     //Map the domain class attributes to fields created above
 
        let firmPropMappings = [
         ^meta::external::store::mongodb::metamodel::mapping::MongoDBPropertyMapping(
         property = $firmClass.properties->filter(p | $p.name == 'legalName')->toOne(),
+        sourceSetImplementationId = 'firm', targetSetImplementationId = ''),
+        ^meta::external::store::mongodb::metamodel::mapping::MongoDBPropertyMapping(
+        property = $firmClass.properties->filter(p | $p.name == 'address')->toOne(),
         sourceSetImplementationId = 'firm', targetSetImplementationId = '')
       /*  ,
         field = $legalName)
@@ -251,7 +265,7 @@ function  meta::external::store::mongodb::executionPlan::platformBinding::legend
     binding = $currentBinding
    );
 
-   let firmEmbeddedMongoDBSetImplementation = ^meta::external::store::mongodb::metamodel::mapping::EmbeddedMongoDBSetImplementation(
+   let firmEmbeddedMongoDBSetImplementation = ^EmbeddedMongoDBSetImplementation(
         property = $domainClass.properties->filter(p | $p.name == 'firm')->toOne(),
         sourceSetImplementationId = 'person', targetSetImplementationId = 'firm',
         propertyMappings = $firmPropMappings,
@@ -264,6 +278,12 @@ function  meta::external::store::mongodb::executionPlan::platformBinding::legend
         parent = meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::MongoDBTestMapping
    );
 
+/*
+    //Generated in compilation phase using schema binding details
+   let embeddedSetImpl = ^EmbeddedServiceStoreSetImplementation(property = S_Product.properties->filter(p | $p.name == 's_synonyms')->toOne(), owner = $prodServiceSetImpl, sourceSetImplementationId = 's_prod_set', targetSetImplementationId = 's_synonym_set', root = false, class = S_Synonym, parent = $baseMapping, id = 's_synonym_set',
+                                       propertyMappings = [^ServiceStorePropertyMapping(property = S_Synonym.properties->filter(p | $p.name == 's_name')->toOne(), sourceSetImplementationId = 's_synonyms', targetSetImplementationId = ''),
+                                                           ^ServiceStorePropertyMapping(property = S_Synonym.properties->filter(p | $p.name == 's_type')->toOne(), sourceSetImplementationId = 's_synonyms', targetSetImplementationId = '')]);
+*/
     let personPropMappings = [
       ^meta::external::store::mongodb::metamodel::mapping::MongoDBPropertyMapping(
         property = $domainClass.properties->filter(p | $p.name == 'firstName')->toOne(),
