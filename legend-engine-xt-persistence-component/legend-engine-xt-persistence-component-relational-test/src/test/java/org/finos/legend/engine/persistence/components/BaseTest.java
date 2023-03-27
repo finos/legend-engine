@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components;
 
 import org.finos.legend.engine.persistence.components.common.StatisticName;
+import org.finos.legend.engine.persistence.components.ingestmode.DeriveMainDatasetSchemaFromStaging;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
@@ -23,6 +24,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
 import org.finos.legend.engine.persistence.components.relational.api.GeneratorResult;
+import org.finos.legend.engine.persistence.components.scenarios.TestScenario;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 import org.junit.jupiter.api.Assertions;
 
@@ -196,7 +198,7 @@ public class BaseTest
         .addFields(digest)
         .addFields(batchIdIn)
         .addFields(batchIdOut)
-        .addFields(batchTimeIn)
+        .addFields(batchTimeInNonPrimary)
         .addFields(batchTimeOut)
         .build();
 
@@ -295,6 +297,23 @@ public class BaseTest
         .addFields(batchUpdateTime)
         .build();
 
+    protected SchemaDefinition baseTableSchemaWithUpdateBatchTimeField = SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(amount)
+            .addFields(bizDate)
+            .addFields(batchUpdateTime)
+            .build();
+
+    protected SchemaDefinition baseTableSchemaWithUpdateBatchTimeFieldNotPk = SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(amount)
+            .addFields(bizDate)
+            .addFields(digest)
+            .addFields(batchUpdateTimeNonPK)
+            .build();
+
     protected SchemaDefinition stagingTableSchemaWithLimitedColumns = SchemaDefinition.builder()
         .addFields(id)
         .addFields(name)
@@ -348,7 +367,7 @@ public class BaseTest
             .addFields(digest)
             .addFields(batchIdIn)
             .addFields(batchIdOut)
-            .addFields(batchTimeIn)
+            .addFields(batchTimeInNonPrimary)
             .addFields(batchTimeOut)
             .addFields(validityFromTarget)
             .addFields(validityThroughTarget)
@@ -383,7 +402,7 @@ public class BaseTest
             .addFields(digest)
             .addFields(batchIdIn)
             .addFields(batchIdOut)
-            .addFields(batchTimeIn)
+            .addFields(batchTimeInNonPrimary)
             .addFields(batchTimeOut)
             .addFields(validityFromTarget)
             .addFields(validityThroughTarget)
@@ -532,6 +551,11 @@ public class BaseTest
             .schema(baseTableSchemaWithNoPrimaryKeys)
             .build();
 
+    protected Dataset mainTableWithNoFields = DatasetDefinition.builder()
+            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
+            .schema(SchemaDefinition.builder().build())
+            .build();
+
     protected Dataset stagingTableWithNoPrimaryKeys = DatasetDefinition.builder()
             .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
             .schema(baseTableSchemaWithNoPrimaryKeys)
@@ -560,6 +584,16 @@ public class BaseTest
     protected Dataset mainTableWithBaseSchemaHavingDigestAndAuditField = DatasetDefinition.builder()
             .database(mainDbName).name(mainTableName).alias(mainTableAlias)
             .schema(baseTableSchemaWithDigestAndUpdateBatchTimeField)
+            .build();
+
+    protected Dataset mainTableWithBaseSchemaHavingAuditField = DatasetDefinition.builder()
+            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
+            .schema(baseTableSchemaWithUpdateBatchTimeField)
+            .build();
+
+    protected Dataset mainTableWithBaseSchemaHavingAuditFieldNotPk = DatasetDefinition.builder()
+            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
+            .schema(baseTableSchemaWithUpdateBatchTimeFieldNotPk)
             .build();
 
     protected Dataset stagingTableWithBaseSchemaHavingDigestAndDataSplit = DatasetDefinition.builder()
@@ -802,5 +836,13 @@ public class BaseTest
     protected String getExpectedCleanupSql(String fullName, String alias)
     {
         return String.format("DELETE FROM %s as %s", fullName, alias);
+    }
+
+    public static void assertDerivedMainDataset(TestScenario scenario)
+    {
+        Dataset stagingDataset = scenario.getDatasets().stagingDataset();
+        Dataset expectedMainDataset = scenario.getDatasets().mainDataset();
+        Dataset derivedMainDataset = scenario.getIngestMode().accept(new DeriveMainDatasetSchemaFromStaging(expectedMainDataset, stagingDataset));
+        Assertions.assertEquals(expectedMainDataset, derivedMainDataset);
     }
 }

@@ -81,7 +81,8 @@ public class MemSqlSink extends AnsiSqlSink
         capabilities.add(Capability.ADD_COLUMN);
         capabilities.add(Capability.IMPLICIT_DATA_TYPE_CONVERSION);
         capabilities.add(Capability.EXPLICIT_DATA_TYPE_CONVERSION);
-        capabilities.add(Capability.DATA_SIZING_CHANGES);
+        capabilities.add(Capability.DATA_TYPE_LENGTH_CHANGE);
+        capabilities.add(Capability.DATA_TYPE_SCALE_CHANGE);
         CAPABILITIES = Collections.unmodifiableSet(capabilities);
 
         Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass = new HashMap<>();
@@ -148,7 +149,11 @@ public class MemSqlSink extends AnsiSqlSink
             SqlGenUtils.BACK_QUOTE_IDENTIFIER,
             LOGICAL_PLAN_VISITOR_BY_CLASS,
             (executor, sink, dataset) -> sink.doesTableExist(dataset),
-            VALIDATE_MAIN_DATASET_SCHEMA);
+            VALIDATE_MAIN_DATASET_SCHEMA,
+            (v, w, x, y, z) ->
+            {
+                throw new UnsupportedOperationException();
+            });
     }
 
 

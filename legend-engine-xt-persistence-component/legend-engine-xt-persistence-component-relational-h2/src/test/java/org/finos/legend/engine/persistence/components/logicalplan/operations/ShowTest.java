@@ -53,6 +53,6 @@ public class ShowTest extends BaseTest
         LogicalPlan datasetExistslogicalPlan = LogicalPlanFactory.getLogicalPlanForDoesDatasetExist(mainTable);
         SqlPlan datasetExistsPhysicalPlan = transformer.generatePhysicalPlan(datasetExistslogicalPlan);
         List<TabularData> mainResult = executor.executePhysicalPlanAndGetResults(datasetExistsPhysicalPlan);
-        Assertions.assertEquals(0, mainResult.get(0).getData().size());
+        Assertions.assertEquals(0, mainResult.size());
     }
 }

@@ -49,7 +49,7 @@ public class BaseTestUtils
     public static Field colVarBinary = Field.builder().name("col_varbinary").type(FieldType.of(DataType.VARBINARY, 10, null)).build();
     public static Field colInt64 = Field.builder().name("col_int64").type(FieldType.of(DataType.INT64, Optional.empty(), Optional.empty())).build();
     public static Field colBit = Field.builder().name("col_bit").type(FieldType.of(DataType.BIT, Optional.empty(), Optional.empty())).build();
-    public static Index index = Index.builder().indexName("my_idx").addAllColumns(Arrays.asList(colInt, colVarchar)).build();
+    public static Index index = Index.builder().indexName("my_idx").addAllColumns(Arrays.asList("col_int", "col_varchar")).build();
 
     public static SchemaDefinition schemaWithAllColumns = SchemaDefinition.builder()
         .addFields(colInt)

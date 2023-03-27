@@ -49,7 +49,7 @@ class UnitemporalDeltaDbAndSchemaMissingTest extends BaseTest
     @Test
     void testMilestoningDbAndSchemaMissing() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getUnitemporalMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         mainTable = mainTable.withDatabase(Optional.empty());
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
         stagingTable = stagingTable.withDatabase(Optional.empty());
@@ -93,7 +93,6 @@ class UnitemporalDeltaDbAndSchemaMissingTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String mainTableFullyQualifiedName = getFullyQualifiedTableName(mainTable);
         String stagingTableFullyQualifiedName = getFullyQualifiedTableName(stagingTable);
 
         // ------------ Perform Pass1 ------------------------

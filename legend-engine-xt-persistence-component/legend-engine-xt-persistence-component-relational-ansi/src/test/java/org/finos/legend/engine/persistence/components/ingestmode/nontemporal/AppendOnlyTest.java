@@ -116,11 +116,9 @@ public class AppendOnlyTest extends AppendOnlyTestCases
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
 
-        String insertSql = "INSERT INTO \"mydb\".\"main\" " +
-                "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"batch_update_time\") " +
-                "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",'2000-01-01 00:00:00' " +
-                "FROM \"mydb\".\"staging\" as stage)";
-        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestPlusUpdateTimestampCreateQuery, preActionsSqlList.get(0));
+        String insertSql = "INSERT INTO \"mydb\".\"main\" (\"id\", \"name\", \"amount\", \"biz_date\", \"batch_update_time\") " +
+                "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",'2000-01-01 00:00:00' FROM \"mydb\".\"staging\" as stage)";
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTableWithAuditNotPkCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(0));
 
         // Stats

@@ -61,6 +61,13 @@ public class AppendOnlyScenarios extends BaseTest
         return new TestScenario(mainTableWithNoPrimaryKeys, stagingTableWithNoPrimaryKeys, ingestMode);
     }
 
+    public TestScenario ALLOW_DUPLICATES_NO_AUDITING_DERIVE_MAIN_SCHEMA()
+    {
+        TestScenario scenario = ALLOW_DUPLICATES_NO_AUDITING();
+        scenario.setMainTable(mainTableWithNoFields);
+        return scenario;
+    }
+
     public TestScenario ALLOW_DUPLICATES_WITH_AUDITING()
     {
         AppendOnly ingestMode = AppendOnly.builder()
@@ -99,7 +106,7 @@ public class AppendOnlyScenarios extends BaseTest
                 .deduplicationStrategy(FailOnDuplicates.builder().build())
                 .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
                 .build();
-        return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchemaAndDigest, ingestMode);
+        return new TestScenario(mainTableWithBaseSchemaHavingAuditFieldNotPk, stagingTableWithBaseSchema, ingestMode);
     }
 
     public TestScenario FILTER_DUPLICATES_NO_AUDITING()

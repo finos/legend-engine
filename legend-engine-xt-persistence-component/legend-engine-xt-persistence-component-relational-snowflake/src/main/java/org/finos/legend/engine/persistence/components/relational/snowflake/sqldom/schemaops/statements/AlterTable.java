@@ -75,19 +75,24 @@ public class AlterTable implements DDLStatement
         builder.append(COLUMN);
         builder.append(WHITE_SPACE);
 
-        // Operation parameters
-        if (operation == AlterOperation.NULLABLE_COLUMN)
+        switch (operation)
         {
-            columnToAlter.genSqlWithNameOnly(builder);
-            builder.append(WHITE_SPACE);
-            builder.append(DROP);
-            builder.append(WHITE_SPACE);
-            NotNullColumnConstraint notNullColumnConstraint = new NotNullColumnConstraint();
-            notNullColumnConstraint.genSql(builder);
-        }
-        else
-        {
-            columnToAlter.genSql(builder);
+            case ADD:
+                columnToAlter.genSql(builder);
+                break;
+            case CHANGE_DATATYPE:
+                columnToAlter.genSqlWithNameAndTypeOnly(builder);
+                break;
+            case NULLABLE_COLUMN:
+                columnToAlter.genSqlWithNameOnly(builder);
+                builder.append(WHITE_SPACE);
+                builder.append(DROP);
+                builder.append(WHITE_SPACE);
+                NotNullColumnConstraint notNullColumnConstraint = new NotNullColumnConstraint();
+                notNullColumnConstraint.genSql(builder);
+                break;
+            default:
+                throw new SqlDomException("Alter operation " + operation.name() + " not supported");
         }
     }
 

@@ -35,7 +35,7 @@ public interface IndexAbstract
     String indexName();
 
     @Parameter(order = 1)
-    List<Field> columns();
+    List<String> columns();
 
     @Parameter(order = 2)
     @Default

@@ -68,7 +68,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
     @Test
     void testMilestoningSourceSpecifiesFromAndThrough() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBitemporalMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getBitemporalStagingTable();
 
         String[] schema = new String[] {key1Name, key2Name, valueName, fromName, throughName, digestName, batchIdInName, batchIdOutName};
@@ -252,7 +252,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
     @Test
     void testMilestoningSourceSpecifiesFromAndThroughWithDeleteIndicatorWithCleanStagingData() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBitemporalMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getBitemporalStagingTableWithDeleteIndicator();
 
         String[] schema = new String[] {key1Name, key2Name, valueName, fromName, throughName, digestName, batchIdInName, batchIdOutName};
@@ -386,6 +386,58 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass6, expectedStats);
     }
 
+    /*
+    Scenario: Test milestoning Logic with only validity from time specified when staging table pre populated and Upper case Optimizer
+    */
+    @Test
+    void testMilestoningSourceSpecifiesFromSet1WithUpperCaseOptimizer() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getBitemporalFromOnlyMainTableIdBased();
+        DatasetDefinition stagingTable = TestUtils.getBitemporalFromOnlyStagingTableIdBased();
+
+        String[] schema = new String[]{indexName.toUpperCase(), balanceName.toUpperCase(), digestName.toUpperCase(),
+                startDateTimeName.toUpperCase(), endDateTimeName.toUpperCase(), batchIdInName.toUpperCase(), batchIdOutName.toUpperCase()};
+
+        // Create staging table
+        h2Sink.executeStatement("CREATE TABLE IF NOT EXISTS \"TEST\".\"STAGING\"(\"INDEX\" INTEGER NOT NULL,\"DATETIME\" TIMESTAMP NOT NULL,\"BALANCE\" BIGINT,\"DIGEST\" VARCHAR,PRIMARY KEY (\"INDEX\", \"DATETIME\"))");
+
+        BitemporalDelta ingestMode = BitemporalDelta.builder()
+                .digestField(digestName)
+                .transactionMilestoning(BatchId.builder()
+                        .batchIdInName(batchIdInName)
+                        .batchIdOutName(batchIdOutName)
+                        .build())
+                .validityMilestoning(ValidDateTime.builder()
+                        .dateTimeFromName(startDateTimeName)
+                        .dateTimeThruName(endDateTimeName)
+                        .validityDerivation(SourceSpecifiesFromDateTime.builder()
+                                .sourceDateTimeFromField(dateTimeName)
+                                .build())
+                        .build())
+                .build();
+
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
+        Datasets datasets = Datasets.builder().mainDataset(mainTable).stagingDataset(stagingTable).build();
+
+        // ------------ Perform Pass1 ------------------------
+        String dataPass1 = basePathForInput + "source_specifies_from/without_delete_ind/set_1/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "source_specifies_from/without_delete_ind/set_1/expected_pass1.csv";
+        // 1. Load Staging table
+        loadStagingDataForBitemporalFromOnlyWithUpperCase(dataPass1);
+        // 2. Execute Plan and Verify Results
+        Map<String, Object> expectedStats = createExpectedStatsMap(1, 0, 1, 0, 0);
+        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
+
+        // ------------ Perform Pass2 ------------------------
+        String dataPass2 = basePathForInput + "source_specifies_from/without_delete_ind/set_1/staging_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "source_specifies_from/without_delete_ind/set_1/expected_pass2.csv";
+        // 1. Load Staging table
+        loadStagingDataForBitemporalFromOnlyWithUpperCase(dataPass2);
+        // 2. Execute Plan and Verify Results
+        expectedStats = createExpectedStatsMap(1, 0, 1, 1, 0);
+        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
+    }
+
 
     /*
     Scenario: Test milestoning Logic with only validity from time specified when staging table pre populated
@@ -393,7 +445,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
     @Test
     void testMilestoningSourceSpecifiesFromSet2() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBitemporalFromOnlyMainTableIdBased();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getBitemporalFromOnlyStagingTableIdBased();
         DatasetDefinition tempTable = TestUtils.getBitemporalFromOnlyTempTableIdBased();
 
@@ -447,7 +499,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
     @Test
     void testMilestoningSourceSpecifiesFromSet3WithDataSplit() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBitemporalFromOnlyMainTableIdBased();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getBitemporalFromOnlyStagingTableWithDataSplitIdBased();
         DatasetDefinition tempTable = TestUtils.getBitemporalFromOnlyTempTableIdBased();
 
@@ -526,7 +578,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
     @Test
     void testMilestoningSourceSpecifiesFromSet3WithDataSplitMultiPasses() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBitemporalFromOnlyMainTableIdBased();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getBitemporalFromOnlyStagingTableWithDataSplitIdBased();
         DatasetDefinition tempTable = TestUtils.getBitemporalFromOnlyTempTableIdBased();
 
@@ -800,7 +852,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
     @Test
     void testMilestoningSourceSpecifiesFromSet5WithDataSplitFilterDuplicatesMultiPasses() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBitemporalFromOnlyMainTableIdBased();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getBitemporalFromOnlyStagingTableWithDataSplitIdBased();
         DatasetDefinition tempTable = TestUtils.getBitemporalFromOnlyTempTableIdBased();
 
@@ -997,7 +1049,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
     @Test
     void testMilestoningSourceSpecifiesFromWithDeleteIndicatorSet2() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBitemporalFromOnlyMainTableIdBased();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getBitemporalFromOnlyStagingTableWithDeleteIndicatorIdBased();
         DatasetDefinition tempTable = TestUtils.getBitemporalFromOnlyTempTableIdBased();
         DatasetDefinition tempTableWithDeleteIndicator = TestUtils.getBitemporalFromOnlyTempTableWithDeleteIndicatorIdBased();
@@ -1133,7 +1185,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
     @Test
     void testMilestoningSourceSpecifiesFromWithDeleteIndicatorSet3WithDataSplitWithMultiplePasses() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBitemporalFromOnlyMainTableIdBased();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getBitemporalFromOnlyStagingTableWithDeleteIndicatorWithDataSplitIdBased();
 
         String[] schema = new String[] {indexName, balanceName, digestName, startDateTimeName, endDateTimeName, batchIdInName, batchIdOutName};
@@ -1313,7 +1365,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
     @Test
     void testMilestoningSourceSpecifiesFromWithDeleteIndicatorSet5WithDataSplitFilterDuplicates() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBitemporalFromOnlyMainTableIdBased();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getBitemporalFromOnlyStagingTableWithDeleteIndicatorWithDataSplitIdBased();
         DatasetDefinition stagingTableWithoutDuplicates = TestUtils.getBitemporalFromOnlyStagingTableWithoutDuplicatesWithDeleteIndicatorWithDataSplitIdBased();
 
