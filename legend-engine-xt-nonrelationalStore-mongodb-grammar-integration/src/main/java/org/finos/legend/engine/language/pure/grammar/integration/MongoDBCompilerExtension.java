@@ -60,8 +60,6 @@ public class MongoDBCompilerExtension implements IMongoDBStoreCompilerExtension
                 {
                     Root_meta_external_store_mongodb_metamodel_pure_MongoDatabase pureMongoDatabase = MongoDBCompilerHelper.getMongoDatabase(context.pureModel.buildPackageString(mongoDBStore._package, mongoDBStore.name), mongoDBStore.sourceInformation, context);
                     MongoDBCompilerHelper.compileAndAddCollectionstoMongoDatabase(pureMongoDatabase, mongoDBStore, context);
-                    LOGGER.info("processing Second pass");
-                    pureMongoDatabase._collections().forEach(c -> LOGGER.info(c._validator()._validationAction().toString()));
                 });
         return Lists.immutable.with(processor);
     }

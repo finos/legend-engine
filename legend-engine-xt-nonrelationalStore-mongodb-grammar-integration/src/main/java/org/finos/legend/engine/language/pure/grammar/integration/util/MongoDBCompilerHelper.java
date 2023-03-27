@@ -97,6 +97,7 @@ public class MongoDBCompilerHelper
     {
         Root_meta_external_store_mongodb_metamodel_Collection pureCollection = new Root_meta_external_store_mongodb_metamodel_Collection_Impl(col.name, null, context.pureModel.getClass("meta::external::store::mongodb::metamodel::Collection"));
         pureCollection._owner(owner);
+        pureCollection._name(col.name);
         pureCollection._uuid(col.uuid);
         pureCollection._validator(compileValidator(col.validator, pureCollection, context));
         return pureCollection;
