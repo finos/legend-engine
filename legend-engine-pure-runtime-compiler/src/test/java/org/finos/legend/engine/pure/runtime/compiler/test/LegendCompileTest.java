@@ -55,6 +55,16 @@ public abstract class LegendCompileTest
     }
 
     @Test
+    public void testCoreInstanceCopy()
+    {
+        test("let x = meta::legend::compile('function a::f():Integer[1]{1+1}')->toOne()->cast(@ConcreteFunctionDefinition<Any>);" +
+                "assert($x.name != 'copied name');" +
+                "let copy = ^$x(name = 'copied name');" +
+                "assert($copy.name == 'copied name');");
+    }
+
+
+    @Test
     public void testProfile()
     {
         test("let x =  meta::legend::compile('Profile a::prof {stereotypes:[a,b];tags:[c,d,e];}')->cast(@Profile);" +
