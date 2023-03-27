@@ -16,11 +16,6 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
-import java.lang.reflect.Field;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.Predicate;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.factory.Lists;
@@ -35,13 +30,18 @@ import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.factory.primitive.ObjectIntMaps;
 import org.eclipse.collections.impl.utility.LazyIterate;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.MetadataWrapper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtensions;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.UserDefinedFunctionHandler;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.*;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.AssociationValidator;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.ClassValidator;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.EnumerationValidator;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.ProfileValidator;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.PureModelContextDataValidator;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
@@ -62,7 +62,17 @@ import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
-import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.Package_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_multiplicity_Multiplicity_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_LazyImpl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_FunctionType_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_PrimitiveType_LazyImpl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_Connection;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableConnection;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime;
 import org.finos.legend.pure.m3.coreinstance.Package;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
@@ -88,10 +98,20 @@ import org.finos.legend.pure.runtime.java.compiled.execution.CompiledProcessorSu
 import org.finos.legend.pure.runtime.java.compiled.execution.ConsoleCompiled;
 import org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtensionLoader;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.Pure;
-import org.finos.legend.pure.runtime.java.compiled.metadata.*;
+import org.finos.legend.pure.runtime.java.compiled.metadata.ClassCache;
+import org.finos.legend.pure.runtime.java.compiled.metadata.FunctionCache;
+import org.finos.legend.pure.runtime.java.compiled.metadata.Metadata;
+import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataAccessor;
+import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
 import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Field;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Predicate;
 
 public class PureModel implements IPureModel
 {
@@ -926,6 +946,11 @@ public class PureModel implements IPureModel
         Root_meta_pure_runtime_Runtime runtime = getRuntime_safe(fullPath);
         Assert.assertTrue(runtime != null, () -> "Can't find runtime '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
         return runtime;
+    }
+
+    public String getRuntimePath(Root_meta_pure_runtime_Runtime runtime)
+    {
+        return ListIterate.detect(runtimesIndex.keysView().toList(), (path) -> runtimesIndex.get(path).equals(runtime));
     }
 
     public Root_meta_pure_runtime_Runtime getRuntime_safe(String fullPath)
