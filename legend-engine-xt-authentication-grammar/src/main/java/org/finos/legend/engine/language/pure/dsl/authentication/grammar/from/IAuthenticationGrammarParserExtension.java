@@ -17,10 +17,12 @@ package org.finos.legend.engine.language.pure.dsl.authentication.grammar.from;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.ServiceLoader;
 import java.util.stream.Stream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.eclipse.collections.api.block.function.Function;
+import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureIslandGrammarSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
@@ -41,7 +43,10 @@ public interface IAuthenticationGrammarParserExtension extends PureGrammarParser
                 .filter(IAuthenticationGrammarParserExtension.class::isInstance)
                 .map(IAuthenticationGrammarParserExtension.class::cast);
     }
-
+    static List<IAuthenticationGrammarParserExtension> getExtensions()
+    {
+        return Lists.mutable.withAll(ServiceLoader.load(IAuthenticationGrammarParserExtension.class));
+    }
     default List<Function<PureIslandGrammarSourceCode, AuthenticationSpecification>> getExtraAuthenticationParsers()
     {
         return Collections.emptyList();
