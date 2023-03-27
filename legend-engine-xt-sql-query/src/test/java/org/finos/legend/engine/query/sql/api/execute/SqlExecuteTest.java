@@ -15,19 +15,17 @@
 
 package org.finos.legend.engine.query.sql.api.execute;
 
-import io.dropwizard.testing.ResourceHelpers;
 import io.dropwizard.testing.junit.ResourceTestRule;
-import org.apache.commons.io.FileUtils;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.query.sql.api.MockPac4jFeature;
+import org.finos.legend.engine.query.sql.api.sources.TestSQLSourceProvider;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.pure.generated.Root_meta_external_query_sql_PrimitiveValueSchemaColumn_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_query_sql_Schema;
@@ -39,15 +37,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import javax.ws.rs.client.Entity;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Paths;
-import java.security.PrivilegedActionException;
 import java.util.ServiceLoader;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
 
 public class SqlExecuteTest
 {
@@ -62,26 +52,12 @@ public class SqlExecuteTest
         ModelManager modelManager = new ModelManager(deploymentMode);
         PlanExecutor executor = PlanExecutor.newPlanExecutorWithConfigurations();
         MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
-        SqlExecute sqlExecute = new SqlExecute(modelManager, executor, (pm) -> generatorExtensions.flatCollect(g -> g.getExtraExtensions(pm)), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers), null, deploymentMode);
+        TestSQLSourceProvider testSQLSourceProvider = new TestSQLSourceProvider();
+        SqlExecute sqlExecute = new SqlExecute(modelManager, executor, (pm) -> generatorExtensions.flatCollect(g -> g.getExtraExtensions(pm)), FastList.newListWith(testSQLSourceProvider), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
 
-        SqlExecute resource = spy(sqlExecute);
-
-        try
-        {
-            String pureProject1 = ResourceHelpers.resourceFilePath("proj-1.pure");
-            String pureProject1Contents = FileUtils.readFileToString(Paths.get(pureProject1).toFile(), Charset.defaultCharset());
-
-            PureModelContextData pureModelContextData1 = PureModelContextData.newBuilder().withOrigin(null).withSerializer(null).withPureModelContextData(PureGrammarParser.newInstance().parseModel(pureProject1Contents)).build();
-
-            doReturn(pureModelContextData1).when(resource).loadModelContextData(any(), eq(null), eq("SAMPLE-123"));
-            pureModel = modelManager.loadModel(pureModelContextData1, PureClientVersions.production, null, "");
-        }
-        catch (PrivilegedActionException | IOException e)
-        {
-            throw new RuntimeException(e);
-        }
+        pureModel = modelManager.loadModel(testSQLSourceProvider.getPureModelContextData(), PureClientVersions.production, null, "");
         resources = ResourceTestRule.builder()
-                .addResource(resource)
+                .addResource(sqlExecute)
                 .addResource(new MockPac4jFeature())
                 .build();
     }
@@ -90,7 +66,7 @@ public class SqlExecuteTest
     @Test
     public void getSchemaFromQueryString()
     {
-        String actualSchema = resources.target("sql/v1/execution/getSchemaFromQueryString/SAMPLE-123")
+        String actualSchema = resources.target("sql/v1/execution/getSchemaFromQueryString")
                 .request()
                 .post(Entity.text("SELECT * FROM service.\"/testService\"")).readEntity(String.class);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum integerType = new Root_meta_pure_metamodel_type_Enum_Impl("Integer");
@@ -105,7 +81,7 @@ public class SqlExecuteTest
     @Test
     public void getSchemaFromQuery()
     {
-        String actualSchema = resources.target("sql/v1/execution/getSchemaFromQuery/SAMPLE-123")
+        String actualSchema = resources.target("sql/v1/execution/getSchemaFromQuery")
                 .request()
                 .post(Entity.json("{ \"_type\": \"query\", \"orderBy\": [], \"queryBody\": { \"_type\": \"querySpecification\", \"from\": [ { \"_type\": \"table\", \"name\": { \"parts\": [ \"service\", \"/testService\" ] } } ], \"groupBy\": [], \"orderBy\": [], \"select\": { \"_type\": \"select\", \"distinct\": false, \"selectItems\": [ { \"_type\": \"allColumns\" } ] } } }")).readEntity(String.class);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum integerType = new Root_meta_pure_metamodel_type_Enum_Impl("Integer");

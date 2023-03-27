@@ -111,11 +111,13 @@ function meta::external::query::sql::transformation::queryToPure::tests::service
 
   ^SQLSource(
       type = 'service',
-      id = $service.pattern,
       func = $execution.func,
       mapping = $execution.mapping,
       runtime = $execution.runtime,
-      executionOptions = $execution.executionOptions
+      executionOptions = $execution.executionOptions,
+      key = [
+        ^SQLSourceArgument(name = 'pattern', value = $service.pattern, index = 0)
+      ]
   );
 }
 
