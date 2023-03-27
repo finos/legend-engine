@@ -27,6 +27,9 @@ import org.finos.legend.engine.generation.analytics.model.DataSpaceClassDocument
 import org.finos.legend.engine.generation.analytics.model.DataSpaceDiagramAnalysisResult;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceEnumerationDocumentationEntry;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceExecutableAnalysisResult;
+import org.finos.legend.engine.generation.analytics.model.DataSpaceExecutableResult;
+import org.finos.legend.engine.generation.analytics.model.DataSpaceExecutableTDSResult;
+import org.finos.legend.engine.generation.analytics.model.DataSpaceExecutableTDSResultColumn;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceExecutionContextAnalysisResult;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceModelDocumentationEntry;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceServiceExecutableInfo;
@@ -35,16 +38,23 @@ import org.finos.legend.engine.generation.analytics.model.DataSpaceTaggedValueIn
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.analytics.model.MappingModelCoverageAnalysisResult;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.ResultType;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.TDSResultType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.BaseExecutionContext;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.finos.legend.pure.generated.Root_meta_analytics_mapping_modelCoverage_MappingModelCoverageAnalysisResult;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureSingleExecution;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
@@ -66,6 +76,7 @@ import org.slf4j.Logger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.stream.Collectors;
 
 public class DataSpaceAnalyticsHelper
 {
@@ -79,6 +90,25 @@ public class DataSpaceAnalyticsHelper
         docEntry.name = entry._name();
         docEntry.docs = new ArrayList<>(entry._docs().toList());
         return docEntry;
+    }
+
+    private static DataSpaceExecutableResult buildExecutableResult(ResultType resultType)
+    {
+        if (resultType instanceof TDSResultType)
+        {
+            DataSpaceExecutableTDSResult result = new DataSpaceExecutableTDSResult();
+            result.columns = (((TDSResultType) resultType).tdsColumns).stream().map(tdsColumn ->
+            {
+                DataSpaceExecutableTDSResultColumn column = new DataSpaceExecutableTDSResultColumn();
+                column.name = tdsColumn.name;
+                column.type = tdsColumn.type;
+                column.relationalType = tdsColumn.relationalType;
+                column.documentation = tdsColumn.doc;
+                return column;
+            }).collect(Collectors.toList());
+            return result;
+        }
+        return null;
     }
 
     public static DataSpaceAnalysisResult analyzeDataSpace(Root_meta_pure_metamodel_dataSpace_DataSpace dataSpace, PureModel pureModel, DataSpace dataSpaceProtocol, PureModelContextData pureModelContextData, String clientVersion)
@@ -228,13 +258,26 @@ public class DataSpaceAnalyticsHelper
                         DataSpaceExecutableAnalysisResult executableAnalysisResult = new DataSpaceExecutableAnalysisResult();
                         executableAnalysisResult.title = executable._title();
                         executableAnalysisResult.description = executable._description();
-                        executableAnalysisResult.executable = HelperModelBuilder.getElementFullPath(executable._executable(), pureModel.getExecutionSupport());
+                        String servicePath = HelperModelBuilder.getElementFullPath(executable._executable(), pureModel.getExecutionSupport());
+                        executableAnalysisResult.executable = servicePath;
 
                         DataSpaceServiceExecutableInfo serviceExecutableInfo = new DataSpaceServiceExecutableInfo();
                         serviceExecutableInfo.pattern = service._pattern();
-                        executableAnalysisResult.info = serviceExecutableInfo;
+                        org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement _el = ListIterate.detect(pureModelContextData.getElements(), el -> el.getPath().equals(servicePath) && el instanceof Service);
+                        if (!(_el instanceof Service))
+                        {
+                            throw new RuntimeException("Can't find protocol for service '" + servicePath + "'");
+                        }
+                        Service serviceProtocol = (Service) _el;
+                        serviceExecutableInfo.query = ((PureSingleExecution) serviceProtocol.execution).func.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(RenderStyle.PRETTY).build());
+                        serviceExecutableInfo.mapping = HelperModelBuilder.getElementFullPath(execution._mapping(), pureModel.getExecutionSupport());
+                        if (serviceProtocol.execution instanceof PureSingleExecution && ((PureSingleExecution) serviceProtocol.execution).runtime instanceof RuntimePointer)
+                        {
+                            serviceExecutableInfo.runtime = pureModel.getRuntimePath(execution._runtime());
+                        }
 
-                        executableAnalysisResult.resultType = PlanGenerator.generateExecutionPlanDebug(
+                        executableAnalysisResult.info = serviceExecutableInfo;
+                        executableAnalysisResult.result = buildExecutableResult(PlanGenerator.generateExecutionPlanDebug(
                                 (LambdaFunction<?>) execution._func(),
                                 execution._mapping(),
                                 execution._runtime(),
@@ -245,7 +288,7 @@ public class DataSpaceAnalyticsHelper
                                 null,
                                 generatorExtensions.flatCollect(e -> e.getExtraExtensions(pureModel)),
                                 generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers)
-                        ).plan.rootExecutionNode.resultType;
+                        ).plan.rootExecutionNode.resultType);
 
                         result.executables.add(executableAnalysisResult);
                     }

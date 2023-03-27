@@ -14,8 +14,6 @@
 
 package org.finos.legend.engine.generation.analytics.model;
 
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.ResultType;
-
 public class DataSpaceDiagramAnalysisResult
 {
     public String title;
