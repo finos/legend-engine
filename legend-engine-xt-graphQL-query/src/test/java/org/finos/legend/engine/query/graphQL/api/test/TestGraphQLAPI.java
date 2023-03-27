@@ -146,6 +146,27 @@ public class TestGraphQLAPI
     }
 
     @Test
+    public void testGraphQLExecuteDevAPI_Milestoning_Root() throws Exception
+    {
+        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
+        PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
+        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
+        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> generatorExtensions.flatCollect(g -> g.getExtraExtensions(pm)), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
+        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
+        Query query = new Query();
+        query.query = "query Query {\n" +
+                "  allAddresses (businessDate: \"2023-02-13\", processingDate: \"2023-02-13\") {\n" +
+                "      line1\n" +
+                "    }\n" +
+                "  }";
+        Response response = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
+
+        String expected = "{\"data\":{\"allAddresses\":{\"line1\":\"peter address\"}}}";
+        Assert.assertEquals(expected, responseAsString(response));
+    }
+
+    @Test
     public void testGraphQLExecuteDevAPI_Relational_WithDependencies() throws Exception
     {
         ModelManager modelManager = new ModelManager(DeploymentMode.TEST, new SDLCLoader(metaDataServerConfiguration, null));
