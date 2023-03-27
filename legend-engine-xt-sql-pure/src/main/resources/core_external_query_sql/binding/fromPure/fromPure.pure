@@ -189,16 +189,13 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
                                                 let functionCall = $column.expression->cast(@FunctionCall);
 
-                                                assert($functionCall.arguments->size() == 1 && $functionCall.arguments->at(0)->instanceOf(QualifiedNameReference), | 'only single identifier argument aggregations currently supported');
-
-                                                let mapExpression = processExpression($functionCall.arguments->toOne(), rowExpressionContext(), $context)->evaluateAndDeactivate();
+                                                let mapExpression = processMapFunction($functionCall, $context);
                                                 let mapReturnType = $mapExpression.genericType.rawType->toOne();
                                                 let mapFunctionType = functionType('row', TDSRow, PureOne, $mapReturnType, ZeroOne);
                                                 let mapLambda = lambda($mapFunctionType, $mapExpression);
 
-                                                let aggFunctionName = extractNameFromQualifiedName($functionCall.name->toOne());
-                                                let aggVariable = ^VariableExpression(genericType = ^GenericType(rawType = $mapReturnType),name = 'y', multiplicity = ZeroMany)->evaluateAndDeactivate();
-                                                let aggExpression = functionCall($aggFunctionName, $aggVariable)->cast(@SimpleFunctionExpression)->evaluateAndDeactivate();
+                                                let aggExpression = processAggFunction($functionCall, $mapReturnType, $context);
+                                                
                                                 let aggReturnType = $aggExpression.genericType.rawType->toOne();
                                                 let aggFunctionType = functionType('y', $mapReturnType, ZeroMany, $aggReturnType, PureOne);
                                                 let aggLambda = lambda($aggFunctionType, $aggExpression);
@@ -211,6 +208,42 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
                                               );
 
   appendTdsFunc($context.expression->toOne(), groupBy_TabularDataSet_1__String_MANY__AggregateValue_MANY__TabularDataSet_1_, [list($groupByColumns), list($aggregations)]);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processAggFunction(functionCall:FunctionCall[1], type:Type[1], context: SqlTransformContext[1]):ValueSpecification[1]
+{
+
+  let expContext = expressionContext(^VariableExpression(genericType = ^GenericType(rawType = $type),name = 'y', multiplicity = PureOne), ^Map<String, VariableExpression>());
+
+  ensureAggregateFunction($functionCall);
+
+  let expression = $functionCall.arguments->match([
+    q:QualifiedNameReference[1] | processFunctionCall(^$functionCall(arguments = ^QualifiedNameReference(name=^QualifiedName())), $expContext, $context),
+    l:Literal[1] | processFunctionCall($functionCall, $expContext, $context),
+    e:meta::external::query::sql::metamodel::Expression[1] | processFunctionCall(^$functionCall(arguments = ^QualifiedNameReference(name=^QualifiedName())), $expContext, $context),
+    //NOTE * params come through as empty, investigate whether parser should handle this better
+    a:Any[0] | processFunctionCall(^$functionCall(arguments = ^QualifiedNameReference(name=^QualifiedName())), $expContext, $context),
+    a:Any[*] | fail('aggregation type currently not supported'); iv(1);
+  ])->evaluateAndDeactivate();
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processMapFunction(functionCall:FunctionCall[1], context: SqlTransformContext[1]):ValueSpecification[1]
+{
+  $functionCall.arguments->match([
+    q:QualifiedNameReference[1] | processExpression($q, rowExpressionContext(), $context)->evaluateAndDeactivate();,
+    l:Literal[1] | rowExpressionContext().var()->evaluateAndDeactivate(),
+    e:meta::external::query::sql::metamodel::Expression[1] | processExpression($e, rowExpressionContext(), $context),
+    //NOTE * params come through as empty, investigate whether parser should handle this better
+    a:Any[0] | rowExpressionContext().var()->evaluateAndDeactivate(),
+    a:Any[*] | fail('aggregation type currently not supported'); iv(1);
+  ])->evaluateAndDeactivate();
+}
+
+//We currently need to ensure that all the functions used in group by are in fact aggregate functions. e.g. select count(*), pi() would not currently translate well to Pure.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::ensureAggregateFunction(functionCall:FunctionCall[1]):Boolean[1]
+{
+  let processor = functionProcessor($functionCall.name);
+  assert($processor.isAggregate, | 'function ' + extractNameFromQualifiedName($functionCall.name) + ' is not currently supported as aggregate function');
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processSelect(select: Select[1], context: SqlTransformContext[1]):FunctionExpression[1]
@@ -771,10 +804,10 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   sfe(if_Boolean_1__Function_1__Function_1__T_m_, [$condition, $truthLambda->iv(), $elseLambda->iv()]);
 }
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::createTdsColumn(qualifiedName:QualifiedName[1], var:VariableExpression[1], context: SqlTransformContext[1]):SimpleFunctionExpression[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::createTdsColumn(qualifiedName:QualifiedName[1], var:VariableExpression[1], context: SqlTransformContext[1]):ValueSpecification[1]
 {
 
-  createTdsColumn($context.columnByNameParts($qualifiedName.parts)->toOne(), $var, $context);
+  if ($qualifiedName.parts->isEmpty(), | $var, | createTdsColumn($context.columnByNameParts($qualifiedName.parts)->toOne(), $var, $context));
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::createTdsColumn(name:String[1], var:VariableExpression[1], context: SqlTransformContext[1]):SimpleFunctionExpression[1]

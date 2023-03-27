@@ -326,15 +326,17 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
 
-function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure::tests::testSumConstant():Boolean[1]
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByAggregateExpressions():Boolean[1]
 {
-  let sqlString = 'SELECT sum(1) AS "sum", FROM service."/service/service1"';
+  let sqlString = 'SELECT sum(1) AS "sum", count(*) AS "count", sum(Integer + Float) AS "exp" FROM service."/service/service1"';
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {| FlatInput.all()->project(
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
           [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
-        )->groupBy('String', [
-          agg('sum', row | $row, y | sum(1))
+        )->groupBy([], [
+          agg('sum', row | $row, y | sum(1)),
+          agg('count', row | $row, y | $y->count()),
+          agg('exp', row | $row.getInteger('Integer') + $row.getFloat('Float'), y | $y->sum())
         ])
       };
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
