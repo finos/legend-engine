@@ -157,7 +157,7 @@ function meta::analytics::search::transformation::mapping::buildPropertyList(pro
 function meta::analytics::search::transformation::service::buildDocument(service: meta::legend::service::metamodel::Service[1]): meta::analytics::search::metamodel::service::RootDocument[1]
 {
   ^meta::analytics::search::metamodel::service::RootDocument(
-    id = $service.pattern,
+    id = $service->elementToPath(),
     name = $service.pattern,
     type = meta::analytics::search::metamodel::DocumentType.Service,
     owners = $service.owners,
