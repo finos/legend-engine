@@ -68,9 +68,6 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
 
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::processEqual(functionExpression: FunctionExpression[1], databaseCommand: DatabaseCommand[1], mapping: Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]): EqOperatorExpression[1]
 {
-  //println('$functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value');
-  //println($functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).parametersValues, 8);
-
   let parameterValues = processSimpleFunctionExpression($functionExpression, 0);
   let firstParameterValue = $parameterValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value;
 
@@ -83,25 +80,8 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
       $root + '.' + $embedded;
   );
 
-  let fieldPath = getFieldPathForPropertyNameAndMapping($path, $mapping);
+  let fieldPath = '$' + $path;
 
-  /*
-  println('param values?');
-  println($functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value); // the value here is a variableExpression, on the nested is a simpleFunctionExpression
-  
-  println('the root element is');
-  println($functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name->toOne());
-
-  println('the root element when embedded is used is');
-  println($functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name->toOne());
-
-  println('the embedded element is');
-  println($functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).parametersValues->at(1)->cast(@StoreMappingRoutedValueSpecification).value->cast(@FunctionRoutedValueSpecification).originalFunction->cast(@LambdaFunction<Any>).expressionSequence->cast(@SimpleFunctionExpression).func.name->toOne());
-  */
-
-  //let fieldPath = getFieldPathForPropertyNameAndMapping($functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name->toOne(), $mapping);
-  //println('fieldPath');
-  //println($functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value);
   let leftSide = ^FieldPathExpression(fieldPath=$fieldPath);
   let rightSide = processInstanceValue($functionExpression.parametersValues->at(1)->cast(@InstanceValue), $databaseCommand, $mapping, $inScopeVars, $debug)->cast(@LiteralValue);
   ^EqOperatorExpression(expressions=[$leftSide, $rightSide]);
@@ -111,24 +91,6 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
 {
   let eqOperatorExpression = processValueSpecification($functionExpression.parametersValues->at(0), $databaseCommand, $mapping, $inScopeVars, $debug)->cast(@ComparisonOperatorExpression);
   ^NEOperatorExpression(expressions=$eqOperatorExpression.expressions);
-}
-
-function meta::external::store::mongodb::functions::pureToDatabaseCommand::getFieldPathForPropertyNameAndMapping(propertyName: String[1], mapping: Mapping[1]): String[1]
-{
-  /*
-  println('$propertyName');
-  println($propertyName);
-  let domainClassProperty = $mapping.classMappings->map(x | $x->match([
-      m: MongoDBSetImplementation[1]          | $m.class.properties->filter(x | $x.name == $propertyName).name->toOne(),
-      e: EmbeddedMongoDBSetImplementation[1]  | println($e); 'test';
-    ])
-  );
-
-  println('domainClassProperty');
-  println($domainClassProperty);
-  '$' + $domainClassProperty->toOne();
-  */
-  '$' + $propertyName;
 }
 
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::processInstanceValue(i: InstanceValue[1], databaseCommand: DatabaseCommand[1], mapping: Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]): MongoDBOperationElement[1]
@@ -210,17 +172,7 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
 {
   let setImplementation = $functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->toOne();
   let collectionName = $setImplementation->cast(@MongoDBSetImplementation).mainCollection->cast(@Collection).name;
-  let projectedKeys = getProjectKeyValuesForDomainClassProperties($setImplementation->cast(@MongoDBSetImplementation).class.properties);
-  let result = ^$databaseCommand(collectionName=$collectionName, aggregationPipeline=^AggregationPipeline(stages=^ProjectStage(projections=$projectedKeys)));
-  $result;
-}
-
-function meta::external::store::mongodb::functions::pureToDatabaseCommand::getProjectKeyValuesForDomainClassProperties(properties: Property<Any, Any|*>[*]): ObjectQueryExpression[1]
-{
-  let keyValues = $properties->map(k |
-    ^QueryExprKeyValue(key=^FieldPathExpression(fieldPath=$k.name->toOne()), value=^LiteralValue(value=^IntTypeValue(value=1)));
-  );
-  ^ObjectQueryExpression(keyValues=$keyValues);
+  ^$databaseCommand(collectionName=$collectionName, aggregationPipeline=^AggregationPipeline(stages=[]));
 }
 
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::processNoOp(functionExpression: FunctionExpression[1], databaseCommand: DatabaseCommand [1], mapping: Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]): MongoDBOperationElement[1]

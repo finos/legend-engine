@@ -37,18 +37,13 @@ function meta::external::store::mongodb::graphFetch::executionPlan::planRootGrap
   let rootTree = $clusteredTree->byPassClusteringInfo()->cast(@RoutedRootGraphFetchTree<Any>);
   let store = $sq.store->cast(@MongoDatabase);
 
-  let domainFieldsToProject = $rootTree.subTrees->cast(@meta::pure::graphFetch::PropertyGraphFetchTree).property->filter(x | $x->instanceOf(Property))->cast(@Property<Nil,Any|*>).name;
+  let propertiesToProject = getSubTreeProperties($rootTree.subTrees->cast(@RoutedPropertyGraphFetchTree));
 
-  let databaseCommand = $lhsFe->toDatabaseCommand($mapping, $sq.inScopeVars, $debug, $extensions)->cast(@DatabaseCommand)->filterOutProjectedFields($domainFieldsToProject);
+  let databaseCommand = $lhsFe->toDatabaseCommand($mapping, $sq.inScopeVars, $debug, $extensions)->cast(@DatabaseCommand)->addProjectedFields($propertiesToProject);
 
   let connection = $runtime->toOne()->connectionByElement($store)->cast(@MongoDBConnection);
 
   let binding = $mapping.classMappings->at(0)->cast(@MongoDBSetImplementation)->at(0).binding->toOne();
-
-/*
-  println('rootTree');
-  println($rootTree.subTrees);
-*/
   
   ^InMemoryRootGraphFetchExecutionNode(
     resultType = $rootTree->resultTypeFromGraphFetchTree(),
@@ -77,12 +72,27 @@ function meta::external::store::mongodb::graphFetch::executionPlan::planRootGrap
   );
 }
 
+function meta::external::store::mongodb::graphFetch::executionPlan::getSubTreeProperties(subTrees: RoutedPropertyGraphFetchTree[*]): String[*]
+{
+  let propertiesToProject = $subTrees->fold({s, acc |
+    let propertyName = $s.property.name->toOne();
+    let path = $s.propertyMapping->match([
+      m: MongoDBPropertyMapping[1]           | $propertyName,
+      e: EmbeddedMongoDBSetImplementation[1] |
+        let subProperties = getSubTreeProperties($s.subTrees->cast(@RoutedPropertyGraphFetchTree)); //$propertyTree.subTrees->at(0)->cast(@RoutedPropertyGraphFetchTree).property.name->toOne();
+        $subProperties->map(p | $propertyName + '.' + $p);
+    ]);
+    $acc->concatenate($path);
+  }, []);
+}
 
-function meta::external::store::mongodb::graphFetch::executionPlan::filterOutProjectedFields(databaseCommand: DatabaseCommand[1], fieldNames: String[*]): DatabaseCommand[1]
+function meta::external::store::mongodb::graphFetch::executionPlan::addProjectedFields(databaseCommand: DatabaseCommand[1], fieldNames: String[*]): DatabaseCommand[1]
 {
   let matchStage = $databaseCommand.aggregationPipeline.stages->filter(x | $x->instanceOf(MatchStage))->cast(@MatchStage);
 
-  let keyValuesToProject = $databaseCommand.aggregationPipeline.stages->filter(x | $x->instanceOf(ProjectStage))->toOne()->cast(@ProjectStage).projections->cast(@ObjectQueryExpression).keyValues->filter(k | $k->cast(@QueryExprKeyValue).key->cast(@FieldPathExpression).fieldPath->in($fieldNames));
+  let keyValuesToProject = $fieldNames->map(k |
+    ^QueryExprKeyValue(key=^FieldPathExpression(fieldPath=$k->toOne()), value=^LiteralValue(value=^IntTypeValue(value=1)));
+  );
 
   ^$databaseCommand(
     aggregationPipeline = ^AggregationPipeline(
@@ -90,12 +100,3 @@ function meta::external::store::mongodb::graphFetch::executionPlan::filterOutPro
     )
   );
 }
-
-/*
-function meta::external::store::mongodb::graphFetch::executionPlan::extractPathsFromBindings(schemaSet: SchemaSet[1]): String[*]
-{
-  println('extractPathsFromBindings');
-  println($schemaSet.schemas.detail->cast(@meta::external::format::json::metamodel::JsonSchema).content);
-  ['asdf'];
-}
-*/

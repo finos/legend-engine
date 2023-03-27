@@ -6,7 +6,8 @@
       "lastName": "Doe",
       "age": 20,
       "firm": {
-        "legalName": "Goldman Sachs"
+        "legalName": "Goldman Sachs",
+        "address": "Address of Goldman Sachs"
       }
     },
     {
@@ -14,7 +15,8 @@
       "lastName": "Doe",
       "age": 22,
       "firm": {
-        "legalName": "Goldman Sachs"
+        "legalName": "Goldman Sachs",
+        "address": "Address of Goldman Sachs"
       }
     },
     {
@@ -22,7 +24,8 @@
       "lastName": "Doe",
       "age": 23,
       "firm": {
-        "legalName": "JPMorgan"
+        "legalName": "JPMorgan",
+        "address": "Address of JPMorgan"
       }
     },
     {
@@ -30,7 +33,8 @@
       "lastName": "Doe",
       "age": 24,
       "firm": {
-        "legalName": "JPMorgan"
+        "legalName": "JPMorgan",
+        "address": "Address of JPMorgan"
       }
     },
     {
@@ -38,7 +42,8 @@
       "lastName": "Doe",
       "age": 25,
       "firm": {
-        "legalName": "Morgan Stanley"
+        "legalName": "Morgan Stanley",
+        "address": "Address of Morgan Stanley"
       }
     },
     {
@@ -46,7 +51,8 @@
       "lastName": "Doe",
       "age": 26,
       "firm": {
-        "legalName": "BNP Paribas"
+        "legalName": "BNP Paribas",
+        "address": "Address of BNP Paribas"
       }
     },
     {
@@ -54,7 +60,8 @@
       "lastName": "Doe",
       "age": 27,
       "firm": {
-        "legalName": "BNP Paribas"
+        "legalName": "BNP Paribas",
+        "address": "Address of BNP Paribas"
       }
     },
     {
@@ -62,7 +69,8 @@
       "lastName": "Doe",
       "age": 28,
       "firm": {
-        "legalName": "Banco Santander"
+        "legalName": "Banco Santander",
+        "address": "Address of Banco Santander"
       }
     },
     {
@@ -70,7 +78,8 @@
       "lastName": "Doe",
       "age": 29,
       "firm": {
-        "legalName": "Banco Santander"
+        "legalName": "Banco Santander",
+        "address": "Address of Banco Santander"
       }
     },
     {
@@ -78,7 +87,8 @@
       "lastName": "Doe",
       "age": 30,
       "firm": {
-        "legalName": "Banco Santander"
+        "legalName": "Banco Santander",
+        "address": "Address of Banco Santander"
       }
     },
     {
@@ -86,7 +96,8 @@
       "lastName": "Doe",
       "age": 31,
       "firm": {
-        "legalName": "Bank of America"
+        "legalName": "Bank of America",
+        "address": "Address of Bank of America"
       }
     },
     {
@@ -94,7 +105,8 @@
       "lastName": "Doe",
       "age": 32,
       "firm": {
-        "legalName": "Bank of America"
+        "legalName": "Bank of America",
+        "address": "Address of Bank of America"
       }
     }
   ]
