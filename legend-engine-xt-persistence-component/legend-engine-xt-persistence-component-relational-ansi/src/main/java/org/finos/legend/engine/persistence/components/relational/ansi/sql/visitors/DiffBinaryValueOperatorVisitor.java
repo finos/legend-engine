@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors;
 
 import org.finos.legend.engine.persistence.components.logicalplan.values.DiffBinaryValueOperator;
+import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.relational.sqldom.common.Operator;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Expression;
@@ -30,6 +31,10 @@ public class DiffBinaryValueOperatorVisitor implements LogicalPlanVisitor<DiffBi
     public VisitorResult visit(PhysicalPlanNode prev, DiffBinaryValueOperator current, VisitorContext context)
     {
         Expression e = new Expression(Operator.MINUS, current.alias().orElse(null), context.quoteIdentifier());
+        for (Optimizer optimizer : context.optimizers())
+        {
+            e = (Expression) optimizer.optimize(e);
+        }
         prev.push(e);
         return new VisitorResult(e, Arrays.asList(current.left(), current.right()));
     }

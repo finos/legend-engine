@@ -15,7 +15,9 @@
 package org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors;
 
 import org.finos.legend.engine.persistence.components.logicalplan.values.SelectValue;
+import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.Column;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
 
@@ -26,6 +28,11 @@ public class SelectValueVisitor implements LogicalPlanVisitor<SelectValue>
     public VisitorResult visit(PhysicalPlanNode prev, SelectValue current, VisitorContext context)
     {
         org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.SelectValue selectValue = new org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.SelectValue(current.alias().orElse(null), context.quoteIdentifier());
+        for (Optimizer optimizer : context.optimizers())
+        {
+            selectValue = (org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.SelectValue) optimizer.optimize(selectValue);
+        }
+
         prev.push(selectValue);
 
         return new SelectionVisitor().visit(selectValue, current.selection(), context);

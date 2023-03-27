@@ -52,7 +52,7 @@ class UnitemporalDeltaWithBatchTimeTest extends BaseTest
     @Test
     void testMilestoning() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getUnitemporalTimeBasedMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
 
         String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchTimeInName, batchTimeOutName};
@@ -108,7 +108,7 @@ class UnitemporalDeltaWithBatchTimeTest extends BaseTest
     @Test
     void testMilestoningWithDeleteIndicator() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getUnitemporalTimeBasedMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getStagingTableWithDeleteIndicator();
 
         String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchTimeInName, batchTimeOutName};

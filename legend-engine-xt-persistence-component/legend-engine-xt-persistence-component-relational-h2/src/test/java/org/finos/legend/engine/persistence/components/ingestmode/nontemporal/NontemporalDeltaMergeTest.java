@@ -49,7 +49,7 @@ class NontemporalDeltaMergeTest extends BaseTest
     @Test
     void testMilestoningStagingTablePrePopulated() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBasicMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
 
         // Create staging table
@@ -137,7 +137,7 @@ class NontemporalDeltaMergeTest extends BaseTest
     @Test
     void testGeneratePhysicalPlanWithUpdateTimestampColumn() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getMainTableWithBatchUpdateTimeField();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
 
         // Create staging table

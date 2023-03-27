@@ -48,7 +48,7 @@ public class CreateTableTest
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
 
-        String expected = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_schema\".\"my_table\"(\"col_int\" INTEGER PRIMARY KEY," +
+        String expected = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_schema\".\"my_table\"(\"col_int\" INTEGER NOT NULL PRIMARY KEY," +
             "\"col_integer\" INTEGER NOT NULL UNIQUE,\"col_bigint\" BIGINT,\"col_tinyint\" TINYINT," +
             "\"col_smallint\" SMALLINT,\"col_char\" CHAR,\"col_varchar\" VARCHAR,\"col_string\" VARCHAR," +
             "\"col_timestamp\" TIMESTAMP,\"col_datetime\" DATETIME,\"col_date\" DATE,\"col_real\" REAL," +
@@ -81,7 +81,7 @@ public class CreateTableTest
         List<String> list = physicalPlan.getSqlList();
 
         String expected = "CREATE TABLE IF NOT EXISTS \"MY_DB\".\"MY_SCHEMA\".\"MY_TABLE\"" +
-            "(\"COL_INT\" INTEGER PRIMARY KEY,\"COL_INTEGER\" INTEGER NOT NULL UNIQUE,\"COL_BIGINT\" BIGINT," +
+            "(\"COL_INT\" INTEGER NOT NULL PRIMARY KEY,\"COL_INTEGER\" INTEGER NOT NULL UNIQUE,\"COL_BIGINT\" BIGINT," +
             "\"COL_TINYINT\" TINYINT,\"COL_SMALLINT\" SMALLINT,\"COL_CHAR\" CHAR,\"COL_VARCHAR\" VARCHAR," +
             "\"COL_STRING\" VARCHAR,\"COL_TIMESTAMP\" TIMESTAMP,\"COL_DATETIME\" DATETIME,\"COL_DATE\" DATE," +
             "\"COL_REAL\" REAL,\"COL_FLOAT\" REAL,\"COL_DECIMAL\" DECIMAL(10,4),\"COL_DOUBLE\" DOUBLE," +

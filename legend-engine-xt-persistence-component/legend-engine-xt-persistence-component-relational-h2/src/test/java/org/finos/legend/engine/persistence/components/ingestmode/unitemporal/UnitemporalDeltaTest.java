@@ -55,7 +55,7 @@ class UnitemporalDeltaTest extends BaseTest
     @Test
     void testMilestoning() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getUnitemporalMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
 
         String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
@@ -114,7 +114,7 @@ class UnitemporalDeltaTest extends BaseTest
     void testMilestoningWithDeleteIndicator() throws Exception
     {
 
-        DatasetDefinition mainTable = TestUtils.getUnitemporalMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getStagingTableWithDeleteIndicator();
 
         String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
@@ -223,7 +223,7 @@ class UnitemporalDeltaTest extends BaseTest
     @Test
     void testMilestoningWithDeleteIndicatorWithCleanStagingDataWithoutStatCollection() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getUnitemporalMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getStagingTableWithDeleteIndicator();
 
         String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
@@ -263,7 +263,7 @@ class UnitemporalDeltaTest extends BaseTest
     @Test
     void testMilestoningWithDeleteIndicatorWithoutCleanStagingDataWithStatCollection() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getUnitemporalMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getStagingTableWithDeleteIndicator();
 
         String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};

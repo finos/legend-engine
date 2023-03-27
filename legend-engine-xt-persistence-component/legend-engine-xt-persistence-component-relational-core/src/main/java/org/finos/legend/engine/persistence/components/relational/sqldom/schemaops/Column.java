@@ -75,6 +75,13 @@ public class Column implements SqlGen
         builder.append(SqlGenUtils.getQuotedField(columnName, quoteIdentifier));
     }
 
+    public void genSqlWithNameAndTypeOnly(StringBuilder builder) throws SqlDomException
+    {
+        validate();
+        builder.append(SqlGenUtils.getQuotedField(columnName, quoteIdentifier) + WHITE_SPACE);
+        dataType.genSql(builder);
+    }
+
     @Override
     public void push(Object node)
     {

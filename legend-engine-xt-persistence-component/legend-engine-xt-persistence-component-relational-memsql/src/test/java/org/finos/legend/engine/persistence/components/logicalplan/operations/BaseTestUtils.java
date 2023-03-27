@@ -43,7 +43,7 @@ public class BaseTestUtils
     static Field colDouble = Field.builder().name("col_double").type(FieldType.of(DataType.DOUBLE, Optional.empty(), Optional.empty())).build();
     static Field colTime = Field.builder().name("col_time").type(FieldType.of(DataType.TIME, Optional.empty(), Optional.empty())).build();
     static Field colBoolean = Field.builder().name("col_boolean").type(FieldType.of(DataType.BOOLEAN, Optional.empty(), Optional.empty())).build();
-    public static Index index = Index.builder().indexName("my_idx").addAllColumns(Arrays.asList(colInt)).build();
+    public static Index index = Index.builder().indexName("my_idx").addAllColumns(Arrays.asList("col_int")).build();
 
     public static SchemaDefinition schemaWithAllColumns = SchemaDefinition.builder()
         .addFields(colInt)

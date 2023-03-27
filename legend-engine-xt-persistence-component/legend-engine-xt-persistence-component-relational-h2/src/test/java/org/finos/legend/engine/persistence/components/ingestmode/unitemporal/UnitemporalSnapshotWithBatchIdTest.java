@@ -55,7 +55,7 @@ class UnitemporalSnapshotWithBatchIdTest extends BaseTest
     @Test
     void testUnitemporalSnapshotMilestoningLogicWithoutPartition() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getUnitemporalIdBasedMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
         MetadataDataset metadataDataset = TestUtils.getMetadataDataset();
 

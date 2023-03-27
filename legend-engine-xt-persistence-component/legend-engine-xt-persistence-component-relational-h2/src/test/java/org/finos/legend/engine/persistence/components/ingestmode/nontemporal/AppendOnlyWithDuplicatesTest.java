@@ -58,7 +58,7 @@ class AppendOnlyWithDuplicatesTest extends BaseTest
     @Test
     void testAppendOnlyWithAllowDuplicatesWherePKsNotEmpty() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBasicMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
 
         // Create staging table
@@ -100,7 +100,7 @@ class AppendOnlyWithDuplicatesTest extends BaseTest
     @Test
     void testAppendOnlyWithAllowDuplicates() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBasicTableWithNoPks();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         String dataPass1 = basePath + "input/allow_duplicates/data_pass1.csv";
         Dataset stagingTable = CsvExternalDatasetReference.builder().schema(getSchemaWithNoPKs()).csvDataPath(dataPass1).build();
 
@@ -142,7 +142,7 @@ class AppendOnlyWithDuplicatesTest extends BaseTest
     @Test
     void testAppendOnlyWithFailOnDuplicatesValidation() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBasicTableWithNoPks();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         String dataPass1 = basePath + "input/allow_duplicates/data_pass1.csv";
         Dataset stagingTable = CsvExternalDatasetReference.builder().schema(getSchemaWithNoPKs()).csvDataPath(dataPass1).build();
 
@@ -181,7 +181,7 @@ class AppendOnlyWithDuplicatesTest extends BaseTest
     @Test
     void testAppendOnlyWithFailOnDuplicates() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBasicMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
 
         // Create staging table

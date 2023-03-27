@@ -227,6 +227,10 @@ public class AnsiSqlSink extends RelationalSink
             (x, y, z) ->
             {
                 throw new UnsupportedOperationException();
+            },
+            (v, w, x, y, z) ->
+            {
+                throw new UnsupportedOperationException();
             });
     }
 
@@ -237,7 +241,8 @@ public class AnsiSqlSink extends RelationalSink
         String quoteIdentifier,
         Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass,
         DatasetExists datasetExists,
-        ValidateMainDatasetSchema validateMainDatasetSchema)
+        ValidateMainDatasetSchema validateMainDatasetSchema,
+        ConstructDatasetFromDatabase constructDatasetFromDatabase)
     {
         super(
             capabilities,
@@ -246,7 +251,8 @@ public class AnsiSqlSink extends RelationalSink
             quoteIdentifier,
             rightBiasedUnion(LOGICAL_PLAN_VISITOR_BY_CLASS, logicalPlanVisitorByClass),
             datasetExists,
-            validateMainDatasetSchema);
+            validateMainDatasetSchema,
+            constructDatasetFromDatabase);
     }
 
     @Override

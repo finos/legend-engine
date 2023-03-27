@@ -75,7 +75,7 @@ public class SchemaDefinitionVisitor implements LogicalPlanVisitor<SchemaDefinit
         for (Index idx : current.indexes())
         {
             TableConstraint constraint;
-            List<String> columns = idx.columns().stream().map(Field::name).collect(Collectors.toList());
+            List<String> columns = idx.columns();
             if (idx.unique())
             {
                 constraint = new UniqueTableConstraint(columns, context.quoteIdentifier());
