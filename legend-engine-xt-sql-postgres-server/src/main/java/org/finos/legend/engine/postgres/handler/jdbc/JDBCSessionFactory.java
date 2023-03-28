@@ -24,7 +24,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Set;
 import org.finos.legend.engine.postgres.Session;
 import org.finos.legend.engine.postgres.SessionsFactory;
 import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
@@ -33,20 +35,31 @@ import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
 import org.finos.legend.engine.postgres.handler.PostgresStatement;
 import org.finos.legend.engine.postgres.handler.SessionHandler;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.slf4j.Logger;
 
 public class JDBCSessionFactory implements SessionsFactory
 {
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(JDBCSessionFactory.class);
 
     private Connection connection;
     private final String connectionString;
     private final String user;
     private final String password;
 
+    private Set<String> ignoreQuerySet;
+
+
     public JDBCSessionFactory(String connectionString, String user, String password)
+    {
+        this(connectionString, user, password, Collections.emptySet());
+    }
+
+    public JDBCSessionFactory(String connectionString, String user, String password, Set<String> ignoreQuerySet)
     {
         this.connectionString = connectionString;
         this.user = user;
         this.password = password;
+        this.ignoreQuerySet = ignoreQuerySet;
     }
 
     @Override
@@ -58,7 +71,7 @@ public class JDBCSessionFactory implements SessionsFactory
             @Override
             public PostgresPreparedStatement prepareStatement(String query) throws SQLException
             {
-                return new JDBCPostgresPreparedStatement(getConnection().prepareStatement(convertToJDBC(query)));
+                return new JDBCPostgresPreparedStatement(getConnection().prepareStatement(convertToJDBC(query)), query, ignoreQuerySet);
             }
 
             @Override
@@ -111,12 +124,18 @@ public class JDBCSessionFactory implements SessionsFactory
 
     private static class JDBCPostgresPreparedStatement implements PostgresPreparedStatement
     {
+        private String query;
 
         private PreparedStatement preparedStatement;
 
-        public JDBCPostgresPreparedStatement(PreparedStatement preparedStatement)
+        private Set<String> ignoreQuerySet;
+
+
+        public JDBCPostgresPreparedStatement(PreparedStatement preparedStatement, String query, Set<String> ignoreQuerySet)
         {
             this.preparedStatement = preparedStatement;
+            this.query = query;
+            this.ignoreQuerySet = ignoreQuerySet;
         }
 
         @Override
@@ -152,6 +171,11 @@ public class JDBCSessionFactory implements SessionsFactory
         @Override
         public boolean execute() throws Exception
         {
+            if (ignoreQuerySet.contains(query))
+            {
+                LOGGER.info("Ignoring query: " + query);
+                return false;
+            }
             return preparedStatement.execute();
         }
 

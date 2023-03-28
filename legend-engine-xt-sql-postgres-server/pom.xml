@@ -90,6 +90,13 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- DRIVERS -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- WIREMOCK -->
         <dependency>
             <groupId>com.github.tomakehurst</groupId>

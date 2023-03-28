@@ -69,7 +69,7 @@ public class Session implements AutoCloseable
         Prepared p = new Prepared();
         p.name = statementName;
         p.sql = query;
-        p.paramType = paramTypes.toArray(new Integer[]{});
+        p.paramType = paramTypes.toArray(new Integer[] {});
 
         if (query != null && query.length() > 0)
         {
@@ -119,7 +119,7 @@ public class Session implements AutoCloseable
             try
             {
                 //prepared statement parameters start with 1
-                preparedStatement.setObject(i+1, params.get(i));
+                preparedStatement.setObject(i + 1, params.get(i));
             }
             catch (Exception e)
             {
