@@ -387,6 +387,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
         config._includeType(serializationConfig.includeType);
         config._typeKeyName(serializationConfig.typeKeyName);
         config._includeEnumType(serializationConfig.includeEnumType);
+        config._dateTimeFormat(serializationConfig.dateTimeFormat);
         config._removePropertiesWithNullValues(serializationConfig.removePropertiesWithNullValues);
         config._removePropertiesWithEmptySets(serializationConfig.removePropertiesWithEmptySets);
         config._fullyQualifiedTypePath(serializationConfig.fullyQualifiedTypePath);

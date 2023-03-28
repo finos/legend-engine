@@ -376,6 +376,38 @@ public class TestServiceRunner
         Assert.assertEquals("{\"wheels\":55}", result);
     }
 
+    private static class SimpleM2MServiceRunnerForDateTimeSerialization extends AbstractServicePlanExecutor
+    {
+        SimpleM2MServiceRunnerForDateTimeSerialization(String function)
+        {
+            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleM2MService.pure", function), true);
+        }
+
+        @Override
+        public List<ServiceVariable> getServiceVariables()
+        {
+            return Collections.emptyList();
+        }
+    }
+
+    @Test
+    public void SimpleM2MServiceRunnerForDateTimeSerialization()
+    {
+        SimpleM2MServiceRunnerForDateTimeSerialization validDateTimeSerialization = new SimpleM2MServiceRunnerForDateTimeSerialization("test::serializeDateTime__String_1_");
+        ServiceRunnerInput serviceRunnerInput1 = ServiceRunnerInput
+                .newInstance()
+                .withSerializationFormat(SerializationFormat.PURE);
+        String result = validDateTimeSerialization.run(serviceRunnerInput1);
+        Assert.assertEquals("{\"age\":25,\"birthDate\":\"2014-02-27T15:01:35.231+0000\"}", result);
+
+        SimpleM2MServiceRunnerForDateTimeSerialization invalidDateTimeSerialization = new SimpleM2MServiceRunnerForDateTimeSerialization("test::serializeInvalidDateTimeFormat__String_1_");
+        ServiceRunnerInput serviceRunnerInput2 = ServiceRunnerInput
+                .newInstance();
+        IllegalArgumentException e1 = Assert.assertThrows(IllegalArgumentException.class, () -> invalidDateTimeSerialization.run(serviceRunnerInput2));
+        MatcherAssert.assertThat(e1, ThrowableMessageMatcher.hasMessage(CoreMatchers.startsWith("java.lang.IllegalArgumentException: Too many pattern letters: m\n" +
+                "yyyy-MM-dd\"T\"HH:mmm:ss.SSSZ is not a valid dateTime format in SerializationConfig")));
+    }
+
     private static class EnumParamServiceRunner extends AbstractServicePlanExecutor
     {
         private String argName;

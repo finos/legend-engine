@@ -85,6 +85,7 @@ Class meta::pure::graphFetch::execution::AlloySerializationConfig
     typeKeyName : String[1];
     includeType: Boolean[0..1];
     includeEnumType: Boolean[0..1];
+    dateTimeFormat: String[0..1];
     removePropertiesWithNullValues: Boolean[0..1];
     removePropertiesWithEmptySets: Boolean[0..1];
     fullyQualifiedTypePath: Boolean[0..1];
@@ -125,6 +126,25 @@ function meta::pure::graphFetch::execution::alloyConfig(includeType:Boolean[1], 
 function meta::pure::graphFetch::execution::alloyConfig(includeType:Boolean[1], includeEnumType:Boolean[1], removePropertiesWithNullValues:Boolean[1],  removePropertiesWithEmptySets:Boolean[1], typeString:String[1], fullyQualifiedTypePath:Boolean[1]): meta::pure::graphFetch::execution::AlloySerializationConfig[1]
 {
   meta::pure::graphFetch::execution::alloyConfig($includeType, $includeEnumType, $removePropertiesWithNullValues, $removePropertiesWithEmptySets, $typeString, $fullyQualifiedTypePath, false);
+}
+
+function meta::pure::graphFetch::execution::alloyConfig(includeType:Boolean[1], includeEnumType:Boolean[1], dateTimeFormat: String[1], removePropertiesWithNullValues:Boolean[1],  removePropertiesWithEmptySets:Boolean[1], typeString:String[1], fullyQualifiedTypePath:Boolean[1]): meta::pure::graphFetch::execution::AlloySerializationConfig[1]
+{
+  meta::pure::graphFetch::execution::alloyConfig($includeType, $includeEnumType, $dateTimeFormat, $removePropertiesWithNullValues, $removePropertiesWithEmptySets, $typeString, $fullyQualifiedTypePath, false);
+}
+
+function meta::pure::graphFetch::execution::alloyConfig(includeType:Boolean[1], includeEnumType:Boolean[1], dateTimeFormat: String[1], removePropertiesWithNullValues:Boolean[1],  removePropertiesWithEmptySets:Boolean[1], typeString:String[1], fullyQualifiedTypePath:Boolean[1], includeObjectReference:Boolean[1]): meta::pure::graphFetch::execution::AlloySerializationConfig[1]
+{
+   ^meta::pure::graphFetch::execution::AlloySerializationConfig(
+      typeKeyName = $typeString,
+      includeType = $includeType,
+      includeEnumType = $includeEnumType,
+      dateTimeFormat = $dateTimeFormat,
+      removePropertiesWithNullValues = $removePropertiesWithNullValues,
+      removePropertiesWithEmptySets = $removePropertiesWithEmptySets,
+      fullyQualifiedTypePath = $fullyQualifiedTypePath,
+      includeObjectReference = $includeObjectReference
+   );
 }
 
 function meta::pure::graphFetch::execution::alloyConfig(includeType:Boolean[1], includeEnumType:Boolean[1], removePropertiesWithNullValues:Boolean[1],  removePropertiesWithEmptySets:Boolean[1], typeString:String[1], fullyQualifiedTypePath:Boolean[1], includeObjectReference:Boolean[1]): meta::pure::graphFetch::execution::AlloySerializationConfig[1]
