@@ -23,7 +23,7 @@ function {doc.doc = 'Legend openapi test simple service'} meta::external::format
          autoActivateUpdates = true,
          execution = ^PureSingleExecution
                      (
-                        func = {|Person.all()->filter(p | $p.firstName->in(['A', 'B', 'C', 'D', 'E']))->project(col(p|$p.firstName, 'firstName'))},
+                        func = {|Person.all()->project(col(p|$p.firstName, 'firstName'))},
                         mapping = personMapping,
                         runtime = []
                      ),
@@ -52,33 +52,16 @@ function <<test.Test>> meta::external::format::openapi::test::testServiceShouldR
 }
 
 
-
-
-
-
-###Relational
-Database meta::external::format::openapi::test::dbInc
-(
-    Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT)
-)
-
 ###Mapping
 
 import meta::external::format::openapi::test::*;
 Mapping meta::external::format::openapi::test::personMapping
 (
-  Person : Relational
-            {
-                //~primaryKey([dbInc]default.personTable.ID, [dbInc]default.personTable.FIRSTNAME)
-                scope([dbInc])
-                (
-                    firstName : personTable.FIRSTNAME,
-                    age : personTable.AGE
-                ),
-                scope([dbInc]default.personTable)
-                (
-                    lastName : LASTNAME
-                )
-            }
+  Person : Pure
+           {
+             ~src Person
+             firstName : $src.firstName;
+             lastName: $src.lastName;
+           }
 )
 
