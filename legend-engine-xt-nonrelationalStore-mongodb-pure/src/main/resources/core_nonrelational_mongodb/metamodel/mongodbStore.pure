@@ -60,7 +60,7 @@ Class meta::external::store::mongodb::metamodel::BsonType extends BaseType
 {  
 }
 
-Class meta::external::store::mongodb::metamodel::ObjectType extends BsonType
+Class meta::external::store::mongodb::metamodel::ObjectType extends BaseType
 {
   properties: PropertyType[1..*];
   required: String[*];  // Refers to properties, should it be ObjectType[*]??

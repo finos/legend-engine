@@ -50,28 +50,37 @@ import org.pac4j.core.profile.CommonProfile;
 
 import java.io.IOException;
 
-public class MongoDBExecutionNodeExecutor implements ExecutionNodeVisitor<Result> {
+public class MongoDBExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
+{
     MutableList<CommonProfile> profiles;
     ExecutionState executionState;
 
-    public MongoDBExecutionNodeExecutor(MutableList<CommonProfile> profiles, ExecutionState executionState) {
+    public MongoDBExecutionNodeExecutor(MutableList<CommonProfile> profiles, ExecutionState executionState)
+    {
         this.profiles = profiles;
         this.executionState = executionState;
     }
 
     @Override
-    public Result visit(ExecutionNode executionNode) {
-        if (executionNode instanceof MongoDBExecutionNode) {
-            try (Scope scope = GlobalTracer.get().buildSpan("MongoDB Store Execution").startActive(true)) {
+    public Result visit(ExecutionNode executionNode)
+    {
+        if (executionNode instanceof MongoDBExecutionNode)
+        {
+            try (Scope scope = GlobalTracer.get().buildSpan("MongoDB Store Execution").startActive(true))
+            {
                 return executeMongoDBExecutionNode((MongoDBExecutionNode) executionNode);
             }
-        } else {
+        }
+        else
+        {
             return null;
         }
     }
 
-    public Result executeMongoDBExecutionNode(MongoDBExecutionNode mongoDBExecutionNode) {
-        try (Scope scope = GlobalTracer.get().buildSpan("MongoDB Store Execution").startActive(true)) {
+    public Result executeMongoDBExecutionNode(MongoDBExecutionNode mongoDBExecutionNode)
+    {
+        try (Scope scope = GlobalTracer.get().buildSpan("MongoDB Store Execution").startActive(true))
+        {
             scope.span().setTag("databaseCommand", (mongoDBExecutionNode).databaseCommand.toString());
             MongoDBConnection mongoDBConnection = mongoDBExecutionNode.connection;
             String databaseCommand = mongoDBExecutionNode.databaseCommand;
@@ -83,95 +92,114 @@ public class MongoDBExecutionNodeExecutor implements ExecutionNodeVisitor<Result
 
             CredentialProviderProvider credentialProviderProvider = ((MongoDBStoreExecutionState) executionState.getStoreExecutionState(StoreType.NonRelational_MongoDB)).getCredentialProviderProvider();
             return new MongoDBExecutor(credentialProviderProvider).executeMongoDBQuery(composedDbCommand, mongoDBConnection);
-        } catch (IOException e) {
+        }
+        catch (IOException e)
+        {
             throw new IllegalStateException("Failed to parse databaseCommand from Mongo executionNode", e);
         }
     }
 
     @Deprecated
     @Override
-    public Result visit(GraphFetchM2MExecutionNode graphFetchM2MExecutionNode) {
+    public Result visit(GraphFetchM2MExecutionNode graphFetchM2MExecutionNode)
+    {
         throw new RuntimeException("Not implemented!");
     }
 
     @Override
-    public Result visit(StoreStreamReadingExecutionNode storeStreamReadingExecutionNode) {
+    public Result visit(StoreStreamReadingExecutionNode storeStreamReadingExecutionNode)
+    {
         throw new RuntimeException("Not implemented!");
     }
 
     @Override
-    public Result visit(InMemoryRootGraphFetchExecutionNode inMemoryRootGraphFetchExecutionNode) {
+    public Result visit(InMemoryRootGraphFetchExecutionNode inMemoryRootGraphFetchExecutionNode)
+    {
         throw new RuntimeException("Not implemented!");
     }
 
     @Override
-    public Result visit(InMemoryCrossStoreGraphFetchExecutionNode inMemoryRootGraphFetchExecutionNode) {
+    public Result visit(InMemoryCrossStoreGraphFetchExecutionNode inMemoryRootGraphFetchExecutionNode)
+    {
         throw new RuntimeException("Not implemented!");
     }
 
     @Override
-    public Result visit(InMemoryPropertyGraphFetchExecutionNode inMemoryPropertyGraphFetchExecutionNode) {
+    public Result visit(InMemoryPropertyGraphFetchExecutionNode inMemoryPropertyGraphFetchExecutionNode)
+    {
         throw new RuntimeException("Not implemented!");
     }
 
     @Deprecated
     @Override
-    public Result visit(GraphFetchExecutionNode graphFetchExecutionNode) {
+    public Result visit(GraphFetchExecutionNode graphFetchExecutionNode)
+    {
         throw new RuntimeException("Not implemented!");
     }
 
     @Override
-    public Result visit(StoreMappingGlobalGraphFetchExecutionNode storeMappingGlobalGraphFetchExecutionNode) {
+    public Result visit(StoreMappingGlobalGraphFetchExecutionNode storeMappingGlobalGraphFetchExecutionNode)
+    {
         throw new RuntimeException("Not implemented!");
     }
 
     @Override
-    public Result visit(ErrorExecutionNode errorExecutionNode) {
+    public Result visit(ErrorExecutionNode errorExecutionNode)
+    {
         throw new RuntimeException("Not implemented!");
     }
 
     @Override
-    public Result visit(AggregationAwareExecutionNode aggregationAwareExecutionNode) {
+    public Result visit(AggregationAwareExecutionNode aggregationAwareExecutionNode)
+    {
         throw new RuntimeException("Not implemented!");
     }
 
     @Override
-    public Result visit(MultiResultSequenceExecutionNode multiResultSequenceExecutionNode) {
+    public Result visit(MultiResultSequenceExecutionNode multiResultSequenceExecutionNode)
+    {
         throw new RuntimeException("Not implemented!");
     }
 
     @Override
-    public Result visit(SequenceExecutionNode sequenceExecutionNode) {
+    public Result visit(SequenceExecutionNode sequenceExecutionNode)
+    {
         throw new RuntimeException("Not implemented!");
     }
 
     @Override
-    public Result visit(FunctionParametersValidationNode functionParametersValidationNode) {
+    public Result visit(FunctionParametersValidationNode functionParametersValidationNode)
+    {
         throw new RuntimeException("Not implemented!");
     }
 
     @Override
-    public Result visit(AllocationExecutionNode allocationExecutionNode) {
+    public Result visit(AllocationExecutionNode allocationExecutionNode)
+    {
         throw new RuntimeException("Not implemented!");
     }
 
     @Override
-    public Result visit(PureExpressionPlatformExecutionNode pureExpressionPlatformExecutionNode) {
+    public Result visit(PureExpressionPlatformExecutionNode pureExpressionPlatformExecutionNode)
+    {
         throw new RuntimeException("Not implemented!");
     }
 
     @Override
-    public Result visit(ConstantExecutionNode constantExecutionNode) {
+    public Result visit(ConstantExecutionNode constantExecutionNode)
+    {
         throw new RuntimeException("Not implemented!");
     }
 
     @Override
-    public Result visit(LocalGraphFetchExecutionNode localGraphFetchExecutionNode) {
+    public Result visit(LocalGraphFetchExecutionNode localGraphFetchExecutionNode)
+    {
         throw new RuntimeException("Not implemented!");
     }
 
     @Override
-    public Result visit(FreeMarkerConditionalExecutionNode localGraphFetchExecutionNode) {
+    public Result visit(FreeMarkerConditionalExecutionNode localGraphFetchExecutionNode)
+    {
         throw new RuntimeException("Not implemented!");
     }
 }
