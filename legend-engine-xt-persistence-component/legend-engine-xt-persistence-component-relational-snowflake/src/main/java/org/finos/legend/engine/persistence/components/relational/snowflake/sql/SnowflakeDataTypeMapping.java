@@ -67,6 +67,8 @@ public class SnowflakeDataTypeMapping implements DataTypeMapping
             case NUMBER:
             case DECIMAL:
                 dataType = new Number(38, 0);
+                type.length().ifPresent(dataType::setLength);
+                type.scale().ifPresent(dataType::setScale);
                 break;
             case REAL:
             case FLOAT:
@@ -77,15 +79,18 @@ public class SnowflakeDataTypeMapping implements DataTypeMapping
             case CHAR:
             case CHARACTER:
                 dataType = new Char();
+                type.length().ifPresent(dataType::setLength);
                 break;
             case VARCHAR:
             case STRING:
             case TEXT:
                 dataType = new VarChar();
+                type.length().ifPresent(dataType::setLength);
                 break;
             case BINARY:
             case VARBINARY:
                 dataType = new Binary();
+                type.length().ifPresent(dataType::setLength);
                 break;
             // Other types
             case BOOLEAN:
@@ -96,21 +101,27 @@ public class SnowflakeDataTypeMapping implements DataTypeMapping
                 break;
             case TIME:
                 dataType = new Time();
+                type.scale().ifPresent(dataType::setScale);
                 break;
             case DATETIME:
                 dataType = new DateTime();
+                type.scale().ifPresent(dataType::setScale);
                 break;
             case TIMESTAMP:
                 dataType = new Timestamp();
+                type.scale().ifPresent(dataType::setScale);
                 break;
             case TIMESTAMP_NTZ:
                 dataType = new TimestampWithNoTimeZone();
+                type.scale().ifPresent(dataType::setScale);
                 break;
             case TIMESTAMP_TZ:
                 dataType = new TimestampWithTimezone();
+                type.scale().ifPresent(dataType::setScale);
                 break;
             case TIMESTAMP_LTZ:
                 dataType = new TimestampWithLocalTimezone();
+                type.scale().ifPresent(dataType::setScale);
                 break;
             case VARIANT:
                 dataType = new Variant();
@@ -124,9 +135,6 @@ public class SnowflakeDataTypeMapping implements DataTypeMapping
             default:
                 throw new IllegalArgumentException("Unexpected value: " + type.dataType());
         }
-
-        type.length().ifPresent(dataType::setLength);
-        type.scale().ifPresent(dataType::setScale);
 
         return dataType;
     }

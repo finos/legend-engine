@@ -258,6 +258,7 @@
         <module>legend-engine-xt-nonrelationalStore-mongodb-grammar</module>
         <module>legend-engine-xt-nonrelationalStore-mongodb-protocol</module>
         <module>legend-engine-xt-nonrelationalStore-mongodb-grammar-integration</module>
+        <module>legend-engine-xt-openapi-generation</module>
 
         <!-- NOTE: Do not change the ordering of this block, we want to build these modules last -->
         <module>legend-engine-test-reports</module>
@@ -1787,6 +1788,12 @@
                 <artifactId>legend-engine-xt-nonrelationalStore-mongodb-protocol</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-openapi-generation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <!-- ENGINE -->
 
             <!-- PURE -->

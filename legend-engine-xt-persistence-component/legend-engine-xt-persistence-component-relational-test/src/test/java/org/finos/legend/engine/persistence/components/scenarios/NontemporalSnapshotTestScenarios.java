@@ -49,7 +49,7 @@ public class NontemporalSnapshotTestScenarios extends BaseTest
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder()
                 .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
                 .build();
-        return new TestScenario(mainTableWithBaseSchema, stagingTableWithBaseSchema, ingestMode);
+        return new TestScenario(mainTableWithBaseSchemaHavingAuditField, stagingTableWithBaseSchema, ingestMode);
     }
 
     public TestScenario WITH_AUDTING__WITH_DATASPLIT()
@@ -58,7 +58,7 @@ public class NontemporalSnapshotTestScenarios extends BaseTest
                 .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
                 .dataSplitField("data_split")
                 .build();
-        return new TestScenario(mainTableWithBaseSchema, stagingTableWithBaseSchemaHavingDataSplit, ingestMode);
+        return new TestScenario(mainTableWithBaseSchemaHavingAuditField, stagingTableWithBaseSchemaHavingDataSplit, ingestMode);
     }
 
 

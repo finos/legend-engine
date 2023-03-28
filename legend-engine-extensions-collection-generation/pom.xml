@@ -329,6 +329,12 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-analytics-search-generation</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-openapi-generation</artifactId>
+        </dependency>
+
         <!-- ENGINE XT -->
 
         <!-- ECLIPSE COLLECTIONS -->

@@ -22,7 +22,6 @@ import org.finos.legend.engine.persistence.components.ingestmode.transactionmile
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
-import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -40,8 +39,6 @@ import static org.finos.legend.engine.persistence.components.TestUtils.priceName
 import static org.finos.legend.engine.persistence.components.TestUtils.dateName;
 import static org.finos.legend.engine.persistence.components.TestUtils.digestName;
 import static org.finos.legend.engine.persistence.components.TestUtils.expiryDateName;
-import static org.finos.legend.engine.persistence.components.TestUtils.getBasicStagingTable;
-import static org.finos.legend.engine.persistence.components.TestUtils.getUnitemporalMainTableWithMissingColumn;
 import static org.finos.legend.engine.persistence.components.TestUtils.idName;
 import static org.finos.legend.engine.persistence.components.TestUtils.incomeName;
 import static org.finos.legend.engine.persistence.components.TestUtils.nameName;
@@ -60,9 +57,8 @@ class UnitemporalSnapshotTest extends BaseTest
     @Test
     void testUnitemporalSnapshotMilestoningLogicWithoutPartition() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getUnitemporalMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
-        MetadataDataset metadataDataset = TestUtils.getMetadataDataset();
 
         String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
 
@@ -297,69 +293,5 @@ class UnitemporalSnapshotTest extends BaseTest
         // 3. Assert that the staging table is truncated
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
         Assertions.assertEquals(stagingTableList.size(), 6);
-    }
-
-    /*
-    Scenario: Test milestoning Logic without Partition when staging table pre populated
-    Staging table has extra column which will be handled under schema evolution
-    */
-    @Test
-    void testUnitemporalSnapshotMilestoningLogicWithoutPartitionWithSchemaEvolutionAddColumn() throws Exception
-    {
-        MetadataDataset metadataDataset = TestUtils.getMetadataDataset();
-
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
-
-        // Create staging table
-        createStagingTable(TestUtils.getBasicStagingTable());
-
-        UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
-            .digestField(digestName)
-            .transactionMilestoning(BatchIdAndDateTime.builder()
-                .batchIdInName(batchIdInName)
-                .batchIdOutName(batchIdOutName)
-                .dateTimeInName(batchTimeInName)
-                .dateTimeOutName(batchTimeOutName)
-                .build())
-            .build();
-
-        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).enableSchemaEvolution(true).build();
-        Datasets datasets = Datasets.builder()
-            .mainDataset(getUnitemporalMainTableWithMissingColumn())
-            .stagingDataset(getBasicStagingTable()).metadataDataset(metadataDataset)
-            .build();
-
-        // ------------ Perform unitemporal snapshot milestoning Pass1 ------------------------
-        String dataPass1 = basePathForInput + "without_partition/staging_data_pass1.csv";
-        String expectedDataPass1 = basePathForExpected + "without_partition/expected_pass1.csv";
-        // 1. Load staging table
-        loadBasicStagingData(dataPass1);
-        // 2. Execute plans and verify results
-        Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
-        IngestorResult result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
-        // 3. Assert that the staging table is NOT truncated
-        List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
-        Assertions.assertEquals(stagingTableList.size(), 3);
-
-        // ------------ Perform unitemporal snapshot milestoning Pass2 ------------------------
-        String dataPass2 = basePathForInput + "without_partition/staging_data_pass2.csv";
-        String expectedDataPass2 = basePathForExpected + "without_partition/expected_pass2.csv";
-        // 1. Load staging table
-        loadBasicStagingData(dataPass2);
-        // 2. Execute plans and verify results
-        expectedStats = createExpectedStatsMap(4, 0, 1, 1, 0);
-        result = executePlansAndVerifyResults(ingestMode, options, result.updatedDatasets(), schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
-
-        // ------------ Perform unitemporal snapshot milestoning Pass3 (Empty Batch) ------------------------
-
-        options = PlannerOptions.builder().collectStatistics(true).build();
-
-        String dataPass3 = basePathForInput + "without_partition/staging_data_pass3.csv";
-        String expectedDataPass3 = basePathForExpected + "without_partition/expected_pass3.csv";
-        // 1. Load Staging table
-        loadBasicStagingData(dataPass3);
-        // 2. Execute plans and verify results
-        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 4);
-        executePlansAndVerifyResults(ingestMode, options, result.updatedDatasets(), schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01);
     }
 }

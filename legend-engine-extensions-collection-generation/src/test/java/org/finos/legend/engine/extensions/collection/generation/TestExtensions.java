@@ -22,6 +22,7 @@ import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
 import org.finos.legend.engine.generation.DataSpaceAnalyticsArtifactGenerationExtension;
+import org.finos.legend.engine.generation.OpenApiArtifactGenerationExtension;
 import org.finos.legend.engine.generation.SearchDocumentArtifactGenerationExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
@@ -326,7 +327,8 @@ public class TestExtensions
         // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
         return Lists.mutable.<Class<? extends ArtifactGenerationExtension>>empty()
                 .with(DataSpaceAnalyticsArtifactGenerationExtension.class)
-                .with(SearchDocumentArtifactGenerationExtension.class);
+                .with(SearchDocumentArtifactGenerationExtension.class)
+                .with(OpenApiArtifactGenerationExtension.class);
     }
 
     protected Iterable<String> getExpectedCodeRepositories()

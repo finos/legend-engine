@@ -58,7 +58,7 @@ class BitemporalSnapshotWithBatchIdTest extends BaseTest
     @Test
     void testBitemporalSnapshotMilestoningLogicWithoutPartition() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBitemporalMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getBitemporalStagingTable();
 
         String[] schema = new String[]{key1Name, key2Name, valueName, dateInName, dateOutName, digestName, batchIdInName, batchIdOutName, fromName, throughName};
@@ -128,7 +128,7 @@ class BitemporalSnapshotWithBatchIdTest extends BaseTest
     void testBitemporalSnapshotMilestoningLogicHasFromTimeOnly() throws Exception
     {
 
-        DatasetDefinition mainTable = TestUtils.getBitemporalFromTimeOnlyMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getBitemporalFromTimeOnlyStagingTable();
 
         String[] schema = new String[]{key1Name, key2Name, valueName, dateInName, digestName, batchIdInName, batchIdOutName, fromName, throughName};
@@ -196,7 +196,7 @@ class BitemporalSnapshotWithBatchIdTest extends BaseTest
     void testBitemporalSnapshotMilestoningLogicWithPartition() throws Exception
     {
 
-        DatasetDefinition mainTable = TestUtils.getBitemporalMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getBitemporalStagingTable();
 
         String[] schema = new String[]{key1Name, key2Name, valueName, dateInName, dateOutName, digestName, batchIdInName, batchIdOutName, fromName, throughName};

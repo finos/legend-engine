@@ -14,7 +14,9 @@
 
 package org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors;
 
+import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.NumericalValue;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.ObjectValue;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
@@ -27,6 +29,11 @@ public class ObjectValueVisitor implements LogicalPlanVisitor<org.finos.legend.e
     {
 
         ObjectValue value = new ObjectValue(current.value().orElse(null), current.alias().orElse(null), context.quoteIdentifier());
+        for (Optimizer optimizer : context.optimizers())
+        {
+            value = (ObjectValue) optimizer.optimize(value);
+        }
+
         prev.push(value);
 
         return new VisitorResult(null);

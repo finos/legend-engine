@@ -16,6 +16,7 @@ package org.finos.legend.engine.persistence.components.relational.ansi.sql.visit
 
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNode;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
+import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.relational.sqldom.common.FunctionName;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
@@ -37,6 +38,10 @@ public class FunctionVisitor implements LogicalPlanVisitor<FunctionImpl>
                 current.alias().orElse(null),
                 context.quoteIdentifier());
 
+        for (Optimizer optimizer : context.optimizers())
+        {
+            function = (org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Function) optimizer.optimize(function);
+        }
         prev.push(function);
 
         if (current.value() != null)
