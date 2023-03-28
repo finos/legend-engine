@@ -199,10 +199,10 @@
             <artifactId>legend-pure-m2-dsl-mapping-pure</artifactId>
         </dependency>
         <!-- Required for test -->
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m2-dsl-graph-pure</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.finos.legend.pure</groupId>-->
+<!--            <artifactId>legend-pure-m2-dsl-graph-pure</artifactId>-->
+<!--        </dependency>-->
         <!-- PURE -->
 
         <!-- ENGINE -->
@@ -268,12 +268,5 @@
             <artifactId>eclipse-collections-api</artifactId>
         </dependency>
 
-        <!-- TEST -->
-<!--        <dependency>-->
-<!--            <groupId>junit</groupId>-->
-<!--            <artifactId>junit</artifactId>-->
-<!--        </dependency>-->
-
-        <!-- TEST -->
     </dependencies>
 </project>

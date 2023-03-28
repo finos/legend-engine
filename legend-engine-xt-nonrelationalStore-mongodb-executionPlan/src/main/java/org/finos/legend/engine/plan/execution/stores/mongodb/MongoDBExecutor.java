@@ -53,7 +53,6 @@ public class MongoDBExecutor
 
     public InputStreamResult executeMongoDBQuery(String dbCommand, MongoDBConnection dbConnection)
     {
-        // Connection has datasource details & authentication.
         try
         {
             MongoDBStoreConnectionProvider mongoDBConnectionProvider = getMongoDBConnectionProvider();
@@ -65,11 +64,9 @@ public class MongoDBExecutor
             Document bsonCmd = Document.parse(dbCommand);
 
 
-            // Loading with no iterator - TODO: Fix this up
             ObjectMapper mapper = new ObjectMapper();
             ArrayNode arrayNode = mapper.createArrayNode();
 
-            // using Collection and Iterator
             try (MongoCursor<Document> cursor = mongoDatabase.getCollection(bsonCmd.getString("aggregate"))
                     .aggregate(bsonCmd.getList("pipeline", Document.class))
                     .batchSize(DEFAULT_BATCH_SIZE).iterator())
@@ -104,13 +101,10 @@ public class MongoDBExecutor
                 .with(propertiesFileCredentialVault).build();
 
 
-        // Setup CV Provider with just platform CV provider
         CredentialVaultProvider credentialVaultProvider = CredentialVaultProvider.builder()
                 .with(platformCredentialVaultProvider)
-                //.with(awsSecretsManagerVault)
                 .build();
 
-        // Looks like the link between the CV provider and the ProviderProvider
         IntermediationRuleProvider intermediationRuleProvider = IntermediationRuleProvider.builder()
                 .with(new UserPasswordFromVaultRule(credentialVaultProvider))
                 .build();

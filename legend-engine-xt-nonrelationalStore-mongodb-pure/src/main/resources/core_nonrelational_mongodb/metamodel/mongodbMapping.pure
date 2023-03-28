@@ -40,7 +40,6 @@ Class meta::external::store::mongodb::metamodel::mapping::MongoDBClassMapping
 
 Class meta::external::store::mongodb::metamodel::pure::EmbeddedMongoDBSetImplementation extends EmbeddedSetImplementation
 {
-  // Store comes from PropertyMapping
     mainCollection : Collection[1];
     binding: Binding[1];
 }
@@ -58,13 +57,8 @@ Class meta::external::store::mongodb::metamodel::mapping::Field
     owner: Collection[0..1];
 }
 
-// Pure Mapping specification
-
-
-
 Class meta::external::store::mongodb::metamodel::pure::MongoDBSetImplementation extends InstanceSetImplementation
 {
-    // Store comes from PropertyMapping
     mainCollection : Collection[1];
     binding: Binding[1];
 

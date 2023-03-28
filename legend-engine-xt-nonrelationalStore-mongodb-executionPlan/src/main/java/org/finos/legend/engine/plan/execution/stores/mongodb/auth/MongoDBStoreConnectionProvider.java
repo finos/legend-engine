@@ -60,7 +60,6 @@ public class MongoDBStoreConnectionProvider extends ConnectionProvider<MongoClie
         }
 
         PlaintextUserPasswordCredential plaintextCredential = (PlaintextUserPasswordCredential) credential;
-        //TODO: THE admin DB should come from credentials
         MongoCredential mongoCredential = MongoCredential.createCredential(plaintextCredential.getUser(), ADMIN_DB, plaintextCredential.getPassword().toCharArray());
         List<ServerAddress> serverAddresses = mongoDBConnectionSpec.getServerAddresses();
 

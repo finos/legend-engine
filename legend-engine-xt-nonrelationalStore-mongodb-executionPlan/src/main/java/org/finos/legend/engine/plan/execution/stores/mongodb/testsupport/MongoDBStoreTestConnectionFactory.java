@@ -38,9 +38,6 @@ public class MongoDBStoreTestConnectionFactory implements ConnectionFactoryExten
 {
     public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnection(Connection sourceConnection, EmbeddedData data)
     {
-        // TODO : Implement test connection to in-memory instance + load data.
-
-
         if (sourceConnection instanceof MongoDBConnection && data instanceof MongoDBStoreEmbeddedData)
         {
 

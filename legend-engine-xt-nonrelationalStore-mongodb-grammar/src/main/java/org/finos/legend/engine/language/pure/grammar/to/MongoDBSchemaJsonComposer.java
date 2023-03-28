@@ -112,7 +112,6 @@ public class MongoDBSchemaJsonComposer
             ComposerUtility.appendTabString(builder, validatorValuesIndex);
             ComposerUtility.appendJsonKey(builder, "$jsonSchema");
             visitSchemas(col.validator.validatorExpression, builder, validatorValuesIndex);
-            //appendStringWithQuotes(builder, col.schema.id);
 
             if (col.validator.validationLevel != null)
             {

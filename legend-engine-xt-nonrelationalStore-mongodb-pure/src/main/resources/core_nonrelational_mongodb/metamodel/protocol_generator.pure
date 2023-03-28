@@ -35,6 +35,5 @@ function meta::external::store::mongodb::metamodel::configureConventions(purePac
                  ->addProvidedType(meta::pure::runtime::connection::authentication::AuthenticationSpecification, 'org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification')
                  ->addProvidedType(meta::pure::executionPlan::ExecutionNode,'org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode')
                  ->addProvidedType(meta::pure::data::EmbeddedData,'org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData');
-                 //->addProvidedType(meta::json::JSONObject,'org.finos.legend.pure.generated.Root_meta_json_JSONObject');
     $defaultConventions;
 }

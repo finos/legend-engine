@@ -5,6 +5,13 @@
 
 ### Execution
 - Run Server.java
+  - Before running the server, click the Run configurations dropdown between the Build Project button(hammer symbol) and the Run button on the upper right corner of Intellij:
+    - Select "Edit Configurations..."
+    - Under "Application", select "Server" (or "Server External" - depends on what name the legend engine server has)
+    - Select "Modify Options"
+    - Select "Add VM Options"
+    - In the "VM Options" input field that appeared after clicking "Add VM Options", add "-Dmongo_pwd=sa" (without the double quotes)
+    - Click "Apply"
 - Run PureIDELight.java
 - Run MongoTestServerInvoker.java
   - By running this, a dockerized mongo db spins up, and contains the data from this file: src/test/resources/mongoData/person.json
