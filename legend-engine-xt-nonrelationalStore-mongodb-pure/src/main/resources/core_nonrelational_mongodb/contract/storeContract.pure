@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::mongodb::metamodel::mapping::*;
 import meta::pure::router::store::metamodel::*;
 import meta::pure::router::routing::*;
 import meta::external::store::mongodb::metamodel::aggregation::*;
@@ -42,10 +43,15 @@ function meta::external::store::mongodb::contract::mongoDBStoreContract(): Store
     planGraphFetchExecution = meta::external::store::mongodb::contract::planGraphFetchExecution_StoreMappingLocalGraphFetchExecutionNodeGenerationInput_1__LocalGraphFetchExecutionNode_1_,
     supportsStore = s:Store[1]|$s->instanceOf(meta::external::store::mongodb::metamodel::pure::MongoDatabase),
     supportsNativeJoinAmongElements = false,
-    supportsSetImplementation = s:SetImplementation[1]| $s->instanceOf(MongoDBSetImplementation) ||
-                                                        $s->instanceOf(CrossSetImplementation) && $s->cast(@CrossSetImplementation).targetStore->instanceOf(MongoDatabase),
-    resolveStoreFromSetImplementation = s:InstanceSetImplementation[1]|$s->meta::external::store::mongodb::contract::getStore(),
-    supports = meta::external::store::mongodb::contract::supports_FunctionExpression_1__Boolean_1_
+    supportsSetImplementation = s:SetImplementation[1]| $s->instanceOf(MongoDBSetImplementation) || $s->instanceOf(EmbeddedMongoDBSetImplementation),
+    resolveStoreFromSetImplementation = s:InstanceSetImplementation[1]|$s->match(
+                                                                            [
+                                                                              m : MongoDBSetImplementation[1] | $m->getStore(),
+                                                                              e : EmbeddedMongoDBSetImplementation[1] | $e->resolveRootFromEmbedded()->cast(@MongoDBSetImplementation).getStore();
+                                                                            ]
+                                                                        ),
+    supports = meta::external::store::mongodb::contract::supports_FunctionExpression_1__Boolean_1_,
+    extractSourceClassFromSetImplementation = [m: MongoDBSetImplementation[1]  | $m.class, e: EmbeddedMongoDBSetImplementation[1]  | $e.class] // the second one maybe not needed, doesn't break without it
   )
 }
 
@@ -85,8 +91,7 @@ function meta::external::store::mongodb::contract::getStore(r:InstanceSetImpleme
   $r->match(
     [
       r:MongoDBSetImplementation[1]|
-          $r.mainCollection.owner->toOne(),
-      s:CrossSetImplementation[1]|$s.targetStore
+          $r.mainCollection.owner->toOne()
     ]
   )
 }

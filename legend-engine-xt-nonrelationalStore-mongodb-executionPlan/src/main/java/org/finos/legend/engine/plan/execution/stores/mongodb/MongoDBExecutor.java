@@ -14,6 +14,9 @@
 
 package org.finos.legend.engine.plan.execution.stores.mongodb;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
@@ -34,11 +37,7 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
 public class MongoDBExecutor
@@ -67,29 +66,22 @@ public class MongoDBExecutor
 
 
             // Loading with no iterator - TODO: Fix this up
-            // Document dbResult = mongoDatabase.runCommand(bsonCmd);
+            ObjectMapper mapper = new ObjectMapper();
+            ArrayNode arrayNode = mapper.createArrayNode();
 
             // using Collection and Iterator
-            List<String> result = new ArrayList<>();
             try (MongoCursor<Document> cursor = mongoDatabase.getCollection(bsonCmd.getString("aggregate"))
                     .aggregate(bsonCmd.getList("pipeline", Document.class))
                     .batchSize(DEFAULT_BATCH_SIZE).iterator())
             {
                 while (cursor.hasNext())
                 {
-                    String jsonResult = cursor.next().toJson();
-                    System.out.println(jsonResult);
-                    result.add(jsonResult);
+                    JsonNode jsonNode = mapper.readTree(cursor.next().toJson());
+                    arrayNode.add(jsonNode);
                 }
             }
 
-            // return results as InputStream
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(baos);
-            oos.writeObject(result);
-            oos.flush();
-            byte[] bytes = baos.toByteArray();
-            InputStream inputStream = new ByteArrayInputStream(bytes);
+            InputStream inputStream = new ByteArrayInputStream(arrayNode.toString().getBytes());
 
             return new InputStreamResult(inputStream);
 

@@ -20,6 +20,7 @@ function meta::pure::extension::configuration::coreExtensions(): Extension[*]
    [
       meta::pure::extension::defaultExtensions()->toOne(),
       meta::relational::extension::relationalExtension('relational'),
+      meta::external::store::mongodb::extension::mongoDBExtensions('mongoDB'),
       meta::external::store::service::extension::serviceStoreExtensions(),
       meta::external::shared::format::externalFormatExtension(),
       meta::external::format::flatdata::extension::flatDataFormatExtension(),

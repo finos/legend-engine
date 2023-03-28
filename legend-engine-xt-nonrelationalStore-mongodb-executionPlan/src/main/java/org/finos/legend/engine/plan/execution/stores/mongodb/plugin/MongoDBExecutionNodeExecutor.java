@@ -27,7 +27,6 @@ import org.finos.legend.engine.plan.execution.stores.mongodb.MongoDBExecutor;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DatabaseCommand;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBExecutionNode;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AggregationAwareExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AllocationExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ConstantExecutionNode;
@@ -71,11 +70,6 @@ public class MongoDBExecutionNodeExecutor implements ExecutionNodeVisitor<Result
             {
                 return executeMongoDBExecutionNode((MongoDBExecutionNode) executionNode);
             }
-        }
-        else if (executionNode instanceof MongoDBGraphFetchExecutionNode)
-        {
-            MongoDBGraphFetchExecutionNode node = (MongoDBGraphFetchExecutionNode) executionNode;
-            return executeMongoDBExecutionNode((MongoDBExecutionNode) node.executionNodes.get(0));
         }
         else
         {

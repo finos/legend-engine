@@ -135,6 +135,10 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-nonrelationalStore-mongodb-grammar</artifactId>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.finos.legend.engine</groupId>-->
+<!--            <artifactId>legend-engine-external-shared-format-runtime</artifactId>-->
+<!--        </dependency>-->
         <!-- ENGINE -->
 
 
@@ -251,6 +255,10 @@
             <artifactId>legend-engine-language-pure-grammar</artifactId>
             <scope>test</scope>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.finos.legend.engine</groupId>-->
+<!--            <artifactId>legend-engine-xt-json-runtime</artifactId>-->
+<!--        </dependency>-->
 
         <!--
         <dependency>

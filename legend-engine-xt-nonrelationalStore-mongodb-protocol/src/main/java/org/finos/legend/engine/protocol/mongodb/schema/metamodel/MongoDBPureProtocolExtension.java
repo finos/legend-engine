@@ -18,9 +18,7 @@ import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBExecutionNode;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDatabase;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.RootMongoDBGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
@@ -45,8 +43,6 @@ public class MongoDBPureProtocolExtension implements PureProtocolExtension
                 // Execution Nodes
                 ProtocolSubTypeInfo.newBuilder(ExecutionNode.class)
                         .withSubtype(MongoDBExecutionNode.class, "MongoDBExecutionNode")
-                        .withSubtype(RootMongoDBGraphFetchExecutionNode.class, "RootMongoDBGraphFetchExecutionNode")
-                        .withSubtype(MongoDBGraphFetchExecutionNode.class, "MongoDBGraphFetchExecutionNode")
                         .build()
         ));
     }

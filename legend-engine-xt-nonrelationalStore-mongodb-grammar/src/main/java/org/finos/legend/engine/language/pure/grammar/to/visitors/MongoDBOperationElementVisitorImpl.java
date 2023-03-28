@@ -294,9 +294,9 @@ public class MongoDBOperationElementVisitorImpl implements MongoDBOperationEleme
     @Override
     public String visit(ProjectStage val)
     {
-        return "{ \"$project\" : " +
-                val.projections.accept(new MongoDBOperationElementVisitorImpl()) +
-                " }";
+        String projectObject = val.projections.accept(new MongoDBOperationElementVisitorImpl());
+        String projectObjectWithoutId = projectObject.substring(0, projectObject.length() - 1) + ", \"_id\": 0";
+        return "{ \"$project\" : " + projectObjectWithoutId + " } }";
     }
 
 }
