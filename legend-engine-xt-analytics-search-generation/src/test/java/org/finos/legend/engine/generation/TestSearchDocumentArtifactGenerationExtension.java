@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.generation;
 
+import static org.finos.legend.engine.generation.SearchDocumentArtifactGenerationExtension.FILE_NAME;
+
 import java.net.URL;
 import java.util.List;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
@@ -68,7 +70,7 @@ public class TestSearchDocumentArtifactGenerationExtension
         Assert.assertEquals(1, outputs.size());
         Artifact searchDocumentResult = outputs.get(0);
         Assert.assertEquals(searchDocumentResult.format, "json");
-        Assert.assertEquals(searchDocumentResult.path, "model::Person.json");
+        Assert.assertEquals(searchDocumentResult.path, FILE_NAME);
         Assert.assertNotNull(searchDocumentResult.content);
         Assert.assertEquals(searchDocumentResult.content, "{\"package\":\"model\",\"name\":\"Person\",\"projectCoordinates\":{\"versionId\":\"UNKNOWN\",\"groupId\":\"UNKNOWN\",\"artifactId\":\"UNKNOWN\"},\"id\":\"model::Person\",\"type\":\"Class\",\"properties\":[\"firstName\",\"lastName\"]}");
     }
@@ -98,7 +100,7 @@ public class TestSearchDocumentArtifactGenerationExtension
         Assert.assertEquals(1, outputs.size());
         Artifact searchDocumentResult = outputs.get(0);
         Assert.assertEquals(searchDocumentResult.format, "json");
-        Assert.assertEquals(searchDocumentResult.path, "model::Person.json");
+        Assert.assertEquals(searchDocumentResult.path, FILE_NAME);
         Assert.assertNotNull(searchDocumentResult.content);
         Assert.assertEquals(searchDocumentResult.content, "{\"package\":\"model\",\"name\":\"Person\",\"projectCoordinates\":{\"versionId\":\"0.0.1-SNAPSHOT\",\"groupId\":\"org.finos.test\",\"artifactId\":\"test-project\"},\"id\":\"model::Person\",\"type\":\"Class\",\"properties\":[\"firstName\",\"lastName\"]}");
     }
