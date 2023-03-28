@@ -225,14 +225,7 @@ function  meta::external::store::mongodb::executionPlan::platformBinding::legend
           dataType = ^meta::external::store::mongodb::metamodel::IntType(),
           argumentExpression = ^FieldPathExpression(fieldPath='age')
     );
-    let firm = ^meta::external::store::mongodb::metamodel::mapping::Field(
-          dataType = ^meta::external::store::mongodb::metamodel::ObjectType(
-            required = ['legalName', 'address'],
-            properties = [$personCollection.validator.validatorExpression->cast(@JsonSchemaExpression).schemaExpression.properties->at(4)],
-            additionalPropertiesAllowed = true
-          ),
-          argumentExpression = ^FieldPathExpression(fieldPath='firm')
-    );
+
     let legalName = ^meta::external::store::mongodb::metamodel::mapping::Field(
           dataType = ^meta::external::store::mongodb::metamodel::StringType(),
           argumentExpression = ^FieldPathExpression(fieldPath='firm.legalName'));
