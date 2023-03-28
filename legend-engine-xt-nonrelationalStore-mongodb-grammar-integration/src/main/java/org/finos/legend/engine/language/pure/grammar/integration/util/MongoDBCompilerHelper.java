@@ -46,6 +46,8 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDatab
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.pure.generated.Root_meta_external_store_mongodb_metamodel_ArrayType;
+import org.finos.legend.pure.generated.Root_meta_external_store_mongodb_metamodel_ArrayType_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_store_mongodb_metamodel_BaseType;
 import org.finos.legend.pure.generated.Root_meta_external_store_mongodb_metamodel_BoolType;
 import org.finos.legend.pure.generated.Root_meta_external_store_mongodb_metamodel_BoolType_Impl;
@@ -166,7 +168,7 @@ public class MongoDBCompilerHelper
         {
             Root_meta_external_store_mongodb_metamodel_PropertyType propType = new Root_meta_external_store_mongodb_metamodel_PropertyType_Impl(pureObjType.getName() + "_Property", null, context.pureModel.getClass("meta::external::store::mongodb::metamodel::PropertyType"));
             propType._key(p.key);
-            BaseTypeBuilder baseTypeBuilder = new BaseTypeBuilder(context, pureObjType);
+            BaseTypeBuilder baseTypeBuilder = new BaseTypeBuilder(context, pureObjType, propType._key());
             propType._value(p.value.accept(baseTypeBuilder));
             return propType;
         }).toList();
@@ -193,17 +195,31 @@ public class MongoDBCompilerHelper
     {
         private final CompileContext context;
         private final Root_meta_external_store_mongodb_metamodel_ObjectType pureObjType;
+        private final String propName;
 
-        private BaseTypeBuilder(CompileContext context, Root_meta_external_store_mongodb_metamodel_ObjectType pureObjType)
+        private BaseTypeBuilder(CompileContext context, Root_meta_external_store_mongodb_metamodel_ObjectType pureObjType, String propName)
         {
             this.context = context;
             this.pureObjType = pureObjType;
+            this.propName = propName;
         }
 
         @Override
         public Root_meta_external_store_mongodb_metamodel_BaseType visit(ArrayType val)
         {
-            return null;
+            Root_meta_external_store_mongodb_metamodel_ArrayType arrayType = new Root_meta_external_store_mongodb_metamodel_ArrayType_Impl(pureObjType.getName() + "_" + this.propName + "_Array", null, this.context.pureModel.getClass("meta::external::store::mongodb::metamodel::ArrayType"));
+            arrayType._title(val.title);
+            arrayType._description(val.description);
+            arrayType._maxItems(val.maxItems);
+            arrayType._minItems(val.minItems);
+            arrayType._uniqueItems(val.uniqueItems);
+            arrayType._additionalItemsAllowed(val.additionalItemsAllowed);
+            arrayType._items(ListIterate.collect(val.items, item ->
+            {
+                BaseTypeBuilder baseTypeBuilder = new BaseTypeBuilder(context, pureObjType, propName);
+                return item.accept(baseTypeBuilder);
+            }));
+            return arrayType;
         }
 
         @Override
@@ -215,7 +231,7 @@ public class MongoDBCompilerHelper
         @Override
         public Root_meta_external_store_mongodb_metamodel_BaseType visit(BoolType val)
         {
-            Root_meta_external_store_mongodb_metamodel_BoolType boolType = new Root_meta_external_store_mongodb_metamodel_BoolType_Impl(pureObjType.getName() + "_Bool", null, this.context.pureModel.getClass("meta::external::store::mongodb::metamodel::BoolType"));
+            Root_meta_external_store_mongodb_metamodel_BoolType boolType = new Root_meta_external_store_mongodb_metamodel_BoolType_Impl(pureObjType.getName() + "_" + this.propName + "_Bool", null, this.context.pureModel.getClass("meta::external::store::mongodb::metamodel::BoolType"));
             boolType._description(val.description);
             boolType._title(val.title);
             return boolType;
@@ -230,7 +246,7 @@ public class MongoDBCompilerHelper
         @Override
         public Root_meta_external_store_mongodb_metamodel_BaseType visit(DateType val)
         {
-            Root_meta_external_store_mongodb_metamodel_DateType dateType = new Root_meta_external_store_mongodb_metamodel_DateType_Impl(pureObjType.getName() + "_Date", null, this.context.pureModel.getClass("meta::external::store::mongodb::metamodel::DateType"));
+            Root_meta_external_store_mongodb_metamodel_DateType dateType = new Root_meta_external_store_mongodb_metamodel_DateType_Impl(pureObjType.getName() + "_" + this.propName + "_Date", null, this.context.pureModel.getClass("meta::external::store::mongodb::metamodel::DateType"));
             dateType._description(val.description);
             dateType._title(val.title);
             return dateType;
@@ -239,7 +255,7 @@ public class MongoDBCompilerHelper
         @Override
         public Root_meta_external_store_mongodb_metamodel_BaseType visit(DecimalType val)
         {
-            Root_meta_external_store_mongodb_metamodel_DecimalType decimalType = new Root_meta_external_store_mongodb_metamodel_DecimalType_Impl(pureObjType.getName() + "_Decimal", null, this.context.pureModel.getClass("meta::external::store::mongodb::metamodel::DecimalType"));
+            Root_meta_external_store_mongodb_metamodel_DecimalType decimalType = new Root_meta_external_store_mongodb_metamodel_DecimalType_Impl(pureObjType.getName() + "_" + this.propName + "_Decimal", null, this.context.pureModel.getClass("meta::external::store::mongodb::metamodel::DecimalType"));
             decimalType._description(val.description);
             decimalType._title(val.title);
             decimalType._maximum(val.maximum);
@@ -252,7 +268,7 @@ public class MongoDBCompilerHelper
         @Override
         public Root_meta_external_store_mongodb_metamodel_BaseType visit(DoubleType val)
         {
-            Root_meta_external_store_mongodb_metamodel_DoubleType dblType = new Root_meta_external_store_mongodb_metamodel_DoubleType_Impl(pureObjType.getName() + "_Double", null, this.context.pureModel.getClass("meta::external::store::mongodb::metamodel::DoubleType"));
+            Root_meta_external_store_mongodb_metamodel_DoubleType dblType = new Root_meta_external_store_mongodb_metamodel_DoubleType_Impl(pureObjType.getName() + "_" + this.propName + "_Double", null, this.context.pureModel.getClass("meta::external::store::mongodb::metamodel::DoubleType"));
             dblType._description(val.description);
             dblType._title(val.title);
             dblType._maximum(val.maximum);
@@ -265,7 +281,7 @@ public class MongoDBCompilerHelper
         @Override
         public Root_meta_external_store_mongodb_metamodel_BaseType visit(IntType val)
         {
-            Root_meta_external_store_mongodb_metamodel_IntType intType = new Root_meta_external_store_mongodb_metamodel_IntType_Impl(pureObjType.getName() + "_Int", null, this.context.pureModel.getClass("meta::external::store::mongodb::metamodel::IntType"));
+            Root_meta_external_store_mongodb_metamodel_IntType intType = new Root_meta_external_store_mongodb_metamodel_IntType_Impl(pureObjType.getName() + "_" + this.propName + "_Int", null, this.context.pureModel.getClass("meta::external::store::mongodb::metamodel::IntType"));
             intType._description(val.description);
             intType._title(val.title);
             intType._maximum(val.maximum);
@@ -284,7 +300,7 @@ public class MongoDBCompilerHelper
         @Override
         public Root_meta_external_store_mongodb_metamodel_BaseType visit(LongType val)
         {
-            Root_meta_external_store_mongodb_metamodel_LongType longType = new Root_meta_external_store_mongodb_metamodel_LongType_Impl(pureObjType.getName() + "_Long", null, this.context.pureModel.getClass("meta::external::store::mongodb::metamodel::LongType"));
+            Root_meta_external_store_mongodb_metamodel_LongType longType = new Root_meta_external_store_mongodb_metamodel_LongType_Impl(pureObjType.getName() + "_" + this.propName + "_Long", null, this.context.pureModel.getClass("meta::external::store::mongodb::metamodel::LongType"));
             longType._description(val.description);
             longType._title(val.title);
             longType._maximum(val.maximum);
@@ -324,7 +340,15 @@ public class MongoDBCompilerHelper
         @Override
         public Root_meta_external_store_mongodb_metamodel_BaseType visit(ObjectType val)
         {
-            return null;
+            Root_meta_external_store_mongodb_metamodel_ObjectType pureObjectType = new Root_meta_external_store_mongodb_metamodel_ObjectType_Impl(pureObjType.getName() + "_" + this.propName + "_ObjectType", null, context.pureModel.getClass("meta::external::store::mongodb::metamodel::ObjectType"));
+            pureObjectType._title(val.title);
+            pureObjectType._description(val.description);
+            pureObjectType._additionalPropertiesAllowed(val.additionalPropertiesAllowed);
+            pureObjectType._maxProperties(val.maxProperties);
+            pureObjectType._minProperties(val.minProperties);
+            pureObjectType._required(ListIterate.collect(val.required, r -> r));
+            pureObjectType._properties(compileProperties(val.properties, pureObjectType, context));
+            return pureObjectType;
         }
 
         @Override
@@ -342,7 +366,7 @@ public class MongoDBCompilerHelper
         @Override
         public Root_meta_external_store_mongodb_metamodel_BaseType visit(StringType val)
         {
-            Root_meta_external_store_mongodb_metamodel_StringType strType = new Root_meta_external_store_mongodb_metamodel_StringType_Impl(pureObjType.getName() + "_String", null, this.context.pureModel.getClass("meta::external::store::mongodb::metamodel::StringType"));
+            Root_meta_external_store_mongodb_metamodel_StringType strType = new Root_meta_external_store_mongodb_metamodel_StringType_Impl(pureObjType.getName() + "_" + this.propName + "_String", null, this.context.pureModel.getClass("meta::external::store::mongodb::metamodel::StringType"));
             strType._maxLength(val.maxLength);
             strType._minLength(val.minLength);
             strType._description(val.description);
