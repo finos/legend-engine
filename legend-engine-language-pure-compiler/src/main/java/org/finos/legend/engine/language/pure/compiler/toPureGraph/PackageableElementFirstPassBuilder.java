@@ -268,6 +268,11 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
                 ._package(pack)
                 ._classifierGenericType(packageableRuntimeGenericType);
         pack._childrenAdd(metamodel);
+
+        // NOTE: the whole point of this processing is to put the Pure Runtime in an index
+        Root_meta_pure_runtime_Runtime pureRuntime = new Root_meta_pure_runtime_Runtime_Impl("Root::meta::pure::runtime::Runtime", null,  context.pureModel.getClass("meta::pure::runtime::Runtime"));
+        this.context.pureModel.runtimesIndex.put(this.context.pureModel.buildPackageString(packageableRuntime._package, packageableRuntime.name), pureRuntime);
+
         return metamodel;
     }
 

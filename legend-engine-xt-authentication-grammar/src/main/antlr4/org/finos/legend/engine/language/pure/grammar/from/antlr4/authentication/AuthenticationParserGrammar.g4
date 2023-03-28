@@ -37,10 +37,7 @@ authenticationDemo:     AUTHENTICATION_DEMO qualifiedName
 
 // -------------------------------------- Authentication --------------------------------------
 
-authentication:     AUTHENTICATION_DEMO_AUTHENTICATION COLON authenticationCode
-;
-
-authenticationCode: identifier ISLAND_OPEN islandContent
+authentication:     AUTHENTICATION_DEMO_AUTHENTICATION COLON islandDefinition SEMI_COLON
 ;
 
 // -------------------------------------- UserPasswordAuthentication --------------------------------------
@@ -56,7 +53,7 @@ userPasswordAuthentication:     (
 userPasswordAuthentication_username:    USER_PASSWORD_AUTHENTICATION_USERNAME COLON STRING SEMI_COLON
 ;
 
-userPasswordAuthentication_password:    USER_PASSWORD_AUTHENTICATION_PASSWORD COLON secret_value
+userPasswordAuthentication_password:    USER_PASSWORD_AUTHENTICATION_PASSWORD COLON secret_value SEMI_COLON
 ;
 
 // -------------------------------------- APIKeyAuthentication --------------------------------------

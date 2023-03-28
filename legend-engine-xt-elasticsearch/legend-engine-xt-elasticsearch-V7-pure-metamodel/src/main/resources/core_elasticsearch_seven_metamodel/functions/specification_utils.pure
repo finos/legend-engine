@@ -102,7 +102,7 @@ function meta::external::store::elasticsearch::v7::specification::utils::propert
   ]
 }
 
-function meta::external::store::elasticsearch::v7::specification::utils::property::collectPrimitiveTypeProperties(properties: Elasticsearch7StoreIndexMappingProperty[*]): Pair<List<String>, PropertyBase>[*]
+function meta::external::store::elasticsearch::v7::specification::utils::property::collectPrimitiveTypeProperties(properties: Elasticsearch7StoreIndexProperty[*]): Pair<List<String>, PropertyBase>[*]
 {
   $properties->map(p | $p.property->taggedUnionValue()->cast(@PropertyBase)->map(x | $x->collectPrimitiveTypeProperties($p.propertyName)));
 }
@@ -129,8 +129,8 @@ function <<test.Test>> meta::external::store::elasticsearch::v7::specification::
   ]);
 
   let properties = [
-      ^Elasticsearch7StoreIndexMappingProperty(propertyName = 'Title', property = ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(keyword = ^KeywordProperty())),
-      ^Elasticsearch7StoreIndexMappingProperty(propertyName = 'Nested', property = ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(object = ^ObjectProperty(properties = $nested)))
+      ^Elasticsearch7StoreIndexProperty(propertyName = 'Title', property = ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(keyword = ^KeywordProperty())),
+      ^Elasticsearch7StoreIndexProperty(propertyName = 'Nested', property = ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(object = ^ObjectProperty(properties = $nested)))
     ];
 
   let actual = $properties->collectPrimitiveTypeProperties()
