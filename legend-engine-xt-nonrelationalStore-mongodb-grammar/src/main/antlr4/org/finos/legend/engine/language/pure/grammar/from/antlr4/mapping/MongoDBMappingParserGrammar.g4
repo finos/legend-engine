@@ -15,21 +15,46 @@
 
 parser grammar MongoDBMappingParserGrammar;
 
+import M3ParserGrammar;
+
 options { tokenVocab = MongoDBMappingLexerGrammar; }
 
 unquotedIdentifier:                         VALID_STRING
+                                            | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE
+                                            | BYTE_STREAM_FUNCTION  // From M3Parser
+                                            | FILTER_CMD | DISTINCT_CMD
+                                            | MAIN_COLLECTION_CMD | PRIMARY_KEY_CMD
+                                            | BINDING
 ;
 
-
-mapping:                                    classMapping
+identifier:                                 unquotedIdentifier    | STRING
 ;
 
+definition:                                    classMapping
+;
 
 // Excluding association mapping for now
 
-classMapping:                               DISTINCT_CMD?
+classMapping:                               mappingFilter?
+                                            (mappingMainCollection
+                                            | mappingBinding)*
                                             EOF
 ;
 
-mongodbIdentifier:                      unquotedIdentifier    //| QUOTED_STRING
+
+mappingFilter:                              FILTER_CMD databasePointer identifier
+;
+
+mappingMainCollection:                      MAIN_COLLECTION_CMD databasePointer mappingScopeInfo
+;
+
+mappingBinding:                             BINDING qualifiedName
+;
+
+mappingScopeInfo:                           identifier (DOT scopeInfo)?
+;
+
+scopeInfo:                                  identifier (DOT identifier)?
+;
+databasePointer:                            BRACKET_OPEN qualifiedName BRACKET_CLOSE
 ;

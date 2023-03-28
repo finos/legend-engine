@@ -23,3 +23,4 @@ FILTER_CMD:                                 '~filter';
 DISTINCT_CMD:                               '~distinct';
 MAIN_COLLECTION_CMD:                        '~mainCollection';
 PRIMARY_KEY_CMD:                            '~primaryKey';
+BINDING:                                    '~binding';
