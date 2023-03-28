@@ -12,24 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/** Taken from "The Definitive ANTLR 4 Reference" by Terence Parr */
+// Derived from http://json.org as starting point.
 
-parser grammar MongoDBMappingParserGrammar;
+lexer grammar MongoDBConnectionLexerGrammar;
 
-options { tokenVocab = MongoDBMappingLexerGrammar; }
+import CoreLexerGrammar;
 
-unquotedIdentifier:                         VALID_STRING
-;
-
-
-mapping:                                    classMapping
-;
-
-
-// Excluding association mapping for now
-
-classMapping:                               DISTINCT_CMD?
-                                            EOF
-;
-
-mongodbIdentifier:                      unquotedIdentifier    //| QUOTED_STRING
-;
+STORE:                                      'store';
+SERVER_URLS:                                'serverURLs';
+DATABASE:                                   'database';
+DEBUG:                                      'debug';
+AUTHENTICATION:                             'authentication';
