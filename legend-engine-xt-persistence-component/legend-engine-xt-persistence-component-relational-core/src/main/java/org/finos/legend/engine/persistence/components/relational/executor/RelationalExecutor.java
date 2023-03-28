@@ -62,7 +62,11 @@ public class RelationalExecutor implements Executor<SqlGen, TabularData, SqlPlan
         List<TabularData> resultSetList = new ArrayList<>();
         for (String sql : physicalPlan.getSqlList())
         {
-            resultSetList.add(new TabularData(jdbcHelper.executeQuery(sql)));
+            List<Map<String, Object>> queryResult = jdbcHelper.executeQuery(sql);
+            if (!queryResult.isEmpty())
+            {
+                resultSetList.add(new TabularData(queryResult));
+            }
         }
         return resultSetList;
     }
@@ -74,7 +78,11 @@ public class RelationalExecutor implements Executor<SqlGen, TabularData, SqlPlan
         for (String sql : physicalPlan.getSqlList())
         {
             String enrichedSql = getEnrichedSql(placeholderKeyValues, sql);
-            resultSetList.add(new TabularData(jdbcHelper.executeQuery(enrichedSql)));
+            List<Map<String, Object>> queryResult = jdbcHelper.executeQuery(enrichedSql);
+            if (!queryResult.isEmpty())
+            {
+                resultSetList.add(new TabularData(queryResult));
+            }
         }
         return resultSetList;
     }
@@ -89,6 +97,12 @@ public class RelationalExecutor implements Executor<SqlGen, TabularData, SqlPlan
     public void validateMainDatasetSchema(Dataset dataset)
     {
         relationalSink.validateMainDatasetSchemaFn().execute(this, jdbcHelper, dataset);
+    }
+
+    @Override
+    public Dataset constructDatasetFromDatabase(String tableName, String schemaName, String databaseName)
+    {
+        return relationalSink.constructDatasetFromDatabaseFn().execute(this, jdbcHelper, tableName, schemaName, databaseName);
     }
 
     @Override

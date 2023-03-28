@@ -6,9 +6,11 @@
       "_type": "dataSpace",
       "name": "TestDataSpace",
       "package": "test::model",
+      "title": "My Data Space",
       "executionContexts": [
         {
           "name": "INT",
+          "title": "Integration",
           "description": "some description 1",
           "mapping": {
             "type": "MAPPING",
@@ -22,33 +24,42 @@
       ],
       "defaultExecutionContext": "INT",
       "description": "some description 2",
-      "featuredDiagrams": [
+      "diagrams": [
         {
-          "type": "DIAGRAM",
-          "path": "test::model::TestDiagram1"
+          "title": "Diagram 1",
+          "description": "description",
+          "diagram": { "path": "model::MyDiagram" }
         },
         {
-          "type": "DIAGRAM",
-          "path": "test::model::TestDiagram2"
+          "title": "Diagram 2",
+          "description": "description",
+          "diagram": { "path": "model::MyDiagram" }
         }
       ],
       "elements": [
+        { "path": "test::model::Class1" },
+        { "path": "test::model::Class2" },
+        { "path": "test::model::Assoc1" }
+      ],
+      "executables": [
         {
-          "type": "CLASS",
-          "path": "test::model::Class1"
+          "title": "Executable 1",
+          "description": "description",
+          "executable": { "path": "model::MyExecutable" }
         },
         {
-          "type": "CLASS",
-          "path": "test::model::Class2"
-        },
-        {
-          "type": "CLASS",
-          "path": "test::model::Assoc1"
+          "title": "Executable 2",
+          "description": "description",
+          "executable": { "path": "model::MyExecutable" }
         }
       ],
       "supportInfo": {
-        "_type": "email",
-        "address": "testEmail@test.org"
+        "_type": "combined",
+        "documentationUrl": "https://www.example.org",
+        "emails": ["testEmail@test.org"],
+        "website": "https://www.example.org",
+        "faqUrl": "https://www.example.org",
+        "supportUrl": "https://www.example.org"
       }
     }
   ]

@@ -14,7 +14,9 @@
 
 package org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors;
 
+import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.Column;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.NumericalValue;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
@@ -28,6 +30,10 @@ public class NumericalValueVisitor implements LogicalPlanVisitor<org.finos.legen
 
         NumericalValue value = new NumericalValue(current.value().orElse(null), current.alias().orElse(null), context.quoteIdentifier());
         prev.push(value);
+        for (Optimizer optimizer : context.optimizers())
+        {
+            value = (NumericalValue) optimizer.optimize(value);
+        }
 
         return new VisitorResult(null);
     }

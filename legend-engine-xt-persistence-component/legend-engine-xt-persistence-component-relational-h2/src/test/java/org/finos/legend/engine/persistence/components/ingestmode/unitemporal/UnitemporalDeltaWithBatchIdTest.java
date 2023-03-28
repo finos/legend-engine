@@ -55,7 +55,7 @@ class UnitemporalDeltaWithBatchIdTest extends BaseTest
     @Test
     void testMilestoning() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getUnitemporalIdBasedMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
 
         String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdInName, batchIdOutName};
@@ -112,7 +112,7 @@ class UnitemporalDeltaWithBatchIdTest extends BaseTest
     void testMilestoningWithExternalJsonData() throws Exception
     {
 
-        DatasetDefinition mainTable = TestUtils.getUnitemporalIdBasedMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         String dataPass1 = basePathForInput + "without_delete_ind/staging_data_pass1.json";
         Dataset stagingTable = TestUtils.getBasicJsonDatasetReferenceTable(dataPass1);
 
@@ -155,7 +155,7 @@ class UnitemporalDeltaWithBatchIdTest extends BaseTest
     @Test
     void testMilestoningWithDeleteIndicator() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getUnitemporalIdBasedMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getStagingTableWithDeleteIndicator();
 
         String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdInName, batchIdOutName};
@@ -301,7 +301,7 @@ class UnitemporalDeltaWithBatchIdTest extends BaseTest
     @Test
     void testMilestoningWithDataSplits() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getUnitemporalIdBasedMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         String dataPass1 = basePathForInput + "with_data_splits/staging_data_pass1.csv";
         Dataset stagingTable = TestUtils.getBasicCsvDatasetReferenceTableWithDataSplits(dataPass1);
 

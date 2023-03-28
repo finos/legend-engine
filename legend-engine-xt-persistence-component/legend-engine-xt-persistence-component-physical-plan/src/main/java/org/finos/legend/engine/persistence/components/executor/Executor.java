@@ -35,6 +35,8 @@ public interface Executor<C extends PhysicalPlanNode, R extends ResultData, P ex
 
     void validateMainDatasetSchema(Dataset dataset);
 
+    Dataset constructDatasetFromDatabase(String tableName, String schemaName, String databaseName);
+
     void begin();
 
     void commit();

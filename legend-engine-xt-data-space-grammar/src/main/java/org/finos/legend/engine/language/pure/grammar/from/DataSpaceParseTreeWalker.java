@@ -18,12 +18,14 @@ import org.antlr.v4.runtime.CharStream;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.DataSpaceParserGrammar;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceDiagram;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceExecutable;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceExecutionContext;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportCombinedInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportEmail;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
@@ -67,6 +69,7 @@ public class DataSpaceParseTreeWalker
         // Execution contexts
         DataSpaceParserGrammar.ExecutionContextsContext executionContextsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.executionContexts(), "executionContexts", dataSpace.sourceInformation);
         dataSpace.executionContexts = ListIterate.collect(executionContextsContext.executionContext(), executionContext -> this.visitDataSpaceExecutionContext(executionContext));
+
         // Default execution context
         DataSpaceParserGrammar.DefaultExecutionContextContext defaultExecutionContextContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.defaultExecutionContext(), "defaultExecutionContext", dataSpace.sourceInformation);
         dataSpace.defaultExecutionContext = PureGrammarParserUtility.fromGrammarString(defaultExecutionContextContext.STRING().getText(), true);
@@ -78,18 +81,6 @@ public class DataSpaceParseTreeWalker
         // Description (optional)
         DataSpaceParserGrammar.DescriptionContext descriptionContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.description(), "description", dataSpace.sourceInformation);
         dataSpace.description = descriptionContext != null ? PureGrammarParserUtility.fromGrammarString(descriptionContext.STRING().getText(), true) : null;
-
-        // Featured diagrams (optional)
-        DataSpaceParserGrammar.FeaturedDiagramsContext featuredDiagramsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.featuredDiagrams(), "featuredDiagrams", dataSpace.sourceInformation);
-        dataSpace.featuredDiagrams = featuredDiagramsContext != null ? ListIterate.collect(featuredDiagramsContext.qualifiedName(), diagramPathContext ->
-        {
-            PackageableElementPointer pointer = new PackageableElementPointer(
-                    PackageableElementType.DIAGRAM,
-                    PureGrammarParserUtility.fromQualifiedName(diagramPathContext.packagePath() == null ? Collections.emptyList() : diagramPathContext.packagePath().identifier(), diagramPathContext.identifier())
-            );
-            pointer.sourceInformation = walkerSourceInformation.getSourceInformation(diagramPathContext);
-            return pointer;
-        }) : null;
 
         // Elements (optional)
         DataSpaceParserGrammar.ElementsContext elementsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.elements(), "elements", dataSpace.sourceInformation);
@@ -103,9 +94,31 @@ public class DataSpaceParseTreeWalker
             return pointer;
         }) : null;
 
+        // Executables (optional)
+        DataSpaceParserGrammar.ExecutablesContext executablesContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.executables(), "executables", dataSpace.sourceInformation);
+        dataSpace.executables = executablesContext != null ? ListIterate.collect(executablesContext.executable(), executableContext -> this.visitDataSpaceExecutable(executableContext)) : null;
+
+        // Diagrams (optional)
+        DataSpaceParserGrammar.DiagramsContext diagramsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.diagrams(), "diagrams", dataSpace.sourceInformation);
+        dataSpace.diagrams = diagramsContext != null ? ListIterate.collect(diagramsContext.diagram(), diagramContext -> this.visitDataSpaceDiagram(diagramContext)) : null;
+
+        // Featured diagrams (optional)
+        // NOTE: this field will be deprecated, we should consider adding this to the list of diagrams during parsing phase
+        DataSpaceParserGrammar.FeaturedDiagramsContext featuredDiagramsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.featuredDiagrams(), "featuredDiagrams", dataSpace.sourceInformation);
+        dataSpace.featuredDiagrams = featuredDiagramsContext != null ? ListIterate.collect(featuredDiagramsContext.qualifiedName(), diagramPathContext ->
+        {
+            PackageableElementPointer pointer = new PackageableElementPointer(
+                    PackageableElementType.DIAGRAM,
+                    PureGrammarParserUtility.fromQualifiedName(diagramPathContext.packagePath() == null ? Collections.emptyList() : diagramPathContext.packagePath().identifier(), diagramPathContext.identifier())
+            );
+            pointer.sourceInformation = walkerSourceInformation.getSourceInformation(diagramPathContext);
+            return pointer;
+        }) : null;
+
         // Support info (optional)
         DataSpaceParserGrammar.SupportInfoContext supportInfoContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.supportInfo(), "supportInfo", dataSpace.sourceInformation);
-        dataSpace.supportInfo = supportInfoContext != null ? this.visitDataSpaceSupportInfo(supportInfoContext, dataSpace.sourceInformation) : null;
+        dataSpace.supportInfo = supportInfoContext != null ? this.visitDataSpaceSupportInfo(supportInfoContext) : null;
+
         return dataSpace;
     }
 
@@ -118,12 +131,16 @@ public class DataSpaceParseTreeWalker
         DataSpaceParserGrammar.ExecutionContextNameContext executionContextNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.executionContextName(), "name", executionContext.sourceInformation);
         executionContext.name = PureGrammarParserUtility.fromGrammarString(executionContextNameContext.STRING().getText(), true);
 
+        // Title (optional)
+        DataSpaceParserGrammar.ExecutionContextTitleContext titleContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.executionContextTitle(), "title", executionContext.sourceInformation);
+        executionContext.title = titleContext != null ? PureGrammarParserUtility.fromGrammarString(titleContext.STRING().getText(), true) : null;
+
         // Description (optional)
-        DataSpaceParserGrammar.DescriptionContext descriptionContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.description(), "description", executionContext.sourceInformation);
+        DataSpaceParserGrammar.ExecutionContextDescriptionContext descriptionContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.executionContextDescription(), "description", executionContext.sourceInformation);
         executionContext.description = descriptionContext != null ? PureGrammarParserUtility.fromGrammarString(descriptionContext.STRING().getText(), true) : null;
 
         // Mapping
-        DataSpaceParserGrammar.MappingContext mappingContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.mapping(), "mapping", executionContext.sourceInformation);
+        DataSpaceParserGrammar.ExecutionContextMappingContext mappingContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.executionContextMapping(), "mapping", executionContext.sourceInformation);
         executionContext.mapping = new PackageableElementPointer(
                 PackageableElementType.MAPPING,
                 PureGrammarParserUtility.fromQualifiedName(mappingContext.qualifiedName().packagePath() == null ? Collections.emptyList() : mappingContext.qualifiedName().packagePath().identifier(), mappingContext.qualifiedName().identifier())
@@ -131,25 +148,110 @@ public class DataSpaceParseTreeWalker
         executionContext.mapping.sourceInformation = walkerSourceInformation.getSourceInformation(mappingContext);
 
         // Runtime
-        DataSpaceParserGrammar.DefaultRuntimeContext defaultRuntimeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.defaultRuntime(), "defaultRuntime", executionContext.sourceInformation);
+        DataSpaceParserGrammar.ExecutionContextDefaultRuntimeContext defaultRuntimeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.executionContextDefaultRuntime(), "defaultRuntime", executionContext.sourceInformation);
         executionContext.defaultRuntime = new PackageableElementPointer(
                 PackageableElementType.RUNTIME,
                 PureGrammarParserUtility.fromQualifiedName(defaultRuntimeContext.qualifiedName().packagePath() == null ? Collections.emptyList() : defaultRuntimeContext.qualifiedName().packagePath().identifier(), defaultRuntimeContext.qualifiedName().identifier())
         );
         executionContext.defaultRuntime.sourceInformation = walkerSourceInformation.getSourceInformation(defaultRuntimeContext);
+
         return executionContext;
     }
 
-    // NOTE: for simplicity reason, in the grammar, we only support email address as the only support info type at the moment
-    // when there are more, we will handle the extension mechanism later
-    private DataSpaceSupportInfo visitDataSpaceSupportInfo(DataSpaceParserGrammar.SupportInfoContext ctx, SourceInformation dataSpaceSourceInformation)
+    private DataSpaceExecutable visitDataSpaceExecutable(DataSpaceParserGrammar.ExecutableContext ctx)
     {
-        DataSpaceSupportEmail supportInfo = new DataSpaceSupportEmail();
+        DataSpaceExecutable executable = new DataSpaceExecutable();
+        executable.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
 
-        // Email
-        DataSpaceParserGrammar.SupportEmailContext supportEmailContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.supportEmail(), "address", dataSpaceSourceInformation);
-        supportInfo.address = PureGrammarParserUtility.fromGrammarString(supportEmailContext.STRING().getText(), true);
-        return supportInfo;
+        // Name
+        DataSpaceParserGrammar.ExecutableTitleContext executableTitleContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.executableTitle(), "title", executable.sourceInformation);
+        executable.title = PureGrammarParserUtility.fromGrammarString(executableTitleContext.STRING().getText(), true);
+
+        // Description (optional)
+        DataSpaceParserGrammar.ExecutableDescriptionContext descriptionContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.executableDescription(), "description", executable.sourceInformation);
+        executable.description = descriptionContext != null ? PureGrammarParserUtility.fromGrammarString(descriptionContext.STRING().getText(), true) : null;
+
+        // Path
+        DataSpaceParserGrammar.ExecutablePathContext pathContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.executablePath(), "executable", executable.sourceInformation);
+        executable.executable = new PackageableElementPointer(
+                PureGrammarParserUtility.fromQualifiedName(pathContext.qualifiedName().packagePath() == null ? Collections.emptyList() : pathContext.qualifiedName().packagePath().identifier(), pathContext.qualifiedName().identifier())
+        );
+        executable.executable.sourceInformation = walkerSourceInformation.getSourceInformation(pathContext);
+
+        return executable;
+    }
+
+    private DataSpaceDiagram visitDataSpaceDiagram(DataSpaceParserGrammar.DiagramContext ctx)
+    {
+        DataSpaceDiagram diagram = new DataSpaceDiagram();
+        diagram.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+
+        // Name
+        DataSpaceParserGrammar.DiagramTitleContext executableTitleContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.diagramTitle(), "title", diagram.sourceInformation);
+        diagram.title = PureGrammarParserUtility.fromGrammarString(executableTitleContext.STRING().getText(), true);
+
+        // Description (optional)
+        DataSpaceParserGrammar.DiagramDescriptionContext descriptionContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.diagramDescription(), "description", diagram.sourceInformation);
+        diagram.description = descriptionContext != null ? PureGrammarParserUtility.fromGrammarString(descriptionContext.STRING().getText(), true) : null;
+
+        // Path
+        DataSpaceParserGrammar.DiagramPathContext pathContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.diagramPath(), "diagram", diagram.sourceInformation);
+        diagram.diagram = new PackageableElementPointer(
+                PureGrammarParserUtility.fromQualifiedName(pathContext.qualifiedName().packagePath() == null ? Collections.emptyList() : pathContext.qualifiedName().packagePath().identifier(), pathContext.qualifiedName().identifier())
+        );
+        diagram.diagram.sourceInformation = walkerSourceInformation.getSourceInformation(pathContext);
+
+        return diagram;
+    }
+
+    private DataSpaceSupportInfo visitDataSpaceSupportInfo(DataSpaceParserGrammar.SupportInfoContext ctx)
+    {
+        if (ctx.supportCombinedInfo() != null)
+        {
+            DataSpaceParserGrammar.SupportCombinedInfoContext combinedInfoContext = ctx.supportCombinedInfo();
+            DataSpaceSupportCombinedInfo supportInfo = new DataSpaceSupportCombinedInfo();
+            supportInfo.sourceInformation = this.walkerSourceInformation.getSourceInformation(combinedInfoContext);
+
+            // Documentation URL (optional)
+            DataSpaceParserGrammar.SupportDocumentationUrlContext documentationUrlContext = PureGrammarParserUtility.validateAndExtractOptionalField(combinedInfoContext.supportDocumentationUrl(), "documentationUrl", supportInfo.sourceInformation);
+            supportInfo.documentationUrl = documentationUrlContext != null ? PureGrammarParserUtility.fromGrammarString(documentationUrlContext.STRING().getText(), true) : null;
+
+            // Emails (optional)
+            DataSpaceParserGrammar.CombinedInfoEmailsContext emailsContext = PureGrammarParserUtility.validateAndExtractOptionalField(combinedInfoContext.combinedInfoEmails(), "emails", supportInfo.sourceInformation);
+            supportInfo.emails = emailsContext != null ? ListIterate.collect(emailsContext.STRING(), val -> PureGrammarParserUtility.fromGrammarString(val.getText(), true)) : null;
+
+            // Website (optional)
+            DataSpaceParserGrammar.CombinedInfoWebsiteContext websiteContext = PureGrammarParserUtility.validateAndExtractOptionalField(combinedInfoContext.combinedInfoWebsite(), "website", supportInfo.sourceInformation);
+            supportInfo.website = websiteContext != null ? PureGrammarParserUtility.fromGrammarString(websiteContext.STRING().getText(), true) : null;
+
+            // FAQ URL (optional)
+            DataSpaceParserGrammar.CombinedInfoFaqUrlContext faqUrlContext = PureGrammarParserUtility.validateAndExtractOptionalField(combinedInfoContext.combinedInfoFaqUrl(), "faqUrl", supportInfo.sourceInformation);
+            supportInfo.faqUrl = faqUrlContext != null ? PureGrammarParserUtility.fromGrammarString(faqUrlContext.STRING().getText(), true) : null;
+
+            // Support URL (optional)
+            DataSpaceParserGrammar.CombinedInfoSupportUrlContext supportUrlContext = PureGrammarParserUtility.validateAndExtractOptionalField(combinedInfoContext.combinedInfoSupportUrl(), "supportUrl", supportInfo.sourceInformation);
+            supportInfo.supportUrl = supportUrlContext != null ? PureGrammarParserUtility.fromGrammarString(supportUrlContext.STRING().getText(), true) : null;
+
+            return supportInfo;
+
+        }
+        else if (ctx.supportEmail() != null)
+        {
+            DataSpaceParserGrammar.SupportEmailContext supportEmailContext = ctx.supportEmail();
+            DataSpaceSupportEmail supportInfo = new DataSpaceSupportEmail();
+            supportInfo.sourceInformation = this.walkerSourceInformation.getSourceInformation(supportEmailContext);
+
+            // Documentation URL (optional)
+            DataSpaceParserGrammar.SupportDocumentationUrlContext documentationUrlContext = PureGrammarParserUtility.validateAndExtractOptionalField(supportEmailContext.supportDocumentationUrl(), "documentationUrl", supportInfo.sourceInformation);
+            supportInfo.documentationUrl = documentationUrlContext != null ? PureGrammarParserUtility.fromGrammarString(documentationUrlContext.STRING().getText(), true) : null;
+
+            // Address
+            DataSpaceParserGrammar.SupportEmailAddressContext supportEmailAddressContext = PureGrammarParserUtility.validateAndExtractRequiredField(supportEmailContext.supportEmailAddress(), "address", supportInfo.sourceInformation);
+            supportInfo.address = PureGrammarParserUtility.fromGrammarString(supportEmailAddressContext.STRING().getText(), true);
+
+            return supportInfo;
+        }
+        throw new UnsupportedOperationException("Can't parse unsupported support info");
     }
 
     private List<TaggedValue> visitTaggedValues(DataSpaceParserGrammar.TaggedValuesContext ctx)

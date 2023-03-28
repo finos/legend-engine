@@ -23,6 +23,12 @@ Class meta::external::query::sql::transformation::queryToPure::tests::FlatInput
   strictDateIn: StrictDate[1];
   dateTimeIn: DateTime[1];
   stringIn: String[1];
+  enumVal: meta::external::query::sql::transformation::queryToPure::tests::MyEnum[1];
+}
+
+Enum meta::external::query::sql::transformation::queryToPure::tests::MyEnum
+{
+   Value1, Value2, Value_3, VALUE__4
 }
 
 ###Mapping
@@ -105,11 +111,13 @@ function meta::external::query::sql::transformation::queryToPure::tests::service
 
   ^SQLSource(
       type = 'service',
-      id = $service.pattern,
       func = $execution.func,
       mapping = $execution.mapping,
       runtime = $execution.runtime,
-      executionOptions = $execution.executionOptions
+      executionOptions = $execution.executionOptions,
+      key = [
+        ^SQLSourceArgument(name = 'pattern', value = $service.pattern, index = 0)
+      ]
   );
 }
 
@@ -156,6 +164,34 @@ function meta::external::query::sql::transformation::queryToPure::tests::Service
         ],
         [
           'ID', 'Integer', 'String'
+        ]
+      ),
+      mapping = dummyMapping,
+      runtime = dummyRuntime()
+    ),
+    test = ^SingleExecutionTest(
+      data = '',
+      asserts = ^TestContainer(assert = x:Result<Any|m>[1] | true))
+  );
+}
+
+
+function meta::external::query::sql::transformation::queryToPure::tests::Service3(): Service[1]
+{
+  ^Service
+  (
+    pattern = '/service/service3',
+    owners = ['dummy'],
+    documentation = '',
+    autoActivateUpdates = true,
+    execution = ^PureSingleExecution
+    (
+      func = | FlatInput.all()->project(
+        [
+          x | $x.idIn, x | $x.integerIn, x | $x.enumVal
+        ],
+        [
+          'ID', 'Integer', 'The Enum Value'
         ]
       ),
       mapping = dummyMapping,

@@ -47,13 +47,45 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
                 "    model::Diagram,\n" +
                 "    model::Diagram2\n" +
                 "  ];\n" +
+                "  diagrams:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      title: 'Diag 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      diagram: model::SomeDiag1;\n" +
+                "    },\n" +
+                "    {\n" +
+                "      title: 'Diag 2';\n" +
+                "      diagram: model::SomeDiag2;\n" +
+                "    }\n" +
+                "  ];\n" +
                 "  elements:\n" +
                 "  [\n" +
                 "    model::Class1,\n" +
                 "    model::Class2\n" +
                 "  ];\n" +
-                "  supportInfo: Email {\n" +
-                "    address: 'someEmail@test.org';\n" +
+                "  executables:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      title: 'Exec 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      executable: model::SomeExec1;\n" +
+                "    },\n" +
+                "    {\n" +
+                "      title: 'Exec 2';\n" +
+                "      executable: model::SomeExec2;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  supportInfo: Combined {\n" +
+                "    documentationUrl: 'https://example.org';\n" +
+                "    website: 'https://example.org/website';\n" +
+                "    faqUrl: 'https://example.org/faq';\n" +
+                "    supportUrl: 'https://example.org/support';\n" +
+                "    emails:\n" +
+                "    [\n" +
+                "      'someEmail@test.org',\n" +
+                "      'someEmail2@test.org'\n" +
+                "    ];\n" +
                 "  };\n" +
                 "}\n");
     }

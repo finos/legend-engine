@@ -82,6 +82,18 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testTableFunc():Boolean[1]
+{
+  let sqlString = 'SELECT Boolean, table1.Integer FROM service(\'/service/service1\') AS table1';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->restrict(['Boolean', 'Integer'])
+      };
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectQuotedSingleColumn():Boolean[1]
 {
   let sqlString = 'SELECT "Boolean", "Integer" FROM service."/service/service1"';
@@ -314,15 +326,17 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
 
-function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure::tests::testSumConstant():Boolean[1]
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByAggregateExpressions():Boolean[1]
 {
-  let sqlString = 'SELECT sum(1) AS "sum", FROM service."/service/service1"';
+  let sqlString = 'SELECT sum(1) AS "sum", count(*) AS "count", sum(Integer + Float) AS "exp" FROM service."/service/service1"';
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {| FlatInput.all()->project(
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
           [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
-        )->groupBy('String', [
-          agg('sum', row | $row, y | sum(1))
+        )->groupBy([], [
+          agg('sum', row | $row, y | sum(1)),
+          agg('count', row | $row, y | $y->count()),
+          agg('exp', row | $row.getInteger('Integer') + $row.getFloat('Float'), y | $y->sum())
         ])
       };
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
@@ -575,9 +589,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 //DATE_ADD
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDateAdd():Boolean[1]
 {
-  let sqlString = 'SELECT date_add(\'year\', 1, StrictDate) AS "YEAR", date_add(\'month\', 1, StrictDate) AS "MONTH", date_add(\'week\', 1, StrictDate) AS "WEEK", ' + 
-                  'date_add(\'day\', 1, StrictDate) AS "DAY", date_add(\'hour\', 1, StrictDate) AS "HOUR", date_add(\'minute\', 1, StrictDate) AS "MINUTE", ' + 
-                  'date_add(\'second\', 1, StrictDate) AS "SECOND", date_add(\'millisecond\', 1, StrictDate) AS "MILLISECOND", ' + 
+  let sqlString = 'SELECT date_add(\'year\', 1, StrictDate) AS "YEAR", date_add(\'month\', 1, StrictDate) AS "MONTH", date_add(\'week\', 1, StrictDate) AS "WEEK", ' +
+                  'date_add(\'day\', 1, StrictDate) AS "DAY", date_add(\'hour\', 1, StrictDate) AS "HOUR", date_add(\'minute\', 1, StrictDate) AS "MINUTE", ' +
+                  'date_add(\'second\', 1, StrictDate) AS "SECOND", date_add(\'millisecond\', 1, StrictDate) AS "MILLISECOND", ' +
                   'date_add(\'microsecond\', 1, StrictDate) AS "MICROSECOND", date_add(\'nanosecond\', 1, StrictDate) AS "NANOSECOND" FROM service."/service/service1"';
 
   let sqlTransformContext = $sqlString->processQuery();
@@ -659,7 +673,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testMathFunctions():Boolean[1]
 {
   let sqlString = 'SELECT abs(Integer) AS "ABS", acos(Integer) AS "ACOS", asin(Integer) AS "ASIN", atan(Integer) AS "ATAN", atan2(Integer, 1) AS "ATAN2", ' +
-                  'ceil(Integer) AS "CEIL", ceiling(Integer) AS "CEILING", cos(Integer) AS "COS", degrees(Integer) AS "DEGREES", exp(Integer) AS "EXP", floor(Float) AS "FLOOR", ln(Integer) AS "LOG", ' +
+                  'ceil(Integer) AS "CEIL", ceiling(Integer) AS "CEILING", cos(Integer) AS "COS", degrees(Integer) AS "DEGREES", div(Integer, 1) AS "DIV", exp(Integer) AS "EXP", floor(Float) AS "FLOOR", ln(Integer) AS "LOG", ' +
                   'mod(Integer, 1) AS "MOD", pi() AS "PI", power(Integer, 2) AS "POWER", radians(Integer) AS "RADIANS", round(Integer) AS "ROUND", round(Decimal, 1) AS "ROUND_DEC", ' +
                   'sin(Integer) AS "SIN", sqrt(Integer) AS "SQRT", tan(Integer) AS "TAN" FROM service."/service/service1"';
 
@@ -679,6 +693,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 col(row:TDSRow[1] | ceiling($row.getInteger('Integer')), 'CEILING'),
                 col(row:TDSRow[1] | cos($row.getInteger('Integer')), 'COS'),
                 col(row:TDSRow[1] | toDegrees($row.getInteger('Integer')), 'DEGREES'),
+                col(row:TDSRow[1] | $row.getInteger('Integer') / 1, 'DIV'),
                 col(row:TDSRow[1] | exp($row.getInteger('Integer')), 'EXP'),
                 col(row:TDSRow[1] | floor($row.getFloat('Float')), 'FLOOR'),
                 col(row:TDSRow[1] | log($row.getInteger('Integer')), 'LOG'),
@@ -710,7 +725,7 @@ function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure:
             ->groupBy('String', agg('SUM', row | $row.getInteger('Integer'), y | $y->sum()))
             ->olapGroupBy(['String'], asc('Integer'), y | $y->meta::pure::functions::math::olap::rowNumber(), 'ROW')
       };
-      
+
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
 
@@ -767,6 +782,39 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   assertLambdaJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSchemaService1():Boolean[1]
+{
+  let sqlString = 'SELECT * FROM service."/service/service1"';
+
+  let schema = $sqlString->processQuery(true).columns()->meta::external::query::sql::tdsColsToSchema();
+  assertEquals($schema.columns->at(0).name, 'Boolean');
+  assertEquals($schema.columns->at(0)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.Boolean);
+  assertEquals($schema.columns->at(1).name, 'Integer');
+  assertEquals($schema.columns->at(1)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.Integer);
+  assertEquals($schema.columns->at(2).name, 'Float');
+  assertEquals($schema.columns->at(2)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.Float);
+  assertEquals($schema.columns->at(3).name, 'Decimal');
+  assertEquals($schema.columns->at(3)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.Decimal);
+  assertEquals($schema.columns->at(4).name, 'StrictDate');
+  assertEquals($schema.columns->at(4)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.StrictDate);
+  assertEquals($schema.columns->at(5).name, 'DateTime');
+  assertEquals($schema.columns->at(5)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.DateTime);
+  assertEquals($schema.columns->at(6).name, 'String');
+  assertEquals($schema.columns->at(6)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.String);
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSchemaService2():Boolean[1]
+{
+  let sqlString = 'SELECT * FROM service."/service/service2"';
+
+  let schema = $sqlString->processQuery(true).columns()->meta::external::query::sql::tdsColsToSchema();
+  assertEquals($schema.columns->at(0).name, 'ID');
+  assertEquals($schema.columns->at(0)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.Integer);
+  assertEquals($schema.columns->at(1).name, 'Integer');
+  assertEquals($schema.columns->at(1)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.Integer);
+  assertEquals($schema.columns->at(2).name, 'String');
+  assertEquals($schema.columns->at(2)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.String);
+}
 
 function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1]): SqlTransformContext[1]
 {
@@ -777,11 +825,20 @@ function meta::external::query::sql::transformation::queryToPure::tests::process
 {
   let query = meta::legend::compileVS('#SQL{' + $sql + '}#')->cast(@Query);
   let context = ^SqlTransformContext(
-    sources = [serviceToSource(Service1()), serviceToSource(Service2())],
+    sources = [
+      serviceToSource(Service1()),
+      serviceToSource(Service2()),
+      serviceToSource(Service3())
+    ],
     extensions = sqlExtensions(),
     scopeWithFrom = $scopeWithFrom,
     aliases = ^Map<String, String>(),
     contexts = ^Map<String, SqlTransformContext>());
 
   $query->processQuery($context);
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::forceGetStringType(col: TDSColumn[1]): String[1]
+{
+  $col.type->toOne()->meta::pure::functions::meta::elementToPath();
 }

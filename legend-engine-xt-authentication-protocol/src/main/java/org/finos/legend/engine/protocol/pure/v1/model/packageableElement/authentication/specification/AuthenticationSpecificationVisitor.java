@@ -16,6 +16,8 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authen
 
 public interface AuthenticationSpecificationVisitor<T>
 {
+    T visit(AuthenticationSpecification catchAll);
+
     T visit(ApiKeyAuthenticationSpecification authenticationSpecification);
 
     T visit(UserPasswordAuthenticationSpecification authenticationSpecification);

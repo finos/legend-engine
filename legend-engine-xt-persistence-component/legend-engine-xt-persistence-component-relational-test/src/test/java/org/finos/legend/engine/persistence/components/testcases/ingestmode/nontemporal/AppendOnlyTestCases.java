@@ -49,6 +49,19 @@ public abstract class AppendOnlyTestCases extends BaseTest
         verifyAppendOnlyAllowDuplicatesNoAuditing(operations);
     }
 
+    @Test
+    void testAppendOnlyAllowDuplicatesNoAuditingDeriveMainSchema()
+    {
+        TestScenario scenario = scenarios.ALLOW_DUPLICATES_NO_AUDITING_DERIVE_MAIN_SCHEMA();
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(scenario.getIngestMode())
+                .relationalSink(getRelationalSink())
+                .collectStatistics(true)
+                .build();
+        GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
+        verifyAppendOnlyAllowDuplicatesNoAuditing(operations);
+    }
+
     public abstract void verifyAppendOnlyAllowDuplicatesNoAuditing(GeneratorResult operations);
 
     @Test

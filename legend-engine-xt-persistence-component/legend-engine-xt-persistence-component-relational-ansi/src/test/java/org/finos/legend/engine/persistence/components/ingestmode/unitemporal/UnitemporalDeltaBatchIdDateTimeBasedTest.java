@@ -237,8 +237,8 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
         List<String> milestoningSql = operations.ingestSql();
         List<String> metadataIngestSql = operations.metadataIngestSql();
 
-        String expectedMilestoneQuery = "UPDATE \"MYDB\".\"MAIN\" as sink SET sink.\"BATCH_ID_OUT\" = (SELECT COALESCE(MAX(batch_metadata.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as batch_metadata WHERE batch_metadata.\"TABLE_NAME\" = 'main')-1,sink.\"BATCH_TIME_OUT\" = '2000-01-01 00:00:00' WHERE (sink.\"BATCH_ID_OUT\" = 999999999) AND (EXISTS (SELECT * FROM \"MYDB\".\"STAGING\" as stage WHERE ((sink.\"ID\" = stage.\"ID\") AND (sink.\"NAME\" = stage.\"NAME\")) AND (sink.\"DIGEST\" <> stage.\"DIGEST\")))";
-        String expectedUpsertQuery = "INSERT INTO \"MYDB\".\"MAIN\" (\"ID\", \"NAME\", \"AMOUNT\", \"BIZ_DATE\", \"DIGEST\", \"BATCH_ID_IN\", \"BATCH_ID_OUT\", \"BATCH_TIME_IN\", \"BATCH_TIME_OUT\") (SELECT stage.\"ID\",stage.\"NAME\",stage.\"AMOUNT\",stage.\"BIZ_DATE\",stage.\"DIGEST\",(SELECT COALESCE(MAX(batch_metadata.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as batch_metadata WHERE batch_metadata.\"TABLE_NAME\" = 'main'),999999999,'2000-01-01 00:00:00','9999-12-31 23:59:59' FROM \"MYDB\".\"STAGING\" as stage WHERE NOT (EXISTS (SELECT * FROM \"MYDB\".\"MAIN\" as sink WHERE (sink.\"BATCH_ID_OUT\" = 999999999) AND (sink.\"DIGEST\" = stage.\"DIGEST\") AND ((sink.\"ID\" = stage.\"ID\") AND (sink.\"NAME\" = stage.\"NAME\")))))";
+        String expectedMilestoneQuery = "UPDATE \"MYDB\".\"MAIN\" as sink SET sink.\"BATCH_ID_OUT\" = (SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE BATCH_METADATA.\"TABLE_NAME\" = 'MAIN')-1,sink.\"BATCH_TIME_OUT\" = '2000-01-01 00:00:00' WHERE (sink.\"BATCH_ID_OUT\" = 999999999) AND (EXISTS (SELECT * FROM \"MYDB\".\"STAGING\" as stage WHERE ((sink.\"ID\" = stage.\"ID\") AND (sink.\"NAME\" = stage.\"NAME\")) AND (sink.\"DIGEST\" <> stage.\"DIGEST\")))";
+        String expectedUpsertQuery = "INSERT INTO \"MYDB\".\"MAIN\" (\"ID\", \"NAME\", \"AMOUNT\", \"BIZ_DATE\", \"DIGEST\", \"BATCH_ID_IN\", \"BATCH_ID_OUT\", \"BATCH_TIME_IN\", \"BATCH_TIME_OUT\") (SELECT stage.\"ID\",stage.\"NAME\",stage.\"AMOUNT\",stage.\"BIZ_DATE\",stage.\"DIGEST\",(SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE BATCH_METADATA.\"TABLE_NAME\" = 'MAIN'),999999999,'2000-01-01 00:00:00','9999-12-31 23:59:59' FROM \"MYDB\".\"STAGING\" as stage WHERE NOT (EXISTS (SELECT * FROM \"MYDB\".\"MAIN\" as sink WHERE (sink.\"BATCH_ID_OUT\" = 999999999) AND (sink.\"DIGEST\" = stage.\"DIGEST\") AND ((sink.\"ID\" = stage.\"ID\") AND (sink.\"NAME\" = stage.\"NAME\")))))";
         Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableCreateQueryWithUpperCase, preActionsSql.get(0));
         Assertions.assertEquals(AnsiTestArtifacts.expectedMetadataTableCreateQueryWithUpperCase, preActionsSql.get(1));
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
@@ -317,16 +317,16 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
         List<String> metadataIngestSql = operations.metadataIngestSql();
 
         String expectedCreateMainTableQuery = "CREATE TABLE IF NOT EXISTS \"my_schema\".\"main\"" +
-                "(\"id\" INTEGER," +
-                "\"name\" VARCHAR," +
+                "(\"id\" INTEGER NOT NULL," +
+                "\"name\" VARCHAR NOT NULL," +
                 "\"amount\" DOUBLE," +
                 "\"biz_date\" DATE," +
                 "\"digest\" VARCHAR," +
-                "\"batch_id_in\" INTEGER," +
+                "\"batch_id_in\" INTEGER NOT NULL," +
                 "\"batch_id_out\" INTEGER," +
                 "\"batch_time_in\" DATETIME," +
                 "\"batch_time_out\" DATETIME," +
-                "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"batch_time_in\"))";
+                "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\"))";
 
         String expectedMilestoneQuery = "UPDATE \"my_schema\".\"main\" as sink " +
                 "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main')-1," +
@@ -362,16 +362,16 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
         List<String> metadataIngestSql = operations.metadataIngestSql();
 
         String expectedCreateMainTableQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"my_schema\".\"main\"" +
-                "(\"id\" INTEGER," +
-                "\"name\" VARCHAR," +
+                "(\"id\" INTEGER NOT NULL," +
+                "\"name\" VARCHAR NOT NULL," +
                 "\"amount\" DOUBLE," +
                 "\"biz_date\" DATE," +
                 "\"digest\" VARCHAR," +
-                "\"batch_id_in\" INTEGER," +
+                "\"batch_id_in\" INTEGER NOT NULL," +
                 "\"batch_id_out\" INTEGER," +
                 "\"batch_time_in\" DATETIME," +
                 "\"batch_time_out\" DATETIME," +
-                "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"batch_time_in\"))";
+                "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\"))";
 
         String expectedMilestoneQuery = "UPDATE \"mydb\".\"my_schema\".\"main\" as sink " +
                 "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main')-1," +
@@ -407,16 +407,16 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
         List<String> metadataIngestSql = operations.metadataIngestSql();
 
         String expectedCreateMainTableQuery = "CREATE TABLE IF NOT EXISTS main" +
-                "(\"id\" INTEGER," +
-                "\"name\" VARCHAR," +
+                "(\"id\" INTEGER NOT NULL," +
+                "\"name\" VARCHAR NOT NULL," +
                 "\"amount\" DOUBLE," +
                 "\"biz_date\" DATE," +
                 "\"digest\" VARCHAR," +
-                "\"batch_id_in\" INTEGER," +
+                "\"batch_id_in\" INTEGER NOT NULL," +
                 "\"batch_id_out\" INTEGER," +
                 "\"batch_time_in\" DATETIME," +
                 "\"batch_time_out\" DATETIME," +
-                "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"batch_time_in\"))";
+                "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\"))";
 
         String expectedMilestoneQuery = "UPDATE main as sink " +
                 "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main')-1," +

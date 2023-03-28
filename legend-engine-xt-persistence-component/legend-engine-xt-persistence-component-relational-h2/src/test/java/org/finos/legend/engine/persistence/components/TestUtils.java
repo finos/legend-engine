@@ -23,6 +23,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.JsonExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
+import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.junit.jupiter.api.Assertions;
 
@@ -41,6 +42,7 @@ import java.util.Set;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.stream.Collectors;
 
 public class TestUtils
 {
@@ -100,12 +102,17 @@ public class TestUtils
         put(dateName, new HashSet<>(Arrays.asList("2021-12-01", "2021-12-02")));
     }};
 
-    public static Field id = Field.builder().name(idName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(idName).build();
+    public static Field id = Field.builder().name(idName).type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(idName).build();
     public static Field tinyIntId = Field.builder().name(idName).type(FieldType.of(DataType.TINYINT, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(idName).build();
     public static Field name = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 64, null)).nullable(false).fieldAlias(nameName).build();
+    public static Field nullableName = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 64, null)).fieldAlias(nameName).build();
     public static Field nameWithMoreLength = Field.builder().name(nameName).type(FieldType.of(DataType.VARCHAR, 256, null)).nullable(false).fieldAlias(nameName).build();
     public static Field income = Field.builder().name(incomeName).type(FieldType.of(DataType.BIGINT, Optional.empty(), Optional.empty())).fieldAlias(incomeName).build();
+    public static Field notNullableIntIncome = Field.builder().name(incomeName).type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty())).nullable(false).fieldAlias(incomeName).build();
+    public static Field nullableIntIncome = Field.builder().name(incomeName).type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty())).fieldAlias(incomeName).build();
+    public static Field decimalIncome = Field.builder().name(incomeName).type(FieldType.of(DataType.DECIMAL, 10, 2)).fieldAlias(incomeName).build();
     public static Field startTime = Field.builder().name(startTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(startTimeName).build();
+    public static Field startTimeTimestamp = Field.builder().name(startTimeName).type(FieldType.of(DataType.TIMESTAMP, null, 6)).primaryKey(true).fieldAlias(startTimeName).build();
     public static Field expiryDate = Field.builder().name(expiryDateName).type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).fieldAlias(expiryDateName).build();
     public static Field date = Field.builder().name(dateName).type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(dateName).build();
     public static Field entity = Field.builder().name(entityName).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(entityName).build();
@@ -117,6 +124,7 @@ public class TestUtils
     public static Field dateIn = Field.builder().name(dateInName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(dateInName).build();
     public static Field dateOut = Field.builder().name(dateOutName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(dateOutName).build();
     public static Field digest = Field.builder().name(digestName).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).fieldAlias(digestName).build();
+    public static Field digestWithLength = Field.builder().name(digestName).type(FieldType.of(DataType.VARCHAR, 2147483647, null)).fieldAlias(digestName).build();
     public static Field batchUpdateTimestamp = Field.builder().name(batchUpdateTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).build();
     public static Field batchIdIn = Field.builder().name(batchIdInName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(batchIdInName).build();
     public static Field batchIdOut = Field.builder().name(batchIdOutName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(batchIdOutName).build();
@@ -152,19 +160,13 @@ public class TestUtils
             .build();
     }
 
-    public static DatasetDefinition getSchemaEvolMainTableWithMissingColumn()
+    public static DatasetDefinition getDefaultMainTable()
     {
         return DatasetDefinition.builder()
-            .group(testSchemaName)
-            .name(mainTableName)
-            .schema(SchemaDefinition.builder()
-                .addFields(id)
-                .addFields(name)
-                .addFields(income)
-                .addFields(startTime)
-                .addFields(digest)
-                .build())
-            .build();
+                .group(testSchemaName)
+                .name(mainTableName)
+                .schema(SchemaDefinition.builder().build())
+                .build();
     }
 
     public static DatasetDefinition getMainTableWithBatchUpdateTimeField()
@@ -319,31 +321,6 @@ public class TestUtils
             .build();
     }
 
-    public static DatasetDefinition getStagingTableForImplicitSchemaEvolution()
-    {
-        return DatasetDefinition.builder()
-            .group(testSchemaName)
-            .name(stagingTableName)
-            .schema(SchemaDefinition.builder()
-                .addFields(tinyIntId)
-                .addFields(nameWithMoreLength)
-                .addFields(income)
-                .addFields(startTime)
-                .addFields(expiryDate)
-                .addFields(digest)
-                .build())
-            .build();
-    }
-
-    public static DatasetDefinition getBasicTableWithNoPks()
-    {
-        return DatasetDefinition.builder()
-            .group(testSchemaName)
-            .name(mainTableName)
-            .schema(getSchemaWithNoPKs())
-            .build();
-    }
-
     public static Dataset getCsvDatasetRefWithLessColumnsThanMain(String dataPath)
     {
         return CsvExternalDatasetReference.builder()
@@ -371,26 +348,6 @@ public class TestUtils
                 .addFields(income)
                 .addFields(startTime)
                 .addFields(expiryDate)
-                .addFields(digest)
-                .addFields(batchIdIn)
-                .addFields(batchIdOut)
-                .addFields(batchTimeIn)
-                .addFields(batchTimeOut)
-                .build()
-            )
-            .build();
-    }
-
-    public static DatasetDefinition getUnitemporalMainTableWithMissingColumn()
-    {
-        return DatasetDefinition.builder()
-            .group(testSchemaName)
-            .name(mainTableName)
-            .schema(SchemaDefinition.builder()
-                .addFields(id)
-                .addFields(name)
-                .addFields(income)
-                .addFields(startTime)
                 .addFields(digest)
                 .addFields(batchIdIn)
                 .addFields(batchIdOut)
@@ -781,6 +738,179 @@ public class TestUtils
             .build();
     }
 
+    public static DatasetDefinition getSchemaEvolutionAddColumnMainTable()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(startTime)
+                .addFields(expiryDate)
+                .addFields(digest)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition expectedMainTableSchema()
+    {
+        return DatasetDefinition.builder()
+                .group(testSchemaName)
+                .name(mainTableName)
+                .schema(SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(income)
+            .addFields(startTimeTimestamp)
+            .addFields(expiryDate)
+            .addFields(digestWithLength)
+            .build())
+                .build();
+    }
+
+    public static DatasetDefinition expectedMainTableSchemaWithLengthEvolution()
+    {
+        return DatasetDefinition.builder()
+                .group(testSchemaName)
+                .name(mainTableName)
+                .schema(SchemaDefinition.builder()
+                        .addFields(id)
+                        .addFields(nameWithMoreLength)
+                        .addFields(income)
+                        .addFields(startTimeTimestamp)
+                        .addFields(expiryDate)
+                        .addFields(digestWithLength)
+                        .build())
+                .build();
+    }
+
+    public static DatasetDefinition expectedMainTableSchemaWithDatatypeChange()
+    {
+        return DatasetDefinition.builder()
+                .group(testSchemaName)
+                .name(mainTableName)
+                .schema(SchemaDefinition.builder()
+                        .addFields(id)
+                        .addFields(name)
+                        .addFields(decimalIncome)
+                        .addFields(startTimeTimestamp)
+                        .addFields(expiryDate)
+                        .addFields(digestWithLength)
+                        .build())
+                .build();
+    }
+
+    public static DatasetDefinition getSchemaEvolutionDataTypeConversionMainTable()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(nullableIntIncome)
+                .addFields(startTime)
+                .addFields(expiryDate)
+                .addFields(digest)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getSchemaEvolutionDataTypeSizeChangeStagingTable()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(nameWithMoreLength)
+                .addFields(nullableIntIncome)
+                .addFields(startTime)
+                .addFields(expiryDate)
+                .addFields(digest)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getSchemaEvolutionColumnNullabilityChangeStagingTable()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(nullableName)
+                .addFields(income)
+                .addFields(startTime)
+                .addFields(expiryDate)
+                .addFields(digest)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getSchemaEvolutionDataTypeConversionAndColumnNullabilityChangeMainTable()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(notNullableIntIncome)
+                .addFields(startTime)
+                .addFields(expiryDate)
+                .addFields(digest)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getSchemaEvolutionDataTypeConversionAndDataTypeSizeChangeStagingTable()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(decimalIncome)
+                .addFields(startTime)
+                .addFields(expiryDate)
+                .addFields(digest)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getSchemaEvolutionMakeMainColumnNullableStagingTable()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(income)
+                .addFields(startTime)
+                .addFields(expiryDate)
+                .addFields(digest)
+                .build())
+            .build();
+    }
+
+    public static DatasetDefinition getSchemaEvolutionPKTypeDifferentMainTable()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(income)
+                .addFields(expiryDate)
+                .addFields(digest)
+                .build())
+            .build();
+    }
+
     public static MetadataDataset getMetadataDataset()
     {
         return MetadataDataset.builder().build();
@@ -804,6 +934,23 @@ public class TestUtils
         }
     }
 
+    // This is to check the Dataset objects - whether everything has been updated properly
+    public static void assertUpdatedDataset(Dataset expectedDataset, Dataset actualDataset)
+    {
+        Set<Field> actualFieldsSet = actualDataset.schema().fields().stream().collect(Collectors.toSet());
+        Set<Field> expectedFieldsSet = expectedDataset.schema().fields().stream().collect(Collectors.toSet());
+        expectedFieldsSet.forEach(
+                field ->
+                {
+                    Field matchedMainField = actualFieldsSet.stream().filter(mainField -> mainField.name().equals(field.name())).findFirst().orElse(null);
+                    if (matchedMainField == null || field.nullable() != matchedMainField.nullable() || field.primaryKey() != matchedMainField.primaryKey() || !field.type().equals(matchedMainField.type()))
+                    {
+                        Assertions.fail("Updated dataset object does not match that of the expected dataset");
+                    }
+                });
+    }
+
+    // This is to check the actual database table - whether columns have been added properly
     public static void assertTableColumnsEquals(List<String> expectedSchema, List<Map<String, Object>> actualData)
     {
         for (Map<String, Object> actualTableRow : actualData)
@@ -825,12 +972,29 @@ public class TestUtils
         }
     }
 
-    public static String getCheckIsNullableFromTableSql(String tableName, String columnName)
+    // This is to check the actual database table - whether columns have the right nullability
+    public static String getIsColumnNullableFromTable(JdbcHelper sink, String tableName, String columnName)
     {
-        return "SELECT IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='" + tableName + "' and COLUMN_NAME ='" + columnName + "'";
+        List<Map<String, Object>> result = sink.executeQuery("SELECT IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='" + tableName + "' and COLUMN_NAME ='" + columnName + "'");
+        return result.get(0).get("IS_NULLABLE").toString();
     }
 
-    public static String getCheckDataTypeFromTableSql(Connection connection, String database, String schema, String tableName, String columnName) throws SQLException
+    // This is to check the actual database table - the length (precision) of the column data type
+    public static int getColumnDataTypeLengthFromTable(JdbcHelper sink, String tableName, String columnName)
+    {
+        List<Map<String, Object>> result = sink.executeQuery("SELECT NUMERIC_PRECISION FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='" + tableName + "' and COLUMN_NAME ='" + columnName + "'");
+        return Integer.parseInt(result.get(0).get("NUMERIC_PRECISION").toString());
+    }
+
+    // This is to check the actual database table - the scale of the column data type
+    public static int getColumnDataTypeScaleFromTable(JdbcHelper sink, String tableName, String columnName)
+    {
+        List<Map<String, Object>> result = sink.executeQuery("SELECT NUMERIC_SCALE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='" + tableName + "' and COLUMN_NAME ='" + columnName + "'");
+        return Integer.parseInt(result.get(0).get("NUMERIC_SCALE").toString());
+    }
+
+    // This is to check the actual database table - whether data types are correct
+    public static String getColumnDataTypeFromTable(Connection connection, String database, String schema, String tableName, String columnName) throws SQLException
     {
         ResultSet result = connection.getMetaData().getColumns(database, schema, tableName, columnName);
         String dataType = "";
@@ -839,6 +1003,18 @@ public class TestUtils
             dataType = JDBCType.valueOf(result.getInt("DATA_TYPE")).name();
         }
         return dataType;
+    }
+
+    public static Dataset createDatasetWithUpdatedField(Dataset dataset, Field field)
+    {
+        List<Field> newFields = dataset.schema().fields()
+            .stream()
+            .filter(f -> f.name() != field.name())
+            .collect(Collectors.toList());
+
+        newFields.add(field);
+
+        return dataset.withSchema(dataset.schema().withFields(newFields));
     }
 
     private static List<String[]> readCsvData(String path) throws IOException

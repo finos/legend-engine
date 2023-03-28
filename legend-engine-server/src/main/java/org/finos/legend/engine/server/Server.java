@@ -29,6 +29,7 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.eclipse.jetty.server.session.SessionHandler;
@@ -299,7 +300,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new GraphQLDebug(modelManager, serverConfiguration.metadataserver, routerExtensions));
 
         // SQL
-        environment.jersey().register(new SqlExecute(modelManager, planExecutor, routerExtensions, generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers), serverConfiguration.metadataserver, serverConfiguration.deployment.mode));
+        environment.jersey().register(new SqlExecute(modelManager, planExecutor, routerExtensions, FastList.newListWith(), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers)));
         environment.jersey().register(new SqlGrammar());
 
         // Service
@@ -318,7 +319,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         // Analytics
         environment.jersey().register(new MappingAnalytics(modelManager));
         environment.jersey().register(new DiagramAnalytics(modelManager));
-        environment.jersey().register(new DataSpaceAnalytics(modelManager));
+        environment.jersey().register(new DataSpaceAnalytics(modelManager, generatorExtensions));
         environment.jersey().register(new LineageAnalytics(modelManager));
 
         // Testable

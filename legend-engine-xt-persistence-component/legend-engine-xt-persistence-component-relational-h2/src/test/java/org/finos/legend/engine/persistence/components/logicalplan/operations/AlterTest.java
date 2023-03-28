@@ -90,7 +90,7 @@ class AlterTest extends BaseTest
         insertMainData(inputPath);
 
         // Assert column is of type BIGINT before operation
-        String dataType = TestUtils.getCheckDataTypeFromTableSql(h2Sink.connection(), testDatabaseName, testSchemaName, mainTableName, incomeName);
+        String dataType = TestUtils.getColumnDataTypeFromTable(h2Sink.connection(), testDatabaseName, testSchemaName, mainTableName, incomeName);
         Assertions.assertEquals("BIGINT", dataType);
 
         // Generate and execute schema evolution plan
@@ -107,7 +107,7 @@ class AlterTest extends BaseTest
         TestUtils.assertFileAndTableDataEquals(expectedNewSchema.toArray(new String[]{}), expectedPath, actualTableData);
 
         // Assert column is of type INTEGER after operation
-        dataType = TestUtils.getCheckDataTypeFromTableSql(h2Sink.connection(), testDatabaseName, testSchemaName, mainTableName, incomeName);
+        dataType = TestUtils.getColumnDataTypeFromTable(h2Sink.connection(), testDatabaseName, testSchemaName, mainTableName, incomeName);
         Assertions.assertEquals("INTEGER", dataType);
     }
 
@@ -125,8 +125,7 @@ class AlterTest extends BaseTest
         insertMainData(inputPath);
 
         // Assert column is not nullable before operation
-        List<Map<String, Object>> result = h2Sink.executeQuery(TestUtils.getCheckIsNullableFromTableSql(mainTableName, nameName));
-        Assertions.assertEquals("NO", result.get(0).get("IS_NULLABLE"));
+        Assertions.assertEquals("NO", TestUtils.getIsColumnNullableFromTable(h2Sink, mainTableName, nameName));
 
         // Generate and execute schema evolution plan
         Operation nullableColumn = Alter.of(mainTable, Alter.AlterOperation.NULLABLE_COLUMN, name, Optional.empty());
@@ -142,8 +141,7 @@ class AlterTest extends BaseTest
         TestUtils.assertFileAndTableDataEquals(expectedNewSchema.toArray(new String[]{}), expectedPath, actualTableData);
 
         // Assert column is nullable after operation
-        result = h2Sink.executeQuery(TestUtils.getCheckIsNullableFromTableSql(mainTableName, nameName));
-        Assertions.assertEquals("YES", result.get(0).get("IS_NULLABLE"));
+        Assertions.assertEquals("YES", TestUtils.getIsColumnNullableFromTable(h2Sink, mainTableName, nameName));
     }
 
     private void insertMainData(String path) throws Exception

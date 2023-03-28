@@ -65,7 +65,7 @@ class NontemporalDeltaTest extends BaseTest
     @Test
     void testNonTemporalDeltaWithNoAuditing() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBasicMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
 
         // Create staging table
@@ -112,7 +112,7 @@ class NontemporalDeltaTest extends BaseTest
     @Test
     void testNonTemporalDeltaWithDeleteIndicator() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBasicMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getStagingTableWithDeleteIndicator();
 
         // Create staging table
@@ -209,7 +209,7 @@ class NontemporalDeltaTest extends BaseTest
     @Test
     void testNonTemporalDeltaWithCleanStagingData() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBasicMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
 
         // Create staging table
@@ -249,7 +249,7 @@ class NontemporalDeltaTest extends BaseTest
     @Test
     void testNonTemporalDeltaWithAuditing() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getMainTableWithBatchUpdateTimeField();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
 
         // Create staging table
@@ -285,7 +285,7 @@ class NontemporalDeltaTest extends BaseTest
     @Test
     void testNonTemporalDeltaNoAuditingWithDataSplits() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBasicMainTable();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         String dataPass1 = basePath + "input/with_data_splits/data_pass1.csv";
         Dataset stagingTable = TestUtils.getBasicCsvDatasetReferenceTableWithDataSplits(dataPass1);
 

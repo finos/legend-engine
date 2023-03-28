@@ -29,6 +29,7 @@ public class DataSpaceAnalysisResult
     public String path;
     public List<DataSpaceTaggedValueInfo> taggedValues = Collections.emptyList();
     public List<DataSpaceStereotypeInfo> stereotypes = Collections.emptyList();
+
     public String title;
     public String description;
     public DataSpaceSupportInfo supportInfo;
@@ -36,9 +37,14 @@ public class DataSpaceAnalysisResult
     public List<DataSpaceExecutionContextAnalysisResult> executionContexts = Collections.emptyList();
     public String defaultExecutionContext;
 
-    public List<String> featuredDiagrams = Collections.emptyList();
     public PureModelContextData model;
 
     public List<String> elements = Collections.emptyList();
+
+    public List<DataSpaceExecutableAnalysisResult> executables = Collections.emptyList();
+    public List<DataSpaceDiagramAnalysisResult> diagrams = Collections.emptyList();
     public List<DataSpaceModelDocumentationEntry> elementDocs = Collections.emptyList();
+
+    @Deprecated
+    public List<String> featuredDiagrams = Collections.emptyList();
 }

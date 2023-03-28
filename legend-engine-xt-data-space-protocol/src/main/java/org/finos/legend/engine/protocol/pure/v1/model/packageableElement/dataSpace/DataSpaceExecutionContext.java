@@ -20,6 +20,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElement
 public class DataSpaceExecutionContext
 {
     public String name;
+    public String title;
     public String description;
     public PackageableElementPointer mapping;
     public PackageableElementPointer defaultRuntime;
