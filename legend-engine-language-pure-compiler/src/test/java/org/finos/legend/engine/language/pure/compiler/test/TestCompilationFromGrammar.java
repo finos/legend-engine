@@ -289,7 +289,7 @@ public class TestCompilationFromGrammar
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
                         "[ agg(p | annualized($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
-                        "['includedDate',  'calendarAgg'])"+
+                        "['includedDate',  'calendarAgg'])" +
                         "}");
     }
 
@@ -311,9 +311,10 @@ public class TestCompilationFromGrammar
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
                         "[ agg(p | cme($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
-                        "['includedDate',  'calendarAgg'])"+
+                        "['includedDate',  'calendarAgg'])" +
                         "}");
     }
+    
     @Test
     public void testCompilationCw()
     {
@@ -332,7 +333,7 @@ public class TestCompilationFromGrammar
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
                         "[ agg(p | cw($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
-                        "['includedDate',  'calendarAgg'])"+
+                        "['includedDate',  'calendarAgg'])" +
                         "}");
     }
 
@@ -354,7 +355,7 @@ public class TestCompilationFromGrammar
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
                         "[ agg(p | cw_fm($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
-                        "['includedDate',  'calendarAgg'])"+
+                        "['includedDate',  'calendarAgg'])" +
                         "}");
     }
 
@@ -376,7 +377,7 @@ public class TestCompilationFromGrammar
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
                         "[ agg(p | CYMinus2($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
-                        "['includedDate',  'calendarAgg'])"+
+                        "['includedDate',  'calendarAgg'])" +
                         "}");
     }
 
@@ -398,7 +399,7 @@ public class TestCompilationFromGrammar
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
                         "[ agg(p | CYMinus3($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
-                        "['includedDate',  'calendarAgg'])"+
+                        "['includedDate',  'calendarAgg'])" +
                         "}");
     }
 
@@ -420,7 +421,7 @@ public class TestCompilationFromGrammar
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
                         "[ agg(p | mtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
-                        "['includedDate',  'calendarAgg'])"+
+                        "['includedDate',  'calendarAgg'])" +
                         "}");
     }
 
@@ -442,7 +443,7 @@ public class TestCompilationFromGrammar
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
                         "[ agg(p | p12wa($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
-                        "['includedDate',  'calendarAgg'])"+
+                        "['includedDate',  'calendarAgg'])" +
                         "}");
     }
 
@@ -464,7 +465,7 @@ public class TestCompilationFromGrammar
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
                         "[ agg(p | p12wtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
-                        "['includedDate',  'calendarAgg'])"+
+                        "['includedDate',  'calendarAgg'])" +
                         "}");
     }
 
@@ -486,7 +487,7 @@ public class TestCompilationFromGrammar
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
                         "[ agg(p | p4wa($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
-                        "['includedDate',  'calendarAgg'])"+
+                        "['includedDate',  'calendarAgg'])" +
                         "}");
     }
 
@@ -508,7 +509,7 @@ public class TestCompilationFromGrammar
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
                         "[ agg(p | p4wtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
-                        "['includedDate',  'calendarAgg'])"+
+                        "['includedDate',  'calendarAgg'])" +
                         "}");
     }
 
@@ -530,7 +531,7 @@ public class TestCompilationFromGrammar
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
                         "[ agg(p | p52wtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
-                        "['includedDate',  'calendarAgg'])"+
+                        "['includedDate',  'calendarAgg'])" +
                         "}");
     }
 
@@ -552,7 +553,7 @@ public class TestCompilationFromGrammar
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
                         "[ agg(p | p52wa($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
-                        "['includedDate',  'calendarAgg'])"+
+                        "['includedDate',  'calendarAgg'])" +
                         "}");
     }
 
@@ -574,7 +575,7 @@ public class TestCompilationFromGrammar
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
                         "[ agg(p | pma($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
-                        "['includedDate',  'calendarAgg'])"+
+                        "['includedDate',  'calendarAgg'])" +
                         "}");
     }
 
@@ -596,7 +597,7 @@ public class TestCompilationFromGrammar
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
                         "[ agg(p | pmtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
-                        "['includedDate',  'calendarAgg'])"+
+                        "['includedDate',  'calendarAgg'])" +
                         "}");
     }
 
@@ -618,7 +619,7 @@ public class TestCompilationFromGrammar
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
                         "[ agg(p | pqtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
-                        "['includedDate',  'calendarAgg'])"+
+                        "['includedDate',  'calendarAgg'])" +
                         "}");
     }
 
@@ -640,7 +641,7 @@ public class TestCompilationFromGrammar
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
                         "[ agg(p | priorDay($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
-                        "['includedDate',  'calendarAgg'])"+
+                        "['includedDate',  'calendarAgg'])" +
                         "}");
     }
 
@@ -662,7 +663,7 @@ public class TestCompilationFromGrammar
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
                         "[ agg(p | priorYear($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
-                        "['includedDate',  'calendarAgg'])"+
+                        "['includedDate',  'calendarAgg'])" +
                         "}");
     }
 
@@ -684,7 +685,7 @@ public class TestCompilationFromGrammar
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
                         "[ agg(p | pw($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
-                        "['includedDate',  'calendarAgg'])"+
+                        "['includedDate',  'calendarAgg'])" +
                         "}");
     }
 
@@ -706,7 +707,7 @@ public class TestCompilationFromGrammar
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
                         "[ agg(p | pw_fm($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
-                        "['includedDate',  'calendarAgg'])"+
+                        "['includedDate',  'calendarAgg'])" +
                         "}");
     }
 
@@ -728,7 +729,7 @@ public class TestCompilationFromGrammar
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
                         "[ agg(p | pwa($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
-                        "['includedDate',  'calendarAgg'])"+
+                        "['includedDate',  'calendarAgg'])" +
                         "}");
     }
 
@@ -750,7 +751,7 @@ public class TestCompilationFromGrammar
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
                         "[ agg(p | pwtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
-                        "['includedDate',  'calendarAgg'])"+
+                        "['includedDate',  'calendarAgg'])" +
                         "}");
     }
 
@@ -772,7 +773,7 @@ public class TestCompilationFromGrammar
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
                         "[ agg(p | pymtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
-                        "['includedDate',  'calendarAgg'])"+
+                        "['includedDate',  'calendarAgg'])" +
                         "}");
     }
 
@@ -794,7 +795,7 @@ public class TestCompilationFromGrammar
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
                         "[ agg(p | pyqtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
-                        "['includedDate',  'calendarAgg'])"+
+                        "['includedDate',  'calendarAgg'])" +
                         "}");
     }
 
@@ -816,7 +817,7 @@ public class TestCompilationFromGrammar
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
                         "[ agg(p | pytd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
-                        "['includedDate',  'calendarAgg'])"+
+                        "['includedDate',  'calendarAgg'])" +
                         "}");
     }
 
@@ -838,7 +839,7 @@ public class TestCompilationFromGrammar
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
                         "[ agg(p | pywa($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
-                        "['includedDate',  'calendarAgg'])"+
+                        "['includedDate',  'calendarAgg'])" +
                         "}");
     }
 
@@ -860,7 +861,7 @@ public class TestCompilationFromGrammar
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
                         "[ agg(p | pywtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
-                        "['includedDate',  'calendarAgg'])"+
+                        "['includedDate',  'calendarAgg'])" +
                         "}");
     }
 
@@ -882,7 +883,7 @@ public class TestCompilationFromGrammar
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
                         "[ agg(p | qtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
-                        "['includedDate',  'calendarAgg'])"+
+                        "['includedDate',  'calendarAgg'])" +
                         "}");
     }
 
@@ -904,7 +905,7 @@ public class TestCompilationFromGrammar
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
                         "[ agg(p | reportEndDay($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
-                        "['includedDate',  'calendarAgg'])"+
+                        "['includedDate',  'calendarAgg'])" +
                         "}");
     }
 
@@ -926,7 +927,7 @@ public class TestCompilationFromGrammar
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
                         "[ agg(p | wtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
-                        "['includedDate',  'calendarAgg'])"+
+                        "['includedDate',  'calendarAgg'])" +
                         "}");
     }
 
@@ -948,7 +949,7 @@ public class TestCompilationFromGrammar
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
                         "[ agg(p | ytd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
-                        "['includedDate',  'calendarAgg'])"+
+                        "['includedDate',  'calendarAgg'])" +
                         "}");
     }
 
