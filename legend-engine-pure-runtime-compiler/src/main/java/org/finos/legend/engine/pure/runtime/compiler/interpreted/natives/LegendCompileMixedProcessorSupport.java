@@ -14,24 +14,23 @@
 
 package org.finos.legend.engine.pure.runtime.compiler.interpreted.natives;
 
+import org.eclipse.collections.api.list.ListIterable;
+import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.pure.m3.compiler.Context;
-import org.finos.legend.pure.m3.coreinstance.BaseCoreInstance;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Any;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
-import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m3.navigation.M3ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation._package._Package;
 import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.m4.coreinstance.SourceInformation;
-import org.finos.legend.pure.m4.coreinstance.primitive.PrimitiveCoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.coreinstance.ValCoreInstance;
 
 public class LegendCompileMixedProcessorSupport extends M3ProcessorSupport
 {
-    private ProcessorSupport originalProcessorSupport;
+    private final ProcessorSupport originalProcessorSupport;
 
     public LegendCompileMixedProcessorSupport(Context context, ModelRepository modelRepository, ProcessorSupport original)
     {
@@ -69,5 +68,51 @@ public class LegendCompileMixedProcessorSupport extends M3ProcessorSupport
     {
         CoreInstance coreInstance = _Package.getByUserPath("meta::pure::metamodel::type::generics::GenericType", this.originalProcessorSupport);
         return this.modelRepository.newCoreInstance("", coreInstance, null);
+    }
+
+    // Intended mainly to convert ValCoreInstance (String, Integer, etc.) into M3 equivalent instances (StringCoreInstance, IntegerCoreInstance, etc)
+    private CoreInstance convertValCoreInstance(CoreInstance value)
+    {
+        if (value instanceof ValCoreInstance)
+        {
+            ValCoreInstance val = (ValCoreInstance) value;
+            return this.modelRepository.newCoreInstance(val.getName(), getClassifier(val), null);
+        }
+        else
+        {
+            return value;
+        }
+    }
+
+    @Override
+    public void instance_addValueToProperty(CoreInstance owner, ListIterable<String> path, Iterable<? extends CoreInstance> values)
+    {
+        values = LazyIterate.collect(values, this::convertValCoreInstance);
+        super.instance_addValueToProperty(owner, path, values);
+    }
+
+    @Override
+    public void instance_setValuesForProperty(CoreInstance owner, CoreInstance property, ListIterable<? extends CoreInstance> values)
+    {
+        values = values.collect(this::convertValCoreInstance);
+        super.instance_setValuesForProperty(owner, property, values);
+    }
+
+    @Override
+    public CoreInstance instance_getValueForMetaPropertyToOneResolved(CoreInstance owner, String property)
+    {
+        return convertValCoreInstance(super.instance_getValueForMetaPropertyToOneResolved(owner, property));
+    }
+
+    @Override
+    public ListIterable<? extends CoreInstance> instance_getValueForMetaPropertyToMany(CoreInstance owner, String propertyName)
+    {
+        return super.instance_getValueForMetaPropertyToMany(owner, propertyName).collect(this::convertValCoreInstance);
+    }
+
+    @Override
+    public ListIterable<? extends CoreInstance> instance_getValueForMetaPropertyToMany(CoreInstance owner, CoreInstance property)
+    {
+        return super.instance_getValueForMetaPropertyToMany(owner, property).collect(this::convertValCoreInstance);
     }
 }
