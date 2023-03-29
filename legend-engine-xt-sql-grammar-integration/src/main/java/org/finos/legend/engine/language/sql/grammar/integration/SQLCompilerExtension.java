@@ -42,7 +42,7 @@ public class SQLCompilerExtension implements CompilerExtension
                 new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                         ._genericType(context.pureModel.getGenericType("meta::external::query::sql::metamodel::Node"))
                         ._multiplicity(context.pureModel.getMultiplicity("one"))
-                        ._values(Lists.mutable.with(new org.finos.legend.engine.protocol.sql.metamodel.Translator().translate((Node) obj, context.pureModel)))
+                        ._values(Lists.mutable.with(new org.finos.legend.engine.protocol.sql.metamodel.ProtocolToMetamodelTranslator().translate((Node) obj, context.pureModel)))
         );
     }
 

@@ -47,7 +47,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPo
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.sql.metamodel.Query;
 import org.finos.legend.engine.protocol.sql.metamodel.Statement;
-import org.finos.legend.engine.protocol.sql.metamodel.Translator;
+import org.finos.legend.engine.protocol.sql.metamodel.ProtocolToMetamodelTranslator;
 import org.finos.legend.engine.query.sql.api.sources.SQLContext;
 import org.finos.legend.engine.query.sql.api.sources.SQLSource;
 import org.finos.legend.engine.query.sql.api.sources.SQLSourceProvider;
@@ -211,7 +211,7 @@ public class SqlExecute
 
         PureModel pureModel = modelManager.loadModel(pureModelContext, PureClientVersions.production, profiles, "");
 
-        Root_meta_external_query_sql_metamodel_Node query = new Translator().translate(statement, pureModel);
+        Root_meta_external_query_sql_metamodel_Node query = new ProtocolToMetamodelTranslator().translate(statement, pureModel);
 
         RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLSource> compiledSources = new SQLSourceTranslator().translate(sources, pureModel);
         Root_meta_pure_executionPlan_ExecutionPlan plan = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_getPlansFromSQL_SQLSource_MANY__Node_1__Extension_MANY__ExecutionPlan_1_(compiledSources, query, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
@@ -268,7 +268,7 @@ public class SqlExecute
         PureModelContext pureModelContextData = sourcesAndModel.getTwo();
 
         PureModel pureModel = this.modelManager.loadModel(pureModelContextData, clientVersion, profiles, "");
-        Root_meta_external_query_sql_metamodel_Node query = new Translator().translate(statement, pureModel);
+        Root_meta_external_query_sql_metamodel_Node query = new ProtocolToMetamodelTranslator().translate(statement, pureModel);
 
         RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLSource> compiledSources = new SQLSourceTranslator().translate(sources, pureModel);
 

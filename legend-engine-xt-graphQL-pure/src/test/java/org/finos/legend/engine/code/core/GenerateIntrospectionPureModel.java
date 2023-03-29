@@ -19,7 +19,7 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.graphQL.grammar.from.GraphQLGrammarParser;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
-import org.finos.legend.engine.protocol.graphQL.metamodel.Translator;
+import org.finos.legend.engine.protocol.graphQL.metamodel.ProtocolToMetamodelTranslator;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.pure.generated.core_pure_serialization_toPureGrammar;
@@ -114,7 +114,7 @@ public class GenerateIntrospectionPureModel
 
         GraphQLGrammarParser parser = GraphQLGrammarParser.newInstance();
         Document document = parser.parseDocument(introspection);
-        RichIterable<? extends Type> types = org.finos.legend.pure.generated.core_external_query_graphql_binding_toPure_sdl_toPure_sdl.Root_meta_external_query_graphQL_binding_toPure_sdl_graphQLTypeSystemtoPure_Document_1__String_1__Type_MANY_(new Translator().translate(document, pureModel), "meta::external::query::graphQL::metamodel::introspection", pureModel.getExecutionSupport());
+        RichIterable<? extends Type> types = org.finos.legend.pure.generated.core_external_query_graphql_binding_toPure_sdl_toPure_sdl.Root_meta_external_query_graphQL_binding_toPure_sdl_graphQLTypeSystemtoPure_Document_1__String_1__Type_MANY_(new ProtocolToMetamodelTranslator().translate(document, pureModel), "meta::external::query::graphQL::metamodel::introspection", pureModel.getExecutionSupport());
         String res = types.collect(t -> core_pure_serialization_toPureGrammar.Root_meta_pure_metamodel_serialization_grammar_printType_Type_1__String_1_(t, pureModel.getExecutionSupport())).makeString("\n");
         System.out.println(res);
     }
