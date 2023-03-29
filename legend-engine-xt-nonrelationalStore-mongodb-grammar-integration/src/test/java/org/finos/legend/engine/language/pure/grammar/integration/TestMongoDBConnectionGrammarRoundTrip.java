@@ -14,27 +14,17 @@
 
 package org.finos.legend.engine.language.pure.grammar.integration;
 
-import org.antlr.v4.runtime.Vocabulary;
-import org.eclipse.collections.impl.list.mutable.ListAdapter;
-import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.MongoDBConnectionParserGrammar;
-import org.finos.legend.engine.language.pure.grammar.from.antlr4.schema.MongoDBSchemaParserGrammar;
-import org.finos.legend.engine.language.pure.grammar.test.TestGrammarParser;
+import org.finos.legend.engine.language.pure.grammar.test.TestGrammarRoundtrip;
+import org.junit.Test;
 
-import java.util.List;
-
-public class TestMongoDBConnectionGrammarParser extends TestGrammarParser.TestGrammarParserTestSuite
+public class TestMongoDBConnectionGrammarRoundTrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
-    @Override
-    public Vocabulary getParserGrammarVocabulary()
-    {
-        return MongoDBConnectionParserGrammar.VOCABULARY;
-    }
 
-    @Override
-    public String getParserGrammarIdentifierInclusionTestCode(List<String> keywords)
+    @Test
+    public void testEmptyMongoDBStoreGrammar()
     {
-        return "###Connection\n" +
-                "MongoDBConnection " + ListAdapter.adapt(keywords).makeString("::") + "\n" +
+        test("###Connection\n" +
+                "MongoDBConnection test::testConnection\n" +
                 "{\n" +
                 "  database: legend_db;\n" +
                 "  store: mongo::test::db;\n" +
@@ -46,9 +36,7 @@ public class TestMongoDBConnectionGrammarParser extends TestGrammarParser.TestGr
                 "      systemPropertyName: 'sys.prop.name';\n" +
                 "    };\n" +
                 "  }#;\n" +
-                "}\n";
+                "}\n");
     }
 
-
 }
-

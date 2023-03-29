@@ -14,16 +14,26 @@
 
 package org.finos.legend.engine.language.pure.grammar.integration;
 
+import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.dsl.authentication.grammar.to.IAuthenticationGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.integration.extensions.IMongoDBGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.integration.util.MongoDBSchemaComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDatabase;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.runtime.MongoDBURL;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
 
 public class MongoDBGrammarComposerExtension implements IMongoDBGrammarComposerExtension
 {
@@ -46,4 +56,31 @@ public class MongoDBGrammarComposerExtension implements IMongoDBGrammarComposerE
             }).makeString("\n\n");
         });
     }
+
+
+    public List<Function2<Connection, PureGrammarComposerContext, Pair<String, String>>> getExtraConnectionValueComposers()
+    {
+        return Lists.mutable.with((connectionValue, context) ->
+        {
+            if (connectionValue instanceof MongoDBConnection)
+            {
+                MongoDBConnection mongoDBConnection = (MongoDBConnection) connectionValue;
+
+                return Tuples.pair(MongoDBGrammarParserExtension.MONGO_DB_CONNECTION_TYPE,
+                        context.getIndentationString() + "{\n" +
+                                context.getIndentationString() + getTabString() + "database: " + mongoDBConnection.dataSourceSpecification.databaseName + ";\n" +
+                                context.getIndentationString() + getTabString() + "store: " + mongoDBConnection.element + ";\n" +
+                                context.getIndentationString() + getTabString() + "serverURLs: [" + this.getMongoDBURLs(mongoDBConnection.dataSourceSpecification.serverURLs)  + "];\n" +
+                                context.getIndentationString() + getTabString() + "authentication: " + IAuthenticationGrammarComposerExtension.renderAuthentication(mongoDBConnection.authenticationSpecification, 1, context) + ";\n" +
+                                context.getIndentationString() + "}");
+            }
+            return null;
+        });
+    }
+
+    private String getMongoDBURLs(List<MongoDBURL> serverURLs)
+    {
+        return serverURLs.stream().map(i -> i.baseUrl + ":" + i.port).collect(Collectors.joining());
+    }
+
 }

@@ -15,11 +15,15 @@
 package org.finos.legend.engine.language.pure.grammar.integration.connection;
 
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.finos.legend.engine.language.pure.dsl.authentication.grammar.from.IAuthenticationGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.MongoDBConnectionLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.MongoDBConnectionParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.runtime.MongoDBDatasourceSpecification;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.runtime.MongoDBURL;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.UserPasswordAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.SystemPropertiesSecret;
@@ -31,10 +35,12 @@ import java.util.stream.Collectors;
 public class MongoDBConnectionParseTreeWalker
 {
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
+    private final PureGrammarParserExtensions extension;
 
-    public MongoDBConnectionParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation)
+    public MongoDBConnectionParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, PureGrammarParserExtensions extension)
     {
         this.walkerSourceInformation = walkerSourceInformation;
+        this.extension = extension;
     }
 
     public void visitServiceStoreConnectionValue(MongoDBConnectionParserGrammar.DefinitionContext ctx, MongoDBConnection connectionValue, boolean isEmbedded)
@@ -52,16 +58,33 @@ public class MongoDBConnectionParseTreeWalker
             PureGrammarParserUtility.validateAndExtractRequiredField(ctx.connectionStore(), "store", connectionValue.sourceInformation);
         }
         // database type
-        MongoDBConnectionParserGrammar.DatabaseContext dbContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.database(), "database", connectionValue.sourceInformation);
+        MongoDBDatasourceSpecification dsSpecification = getMongoDBDatasourceSpecification(ctx, connectionValue);
+        connectionValue.dataSourceSpecification = dsSpecification;
+
+        MongoDBConnectionParserGrammar.AuthenticationContext authenticationContext = PureGrammarParserUtility.validateAndExtractRequiredField(
+                ctx.authentication(),
+                MongoDBConnectionLexerGrammar.VOCABULARY.getLiteralName(MongoDBConnectionLexerGrammar.AUTHENTICATION),
+                connectionValue.sourceInformation
+        );
+        connectionValue.authenticationSpecification = IAuthenticationGrammarParserExtension.parseAuthentication(authenticationContext.islandDefinition(), this.walkerSourceInformation, this.extension);
+
+    }
+
+    private static MongoDBDatasourceSpecification getMongoDBDatasourceSpecification(MongoDBConnectionParserGrammar.DefinitionContext ctx, MongoDBConnection connectionValue)
+    {
         MongoDBDatasourceSpecification dsSpecification = new MongoDBDatasourceSpecification();
+        MongoDBConnectionParserGrammar.DatabaseContext dbContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.database(), "database", connectionValue.sourceInformation);
         dsSpecification.databaseName = PureGrammarParserUtility.fromIdentifier(dbContext.identifier());
 
-        MongoDBConnectionParserGrammar.AuthenticationContext authContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.authentication(), "authentication", connectionValue.sourceInformation);
-        List<ParseTree> pTree = authContext.islandDefintion().children;
-        List<String> islandValues = pTree.stream().map(p -> p.getText()).collect(Collectors.toList());
-        AuthenticationSpecification authSpecification = new UserPasswordAuthenticationSpecification("mongo_user", new SystemPropertiesSecret("mongo_pwd"));
-        connectionValue.dataSourceSpecification = dsSpecification;
-        connectionValue.authenticationSpecification = authSpecification;
+        MongoDBConnectionParserGrammar.ServerDetailsContext serverDetailsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.serverDetails(), "serverURLs", connectionValue.sourceInformation);
+        dsSpecification.serverURLs = serverDetailsContext.serverURLDef().stream().map(i ->
+        {
+            MongoDBURL url = new MongoDBURL();
+            url.baseUrl = i.VALID_STRING().getText();
+            url.port = Long.parseLong(i.INTEGER().getText());
+            return url;
+        }).collect(Collectors.toList());
+        return dsSpecification;
     }
 }
 

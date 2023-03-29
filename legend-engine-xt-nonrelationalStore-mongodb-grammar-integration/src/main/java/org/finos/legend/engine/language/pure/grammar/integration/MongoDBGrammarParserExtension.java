@@ -70,10 +70,10 @@ public class MongoDBGrammarParserExtension implements IMongoDBGrammarParserExten
     @Override
     public Iterable<? extends ConnectionValueParser> getExtraConnectionParsers()
     {
-        return Collections.singletonList(ConnectionValueParser.newParser(MONGO_DB_CONNECTION_TYPE, connectionValueSourceCode ->
+        return Collections.singletonList(ConnectionValueParser.newParser(MONGO_DB_CONNECTION_TYPE, (connectionValueSourceCode, extension)->
         {
             SourceCodeParserInfo parserInfo = getMongoDBConnectionParserInfo(connectionValueSourceCode);
-            MongoDBConnectionParseTreeWalker walker = new MongoDBConnectionParseTreeWalker(parserInfo.walkerSourceInformation);
+            MongoDBConnectionParseTreeWalker walker = new MongoDBConnectionParseTreeWalker(parserInfo.walkerSourceInformation, extension);
             MongoDBConnection connectionValue = new MongoDBConnection();
             connectionValue.sourceInformation = connectionValueSourceCode.sourceInformation;
             walker.visitServiceStoreConnectionValue((MongoDBConnectionParserGrammar.DefinitionContext) parserInfo.rootContext, connectionValue, connectionValueSourceCode.isEmbedded);

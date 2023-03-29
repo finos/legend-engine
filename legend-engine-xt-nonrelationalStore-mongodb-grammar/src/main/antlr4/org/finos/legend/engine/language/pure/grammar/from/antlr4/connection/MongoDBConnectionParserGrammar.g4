@@ -52,8 +52,5 @@ serverURLDef:                               VALID_STRING COLON INTEGER
 database:                                   DATABASE COLON identifier SEMI_COLON
 ;
 
-authentication:                             AUTHENTICATION COLON islandDefintion SEMI_COLON
-;
-
-islandDefintion:                           ISLAND_OPEN islandContent
+authentication:                             AUTHENTICATION COLON islandDefinition SEMI_COLON
 ;
