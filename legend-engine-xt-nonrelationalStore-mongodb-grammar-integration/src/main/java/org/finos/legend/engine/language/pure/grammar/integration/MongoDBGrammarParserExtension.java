@@ -20,11 +20,17 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.finos.legend.engine.language.pure.grammar.from.ParserErrorListener;
 import org.finos.legend.engine.language.pure.grammar.from.SectionSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.SourceCodeParserInfo;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.MongoDBConnectionLexerGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.MongoDBConnectionParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.schema.MongoDBSchemaLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.schema.MongoDBSchemaParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionValueSourceCode;
+import org.finos.legend.engine.language.pure.grammar.from.extension.ConnectionValueParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
+import org.finos.legend.engine.language.pure.grammar.integration.connection.MongoDBConnectionParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.integration.extensions.IMongoDBGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.integration.util.MongoDBSchemaParseTreeWalker;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
 
 import java.util.Collections;
@@ -46,6 +52,33 @@ public class MongoDBGrammarParserExtension implements IMongoDBGrammarParserExten
         parser.removeErrorListeners();
         parser.addErrorListener(errorListener);
         return new SourceCodeParserInfo(sectionSourceCode.code, input, sectionSourceCode.sourceInformation, sectionSourceCode.walkerSourceInformation, lexer, parser, parser.definition());
+    }
+
+    private static SourceCodeParserInfo getMongoDBConnectionParserInfo(ConnectionValueSourceCode connectionValueSourceCode)
+    {
+        CharStream input = CharStreams.fromString(connectionValueSourceCode.code);
+        ParserErrorListener errorListener = new ParserErrorListener(connectionValueSourceCode.walkerSourceInformation);
+        MongoDBConnectionLexerGrammar lexer = new MongoDBConnectionLexerGrammar(input);
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(errorListener);
+        MongoDBConnectionParserGrammar parser = new MongoDBConnectionParserGrammar(new CommonTokenStream(lexer));
+        parser.removeErrorListeners();
+        parser.addErrorListener(errorListener);
+        return new SourceCodeParserInfo(connectionValueSourceCode.code, input, connectionValueSourceCode.sourceInformation, connectionValueSourceCode.walkerSourceInformation, lexer, parser, parser.definition());
+    }
+
+    @Override
+    public Iterable<? extends ConnectionValueParser> getExtraConnectionParsers()
+    {
+        return Collections.singletonList(ConnectionValueParser.newParser(MONGO_DB_CONNECTION_TYPE, connectionValueSourceCode ->
+        {
+            SourceCodeParserInfo parserInfo = getMongoDBConnectionParserInfo(connectionValueSourceCode);
+            MongoDBConnectionParseTreeWalker walker = new MongoDBConnectionParseTreeWalker(parserInfo.walkerSourceInformation);
+            MongoDBConnection connectionValue = new MongoDBConnection();
+            connectionValue.sourceInformation = connectionValueSourceCode.sourceInformation;
+            walker.visitServiceStoreConnectionValue((MongoDBConnectionParserGrammar.DefinitionContext) parserInfo.rootContext, connectionValue, connectionValueSourceCode.isEmbedded);
+            return connectionValue;
+        }));
     }
 
     @Override
