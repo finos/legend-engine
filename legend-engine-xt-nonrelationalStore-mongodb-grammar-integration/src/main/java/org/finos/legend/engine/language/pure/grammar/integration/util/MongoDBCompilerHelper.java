@@ -18,6 +18,8 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.SourceInformationHelper;
+import org.finos.legend.engine.language.pure.dsl.authentication.compiler.toPureGraph.HelperAuthenticationBuilder;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.ArrayType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.BaseTypeVisitor;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.BinaryType;
@@ -42,9 +44,12 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.StringType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.TimeStampType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.Validator;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.JsonSchemaExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDatabase;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.runtime.MongoDBURL;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_external_store_mongodb_metamodel_ArrayType;
 import org.finos.legend.pure.generated.Root_meta_external_store_mongodb_metamodel_ArrayType_Impl;
@@ -78,6 +83,13 @@ import org.finos.legend.pure.generated.Root_meta_external_store_mongodb_metamode
 import org.finos.legend.pure.generated.Root_meta_external_store_mongodb_metamodel_aggregation_JsonSchemaExpression;
 import org.finos.legend.pure.generated.Root_meta_external_store_mongodb_metamodel_aggregation_JsonSchemaExpression_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_store_mongodb_metamodel_pure_MongoDatabase;
+import org.finos.legend.pure.generated.Root_meta_external_store_mongodb_metamodel_pure_runtime_MongoDBConnection;
+import org.finos.legend.pure.generated.Root_meta_external_store_mongodb_metamodel_pure_runtime_MongoDBConnection_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_mongodb_metamodel_runtime_MongoDBDatasourceSpecification;
+import org.finos.legend.pure.generated.Root_meta_external_store_mongodb_metamodel_runtime_MongoDBDatasourceSpecification_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_mongodb_metamodel_runtime_MongoDBURL;
+import org.finos.legend.pure.generated.Root_meta_external_store_mongodb_metamodel_runtime_MongoDBURL_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_connection_authentication_AuthenticationSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 
 import java.util.List;
@@ -189,6 +201,39 @@ public class MongoDBCompilerHelper
         {
             throw new EngineException("Can't find MongoDBStore '" + buildPackageString + "'", sourceInformation, EngineErrorType.COMPILATION);
         }
+    }
+
+    public static Root_meta_external_store_mongodb_metamodel_pure_runtime_MongoDBConnection buildConnection(MongoDBConnection connectionValue, CompileContext context)
+    {
+        org.finos.legend.pure.m4.coreinstance.SourceInformation sourceInformation = SourceInformationHelper.toM3SourceInformation(connectionValue.sourceInformation);
+
+        Root_meta_pure_runtime_connection_authentication_AuthenticationSpecification authSpec = HelperAuthenticationBuilder.buildAuthenticationSpecification(connectionValue.authenticationSpecification, context);
+        Root_meta_external_store_mongodb_metamodel_runtime_MongoDBDatasourceSpecification dbDatasourceSpecification = new Root_meta_external_store_mongodb_metamodel_runtime_MongoDBDatasourceSpecification_Impl("MongoDBDatasourceSpecification", sourceInformation, context.pureModel.getClass("meta::external::store::mongodb::metamodel::runtime::MongoDBDatasourceSpecification"));
+        dbDatasourceSpecification._databaseName(connectionValue.dataSourceSpecification.databaseName);
+        dbDatasourceSpecification._serverURLs(compileServerURLs(connectionValue, context, sourceInformation));
+
+        Root_meta_external_store_mongodb_metamodel_pure_runtime_MongoDBConnection conn = new Root_meta_external_store_mongodb_metamodel_pure_runtime_MongoDBConnection_Impl("MongoDBConnection", sourceInformation, context.pureModel.getClass("meta::external::store::mongodb::metamodel::pure::runtime::MongoDBConnection"))
+                ._authenticationSpecification(authSpec)
+                ._dataSourceSpecification(dbDatasourceSpecification)
+                ._element(context.pureModel.getStore(connectionValue.element, connectionValue.elementSourceInformation));
+
+        return conn._validate(true, sourceInformation, context.getExecutionSupport());
+
+    }
+
+    public static RichIterable<? extends Root_meta_external_store_mongodb_metamodel_runtime_MongoDBURL> compileServerURLs(MongoDBConnection connectionValue, CompileContext context, org.finos.legend.pure.m4.coreinstance.SourceInformation sourceInformation)
+    {
+        List<MongoDBURL> serverURLs = connectionValue.dataSourceSpecification.serverURLs;
+        return ListIterate.collect(serverURLs, u ->
+        {
+            Root_meta_external_store_mongodb_metamodel_runtime_MongoDBURL url = new Root_meta_external_store_mongodb_metamodel_runtime_MongoDBURL_Impl("MongoDBURL", sourceInformation,
+                    context.pureModel.getClass("meta::external::store::mongodb::metamodel::runtime::MongoDBURL"));
+            Assert.assertTrue(u.port > 0, () -> "MongoDB URL is missing port: " + u.baseUrl, connectionValue.sourceInformation, EngineErrorType.COMPILATION);
+            url._baseUrl(u.baseUrl);
+            url._port(u.port);
+            return url;
+        });
+
     }
 
     private static class BaseTypeBuilder implements BaseTypeVisitor<Root_meta_external_store_mongodb_metamodel_BaseType>

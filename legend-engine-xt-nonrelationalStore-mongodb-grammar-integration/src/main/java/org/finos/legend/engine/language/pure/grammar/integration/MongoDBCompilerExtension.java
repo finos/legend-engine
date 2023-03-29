@@ -21,6 +21,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Comp
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.grammar.integration.extensions.IMongoDBStoreCompilerExtension;
 import org.finos.legend.engine.language.pure.grammar.integration.util.MongoDBCompilerHelper;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDatabase;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
@@ -67,6 +68,15 @@ public class MongoDBCompilerExtension implements IMongoDBStoreCompilerExtension
     @Override
     public List<Function2<Connection, CompileContext, Root_meta_pure_runtime_Connection>> getExtraConnectionValueProcessors()
     {
-        return Lists.mutable.empty();
+        return Lists.fixedSize.with(
+                (connectionValue, context) ->
+                {
+                    if (connectionValue instanceof MongoDBConnection)
+                    {
+                        return MongoDBCompilerHelper.buildConnection((MongoDBConnection) connectionValue, context);
+                    }
+                    return null;
+                }
+        );
     }
 }

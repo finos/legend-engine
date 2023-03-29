@@ -134,4 +134,55 @@ public class TestMongoDBCompilerUtil
                     "                    meta::external::store::mongodb::showcase::domain::Address\n" +
                     "                  ];\n" +
                     "}\n\n";
+
+    static final String SAMPLE_STORE =
+            "###MongoDB\n" +
+                    "Database meta::external::store::mongodb::showcase::store::PersonDatabase\n" +
+                    "(\n" +
+                    "  Collection PersonCollection\n" +
+                    "  (\n" +
+                    "    validationLevel: strict;\n" +
+                    "    validationAction: warn;\n" +
+                    "    jsonSchema: {\n" +
+                    "      \"bsonType\": \"object\",\n" +
+                    "      \"title\": \"Person\",\n" +
+                    "      \"properties\": {\n" +
+                    "        \"firstName\": {\n" +
+                    "          \"bsonType\": \"string\"\n" +
+                    "        },\n" +
+                    "        \"lastName\": {\n" +
+                    "          \"bsonType\": \"string\"\n" +
+                    "        },\n" +
+                    "        \"middleName\": {\n" +
+                    "          \"bsonType\": \"string\"\n" +
+                    "        },\n" +
+                    "        \"firm\": {\n" +
+                    "          \"bsonType\": \"object\",\n" +
+                    "          \"properties\": {\n" +
+                    "            \"firmName\": {\n" +
+                    "              \"bsonType\": \"string\"\n" +
+                    "            },\n" +
+                    "            \"firmId\": {\n" +
+                    "              \"bsonType\": \"int\"\n" +
+                    "            },\n" +
+                    "            \"address\": {\n" +
+                    "              \"bsonType\": \"array\",\n" +
+                    "              \"items\": {\n" +
+                    "                \"bsonType\": \"object\",\n" +
+                    "                \"properties\": {\n" +
+                    "                  \"street\": {\n" +
+                    "                    \"bsonType\": \"string\"\n" +
+                    "                  }\n" +
+                    "                }\n" +
+                    "              }\n" +
+                    "            }\n" +
+                    "          }\n" +
+                    "        }\n" +
+                    "      }\n" +
+                    "    };" +
+                    "   )\n" +
+                    "\n" +
+                    ")\n" +
+                    "\n";
+
 }
