@@ -78,7 +78,7 @@ jobs:
       - name: Build + Test
         if: github.ref != 'refs/heads/master'
         run: |
-          mvn -B -e -DXss4m -DXX:MaxRAMPercentage=90.0 -DskipTests=true install
+          mvn -B -e -DXss4m -DXX:MaxRAMPercentage=90.0 -DskipTests=true install -P sonar
           mvn -B -e -DXss4m -DXX:MaxRAMPercentage=10.0 surefire:test -DargLine="-XX:MaxRAMPercentage=70.0"
 
       - name: Build + Test + Maven Deploy + Sonar + Docker Snapshot
