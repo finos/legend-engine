@@ -75,6 +75,7 @@ public class TrinoDelegatedKerberosAuthenticationStrategyRuntime extends org.fin
     {
         properties.setProperty("KerberosRemoteServiceName", this.kerberosRemoteServiceName);
         properties.setProperty("KerberosUseCanonicalHostname", String.valueOf(this.kerberosUseCanonicalHostname));
+        properties.setProperty("KerberosDelegation", "true");
 
         return Tuples.pair(url, properties);
     }
