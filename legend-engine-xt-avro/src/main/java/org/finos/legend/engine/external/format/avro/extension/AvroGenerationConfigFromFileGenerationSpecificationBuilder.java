@@ -17,14 +17,13 @@ package org.finos.legend.engine.external.format.avro.extension;
 import org.finos.legend.engine.external.format.avro.schema.generations.AvroGenerationConfig;
 import org.finos.legend.engine.language.pure.dsl.generation.config.ConfigBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationType;
 import org.finos.legend.engine.shared.core.operational.Assert;
 
 public class AvroGenerationConfigFromFileGenerationSpecificationBuilder
 {
     public static AvroGenerationConfig build(FileGenerationSpecification fileGeneration)
     {
-        Assert.assertTrue(fileGeneration.type.equals(FileGenerationType.avro.name()), () -> "File generation of type of " + FileGenerationType.avro.name() + " expected, got '" + fileGeneration.type + "'");
+        Assert.assertTrue(fileGeneration.type.equals("avro"), () -> "File generation of type of avro expected, got '" + fileGeneration.type + "'");
         AvroGenerationConfig avroConfig = new AvroGenerationConfig();
         ConfigBuilder.duplicateCheck(fileGeneration.configurationProperties);
         ConfigBuilder.setScopeElements(fileGeneration, avroConfig);

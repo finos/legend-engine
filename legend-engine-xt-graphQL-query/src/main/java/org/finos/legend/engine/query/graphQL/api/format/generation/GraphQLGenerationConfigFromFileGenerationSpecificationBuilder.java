@@ -16,7 +16,6 @@ package org.finos.legend.engine.query.graphQL.api.format.generation;
 
 import org.finos.legend.engine.language.pure.dsl.generation.config.ConfigBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationType;
 import org.finos.legend.engine.shared.core.operational.Assert;
 
 @Deprecated
@@ -24,7 +23,7 @@ public class GraphQLGenerationConfigFromFileGenerationSpecificationBuilder
 {
     public static GraphQLGenerationConfig build(FileGenerationSpecification fileGeneration)
     {
-        Assert.assertTrue(fileGeneration.type.equals(FileGenerationType.graphql.name()), () -> "File generation of type of " + FileGenerationType.graphql.name() + " expected, got '" + fileGeneration.type + "'");
+        Assert.assertTrue(fileGeneration.type.equals("graphql"), () -> "File generation of type of " + "GraphQL" + " expected, got '" + fileGeneration.type + "'");
         GraphQLGenerationConfig graphqlConfig = new GraphQLGenerationConfig();
         ConfigBuilder.duplicateCheck(fileGeneration.configurationProperties);
         ConfigBuilder.setScopeElements(fileGeneration, graphqlConfig);

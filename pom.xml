@@ -141,7 +141,6 @@
         <module>legend-engine-xt-avro</module>
         <module>legend-engine-xt-avro-pure</module>
 
-        <module>legend-engine-xt-rosetta</module>
         <module>legend-engine-xt-rosetta-pure</module>
 
         <module>legend-engine-xt-morphir</module>
@@ -1193,11 +1192,6 @@
                 <version>${project.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-rosetta</artifactId>
-                <version>${project.version}</version>
-            </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-rosetta-pure</artifactId>
