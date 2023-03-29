@@ -27,12 +27,22 @@ Class simple::model::Query
                                                            Person.all()->slice($start, $end);
                                                          }: simple::model::Person[*];
   personsByLastNames(lastNames: String[*]) {simple::model::Person.all()->filter(p|$p.lastName->in($lastNames))}: simple::model::Person[*];
-  allAddresses(processingDate: String[1], businessDate: String[1])
+  addressesBiTemporal(processingDate: String[1], businessDate: String[1])
   {
     let pd = $processingDate->parseDate();
     let bd = $businessDate->parseDate();
-    simple::model::Address.all($pd, $bd);
-  }: simple::model::Address[*];
+    simple::model::AddressBiTemporal.all($pd, $bd);
+  }: simple::model::AddressBiTemporal[*];
+  addressesBusinessTemporal(businessDate: String[1])
+  {
+    let bd = $businessDate->parseDate();
+    simple::model::AddressBusinessTemporal.all($bd);
+  }: simple::model::AddressBusinessTemporal[*];
+  addressesProcessingTemporal(processingDate: String[1])
+  {
+    let pd = $processingDate->parseDate();
+    simple::model::AddressProcessingTemporal.all($pd);
+  }: simple::model::AddressProcessingTemporal[*];
 }
 
 Class simple::model::Firm
@@ -44,10 +54,19 @@ Class simple::model::Person
 {
   firstName: String[1];
   lastName: String[1];
-  address: Address[1];
 }
 
-Class <<meta::pure::profiles::temporal.bitemporal>> simple::model::Address
+Class <<meta::pure::profiles::temporal.bitemporal>> simple::model::AddressBiTemporal
+{
+  line1: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> simple::model::AddressBusinessTemporal
+{
+  line1: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> simple::model::AddressProcessingTemporal
 {
   line1: String[1];
 }
@@ -111,11 +130,20 @@ Mapping simple::mapping::Map
   {
     firstName: [DB]PERSON_TABLE.FIRST_NAME,
     lastName: [DB]PERSON_TABLE.LAST_NAME,
-    employer: [DB]@PERSON_FIRM,
-    address: [DB]@PERSON_ADDRESS
+    employer: [DB]@PERSON_FIRM
   }
 
-  Address : Relational
+  AddressBiTemporal : Relational
+  {
+    line1: [DB]ADDRESS_TABLE.LINE1
+  }
+
+  AddressBusinessTemporal : Relational
+  {
+    line1: [DB]ADDRESS_TABLE.LINE1
+  }
+
+  AddressProcessingTemporal : Relational
   {
     line1: [DB]ADDRESS_TABLE.LINE1
   }
