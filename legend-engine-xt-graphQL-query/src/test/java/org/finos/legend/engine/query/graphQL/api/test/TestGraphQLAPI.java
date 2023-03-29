@@ -681,7 +681,7 @@ public class TestGraphQLAPI
     {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         Object entity = response.getEntity();
-        if(entity instanceof StreamingOutput)
+        if (entity instanceof StreamingOutput)
         {
             StreamingOutput output = (StreamingOutput) response.getEntity();
             output.write(byteArrayOutputStream);
