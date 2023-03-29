@@ -51,7 +51,7 @@ function meta::external::store::mongodb::contract::mongoDBStoreContract(): Store
                                                                             ]
                                                                         ),
     supports = meta::external::store::mongodb::contract::supports_FunctionExpression_1__Boolean_1_,
-    extractSourceClassFromSetImplementation = [m: MongoDBSetImplementation[1]  | $m.class, e: EmbeddedMongoDBSetImplementation[1]  | $e.class] // the second one maybe not needed, doesn't break without it
+    extractSourceClassFromSetImplementation = [m: MongoDBSetImplementation[1]  | $m.class, e: EmbeddedMongoDBSetImplementation[1]  | $e.class]
   )
 }
 
