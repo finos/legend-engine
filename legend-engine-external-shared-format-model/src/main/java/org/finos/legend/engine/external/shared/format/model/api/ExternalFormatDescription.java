@@ -39,6 +39,8 @@ public class ExternalFormatDescription
     public boolean supportsModelGeneration;
     public List<GenerationProperty> modelGenerationProperties;
 
+    public boolean supportsBinding;
+
     public static ExternalFormatDescription newDescription(ExternalFormatExtension<?> extension, PureModel pureModel)
     {
         ExternalFormatDescription result = new ExternalFormatDescription();
@@ -48,6 +50,7 @@ public class ExternalFormatDescription
         result.modelGenerationProperties = result.supportsModelGeneration ? toGenerationProperties(((ExternalFormatModelGenerationExtension<?, ?>) extension).getModelGenerationProperties(pureModel)) : Collections.emptyList();
         result.supportsSchemaGeneration = extension instanceof ExternalFormatSchemaGenerationExtension;
         result.schemaGenerationProperties = result.supportsSchemaGeneration ? toGenerationProperties(((ExternalFormatSchemaGenerationExtension<?, ?>) extension).getSchemaGenerationProperties(pureModel)) : Collections.emptyList();
+        result.supportsBinding = extension.supportsBinding();
         return result;
     }
 
