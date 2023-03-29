@@ -91,30 +91,7 @@ public class MongoDBExecutor
 
     private MongoDBStoreConnectionProvider getMongoDBConnectionProvider()
     {
-        Properties properties = new Properties();
-        properties.put("passwordRef1", "");
-        PropertiesFileCredentialVault propertiesFileCredentialVault = new PropertiesFileCredentialVault(properties);
-        SystemPropertiesCredentialVault systemPropertiesCredentialVault = new SystemPropertiesCredentialVault();
-
-        PlatformCredentialVaultProvider platformCredentialVaultProvider = PlatformCredentialVaultProvider.builder()
-                .with(systemPropertiesCredentialVault)
-                .with(propertiesFileCredentialVault).build();
-
-
-        CredentialVaultProvider credentialVaultProvider = CredentialVaultProvider.builder()
-                .with(platformCredentialVaultProvider)
-                .build();
-
-        IntermediationRuleProvider intermediationRuleProvider = IntermediationRuleProvider.builder()
-                .with(new UserPasswordFromVaultRule(credentialVaultProvider))
-                .build();
-
-        CredentialProviderProvider credentialProviderProvider = CredentialProviderProvider.builder()
-                .with(new UserPasswordCredentialProvider())
-                .with(intermediationRuleProvider)
-                .build();
-
-        MongoDBStoreConnectionProvider connectionProvider = new MongoDBStoreConnectionProvider(credentialProviderProvider);
+        MongoDBStoreConnectionProvider connectionProvider = new MongoDBStoreConnectionProvider(this.credentialProviderProvider);
         return connectionProvider;
     }
 
