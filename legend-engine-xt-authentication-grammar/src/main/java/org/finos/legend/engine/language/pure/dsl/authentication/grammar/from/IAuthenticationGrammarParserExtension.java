@@ -22,10 +22,9 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.eclipse.collections.api.block.function.Function;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
-import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
-import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.PureIslandGrammarSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
+import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
@@ -35,10 +34,9 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 
 public interface IAuthenticationGrammarParserExtension extends PureGrammarParserExtension
 {
-    static Stream<IAuthenticationGrammarParserExtension> getExtensions(PureGrammarParserContext context)
+    static Stream<IAuthenticationGrammarParserExtension> getExtensions(PureGrammarParserExtensions context)
     {
-        return context.getPureGrammarParserExtensions()
-                .getExtensions()
+        return context.getExtensions()
                 .stream()
                 .filter(IAuthenticationGrammarParserExtension.class::isInstance)
                 .map(IAuthenticationGrammarParserExtension.class::cast);
@@ -55,32 +53,34 @@ public interface IAuthenticationGrammarParserExtension extends PureGrammarParser
     }
 
 
-    static AuthenticationSpecification parseAuthentication(ParserRuleContext ctx, ParseTreeWalkerSourceInformation walkerSourceInformation, PureGrammarParserContext context)
+    static AuthenticationSpecification parseAuthentication(ParserRuleContext ctx, ParseTreeWalkerSourceInformation walkerSourceInformation, PureGrammarParserExtensions context)
     {
        return parseIsland(ctx, walkerSourceInformation, IAuthenticationGrammarParserExtension.getExtensions(context).map(IAuthenticationGrammarParserExtension::getExtraAuthenticationParsers).flatMap(List::stream), "Authentication");
     }
 
-    static AuthenticationSpecification parseCredentialVaultSecret(ParserRuleContext ctx, ParseTreeWalkerSourceInformation walkerSourceInformation, PureGrammarParserContext context)
+    static AuthenticationSpecification parseCredentialVaultSecret(ParserRuleContext ctx, ParseTreeWalkerSourceInformation walkerSourceInformation, PureGrammarParserExtensions context)
     {
-        return parseIsland(ctx, walkerSourceInformation, IAuthenticationGrammarParserExtension.getExtensions(context).map(IAuthenticationGrammarParserExtension::getExtraAuthenticationParsers).flatMap(List::stream), "Authentication");
+        return parseIsland(ctx, walkerSourceInformation, IAuthenticationGrammarParserExtension.getExtensions(context).map(IAuthenticationGrammarParserExtension::getExtraAuthenticationParsers).flatMap(List::stream), "CredentialVaultSecret");
     }
 
     static <U> U parseIsland(ParserRuleContext ctx, ParseTreeWalkerSourceInformation walkerSourceInformation, Stream<Function<PureIslandGrammarSourceCode, U>> processors, String parser)
     {
-        Assert.assertTrue(ctx.getChildCount() == 3, () -> "Wrong number of token on authentication island", walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
-        ParserRuleContext identifier = (ParserRuleContext) ctx.getChild(0);
-        TerminalNode ISLAND_OPEN = (TerminalNode) ctx.getChild(1);
-        ParserRuleContext islandContentContext = (ParserRuleContext) ctx.getChild(2);
+        Assert.assertTrue(ctx.getChildCount() == 2, () -> "Wrong number of token on authentication island", walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+        TerminalNode islandOpenToken = (TerminalNode) ctx.getChild(0);
+        String islandOpen = islandOpenToken.getText();
+        String type = islandOpen.substring(1, islandOpen.length() - 1).trim();
 
-        String type = PureGrammarParserUtility.fromIdentifier(identifier);
+        Assert.assertTrue(!type.isEmpty(), () -> "Missing authentication type.  Expect '# TYPE_HERE { ... }#'", walkerSourceInformation.getSourceInformation(islandOpenToken.getSymbol()), EngineErrorType.PARSER);
+
+        ParserRuleContext islandContentContext = (ParserRuleContext) ctx.getChild(1);
         islandContentContext.removeLastChild();
         String islandCode = islandContentContext.getText();
 
         // prepare island grammar walker source information
-        int startLine = ISLAND_OPEN.getSymbol().getLine();
+        int startLine = islandOpenToken.getSymbol().getLine();
         int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
         // only add current walker source information column offset if this is the first line
-        int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ISLAND_OPEN.getSymbol().getCharPositionInLine() + ISLAND_OPEN.getSymbol().getText().length();
+        int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + islandOpenToken.getSymbol().getCharPositionInLine() + islandOpenToken.getSymbol().getText().length();
         ParseTreeWalkerSourceInformation subWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(walkerSourceInformation.getReturnSourceInfo()).build();
         SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 

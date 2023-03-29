@@ -22,7 +22,6 @@ import meta::pure::mapping::*;
 import meta::protocols::pure::vX_X_X::extension::*;
 import meta::pure::extension::*;
 
-// TODO change tokens?
 function meta::external::store::elasticsearch::v7::protocol::vX_X_X::elasticsearchV7StoreExtension(type: String[1]): SerializerExtension[1]
 {
   ^SerializerExtension_vX_X_X(

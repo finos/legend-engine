@@ -100,6 +100,6 @@ public class ConnectionParseTreeWalker
         {
             throw new EngineException("Unsupported connection value type: " + connectionType, sourceInformation, EngineErrorType.PARSER);
         }
-        return connectionValueParser.parse(connectionValueSourceCode);
+        return connectionValueParser.parse(connectionValueSourceCode, this.extensions);
     }
 }

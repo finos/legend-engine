@@ -33,7 +33,7 @@ public class HelperAuthenticationDemoComposer
     {
         return "AuthenticationDemo " + convertPath(authenticationDemo.getPath()) + "\n" +
                 "{\n" +
-                getTabString(indentLevel) + "authentication: " + IAuthenticationGrammarComposerExtension.renderAuthentication(authenticationDemo.authenticationSpecification, indentLevel, context) +
+                getTabString(indentLevel) + "authentication: " + IAuthenticationGrammarComposerExtension.renderAuthentication(authenticationDemo.authenticationSpecification, indentLevel, context) + ";\n" +
                 "}";
     }
 }

@@ -99,6 +99,14 @@ public class HelperRuntimeBuilder
 
     public static Root_meta_pure_runtime_Runtime buildEngineRuntime(EngineRuntime engineRuntime, CompileContext context)
     {
+        // convert EngineRuntime with connection as a map indexes by store to Pure runtime which only contains an array of connections
+        Root_meta_pure_runtime_Runtime pureRuntime = new Root_meta_pure_runtime_Runtime_Impl("Root::meta::pure::runtime::Runtime");
+        buildEngineRuntime(engineRuntime, pureRuntime, context);
+        return pureRuntime;
+    }
+
+    public static void buildEngineRuntime(EngineRuntime engineRuntime, Root_meta_pure_runtime_Runtime pureRuntime, CompileContext context)
+    {
         if (engineRuntime.mappings.isEmpty())
         {
             context.pureModel.addWarnings(Lists.mutable.with(new Warning(engineRuntime.sourceInformation, "Runtime must cover at least one mapping")));
@@ -156,8 +164,7 @@ public class HelperRuntimeBuilder
                 }
             });
         });
-        // convert EngineRuntime with connection as a map indexes by store to Pure runtime which only contains an array of connections
-        Root_meta_pure_runtime_Runtime pureRuntime = new Root_meta_pure_runtime_Runtime_Impl("Root::meta::pure::runtime::Runtime");
+
         ListIterate.forEach(connections, connection ->
         {
             final Root_meta_pure_runtime_Connection pureConnection = connection.accept(new ConnectionFirstPassBuilder(context));
@@ -198,7 +205,6 @@ public class HelperRuntimeBuilder
         });
         // verify runtime mapping coverage
         checkRuntimeMappingCoverage(pureRuntime, mappings, context, engineRuntime.sourceInformation);
-        return pureRuntime;
     }
 
     public static Root_meta_pure_runtime_Runtime buildPureRuntime(Runtime runtime, CompileContext context)

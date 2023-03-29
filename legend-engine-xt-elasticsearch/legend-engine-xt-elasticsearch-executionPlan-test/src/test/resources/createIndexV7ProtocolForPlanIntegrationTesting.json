@@ -1,0 +1,16 @@
+{
+  "_pure_protocol_type": "createRequest",
+  "body": {
+    "mappings": {
+      "properties": {
+        "prop1": {
+          "keyword": {
+            "_pure_protocol_type": "keywordProperty",
+            "type": "keyword"
+          }
+        }
+      }
+    }
+  },
+  "index": "index1"
+}

@@ -75,6 +75,14 @@ public interface ExternalFormatExtension<Metamodel>
     }
 
     /**
+     * Returns whether the external format contract supports binding validation
+     */
+    default Boolean supportsBinding()
+    {
+        return getExternalFormatContract()._externalFormatBindingValidator() != null;
+    }
+
+    /**
      * Returns the content types (see https://www.iana.org/assignments/media-types/media-types.xhtml) supported
      * by this format.
      */

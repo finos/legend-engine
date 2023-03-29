@@ -43,11 +43,11 @@ Class meta::external::store::elasticsearch::v7::pureToEs::State
   aggregationQuery: Boolean[1];
   sq: StoreQuery[1];
   ext: RoutedValueSpecification[0..1];
-  lazyIndex: Elasticsearch7StoreIndexMapping[0..1];
+  lazyIndex: Elasticsearch7StoreIndex[0..1];
   index()
   {
     $this.lazyIndex->toOne('index have not been found yet');
-  }:Elasticsearch7StoreIndexMapping[1];  
+  }:Elasticsearch7StoreIndex[1];
   debug: DebugContext[1];
   debug(s : Function<{->String[1]}>[1])
   {

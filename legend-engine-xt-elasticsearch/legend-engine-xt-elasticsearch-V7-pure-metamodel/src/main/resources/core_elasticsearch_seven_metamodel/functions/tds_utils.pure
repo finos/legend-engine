@@ -25,7 +25,7 @@ import meta::external::store::elasticsearch::v7::metamodel::specification::types
 
 Class meta::external::store::elasticsearch::v7::tds::IndexTDS extends TabularDataSetImplementation
 {  
-  index: Elasticsearch7StoreIndexMapping[1];
+  index: Elasticsearch7StoreIndex[1];
 }
 
 function <<functionType.SideEffectFunction>> meta::external::store::elasticsearch::v7::tds::indexToTDS(store: Elasticsearch7Store[1], indexName: String[1]): TabularDataSet[1]

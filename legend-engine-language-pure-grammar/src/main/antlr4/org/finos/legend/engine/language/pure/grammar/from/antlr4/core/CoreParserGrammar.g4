@@ -11,5 +11,8 @@ packagePath:                                    identifier (PATH_SEPARATOR ident
 word:                                           identifier | BOOLEAN | INTEGER
 ;
 
+islandDefinition:                           ISLAND_OPEN islandContent
+;
+
 islandContent:                              (ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END)*
 ;
