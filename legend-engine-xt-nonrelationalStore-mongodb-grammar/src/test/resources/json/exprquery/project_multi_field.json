@@ -10,7 +10,7 @@
         "country": "$location.country",
         "firmTags": "$tags",
         "sector": 1,
-        "id": 0
+        "_id": 0
       }
     }
   ],
