@@ -93,7 +93,7 @@ jobs:
         # and can cause problem with some code generators
         # See https://github.com/finos/legend-engine/pull/924
         run: |
-          mvn -B -e -DXss4m -DXX:MaxRAMPercentage=90.0 -DskipTests=true deploy -P docker-snapshot, sonar
+          mvn -B -e -DXss4m -DXX:MaxRAMPercentage=90.0 -DskipTests=true deploy -P docker-snapshot,sonar
           mvn -B -e -DXss4m -DXX:MaxRAMPercentage=10.0 surefire:test -DargLine="-XX:MaxRAMPercentage=70.0"
 
       - name: Upload Test Results
