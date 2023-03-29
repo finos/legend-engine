@@ -250,7 +250,7 @@ function <<access.private>> meta::external::format::xml::executionPlan::platform
                    if($itemType == $pureDate,
                       {|
                          let addToType         = javaParameterizedType($conventions->className(_AddObjectToObject), [$dataClass, javaTemporal()]);
-                         let simpleTypeHandler = $ctxParam->j_invoke(if($propType == StrictDate, |'dateSimpleTypeHandler', |'datetimeSimpleTypeHandler'), [], javaParameterizedType($conventions->className(_SimpleTypeHandler), javaTemporal()));
+                         let simpleTypeHandler = $ctxParam->j_invoke(if($propType == StrictDate, |'dateSimpleTypeHandler', |'dateTimeSimpleTypeHandler'), [], javaParameterizedType($conventions->className(_SimpleTypeHandler), javaTemporal()));
                          j_new($addToType, [$getAdder, $simpleTypeHandler]);
                       },
                       |

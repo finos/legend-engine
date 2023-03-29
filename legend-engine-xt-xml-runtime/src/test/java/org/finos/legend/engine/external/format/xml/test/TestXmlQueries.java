@@ -271,6 +271,19 @@ public class TestXmlQueries extends TestExternalFormatQueries
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/firmWithXsiNilCheckedResult.json")));
     }
 
+    @Test
+    public void testInternalizeWithAllDataType()
+    {
+        String grammar = allDataTypeModel();
+        PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(grammar);
+
+        String result = runTest(modelData,
+                "data:ByteStream[1]|test::model::AllDataType->internalize(test::model::Binding, $data)->serialize(#{test::model::AllDataType{string, integer, boolean, float, decimal, date, dateTime}}#)",
+                Maps.mutable.with("data", resource("queries/allDataType.xml")));
+
+        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/allDataTypeResult.json")));
+    }
+
     private String schemalessBinding()
     {
         return "###ExternalFormat\n" +
@@ -288,6 +301,26 @@ public class TestXmlQueries extends TestExternalFormatQueries
                 "{\n" +
                 "  contentType: 'application/xml';\n" +
                 "  modelIncludes: [ test::firm::model::GeographicPosition ];\n" +
+                "}\n";
+    }
+
+    private String allDataTypeModel()
+    {
+        return "Class test::model::AllDataType\n" +
+                "{\n" +
+                "   string   : String[1];\n" +
+                "   integer  : Integer[1];\n" +
+                "   boolean  : Boolean[1];   \n" +
+                "   float    : Float[1];\n" +
+                "   decimal  : Decimal[1];\n" +
+                "   date     : StrictDate[1];\n" +
+                "   dateTime : DateTime[1];\n" +
+                "}\n\n" +
+                "###ExternalFormat\n" +
+                "Binding test::model::Binding\n" +
+                "{\n" +
+                "  contentType: 'application/xml';\n" +
+                "  modelIncludes: [ test::model::AllDataType ];\n" +
                 "}\n";
     }
 }
