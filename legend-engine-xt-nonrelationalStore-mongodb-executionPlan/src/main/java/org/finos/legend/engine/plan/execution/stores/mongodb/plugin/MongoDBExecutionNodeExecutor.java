@@ -90,7 +90,7 @@ public class MongoDBExecutionNodeExecutor implements ExecutionNodeVisitor<Result
             MongoDBQueryJsonComposer mongoDBQueryJsonComposer = new MongoDBQueryJsonComposer(false);
             String composedDbCommand = mongoDBQueryJsonComposer.parseDatabaseCommand(dbCommand);
 
-            CredentialProviderProvider credentialProviderProvider = ((MongoDBStoreExecutionState) executionState.getStoreExecutionState(StoreType.NonRelational_MongoDB)).getCredentialProviderProvider();
+            CredentialProviderProvider credentialProviderProvider = this.executionState.getCredentialProviderProvider();
             return new MongoDBExecutor(credentialProviderProvider).executeMongoDBQuery(composedDbCommand, mongoDBConnection);
         }
         catch (IOException e)

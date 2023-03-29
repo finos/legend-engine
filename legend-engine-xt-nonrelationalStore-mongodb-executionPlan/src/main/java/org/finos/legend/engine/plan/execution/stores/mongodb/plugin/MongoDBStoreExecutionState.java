@@ -15,7 +15,6 @@
 package org.finos.legend.engine.plan.execution.stores.mongodb.plugin;
 
 import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
@@ -28,24 +27,18 @@ public class MongoDBStoreExecutionState implements StoreExecutionState
 
     private final MongoDBStoreState state;
     private RuntimeContext runtimeContext;
-    private CredentialProviderProvider credentialProviderProvider;
+    //private CredentialProviderProvider credentialProviderProvider;
 
 
-    public MongoDBStoreExecutionState(MongoDBStoreState state, RuntimeContext runtimeContext,CredentialProviderProvider credentialProviderProvider)
+    public MongoDBStoreExecutionState(MongoDBStoreState state, RuntimeContext runtimeContext)
     {
         this.state = state;
         this.runtimeContext = runtimeContext;
-        this.credentialProviderProvider = credentialProviderProvider;
     }
 
     public MongoDBStoreExecutionState(MongoDBStoreState state)
     {
-        this(state, RuntimeContext.empty(),CredentialProviderProvider.builder().build());
-    }
-
-    public MongoDBStoreExecutionState(MongoDBStoreState state,CredentialProviderProvider credentialProviderProvider)
-    {
-        this(state, RuntimeContext.empty(),credentialProviderProvider);
+        this(state, RuntimeContext.empty());
     }
 
     @Override
@@ -63,7 +56,7 @@ public class MongoDBStoreExecutionState implements StoreExecutionState
     @Override
     public StoreExecutionState copy()
     {
-        return new MongoDBStoreExecutionState(this.state, this.runtimeContext, this.credentialProviderProvider);
+        return new MongoDBStoreExecutionState(this.state, this.runtimeContext);
     }
 
     @Override
@@ -78,8 +71,5 @@ public class MongoDBStoreExecutionState implements StoreExecutionState
         this.runtimeContext = runtimeContext;
     }
 
-    public CredentialProviderProvider getCredentialProviderProvider()
-    {
-        return credentialProviderProvider;
-    }
+
 }
