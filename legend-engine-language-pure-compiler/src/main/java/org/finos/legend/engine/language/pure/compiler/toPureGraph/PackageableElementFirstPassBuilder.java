@@ -260,7 +260,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     @Override
     public PackageableElement visit(PackageableRuntime packageableRuntime)
     {
-        Root_meta_pure_runtime_PackageableRuntime metamodel = new Root_meta_pure_runtime_PackageableRuntime_Impl("", null, context.pureModel.getClass("meta::pure::runtime::PackageableRuntime"));
+        Root_meta_pure_runtime_PackageableRuntime metamodel = new Root_meta_pure_runtime_PackageableRuntime_Impl(packageableRuntime.name, null, context.pureModel.getClass("meta::pure::runtime::PackageableRuntime"));
         this.context.pureModel.packageableRuntimesIndex.put(this.context.pureModel.buildPackageString(packageableRuntime._package, packageableRuntime.name), metamodel);
         GenericType packageableRuntimeGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.context.pureModel.getType("meta::pure::runtime::PackageableRuntime"));
         org.finos.legend.pure.m3.coreinstance.Package pack = this.context.pureModel.getOrCreatePackage(packageableRuntime._package);
@@ -279,7 +279,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     @Override
     public PackageableElement visit(PackageableConnection packageableConnection)
     {
-        Root_meta_pure_runtime_PackageableConnection metamodel = new Root_meta_pure_runtime_PackageableConnection_Impl("", null, context.pureModel.getClass("meta::pure::runtime::PackageableConnection"));
+        Root_meta_pure_runtime_PackageableConnection metamodel = new Root_meta_pure_runtime_PackageableConnection_Impl(packageableConnection.name, null, context.pureModel.getClass("meta::pure::runtime::PackageableConnection"));
         this.context.pureModel.packageableConnectionsIndex.put(this.context.pureModel.buildPackageString(packageableConnection._package, packageableConnection.name), metamodel);
         org.finos.legend.pure.m3.coreinstance.Package pack = this.context.pureModel.getOrCreatePackage(packageableConnection._package);
         metamodel._name(packageableConnection.name)._package(pack);
