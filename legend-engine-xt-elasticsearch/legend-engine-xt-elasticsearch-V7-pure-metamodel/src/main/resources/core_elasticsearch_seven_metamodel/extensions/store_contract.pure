@@ -46,7 +46,7 @@ function meta::external::store::elasticsearch::v7::contract::elasticsearchV7Stor
      // ** SupportContract **
 
       // Routing
-      supports = supports_FunctionExpression_1__Boolean_1_,
+      supports = supports(),
       supportsNativeJoinAmongElements = false,
       // Routing
 
@@ -117,9 +117,11 @@ function meta::external::store::elasticsearch::v7::contract::routeFunctionExpres
    )
 }
 
-function meta::external::store::elasticsearch::v7::contract::supports(f:FunctionExpression[1]):Boolean[1]
+function meta::external::store::elasticsearch::v7::contract::supports(): Function<{FunctionExpression[1]->Boolean[1]}>[1]
 {
-  $f.func->in(meta::external::store::elasticsearch::v7::pureToEs::supportedRoutingFunctions().first);
+  let supportedFunctions = meta::external::store::elasticsearch::v7::pureToEs::supportedRoutingFunctions().first; 
+
+  {f:FunctionExpression[1]|$f.func->in($supportedFunctions)};
 }
 
 function meta::external::store::elasticsearch::v7::contract::elasticsearchV7StoreSerializerExtension(version:String[1]):String[1]

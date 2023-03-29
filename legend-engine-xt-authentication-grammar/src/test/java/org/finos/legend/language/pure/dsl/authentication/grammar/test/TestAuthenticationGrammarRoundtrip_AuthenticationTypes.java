@@ -26,14 +26,13 @@ public class TestAuthenticationGrammarRoundtrip_AuthenticationTypes extends Test
                 "import test::*;\n" +
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
-                "  authentication: UserPassword\n" +
-                "  #{\n" +
+                "  authentication: # UserPassword {\n" +
                 "    username: 'alice';\n" +
                 "    password: PropertiesFileSecret\n" +
                 "    {\n" +
                 "      propertyName: 'property1';\n" +
-                "    }\n" +
-                "  }#\n" +
+                "    };\n" +
+                "  }#;\n" +
                 "}\n");
     }
 
@@ -44,15 +43,14 @@ public class TestAuthenticationGrammarRoundtrip_AuthenticationTypes extends Test
                 "import test::*;\n" +
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
-                "  authentication: ApiKey\n" +
-                "  #{\n" +
+                "  authentication: # ApiKey {\n" +
                 "    location: 'header';\n" +
                 "    keyName: 'key1';\n" +
                 "    value: PropertiesFileSecret\n" +
                 "    {\n" +
                 "      propertyName: 'property1';\n" +
                 "    }\n" +
-                "  }#\n" +
+                "  }#;\n" +
                 "}\n");
     }
 
@@ -63,8 +61,7 @@ public class TestAuthenticationGrammarRoundtrip_AuthenticationTypes extends Test
                 "import test::*;\n" +
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
-                "  authentication: EncryptedPrivateKey\n" +
-                "  #{\n" +
+                "  authentication: # EncryptedPrivateKey {\n" +
                 "    userName: 'alice';\n" +
                 "    privateKey: PropertiesFileSecret\n" +
                 "    {\n" +
@@ -74,7 +71,7 @@ public class TestAuthenticationGrammarRoundtrip_AuthenticationTypes extends Test
                 "    {\n" +
                 "      propertyName: 'property1';\n" +
                 "    }\n" +
-                "  }#\n" +
+                "  }#;\n" +
                 "}\n");
     }
 
@@ -85,8 +82,7 @@ public class TestAuthenticationGrammarRoundtrip_AuthenticationTypes extends Test
                 "import test::*;\n" +
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
-                "  authentication: GCPWIFWithAWSIdP\n" +
-                "  #{\n" +
+                "  authentication: # GCPWIFWithAWSIdP {\n" +
                 "    serviceAccountEmail: 'a@b.com';\n" +
                 "    idP: AWSIdP\n" +
                 "    {\n" +
@@ -111,7 +107,7 @@ public class TestAuthenticationGrammarRoundtrip_AuthenticationTypes extends Test
                 "      providerId: 'provider1';\n" +
                 "      poolId: 'pool1';\n" +
                 "    }\n" +
-                "  }#\n" +
+                "  }#;\n" +
                 "}\n");
     }
 }

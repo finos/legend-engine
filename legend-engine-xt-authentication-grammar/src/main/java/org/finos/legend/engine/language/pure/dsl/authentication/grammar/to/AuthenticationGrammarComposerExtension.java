@@ -15,8 +15,9 @@
 package org.finos.legend.engine.language.pure.dsl.authentication.grammar.to;
 
 import java.util.List;
-import java.util.function.BiFunction;
+import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.impl.factory.Lists;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.CredentialVaultSecret;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.EnvironmentCredentialVaultSecret;
@@ -28,16 +29,16 @@ import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarCompos
 public class AuthenticationGrammarComposerExtension implements IAuthenticationGrammarComposerExtension
 {
     @Override
-    public List<BiFunction<AuthenticationSpecification, Integer, String>> getExtraAuthenticationSpecificationComposers()
+    public List<Function3<AuthenticationSpecification, Integer, PureGrammarComposerContext, String>> getExtraAuthenticationSpecificationComposers()
     {
-        return Lists.fixedSize.with((authenticationSpec, indentLevel) ->
-                authenticationSpec.accept(new AuthenticationSpecificationComposer(indentLevel)));
+        return Lists.fixedSize.with((authenticationSpec, indentLevel, context) ->
+                authenticationSpec.accept(new AuthenticationSpecificationComposer(indentLevel, context)));
     }
 
     @Override
-    public List<BiFunction<CredentialVaultSecret, Integer, String>> getExtraCredentialVaultSecretComposers()
+    public List<Function3<CredentialVaultSecret, Integer, PureGrammarComposerContext, String>> getExtraCredentialVaultSecretComposers()
     {
-        return Lists.fixedSize.with((credentialVaultSecret, indentLevel) ->
+        return Lists.fixedSize.with((credentialVaultSecret, indentLevel, context) ->
         {
             if (credentialVaultSecret instanceof PropertiesFileSecret)
             {

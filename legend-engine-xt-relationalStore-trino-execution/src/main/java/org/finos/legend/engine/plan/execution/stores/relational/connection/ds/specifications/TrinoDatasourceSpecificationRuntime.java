@@ -85,6 +85,7 @@ public class TrinoDatasourceSpecificationRuntime extends org.finos.legend.engine
                     throw new RuntimeException("No valid SSL trustStorePathVaultReference and trustStorePasswordVaultReference values found for references ");
                 }
                 properties.setProperty(SSL_TRUST_STORE_PATH, createTrinoTempDile(trustStorePathVaultReference, sslTrustStoreValue));
+                properties.setProperty(SSL_TRUST_STORE_PASSWORD, sslTrustStorePassword);
             }
         }
         return properties;

@@ -21,5 +21,6 @@
 /legend-engine.iws
 /legend-engine-language-pure-grammar/gen/
 /legend-engine-language-pure-grammar/src/main/antlr4/org/finos/legend/engine/language/pure/grammar/from/antlr4/core/gen/
+/legend-engine-xt-graphQL-grammar/gen/
 /welcome.pure
 /legend-engine-xt-nonrelationalStore-mongodb-grammar/gen/

@@ -226,10 +226,10 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
     @Override
     public PackageableElement visit(PackageableRuntime packageableRuntime)
     {
-        Root_meta_pure_runtime_PackageableRuntime metamodel = this.context.pureModel.getPackageableRuntime(this.context.pureModel.buildPackageString(packageableRuntime._package, packageableRuntime.name), packageableRuntime.sourceInformation);
-        // NOTE: the whole point of this processing is to put the Pure Runtime in an index
-        final Root_meta_pure_runtime_Runtime runtime = HelperRuntimeBuilder.buildEngineRuntime(packageableRuntime.runtimeValue, this.context);
-        this.context.pureModel.runtimesIndex.put(this.context.pureModel.buildPackageString(packageableRuntime._package, packageableRuntime.name), runtime);
+        String fullPath = this.context.pureModel.buildPackageString(packageableRuntime._package, packageableRuntime.name);
+        Root_meta_pure_runtime_PackageableRuntime metamodel = this.context.pureModel.getPackageableRuntime(fullPath, packageableRuntime.sourceInformation);
+        Root_meta_pure_runtime_Runtime runtime = this.context.pureModel.getRuntime(fullPath);
+        HelperRuntimeBuilder.buildEngineRuntime(packageableRuntime.runtimeValue, runtime, this.context);
         metamodel._runtimeValue(new Root_meta_pure_runtime_EngineRuntime_Impl("", null, context.pureModel.getClass("meta::pure::runtime::EngineRuntime"))._mappings(ListIterate.collect(packageableRuntime.runtimeValue.mappings, mappingPointer -> context.resolveMapping(mappingPointer.path, mappingPointer.sourceInformation)))._connections(runtime._connections()));
         return metamodel;
     }
