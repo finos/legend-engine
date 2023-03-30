@@ -108,7 +108,7 @@ public class ServiceStoreCompilerExtension implements IServiceStoreCompilerExten
                         Root_meta_external_store_service_metamodel_ServiceStore pureServiceStore = HelperServiceStoreBuilder.getServiceStore(serviceStoreConnection.element, serviceStoreConnection.elementSourceInformation, context);
                         pureServiceStoreConnection._element(pureServiceStore);
                         pureServiceStoreConnection._baseUrl(serviceStoreConnection.baseUrl);
-                        HelperServiceStoreBuilder.compileAndAddAuthenticationSpecifications(pureServiceStoreConnection,serviceStoreConnection.authenticationSpecifications,pureServiceStore._securitySchemes().getMap(),context);
+                        HelperServiceStoreBuilder.compileAndAddAuthenticationSpecifications(pureServiceStoreConnection, serviceStoreConnection.authenticationSpecifications, pureServiceStore._securitySchemes().getMap(), context);
                         return pureServiceStoreConnection;
                     }
                     return null;

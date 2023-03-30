@@ -424,7 +424,7 @@ public class ServiceStoreParseTreeWalker
         String securitySchemeId = securityCtx.getText();
         List<Function2<String, Map<String,SecurityScheme>, SecuritySchemeRequirement>> processors = ListIterate.flatCollect(IServiceStoreGrammarParserExtension.getExtensions(), ext -> ext.getExtraSecurityParsers());
 
-        return  ListIterate
+        return ListIterate
                 .collect(processors, processor -> processor.value(securitySchemeId,securitySchemeMap))
                 .select(Objects::nonNull)
                 .getFirstOptional()

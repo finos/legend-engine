@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.finos.legend.engine.language.pure.grammar.from.ServiceStoreParseTreeWalker.SERVICE_MAPPING_PATH_PREFIX;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
@@ -86,14 +87,14 @@ public class HelperServiceStoreGrammarComposer
         }
     }
 
-    public static String renderAuthenticationSpecificationsMap(Map<String,AuthenticationSpecification> authenticationSpecifications, PureGrammarComposerContext context)
+    public static String renderAuthenticationSpecificationsMap(Map<String,AuthenticationSpecification> authenticationSpecificationMap, PureGrammarComposerContext context)
     {
-        if (authenticationSpecifications != null && !authenticationSpecifications.isEmpty())
+        if (authenticationSpecificationMap != null && !authenticationSpecificationMap.isEmpty())
         {
-            return "\n" + context.getIndentationString() + getTabString() + "auth: {\n" + getTabString(1) +
-                    authenticationSpecifications.entrySet().stream().map(entry
-                                    -> renderAuthenticationSpecification(entry.getKey(), entry.getValue(), 2, context))
-                            .collect(Collectors.joining(",\n" + getTabString(1))) +
+            Stream<String> authSpecs = authenticationSpecificationMap.entrySet().stream().map(entry -> renderAuthenticationSpecification(entry.getKey(), entry.getValue(), 2, context));
+            return "\n" + context.getIndentationString() + getTabString() +
+                    "auth: {\n" +
+                    getTabString(1) + authSpecs.collect(Collectors.joining(",\n" + getTabString(1))) +
                     "\n" + context.getIndentationString() + getTabString() + "};";
         }
         return "";

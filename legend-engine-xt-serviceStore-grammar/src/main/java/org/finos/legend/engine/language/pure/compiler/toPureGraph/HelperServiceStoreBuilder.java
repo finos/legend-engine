@@ -185,7 +185,7 @@ public class HelperServiceStoreBuilder
     {
         if (authenticationSpecifications != null)
         {
-            pureServiceStoreConnection._authenticationSpecifications(new PureMap(compileAuthenticationSpecifications(authenticationSpecifications, securitySchemes,context)));
+            pureServiceStoreConnection._authenticationSpecifications(new PureMap(compileAuthenticationSpecifications(authenticationSpecifications, securitySchemes, context)));
         }
         else
         {

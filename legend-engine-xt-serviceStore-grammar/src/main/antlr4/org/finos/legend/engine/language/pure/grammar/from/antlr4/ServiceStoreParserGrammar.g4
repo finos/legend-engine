@@ -122,7 +122,6 @@ responseDefinition:                         RESPONSE COLON typeReferenceDefiniti
 ;
 securitySchemeDefinition:                   SECURITY_SCHEME COLON BRACKET_OPEN (identifier (COMMA identifier)*)? BRACKET_CLOSE SEMI_COLON
 ;
-
 typeReferenceDefinition:                    type | listType
 ;
 type:                                       ( primitiveType | complexType)
