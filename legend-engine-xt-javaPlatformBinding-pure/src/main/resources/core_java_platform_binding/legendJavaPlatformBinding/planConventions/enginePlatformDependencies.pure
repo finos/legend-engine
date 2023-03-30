@@ -57,6 +57,7 @@ Class meta::pure::executionPlan::platformBinding::legendJava::IRelationalPrimiti
 Class meta::pure::executionPlan::platformBinding::legendJava::IServiceParametersResolutionExecutionNodeSpecifics {}
 Class meta::pure::executionPlan::platformBinding::legendJava::IPlatformPrimitiveQualifierLocalGraphFetchExecutionNodeSpecifics {}
 
+
 function meta::pure::executionPlan::platformBinding::legendJava::applyJavaEngineDependencies(conventions:Conventions[1], extensions:meta::pure::extension::Extension[*]):Conventions[1]
 {
 

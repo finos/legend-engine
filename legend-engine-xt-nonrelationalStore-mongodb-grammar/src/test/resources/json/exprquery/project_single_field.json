@@ -4,7 +4,8 @@
   "pipeline": [
     {
       "$project": {
-        "name": 1
+        "name": 1,
+        "_id": 0
       }
     }
   ],

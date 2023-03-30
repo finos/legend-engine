@@ -20,6 +20,7 @@ function meta::pure::extension::configuration::coreExtensions(): Extension[*]
    [
       meta::pure::extension::defaultExtensions()->toOne(),
       meta::relational::extension::relationalExtension('relational'),
+      meta::external::store::mongodb::extension::mongoDBExtensions('mongoDB'),
       meta::external::store::service::extension::serviceStoreExtensions(),
       meta::external::shared::format::externalFormatExtension(),
       meta::external::format::flatdata::extension::flatDataFormatExtension(),
@@ -47,6 +48,7 @@ function meta::pure::extension::configuration::coreLegendJavaPlatformBinding(): 
       meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryLegendJavaPlatformBindingExtension(),
       meta::relational::executionPlan::platformBinding::legendJava::relationalLegendJavaPlatformBindingExtension(),
       meta::external::store::service::executionPlan::platformBinding::legendJava::serviceStoreLegendJavaPlatformBindingExtension(),
+      meta::external::store::mongodb::executionPlan::platformBinding::legendJava::mongoDBStoreLegendJavaPlatformBindingExtension(),
 
       // Bindings
       meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension([

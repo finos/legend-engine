@@ -1,0 +1,347 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+//import meta::external::store::mongodb::metamodel::*;
+import meta::external::store::mongodb::metamodel::mapping::*;
+import meta::pure::graphFetch::execution::*;
+import meta::external::store::mongodb::metamodel::aggregation::*;
+import meta::external::store::mongodb::metamodel::pure::*;
+import meta::external::shared::format::functions::*;
+import meta::pure::runtime::*;
+import meta::pure::model::unit::*;
+import meta::external::shared::format::binding::*;
+import meta::external::format::json::metamodel::*;
+import meta::external::shared::format::metamodel::*;
+import meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::*;
+import meta::pure::runtime::connection::authentication::*;
+import meta::external::store::mongodb::metamodel::pure::*;
+
+
+Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::TestSchema
+{
+}
+
+
+Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Person
+{
+  firstName : String[0..1];
+  lastName  : String[0..1];
+  age:        Integer[0..1];
+  firm      : Firm[0..1];
+  //addresses : Address[*];
+}
+
+Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Firm
+{
+  legalName : String[0..1];
+  address: String[0..1];
+}
+
+Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Address
+[
+    $this.street->length() <= 15
+]
+{
+  street : String[1];
+}
+
+function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::getSimpleSchema(): SchemaSet[1]
+{
+  let schemaSet = ^SchemaSet(
+    name = 'MongoSchema',
+    package =  meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test,
+    format = 'JSON',
+    schemas = ^Schema(
+      id = 'Person',
+      location = 'meta/external/store/mongodb/executionPlan/platformBinding/legendJava/test/Person.json',
+      detail = ^JsonSchema(
+            content = '{\n'+
+            //'  \"title\": \"meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Person\",\n'+
+            '  \"type\": \"object\",\n'+
+            '  \"properties\": {\n'+
+            '    \"firstName\": {\n'+
+            '      \"type\": \"string\"\n'+
+            '    },\n'+
+            '    \"lastName\": {\n'+
+            '      \"type\": \"string\"\n'+
+            '    }\n'+
+            '    \"age\": {\n'+
+            '      \"type\": \"integer\"\n'+
+            '    },\n'+
+           '    \"firm\" : {\"type\" : \"object\", \"properties\" : {\"legalName\" : {\"type\" : \"string\"}}, \"required\" : [\"legalName\"]} \n' +
+            '  }\n'+
+            '  \"required\": [\n'+
+            '    \"firstName\",\n'+
+            '    \"lastName\"\n'+
+            '  ]\n'+
+            '}'
+      )
+    )
+  );
+  $schemaSet;
+}
+
+
+
+function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::getSimpleBinding() : Binding[1]
+{
+    let binding = ^Binding(
+      name        = 'SimpleTestBinding',
+      package     = meta::external::format::json::executionPlan::test,
+      // do we need schemaSet?
+      //schemaSet   = getSimpleSchema(),
+      contentType = 'application/json',
+      modelUnit   = newModelUnit()->include([meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Person,meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Firm])
+   );
+   $binding;
+}
+
+function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::executeJsonBindingQuery(f: FunctionDefinition<Any>[1], vars: Pair<String, Any>[*]): String[1]
+{
+  let fStr = 'meta::legend::execute_FunctionDefinition_1__Pair_MANY__ExecutionContext_1__Extension_MANY__String_1_';
+  let func = $fStr->pathToElement()->cast(@Function<{FunctionDefinition<Any>[1], Pair<String, Any>[*], ExecutionContext[1], meta::pure::extension::Extension[*]->String[1]}>);
+  $func->eval($f, $vars, ^ExecutionContext(), getExtensions());
+}
+
+function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::getExtensions() : meta::pure::extension::Extension[*]
+{
+     [
+      meta::external::shared::format::externalFormatExtension(),
+      meta::external::format::json::extension::jsonSchemaFormatExtension(),
+      meta::pure::executionPlan::platformBinding::platformBindingExtension([
+         meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
+            meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryLegendJavaPlatformBindingExtension(),
+            meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension([
+               meta::external::format::json::executionPlan::platformBinding::legendJava::jsonSchemaJavaBindingDescriptor()
+            ])  
+         ])
+      ])
+   ]
+}
+
+
+function <<meta::pure::profiles::test.Test>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::testJsonInternalize(): Boolean[1]
+{
+  let binding = getSimpleBinding();
+  //let roundtripQuery   = {data:String[1] | Person->internalize($binding, $data)
+  //  ->externalize($binding, #{Person{firstName, lastName}}#)};
+
+  let vars    = pair('data', '{"firstName":"John", "lastName":"Doe", "age":25, "firm": {"legalName": "Firm A" } }');
+
+  let internalizeQuery   = {data:String[1] | Person->internalize($binding, $data)};
+  let internalizeResult  = executeJsonBindingQuery($internalizeQuery, $vars);
+  let expectedResult = '{"builder": null, "activities": [], "objects\" : [{"firstName":"John","lastName":"Doe","age":25,"firm":{"legalName":"Firm A"}}]}';
+  println($internalizeResult);
+  assertEquals($expectedResult, $internalizeResult);
+}
+
+
+function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::getTestMongoPersonCollection(mongoDatabase : MongoDatabase[1]): meta::external::store::mongodb::metamodel::Collection[1]
+{
+    let firstName = ^meta::external::store::mongodb::metamodel::PropertyType(
+      key = 'firstName',
+      value = ^meta::external::store::mongodb::metamodel::StringType()
+    );
+
+    let lastName = ^meta::external::store::mongodb::metamodel::PropertyType(
+      key = 'lastName',
+      value = ^meta::external::store::mongodb::metamodel::StringType()
+    );
+
+    let age = ^meta::external::store::mongodb::metamodel::PropertyType(
+      key = 'age',
+      value = ^meta::external::store::mongodb::metamodel::IntType()
+    );
+
+    let legalName = ^meta::external::store::mongodb::metamodel::PropertyType(
+      key = 'legalName',
+      value = ^meta::external::store::mongodb::metamodel::StringType()
+    );
+
+    let address = ^meta::external::store::mongodb::metamodel::PropertyType(
+      key = 'address',
+      value = ^meta::external::store::mongodb::metamodel::StringType()
+    );
+
+    let firm = ^meta::external::store::mongodb::metamodel::PropertyType(
+      key = 'firm',
+      value = ^meta::external::store::mongodb::metamodel::ObjectType(
+        properties=[$legalName, $address],
+        required = ['legalName', 'address'],
+        additionalPropertiesAllowed = true
+      )
+    );
+
+    let schema = ^meta::external::store::mongodb::metamodel::Schema(
+      properties = [$firstName, $lastName, $age, $legalName, $firm, $address],
+      required = ['firstName', 'lastName', 'firm'],
+      additionalPropertiesAllowed = true
+    );
+
+    let jsonSchemaExpression = ^meta::external::store::mongodb::metamodel::aggregation::JsonSchemaExpression(
+      schemaExpression=$schema
+    );
+
+    let validator = ^meta::external::store::mongodb::metamodel::Validator(
+      validatorExpression=$jsonSchemaExpression
+    );
+
+    let collection = ^meta::external::store::mongodb::metamodel::Collection(
+      owner=$mongoDatabase,
+      name='person',
+      uuid='1b71e944-c3ec-11ed-afa1-0242ac120002',
+      validator=$validator
+    );
+    $collection;
+}
+
+
+function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::getTestMongoPersonMapping(): meta::pure::mapping::Mapping[1] 
+{
+
+  let domainClass = meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Person;
+
+  let firmClass = meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Firm;
+
+  let mongoDatabase = ^meta::external::store::mongodb::metamodel::pure::MongoDatabase(
+    name = 'TestMongoDatabase'
+  );
+
+
+  let personCollection = getTestMongoPersonCollection($mongoDatabase); // From Store representation
+
+
+  let currentBinding = getSimpleBinding();
+
+    // Map Fields to properties. create fields that correspond to collection representation
+    let firstName = ^meta::external::store::mongodb::metamodel::mapping::Field(
+          dataType = ^meta::external::store::mongodb::metamodel::StringType(),
+          argumentExpression = ^FieldPathExpression(fieldPath='firstName')
+    );
+    let lastName = ^meta::external::store::mongodb::metamodel::mapping::Field(
+          dataType = ^meta::external::store::mongodb::metamodel::StringType(),
+          argumentExpression = ^FieldPathExpression(fieldPath='lastName')
+    );
+    let age = ^meta::external::store::mongodb::metamodel::mapping::Field(
+          dataType = ^meta::external::store::mongodb::metamodel::IntType(),
+          argumentExpression = ^FieldPathExpression(fieldPath='age')
+    );
+
+    let legalName = ^meta::external::store::mongodb::metamodel::mapping::Field(
+          dataType = ^meta::external::store::mongodb::metamodel::StringType(),
+          argumentExpression = ^FieldPathExpression(fieldPath='firm.legalName'));
+
+    let address = ^meta::external::store::mongodb::metamodel::mapping::Field(
+          dataType = ^meta::external::store::mongodb::metamodel::StringType(),
+          argumentExpression = ^FieldPathExpression(fieldPath='firm.address'));
+
+       let firmPropMappings = [
+        ^meta::external::store::mongodb::metamodel::mapping::MongoDBPropertyMapping(
+        property = $firmClass.properties->filter(p | $p.name == 'legalName')->toOne(),
+        sourceSetImplementationId = 'firm', targetSetImplementationId = ''),
+        ^meta::external::store::mongodb::metamodel::mapping::MongoDBPropertyMapping(
+        property = $firmClass.properties->filter(p | $p.name == 'address')->toOne(),
+        sourceSetImplementationId = 'firm', targetSetImplementationId = '')
+   ];
+
+    let firmClassMapping = ^meta::external::store::mongodb::metamodel::pure::MongoDBSetImplementation(
+    class=$firmClass,
+    root=false,
+    id='firm',
+    parent = meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::MongoDBTestMapping,
+    propertyMappings = $firmPropMappings,
+    mainCollection = $personCollection,
+    stores = [$personCollection.owner],
+    binding = $currentBinding
+   );
+
+   let firmEmbeddedMongoDBSetImplementation = ^EmbeddedMongoDBSetImplementation(
+        property = $domainClass.properties->filter(p | $p.name == 'firm')->toOne(),
+        sourceSetImplementationId = 'person', targetSetImplementationId = 'firm',
+        propertyMappings = $firmPropMappings,
+        root = false,
+        class=$firmClass,
+        id='firm',
+        mainCollection = $personCollection,
+        stores = [$personCollection.owner],
+        binding = $currentBinding,
+        parent = meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::MongoDBTestMapping
+   );
+
+    let personPropMappings = [
+      ^meta::external::store::mongodb::metamodel::mapping::MongoDBPropertyMapping(
+        property = $domainClass.properties->filter(p | $p.name == 'firstName')->toOne(),
+        sourceSetImplementationId = 'person', targetSetImplementationId = '',
+        field = $firstName),
+      ^meta::external::store::mongodb::metamodel::mapping::MongoDBPropertyMapping(
+        property = $domainClass.properties->filter(p | $p.name == 'lastName')->toOne(),
+        sourceSetImplementationId = 'person', targetSetImplementationId = '',
+        field = $lastName),
+        ^meta::external::store::mongodb::metamodel::mapping::MongoDBPropertyMapping(
+        property = $domainClass.properties->filter(p | $p.name == 'age')->toOne(),
+        sourceSetImplementationId = 'person', targetSetImplementationId = '',
+        field = $age),
+        $firmEmbeddedMongoDBSetImplementation
+    ];
+   
+   let mongoDbClassMapping = ^meta::external::store::mongodb::metamodel::pure::MongoDBSetImplementation(
+    class=$domainClass,
+    root=true,
+    id='person',
+    parent = meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::MongoDBTestMapping,
+    propertyMappings = $personPropMappings,
+    mainCollection = $personCollection,
+    stores = [$personCollection.owner],
+    binding = $currentBinding
+   );
+   
+   $firmEmbeddedMongoDBSetImplementation->mutateAdd('owner',$mongoDbClassMapping);
+
+   let mongoTestMapping = ^meta::pure::mapping::Mapping(classMappings=[$mongoDbClassMapping, $firmEmbeddedMongoDBSetImplementation], name='mongoDbClassMapping');
+   
+   $mongoTestMapping;
+}
+
+function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::getMongoRuntime(port: Integer[1]): meta::pure::runtime::Runtime[1]
+{
+  let mongoDatabase = meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::getMongoDatabase();
+
+  let mongoRuntime = ^meta::pure::runtime::Runtime(
+    connections = ^meta::external::store::mongodb::metamodel::pure::runtime::MongoDBConnection(
+      element=$mongoDatabase,
+      type=meta::external::store::mongodb::metamodel::runtime::DatabaseType.MongoDb,
+      authenticationSpecification = ^UserPasswordAuthenticationSpecification(username='sa', password=^SystemPropertiesSecret(systemPropertyName='mongo_pwd')),
+      dataSourceSpecification = ^meta::external::store::mongodb::metamodel::runtime::MongoDBDatasourceSpecification(
+        databaseName = 'userDatabase',
+        serverURLs=[
+          ^meta::external::store::mongodb::metamodel::runtime::MongoDBURL(baseUrl = 'localhost', port = $port)
+        ]
+      )
+    )
+  );
+
+  $mongoRuntime;
+}
+
+function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::getMongoDatabase(): meta::external::store::mongodb::metamodel::pure::MongoDatabase[1]
+{
+  ^meta::external::store::mongodb::metamodel::pure::MongoDatabase(
+    name = 'TestMongoDatabase'
+  )
+} 
+
+###Mapping
+Mapping meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::MongoDBTestMapping
+(
+)
