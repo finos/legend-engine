@@ -126,10 +126,15 @@ public class ServiceStoreGrammarComposerExtension implements IServiceStoreGramma
             if (scheme instanceof HttpSecurityScheme)
             {
                 HttpSecurityScheme httpSecurityScheme = (HttpSecurityScheme) scheme;
+                String bearerFormart = "";
+                if (httpSecurityScheme.bearerFormat != null)
+                {
+                    bearerFormart = getTabString(baseIndentation + 1) + "bearerFormat : " + convertString(httpSecurityScheme.bearerFormat, true) + ";\n";
+                }
                 return "Http\n" +
                         getTabString(baseIndentation) + "{\n" +
-                        getTabString(baseIndentation + 1) + getTabString(3) + PureGrammarComposerUtility.getTabString(1) + "scheme : " + convertString(httpSecurityScheme.scheme.toString().toLowerCase(), true) + ";\n" +
-                        getTabString(baseIndentation + 1) + getTabString(3) + PureGrammarComposerUtility.getTabString(1) + "bearerFormat : " + convertString(httpSecurityScheme.bearerFormat, true) + ";\n" +
+                        getTabString(baseIndentation + 1) + "scheme : " + convertString(httpSecurityScheme.scheme.toString().toLowerCase(), true) + ";\n" +
+                        bearerFormart +
                         getTabString(baseIndentation) + "}";
             }
             else if (scheme instanceof ApiKeySecurityScheme)
@@ -137,8 +142,8 @@ public class ServiceStoreGrammarComposerExtension implements IServiceStoreGramma
                 ApiKeySecurityScheme apiKeySecurityScheme = (ApiKeySecurityScheme) scheme;
                 return "ApiKey\n" +
                         getTabString(baseIndentation) + "{\n" +
-                        getTabString(baseIndentation + 1) + PureGrammarComposerUtility.getTabString(1) + "location : " + convertString(apiKeySecurityScheme.location.toString().toLowerCase(), true) + ";\n" +
-                        getTabString(baseIndentation + 1) + PureGrammarComposerUtility.getTabString(1) + "keyName : " + convertString(apiKeySecurityScheme.keyName, true) + ";\n" +
+                        getTabString(baseIndentation + 1) + "location : " + convertString(apiKeySecurityScheme.location.toString().toLowerCase(), true) + ";\n" +
+                        getTabString(baseIndentation + 1) + "keyName : " + convertString(apiKeySecurityScheme.keyName, true) + ";\n" +
                         getTabString(baseIndentation) + "}";
             }
             return null;

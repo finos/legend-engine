@@ -102,10 +102,10 @@ public class ServiceStoreGrammarParserExtension implements IServiceStoreGrammarP
     @Override
     public Iterable<? extends ConnectionValueParser> getExtraConnectionParsers()
     {
-        return Collections.singletonList(ConnectionValueParser.newParser(SERVICE_STORE_CONNECTION_TYPE, connectionValueSourceCode ->
+        return Collections.singletonList(ConnectionValueParser.newParser(SERVICE_STORE_CONNECTION_TYPE, (connectionValueSourceCode, extensions) ->
         {
             SourceCodeParserInfo parserInfo = getServiceStoreConnectionParserInfo(connectionValueSourceCode);
-            ServiceStoreConnectionParseTreeWalker walker = new ServiceStoreConnectionParseTreeWalker(parserInfo.walkerSourceInformation);
+            ServiceStoreConnectionParseTreeWalker walker = new ServiceStoreConnectionParseTreeWalker(parserInfo.walkerSourceInformation, extensions);
             ServiceStoreConnection connectionValue = new ServiceStoreConnection();
             connectionValue.sourceInformation = connectionValueSourceCode.sourceInformation;
             walker.visitServiceStoreConnectionValue((ServiceStoreConnectionParserGrammar.DefinitionContext) parserInfo.rootContext, connectionValue, connectionValueSourceCode.isEmbedded);

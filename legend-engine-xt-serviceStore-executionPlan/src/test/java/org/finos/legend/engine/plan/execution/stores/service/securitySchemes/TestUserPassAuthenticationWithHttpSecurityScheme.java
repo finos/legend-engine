@@ -41,14 +41,14 @@ public class TestUserPassAuthenticationWithHttpSecurityScheme extends ServiceSto
                 "    baseUrl : 'http://127.0.0.1:" + getPort() + "';\n" +
                 "    auth    : " +
                 "    {\n" +
-                "       http : UserPassword\n" +
+                "       http : # UserPassword\n" +
                 "       {\n" +
                 "           username : 'username';\n" +
                 "           password : SystemPropertiesSecret\n" +
                 "           {\n" +
                 "               systemPropertyName : 'property1';\n" +
-                "           }\n" +
-                "       }\n" +
+                "           };\n" +
+                "       }#\n" +
                 "    };\n" +
                 "}";
 

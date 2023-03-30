@@ -40,12 +40,12 @@ public class TestApiKeyAuthenticationWithApiKeySecurityScheme extends ServiceSto
                 "    baseUrl : 'http://127.0.0.1:" + getPort() + "';\n" +
                 "    auth    : " +
                 "    {\n" +
-                "       api1  : ApiKey\n" +
+                "       api1  : # ApiKey\n" +
                 "       {\n" +
                 "           location : 'cookie';\n" +
                 "           keyName : 'key1';\n" +
                 "           value : apiValue" +
-                "       }\n" +
+                "       }#\n" +
                 "    };\n" +
                 "}";
 
@@ -62,7 +62,7 @@ public class TestApiKeyAuthenticationWithApiKeySecurityScheme extends ServiceSto
             String secret =  "SystemPropertiesSecret\n" +
                              "{\n" +
                              "   systemPropertyName : 'property1';\n" +
-                             "}\n";
+                             "};\n";
             SingleExecutionPlan plan = buildPlanForQuery(pureGrammar.replace("apiValue",secret));
             String result = executePlan(plan);
             Assert.assertEquals("{\"builder\":{\"_type\":\"json\"},\"values\":[{\"s_tradeId\":\"1\",\"s_traderDetails\":\"abc:F_Name_1:L_Name_1\",\"s_tradeDetails\":\"30:100\"},{\"s_tradeId\":\"2\",\"s_traderDetails\":\"abc:F_Name_1:L_Name_1\",\"s_tradeDetails\":\"31:200\"},{\"s_tradeId\":\"3\",\"s_traderDetails\":\"abc:F_Name_2:L_Name_2\",\"s_tradeDetails\":\"30:300\"},{\"s_tradeId\":\"4\",\"s_traderDetails\":\"abc:F_Name_2:L_Name_2\",\"s_tradeDetails\":\"31:400\"}]}", result);
@@ -79,7 +79,7 @@ public class TestApiKeyAuthenticationWithApiKeySecurityScheme extends ServiceSto
         String secret =  "PropertiesFileSecret\n" +
                          "{\n" +
                          "   propertyName: 'property1';\n" +
-                         "}\n";
+                         "};\n";
         SingleExecutionPlan plan = buildPlanForQuery(pureGrammar.replace("apiValue",secret));
         String result = executePlan(plan);
         Assert.assertEquals("{\"builder\":{\"_type\":\"json\"},\"values\":[{\"s_tradeId\":\"1\",\"s_traderDetails\":\"abc:F_Name_1:L_Name_1\",\"s_tradeDetails\":\"30:100\"},{\"s_tradeId\":\"2\",\"s_traderDetails\":\"abc:F_Name_1:L_Name_1\",\"s_tradeDetails\":\"31:200\"},{\"s_tradeId\":\"3\",\"s_traderDetails\":\"abc:F_Name_2:L_Name_2\",\"s_tradeDetails\":\"30:300\"},{\"s_tradeId\":\"4\",\"s_traderDetails\":\"abc:F_Name_2:L_Name_2\",\"s_tradeDetails\":\"31:400\"}]}", result);

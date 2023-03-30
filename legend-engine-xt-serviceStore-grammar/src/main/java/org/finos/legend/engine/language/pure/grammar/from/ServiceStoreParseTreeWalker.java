@@ -65,7 +65,6 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -77,8 +76,6 @@ public class ServiceStoreParseTreeWalker
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final Consumer<PackageableElement> elementConsumer;
     private final DefaultCodeSection section;
-    private Map<String,SecurityScheme> securitySchemeMap = new HashMap<>();
-
     public static final String SERVICE_MAPPING_PATH_PREFIX = "$service.response";
 
     public ServiceStoreParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation)
@@ -110,20 +107,18 @@ public class ServiceStoreParseTreeWalker
         ServiceStoreParserGrammar.SecuritySchemesContext securitySchemeCtx = ctx.securitySchemes();
         if (securitySchemeCtx != null)
         {
-            //TODO: Make sure order of securitySchemes in Map is same as in grammar
             MutableList<Pair<String, SecurityScheme>> securitySchemeList = ListIterate.collect(securitySchemeCtx.securitySchemeObject(), this::visitSecuritySchemeObject);
             validateSecuritySchemes(securitySchemeList, serviceStore.sourceInformation);
-            securitySchemeMap = securitySchemeList.stream().collect(Collectors.toMap(pair -> pair.getOne(), pair -> pair.getTwo()));
+            serviceStore.securitySchemes = securitySchemeList.stream().collect(Collectors.toMap(Pair::getOne, Pair::getTwo));
         }
         else
         {
-            securitySchemeMap = new LinkedHashMap<>();
+            serviceStore.securitySchemes = new HashMap<>();
         }
 
-        serviceStore.elements = ListIterate.collect(ctx.serviceStoreElement(), this::visitServiceStoreElement);
+        serviceStore.elements = ListIterate.collect(ctx.serviceStoreElement(),  s -> visitServiceStoreElement(s, serviceStore.securitySchemes));
         validateServiceStoreElements(serviceStore.elements, serviceStore.sourceInformation);
 
-        serviceStore.securitySchemes = securitySchemeMap;
         return serviceStore;
     }
 
@@ -149,15 +144,15 @@ public class ServiceStoreParseTreeWalker
         }
     }
 
-    private ServiceStoreElement visitServiceStoreElement(ServiceStoreParserGrammar.ServiceStoreElementContext ctx)
+    private ServiceStoreElement visitServiceStoreElement(ServiceStoreParserGrammar.ServiceStoreElementContext ctx, Map<String,SecurityScheme> securitySchemeMap)
     {
         if (ctx.serviceGroup() != null)
         {
-            return this.visitServiceGroup(ctx.serviceGroup());
+            return this.visitServiceGroup(ctx.serviceGroup(),securitySchemeMap);
         }
         else
         {
-            return this.visitService(ctx.service());
+            return this.visitService(ctx.service(),securitySchemeMap);
         }
     }
 
@@ -190,7 +185,7 @@ public class ServiceStoreParseTreeWalker
         }
     }
 
-    private ServiceGroup visitServiceGroup(ServiceStoreParserGrammar.ServiceGroupContext ctx)
+    private ServiceGroup visitServiceGroup(ServiceStoreParserGrammar.ServiceGroupContext ctx, Map<String,SecurityScheme> securitySchemeMap)
     {
         ServiceGroup serviceGroup = new ServiceGroup();
         serviceGroup.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
@@ -204,13 +199,13 @@ public class ServiceStoreParseTreeWalker
         validatePath(serviceGroup.path, this.walkerSourceInformation.getSourceInformation(pathCtx.identifier()));
 
         // elements
-        serviceGroup.elements = ListIterate.collect(ctx.serviceStoreElement(), this::visitServiceStoreElement);
+        serviceGroup.elements = ListIterate.collect(ctx.serviceStoreElement(),  s -> visitServiceStoreElement(s,securitySchemeMap));
         validateServiceStoreElements(serviceGroup.elements, serviceGroup.sourceInformation);
 
         return serviceGroup;
     }
 
-    private Service visitService(ServiceStoreParserGrammar.ServiceContext ctx)
+    private Service visitService(ServiceStoreParserGrammar.ServiceContext ctx, Map<String,SecurityScheme> securitySchemeMap)
     {
         Service service = new Service();
         service.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
@@ -258,7 +253,7 @@ public class ServiceStoreParseTreeWalker
 
         // security
         ServiceStoreParserGrammar.SecuritySchemeDefinitionContext supportedAuthCtx = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.securitySchemeDefinition(), "security", this.walkerSourceInformation.getSourceInformation(ctx));
-        service.securitySchemeRequirements = ListIterate.collect(supportedAuthCtx.identifier(), this::visitSecurity);
+        service.securitySchemeRequirements = ListIterate.collect(supportedAuthCtx.identifier(), s -> visitSecurity(s, securitySchemeMap));
 
         validateService(service);
         return service;
@@ -424,10 +419,9 @@ public class ServiceStoreParseTreeWalker
         return typeReference;
     }
 
-    private SecuritySchemeRequirement visitSecurity(ServiceStoreParserGrammar.IdentifierContext securityCtx)
+    private SecuritySchemeRequirement visitSecurity(ServiceStoreParserGrammar.IdentifierContext securityCtx, Map<String,SecurityScheme> securitySchemeMap)
     {
         String securitySchemeId = securityCtx.getText();
-
         List<Function2<String, Map<String,SecurityScheme>, SecuritySchemeRequirement>> processors = ListIterate.flatCollect(IServiceStoreGrammarParserExtension.getExtensions(), ext -> ext.getExtraSecurityParsers());
 
         return  ListIterate

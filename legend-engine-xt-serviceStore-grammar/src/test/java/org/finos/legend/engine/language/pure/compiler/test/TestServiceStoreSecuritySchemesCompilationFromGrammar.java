@@ -62,14 +62,14 @@ public class TestServiceStoreSecuritySchemesCompilationFromGrammar extends TestC
                 "    baseUrl : 'http://127.0.0.1:53008';\n" +
                 "    auth: " +
                 "    {\n" +
-                "        http : UserPassword\n" +
+                "        http : # UserPassword\n" +
                 "        {\n" +
                 "           username : 'username';\n" +
                 "           password : PropertiesFileSecret\n" +
                 "           {\n" +
                 "               propertyName : 'ref1';\n" +
-                "           }\n" +
-                "        }" +
+                "           };\n" +
+                "        }#" +
                 "    };\n" +
                 "}");
     }
@@ -98,15 +98,15 @@ public class TestServiceStoreSecuritySchemesCompilationFromGrammar extends TestC
                 "    baseUrl : 'http://127.0.0.1:53008';\n" +
                 "    auth: " +
                 "    {\n" +
-                "       api : ApiKey\n" +
+                "       api : # ApiKey\n" +
                 "       {\n" +
                 "           location : 'cookie';\n" +
                 "           keyName : 'key1';\n" +
                 "           value : SystemPropertiesSecret\n" +
                 "           {\n" +
                 "               systemPropertyName : 'reference1';\n" +
-                "           }\n" +
-                "       }" +
+                "           };\n" +
+                "       }#" +
                 "    };\n" +
                 "}");
     }
@@ -135,52 +135,15 @@ public class TestServiceStoreSecuritySchemesCompilationFromGrammar extends TestC
                 "    baseUrl : 'http://127.0.0.1:53008';\n" +
                 "    auth: " +
                 "    {\n" +
-                "       api : ApiKey\n" +
+                "       api : # ApiKey\n" +
                 "       {\n" +
                 "           location : 'header';\n" +
                 "           keyName : 'key1';\n" +
                 "           value : SystemPropertiesSecret\n" +
                 "           {\n" +
                 "               systemPropertyName : 'reference1';\n" +
-                "           }\n" +
-                "       }" +
-                "    };\n" +
-                "}");
-    }
-
-    @Test
-    public void testApiKeySecuritySchemeWithQueryLocation() throws Exception
-    {
-
-        test("###ServiceStore\n" +
-                "ServiceStore meta::external::store::service::showcase::store::TradeProductServiceStore\n" +
-                "(\n" +
-                "   description : 'Showcase Service Store';\n" +
-                "   securitySchemes : " +
-                "   {\n" +
-                "       api : ApiKey\n" +
-                "       {\n" +
-                "           location : 'query';\n" +
-                "           keyName : 'key1';\n" +
-                "       }" +
-                "   };\n" +
-                ")\n" +
-                "###Connection\n" +
-                "ServiceStoreConnection meta::external::store::service::showcase::connection::serviceStoreConnection\n" +
-                "{\n" +
-                "    store   : meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
-                "    baseUrl : 'http://127.0.0.1:53008';\n" +
-                "    auth: " +
-                "    {\n" +
-                "       api : ApiKey\n" +
-                "       {\n" +
-                "           location : 'query';\n" +
-                "           keyName : 'key1';\n" +
-                "           value : SystemPropertiesSecret\n" +
-                "           {\n" +
-                "               systemPropertyName : 'reference1';\n" +
-                "           }\n" +
-                "       }" +
+                "           };\n" +
+                "       }#" +
                 "    };\n" +
                 "}");
     }
@@ -193,23 +156,22 @@ public class TestServiceStoreSecuritySchemesCompilationFromGrammar extends TestC
                 "{\n" +
                 "    store   : meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
                 "    baseUrl : 'http://127.0.0.1:53008';\n" +
-                "    auth: " +
-                "    {\n" +
-                "       api : ApiKey\n" +
+                "    auth: {\n" +
+                "       api : # ApiKey\n" +
                 "       {\n" +
                 "           location : 'header';\n" +
                 "           keyName : 'key1';\n" +
                 "           value : SystemPropertiesSecret\n" +
                 "           {\n" +
                 "               systemPropertyName : 'reference1';\n" +
-                "           }\n" +
-                "       }" +
+                "           };\n" +
+                "       }#" +
                 "    };\n" +
                 "}\n\n" +
                 "###ServiceStore\n" +
                 "ServiceStore meta::external::store::service::showcase::store::TradeProductServiceStore\n" +
                 "(\n" +
                 "   description : 'Showcase Service Store';\n" +
-                ")\n", "COMPILATION error at [7:20-14:20]: api security scheme not defined in service store ");
+                ")\n", "COMPILATION error at [8:12-14:12]: api security scheme not defined in service store");
     }
 }

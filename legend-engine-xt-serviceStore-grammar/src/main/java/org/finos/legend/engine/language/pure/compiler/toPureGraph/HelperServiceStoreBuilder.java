@@ -181,11 +181,11 @@ public class HelperServiceStoreBuilder
         }
     }
 
-    public static void compileAndAddAuthenticationSpecifications(Root_meta_external_store_service_metamodel_runtime_ServiceStoreConnection pureServiceStoreConnection, Map<String, AuthenticationSpecification> authenticationSpecifications, CompileContext context)
+    public static void compileAndAddAuthenticationSpecifications(Root_meta_external_store_service_metamodel_runtime_ServiceStoreConnection pureServiceStoreConnection, Map<String, AuthenticationSpecification> authenticationSpecifications, Map<String,SecurityScheme> securitySchemes, CompileContext context)
     {
         if (authenticationSpecifications != null)
         {
-            pureServiceStoreConnection._authenticationSpecifications(new PureMap(compileAuthenticationSpecifications(authenticationSpecifications, context)));
+            pureServiceStoreConnection._authenticationSpecifications(new PureMap(compileAuthenticationSpecifications(authenticationSpecifications, securitySchemes,context)));
         }
         else
         {
@@ -223,8 +223,16 @@ public class HelperServiceStoreBuilder
         }).collect(Collectors.toMap(pair -> pair.getOne(), pair -> pair.getTwo()));
     }
 
-    private static Map<String, Root_meta_pure_runtime_connection_authentication_AuthenticationSpecification> compileAuthenticationSpecifications(Map<String, AuthenticationSpecification> authenticationSpecificationMap, CompileContext context)
+    private static Map<String, Root_meta_pure_runtime_connection_authentication_AuthenticationSpecification> compileAuthenticationSpecifications(Map<String, AuthenticationSpecification> authenticationSpecificationMap, Map<String,SecurityScheme> securitySchemes, CompileContext context)
     {
+        List<String> ids = authenticationSpecificationMap.keySet().stream().collect(Collectors.toList());
+        ids.forEach(id -> {
+            if (!securitySchemes.containsKey(id))
+            {
+                throw new EngineException(String.format("%s security scheme not defined in service store",id), authenticationSpecificationMap.get(id).sourceInformation, EngineErrorType.COMPILATION);
+            }
+        });
+
         return MapIterate.collectValues(authenticationSpecificationMap, (k, v) -> HelperAuthenticationBuilder.buildAuthenticationSpecification(v, context));
     }
 

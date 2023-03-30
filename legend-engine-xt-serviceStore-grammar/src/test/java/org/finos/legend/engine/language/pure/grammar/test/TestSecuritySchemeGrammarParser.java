@@ -62,14 +62,14 @@ public class TestSecuritySchemeGrammarParser extends TestGrammarParser.TestGramm
                 "    baseUrl : 'http://127.0.0.1:53008';\n" +
                 "    auth: " +
                 "    {\n" +
-                "       http : UserPassword\n" +
+                "       http : # UserPassword\n" +
                 "       {\n" +
                 "           username : 'username';\n" +
                 "           password : PropertiesFileSecret\n" +
                 "           {\n" +
                 "               propertyName : 'ref1';\n" +
-                "           }\n" +
-                "       }" +
+                "           };\n" +
+                "       }#" +
                 "    };\n" +
                 "}");
     }
@@ -98,15 +98,15 @@ public class TestSecuritySchemeGrammarParser extends TestGrammarParser.TestGramm
                 "    baseUrl : 'http://127.0.0.1:53008';\n" +
                 "    auth: " +
                 "    {\n" +
-                "        api : ApiKey\n" +
+                "        api : # ApiKey\n" +
                 "        {\n" +
                 "           location : 'header';\n" +
                 "           keyName : 'key1';\n" +
                 "           value : SystemPropertiesSecret\n" +
                 "           {\n" +
                 "               systemPropertyName : 'reference1';\n" +
-                "           }\n" +
-                "        }" +
+                "           };\n" +
+                "        }#" +
                 "    };\n" +
                 "}");
     }

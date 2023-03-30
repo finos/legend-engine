@@ -44,11 +44,6 @@ public interface IAuthenticationGrammarParserExtension extends PureGrammarParser
                 .map(IAuthenticationGrammarParserExtension.class::cast);
     }
 
-    static List<IAuthenticationGrammarParserExtension> getExtensions()
-    {
-        return Lists.mutable.withAll(ServiceLoader.load(IAuthenticationGrammarParserExtension.class));
-    }
-
     default List<Function<PureIslandGrammarSourceCode, AuthenticationSpecification>> getExtraAuthenticationParsers()
     {
         return Collections.emptyList();

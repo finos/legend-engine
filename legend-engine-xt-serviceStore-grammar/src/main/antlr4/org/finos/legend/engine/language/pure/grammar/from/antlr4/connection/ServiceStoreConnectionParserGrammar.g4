@@ -29,19 +29,7 @@ authenticationSpec:                     AUTH_SPECS COLON
                                         SEMI_COLON
 ;
 
-authSpecificationObject:                qualifiedName COLON singleAuthSpecification
-;
-
-singleAuthSpecification:                authSpecificationType (authSpecification)?
-;
-
-authSpecificationType:                  VALID_STRING
-;
-
-authSpecification:                      BRACE_OPEN (authSpecificationValue)*
-;
-
-authSpecificationValue:                 AUTH_SPECIFICATION_ISLAND_OPEN | AUTH_SPECIFICATION_CONTENT | AUTH_SPECIFICATION_ISLAND_CLOSE
+authSpecificationObject:                identifier COLON islandDefinition
 ;
 
 baseUrl:                                BASE_URL COLON identifier SEMI_COLON

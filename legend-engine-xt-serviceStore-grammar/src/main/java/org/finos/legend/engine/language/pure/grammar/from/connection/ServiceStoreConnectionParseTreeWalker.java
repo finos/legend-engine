@@ -20,8 +20,8 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.dsl.authentication.grammar.from.IAuthenticationGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
-import org.finos.legend.engine.language.pure.grammar.from.PureIslandGrammarSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.ServiceStoreConnectionParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
@@ -30,17 +30,17 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.stream.Collectors;
 
 public class ServiceStoreConnectionParseTreeWalker
 {
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
+    private final PureGrammarParserExtensions extensions;
 
-    public ServiceStoreConnectionParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation)
+    public ServiceStoreConnectionParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, PureGrammarParserExtensions extensions)
     {
         this.walkerSourceInformation = walkerSourceInformation;
+        this.extensions = extensions;
     }
 
     public void visitServiceStoreConnectionValue(ServiceStoreConnectionParserGrammar.DefinitionContext ctx, ServiceStoreConnection connectionValue, boolean isEmbedded)
@@ -66,32 +66,18 @@ public class ServiceStoreConnectionParseTreeWalker
         ServiceStoreConnectionParserGrammar.AuthenticationSpecContext authContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.authenticationSpec(), "authentication", connectionValue.sourceInformation);
         if (authContext != null)
         {
-            //TODO: Make sure order of authSpecs in Map is same as in grammar
-            connectionValue.authenticationSpecifications = ListIterate.collect(authContext.authSpecificationObject(), this::visitAuthentication).stream().collect(Collectors.toMap(Pair::getOne, Pair::getTwo, (u, v) -> u, LinkedHashMap::new));
+            connectionValue.authenticationSpecifications = ListIterate.collect(authContext.authSpecificationObject(), this::visitAuthentication).stream().collect(Collectors.toMap(Pair::getOne, Pair::getTwo));
         }
         else
         {
-            connectionValue.authenticationSpecifications = new LinkedHashMap<>();
+            connectionValue.authenticationSpecifications = new HashMap<>();
         }
     }
 
     private Pair<String, AuthenticationSpecification> visitAuthentication(ServiceStoreConnectionParserGrammar.AuthSpecificationObjectContext authSpecificationObjectContext)
     {
-        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(authSpecificationObjectContext);
-
-        ServiceStoreConnectionParserGrammar.SingleAuthSpecificationContext specContext = authSpecificationObjectContext.singleAuthSpecification();
-        PureIslandGrammarSourceCode code = new PureIslandGrammarSourceCode(
-                specContext.getText(),
-                specContext.authSpecificationType().getText(),
-                sourceInformation,
-                ParseTreeWalkerSourceInformation.offset(walkerSourceInformation, specContext.getStart())
-        );
-
-
-        List<IAuthenticationGrammarParserExtension> extensions = IAuthenticationGrammarParserExtension.getExtensions();
-        AuthenticationSpecification authenticationSpec = IAuthenticationGrammarParserExtension.parseIsland(authSpecificationObjectContext, walkerSourceInformation,extensions.stream().map(IAuthenticationGrammarParserExtension::getExtraAuthenticationParsers).flatMap(List::stream),"Authentication");
-
-        String securitySchemeId = PureGrammarParserUtility.fromIdentifier(authSpecificationObjectContext.qualifiedName().identifier());
+        AuthenticationSpecification authenticationSpec = IAuthenticationGrammarParserExtension.parseAuthentication(authSpecificationObjectContext.islandDefinition(), walkerSourceInformation, extensions);
+        String securitySchemeId = PureGrammarParserUtility.fromIdentifier(authSpecificationObjectContext.identifier());
         return Tuples.pair(securitySchemeId, authenticationSpec);
     }
 
