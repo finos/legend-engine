@@ -446,8 +446,8 @@ public class TestQueryStoreManager
         Assert.assertEquals(0, queryStoreManager.getQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue3)).build(), currentUser).size());
         Assert.assertEquals(2, queryStoreManager.getQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1)).build(), currentUser).size());
         Assert.assertEquals(2, queryStoreManager.getQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue2)).build(), currentUser).size());
-        Assert.assertEquals(3, queryStoreManager.getQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1, taggedValue2)).build(), currentUser).size());
-        Assert.assertEquals(3, queryStoreManager.getQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1, taggedValue2, taggedValue3)).build(), currentUser).size());
+        Assert.assertEquals(1, queryStoreManager.getQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1, taggedValue2)).build(), currentUser).size());
+        Assert.assertEquals(0, queryStoreManager.getQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1, taggedValue2, taggedValue3)).build(), currentUser).size());
     }
 
     @Test
@@ -733,5 +733,29 @@ public class TestQueryStoreManager
         List<Query> queries = queryStoreManager.getQueries(new TestQuerySearchSpecificationBuilder().withshowLatestQueriesFirst(true).build(), currentUser);
         Query lightQuery = queries.get(0);
         Assert.assertEquals("2", lightQuery.id);
+    }
+
+    @Test
+    public void testGetQueriesWithSearchByQueryId() throws Exception
+    {
+        String currentUser = "testUser";
+        queryStoreManager.createQuery(TestQueryBuilder.create("11", "query_a", currentUser).build(), currentUser);
+        queryStoreManager.createQuery(TestQueryBuilder.create("12", "query_b", currentUser).build(), currentUser);
+        queryStoreManager.createQuery(TestQueryBuilder.create("13", "query_c", currentUser).build(), currentUser);
+        Assert.assertEquals(3, queryStoreManager.getQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
+        Assert.assertEquals(3, queryStoreManager.getQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("1").build(), currentUser).size());
+        Assert.assertEquals(1, queryStoreManager.getQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("2").build(), currentUser).size());
+        Assert.assertEquals(1, queryStoreManager.getQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("13").build(), currentUser).size());
+    }
+
+    @Test
+    public void testGetQueriesSortedWithCurrentUserFirst() throws Exception
+    {
+        String currentUser = "testUser";
+        queryStoreManager.createQuery(TestQueryBuilder.create("1", "query1", "testUser1").build(), "testUser1");
+        queryStoreManager.createQuery(TestQueryBuilder.create("2", "query2", currentUser).build(), currentUser);
+        List<Query> queries = queryStoreManager.getQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser);
+        Assert.assertEquals(2, queries.size());
+        Assert.assertEquals(currentUser, queries.get(0).owner);
     }
 }

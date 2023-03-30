@@ -28,7 +28,6 @@ import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.application.query.model.Query;
 import org.finos.legend.engine.application.query.model.QueryEvent;
-import org.finos.legend.engine.application.query.model.QueryProjectCoordinates;
 import org.finos.legend.engine.application.query.model.QuerySearchSpecification;
 import org.finos.legend.engine.application.query.model.QueryStoreStats;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
@@ -39,9 +38,7 @@ import org.finos.legend.engine.shared.core.vault.Vault;
 import javax.lang.model.SourceVersion;
 import javax.ws.rs.core.Response;
 import java.time.Instant;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -200,17 +197,22 @@ public class QueryStoreManager
         // TODO: we can potentially create a pattern check for version
     }
 
+    public List<Query> getQuerySearchResults(QuerySearchSpecification searchSpecification, List<Bson> filters)
+    {
+        return LazyIterate.collect(this.getQueryCollection()
+                .find(filters.isEmpty() ? EMPTY_FILTER : Filters.and(filters))
+                .sort(searchSpecification.showLatestQueriesFirst != null && searchSpecification.showLatestQueriesFirst ? descending("lastUpdatedAt") : EMPTY_FILTER)
+                // NOTE: return a light version of the query to save bandwidth
+                .projection(Projections.include("id", "name", "versionId", "groupId", "artifactId", "owner", "createdAt", "lastUpdatedAt"))
+                .limit(Math.min(MAX_NUMBER_OF_QUERIES, searchSpecification.limit == null ? Integer.MAX_VALUE : searchSpecification.limit)), QueryStoreManager::documentToQuery).toList();
+    }
+
     public List<Query> getQueries(QuerySearchSpecification searchSpecification, String currentUser)
     {
         List<Bson> filters = new ArrayList<>();
-        if (searchSpecification.showCurrentUserQueriesOnly != null && searchSpecification.showCurrentUserQueriesOnly)
-        {
-            // NOTE: every user is considered owner of the queries created by unknown user
-            filters.add(Filters.in("owner", currentUser, null));
-        }
         if (searchSpecification.searchTerm != null)
         {
-            filters.add(Filters.regex("name", Pattern.quote(searchSpecification.searchTerm), "i"));
+            filters.add(Filters.or(Filters.regex("name", Pattern.quote(searchSpecification.searchTerm), "i"), Filters.regex("id", Pattern.quote(searchSpecification.searchTerm), "i")));
         }
         if (searchSpecification.projectCoordinates != null && !searchSpecification.projectCoordinates.isEmpty())
         {
@@ -229,7 +231,7 @@ public class QueryStoreManager
         }
         if (searchSpecification.taggedValues != null && !searchSpecification.taggedValues.isEmpty())
         {
-            filters.add(Filters.or(
+            filters.add(Filters.and(
                     ListIterate.collect(searchSpecification.taggedValues, taggedValue ->
                             Filters.and(Filters.eq("taggedValues.tag.profile", taggedValue.tag.profile), Filters.eq("taggedValues.tag.value", taggedValue.tag.value), Filters.eq("taggedValues.value", taggedValue.value)))));
         }
@@ -239,11 +241,20 @@ public class QueryStoreManager
                     ListIterate.collect(searchSpecification.stereotypes, stereotype ->
                             Filters.and(Filters.eq("stereotypes.profile", stereotype.profile), Filters.eq("stereotypes.value", stereotype.value)))));
         }
-        return LazyIterate.collect(this.getQueryCollection()
-                .find(filters.isEmpty() ? EMPTY_FILTER : Filters.and(filters)).sort(searchSpecification.showLatestQueriesFirst != null && searchSpecification.showLatestQueriesFirst ? descending("lastUpdatedAt") : EMPTY_FILTER)
-                // NOTE: return a light version of the query to save bandwidth
-                .projection(Projections.include("id", "name", "versionId", "groupId", "artifactId", "owner", "createdAt", "lastUpdatedAt"))
-                .limit(Math.min(MAX_NUMBER_OF_QUERIES, searchSpecification.limit == null ? Integer.MAX_VALUE : searchSpecification.limit)), QueryStoreManager::documentToQuery).toList();
+        filters.add(Filters.in("owner", currentUser, null));
+        List<Query> currentUserQueryResults = this.getQuerySearchResults(searchSpecification, filters);
+        if (searchSpecification.showCurrentUserQueriesOnly != null && searchSpecification.showCurrentUserQueriesOnly)
+        {
+            return currentUserQueryResults;
+        }
+        filters.remove(Filters.in("owner", currentUser, null));
+        filters.add(Filters.nin("owner", currentUser, null));
+        searchSpecification.limit = searchSpecification.limit != null ? searchSpecification.limit - currentUserQueryResults.size() : Integer.MAX_VALUE - currentUserQueryResults.size();
+        if (searchSpecification.limit > 0)
+        {
+            currentUserQueryResults.addAll(this.getQuerySearchResults(searchSpecification, filters));
+        }
+        return currentUserQueryResults;
     }
 
     public Query getQuery(String queryId)
@@ -259,8 +270,6 @@ public class QueryStoreManager
         }
         return matchingQueries.get(0);
     }
-
-
 
     public QueryStoreStats getQueryStoreStats() throws JsonProcessingException
     {
