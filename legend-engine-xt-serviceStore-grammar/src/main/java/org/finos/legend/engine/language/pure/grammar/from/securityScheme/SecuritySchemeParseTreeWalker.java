@@ -16,6 +16,7 @@
 package org.finos.legend.engine.language.pure.grammar.from.securityScheme;
 
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
+import org.finos.legend.engine.language.pure.grammar.from.SpecificationSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.securityScheme.SecuritySchemeParserGrammar;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ApiKeySecurityScheme;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.HttpSecurityScheme;
@@ -25,7 +26,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.s
 public class SecuritySchemeParseTreeWalker
 {
 
-    public HttpSecurityScheme visitHttpSecurityScheme(SecuritySchemeSourceCode code, SecuritySchemeParserGrammar.HttpSecuritySchemeContext securitySchemeCtx)
+    public HttpSecurityScheme visitHttpSecurityScheme(SpecificationSourceCode code, SecuritySchemeParserGrammar.HttpSecuritySchemeContext securitySchemeCtx)
     {
         HttpSecurityScheme securityScheme = new HttpSecurityScheme();
         securityScheme.sourceInformation = code.getSourceInformation();
@@ -41,7 +42,7 @@ public class SecuritySchemeParseTreeWalker
         return securityScheme;
     }
 
-    public ApiKeySecurityScheme visitApiKeySecurityScheme(SecuritySchemeSourceCode code, SecuritySchemeParserGrammar.ApiKeySecuritySchemeContext securitySchemeCtx)
+    public ApiKeySecurityScheme visitApiKeySecurityScheme(SpecificationSourceCode code, SecuritySchemeParserGrammar.ApiKeySecuritySchemeContext securitySchemeCtx)
     {
         ApiKeySecurityScheme securityScheme = new ApiKeySecurityScheme();
         securityScheme.sourceInformation = code.getSourceInformation();

@@ -19,7 +19,6 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.SpecificationSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
-import org.finos.legend.engine.language.pure.grammar.from.securityScheme.SecuritySchemeSourceCode;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecurityScheme;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecuritySchemeRequirement;
@@ -39,12 +38,16 @@ public interface IServiceStoreGrammarParserExtension extends PureGrammarParserEx
         return Lists.mutable.withAll(ServiceLoader.load(IServiceStoreGrammarParserExtension.class));
     }
 
-    static SecurityScheme process(SecuritySchemeSourceCode code, List<Function<SecuritySchemeSourceCode, SecurityScheme>> processors)
+    static SecurityScheme process(SpecificationSourceCode code, List<Function<SpecificationSourceCode, SecurityScheme>> processors)
     {
-        return process(code, processors, "Security Scheme");
+        return ListIterate
+                .collect(processors, processor -> processor.apply(code))
+                .select(Objects::nonNull)
+                .getFirstOptional()
+                .orElseThrow(() -> new EngineException("Unsupported security scheme type '" + code.getType() + "'", code.getSourceInformation(), EngineErrorType.PARSER));
     }
 
-    default List<Function<SecuritySchemeSourceCode, SecurityScheme>> getExtraSecuritySchemesParsers()
+    default List<Function<SpecificationSourceCode, SecurityScheme>> getExtraSecuritySchemesParsers()
     {
         return Collections.emptyList();
     }
@@ -52,14 +55,5 @@ public interface IServiceStoreGrammarParserExtension extends PureGrammarParserEx
     default List<Function2<String, Map<String,SecurityScheme>, SecuritySchemeRequirement>> getExtraSecurityParsers()
     {
         return Collections.emptyList();
-    }
-
-    static <T extends SpecificationSourceCode, U> U process(T code, List<Function<T, U>> processors, String type)
-    {
-        return ListIterate
-                .collect(processors, processor -> processor.apply(code))
-                .select(Objects::nonNull)
-                .getFirstOptional()
-                .orElseThrow(() -> new EngineException("Unsupported " + type + " type '" + code.getType() + "'", code.getSourceInformation(), EngineErrorType.PARSER));
     }
 }

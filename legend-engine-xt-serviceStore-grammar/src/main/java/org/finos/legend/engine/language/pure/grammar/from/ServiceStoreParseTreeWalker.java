@@ -23,7 +23,6 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.ServiceStoreParserGrammar;
-import org.finos.legend.engine.language.pure.grammar.from.securityScheme.SecuritySchemeSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.language.pure.grammar.from.extensions.IServiceStoreGrammarParserExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
@@ -161,7 +160,7 @@ public class ServiceStoreParseTreeWalker
         SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         ServiceStoreParserGrammar.SingleSecuritySchemeContext singleSecuritySchemeCtx = ctx.singleSecurityScheme();
-        SecuritySchemeSourceCode code = new SecuritySchemeSourceCode(
+        SpecificationSourceCode code = new SpecificationSourceCode(
                 singleSecuritySchemeCtx.getText(),
                 singleSecuritySchemeCtx.securitySchemeType().getText(),
                 sourceInformation,

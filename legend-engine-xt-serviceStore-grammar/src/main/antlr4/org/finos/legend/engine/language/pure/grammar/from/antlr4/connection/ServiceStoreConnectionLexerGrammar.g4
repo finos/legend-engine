@@ -1,5 +1,7 @@
 lexer grammar ServiceStoreConnectionLexerGrammar;
 
+import CoreLexerGrammar;
+
 // -------------------------------------- KEYWORD --------------------------------------
 
 STORE:                                  'store';

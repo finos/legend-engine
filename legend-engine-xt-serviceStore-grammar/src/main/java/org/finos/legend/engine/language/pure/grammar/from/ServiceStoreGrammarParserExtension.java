@@ -30,7 +30,6 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.Mapping
 import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionValueSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.connection.ServiceStoreConnectionParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.securityScheme.SecuritySchemeParseTreeWalker;
-import org.finos.legend.engine.language.pure.grammar.from.securityScheme.SecuritySchemeSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.data.ServiceStoreEmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.ConnectionValueParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.MappingElementParser;
@@ -114,7 +113,7 @@ public class ServiceStoreGrammarParserExtension implements IServiceStoreGrammarP
     }
 
     @Override
-    public List<Function<SecuritySchemeSourceCode, SecurityScheme>> getExtraSecuritySchemesParsers()
+    public List<Function<SpecificationSourceCode, SecurityScheme>> getExtraSecuritySchemesParsers()
     {
         return Lists.mutable.with(code ->
         {
@@ -191,7 +190,7 @@ public class ServiceStoreGrammarParserExtension implements IServiceStoreGrammarP
         return new SourceCodeParserInfo(sectionSourceCode.code, input, sectionSourceCode.sourceInformation, sectionSourceCode.walkerSourceInformation, lexer, parser, parser.definition());
     }
 
-    private SecurityScheme parseSecurityScheme(SecuritySchemeSourceCode code, Function<SecuritySchemeParserGrammar, SecurityScheme> func)
+    private SecurityScheme parseSecurityScheme(SpecificationSourceCode code, Function<SecuritySchemeParserGrammar, SecurityScheme> func)
     {
         CharStream input = CharStreams.fromString(code.getCode());
         ParserErrorListener errorListener = new ParserErrorListener(code.getWalkerSourceInformation());
