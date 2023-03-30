@@ -111,7 +111,7 @@ function meta::protocols::generation::java::defaultGenerateClassField(p: Propert
   let field = if ($javaType->isJavaList(),
     |javaField('public', $javaType, $javaName, j_emptyList($javaType)),
     |if($p.defaultValue->isEmpty(),
-      |javaField('public', $javaType, $javaName), 
+      |javaField('public', $javaType, $javaName),
       |
         let defaultValue = $p.defaultValue.functionDefinition->toOne()->cast(@Function<{->Any[1]}>)->eval();
         let defaultValueJava = $c->meta::external::language::java::transform::typeConversion($p->functionReturnType().rawType->toOne()).literalCoder->eval($defaultValue);
@@ -132,8 +132,8 @@ function meta::protocols::generation::java::defaultPostProcessClass(c: meta::pur
   let isTopClass = $rawType->size() == 1 && $rawType == Any && $c.specializations->isNotEmpty();
 
   let superType = $c.generalizations.general;
-  assert($superType->size() <= 1, |'More than one super type is not currently supported in this flow ['+$superType.rawType.name->joinStrings(',')+']');  
-  let withExtend = if ($superType.rawType == Any, |$cls, |$cls->jextends(pureTypeToJavaType($conventions, $superType->toOne(), PureOne)));  
+  assert($superType->size() <= 1, |'More than one super type is not currently supported in this flow ['+$superType.rawType.name->joinStrings(',')+']');
+  let withExtend = if ($superType.rawType == Any, |$cls, |$cls->jextends(pureTypeToJavaType($conventions, $superType->toOne(), PureOne)));
   if ($c->hasStereotype('abstract', typemodifiers) || $isTopClass, |$withExtend->addModifiers('abstract'), |$withExtend);
 }
 
@@ -197,11 +197,10 @@ function meta::protocols::generation::java::visitorPostProcessClass(c: meta::pur
   $cls->addMethods(buildAccept($c, $conventions))->concatenate($visitorClass);
 }
 
-function <<access.private>> meta::protocols::generation::java::buildVisitorClass(topClass: meta::pure::metamodel::type::Class<Any>[1], typeVariable:TypeVariable[1], conventions:Conventions[1]):meta::external::language::java::metamodel::Class[1]
+function meta::protocols::generation::java::buildVisitorClass(topClass: meta::pure::metamodel::type::Class<Any>[1], typeVariable:TypeVariable[1], conventions:Conventions[1]):meta::external::language::java::metamodel::Class[1]
 {
   javaClass(['public', 'interface'], $typeVariable, $conventions.typeAndPackageNameStrategy->toOne()->eval($topClass, $conventions).first->javaPackage(), $topClass.name->toOne()+'Visitor')
 }
-
 
 function <<access.private>> meta::protocols::generation::java::buildAccept(c: meta::pure::metamodel::type::Class<Any>[1], conventions: Conventions[1]): Function<{meta::external::language::java::metamodel::Class[1]->Method[0..1]}>[1]
 {

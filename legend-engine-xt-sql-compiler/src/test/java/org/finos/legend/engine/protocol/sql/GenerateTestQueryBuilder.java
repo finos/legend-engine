@@ -19,7 +19,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.sql.grammar.from.SQLGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.sql.metamodel.Node;
-import org.finos.legend.engine.protocol.sql.metamodel.Translator;
+import org.finos.legend.engine.protocol.sql.metamodel.ProtocolToMetamodelTranslator;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 
 public class GenerateTestQueryBuilder
@@ -30,7 +30,7 @@ public class GenerateTestQueryBuilder
         String query = "SELECT id FROM alloy.\"/alloy/bi/getTableauUsage\" LIMIT 1";
         SQLGrammarParser parser = SQLGrammarParser.newInstance();
         Node node = parser.parseStatement(query);
-        String res = org.finos.legend.pure.generated.core_pure_protocol_generation_builder_generation.Root_meta_protocols_generation_builder_builderGeneration_Any_1__String_1_(new Translator().translate(node, pureModel), pureModel.getExecutionSupport());
+        String res = org.finos.legend.pure.generated.core_pure_protocol_generation_builder_generation.Root_meta_protocols_generation_builder_builderGeneration_Any_1__String_1_(new ProtocolToMetamodelTranslator().translate(node, pureModel), pureModel.getExecutionSupport());
         System.out.println(res);
     }
 }

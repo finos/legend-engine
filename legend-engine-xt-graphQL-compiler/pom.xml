@@ -41,7 +41,7 @@
                         </goals>
                         <configuration>
                             <includePluginDependencies>true</includePluginDependencies>
-                            <mainClass>org.finos.legend.engine.protocol.generation.GenerateTranslator</mainClass>
+                            <mainClass>org.finos.legend.engine.protocol.generation.GenerateProtocolToMetamodelTranslator</mainClass>
                             <arguments>
                                 <argument>meta::external::query::graphQL::metamodel::sdl</argument>
                                 <argument>org.finos.legend.engine.protocol.graphQL.metamodel</argument>
@@ -58,7 +58,7 @@
                         </goals>
                         <configuration>
                             <includePluginDependencies>true</includePluginDependencies>
-                            <mainClass>org.finos.legend.engine.protocol.generation.GenerateTranslator</mainClass>
+                            <mainClass>org.finos.legend.engine.protocol.generation.GenerateProtocolToMetamodelTranslator</mainClass>
                             <arguments>
                                 <argument>meta::external::query::graphQL::metamodel::introspection</argument>
                                 <argument>org.finos.legend.engine.protocol.graphQL.introspection.model</argument>
