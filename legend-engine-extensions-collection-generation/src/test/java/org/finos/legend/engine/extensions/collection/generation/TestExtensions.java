@@ -319,6 +319,7 @@ public class TestExtensions
         return Lists.mutable.<Class<? extends PlanGeneratorExtension>>empty()
                 .with(org.finos.legend.engine.plan.generation.extension.LegendPlanGeneratorExtension.class)
                 .with(org.finos.legend.engine.language.stores.elasticsearch.v7.plan.generation.ElasticsearchPlanGeneratorExtension.class)
+                .with(org.finos.legend.engine.language.pure.grammar.integration.plan.MongoDBPlanGeneratorExtension.class)
                 ;
     }
 
@@ -387,7 +388,6 @@ public class TestExtensions
                 .with("core_configuration")
                 .with("core_elasticsearch_seven_metamodel")
                 .with("core_nonrelational_mongodb")
-                .with("core_nonrelational_mongodb_java_platform_binding")
                 ;
     }
 }
