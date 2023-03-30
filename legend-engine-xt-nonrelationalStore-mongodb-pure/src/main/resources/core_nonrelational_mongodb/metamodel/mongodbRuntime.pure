@@ -15,7 +15,7 @@
 import meta::pure::runtime::*;
 import meta::pure::runtime::connection::authentication::*;
 import meta::external::store::mongodb::metamodel::runtime::*;
-import meta::external::store::mongodb::metamodel::*;
+import meta::external::store::mongodb::metamodel::pure::*;
 
 
 Enum meta::external::store::mongodb::metamodel::runtime::DatabaseType
@@ -23,7 +23,7 @@ Enum meta::external::store::mongodb::metamodel::runtime::DatabaseType
   MongoDb
 }
 
-Class meta::external::store::mongodb::metamodel::runtime::MongoDBConnection extends Connection
+Class meta::external::store::mongodb::metamodel::pure::runtime::MongoDBConnection extends Connection
 [
    $this.element->instanceOf(MongoDatabase)
 ]
@@ -36,8 +36,21 @@ Class meta::external::store::mongodb::metamodel::runtime::MongoDBConnection exte
 
 Class meta::external::store::mongodb::metamodel::runtime::MongoDBDatasourceSpecification // extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
 {
-   baseUrl: String[1];
-   port: Integer[1];
+   serverURLs: MongoDBURL[1..*];
    databaseName: String[0..1];
+   useSSL: Boolean[0..1];
+   connectionTimeoutMS: Integer[0..1];
+   socketTimeoutMS: Integer[0..1];
+   maxIdleTimeMS: Integer[0..1];
+   maxLifeTimeMS: Integer[0..1];
+   maxPoolSize: Integer[0..1];
+   waitQueueMultiple: Integer[0..1];
+   waitQueueTimeoutMS: Integer[0..1];
+
 }
 
+Class meta::external::store::mongodb::metamodel::runtime::MongoDBURL
+{
+    baseUrl: String[1];
+    port: Integer[1];
+}

@@ -20,7 +20,7 @@ import org.finos.legend.engine.external.shared.format.model.transformation.fromM
 import org.finos.legend.engine.language.protobuf3.grammar.from.Protobuf3GrammarParser;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.ProtoFile;
-import org.finos.legend.engine.protocol.protobuf3.metamodel.Translator;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.ProtocolToMetamodelTranslator;
 import org.finos.legend.pure.generated.Root_meta_external_format_protobuf_metamodel_ProtoFile;
 import org.finos.legend.pure.generated.Root_meta_external_format_protobuf_metamodel_ProtobufSchema;
 import org.finos.legend.pure.generated.Root_meta_external_format_protobuf_metamodel_ProtobufSchema_Impl;
@@ -46,7 +46,7 @@ public class ProtobufFormatExtension implements ExternalFormatSchemaGenerationEx
     public Root_meta_external_format_protobuf_metamodel_ProtobufSchema compileSchema(ExternalSchemaCompileContext context)
     {
         ProtoFile protoFile = Protobuf3GrammarParser.newInstance().parseProto(context.getContent());
-        Root_meta_external_format_protobuf_metamodel_ProtoFile pureProtoFile = new Translator().translate(protoFile, context.getPureModel());
+        Root_meta_external_format_protobuf_metamodel_ProtoFile pureProtoFile = new ProtocolToMetamodelTranslator().translate(protoFile, context.getPureModel());
 
         Root_meta_external_format_protobuf_metamodel_ProtobufSchema protobufSchema = new Root_meta_external_format_protobuf_metamodel_ProtobufSchema_Impl("", null, context.getPureModel().getClass("meta::external::format::protobuf::metamodel::ProtobufSchema"));
         protobufSchema._file(pureProtoFile);

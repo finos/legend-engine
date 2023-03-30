@@ -73,6 +73,9 @@ import org.finos.legend.engine.plan.execution.api.ExecutePlanStrategic;
 import org.finos.legend.engine.plan.execution.api.concurrent.ConcurrentExecutionNodeExecutorPoolInfo;
 import org.finos.legend.engine.plan.execution.service.api.ServiceModelingApi;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemory;
+import org.finos.legend.engine.plan.execution.stores.mongodb.plugin.MongoDBStoreExecutor;
+import org.finos.legend.engine.plan.execution.stores.mongodb.plugin.MongoDBStoreExecutorBuilder;
+import org.finos.legend.engine.plan.execution.stores.mongodb.plugin.MongoDBStoreExecutorConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.api.RelationalExecutorInformation;
 import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.SchemaExplorationApi;
@@ -237,12 +240,15 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         ServiceStoreExecutionConfiguration serviceStoreExecutionConfiguration = ServiceStoreExecutionConfiguration.builder().withCredentialProviderProvider(credentialProviderProvider).build();
         ServiceStoreExecutor serviceStoreExecutor = (ServiceStoreExecutor) new ServiceStoreExecutorBuilder().build(serviceStoreExecutionConfiguration);
 
-        PlanExecutor planExecutor = PlanExecutor.newPlanExecutor(relationalStoreExecutor, serviceStoreExecutor, InMemory.build());
+        MongoDBStoreExecutorConfiguration mongoDBExecutorConfiguration = MongoDBStoreExecutorConfiguration.newInstance().withCredentialProviderProvider(credentialProviderProvider).build();
+        MongoDBStoreExecutor mongoDBStoreExecutor = (MongoDBStoreExecutor) new MongoDBStoreExecutorBuilder().build(mongoDBExecutorConfiguration);
+
+        PlanExecutor planExecutor = PlanExecutor.newPlanExecutor(relationalStoreExecutor, serviceStoreExecutor, mongoDBStoreExecutor, InMemory.build());
 
         // Session Management
         SessionTracker sessionTracker = new SessionTracker();
         SessionHandler sessionHandler = new SessionHandler();
-        StoreExecutableManagerSessionListener  storeExecutableManagerSessionListener = new StoreExecutableManagerSessionListener();
+        StoreExecutableManagerSessionListener storeExecutableManagerSessionListener = new StoreExecutableManagerSessionListener();
         if (serverConfiguration.sessionCookie != null)
         {
             sessionHandler.setSessionCookie(serverConfiguration.sessionCookie);
@@ -305,7 +311,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new SqlGrammar());
 
         // Service
-        environment.jersey().register(new ServiceModelingApi(modelManager, serverConfiguration.deployment.mode,planExecutor));
+        environment.jersey().register(new ServiceModelingApi(modelManager, serverConfiguration.deployment.mode, planExecutor));
 
         // Query
         environment.jersey().register(new ApplicationQuery(ApplicationQueryConfiguration.getMongoClient()));

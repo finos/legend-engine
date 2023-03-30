@@ -20,7 +20,7 @@ import org.finos.legend.engine.external.shared.format.model.compile.ExternalSche
 import org.finos.legend.engine.external.shared.format.model.transformation.toModel.ExternalFormatModelGenerationExtension;
 import org.finos.legend.engine.external.shared.format.model.transformation.toModel.SchemaToModelConfiguration;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.protocol.graphQL.introspection.model.Translator;
+import org.finos.legend.engine.protocol.graphQL.introspection.model.ProtocolToMetamodelTranslator;
 import org.finos.legend.engine.protocol.graphQL.introspection.model.__Schema;
 import org.finos.legend.pure.generated.Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer;
 import org.finos.legend.pure.generated.Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer_Impl;
@@ -46,7 +46,7 @@ public class GraphQLFormatExtension implements ExternalFormatModelGenerationExte
         {
             return new Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer_Impl("", null, context.getPureModel().getClass("meta::external::query::graphQL::binding::toPure::introspection::GraphQLIntrospectionContainer"))
                     ._schema(
-                            new Translator().translate(
+                            new ProtocolToMetamodelTranslator().translate(
                                     new ObjectMapper().readValue(context.getContent(), __Schema.class),
                                     context.getPureModel()
                             )

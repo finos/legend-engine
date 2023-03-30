@@ -20,13 +20,6 @@ import meta::external::language::java::transform::*;
 import meta::protocols::generation::java::*;
 
 
-// function meta::external::store::mongodb::metamodel::configureConventions(conventions: meta::external::language::java::transform::Conventions[1]): meta::external::language::java::transform::Conventions[1]
-// {
-//     $conventions
-//       ->meta::external::language::java::transform::addProvidedType(meta::pure::mapping::PropertyMapping, 'org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping')
-//       ->meta::external::language::java::transform::addProvidedType(meta::pure::mapping::InstanceSetImplementation, 'org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.InstanceSetImplementation');
-// }
-
 function meta::external::store::mongodb::metamodel::MongoDBProtocolGenerator(): JavaProtocolGenerator[1]
 {
     let defaultGenerator = meta::protocols::generation::java::basicGeneratorForProtocolWithJacksonAnnotationsAndVisitorClasses();
@@ -39,6 +32,8 @@ function meta::external::store::mongodb::metamodel::configureConventions(purePac
 {
     let defaultConventions = defaultConfigureConventions($purePackage, $javaPackage, $ge)
                  ->configureConventionsWithCoreProtocolClasses()
-                 ->addProvidedType(meta::pure::runtime::connection::authentication::AuthenticationSpecification, 'org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification');
+                 ->addProvidedType(meta::pure::runtime::connection::authentication::AuthenticationSpecification, 'org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification')
+                 ->addProvidedType(meta::pure::executionPlan::ExecutionNode,'org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode')
+                 ->addProvidedType(meta::pure::data::EmbeddedData,'org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData');
     $defaultConventions;
 }
