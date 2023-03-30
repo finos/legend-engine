@@ -50,11 +50,14 @@ public class OpenApiArtifactGenerationExtension implements ArtifactGenerationExt
     @Override
     public List<Artifact> generate(PackageableElement element, PureModel pureModel, PureModelContextData data, String clientVersion)
     {
-        try {
+        try
+        {
             String result = core_external_format_openapi_generation.Root_meta_external_format_openapi_generation_serviceToOpenApi_Service_1__Server_1__String_1_((Root_meta_legend_service_metamodel_Service) element, new Root_meta_external_format_openapi_metamodel_Server_Impl("")._url(HOST), pureModel.getExecutionSupport());
             Artifact output = new Artifact(result, element.getName() + "_spec.json", "json");
             return Collections.singletonList(output);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             LOGGER.warn("Error generating openapi specification", ex);
         }
         return Collections.emptyList();
