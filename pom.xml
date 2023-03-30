@@ -262,6 +262,7 @@
         <module>legend-engine-xt-nonrelationalStore-mongodb-javaPlatformBinding-pure</module>
         <module>legend-engine-xt-analytics-store-entitlement</module>
         <module>legend-engine-xt-analytics-store-entitlement-api</module>
+        <module>legend-engine-xt-artifact-generation-api</module>
         <module>legend-engine-xt-openapi-generation</module>
 
         <!-- NOTE: Do not change the ordering of this block, we want to build these modules last -->
