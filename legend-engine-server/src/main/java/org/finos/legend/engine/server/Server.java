@@ -55,6 +55,7 @@ import org.finos.legend.engine.external.shared.format.generations.loaders.Schema
 import org.finos.legend.engine.external.shared.format.imports.loaders.CodeImports;
 import org.finos.legend.engine.external.shared.format.imports.loaders.SchemaImports;
 import org.finos.legend.engine.external.shared.format.model.api.ExternalFormats;
+import org.finos.legend.engine.generation.artifact.api.ArtifactGenerationExtensionApi;
 import org.finos.legend.engine.language.pure.compiler.api.Compile;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.GrammarToJson;
@@ -316,6 +317,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
 
         // External Format
         environment.jersey().register(new ExternalFormats(modelManager));
+        environment.jersey().register(new ArtifactGenerationExtensionApi(modelManager));
 
         // Analytics
         environment.jersey().register(new MappingAnalytics(modelManager));
