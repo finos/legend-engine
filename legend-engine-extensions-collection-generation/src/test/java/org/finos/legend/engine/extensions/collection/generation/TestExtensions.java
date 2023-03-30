@@ -219,6 +219,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.protocol.pure.v1.TextProtocolExtension.class)
                 .with(org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLPureProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.store.elasticsearch.v7.ElasticsearchV7ProtocolExtension.class)
+                .with(org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDBPureProtocolExtension.class)
                 ;
     }
 
@@ -255,6 +256,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.pure.grammar.from.ServiceStoreGrammarParserExtension.class)
                 .with(TextParserExtension.class)
                 .with(org.finos.legend.engine.language.stores.elasticsearch.v7.from.ElasticsearchGrammarParserExtension.class)
+                .with(org.finos.legend.engine.language.pure.grammar.integration.MongoDBGrammarParserExtension.class)
                 ;
     }
 
@@ -280,6 +282,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.pure.dsl.authentication.grammar.to.AuthenticationGrammarComposerExtension.class)
                 .with(TextGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.stores.elasticsearch.v7.to.ElasticsearchGrammarComposerExtension.class)
+                .with(org.finos.legend.engine.language.pure.grammar.integration.MongoDBGrammarComposerExtension.class)
                 ;
     }
 
@@ -306,6 +309,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.ServiceStoreCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.authentication.compiler.toPureGraph.AuthenticationCompilerExtension.class)
                 .with(org.finos.legend.engine.language.stores.elasticsearch.v7.compiler.ElasticsearchCompilerExtension.class)
+                .with(org.finos.legend.engine.language.pure.grammar.integration.MongoDBCompilerExtension.class)
                 ;
     }
 
@@ -382,6 +386,8 @@ public class TestExtensions
                 .with("core_external_format_xml_java_platform_binding")
                 .with("core_configuration")
                 .with("core_elasticsearch_seven_metamodel")
+                .with("core_nonrelational_mongodb")
+                .with("core_nonrelational_mongodb_java_platform_binding")
                 ;
     }
 }
