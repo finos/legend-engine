@@ -262,6 +262,7 @@
         <module>legend-engine-xt-nonrelationalStore-mongodb-javaPlatformBinding-pure</module>
         <module>legend-engine-xt-analytics-store-entitlement</module>
         <module>legend-engine-xt-analytics-store-entitlement-api</module>
+        <module>legend-engine-xt-artifact-generation-api</module>
 
         <!-- NOTE: Do not change the ordering of this block, we want to build these modules last -->
         <module>legend-engine-test-reports</module>
@@ -1511,6 +1512,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-language-pure-dsl-generation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-artifact-generation-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
