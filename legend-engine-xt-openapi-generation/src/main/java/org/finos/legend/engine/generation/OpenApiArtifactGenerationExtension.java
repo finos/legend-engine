@@ -22,16 +22,18 @@ import org.finos.legend.pure.generated.Root_meta_external_format_openapi_metamod
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.finos.legend.pure.generated.core_external_format_openapi_generation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
+import org.slf4j.Logger;
 
 import java.util.Collections;
 import java.util.List;
-
-import static org.finos.legend.engine.shared.core.operational.Assert.assertTrue;
 
 public class OpenApiArtifactGenerationExtension implements ArtifactGenerationExtension
 {
 
     private static final String ROOT_PATH = "openapi_spec";
+    private static final String HOST = "${HOST}";
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(OpenApiArtifactGenerationExtension.class);
+
 
     @Override
     public String getKey()
@@ -48,8 +50,13 @@ public class OpenApiArtifactGenerationExtension implements ArtifactGenerationExt
     @Override
     public List<Artifact> generate(PackageableElement element, PureModel pureModel, PureModelContextData data, String clientVersion)
     {
-        String result = core_external_format_openapi_generation.Root_meta_external_format_openapi_generation_serviceToOpenApi_Service_1__Server_1__String_1_((Root_meta_legend_service_metamodel_Service) element, new Root_meta_external_format_openapi_metamodel_Server_Impl("")._url("localhost"), pureModel.getExecutionSupport());
-        Artifact output = new Artifact(result, element.getName() + "_spec.json", "json");
-        return Collections.singletonList(output);
+        try {
+            String result = core_external_format_openapi_generation.Root_meta_external_format_openapi_generation_serviceToOpenApi_Service_1__Server_1__String_1_((Root_meta_legend_service_metamodel_Service) element, new Root_meta_external_format_openapi_metamodel_Server_Impl("")._url(HOST), pureModel.getExecutionSupport());
+            Artifact output = new Artifact(result, element.getName() + "_spec.json", "json");
+            return Collections.singletonList(output);
+        } catch (Exception ex) {
+            LOGGER.warn("Error generating openapi specification", ex);
+        }
+        return Collections.emptyList();
     }
 }
