@@ -1,0 +1,14 @@
+{
+  "builder": {
+    "_type": "json"
+  },
+  "values": {
+    "string": "String",
+    "integer": 1,
+    "boolean": true,
+    "float": 1.23,
+    "decimal": 1.568923657233,
+    "date": "1968-03-05",
+    "dateTime": "1968-03-05T09:00:00.000"
+  }
+}
