@@ -69,7 +69,16 @@ public class ServiceGrammarComposerExtension implements PureGrammarComposerExten
         return Lists.mutable.with((elements, context, composedSections) ->
         {
             List<Service> composableElements = ListIterate.selectInstancesOf(elements, Service.class);
-            return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, el -> ServiceGrammarComposerExtension.renderService(el, context)).makeString("###" + ServiceParserExtension.NAME + "\n", "\n\n", ""), composableElements);
+            List<ExecutionEnvironmentInstance> composableExecEnvironment = Lists.mutable.empty();
+            if (composableElements.isEmpty())
+            {
+                composableExecEnvironment = ListIterate.selectInstancesOf(elements, ExecutionEnvironmentInstance.class);
+                return composableExecEnvironment.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableExecEnvironment, el -> renderExecutionEnvironment(el, context)).makeString("###" + ServiceParserExtension.NAME + "\n", "\n\n", ""), composableExecEnvironment);
+            }
+            else
+            {
+                return new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, el -> ServiceGrammarComposerExtension.renderService(el, context)).makeString("###" + ServiceParserExtension.NAME + "\n", "\n\n", ""), composableElements);
+            }
         });
     }
 
