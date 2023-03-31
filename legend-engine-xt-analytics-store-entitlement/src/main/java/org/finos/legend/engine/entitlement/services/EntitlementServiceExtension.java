@@ -19,6 +19,7 @@ import org.finos.legend.engine.entitlement.model.entitlementReport.DatasetEntitl
 import org.finos.legend.engine.entitlement.model.specification.DatasetSpecification;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.pac4j.core.profile.CommonProfile;
 
