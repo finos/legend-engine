@@ -208,7 +208,7 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
 
     public abstract void verifyNontemporalDeltaPostActionSqlAndCleanStagingData(GeneratorResult operations);
 
-    //@Test
+    @Test
     void testNontemporalDeltaWithDerivedDataset()
     {
         TestScenario testScenario = scenarios.DERIVED_DATASET_NO_DEDUP_STRATEGY();
