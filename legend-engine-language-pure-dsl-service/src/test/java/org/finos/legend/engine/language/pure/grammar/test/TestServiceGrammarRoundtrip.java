@@ -14,10 +14,12 @@
 
 package org.finos.legend.engine.language.pure.grammar.test;
 
+import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -1756,11 +1758,47 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "}\n");
     }
 
+    @Test
+    public void testRenderingExecutionEnvironmentWithoutSectionIndex()
+    {
+        String expected = "###Service\n" +
+                "ExecutionEnvironment test::executionEnvironment\n" +
+                "{\n" +
+                "  executions:\n" +
+                "  [\n" +
+                "    QA:\n" +
+                "    {\n" +
+                "      mapping: test::MyMapping;\n" +
+                "      runtime: test::MyRuntime;\n" +
+                "    },\n" +
+                "    PROD:\n" +
+                "    {\n" +
+                "      mapping: test::MyMapping;\n" +
+                "      runtime: test::MyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n";
+        testComposedGrammarWithoutSectionIndex(expected, true);
+    }
+
     private void testComposedGrammar(String input, String result)
     {
         PureModelContextData modelData = null;
         modelData = PureGrammarParser.newInstance().parseModel(input, "", 0, 0, false);
         PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());
         Assert.assertEquals(result, grammarTransformer.renderPureModelContextData(modelData));
+    }
+
+    private void  testComposedGrammarWithoutSectionIndex(String code, boolean omitSectionIndex)
+    {
+        PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());
+        // NOTE: no need to get source information
+        PureModelContextData parsedModel = PureGrammarParser.newInstance().parseModel(code, "", 0, 0, false);
+        if (omitSectionIndex)
+        {
+            parsedModel = PureModelContextData.newPureModelContextData(parsedModel.getSerializer(), parsedModel.getOrigin(), LazyIterate.reject(parsedModel.getElements(), e -> e instanceof SectionIndex));
+        }
+        String formatted = grammarTransformer.renderPureModelContextData(parsedModel);
+        Assert.assertEquals(code, formatted);
     }
 }
