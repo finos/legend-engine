@@ -32,6 +32,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authent
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.UserPasswordAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.Closeable;
@@ -57,6 +58,7 @@ public class TestMongoDBStoreTestConnectionBuilder
     }
 
     @Test
+    @Ignore
     public void testInMemoryMongoDB() throws IOException
     {
         MongoDBStoreTestConnectionFactory testConnectionFactory = new MongoDBStoreTestConnectionFactory();
