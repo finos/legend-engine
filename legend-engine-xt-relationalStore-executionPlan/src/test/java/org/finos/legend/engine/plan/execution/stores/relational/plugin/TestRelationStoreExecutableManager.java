@@ -23,6 +23,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Relati
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.result.SQLResultColumn;
 
+import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -59,7 +60,7 @@ public class TestRelationStoreExecutableManager
         Mockito.when(mockResultSet.getMetaData()).thenReturn(mockMetadata);
         Mockito.when(mockDatabaseConnection.accept(any())).thenReturn(false);
         StoreExecutableManager.INSTANCE.registerManager();
-        RelationalResult result = new RelationalResult(FastList.newListWith(new RelationalExecutionActivity("TEST", "comment")), mockExecutionNode, FastList.newListWith(new SQLResultColumn("test", "INTEGER")), null, null, mockConnection, null, null, null, session);
+        RelationalResult result = new RelationalResult(FastList.newListWith(new RelationalExecutionActivity("TEST", "comment")), mockExecutionNode, FastList.newListWith(new SQLResultColumn("test", "INTEGER")), null, null, mockConnection, null, null, null, new RequestContext(session,"ref"));
         Assert.assertEquals(1, StoreExecutableManager.INSTANCE.getExecutables(session).size());
         result.close();
         Assert.assertTrue(StoreExecutableManager.INSTANCE.getExecutables(session).isEmpty());

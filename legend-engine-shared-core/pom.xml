@@ -79,6 +79,13 @@
         </dependency>
         <!-- For Rest Result -->
 
+        <!-- For Request Context -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+        </dependency>
+        <!-- For Request Context -->
+
         <!-- For ExceptionTools -->
         <dependency>
             <groupId>org.apache.commons</groupId>

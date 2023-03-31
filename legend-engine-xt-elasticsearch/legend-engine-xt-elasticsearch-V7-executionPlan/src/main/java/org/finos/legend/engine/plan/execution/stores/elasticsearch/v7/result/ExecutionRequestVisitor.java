@@ -161,7 +161,7 @@ public class ExecutionRequestVisitor implements RequestBaseVisitor<Result>
                     stream,
                     new TDSBuilder(this.node),
                     Collections.singletonList(new ElasticsearchV7ExecutionActivity(this.request.getURI(), query)),
-                    this.executionState.getSessionID()
+                    this.executionState.getRequestContext().getSessionID()
             );
         }
         catch (IOException e)

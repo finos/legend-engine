@@ -27,6 +27,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.result.SQLResultColumn;
+import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
@@ -62,7 +63,7 @@ public class SQLExecutionResult extends Result implements StoreExecutable
     private final List<String> columnNames = FastList.newList();
     private final List<ResultColumn> resultColumns = FastList.newList();
     private final List<SQLResultColumn> sqlResultColumns;
-    private final String sessionID;
+    private final RequestContext requestContext;
     public Span topSpan;
 
     public SQLExecutionResult(List<ExecutionActivity> activities, SQLExecutionNode SQLExecutionNode, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan)
@@ -70,7 +71,7 @@ public class SQLExecutionResult extends Result implements StoreExecutable
         this(activities, SQLExecutionNode, databaseType, databaseTimeZone, connection, profiles, temporaryTables, topSpan, null);
     }
 
-    public SQLExecutionResult(List<ExecutionActivity> activities, SQLExecutionNode SQLExecutionNode, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan, String sessionID)
+    public SQLExecutionResult(List<ExecutionActivity> activities, SQLExecutionNode SQLExecutionNode, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan, RequestContext requestContext)
     {
         super("success", activities);
         this.SQLExecutionNode = SQLExecutionNode;
@@ -79,7 +80,7 @@ public class SQLExecutionResult extends Result implements StoreExecutable
         this.calendar = new GregorianCalendar(TimeZone.getTimeZone(databaseTimeZone));
         this.temporaryTables = temporaryTables;
         this.topSpan = topSpan;
-        this.sessionID = sessionID;
+        this.requestContext = requestContext;
         try
         {
             this.connection = connection;
@@ -207,9 +208,9 @@ public class SQLExecutionResult extends Result implements StoreExecutable
         return resultColumn.getTransformedValue(this.getResultSet(), calendar);
     }
 
-    public String getSessionID()
+    public RequestContext getRequestContext()
     {
-        return this.sessionID;
+        return this.requestContext;
     }
 
     @Override
@@ -255,13 +256,13 @@ public class SQLExecutionResult extends Result implements StoreExecutable
             if (!statement.isClosed())
             {
                 statement.cancel();
-                LOGGER.info(new LogInfo(null, LoggingEventType.EXECUTABLE_CANCELLATION, "Successful cancellation of  RelationalResult " + sessionID).toString());
+                LOGGER.info(new LogInfo(null, LoggingEventType.EXECUTABLE_CANCELLATION, "Successful cancellation of  RelationalResult " + requestContext.getSessionID()).toString());
 
             }
         }
         catch (Exception e)
         {
-            LOGGER.error(new LogInfo(null, LoggingEventType.EXECUTABLE_CANCELLATION_ERROR, "Unable to cancel  RelationalResult  for session " + sessionID + " " + e.getMessage()).toString());
+            LOGGER.error(new LogInfo(null, LoggingEventType.EXECUTABLE_CANCELLATION_ERROR, "Unable to cancel  RelationalResult  for session " + requestContext.getSessionID() + " " + e.getMessage()).toString());
         }
     }
 
