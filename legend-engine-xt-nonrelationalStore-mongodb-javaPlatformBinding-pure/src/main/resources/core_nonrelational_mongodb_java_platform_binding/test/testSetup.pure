@@ -225,6 +225,7 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
   let currentBinding = getSimpleBinding();
 
     // Map Fields to properties. create fields that correspond to collection representation
+    /*
     let firstName = ^meta::external::store::mongodb::metamodel::mapping::Field(
           dataType = ^meta::external::store::mongodb::metamodel::StringType(),
           argumentExpression = ^FieldPathExpression(fieldPath='firstName')
@@ -245,7 +246,7 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
     let address = ^meta::external::store::mongodb::metamodel::mapping::Field(
           dataType = ^meta::external::store::mongodb::metamodel::StringType(),
           argumentExpression = ^FieldPathExpression(fieldPath='firm.address'));
-
+    */
        let firmPropMappings = [
         ^meta::external::store::mongodb::metamodel::mapping::MongoDBPropertyMapping(
         property = $firmClass.properties->filter(p | $p.name == 'legalName')->toOne(),
@@ -282,16 +283,16 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
     let personPropMappings = [
       ^meta::external::store::mongodb::metamodel::mapping::MongoDBPropertyMapping(
         property = $domainClass.properties->filter(p | $p.name == 'firstName')->toOne(),
-        sourceSetImplementationId = 'person', targetSetImplementationId = '',
-        field = $firstName),
+        sourceSetImplementationId = 'person', targetSetImplementationId = ''),
+        // field = $firstName),
       ^meta::external::store::mongodb::metamodel::mapping::MongoDBPropertyMapping(
         property = $domainClass.properties->filter(p | $p.name == 'lastName')->toOne(),
-        sourceSetImplementationId = 'person', targetSetImplementationId = '',
-        field = $lastName),
+        sourceSetImplementationId = 'person', targetSetImplementationId = ''),
+        // field = $lastName),
         ^meta::external::store::mongodb::metamodel::mapping::MongoDBPropertyMapping(
         property = $domainClass.properties->filter(p | $p.name == 'age')->toOne(),
-        sourceSetImplementationId = 'person', targetSetImplementationId = '',
-        field = $age),
+        sourceSetImplementationId = 'person', targetSetImplementationId = ''),
+        // field = $age),
         $firmEmbeddedMongoDBSetImplementation
     ];
    
