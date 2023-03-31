@@ -388,6 +388,7 @@ public class TestExtensions
                 .with("core_configuration")
                 .with("core_elasticsearch_seven_metamodel")
                 .with("core_nonrelational_mongodb")
+                .with("core_nonrelational_mongodb_java_platform_binding")
                 ;
     }
 }
