@@ -796,7 +796,7 @@ function <<test.Test>> meta::relational::tests::milestoning::businessdate::testM
 {
    // Note: Using now in test deliberately to safegaurd change in sql gen flow. Since change depends on variable date hence not asserting on values but sql
    let result = execute(|Product.all(%2015-8-15)->filter(p|$p.orders.orderDate->toOne() < now())->project([p|$p.name],['name']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions(), noDebug());
-   assertSameSQL('select "root".name as "name" from ProductTable as "root" left outer join OrderTable as "ordertable_0" on ("ordertable_0".prodFk = "root".id) where "ordertable_0".orderDate < current_timestamp() and "root".from_z <= \'2015-08-15\' and "root".thru_z > \'2015-08-15\'', $result);
+   assertSameSQL('select "root".name as "name" from ProductTable as "root" left outer join OrderTable as "ordertable_0" on ("ordertable_0".prodFk = "root".id) where "ordertable_0".orderDate < localtimestamp() and "root".from_z <= \'2015-08-15\' and "root".thru_z > \'2015-08-15\'', $result);
 }
 
 function <<test.Test>> meta::relational::tests::milestoning::businessdate::testFilterOnView():Boolean[1]

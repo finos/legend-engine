@@ -79,7 +79,7 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '    (\n'+
    '      type = TDS[(firstName, String, VARCHAR(200), "")]\n'+
    '      resultColumns = [("firstName", VARCHAR(200))]\n' +
-   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where \'${x}\' > dateadd(DAY, -1, current_timestamp())\n'+
+   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where \'${x}\' > dateadd(DAY, -1, localtimestamp())\n'+
    '      connection = TestDatabaseConnection(type = "H2")\n'+
    '    )\n'+
    '  )\n'+
@@ -117,7 +117,7 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '    (\n' +
    '      type = TDS[(firstName, String, VARCHAR(200), "")]\n' +
    '      resultColumns = [("firstName", VARCHAR(200))]\n' +
-   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where \'${x}\' > dateadd(DAY, -1, current_timestamp())\n' +
+   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where \'${x}\' > dateadd(DAY, -1, localtimestamp())\n' +
    '      connection = TestDatabaseConnection(type = "H2")\n' +
    '    )\n' +
    '  )\n' +
@@ -292,7 +292,7 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '    (\n'+
    '      type = TDS[(firstName, String, VARCHAR(200), "")]\n'+
    '      resultColumns = [("firstName", VARCHAR(200))]\n' +
-   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where \'${x}\' > dateadd(DAY, -1, current_timestamp())\n'+
+   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where \'${x}\' > dateadd(DAY, -1, localtimestamp())\n'+
    '      connection = TestDatabaseConnection(type = "H2")\n'+
    '    )\n'+
    '  )\n'+
@@ -330,7 +330,7 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '    (\n' +
    '      type = TDS[(firstName, String, VARCHAR(200), "")]\n' +
    '      resultColumns = [("firstName", VARCHAR(200))]\n' +
-   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where \'${x}\' > dateadd(DAY, -1, current_timestamp())\n' +
+   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where \'${x}\' > dateadd(DAY, -1, localtimestamp())\n' +
    '      connection = TestDatabaseConnection(type = "H2")\n' +
    '    )\n' +
    '  )\n' +

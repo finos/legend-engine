@@ -117,7 +117,7 @@ function <<test.Test>> meta::relational::tests::mapping::join::testMultipleJoins
    assertSameElements(['Row1', 'Row2', 'Row3'], $result.values.tableProperty);
    assertSameElements(['Row1A', 'Row2A', 'Row3A'], $result.values.propertyTableA);
    assertSameElements(['Row1B', 'Row2B', 'Row3B'], $result.values.propertyTableB);
-   assertSameSQL('select "root".ID as "pk_0", "root".TypeProperty as "tableProperty", "typetablea_0".TypePropertyA as "propertyTableA", "typetableb_0".TypePropertyB as "propertyTableB" from TypeTable as "root" left outer join TypeTableA as "typetablea_0" on ("root".ID = "typetablea_0".ID) left outer join TypeTableB as "typetableb_0" on ("root".ID = "typetableb_0".ID and "typetableb_0".IN_Z <= current_timestamp() and current_timestamp() < "typetableb_0".OUT_Z)', $result);
+   assertSameSQL('select "root".ID as "pk_0", "root".TypeProperty as "tableProperty", "typetablea_0".TypePropertyA as "propertyTableA", "typetableb_0".TypePropertyB as "propertyTableB" from TypeTable as "root" left outer join TypeTableA as "typetablea_0" on ("root".ID = "typetablea_0".ID) left outer join TypeTableB as "typetableb_0" on ("root".ID = "typetableb_0".ID and "typetableb_0".IN_Z <= localtimestamp() and localtimestamp() < "typetableb_0".OUT_Z)', $result);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::join::testMultipleJoinsInPropertyMappingWithDatesInClass():Boolean[1]

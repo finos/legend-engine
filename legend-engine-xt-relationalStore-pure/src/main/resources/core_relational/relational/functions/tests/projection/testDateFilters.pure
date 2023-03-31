@@ -33,7 +33,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::dates::now::
    let query = {|Trade.all()->filter(d | $d.date == now())->project(x | $x.date, 'date')};
 
    let h2Sql = toSQLString($query, simpleRelationalMapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = current_timestamp()', $h2Sql);
+   assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = localtimestamp()', $h2Sql);
    
    let prestoSql = toSQLString($query, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = current_timestamp', $prestoSql);

@@ -489,7 +489,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenera
                                                   ],
                                                   ['DiffYears']),
                             simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
-   assertEquals('select datediff(year,"root".settlementDateTime,current_timestamp()) as "DiffYears" from tradeTable as "root"', $result);
+   assertEquals('select datediff(year,"root".settlementDateTime,localtimestamp()) as "DiffYears" from tradeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForPrestoForDifferenceInYears():Boolean[1]
@@ -529,7 +529,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenera
                                                   ],
                                                   ['DiffMonths']),
                             simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
-   assertEquals('select datediff(month,"root".settlementDateTime,current_timestamp()) as "DiffMonths" from tradeTable as "root"', $result);
+   assertEquals('select datediff(month,"root".settlementDateTime,localtimestamp()) as "DiffMonths" from tradeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForPrestoForDifferenceInMonths():Boolean[1]
@@ -569,7 +569,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenera
                                                   ],
                                                   ['DiffWeeks']),
                             simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
-   assertEquals('select datediff(week,"root".settlementDateTime,current_timestamp()) as "DiffWeeks" from tradeTable as "root"', $result);
+   assertEquals('select datediff(week,"root".settlementDateTime,localtimestamp()) as "DiffWeeks" from tradeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForPrestoForDifferenceInWeeks():Boolean[1]
@@ -609,7 +609,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenera
                                                   ],
                                                   ['DiffDays']),
                             simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
-   assertEquals('select datediff(day,"root".settlementDateTime,current_timestamp()) as "DiffDays" from tradeTable as "root"', $result);
+   assertEquals('select datediff(day,"root".settlementDateTime,localtimestamp()) as "DiffDays" from tradeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForPrestoForDifferenceInDays():Boolean[1]
@@ -649,7 +649,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenera
                                                   ],
                                                   ['DiffHours']),
                             simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
-   assertEquals('select datediff(hour,"root".settlementDateTime,current_timestamp()) as "DiffHours" from tradeTable as "root"', $result);
+   assertEquals('select datediff(hour,"root".settlementDateTime,localtimestamp()) as "DiffHours" from tradeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForPrestoForDifferenceInHours():Boolean[1]
@@ -689,7 +689,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenera
                                                   ],
                                                   ['DiffMinutes']),
                             simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
-   assertEquals('select datediff(minute,"root".settlementDateTime,current_timestamp()) as "DiffMinutes" from tradeTable as "root"', $result);
+   assertEquals('select datediff(minute,"root".settlementDateTime,localtimestamp()) as "DiffMinutes" from tradeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForPrestoForDifferenceInMinutes():Boolean[1]
@@ -729,7 +729,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenera
                                                   ],
                                                   ['DiffSeconds']),
                             simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
-   assertEquals('select datediff(second,"root".settlementDateTime,current_timestamp()) as "DiffSeconds" from tradeTable as "root"', $result);
+   assertEquals('select datediff(second,"root".settlementDateTime,localtimestamp()) as "DiffSeconds" from tradeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForPrestoForDifferenceInSeconds():Boolean[1]
@@ -769,7 +769,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenera
                                                   ],
                                                   ['DiffMilliseconds']),
                             simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
-   assertEquals('select datediff(millisecond,"root".settlementDateTime,current_timestamp()) as "DiffMilliseconds" from tradeTable as "root"', $result);
+   assertEquals('select datediff(millisecond,"root".settlementDateTime,localtimestamp()) as "DiffMilliseconds" from tradeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testGenerateDateDiffExpressionForPrestoForDifferenceInMilliseconds():Boolean[1]

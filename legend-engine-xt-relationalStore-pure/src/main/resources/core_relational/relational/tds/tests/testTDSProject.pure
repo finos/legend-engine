@@ -319,7 +319,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectEnum
    assertEquals('Peter|true,John|true,John|true,Anthony|true,Fabrice|true,Oliver|true,David|true',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
    
-   assertEquals('select "root".FIRSTNAME as "firstName", dateadd(DAY, 1, current_timestamp()) > current_timestamp() as "tomorrowGreaterThanToday" from personTable as "root"', 
+   assertEquals('select "root".FIRSTNAME as "firstName", dateadd(DAY, 1, localtimestamp()) > localtimestamp() as "tomorrowGreaterThanToday" from personTable as "root"',
       $result->sqlRemoveFormatting());   
 }
 
@@ -345,7 +345,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectWith
    assertEquals('Peter|true,John|true,John|true,Anthony|true,Fabrice|true,Oliver|true,David|true',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
    
-   assertEquals('select "root".FIRSTNAME as "firstName", dateadd(DAY, 1, current_timestamp()) > current_timestamp() as "tomorrowGreaterThanToday" from personTable as "root"', 
+   assertEquals('select "root".FIRSTNAME as "firstName", dateadd(DAY, 1, localtimestamp()) > localtimestamp() as "tomorrowGreaterThanToday" from personTable as "root"',
       $result->sqlRemoveFormatting());   
 }
 
