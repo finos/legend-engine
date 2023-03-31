@@ -17,7 +17,6 @@ package org.finos.legend.engine.api.analytics.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 
 public class StoreEntitlementAnalyticsInput
@@ -25,18 +24,18 @@ public class StoreEntitlementAnalyticsInput
     @JsonProperty
     public Lambda query;
     @JsonProperty
-    public Runtime runtime;
+    public String runtimePath;
     @JsonProperty
-    public String mapping;
+    public String mappingPath;
     @JsonProperty
     public PureModelContext model;
 
     @JsonCreator
-    public StoreEntitlementAnalyticsInput(@JsonProperty("query") Lambda query, @JsonProperty("runtime") Runtime runtime, @JsonProperty("mapping") String mapping, @JsonProperty("pureModel") PureModelContext model)
+    public StoreEntitlementAnalyticsInput(@JsonProperty("query") Lambda query, @JsonProperty("runtimePath") String runtimePath, @JsonProperty("mappingPath") String mappingPath, @JsonProperty("pureModel") PureModelContext model)
     {
         this.query = query;
-        this.runtime = runtime;
-        this.mapping = mapping;
+        this.runtimePath = runtimePath;
+        this.mappingPath = mappingPath;
         this.model = model;
     }
 }
