@@ -45,10 +45,15 @@ public class FieldValueVisitor implements LogicalPlanVisitor<FieldValue>
 
     private String getDatasetReferenceAlias(FieldValue current)
     {
-        if (!current.datasetRef().isPresent())
+        String datasetRefAlias = null;
+        if (current.datasetRef().isPresent())
         {
-            return null;
+            datasetRefAlias = current.datasetRef().get().alias().orElse(null);
         }
-        return current.datasetRef().get().alias().orElse(null);
+        else if (current.datasetRefAlias().isPresent())
+        {
+            datasetRefAlias = current.datasetRefAlias().get();
+        }
+        return datasetRefAlias;
     }
 }

@@ -585,13 +585,13 @@ public class BaseTest
 
     Condition filterCondition1 = GreaterThan
             .builder()
-            .leftValue(FieldValue.builder().fieldName("bizDate").build())
+            .leftValue(FieldValue.builder().fieldName("bizDate").datasetRefAlias("stage").build())
             .rightValue(StringValue.of("2020-01-01"))
             .build();
 
     Condition filterCondition2 = LessThan
             .builder()
-            .leftValue(FieldValue.builder().fieldName("bizDate").build())
+            .leftValue(FieldValue.builder().fieldName("bizDate").datasetRefAlias("stage").build())
             .rightValue(StringValue.of("2020-01-03"))
             .build();
 
