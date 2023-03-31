@@ -30,12 +30,12 @@ import java.util.List;
 
 public interface EntitlementServiceExtension
 {
-   default List<DatasetSpecification> generateDatasetSpecifications(Lambda query, Root_meta_pure_runtime_Runtime runtime, String mappingPath, Mapping mapping, PureModelContext model, PureModel pureModel, ModelManager modelManager, MutableList<CommonProfile> profiles)
+   default List<DatasetSpecification> generateDatasetSpecifications(Lambda query, String runtimePath, Root_meta_pure_runtime_Runtime runtime, String mappingPath, Mapping mapping, PureModelContext model, PureModel pureModel, ModelManager modelManager, MutableList<CommonProfile> profiles)
    {
       return Collections.emptyList();
    }
 
-   default List<DatasetEntitlementReport> generateDatasetEntitlementReports(Lambda query, Root_meta_pure_runtime_Runtime runtime, String mappingPath, Mapping mapping, PureModelContext model, PureModel pureModel, ModelManager modelManager, MutableList<CommonProfile> profiles)
+   default List<DatasetEntitlementReport> generateDatasetEntitlementReports(Lambda query, String runtimePath, Root_meta_pure_runtime_Runtime runtime, String mappingPath, Mapping mapping, PureModelContext model, PureModel pureModel, ModelManager modelManager, MutableList<CommonProfile> profiles)
    {
       return Collections.emptyList();
    }

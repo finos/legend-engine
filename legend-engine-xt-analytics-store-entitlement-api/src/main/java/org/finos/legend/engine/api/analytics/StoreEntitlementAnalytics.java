@@ -70,7 +70,7 @@ public class StoreEntitlementAnalytics
         {
             try
             {
-                return ManageConstantResult.manageResult(profiles, LazyIterate.flatCollect(extensions, extension -> extension.generateDatasetSpecifications(input.query, runtime, input.mappingPath, mapping, input.model, pureModel, modelManager, profiles)).toList());
+                return ManageConstantResult.manageResult(profiles, LazyIterate.flatCollect(extensions, extension -> extension.generateDatasetSpecifications(input.query, input.runtimePath, runtime, input.mappingPath, mapping, input.pureModelContext, pureModel, modelManager, profiles)).toList());
             }
             catch (Exception e)
             {
@@ -87,14 +87,14 @@ public class StoreEntitlementAnalytics
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         List<EntitlementServiceExtension> extensions = EntitlementServiceExtensionLoader.extensions();
-        PureModel pureModel = modelManager.loadModel(input.model, PureClientVersions.production, profiles, null);
+        PureModel pureModel = modelManager.loadModel(input.pureModelContext, PureClientVersions.production, profiles, null);
         Mapping mapping = input.mappingPath == null ? null : pureModel.getMapping(input.mappingPath);
         Root_meta_pure_runtime_Runtime runtime = pureModel.getRuntime(input.runtimePath);
         try (Scope scope = GlobalTracer.get().buildSpan("check store entitlements").startActive(true))
         {
             try
             {
-                return ManageConstantResult.manageResult(profiles, LazyIterate.flatCollect(extensions, extension -> extension.generateDatasetEntitlementReports(input.query, runtime, input.mappingPath, mapping, input.model, pureModel, modelManager, profiles)).toList());
+                return ManageConstantResult.manageResult(profiles, LazyIterate.flatCollect(extensions, extension -> extension.generateDatasetEntitlementReports(input.query, input.runtimePath, runtime, input.mappingPath, mapping, input.pureModelContext, pureModel, modelManager, profiles)).toList());
             }
             catch (Exception e)
             {

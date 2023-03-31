@@ -28,14 +28,14 @@ public class StoreEntitlementAnalyticsInput
     @JsonProperty
     public String mappingPath;
     @JsonProperty
-    public PureModelContext model;
+    public PureModelContext pureModelContext;
 
     @JsonCreator
-    public StoreEntitlementAnalyticsInput(@JsonProperty("query") Lambda query, @JsonProperty("runtimePath") String runtimePath, @JsonProperty("mappingPath") String mappingPath, @JsonProperty("model") PureModelContext model)
+    public StoreEntitlementAnalyticsInput(@JsonProperty("query") Lambda query, @JsonProperty("runtimePath") String runtimePath, @JsonProperty("mappingPath") String mappingPath, @JsonProperty("pureModelContext") PureModelContext pureModelContext)
     {
         this.query = query;
         this.runtimePath = runtimePath;
         this.mappingPath = mappingPath;
-        this.model = model;
+        this.pureModelContext = pureModelContext;
     }
 }
