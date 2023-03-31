@@ -15,24 +15,24 @@
 
 Class meta::external::query::sql::SchemaColumn
 {
-  name: String[1];
+  <<equality.Key>> name: String[1];
 }
 
 Class meta::external::query::sql::PrimitiveValueSchemaColumn extends meta::external::query::sql::SchemaColumn
 {
-  type: meta::external::query::sql::PrimitiveType[1];
+  <<equality.Key>> type: meta::external::query::sql::PrimitiveType[1];
 }
 
 Class meta::external::query::sql::EnumValueSchemaColumn extends meta::external::query::sql::SchemaColumn
 {
-  type: String[1];
+  <<equality.Key>> type: String[1];
 }
 
 
 Class meta::external::query::sql::Schema
 {
-  columns: meta::external::query::sql::SchemaColumn[*];
-  enums: meta::external::query::sql::Enum[*];
+  <<equality.Key>> columns: meta::external::query::sql::SchemaColumn[*];
+  <<equality.Key>> enums: meta::external::query::sql::Enum[*];
 }
 
 Enum meta::external::query::sql::PrimitiveType
@@ -51,8 +51,8 @@ Enum meta::external::query::sql::PrimitiveType
 
 Class meta::external::query::sql::Enum
 {
-  type: String[1];
-  values: String[*];
+  <<equality.Key>> type: String[1];
+  <<equality.Key>> values: String[*];
 }
 
 function meta::external::query::sql::stringToPrimitiveType(dt : String[1]) : meta::external::query::sql::PrimitiveType[1]
