@@ -26,6 +26,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.conditions.Not
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Or;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.values.All;
@@ -236,6 +237,17 @@ public class LogicalPlanUtils
                 fieldsList.set(fieldsList.indexOf(field), ((FieldValue) field).withFieldName(newFieldName));
             }
         });
+    }
+
+    public static Optional<Condition> getDatasetFilterCondition(Dataset dataSet)
+    {
+        Optional<Condition> filter = Optional.empty();
+        if (dataSet instanceof DerivedDataset)
+        {
+            DerivedDataset derivedDataset = (DerivedDataset) dataSet;
+            filter = Optional.of(derivedDataset.filter());
+        }
+        return filter;
     }
 
     public static Condition getBatchIdEqualsInfiniteCondition(Dataset mainDataSet, String batchIdOutField)

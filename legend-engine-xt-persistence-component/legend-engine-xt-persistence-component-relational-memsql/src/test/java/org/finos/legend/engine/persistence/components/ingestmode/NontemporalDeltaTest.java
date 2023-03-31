@@ -261,6 +261,12 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
         assertIfListsAreSameIgnoringOrder(expectedSQL, postActionsSql);
     }
 
+    @Override
+    public void verifyNontemporalDeltaWithDerivedDataset(GeneratorResult operations)
+    {
+
+    }
+
     public RelationalSink getRelationalSink()
     {
         return MemSqlSink.get();
