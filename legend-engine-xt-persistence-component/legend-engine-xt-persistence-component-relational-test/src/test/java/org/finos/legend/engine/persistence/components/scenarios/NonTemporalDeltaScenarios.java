@@ -21,6 +21,8 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeA
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
 
 import java.util.Optional;
+
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.PickMaxVersion;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
 
 public class NonTemporalDeltaScenarios extends BaseTest
@@ -32,6 +34,7 @@ public class NonTemporalDeltaScenarios extends BaseTest
     1) Auditing: No Auditing, With Auditing
     2) DataSplit: Enabled, Disabled
     3) MergeStrategy: No MergeStrategy, With Delete Indicator
+    4) DerivedDataset with different InterBatchDedupStrategy
     */
 
     public TestScenario NO_AUDTING__NO_DATASPLIT()
@@ -86,6 +89,23 @@ public class NonTemporalDeltaScenarios extends BaseTest
         return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchemaHavingDigestAndDataSplit, ingestMode);
    }
 
+    public TestScenario DERIVED_DATASET_NO_DEDUP_STRATEGY()
+    {
+        NontemporalDelta ingestMode = NontemporalDelta.builder()
+                .digestField(digestField)
+                .auditing(NoAuditing.builder().build())
+                .build();
+        return new TestScenario(mainTableWithBaseSchemaAndDigest, stagingTableWithFilters, ingestMode);
+    }
 
+    public TestScenario DERIVED_DATASET_MAX_VERSION_DEDUP_STRATEGY()
+    {
+        NontemporalDelta ingestMode = NontemporalDelta.builder()
+                .digestField(digestField)
+                .auditing(NoAuditing.builder().build())
+                .interBatchDeduplicationStrategy(PickMaxVersion.builder().build())
+                .build();
+        return new TestScenario(mainTableWithBaseSchemaAndDigest, stagingTableWithFilters, ingestMode);
+    }
 
 }
