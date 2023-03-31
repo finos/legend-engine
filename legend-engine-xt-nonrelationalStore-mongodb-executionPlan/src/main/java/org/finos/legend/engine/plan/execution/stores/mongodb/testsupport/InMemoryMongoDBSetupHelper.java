@@ -18,43 +18,28 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import de.bwaldvogel.mongo.MongoServer;
-import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
 import org.bson.Document;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.data.MongoDBStoreEmbeddedData;
-
-import java.net.InetSocketAddress;
+import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 
 public class InMemoryMongoDBSetupHelper
 {
     public final String baseUrl;
     public final int port;
-    private final MongoServer mongoServer;
     private final MongoClient mongoClient;
 
 
     public InMemoryMongoDBSetupHelper()
     {
-        this.mongoServer = new MongoServer(new MemoryBackend());
-        InetSocketAddress address = mongoServer.bind();
-
-        this.baseUrl = address.getHostName();
-        this.port = address.getPort();
-        Runtime.getRuntime().addShutdownHook(new Thread()
-        {
-            @Override
-            public void run()
-            {
-                mongoServer.shutdown();
-            }
-        });
+        this.baseUrl = "localhost";
+        this.port = DynamicPortGenerator.generatePort();
+        ;
         this.mongoClient = MongoClients.create("mongodb://" + this.baseUrl + ":" + String.valueOf(this.port));
     }
 
     public void cleanUp()
     {
         this.mongoClient.close();
-        this.mongoServer.shutdown();
     }
 
     public void setupData(MongoDBStoreEmbeddedData data)
