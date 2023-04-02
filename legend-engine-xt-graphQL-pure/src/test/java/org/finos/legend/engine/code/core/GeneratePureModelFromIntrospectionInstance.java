@@ -33,7 +33,7 @@ public class GeneratePureModelFromIntrospectionInstance
     {
         PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(), Lists.mutable.empty(), DeploymentMode.TEST);
         __Schema schema = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(GeneratePureModelFromIntrospectionInstance.class.getClassLoader().getResourceAsStream("exampleModel.json"), __Schema.class);
-        Root_meta_external_query_graphQL_metamodel_introspection___Schema pureSchema = new org.finos.legend.engine.protocol.graphQL.introspection.model.Translator().translate(schema, pureModel);
+        Root_meta_external_query_graphQL_metamodel_introspection___Schema pureSchema = new org.finos.legend.engine.protocol.graphQL.introspection.model.ProtocolToMetamodelTranslator().translate(schema, pureModel);
         RichIterable<? extends Type> types = core_external_query_graphql_binding_toPure_introspection_toPure_introspection.Root_meta_external_query_graphQL_binding_toPure_introspection_buildPureTypesFromGraphQLSchema___Schema_1__String_1__Type_MANY_(pureSchema, "pack", pureModel.getExecutionSupport());
         String res = types.select(t -> t instanceof Class).collect(t -> core_pure_serialization_toPureGrammar.Root_meta_pure_metamodel_serialization_grammar_printType_Type_1__String_1_(t, pureModel.getExecutionSupport())).makeString("\n");
         System.out.println(res);

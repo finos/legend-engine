@@ -446,7 +446,7 @@ public class HelperRelationalBuilder
 
     public static Schema processDatabaseSchema(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Schema srcSchema, CompileContext context, Database database)
     {
-        final Schema schema = new Root_meta_relational_metamodel_Schema_Impl(srcSchema.name)._name(srcSchema.name);
+        final Schema schema = new Root_meta_relational_metamodel_Schema_Impl(srcSchema.name, null, context.pureModel.getClass("meta::relational::metamodel::Schema"))._name(srcSchema.name);
         RichIterable<Table> tables = ListIterate.collect(srcSchema.tables, _table -> processDatabaseTable(_table, context, schema));
         return schema._tables(tables)._database(database);
     }
@@ -467,7 +467,7 @@ public class HelperRelationalBuilder
 
     public static Table processDatabaseTable(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Table databaseTable, CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Schema schema)
     {
-        Table table = new Root_meta_relational_metamodel_relation_Table_Impl(databaseTable.name)._name(databaseTable.name);
+        Table table = new Root_meta_relational_metamodel_relation_Table_Impl(databaseTable.name, null,context.pureModel.getClass("meta::relational::metamodel::relation::Table"))._name(databaseTable.name);
         MutableList<Column> columns = Lists.mutable.empty();
         MutableSet<String> validColumnNames = Sets.mutable.empty();
         MutableSet<String> duplicateColumns = Sets.mutable.empty();
@@ -480,7 +480,7 @@ public class HelperRelationalBuilder
             else
             {
                 validColumnNames.add(column.name);
-                columns.add(new Root_meta_relational_metamodel_Column_Impl(column.name)._name(column.name)._name(column.name)._nullable(column.nullable)._type(transformDatabaseDataType(column.type,context))._owner(table));
+                columns.add(new Root_meta_relational_metamodel_Column_Impl(column.name, null, context.pureModel.getClass("meta::relational::metamodel::Column"))._name(column.name)._name(column.name)._nullable(column.nullable)._type(transformDatabaseDataType(column.type,context))._owner(table));
             }
         }
 
@@ -496,7 +496,7 @@ public class HelperRelationalBuilder
     public static View processDatabaseViewFirstPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.View srcView, CompileContext context, Schema schema)
     {
         View view = new Root_meta_relational_metamodel_relation_View_Impl(srcView.name)._name(srcView.name);
-        MutableList<Column> columns = ListIterate.collect(srcView.columnMappings, columnMapping -> new Root_meta_relational_metamodel_Column_Impl(columnMapping.name)._name(columnMapping.name)._type(new Root_meta_relational_metamodel_datatype_Varchar_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::datatype::Varchar")))._owner(view));
+        MutableList<Column> columns = ListIterate.collect(srcView.columnMappings, columnMapping -> new Root_meta_relational_metamodel_Column_Impl(columnMapping.name, null, context.pureModel.getClass("meta::relational::metamodel::Column"))._name(columnMapping.name)._type(new Root_meta_relational_metamodel_datatype_Varchar_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::datatype::Varchar")))._owner(view));
         RichIterable<Column> pk = ListIterate.collect(srcView.primaryKey, s -> columns.select(column -> s.equals(column._name())).getFirst());
         return view._columns(columns)._primaryKey(pk)._schema(schema);
     }

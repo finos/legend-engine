@@ -20,7 +20,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.4.7-SNAPSHOT</version>
+        <version>4.5.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-xt-nonrelationalStore-mongodb-pure</artifactId>
@@ -29,6 +29,22 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>dependency-analyze</id>
+                        <configuration>
+                            <!-- The dependency plugin analyzer raises these as false positives -->
+                            <ignoredUnusedDeclaredDependencies>
+                                <dependency>org.finos.legend.engine:legend-engine-xt-authentication-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-platform-dsl-mapping-java</dependency>
+                            </ignoredUnusedDeclaredDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-maven-generation-par</artifactId>
@@ -55,11 +71,6 @@
                     </execution>
                 </executions>
                 <dependencies>
-                    <!--                    <dependency>-->
-                    <!--                        <groupId>org.finos.legend.pure</groupId>-->
-                    <!--                        <artifactId>legend-pure-m2-dsl-mapping-grammar</artifactId>-->
-                    <!--                        <version>${legend.pure.version}</version>-->
-                    <!--                    </dependency>-->
                     <dependency>
                         <groupId>org.finos.legend.pure</groupId>
                         <artifactId>legend-pure-m2-dsl-diagram-grammar</artifactId>
@@ -80,11 +91,6 @@
                         <artifactId>legend-engine-pure-runtime-compiler</artifactId>
                         <version>${project.version}</version>
                     </dependency>
-                    <!--                    <dependency>-->
-                    <!--                        <groupId>org.finos.legend.engine</groupId>-->
-                    <!--                        <artifactId>legend-engine-xt-javaGeneration-pure</artifactId>-->
-                    <!--                        <version>${project.version}</version>-->
-                    <!--                    </dependency>-->
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-xt-javaPlatformBinding-pure</artifactId>
@@ -94,6 +100,11 @@
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-xt-authentication-pure</artifactId>
                         <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-m2-dsl-diagram-grammar</artifactId>
+                        <version>${legend.pure.version}</version>
                     </dependency>
                 </dependencies>
             </plugin>
@@ -144,11 +155,6 @@
                         <artifactId>legend-engine-pure-runtime-compiler</artifactId>
                         <version>${project.version}</version>
                     </dependency>
-                    <!--                    <dependency>-->
-                    <!--                        <groupId>org.finos.legend.engine</groupId>-->
-                    <!--                        <artifactId>legend-engine-xt-javaGeneration-pure</artifactId>-->
-                    <!--                        <version>${project.version}</version>-->
-                    <!--                    </dependency>-->
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-xt-javaPlatformBinding-pure</artifactId>
@@ -160,22 +166,6 @@
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>dependency-analyze</id>
-                        <configuration>
-                            <!-- The dependency plugin analyzer raises these as false positives -->
-                            <ignoredUnusedDeclaredDependencies>
-                                <dependency>org.finos.legend.engine:legend-engine-xt-authentication-pure</dependency>
-                                <dependency>org.finos.legend.engine:legend-engine-pure-platform-dsl-mapping-java</dependency>
-                            </ignoredUnusedDeclaredDependencies>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
@@ -224,6 +214,18 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-platform-dsl-mapping-java</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-functions-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-functions-json-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-graph-pure</artifactId>
+        </dependency>
         <!-- Engine-->
 
         <dependency>
@@ -235,10 +237,5 @@
             <artifactId>eclipse-collections-api</artifactId>
         </dependency>
 
-
-        <!--        <dependency>-->
-        <!--            <groupId>junit</groupId>-->
-        <!--            <artifactId>junit</artifactId>-->
-        <!--        </dependency>-->
     </dependencies>
 </project>

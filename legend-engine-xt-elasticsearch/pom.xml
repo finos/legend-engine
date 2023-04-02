@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.4.7-SNAPSHOT</version>
+        <version>4.5.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -31,6 +31,7 @@
         <module>legend-engine-xt-elasticsearch-executionPlan-test</module>
         <module>legend-engine-xt-elasticsearch-V7-executionPlan</module>
         <module>legend-engine-xt-elasticsearch-V7-pure-metamodel</module>
+        <module>legend-engine-xt-elasticsearch-V7-grammar</module>
         <module>legend-engine-xt-elasticsearch-V7-protocol</module>
         <module>legend-engine-xt-elasticsearch-protocol-utils</module>
     </modules>
@@ -91,6 +92,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-elasticsearch-V7-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-elasticsearch-V7-grammar</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

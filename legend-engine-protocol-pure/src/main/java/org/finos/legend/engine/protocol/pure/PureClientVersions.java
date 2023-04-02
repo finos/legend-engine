@@ -45,8 +45,18 @@ public class PureClientVersions
         return versionsSameCase.indexOf(version1.toLowerCase()) >= versionsSameCase.indexOf(version2.toLowerCase());
     }
 
+    public static boolean versionAGreaterThanVersionB(String version1, String version2)
+    {
+        return versionsSameCase.indexOf(version1.toLowerCase()) > versionsSameCase.indexOf(version2.toLowerCase());
+    }
+
     public static ImmutableList<String> versionsSince(String version)
     {
         return versions.select(v -> versionAGreaterThanOrEqualsVersionB(v, version));
+    }
+
+    public static ImmutableList<String> versionsSinceExclusive(String version)
+    {
+        return versions.select(v -> versionAGreaterThanVersionB(v, version));
     }
 }

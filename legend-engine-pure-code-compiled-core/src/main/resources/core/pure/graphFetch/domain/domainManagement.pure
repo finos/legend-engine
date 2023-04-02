@@ -125,7 +125,7 @@ function <<access.private>> meta::pure::graphFetch::domain::findGetAllInQualifie
     p | if ($p->instanceOf(QualifiedProperty),
           | let exp =  $p->cast(@QualifiedProperty<Any>).expressionSequence->evaluateAndDeactivate()->last()->toOne();
             let val = $exp->lookForGetAll();
-            if ($val->instanceOf(SimpleFunctionExpression) && $val->cast(@SimpleFunctionExpression).func == getAll_Class_1__T_MANY_,
+            if ($val->instanceOf(SimpleFunctionExpression) && $val->cast(@SimpleFunctionExpression).func->meta::pure::router::routing::isGetAllFunction(),
               |$exp->cast(@SimpleFunctionExpression),
               |[]
             );,
@@ -137,7 +137,7 @@ function <<access.private>> meta::pure::graphFetch::domain::findGetAllInQualifie
 function <<access.private>> meta::pure::graphFetch::domain::lookForGetAll(s:ValueSpecification[1]):ValueSpecification[1]
 {
   $s->match([
-    s:SimpleFunctionExpression[1]|if($s.func != getAll_Class_1__T_MANY_ && !$s.parametersValues->isEmpty(),
+    s:SimpleFunctionExpression[1]|if(!$s.func->meta::pure::router::routing::isGetAllFunction() && !$s.parametersValues->isEmpty(),
                                       |$s.parametersValues->at(0)->lookForGetAll(),
                                       |$s
                                     );,

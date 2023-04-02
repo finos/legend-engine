@@ -9,7 +9,8 @@
         "location.street": true,
         "country": "$location.country",
         "firmTags": "$tags",
-        "sector": 1
+        "sector": 1,
+        "_id": 0
       }
     }
   ],

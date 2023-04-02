@@ -40,12 +40,13 @@ public class TrinoDatasourceSpecificationRuntime extends org.finos.legend.engine
     private static final String SSL_TRUST_STORE_PASSWORD = "SSLTrustStorePassword";
     private static final String KERBEROES_REMOTE_SERVICE_NAME = "KerberosRemoteServiceName";
     private static final String KERBEROS_USE_CANONICAL_HOSTNAME = "KerberosUseCanonicalHostname";
+    private static final String KERBEROS_DELEGATION = "KerberosDelegation";
 
     private static final String USER = "user";
     private static final String PASSWORD = "password";
     private final TrinoDatasourceSpecificationKey key;
 
-    public static final List<String> propertiesForDriver = Arrays.asList(CLIENT_TAGS, SSL, SSL_TRUST_STORE_PATH, SSL_TRUST_STORE_PASSWORD, KERBEROES_REMOTE_SERVICE_NAME, KERBEROS_USE_CANONICAL_HOSTNAME, USER, PASSWORD);
+    public static final List<String> propertiesForDriver = Arrays.asList(CLIENT_TAGS, SSL, SSL_TRUST_STORE_PATH, SSL_TRUST_STORE_PASSWORD, KERBEROES_REMOTE_SERVICE_NAME, KERBEROS_USE_CANONICAL_HOSTNAME, KERBEROS_DELEGATION, USER, PASSWORD);
 
     public TrinoDatasourceSpecificationRuntime(TrinoDatasourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties)
     {
@@ -85,6 +86,7 @@ public class TrinoDatasourceSpecificationRuntime extends org.finos.legend.engine
                     throw new RuntimeException("No valid SSL trustStorePathVaultReference and trustStorePasswordVaultReference values found for references ");
                 }
                 properties.setProperty(SSL_TRUST_STORE_PATH, createTrinoTempDile(trustStorePathVaultReference, sslTrustStoreValue));
+                properties.setProperty(SSL_TRUST_STORE_PASSWORD, sslTrustStorePassword);
             }
         }
         return properties;

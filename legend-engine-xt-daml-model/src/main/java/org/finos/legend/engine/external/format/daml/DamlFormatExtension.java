@@ -21,7 +21,7 @@ import org.finos.legend.engine.language.daml.grammar.from.DamlGrammarParser;
 import org.finos.legend.engine.language.haskell.grammar.from.HaskellParserException;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.haskell.metamodel.HaskellModule;
-import org.finos.legend.engine.protocol.haskell.metamodel.Translator;
+import org.finos.legend.engine.protocol.haskell.metamodel.ProtocolToMetamodelTranslator;
 import org.finos.legend.pure.generated.Root_meta_external_language_daml_transformation_fromPure_ModelToDamlConfiguration_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_language_haskell_format_HaskellSchema;
 import org.finos.legend.pure.generated.Root_meta_external_language_haskell_format_HaskellSchema_Impl;
@@ -52,7 +52,7 @@ public class DamlFormatExtension implements ExternalFormatSchemaGenerationExtens
 
             Root_meta_external_language_haskell_format_HaskellSchema schema = new Root_meta_external_language_haskell_format_HaskellSchema_Impl("")
                     ._module(
-                            new Translator().translate(
+                            new ProtocolToMetamodelTranslator().translate(
                                     module,
                                     context.getPureModel()
                             )

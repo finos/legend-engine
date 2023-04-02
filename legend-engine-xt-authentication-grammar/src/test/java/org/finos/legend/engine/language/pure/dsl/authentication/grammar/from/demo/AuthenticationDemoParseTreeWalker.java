@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ public class AuthenticationDemoParseTreeWalker
 
         // authentication
         AuthenticationParserGrammar.AuthenticationContext authenticationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.authentication(), "authentication", authenticationDemo.sourceInformation);
-        authenticationDemo.authenticationSpecification = IAuthenticationGrammarParserExtension.parseAuthentication(authenticationContext.authenticationCode(), walkerSourceInformation, context);
+        authenticationDemo.authenticationSpecification = IAuthenticationGrammarParserExtension.parseAuthentication(authenticationContext.islandDefinition(), walkerSourceInformation, context.getPureGrammarParserExtensions());
 
         return authenticationDemo;
     }

@@ -16,8 +16,6 @@
 
 package org.finos.legend.engine.generation;
 
-import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder.getElementFullPath;
-
 import java.util.Collections;
 import java.util.List;
 
@@ -38,6 +36,7 @@ import org.slf4j.Logger;
 public class SearchDocumentArtifactGenerationExtension implements ArtifactGenerationExtension
 {
     public final String ROOT_PATH = "searchDocuments";
+    public static final String FILE_NAME = "SearchDocumentResult.json";
 
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(SearchDocumentArtifactGenerationExtension.class);
 
@@ -56,15 +55,12 @@ public class SearchDocumentArtifactGenerationExtension implements ArtifactGenera
     @Override
     public List<Artifact> generate(PackageableElement element, PureModel pureModel, PureModelContextData data, String clientVersion)
     {
-        String path = getElementFullPath(element, pureModel.getExecutionSupport());
-        String fileName = String.format("%s.json", path);
-
         try
         {
             Root_meta_analytics_search_metamodel_BaseRootDocument document = core_analytics_search_trans.Root_meta_analytics_search_transformation_buildDocument_PackageableElement_1__ProjectCoordinates_1__BaseRootDocument_1_(element, buildProjectCoordinates(data), pureModel.getExecutionSupport());
 
             String stringResult = core_pure_protocol_protocol.Root_meta_alloy_metadataServer_alloyToJSON_Any_1__String_1_(document, pureModel.getExecutionSupport());
-            Artifact output = new Artifact(stringResult, fileName, "json");
+            Artifact output = new Artifact(stringResult, FILE_NAME, "json");
             return Collections.singletonList(output);
         }
         catch (Exception exception)

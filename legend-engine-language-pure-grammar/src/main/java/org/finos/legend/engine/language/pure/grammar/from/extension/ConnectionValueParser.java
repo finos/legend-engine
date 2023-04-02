@@ -14,18 +14,23 @@
 
 package org.finos.legend.engine.language.pure.grammar.from.extension;
 
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionValueSourceCode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
-
-import java.util.function.Function;
 
 public interface ConnectionValueParser
 {
     String getConnectionTypeName();
 
-    Connection parse(ConnectionValueSourceCode sourceCode);
+    Connection parse(ConnectionValueSourceCode sourceCode, PureGrammarParserExtensions extensions);
 
     static ConnectionValueParser newParser(String connectionTypeName, Function<ConnectionValueSourceCode, Connection> parser)
+    {
+        return newParser(connectionTypeName, (x, y) -> parser.apply(x));
+    }
+
+    static ConnectionValueParser newParser(String connectionTypeName, BiFunction<ConnectionValueSourceCode, PureGrammarParserExtensions, Connection> parser)
     {
         return new ConnectionValueParser()
         {
@@ -36,9 +41,9 @@ public interface ConnectionValueParser
             }
 
             @Override
-            public Connection parse(ConnectionValueSourceCode sourceCode)
+            public Connection parse(ConnectionValueSourceCode sourceCode, PureGrammarParserExtensions extensions)
             {
-                return parser.apply(sourceCode);
+                return parser.apply(sourceCode, extensions);
             }
         };
     }

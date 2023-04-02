@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.4.7-SNAPSHOT</version>
+    <version>4.5.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -256,8 +256,13 @@
         <module>legend-engine-xt-elasticsearch</module>
         <module>legend-engine-xt-nonrelationalStore-mongodb-pure</module>
         <module>legend-engine-xt-nonrelationalStore-mongodb-grammar</module>
-        <module>legend-engine-xt-nonrelationalStore-mongodb-protocol</module>
         <module>legend-engine-xt-nonrelationalStore-mongodb-grammar-integration</module>
+        <module>legend-engine-xt-nonrelationalStore-mongodb-protocol</module>
+        <module>legend-engine-xt-nonrelationalStore-mongodb-executionPlan</module>
+        <module>legend-engine-xt-nonrelationalStore-mongodb-javaPlatformBinding-pure</module>
+        <module>legend-engine-xt-analytics-store-entitlement</module>
+        <module>legend-engine-xt-analytics-store-entitlement-api</module>
+        <module>legend-engine-xt-artifact-generation-api</module>
 
         <!-- NOTE: Do not change the ordering of this block, we want to build these modules last -->
         <module>legend-engine-test-reports</module>
@@ -271,7 +276,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>4.3.2</legend.pure.version>
+        <legend.pure.version>4.3.3</legend.pure.version>
         <legend.shared.version>0.23.3</legend.shared.version>
 
         <!-- SONAR -->
@@ -296,7 +301,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.release>8</maven.compiler.release>
         <maven.enforcer.requireJavaVersion>[11.0.10,12)</maven.enforcer.requireJavaVersion>
-        <project.build.outputTimestamp>1679897846</project.build.outputTimestamp>
+        <project.build.outputTimestamp>1680115922</project.build.outputTimestamp>
         <surefire.vm.params>-XX:SoftRefLRUPolicyMSPerMB=1</surefire.vm.params>
 
         <!-- Databases -->
@@ -1511,6 +1516,11 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-artifact-generation-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-language-pure-dsl-service</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1785,6 +1795,26 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-nonrelationalStore-mongodb-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-nonrelationalStore-mongodb-executionPlan</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-nonrelationalStore-mongodb-javaPlatformBinding-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-store-entitlement</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-store-entitlement-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!-- ENGINE -->

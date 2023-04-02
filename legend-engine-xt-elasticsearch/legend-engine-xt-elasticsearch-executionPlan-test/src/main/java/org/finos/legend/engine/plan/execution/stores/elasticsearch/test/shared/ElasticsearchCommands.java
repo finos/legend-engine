@@ -15,6 +15,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.elasticsearch.test.shared;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
@@ -45,6 +46,7 @@ public class ElasticsearchCommands
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(ElasticsearchCommands.class);
     public static final Map<String, ElasticsearchContainer> CONTAINERS = Maps.mutable.empty();
+    public static final ObjectMapper OBJECT_MAPPER = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
 
     public static String START_SERVER_FUNCTION = "startElasticsearchTestServer_String_1__URL_1_";
 
@@ -73,36 +75,6 @@ public class ElasticsearchCommands
 
         long start = System.currentTimeMillis();
         container.withPassword(getPassword()).start();
-        /*
-        container.followOutput(x ->
-        {
-            try
-            {
-                if (x.getBytes() != null)
-                {
-                    System.err.write(x.getBytes());
-                }
-            }
-            catch (IOException e)
-            {
-                throw new RuntimeException(e);
-            }
-        }, OutputFrame.OutputType.STDERR);
-        container.followOutput(x ->
-        {
-            try
-            {
-                if (x.getBytes() != null)
-                {
-                    System.out.write(x.getBytes());
-                }
-            }
-            catch (IOException e)
-            {
-                throw new RuntimeException(e);
-            }
-        }, OutputFrame.OutputType.STDOUT);
-        */
         LOGGER.info("ES Test cluster for version {} running on {}.  Took {}ms to start.", imageTag, container.getHttpHostAddress(), System.currentTimeMillis() - start);
         return container;
     }
@@ -161,7 +133,7 @@ public class ElasticsearchCommands
 
     private static String requestV7(URI url, String json) throws IOException
     {
-        RequestBase requestBase = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(json, RequestBase.class);
+        RequestBase requestBase = OBJECT_MAPPER.readValue(json, RequestBase.class);
         HttpUriRequest httpRequest = requestBase.accept(new ElasticsearchV7RequestToHttpRequestVisitor(url));
         return execute(httpRequest);
     }

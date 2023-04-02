@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.dsl.authentication.grammar.to;
 
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.*;
@@ -23,10 +24,12 @@ import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarCompos
 public class AuthenticationSpecificationComposer implements AuthenticationSpecificationVisitor<String>
 {
     private final int indentLevel;
+    private final PureGrammarComposerContext context;
 
-    public AuthenticationSpecificationComposer(int indentLevel)
+    public AuthenticationSpecificationComposer(int indentLevel, PureGrammarComposerContext context)
     {
         this.indentLevel = indentLevel;
+        this.context = context;
     }
 
     @Override
@@ -38,66 +41,62 @@ public class AuthenticationSpecificationComposer implements AuthenticationSpecif
     @Override
     public String visit(ApiKeyAuthenticationSpecification authenticationSpecification)
     {
-        return "ApiKey\n" +
-                getTabString(indentLevel) + "#{\n" +
-                getTabString(indentLevel + 1) + "location: '" + authenticationSpecification.location.name().toLowerCase() + "';\n" +
-                getTabString(indentLevel + 1) + "keyName: '" + authenticationSpecification.keyName + "';\n" +
-                getTabString(indentLevel + 1) + "value: " + renderCredentialVaultSecret(authenticationSpecification.value, indentLevel + 1) + "\n" +
-                getTabString(indentLevel) + "}#\n";
+        return "# ApiKey {\n" +
+                context.getIndentationString() + getTabString(indentLevel + 1) + "location: '" + authenticationSpecification.location.name().toLowerCase() + "';\n" +
+                context.getIndentationString() + getTabString(indentLevel + 1) + "keyName: '" + authenticationSpecification.keyName + "';\n" +
+                context.getIndentationString() + getTabString(indentLevel + 1) + "value: " + renderCredentialVaultSecret(authenticationSpecification.value, indentLevel + 1) + "\n" +
+                context.getIndentationString() + getTabString(indentLevel) + "}#";
     }
 
     @Override
     public String visit(UserPasswordAuthenticationSpecification authenticationSpecification)
     {
         CredentialVaultSecret credentialVaultSecret = authenticationSpecification.password;
-        return "UserPassword\n" +
-                getTabString(indentLevel) + "#{\n" +
-                getTabString(indentLevel + 1) + "username: '" + authenticationSpecification.username + "';\n" +
-                getTabString(indentLevel + 1) + "password: " + renderCredentialVaultSecret(credentialVaultSecret, indentLevel + 1) + "\n" +
-                getTabString(indentLevel) + "}#\n";
+        return "# UserPassword {\n" +
+                context.getIndentationString() + getTabString(indentLevel + 1) + "username: '" + authenticationSpecification.username + "';\n" +
+                context.getIndentationString() + getTabString(indentLevel + 1) + "password: " + renderCredentialVaultSecret(credentialVaultSecret, indentLevel + 1) + ";\n" +
+                context.getIndentationString() + getTabString(indentLevel) + "}#";
     }
 
     @Override
     public String visit(EncryptedPrivateKeyPairAuthenticationSpecification authenticationSpecification)
     {
-        return "EncryptedPrivateKey\n" +
-                getTabString(indentLevel) + "#{\n" +
-                getTabString(indentLevel + 1) + "userName: '" + authenticationSpecification.userName + "';\n" +
-                getTabString(indentLevel + 1) + "privateKey: " + renderCredentialVaultSecret(authenticationSpecification.privateKey, indentLevel + 1) + "\n" +
-                getTabString(indentLevel + 1) + "passphrase: " + renderCredentialVaultSecret(authenticationSpecification.passphrase, indentLevel + 1) + "\n" +
-                getTabString(indentLevel) + "}#\n";
+        return "# EncryptedPrivateKey {\n" +
+                context.getIndentationString() + getTabString(indentLevel + 1) + "userName: '" + authenticationSpecification.userName + "';\n" +
+                context.getIndentationString() + getTabString(indentLevel + 1) + "privateKey: " + renderCredentialVaultSecret(authenticationSpecification.privateKey, indentLevel + 1) + "\n" +
+                context.getIndentationString() + getTabString(indentLevel + 1) + "passphrase: " + renderCredentialVaultSecret(authenticationSpecification.passphrase, indentLevel + 1) + "\n" +
+                context.getIndentationString() + getTabString(indentLevel) + "}#";
     }
 
     @Override
     public String visit(GCPWIFWithAWSIdPAuthenticationSpecification authenticationSpecification)
     {
-        return "GCPWIFWithAWSIdP\n" +
-                getTabString(indentLevel) + "#{\n" +
-                getTabString(indentLevel + 1) + "serviceAccountEmail: '" + authenticationSpecification.serviceAccountEmail + "';\n" +
-                getTabString(indentLevel + 1) + "idP: " + this.renderGCPWIFWithAWSIdPIdP(authenticationSpecification.idPConfiguration, indentLevel + 1) + "\n" +
-                getTabString(indentLevel + 1) + "workload: " + this.renderGCPWIFWithAWSIdPWorkload(authenticationSpecification.workloadConfiguration, indentLevel + 1) + "\n" +
-                getTabString(indentLevel) + "}#\n";
+        return "# GCPWIFWithAWSIdP {\n" +
+                context.getIndentationString() + getTabString(indentLevel + 1) + "serviceAccountEmail: '" + authenticationSpecification.serviceAccountEmail + "';\n" +
+                context.getIndentationString() + getTabString(indentLevel + 1) + "idP: " + this.renderGCPWIFWithAWSIdPIdP(authenticationSpecification.idPConfiguration, indentLevel + 1) + "\n" +
+                context.getIndentationString() + getTabString(indentLevel + 1) + "workload: " + this.renderGCPWIFWithAWSIdPWorkload(authenticationSpecification.workloadConfiguration, indentLevel + 1) + "\n" +
+                context.getIndentationString() + getTabString(indentLevel) + "}#";
     }
 
     private String renderGCPWIFWithAWSIdPWorkload(GCPWIFWithAWSIdPAuthenticationSpecification.WorkloadConfiguration workloadConfiguration, int indentLevel)
     {
         return "GCPWorkload\n" +
-                getTabString(indentLevel) + "{\n" +
-                getTabString(indentLevel + 1) + "projectNumber: '" + workloadConfiguration.projectNumber + "';\n" +
-                getTabString(indentLevel + 1) + "providerId: '" + workloadConfiguration.providerId + "';\n" +
-                getTabString(indentLevel + 1) + "poolId: '" + workloadConfiguration.poolId + "';\n" +
-                getTabString(indentLevel) + "}";
+                context.getIndentationString() + getTabString(indentLevel) + "{\n" +
+                context.getIndentationString() + getTabString(indentLevel + 1) + "projectNumber: '" + workloadConfiguration.projectNumber + "';\n" +
+                context.getIndentationString() + getTabString(indentLevel + 1) + "providerId: '" + workloadConfiguration.providerId + "';\n" +
+                context.getIndentationString() + getTabString(indentLevel + 1) + "poolId: '" + workloadConfiguration.poolId + "';\n" +
+                context.getIndentationString() + getTabString(indentLevel) + "}";
     }
 
     private String renderGCPWIFWithAWSIdPIdP(GCPWIFWithAWSIdPAuthenticationSpecification.IdPConfiguration idPConfiguration, int indentLevel)
     {
         return "AWSIdP\n" +
-                getTabString(indentLevel) + "{\n" +
-                getTabString(indentLevel + 1) + "accountId: '" + idPConfiguration.accountId + "';\n" +
-                getTabString(indentLevel + 1) + "region: '" + idPConfiguration.region + "';\n" +
-                getTabString(indentLevel + 1) + "role: '" + idPConfiguration.role + "';\n" +
-                getTabString(indentLevel + 1) + "awsCredentials: " + renderAWSCredentials(idPConfiguration.awsCredentials, indentLevel + 1) + "\n" +
-                getTabString(indentLevel) + "}";
+                context.getIndentationString() + getTabString(indentLevel) + "{\n" +
+                context.getIndentationString() + getTabString(indentLevel + 1) + "accountId: '" + idPConfiguration.accountId + "';\n" +
+                context.getIndentationString() + getTabString(indentLevel + 1) + "region: '" + idPConfiguration.region + "';\n" +
+                context.getIndentationString() + getTabString(indentLevel + 1) + "role: '" + idPConfiguration.role + "';\n" +
+                context.getIndentationString() + getTabString(indentLevel + 1) + "awsCredentials: " + renderAWSCredentials(idPConfiguration.awsCredentials, indentLevel + 1) + "\n" +
+                context.getIndentationString() + getTabString(indentLevel) + "}";
     }
 
     private static String renderCredentialVaultSecret(CredentialVaultSecret credentialVaultSecret, int indentLevel)

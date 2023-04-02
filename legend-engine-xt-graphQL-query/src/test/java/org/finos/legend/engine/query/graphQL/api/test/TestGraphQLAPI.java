@@ -52,6 +52,7 @@ import org.finos.legend.engine.query.graphQL.api.execute.model.Query;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionError;
 import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -142,6 +143,69 @@ public class TestGraphQLAPI
                 "]" +
                 "}" +
                 "}";
+        Assert.assertEquals(expected, responseAsString(response));
+    }
+
+    @Test
+    public void testGraphQLExecuteDevAPI_BiTemporalMilestoning_Root() throws Exception
+    {
+        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
+        PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
+        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
+        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> generatorExtensions.flatCollect(g -> g.getExtraExtensions(pm)), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
+        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
+        Query query = new Query();
+        query.query = "query Query {\n" +
+                "  addressesBiTemporal (businessDate: \"2023-02-13\", processingDate: \"2023-02-13\") {\n" +
+                "      line1\n" +
+                "    }\n" +
+                "  }";
+        Response response = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
+
+        String expected = "{\"data\":{\"addressesBiTemporal\":{\"line1\":\"peter address\"}}}";
+        Assert.assertEquals(expected, responseAsString(response));
+    }
+
+    @Test
+    public void testGraphQLExecuteDevAPI_BusinessTemporalMilestoning_Root() throws Exception
+    {
+        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
+        PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
+        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
+        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> generatorExtensions.flatCollect(g -> g.getExtraExtensions(pm)), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
+        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
+        Query query = new Query();
+        query.query = "query Query {\n" +
+                "  addressesBusinessTemporal (businessDate: \"2023-02-14\") {\n" +
+                "      line1\n" +
+                "    }\n" +
+                "  }";
+        Response response = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
+
+        String expected = "{\"data\":{\"addressesBusinessTemporal\":[{\"line1\":\"peter address\"},{\"line1\":\"John address\"}]}}";
+        Assert.assertEquals(expected, responseAsString(response));
+    }
+
+    @Test
+    public void testGraphQLExecuteDevAPI_ProcessingTemporalMilestoning_Root() throws Exception
+    {
+        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
+        PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
+        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
+        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> generatorExtensions.flatCollect(g -> g.getExtraExtensions(pm)), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
+        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
+        Query query = new Query();
+        query.query = "query Query {\n" +
+                "  addressesProcessingTemporal (processingDate: \"2023-02-15\") {\n" +
+                "      line1\n" +
+                "    }\n" +
+                "  }";
+        Response response = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
+
+        String expected = "{\"data\":{\"addressesProcessingTemporal\":[{\"line1\":\"peter address\"},{\"line1\":\"John address\"},{\"line1\":\"John hill address\"}]}}";
         Assert.assertEquals(expected, responseAsString(response));
     }
 
@@ -616,9 +680,14 @@ public class TestGraphQLAPI
     private static String responseAsString(Response response) throws IOException
     {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        StreamingOutput output = (StreamingOutput) response.getEntity();
-        output.write(byteArrayOutputStream);
-        return byteArrayOutputStream.toString("UTF-8");
+        Object entity = response.getEntity();
+        if (entity instanceof StreamingOutput)
+        {
+            StreamingOutput output = (StreamingOutput) response.getEntity();
+            output.write(byteArrayOutputStream);
+            return byteArrayOutputStream.toString("UTF-8");
+        }
+        throw new RuntimeException(((ExceptionError) entity).getMessage());
     }
 
     private static List<ExecutionNode> allChildNodes(ExecutionNode node)

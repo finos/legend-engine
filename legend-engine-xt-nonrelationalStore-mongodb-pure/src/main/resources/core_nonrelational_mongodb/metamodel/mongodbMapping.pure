@@ -12,13 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::shared::format::binding::*;
 import meta::external::store::mongodb::metamodel::mapping::*;
 import meta::external::store::mongodb::metamodel::aggregation::*;
-
-
-
-//
-// meta::external::store::mongodb::metamodel::mapping classes are used for parsing & protocol stuff.  For pure processing, we use the meta::external::store::mongodb::mapping::classes
+import meta::external::store::mongodb::metamodel::*;
+import meta::external::store::mongodb::metamodel::pure::*;
+import meta::pure::mapping::*;
 
 // Parser Model
 Class meta::external::store::mongodb::metamodel::mapping::MongoDBMapping
@@ -26,7 +25,7 @@ Class meta::external::store::mongodb::metamodel::mapping::MongoDBMapping
   classMappings: meta::external::store::mongodb::metamodel::mapping::MongoDBClassMapping[*];
   name: String[1];
   packageName: String[1];
-
+  database: MongoDatabase[1];
 }
 
 Class meta::external::store::mongodb::metamodel::mapping::MongoDBClassMapping
@@ -35,39 +34,46 @@ Class meta::external::store::mongodb::metamodel::mapping::MongoDBClassMapping
     class: String[1];
     root: Boolean[1];
     distinct: Boolean[1];
-    propertyMappings: meta::external::store::mongodb::metamodel::mapping::MongoDBPropertyMapping[*];
-    mainCollection: meta::external::store::mongodb::metamodel::Collection[1];
+    propertyMappings: MongoDBPropertyMapping[*];
+    mainCollection: Collection[1];
 }
 
-
-// Pure Mapping specification
-Class meta::external::store::mongodb::metamodel::mapping::Field
+Class meta::external::store::mongodb::metamodel::pure::EmbeddedMongoDBSetImplementation extends EmbeddedSetImplementation
 {
-    ArgumentExpression:  ArgumentExpression[1];   //Can be FieldPathExpression, or regular OperationExpression
-    dataType : meta::external::store::mongodb::metamodel::BsonType[0..1];                    // Datatype of the mapped field/expression
-    nullable: Boolean[0..1];
-    owner: meta::external::store::mongodb::metamodel::Collection[0..1];
+    mainCollection : Collection[1];
+    binding: Binding[1];
 }
-
 
 Class meta::external::store::mongodb::metamodel::mapping::MongoDBPropertyMapping extends meta::pure::mapping::PropertyMapping
 {
-    field: meta::external::store::mongodb::metamodel::mapping::Field[1];   // exrpession or a path to a field ;   also need a collection name....   
+    field: meta::external::store::mongodb::metamodel::mapping::Field[0..1];   // exrpession or a path to a field ;   also need a collection name....
 }
 
-
-Class meta::external::store::mongodb::mapping::MongoDBInstanceSetImplementation extends meta::pure::mapping::InstanceSetImplementation
-{ 
-}
-
-
-Class meta::external::store::mongodb::mapping::MongoDBMappingSpecification
+Class meta::external::store::mongodb::metamodel::mapping::Field
 {
-    mainCollection : meta::external::store::mongodb::metamodel::Collection[1];
+    argumentExpression:  ArgumentExpression[1];   //Can be FieldPathExpression, or regular OperationExpression
+    dataType : BsonType[0..1];                    // Datatype of the mapped field/expression
+    nullable: Boolean[0..1];
+    owner: Collection[0..1];
+}
+
+Class meta::external::store::mongodb::metamodel::pure::MongoDBSetImplementation extends InstanceSetImplementation
+{
+    mainCollection : Collection[1];
+    binding: Binding[1];
+
+    getStore() {
+      $this.mainCollection.owner->toOne()
+    }: MongoDatabase[1];
 }
 
 
-Class meta::external::store::mongodb::mapping::RootMongoDbInstanceSetImplementation extends meta::external::store::mongodb::mapping::MongoDBInstanceSetImplementation, meta::external::store::mongodb::mapping::MongoDBMappingSpecification
+
+
+Class meta::external::store::mongodb::metamodel::pure::RootMongoDBSetImplementation extends InstanceSetImplementation
 {
 }
+
+
+
 

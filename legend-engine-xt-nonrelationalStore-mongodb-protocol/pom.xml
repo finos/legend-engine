@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.4.7-SNAPSHOT</version>
+        <version>4.5.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-xt-nonrelationalStore-mongodb-protocol</artifactId>
@@ -45,7 +45,7 @@
                                 <argument>meta::external::store::mongodb::metamodel</argument>
                                 <argument>org.finos.legend.engine.protocol.mongodb.schema.metamodel</argument>
                                 <argument>${project.build.directory}/generated-sources/</argument>
-                                <argument>meta::external::store::mongodb::mapping</argument>
+                                <argument>meta::external::store::mongodb::metamodel::pure</argument>
                                 <argument>meta::external::store::mongodb::metamodel::MongoDBProtocolGenerator__JavaProtocolGenerator_1_</argument>
                             </arguments>
                             <classpathScope>test</classpathScope>
@@ -113,6 +113,7 @@
                             <!-- The dependency plugin analyzer raises these as false positives -->
                             <ignoredUnusedDeclaredDependencies>
                                 <dependency>org.finos.legend.engine:legend-engine-xt-authentication-protocol</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-m2-dsl-mapping-pure</dependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
@@ -123,10 +124,6 @@
 
     <dependencies>
         <!-- engine -->
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.engine</groupId>-->
-<!--            <artifactId>legend-engine-language-pure-grammar</artifactId>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-protocol-pure</artifactId>
@@ -135,14 +132,14 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-authentication-protocol</artifactId>
         </dependency>
-        <!-- engine -->
-
-        <!--pure -->
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.pure</groupId>-->
-<!--            <artifactId>legend-pure-m2-dsl-mapping-pure</artifactId>-->
-<!--        </dependency>-->
         <!-- pure -->
+
+        <!-- Eclipse -->
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
+        <!-- Eclipse -->
 
         <!-- JACKSON -->
         <dependency>

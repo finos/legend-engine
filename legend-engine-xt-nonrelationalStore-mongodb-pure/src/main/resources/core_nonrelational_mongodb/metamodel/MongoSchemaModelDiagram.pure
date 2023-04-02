@@ -171,18 +171,6 @@ Diagram meta::external::store::mongodb::metamodel::Mongo_StoreModel_Diagram(widt
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_28(
-        type=meta::external::store::mongodb::metamodel::MongoDatabase,
-        position=(611.01367, 501.33947),
-        width=294.43066,
-        height=72.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
     TypeView cview_36(
         type=meta::external::store::mongodb::metamodel::Validator,
         position=(1240.25911, 462.78462),
@@ -223,18 +211,6 @@ Diagram meta::external::store::mongodb::metamodel::Mongo_StoreModel_Diagram(widt
         type=meta::external::store::mongodb::metamodel::Schema,
         position=(1298.45874, 309.87629),
         width=95.78613,
-        height=44.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_30(
-        type=meta::external::store::mongodb::metamodel::Collation,
-        position=(427.51869, 457.06732),
-        width=104.96533,
         height=44.00000,
         stereotypesVisible=true,
         attributesVisible=true,
@@ -308,6 +284,42 @@ Diagram meta::external::store::mongodb::metamodel::Mongo_StoreModel_Diagram(widt
         position=(785.16287, 231.54950),
         width=197.90137,
         height=86.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_30(
+        type=meta::external::store::mongodb::metamodel::Collation,
+        position=(554.51869, 458.06732),
+        width=104.96533,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_38(
+        type=meta::external::store::mongodb::metamodel::pure::MongoDatabase,
+        position=(185.27377, 502.59359),
+        width=148.17041,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_39(
+        type=meta::external::store::mongodb::metamodel::CollectionView,
+        position=(1131.27377, 597.59359),
+        width=164.67041,
+        height=58.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
@@ -520,10 +532,10 @@ Diagram meta::external::store::mongodb::metamodel::Mongo_StoreModel_Diagram(widt
         lineStyle=SIMPLE)
 
     PropertyView pview_3(
-        property=meta::external::store::mongodb::metamodel::MongoDatabase.collections,
-        source=cview_28,
-        target=cview_29,
-        points=[(758.22900,537.33947),(977.97470,539.02690)],
+        property=meta::external::store::mongodb::metamodel::Collection.collation,
+        source=cview_29,
+        target=cview_30,
+        points=[(991.27377,480.59359),(658.27377,480.59359)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -534,20 +546,6 @@ Diagram meta::external::store::mongodb::metamodel::Mongo_StoreModel_Diagram(widt
         lineStyle=SIMPLE)
 
     PropertyView pview_4(
-        property=meta::external::store::mongodb::metamodel::Collection.collation,
-        source=cview_29,
-        target=cview_30,
-        points=[(977.63285,480.96644),(480.00135,479.06732)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
-
-    PropertyView pview_5(
         property=meta::external::store::mongodb::metamodel::aggregation::JsonSchemaExpression.schemaExpression,
         source=cview_34,
         target=cview_31,
@@ -561,7 +559,7 @@ Diagram meta::external::store::mongodb::metamodel::Mongo_StoreModel_Diagram(widt
         nameVisible=true,
         lineStyle=SIMPLE)
 
-    PropertyView pview_6(
+    PropertyView pview_5(
         property=meta::external::store::mongodb::metamodel::Collection.validator,
         source=cview_29,
         target=cview_36,
@@ -575,11 +573,95 @@ Diagram meta::external::store::mongodb::metamodel::Mongo_StoreModel_Diagram(widt
         nameVisible=true,
         lineStyle=SIMPLE)
 
-    PropertyView pview_7(
+    PropertyView pview_6(
         property=meta::external::store::mongodb::metamodel::Validator.validatorExpression,
         source=cview_36,
         target=cview_37,
         points=[(1374.33944,498.78462),(2076.62275,495.10785),(2078.64295,212.27957),(1870.53476,213.13816)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_7(
+        property=meta::external::store::mongodb::metamodel::pure::MongoDatabase.collections,
+        source=cview_38,
+        target=cview_29,
+        points=[(331.27377,542.59359),(978.27377,542.59359)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_8(
+        property=meta::external::store::mongodb::metamodel::Collection.owner,
+        source=cview_29,
+        target=cview_38,
+        points=[(975.27377,511.59359),(331.27377,511.59359)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_9(
+        property=meta::external::store::mongodb::metamodel::CollectionView.source,
+        source=cview_39,
+        target=cview_29,
+        points=[(1173.27377,603.59359),(1173.27377,533.59359),(1133.27377,533.59359)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_10(
+        property=meta::external::store::mongodb::metamodel::CollectionView.collation,
+        source=cview_39,
+        target=cview_30,
+        points=[(1136.27377,606.59359),(424.27377,606.59359),(423.27377,479.59359),(557.27377,479.59359)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_11(
+        property=meta::external::store::mongodb::metamodel::CollectionView.owner,
+        source=cview_39,
+        target=cview_38,
+        points=[(1132.95836,617.87693),(114.95836,617.87693),(115.27377,542.59359),(183.27377,542.59359),(259.35898,524.59359)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_12(
+        property=meta::external::store::mongodb::metamodel::pure::MongoDatabase.views,
+        source=cview_38,
+        target=cview_39,
+        points=[(259.35898,524.59359),(183.27377,511.59359),(74.27377,511.59359),(74.27377,645.59359),(1134.27377,645.59359)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),

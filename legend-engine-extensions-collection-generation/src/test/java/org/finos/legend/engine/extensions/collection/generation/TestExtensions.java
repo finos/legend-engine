@@ -217,7 +217,10 @@ public class TestExtensions
                 .with(org.finos.legend.engine.protocol.pure.v1.ServiceStoreProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.AuthenticationProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.TextProtocolExtension.class)
-                .with(org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLPureProtocolExtension.class);
+                .with(org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLPureProtocolExtension.class)
+                .with(org.finos.legend.engine.protocol.store.elasticsearch.v7.ElasticsearchV7ProtocolExtension.class)
+                .with(org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDBPureProtocolExtension.class)
+                ;
     }
 
     protected Iterable<? extends Class<? extends GenerationExtension>> getExpectedGenerationExtensions()
@@ -251,7 +254,10 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.pure.dsl.authentication.grammar.from.AuthenticationGrammarParserExtension.class)
                 .with(org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLGrammarParserExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.from.ServiceStoreGrammarParserExtension.class)
-                .with(TextParserExtension.class);
+                .with(TextParserExtension.class)
+                .with(org.finos.legend.engine.language.stores.elasticsearch.v7.from.ElasticsearchGrammarParserExtension.class)
+                .with(org.finos.legend.engine.language.pure.grammar.integration.MongoDBGrammarParserExtension.class)
+                ;
     }
 
     protected Iterable<? extends Class<? extends PureGrammarComposerExtension>> getExpectedGrammarComposerExtensions()
@@ -274,7 +280,10 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.pure.grammar.to.ServiceStoreGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLPureGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.authentication.grammar.to.AuthenticationGrammarComposerExtension.class)
-                .with(TextGrammarComposerExtension.class);
+                .with(TextGrammarComposerExtension.class)
+                .with(org.finos.legend.engine.language.stores.elasticsearch.v7.to.ElasticsearchGrammarComposerExtension.class)
+                .with(org.finos.legend.engine.language.pure.grammar.integration.MongoDBGrammarComposerExtension.class)
+                ;
     }
 
     protected Iterable<? extends Class<? extends CompilerExtension>> getExpectedCompilerExtensions()
@@ -298,14 +307,20 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.TrinoCompilerExtension.class)
                 .with(org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.ServiceStoreCompilerExtension.class)
-                .with(org.finos.legend.engine.language.pure.dsl.authentication.compiler.toPureGraph.AuthenticationCompilerExtension.class);
+                .with(org.finos.legend.engine.language.pure.dsl.authentication.compiler.toPureGraph.AuthenticationCompilerExtension.class)
+                .with(org.finos.legend.engine.language.stores.elasticsearch.v7.compiler.ElasticsearchCompilerExtension.class)
+                .with(org.finos.legend.engine.language.pure.grammar.integration.MongoDBCompilerExtension.class)
+                ;
     }
 
     protected Iterable<? extends Class<? extends PlanGeneratorExtension>> getExpectedPlanGeneratorExtensions()
     {
         // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
         return Lists.mutable.<Class<? extends PlanGeneratorExtension>>empty()
-                .with(org.finos.legend.engine.plan.generation.extension.LegendPlanGeneratorExtension.class);
+                .with(org.finos.legend.engine.plan.generation.extension.LegendPlanGeneratorExtension.class)
+                .with(org.finos.legend.engine.language.stores.elasticsearch.v7.plan.generation.ElasticsearchPlanGeneratorExtension.class)
+                .with(org.finos.legend.engine.language.pure.grammar.integration.plan.MongoDBPlanGeneratorExtension.class)
+                ;
     }
 
     protected Iterable<? extends Class<? extends ExternalFormatExtension<?>>> getExpectedExternalFormatExtensions()
@@ -370,6 +385,10 @@ public class TestExtensions
                 .with("core_external_format_flatdata_java_platform_binding")
                 .with("core_external_format_json_java_platform_binding")
                 .with("core_external_format_xml_java_platform_binding")
-                .with("core_configuration");
+                .with("core_configuration")
+                .with("core_elasticsearch_seven_metamodel")
+                .with("core_nonrelational_mongodb")
+                .with("core_nonrelational_mongodb_java_platform_binding")
+                ;
     }
 }

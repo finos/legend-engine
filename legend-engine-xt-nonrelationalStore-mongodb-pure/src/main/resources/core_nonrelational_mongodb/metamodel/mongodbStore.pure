@@ -13,8 +13,8 @@
 // limitations under the License.
 
 import meta::external::store::mongodb::metamodel::*;
+import meta::external::store::mongodb::metamodel::pure::*;
 import meta::external::store::mongodb::metamodel::aggregation::*;
-import meta::external::store::mongodb::metamodel::authentication::*;
 
 Enum meta::external::store::mongodb::metamodel::aggregation::Operator
 {
@@ -56,6 +56,10 @@ Class meta::external::store::mongodb::metamodel::ArrayType extends BaseType
   uniqueItems: Boolean[1];
 }
 
+Class meta::external::store::mongodb::metamodel::BsonType extends BaseType
+{  
+}
+
 Class meta::external::store::mongodb::metamodel::ObjectType extends BaseType
 {
   properties: PropertyType[1..*];
@@ -66,11 +70,6 @@ Class meta::external::store::mongodb::metamodel::ObjectType extends BaseType
   maxProperties: Integer[0..1];
   minProperties: Integer[0..1];
   patternProperties: ObjectType[0..1];
-}
-
-
-Class meta::external::store::mongodb::metamodel::BsonType extends BaseType
-{  
 }
 
 Class {doc.doc = 'UTF 8'} meta::external::store::mongodb::metamodel::StringType extends BsonType
@@ -206,11 +205,10 @@ Class meta::external::store::mongodb::metamodel::CollectionView
   pipeLine: ViewPipeline[1..*];
 } 
 
-Class meta::external::store::mongodb::metamodel::MongoDatabase extends meta::pure::store::Store
+Class meta::external::store::mongodb::metamodel::pure::MongoDatabase extends meta::pure::store::Store
 {
   collections: Collection[*];
   views: CollectionView[*];
-  authenticationStrategy: AuthenticationStrategy[0..1];
 }
 
 Class meta::external::store::mongodb::metamodel::Collation
@@ -228,8 +226,9 @@ Class  {doc.doc = 'https://www.mongodb.com/docs/manual/reference/command/aggrega
 meta::external::store::mongodb::metamodel::aggregation::DatabaseCommand extends MongoDBOperationElement
 {
     type: String[1];
-    collectionName: String[1];
-    aggregationPipeline: AggregationPipeline[1];
+    // collection name & aggregation pipeline get added after object instantiation hence the multiplicity set to [0..1], should be [1]
+    collectionName: String[0..1];
+    aggregationPipeline: AggregationPipeline[0..1];
     cursor: Cursor[0..1];
     explain: Boolean[0..1];
     allowDiskUse: Boolean[0..1];
@@ -456,40 +455,11 @@ Class meta::external::store::mongodb::metamodel::aggregation::KeyValuePair
 }
 
 
-
-
 Enum meta::external::store::mongodb::metamodel::authentication::AuthenticationMechanism
 {
   SCRAM_SHA_1, SCRAM_SHA_256, GSSAPI, MONGODB_X509
 }
 
-Class meta::external::store::mongodb::metamodel::authentication::AuthenticationStrategy
-{
-  authenticationMechanism: AuthenticationMechanism[1];
-  authenticationDatanbase: String[1];
-}
-
-Class meta::external::store::mongodb::metamodel::authentication::SCRAM extends AuthenticationStrategy
-{
-  baseVaultReference: String[0..1];
-  userNameVaultReference: String[1];
-  passwordVaultReference: String[1];
-  // digestPassword: Boolean[0..1];
-}
-
-Class meta::external::store::mongodb::metamodel::authentication::Kerberos extends AuthenticationStrategy
-{
-  serverPrincipal: String[1];
-  keyTabVaultReference: String[1];
-}
-
-
-Class meta::external::store::mongodb::metamodel::authentication::X509 extends AuthenticationStrategy
-{
-  requireTls: Boolean[1];
-  certificationKeyFileVaultRef: String[1];
-  certificationAuthorityFileVaultRef: String[1];
-}
 
 
 
