@@ -375,7 +375,7 @@ public class TestServiceRunner
         String result = simpleM2MServiceRunnerForRecursive.run(serviceRunnerInput);
         Assert.assertEquals("{\"wheels\":55}", result);
     }
-
+    
     private static class SimpleM2MServiceRunnerForDateTimeSerialization extends AbstractServicePlanExecutor
     {
         SimpleM2MServiceRunnerForDateTimeSerialization(String function)
@@ -390,19 +390,26 @@ public class TestServiceRunner
         }
     }
 
+    private void testServiceExecutionWithDateTimeSerialization(String fetchFunction, String expectedResult)
+    {
+        SimpleM2MServiceRunnerForDateTimeSerialization serviceRunner = new SimpleM2MServiceRunnerForDateTimeSerialization(fetchFunction);
+        ServiceRunnerInput serviceRunnerInputWithEnumParameter = ServiceRunnerInput
+                .newInstance()
+                .withSerializationFormat(SerializationFormat.PURE);
+        String result = serviceRunner.run(serviceRunnerInputWithEnumParameter);
+        Assert.assertEquals(expectedResult, result);
+    }
+
     @Test
     public void SimpleM2MServiceRunnerForDateTimeSerialization()
     {
-        SimpleM2MServiceRunnerForDateTimeSerialization validDateTimeSerialization = new SimpleM2MServiceRunnerForDateTimeSerialization("test::serializeDateTime__String_1_");
-        ServiceRunnerInput serviceRunnerInput1 = ServiceRunnerInput
-                .newInstance()
-                .withSerializationFormat(SerializationFormat.PURE);
-        String result = validDateTimeSerialization.run(serviceRunnerInput1);
-        Assert.assertEquals("{\"age\":25,\"birthDate\":\"2014-02-27T15:01:35.231+0000\"}", result);
+        this.testServiceExecutionWithDateTimeSerialization("test::serializeDateTimeWithoutFormat__String_1_", "{\"birthDate\":\"2014-02-27T15:01:35.231\"}");
+        this.testServiceExecutionWithDateTimeSerialization("test::serializeDateTime__String_1_", "{\"birthDate\":\"2014-02-27T15:01:35.231+0000\"}");
+        this.testServiceExecutionWithDateTimeSerialization("test::serializeDateTimeStrictDateFormat__String_1_", "{\"birthDate\":\"2014-02-27\"}");
+        this.testServiceExecutionWithDateTimeSerialization("test::serializeDateTimeCustomPattern__String_1_", "{\"birthDate\":\"02/27/2014 at 03:01PM GMT\"}");
 
         SimpleM2MServiceRunnerForDateTimeSerialization invalidDateTimeSerialization = new SimpleM2MServiceRunnerForDateTimeSerialization("test::serializeInvalidDateTimeFormat__String_1_");
-        ServiceRunnerInput serviceRunnerInput2 = ServiceRunnerInput
-                .newInstance();
+        ServiceRunnerInput serviceRunnerInput2 = ServiceRunnerInput.newInstance();
         IllegalArgumentException e1 = Assert.assertThrows(IllegalArgumentException.class, () -> invalidDateTimeSerialization.run(serviceRunnerInput2));
         MatcherAssert.assertThat(e1, ThrowableMessageMatcher.hasMessage(CoreMatchers.startsWith("java.lang.IllegalArgumentException: Too many pattern letters: m\n" +
                 "yyyy-MM-dd\"T\"HH:mmm:ss.SSSZ is not a valid dateTime format in SerializationConfig")));
