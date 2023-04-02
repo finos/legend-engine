@@ -47,14 +47,29 @@ Class test::targetPerson
   birthDate: DateTime[0..1];
 }
 
+function test::serializeDateTimeWithoutFormat(): String[1]
+{
+   test::targetPerson.all()->graphFetch(#{test::targetPerson{birthDate}}#)->serialize(#{test::targetPerson{birthDate}}#)
+}
+
 function test::serializeDateTime(): String[1]
 {
-   test::targetPerson.all()->graphFetch(#{test::targetPerson{age,birthDate}}#)->serialize(#{test::targetPerson{age,birthDate}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(typeKeyName='@type', dateTimeFormat='yyyy-MM-dd"T"HH:mm:ss.SSSZ',includeType=false))
+   test::targetPerson.all()->graphFetch(#{test::targetPerson{birthDate}}#)->serialize(#{test::targetPerson{birthDate}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(typeKeyName='@type', dateTimeFormat='yyyy-MM-dd"T"HH:mm:ss.SSSZ',includeType=false))
+}
+
+function test::serializeDateTimeStrictDateFormat(): String[1]
+{
+   test::targetPerson.all()->graphFetch(#{test::targetPerson{birthDate}}#)->serialize(#{test::targetPerson{birthDate}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(typeKeyName='@type', dateTimeFormat='yyyy-MM-dd',includeType=false))
+}
+
+function test::serializeDateTimeCustomPattern(): String[1]
+{
+   test::targetPerson.all()->graphFetch(#{test::targetPerson{birthDate}}#)->serialize(#{test::targetPerson{birthDate}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(typeKeyName='@type', dateTimeFormat='MM/dd/yyyy "at" hh:mma z',includeType=false))
 }
 
 function test::serializeInvalidDateTimeFormat(): String[1]
 {
-   test::targetPerson.all()->graphFetch(#{test::targetPerson{age,birthDate}}#)->serialize(#{test::targetPerson{age,birthDate}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(typeKeyName='@type', dateTimeFormat='yyyy-MM-dd"T"HH:mmm:ss.SSSZ',includeType=false))
+   test::targetPerson.all()->graphFetch(#{test::targetPerson{birthDate}}#)->serialize(#{test::targetPerson{birthDate}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(typeKeyName='@type', dateTimeFormat='yyyy-MM-dd"T"HH:mmm:ss.SSSZ',includeType=false))
 }
 
 function test::M2MErrorMessage(input: String[1]): String[1]
