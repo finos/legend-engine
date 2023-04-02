@@ -25,6 +25,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Comp
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceDiagram;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportCombinedInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportEmail;
@@ -48,6 +49,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElem
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 
 public class DataSpaceCompilerExtension implements CompilerExtension
 {
@@ -107,7 +109,6 @@ public class DataSpaceCompilerExtension implements CompilerExtension
 
                     metamodel._title(dataSpace.title);
                     metamodel._description(dataSpace.description);
-                    metamodel._featuredDiagrams(dataSpace.featuredDiagrams != null ? ListIterate.collect(dataSpace.featuredDiagrams, item -> HelperDiagramBuilder.resolveDiagram(item.path, item.sourceInformation, context)) : null);
 
                     // elements
                     if (dataSpace.elements != null)
@@ -128,6 +129,25 @@ public class DataSpaceCompilerExtension implements CompilerExtension
                                     ._executable(context.pureModel.getPackageableElement(executable.executable.path, executable.executable.sourceInformation))) : null);
 
                     // diagrams
+                    if (dataSpace.featuredDiagrams != null)
+                    {
+                        List<DataSpaceDiagram> featuredDiagrams = ListIterate.collect(dataSpace.featuredDiagrams, featuredDiagram ->
+                        {
+                            DataSpaceDiagram diagram = new DataSpaceDiagram();
+                            diagram.title = "";
+                            diagram.diagram = featuredDiagram;
+                            diagram.sourceInformation = featuredDiagram.sourceInformation;
+                            return diagram;
+                        });
+                        if (dataSpace.diagrams != null)
+                        {
+                            dataSpace.diagrams.addAll(featuredDiagrams);
+                        }
+                        else
+                        {
+                            dataSpace.diagrams = featuredDiagrams;
+                        }
+                    }
                     metamodel._diagrams(dataSpace.diagrams != null ? ListIterate.collect(dataSpace.diagrams, diagram ->
                             new Root_meta_pure_metamodel_dataSpace_DataSpaceDiagram_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceDiagram"))
                                     ._title(diagram.title)

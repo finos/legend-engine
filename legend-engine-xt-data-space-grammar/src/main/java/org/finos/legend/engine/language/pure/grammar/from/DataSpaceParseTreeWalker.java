@@ -99,24 +99,37 @@ public class DataSpaceParseTreeWalker
 
         // Executables (optional)
         DataSpaceParserGrammar.ExecutablesContext executablesContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.executables(), "executables", dataSpace.sourceInformation);
-        dataSpace.executables = executablesContext != null ? ListIterate.collect(executablesContext.executable(), executableContext -> this.visitDataSpaceExecutable(executableContext)) : null;
+        dataSpace.executables = executablesContext != null ? ListIterate.collect(executablesContext.executable(), this::visitDataSpaceExecutable) : null;
 
         // Diagrams (optional)
         DataSpaceParserGrammar.DiagramsContext diagramsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.diagrams(), "diagrams", dataSpace.sourceInformation);
-        dataSpace.diagrams = diagramsContext != null ? ListIterate.collect(diagramsContext.diagram(), diagramContext -> this.visitDataSpaceDiagram(diagramContext)) : null;
+        dataSpace.diagrams = diagramsContext != null ? ListIterate.collect(diagramsContext.diagram(), this::visitDataSpaceDiagram) : null;
 
         // Featured diagrams (optional)
-        // NOTE: this field will be deprecated, we should consider adding this to the list of diagrams during parsing phase
+        // This has been deprecated in favor of diagrams
         DataSpaceParserGrammar.FeaturedDiagramsContext featuredDiagramsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.featuredDiagrams(), "featuredDiagrams", dataSpace.sourceInformation);
-        dataSpace.featuredDiagrams = featuredDiagramsContext != null ? ListIterate.collect(featuredDiagramsContext.qualifiedName(), diagramPathContext ->
+        if (featuredDiagramsContext != null)
         {
-            PackageableElementPointer pointer = new PackageableElementPointer(
-                    PackageableElementType.DIAGRAM,
-                    PureGrammarParserUtility.fromQualifiedName(diagramPathContext.packagePath() == null ? Collections.emptyList() : diagramPathContext.packagePath().identifier(), diagramPathContext.identifier())
-            );
-            pointer.sourceInformation = walkerSourceInformation.getSourceInformation(diagramPathContext);
-            return pointer;
-        }) : null;
+            List<DataSpaceDiagram> featuredDiagrams = ListIterate.collect(featuredDiagramsContext.qualifiedName(), diagramPathContext ->
+            {
+                DataSpaceDiagram diagram = new DataSpaceDiagram();
+                diagram.sourceInformation = this.walkerSourceInformation.getSourceInformation(diagramPathContext);
+                diagram.title = "";
+                diagram.diagram = new PackageableElementPointer(
+                        PureGrammarParserUtility.fromQualifiedName(diagramPathContext.packagePath() == null ? Collections.emptyList() : diagramPathContext.packagePath().identifier(), diagramPathContext.identifier())
+                );
+                diagram.diagram.sourceInformation = diagram.sourceInformation;
+                return diagram;
+            });
+            if (dataSpace.diagrams != null)
+            {
+                dataSpace.diagrams.addAll(featuredDiagrams);
+            }
+            else
+            {
+                dataSpace.diagrams = featuredDiagrams;
+            }
+        }
 
         // Support info (optional)
         DataSpaceParserGrammar.SupportInfoContext supportInfoContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.supportInfo(), "supportInfo", dataSpace.sourceInformation);

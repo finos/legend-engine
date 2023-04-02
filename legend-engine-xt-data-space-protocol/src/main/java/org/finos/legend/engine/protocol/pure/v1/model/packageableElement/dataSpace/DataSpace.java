@@ -55,6 +55,4 @@ public class DataSpace extends PackageableElement
     {
         return visitor.visit(this);
     }
-
-
 }

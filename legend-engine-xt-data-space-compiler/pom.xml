@@ -46,10 +46,6 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-diagram-pure-metamodel</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-data-space-pure-metamodel</artifactId>
         </dependency>
         <!-- PURE -->

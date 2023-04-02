@@ -14,8 +14,13 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
+
+// NOTE: since we migrated from PackageableElementPointer to this shape
+// we have to account for the `type` field if user model accidentally specified them
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DataSpaceElementPointer
 {
     public String path;

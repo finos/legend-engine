@@ -146,7 +146,6 @@ DataSpace dataSpace::_FirmDataSpace
     }
   ];
   defaultExecutionContext: 'dummyContext';
-  featuredDiagrams: ['diagram::MyDiagram'];
   elements: [
     model,
     -model::experiment,

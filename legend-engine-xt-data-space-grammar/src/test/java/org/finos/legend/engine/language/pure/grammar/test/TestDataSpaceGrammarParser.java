@@ -17,7 +17,6 @@ package org.finos.legend.engine.language.pure.grammar.test;
 import org.antlr.v4.runtime.Vocabulary;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.DataSpaceParserGrammar;
-import org.finos.legend.engine.language.pure.grammar.test.TestGrammarParser;
 import org.junit.Test;
 
 import java.util.List;
@@ -250,21 +249,6 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
                 "    }\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
-                "  featuredDiagrams:[model::Diagram];\n" +
-                "  featuredDiagrams:[model::Diagram];\n" +
-                "}\n", "PARSER error at [2:1-15:1]: Field 'featuredDiagrams' should be specified only once");
-        test("###DataSpace\n" +
-                "DataSpace model::dataSpace\n" +
-                "{\n" +
-                "  executionContexts:\n" +
-                "  [\n" +
-                "    {\n" +
-                "      name: 'Context 1';\n" +
-                "      mapping: model::String;\n" +
-                "      defaultRuntime: model::Runtime;\n" +
-                "    }\n" +
-                "  ];\n" +
-                "  defaultExecutionContext: 'Context 1';\n" +
                 "  elements:[model::MyClass];\n" +
                 "  elements:[model::MyClass];\n" +
                 "}\n", "PARSER error at [2:1-15:1]: Field 'elements' should be specified only once");
@@ -384,26 +368,26 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
                 "  ];\n" +
                 "}\n", "PARSER error at [2:1-26:1]: Field 'executables' should be specified only once");
         test("###DataSpace\n" +
-            "DataSpace model::dataSpace" +
-            "{\n" +
-            "  executionContexts:\n" +
-            "  [\n" +
-            "    {\n" +
-            "      name: 'Context 1';\n" +
-            "      mapping: model::String;\n" +
-            "      defaultRuntime: model::Runtime;\n" +
-            "    }\n" +
-            "  ];\n" +
-            "  defaultExecutionContext: 'Context 1';\n" +
-            "  executables:\n" +
-            "  [\n" +
-            "    {\n" +
-            "      title: 'Exec 1';\n" +
-            "      title: 'Exec 1';\n" +
-            "      executable: model::MyExecutable;\n" +
-            "    }\n" +
-            "  ];\n" +
-            "}\n", "PARSER error at [14:5-18:5]: Field 'title' should be specified only once");
+                "DataSpace model::dataSpace" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  executables:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      title: 'Exec 1';\n" +
+                "      title: 'Exec 1';\n" +
+                "      executable: model::MyExecutable;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n", "PARSER error at [14:5-18:5]: Field 'title' should be specified only once");
         test("###DataSpace\n" +
                 "DataSpace model::dataSpace" +
                 "{\n" +
