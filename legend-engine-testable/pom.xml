@@ -23,7 +23,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-testable</artifactId>
-    <name>Legend Engine Testable</name>
+    <name>Legend Engine - Testable</name>
 
     <dependencies>
         <!-- PURE -->

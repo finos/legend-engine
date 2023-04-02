@@ -16,12 +16,16 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportCombinedInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportEmail;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.diagram.Diagram;
@@ -41,12 +45,9 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_Tagged
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration;
 
 import java.util.Collections;
-import java.util.Objects;
+import java.util.Comparator;
 
 public class DataSpaceCompilerExtension implements CompilerExtension
 {
@@ -109,33 +110,29 @@ public class DataSpaceCompilerExtension implements CompilerExtension
                     metamodel._featuredDiagrams(dataSpace.featuredDiagrams != null ? ListIterate.collect(dataSpace.featuredDiagrams, item -> HelperDiagramBuilder.resolveDiagram(item.path, item.sourceInformation, context)) : null);
 
                     // elements
-                    metamodel._elements(dataSpace.elements != null ? ListIterate.collect(dataSpace.elements, el ->
+                    if (dataSpace.elements != null)
                     {
-                        PackageableElement element = context.pureModel.getPackageableElement(el.path, el.sourceInformation);
-                        if (element instanceof Class || element instanceof Enumeration || element instanceof Association)
-                        {
-                            return element;
-                        }
-                        throw new EngineException("Element is not of supported types (only classes, enumerations, and associations are supported)", el.sourceInformation, EngineErrorType.COMPILATION);
-                    }).select(Objects::nonNull) : null);
+                        MutableSet<PackageableElement> elements = Sets.mutable.empty();
+                        MutableList<DataSpaceElementPointer> includes = ListIterate.select(dataSpace.elements, el -> el.exclude == null || !el.exclude);
+                        MutableSet<String> excludePaths = ListIterate.select(dataSpace.elements, el -> el.exclude != null && el.exclude).collect(el -> el.path).toSet();
+
+                        includes.forEach(include -> HelperDataSpaceBuilder.collectElements(include, elements, excludePaths, context));
+                        metamodel._elements(elements.toSortedList(Comparator.comparing(el -> HelperModelBuilder.getElementFullPath(el, context.pureModel.getExecutionSupport()))));
+                    }
 
                     // executables
                     metamodel._executables(dataSpace.executables != null ? ListIterate.collect(dataSpace.executables, executable ->
-                    {
-                        return new Root_meta_pure_metamodel_dataSpace_DataSpaceExecutable_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceExecutable"))
-                                ._title(executable.title)
-                                ._description(executable.description)
-                                ._executable(context.pureModel.getPackageableElement(executable.executable.path, executable.executable.sourceInformation));
-                    }) : null);
+                            new Root_meta_pure_metamodel_dataSpace_DataSpaceExecutable_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceExecutable"))
+                                    ._title(executable.title)
+                                    ._description(executable.description)
+                                    ._executable(context.pureModel.getPackageableElement(executable.executable.path, executable.executable.sourceInformation))) : null);
 
                     // diagrams
                     metamodel._diagrams(dataSpace.diagrams != null ? ListIterate.collect(dataSpace.diagrams, diagram ->
-                    {
-                        return new Root_meta_pure_metamodel_dataSpace_DataSpaceDiagram_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceDiagram"))
-                                ._title(diagram.title)
-                                ._description(diagram.description)
-                                ._diagram(HelperDiagramBuilder.resolveDiagram(diagram.diagram.path, diagram.diagram.sourceInformation, context));
-                    }) : null);
+                            new Root_meta_pure_metamodel_dataSpace_DataSpaceDiagram_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceDiagram"))
+                                    ._title(diagram.title)
+                                    ._description(diagram.description)
+                                    ._diagram(HelperDiagramBuilder.resolveDiagram(diagram.diagram.path, diagram.diagram.sourceInformation, context))) : null);
 
                     // support info
                     if (dataSpace.supportInfo != null)

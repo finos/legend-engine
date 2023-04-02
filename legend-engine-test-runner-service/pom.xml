@@ -24,7 +24,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>legend-engine-test-runner-service</artifactId>
-    <name>Legend Engine Test Runner - Service</name>
+    <name>Legend Engine - Test Runner - Service</name>
 
     <dependencies>
         <!-- PURE -->

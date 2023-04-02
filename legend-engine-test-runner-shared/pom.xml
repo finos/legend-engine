@@ -23,7 +23,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-test-runner-shared</artifactId>
-    <name>Legend Engine Test Runner - Shared</name>
+    <name>Legend Engine - Test Runner - Shared</name>
 
     <dependencies>
         <!-- JACKSON -->

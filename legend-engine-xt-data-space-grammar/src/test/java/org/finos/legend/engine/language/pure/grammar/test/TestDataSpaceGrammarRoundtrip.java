@@ -62,7 +62,10 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
                 "  elements:\n" +
                 "  [\n" +
                 "    model::Class1,\n" +
-                "    model::Class2\n" +
+                "    model::Class2,\n" +
+                "    -model,\n" +
+                "    -model::Enum2,\n" +
+                "    -model::Assoc\n" +
                 "  ];\n" +
                 "  executables:\n" +
                 "  [\n" +

@@ -23,6 +23,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElement
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceDiagram;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceExecutable;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceExecutionContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportCombinedInfo;
@@ -84,13 +85,15 @@ public class DataSpaceParseTreeWalker
 
         // Elements (optional)
         DataSpaceParserGrammar.ElementsContext elementsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.elements(), "elements", dataSpace.sourceInformation);
-        dataSpace.elements = elementsContext != null ? ListIterate.collect(elementsContext.qualifiedName(), elementContext ->
+        dataSpace.elements = elementsContext != null ? ListIterate.collect(elementsContext.elementScopePath(), elementScopePathContext ->
         {
-            PackageableElementPointer pointer = new PackageableElementPointer(
-                    PackageableElementType.CLASS,
-                    PureGrammarParserUtility.fromQualifiedName(elementContext.packagePath() == null ? Collections.emptyList() : elementContext.packagePath().identifier(), elementContext.identifier())
-            );
-            pointer.sourceInformation = walkerSourceInformation.getSourceInformation(elementContext);
+            DataSpaceElementPointer pointer = new DataSpaceElementPointer();
+            pointer.path = PureGrammarParserUtility.fromQualifiedName(elementScopePathContext.qualifiedName().packagePath() == null ? Collections.emptyList() : elementScopePathContext.qualifiedName().packagePath().identifier(), elementScopePathContext.qualifiedName().identifier());
+            pointer.sourceInformation = walkerSourceInformation.getSourceInformation(elementScopePathContext);
+            if (elementScopePathContext.MINUS() != null)
+            {
+                pointer.exclude = true;
+            }
             return pointer;
         }) : null;
 
