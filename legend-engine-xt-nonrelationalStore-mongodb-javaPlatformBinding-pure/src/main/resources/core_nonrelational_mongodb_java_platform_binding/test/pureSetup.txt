@@ -1,0 +1,72 @@
+###MongoDB
+Database test::mongodb::mydatabase
+(
+    Collection PersonCollection
+    (
+        validationLevel: strict;
+        validationAction: warn;
+        jsonSchema: {
+            "bsonType": "object",
+            "title": "Record of Firm",
+            "properties": {
+                "firstName": {
+                    "bsonType": "string",
+                    "description": "firstName of the person",
+                    "minLength": 2
+                }
+            },
+            "additionalProperties": false
+        };
+    )
+)
+
+###Runtime
+Runtime test::mongodb::runtime::TestMongoDBRuntime
+{
+    mappings :
+    [
+        test::mongodb::TestPersonMapping
+    ];
+    connections :
+    [
+        test::mongodb::mydatabase :
+        [
+            connection_1 : test::mongodb::testConnection
+        ]
+    ];
+}
+
+###ExternalFormat
+Binding meta::external::store::mongodb::showcase::store::PersonCollectionBinding
+{
+    contentType   : 'application/json';
+    modelIncludes : [
+        meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Person,
+        meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Firm,
+        meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Address
+    ];
+}
+
+###Mapping
+Mapping test::mongodb::TestPersonMapping
+(
+    *meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Person[Person]: MongoDB
+    {
+        ~mainCollection [test::mongodb::mydatabase] PersonCollection
+    }
+)
+
+###Connection
+MongoDBConnection test::mongodb::testConnection
+{
+    database: legend_db;
+    store: test::mongodb::mydatabase;
+    serverURLs: [localhost:27071];
+    authentication: # UserPassword {
+        username: 'mongo_ro';
+        password: SystemPropertiesSecret
+        {
+            systemPropertyName: 'sys.prop.name';
+        };
+    }#;
+}

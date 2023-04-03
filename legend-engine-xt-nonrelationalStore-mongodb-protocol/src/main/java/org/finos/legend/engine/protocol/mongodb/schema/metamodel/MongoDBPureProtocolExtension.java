@@ -19,11 +19,13 @@ import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBExecutionNode;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDatabase;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.RootMongoDBClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 
 import java.util.List;
 
@@ -43,6 +45,10 @@ public class MongoDBPureProtocolExtension implements PureProtocolExtension
                 // Execution Nodes
                 ProtocolSubTypeInfo.newBuilder(ExecutionNode.class)
                         .withSubtype(MongoDBExecutionNode.class, "MongoDBExecutionNode")
+                        .build(),
+                // Class mapping
+                ProtocolSubTypeInfo.newBuilder(ClassMapping.class)
+                        .withSubtype(RootMongoDBClassMapping.class, "MongoDB")
                         .build()
         ));
     }
