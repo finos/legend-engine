@@ -55,6 +55,7 @@ public class TestMongoDBMappingCompiler extends TestCompilationFromGrammar.TestC
                 "  *meta::external::store::mongodb::showcase::domain::Person[Person]: MongoDB\n" +
                 "  {\n" +
                 "    ~mainCollection [meta::external::store::mongodb::showcase::store::PersonDatabase] PersonCollection\n" +
+                "    ~binding meta::external::store::mongodb::showcase::store::PersonCollectionBinding\n" +
                 "  }\n" +
                 ")\n");
     }

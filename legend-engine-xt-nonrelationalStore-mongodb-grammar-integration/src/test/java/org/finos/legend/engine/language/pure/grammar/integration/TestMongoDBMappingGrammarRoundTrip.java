@@ -28,6 +28,7 @@ public class TestMongoDBMappingGrammarRoundTrip extends TestGrammarRoundtrip.Tes
                 "  *meta::external::mongo::mapping[id1]: MongoDB\n" +
                 "  {\n" +
                 "    ~mainCollection [mongo::test::db] PersonRecord\n" +
+                "    ~binding mongo::test::binding::PersonBinding\n" +
                 "  }\n" +
                 ")\n");
     }

@@ -122,6 +122,7 @@ public class MongoDBCompilerExtension implements IMongoDBStoreCompilerExtension
                         Store mongoDatabase = context.pureModel.getStore(((RootMongoDBClassMapping) cm).storePath, cm.sourceInformation);
                         mongoDBSetImplementation._storesAdd(mongoDatabase);
                         mongoDBSetImplementation._mainCollection(((Root_meta_external_store_mongodb_metamodel_pure_MongoDatabase_Impl) mongoDatabase)._collections());
+                        mongoDBSetImplementation._binding(((Root_meta_external_shared_format_binding_Binding)context.pureModel.getStore(((RootMongoDBClassMapping) cm).bindingPath, cm.sourceInformation)));
 
 //                        RichIterable<? extends Root_meta_external_store_mongodb_metamodel_PropertyType> properties = ((Root_meta_external_store_mongodb_metamodel_aggregation_JsonSchemaExpression_Impl)((Root_meta_external_store_mongodb_metamodel_pure_MongoDatabase_Impl)mongoDatabase)._collections().getFirst()._validator()._validatorExpression())._schemaExpression()._properties();
 

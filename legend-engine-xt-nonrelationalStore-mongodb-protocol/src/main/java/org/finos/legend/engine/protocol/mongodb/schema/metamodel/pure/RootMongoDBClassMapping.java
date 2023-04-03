@@ -20,9 +20,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 
 public class RootMongoDBClassMapping extends ClassMapping
 {
-    public Collection mainCollection;
+    public String mainCollectionName;
 
     public String storePath;
+
+    public String bindingPath;
 
     @Override
     public <T> T accept(ClassMappingVisitor<T> visitor)

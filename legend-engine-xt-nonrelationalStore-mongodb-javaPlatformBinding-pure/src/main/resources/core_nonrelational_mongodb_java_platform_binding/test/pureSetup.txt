@@ -53,20 +53,21 @@ Mapping test::mongodb::TestPersonMapping
     *meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Person[Person]: MongoDB
     {
         ~mainCollection [test::mongodb::mydatabase] PersonCollection
+        ~binding meta::external::store::mongodb::showcase::store::PersonCollectionBinding
     }
 )
 
 ###Connection
 MongoDBConnection test::mongodb::testConnection
 {
-    database: legend_db;
+    database: userDatabase;
     store: test::mongodb::mydatabase;
-    serverURLs: [localhost:27071];
+    serverURLs: [localhost:50322];
     authentication: # UserPassword {
-        username: 'mongo_ro';
+        username: 'sa';
         password: SystemPropertiesSecret
         {
-            systemPropertyName: 'sys.prop.name';
+            systemPropertyName: 'mongo_pwd';
         };
     }#;
 }

@@ -33,15 +33,12 @@ public class MongoDBMappingParseTreeWalker
         }
         if (ctx.mappingBinding().size() == 1)
         {
-            //mappingBinding not currently needed
+            classMapping.bindingPath = ctx.mappingBinding().get(0).qualifiedName().getText();
         }
         if (ctx.mappingMainCollection().size() == 1)
         {
-            Collection collection = new Collection();
-            String store = ctx.mappingMainCollection().get(0).databasePointer().qualifiedName().getText();
-            collection.name = ctx.mappingMainCollection().get(0).mappingScopeInfo().identifier().getText();
-            classMapping.mainCollection = collection;
-            classMapping.storePath = store;
+            classMapping.mainCollectionName = ctx.mappingMainCollection().get(0).mappingScopeInfo().identifier().getText();
+            classMapping.storePath = ctx.mappingMainCollection().get(0).databasePointer().qualifiedName().getText();
         }
     }
 

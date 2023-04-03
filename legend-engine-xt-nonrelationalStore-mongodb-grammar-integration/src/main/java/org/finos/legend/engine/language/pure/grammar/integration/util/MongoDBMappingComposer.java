@@ -20,13 +20,17 @@ public class MongoDBMappingComposer
 {
     public static String renderRootMongoDBClassMapping(RootMongoDBClassMapping rootMongoDBClassMapping)
     {
-        if (rootMongoDBClassMapping.mainCollection != null && rootMongoDBClassMapping.storePath != null)
+        StringBuilder stringBuilder = new StringBuilder();
+        if (rootMongoDBClassMapping.mainCollectionName != null && rootMongoDBClassMapping.storePath != null)
         {
-            return "    ~mainCollection [" + rootMongoDBClassMapping.storePath + "] " + rootMongoDBClassMapping.mainCollection.name + "\n";
+            stringBuilder.append("    ~mainCollection [" + rootMongoDBClassMapping.storePath + "] " + rootMongoDBClassMapping.mainCollectionName + "\n");
         }
-        else
+
+        if (rootMongoDBClassMapping.bindingPath != null)
         {
-            return "";
+            stringBuilder.append("    ~binding " + rootMongoDBClassMapping.bindingPath + "\n");
         }
+
+        return stringBuilder.toString();
     }
 }
