@@ -111,7 +111,7 @@ public class MongoDBCompilerExtension implements IMongoDBStoreCompilerExtension
                     {
                         RootMongoDBClassMapping classMapping = (RootMongoDBClassMapping) cm;
                         String id = HelperMappingBuilder.getClassMappingId(classMapping, context);
-                        Root_meta_external_store_mongodb_metamodel_pure_MongoDBSetImplementation mongoDBSetImplementation = new Root_meta_external_store_mongodb_metamodel_pure_MongoDBSetImplementation_Impl(id);
+                        Root_meta_external_store_mongodb_metamodel_pure_MongoDBSetImplementation mongoDBSetImplementation = new Root_meta_external_store_mongodb_metamodel_pure_MongoDBSetImplementation_Impl(id, null, context.pureModel.getClass("meta::external::store::mongodb::metamodel::pure::MongoDBSetImplementation"));
                         final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass = context.resolveClass(classMapping._class, classMapping.classSourceInformation);
                         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.MappingClass mappingClass = generateMappingClass(pureClass, id, classMapping, parentMapping, context);
                         mongoDBSetImplementation._id(id);

@@ -21,6 +21,7 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.Mong
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.MongoDBConnectionParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.runtime.DatabaseType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.runtime.MongoDBDatasourceSpecification;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.runtime.MongoDBURL;
 
@@ -46,6 +47,7 @@ public class MongoDBConnectionParseTreeWalker
         {
             connectionValue.element = PureGrammarParserUtility.fromQualifiedName(connectionStoreContext.qualifiedName().packagePath() == null ? Collections.emptyList() : connectionStoreContext.qualifiedName().packagePath().identifier(), connectionStoreContext.qualifiedName().identifier());
             connectionValue.elementSourceInformation = this.walkerSourceInformation.getSourceInformation(connectionStoreContext.qualifiedName());
+            connectionValue.type = DatabaseType.MongoDb;
         }
         else if (!isEmbedded)
         {
