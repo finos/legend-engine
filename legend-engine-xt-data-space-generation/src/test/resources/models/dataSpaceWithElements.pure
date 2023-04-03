@@ -30,6 +30,14 @@ Enum {doc.doc = 'Types of company'} model::target::IncType
   CORP
 }
 
+Class model::experiment::Animal
+{
+}
+
+Class model::experiment::Human
+{
+}
+
 Class {doc.doc = 'Animal class'} model::Animal
 {
   {doc.doc = 'age'} age: Integer[1];
@@ -97,6 +105,10 @@ Mapping mapping::ModelToModelMapping
   }
 )
 
+Mapping model::mapping::TestMapping
+(
+)
+
 
 ###Runtime
 Runtime mapping::ModelToModelRuntime
@@ -134,15 +146,11 @@ DataSpace dataSpace::_FirmDataSpace
     }
   ];
   defaultExecutionContext: 'dummyContext';
-  featuredDiagrams: ['diagram::MyDiagram'];
   elements: [
-    'model::Firm_Person',
-    'model::target::IncType',
-    'model::target::_Firm',
-    'model::LegalEntity',
-    'model::Firm',
-    'model::Animal',
-    'model::Person'
+    model,
+    -model::experiment,
+    -model::target::_Firm,
+    -model::NotRelevant
   ];
   title: 'Firm Dataspace';
 }

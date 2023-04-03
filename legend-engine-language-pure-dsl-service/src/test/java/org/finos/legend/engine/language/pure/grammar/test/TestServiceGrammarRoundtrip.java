@@ -1657,7 +1657,17 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
     @Test
     public void testDeletionOfEmptyTests()
     {
-        testComposedGrammar("###Service\n" +
+        testFormat("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: false;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: meta::transform::tests::Address[1]|$src.a->from(meta::myMapping, meta::myRuntime);\n" +
+                "  }\n" +
+                "}\n", "###Service\n" +
                 "Service meta::pure::myServiceSingle\n" +
                 "{\n" +
                 "  pattern: 'url/myUrl/';\n" +
@@ -1674,20 +1684,34 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "    [\n" +
                 "    ];\n" +
                 "  }\n" +
-                "}\n",
-                "###Service\n" +
-                "Service meta::pure::myServiceSingle\n" +
-                "{\n" +
-                "  pattern: 'url/myUrl/';\n" +
-                "  documentation: 'this is just for context';\n" +
-                "  autoActivateUpdates: false;\n" +
-                "  execution: Single\n" +
-                "  {\n" +
-                "    query: src: meta::transform::tests::Address[1]|$src.a->from(meta::myMapping, meta::myRuntime);\n" +
-                "  }\n" +
                 "}\n");
 
-        testComposedGrammar("###Service\n" +
+        testFormat("###Service\n" +
+                "Service meta::pure::myServiceMulti\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'ownerName'\n" +
+                "  ];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Multi\n" +
+                "  {\n" +
+                "    query: |model::pure::mapping::modelToModel::test::shared::dest::Product.all()->graphFetchChecked(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#)->serialize(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#);\n" +
+                "    key: 'env';\n" +
+                "    executions['QA']:\n" +
+                "    {\n" +
+                "      mapping: meta::myMapping1;\n" +
+                "      runtime: test::runtime;\n" +
+                "    }\n" +
+                "    executions['UAT']:\n" +
+                "    {\n" +
+                "      mapping: meta::myMapping2;\n" +
+                "      runtime: meta::myRuntime;\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "###Service\n" +
                 "Service meta::pure::myServiceMulti\n" +
                 "{\n" +
                 "  pattern: 'url/myUrl/';\n" +
@@ -1729,32 +1753,6 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "      ];\n" +
                 "    }\n" +
                 "  }\n" +
-                "}\n",
-                "###Service\n" +
-                "Service meta::pure::myServiceMulti\n" +
-                "{\n" +
-                "  pattern: 'url/myUrl/';\n" +
-                "  owners:\n" +
-                "  [\n" +
-                "    'ownerName'\n" +
-                "  ];\n" +
-                "  documentation: 'this is just for context';\n" +
-                "  autoActivateUpdates: true;\n" +
-                "  execution: Multi\n" +
-                "  {\n" +
-                "    query: |model::pure::mapping::modelToModel::test::shared::dest::Product.all()->graphFetchChecked(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#)->serialize(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#);\n" +
-                "    key: 'env';\n" +
-                "    executions['QA']:\n" +
-                "    {\n" +
-                "      mapping: meta::myMapping1;\n" +
-                "      runtime: test::runtime;\n" +
-                "    }\n" +
-                "    executions['UAT']:\n" +
-                "    {\n" +
-                "      mapping: meta::myMapping2;\n" +
-                "      runtime: meta::myRuntime;\n" +
-                "    }\n" +
-                "  }\n" +
                 "}\n");
     }
 
@@ -1781,15 +1779,7 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
         testComposedGrammarWithoutSectionIndex(expected, true);
     }
 
-    private void testComposedGrammar(String input, String result)
-    {
-        PureModelContextData modelData = null;
-        modelData = PureGrammarParser.newInstance().parseModel(input, "", 0, 0, false);
-        PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());
-        Assert.assertEquals(result, grammarTransformer.renderPureModelContextData(modelData));
-    }
-
-    private void  testComposedGrammarWithoutSectionIndex(String code, boolean omitSectionIndex)
+    private void testComposedGrammarWithoutSectionIndex(String code, boolean omitSectionIndex)
     {
         PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());
         // NOTE: no need to get source information

@@ -25,6 +25,12 @@
       ],
       "defaultExecutionContext": "INT",
       "description": "some description 2",
+      "elements": [
+        {
+          "type": "CLASS",
+          "path": "test::model::Class2"
+        }
+      ],
       "featuredDiagrams": [
         {
           "type": "DIAGRAM",

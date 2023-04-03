@@ -183,19 +183,6 @@ Diagram meta::pure::metamodel::dataSpace::DataSpace_Diagram(width=0.0, height=0.
         nameVisible=true,
         lineStyle=SIMPLE)
 
-    PropertyView pview_3(
-        property=meta::pure::metamodel::dataSpace::DataSpace.featuredDiagrams,
-        source=cview_1,
-        target=cview_5,
-        points=[(786.00000,237.00000),(1038.91326,238.03541)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
 
     PropertyView pview_4(
         property=meta::pure::metamodel::dataSpace::DataSpace.elements,
