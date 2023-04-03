@@ -30,6 +30,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpe
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
+import org.finos.legend.engine.plan.execution.api.request.RequestContextHelper;
 import org.finos.legend.engine.plan.execution.authorization.PlanExecutionAuthorizer;
 import org.finos.legend.engine.plan.execution.authorization.PlanExecutionAuthorizerInput;
 import org.finos.legend.engine.plan.execution.authorization.PlanExecutionAuthorizerOutput;
@@ -48,6 +49,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
 import org.finos.legend.engine.shared.core.api.model.ExecuteInput;
+import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.DefaultIdentityFactory;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactory;
@@ -146,7 +148,7 @@ public class Execute
                     request.getRemoteUser(),
                     format,
                     parameters,
-                    request.getSession().getId());
+                    RequestContextHelper.RequestContext(request));
             if (response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL))
             {
                 MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, System.currentTimeMillis());
@@ -235,7 +237,7 @@ public class Execute
         return exec(functionFunc, pureModelFunc, planExecutor, mapping, runtime, context, clientVersion, pm, user, format, parameters, null);
     }
 
-    public Response exec(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, MutableList<CommonProfile> pm, String user, SerializationFormat format, Map<String, ?> parameters, String sessionID)
+    public Response exec(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, MutableList<CommonProfile> pm, String user, SerializationFormat format, Map<String, ?> parameters, RequestContext requestContext)
     {
         /*
             planExecutionAuthorizer is used as a feature flag.
@@ -244,16 +246,16 @@ public class Execute
          */
         if (this.planExecutionAuthorizer == null)
         {
-            return this.execLegacy(functionFunc, pureModelFunc, planExecutor, mapping, runtime, context, clientVersion, pm, user, format, parameters, sessionID);
+            return this.execLegacy(functionFunc, pureModelFunc, planExecutor, mapping, runtime, context, clientVersion, pm, user, format, parameters, requestContext);
         }
         else
         {
-            return this.execStrategic(functionFunc, pureModelFunc, planExecutor, mapping, runtime, context, clientVersion, pm, user, format, parameters, sessionID);
+            return this.execStrategic(functionFunc, pureModelFunc, planExecutor, mapping, runtime, context, clientVersion, pm, user, format, parameters, requestContext);
         }
     }
 
 
-    public Response execLegacy(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, MutableList<CommonProfile> pm, String user, SerializationFormat format, Map<String, ?> parameterToValues, String sessionID)
+    public Response execLegacy(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, MutableList<CommonProfile> pm, String user, SerializationFormat format, Map<String, ?> parameterToValues, RequestContext requestContext)
     {
         try
         {
@@ -273,7 +275,7 @@ public class Execute
             );
             MutableMap<String, Result> parametersToConstantResult = Maps.mutable.empty();
             buildParameterToConstantResult(plan, parameterToValues, parametersToConstantResult);
-            Result result = planExecutor.execute(plan, parametersToConstantResult, user, pm, null, sessionID);
+            Result result = planExecutor.execute(plan, parametersToConstantResult, user, pm, null, requestContext);
             LOGGER.info(new LogInfo(pm, LoggingEventType.EXECUTE_INTERACTIVE_STOP, (double) System.currentTimeMillis() - start).toString());
             MetricsHandler.observe("execute", start, System.currentTimeMillis());
             try (Scope scope = GlobalTracer.get().buildSpan("Manage Results").startActive(true))
@@ -292,17 +294,17 @@ public class Execute
 
     public Response execStrategic(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, MutableList<CommonProfile> pm, String user, SerializationFormat format, Map<String, ?> parameters)
     {
-        return execStrategic(functionFunc, pureModelFunc, planExecutor, mapping, runtime, context, clientVersion, pm, user, format, parameters, null);
+        return execStrategic(functionFunc, pureModelFunc, planExecutor, mapping, runtime, context, clientVersion, pm, user, format, parameters, new RequestContext());
     }
 
-    public Response execStrategic(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, MutableList<CommonProfile> pm, String user, SerializationFormat format, Map<String, ?> parameters, String sessionID)
+    public Response execStrategic(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, MutableList<CommonProfile> pm, String user, SerializationFormat format, Map<String, ?> parameters, RequestContext requestContext)
     {
         try
         {
             long start = System.currentTimeMillis();
             LOGGER.info(new LogInfo(pm, LoggingEventType.EXECUTE_INTERACTIVE_START, "").toString());
             SingleExecutionPlan plan = this.buildPlan(functionFunc, pureModelFunc, mapping, runtime, context, clientVersion, pm);
-            return this.execImpl(planExecutor, pm, user, format, start, plan, parameters, sessionID);
+            return this.execImpl(planExecutor, pm, user, format, start, plan, parameters, requestContext);
         }
         catch (Exception ex)
         {
@@ -312,18 +314,18 @@ public class Execute
         }
     }
 
-    private Response execImpl(PlanExecutor planExecutor, MutableList<CommonProfile> pm, String user, SerializationFormat format, long start, SingleExecutionPlan plan, Map<String, ?> parameters, String sessionID) throws Exception
+    private Response execImpl(PlanExecutor planExecutor, MutableList<CommonProfile> pm, String user, SerializationFormat format, long start, SingleExecutionPlan plan, Map<String, ?> parameters, RequestContext requestContext) throws Exception
     {
         // Authorizer has not been configured. So we execute the plan with the default push down authorization behavior.
         if (planExecutionAuthorizer == null)
         {
-            return this.executeAsPushDownPlan(planExecutor, pm, user, format, start, plan, parameters, sessionID);
+            return this.executeAsPushDownPlan(planExecutor, pm, user, format, start, plan, parameters, requestContext);
         }
 
         // Plan does not make use of middle tier connections. So we execute the plan with the default push down authorization behavior.
         if (!this.planExecutionAuthorizer.isMiddleTierPlan(plan))
         {
-            return this.executeAsPushDownPlan(planExecutor, pm, user, format, start, plan, parameters, sessionID);
+            return this.executeAsPushDownPlan(planExecutor, pm, user, format, start, plan, parameters, requestContext);
         }
 
         // Plan makes use of middle tier connections. So we check for authorization.
@@ -338,7 +340,7 @@ public class Execute
         }
 
         // Plan passed authorization. Now we can execute it
-        return this.executeAsMiddleTierPlan(planExecutor, pm, user, format, start, authorizationResult.getTransformedPlan(), parameters, sessionID);
+        return this.executeAsMiddleTierPlan(planExecutor, pm, user, format, start, authorizationResult.getTransformedPlan(), parameters, requestContext);
     }
 
     private SingleExecutionPlan buildPlan(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, MutableList<CommonProfile> pm)
@@ -379,15 +381,15 @@ public class Execute
         return executionAuthorization;
     }
 
-    private Response executeAsPushDownPlan(PlanExecutor planExecutor, MutableList<CommonProfile> pm, String user, SerializationFormat format, long start, SingleExecutionPlan plan, Map<String, ?> parameterToValues, String sessionID) throws Exception
+    private Response executeAsPushDownPlan(PlanExecutor planExecutor, MutableList<CommonProfile> pm, String user, SerializationFormat format, long start, SingleExecutionPlan plan, Map<String, ?> parameterToValues, RequestContext requestContext) throws Exception
     {
         MutableMap<String, Result> parametersToConstantResult = Maps.mutable.empty();
         buildParameterToConstantResult(plan, parameterToValues, parametersToConstantResult);
-        Result result = planExecutor.execute(plan, parametersToConstantResult, user, pm, null, sessionID);
+        Result result = planExecutor.execute(plan, parametersToConstantResult, user, pm, null, requestContext);
         return this.wrapInResponse(pm, format, start, result);
     }
 
-    private Response executeAsMiddleTierPlan(PlanExecutor planExecutor, MutableList<CommonProfile> pm, String user, SerializationFormat format, long start, ExecutionPlan plan, Map<String, ?> parameterToValues, String sessionID) throws Exception
+    private Response executeAsMiddleTierPlan(PlanExecutor planExecutor, MutableList<CommonProfile> pm, String user, SerializationFormat format, long start, ExecutionPlan plan, Map<String, ?> parameterToValues, RequestContext requestContext) throws Exception
     {
         StoreExecutionState.RuntimeContext runtimeContext = StoreExecutionState.newRuntimeContext(
                 Maps.immutable.with(
@@ -403,7 +405,7 @@ public class Execute
                 .withProfiles(pm)
                 .withParamsAsResults(parametersToConstantResult)
                 .withStoreRuntimeContext(StoreType.Relational, runtimeContext)
-                .withSessionID(sessionID)
+                .withRequestContext(requestContext)
                 .build();
 
         String logMessage = String.format("Middle tier interactive execution invoked with custom runtime context. Context=%s", runtimeContext.getContextParams());
