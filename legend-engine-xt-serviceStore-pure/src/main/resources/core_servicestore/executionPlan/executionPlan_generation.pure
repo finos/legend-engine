@@ -64,7 +64,7 @@ function meta::external::store::service::executionPlan::generation::planRootGrap
    
    let sourceTree         = calculateSourceTree($rootTree, $mapping, $extensions);
    let sourceTreeExtended = if($enableConstraints, | $sourceTree->ensureConstraintsRequirements(), | $sourceTree);
-   
+
    let serviceSetImpl  =  $rootTree.sets->toOne()->cast(@RootServiceInstanceSetImplementation);
    
    let setsProcessed   = if($ext->isNotEmpty() && $ext->toOne()->instanceOf(StoreMappingRoutedValueSpecification), | $ext->cast(@StoreMappingRoutedValueSpecification).processedChainSets, |[]);

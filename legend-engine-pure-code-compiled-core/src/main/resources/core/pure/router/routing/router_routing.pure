@@ -334,7 +334,7 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
         let newVars = $fullRes->mapVariables(newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>)), $inScopeVars);
 
         if($f->instanceOf(QualifiedProperty) && ($f->cast(@QualifiedProperty<Any>)->evaluateAndDeactivate().expressionSequence->size() == 1),
-            | let qp = $f->cast(@QualifiedProperty<Any>)->evaluateAndDeactivate();
+            | let qp = $f->cast(@QualifiedProperty<Any>)->evaluateAndDeactivate();  $qp.expressionSequence->println();
               $qp.expressionSequence->at(0)->match([
                   i         : InstanceValue[1]      | ^$lastSecondPass(value=^$fullRes(func=$qp));,       // constant
                   feExprSeq : FunctionExpression[1] | let qpSrcState = $firstPassResults->at(0);          // LHS of QP

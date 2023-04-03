@@ -14,7 +14,16 @@
 
 package org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch;
 
+import java.util.Map;
+import java.util.Optional;
+
 public interface IInMemoryRootGraphFetchExecutionNodeSpecifics
 {
     Object transform(Object source);
+
+   default Optional<Object> filter(Object source, Map<String, Object> parameterValue)
+    {
+        return Optional.of(source);
+    }
+
 }
