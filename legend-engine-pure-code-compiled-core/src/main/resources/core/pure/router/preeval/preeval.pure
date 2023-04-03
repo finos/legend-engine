@@ -708,7 +708,33 @@ function <<access.private>> meta::pure::router::preeval::prevalGenericSimpleFunc
                                   modified = true
                                 );
                               }
-                            )                                                            
+                            ),
+                            pair(
+                              {theSfe:SimpleFunctionExpression[1] | ($theSfe.func == toOneMany_T_MANY__T_$1_MANY$_) && 
+                                  $theSfe.parametersValues->match([
+                                    vs:ValueSpecification[1]|$vs.multiplicity->isMultiplicityConcrete() && $vs.multiplicity->hasLowerBound()
+                                          && ($vs.multiplicity->getLowerBound() > 0), 
+                                    a:Any[*]|false
+                                  ])},
+                              {theSfe:SimpleFunctionExpression[1] |
+                                $state->printDebugWithDepth(|'Handling toOneMany');                        
+
+                                $newParamWrappers->toOne()->map(pw|^$pw(modified=true));
+                              }
+                            ),
+                            pair(
+                              {theSfe:SimpleFunctionExpression[1] | ($theSfe.func == toOne_T_MANY__T_1_) && 
+                                  $theSfe.parametersValues->match([
+                                    vs:VariableExpression[1]|$vs.multiplicity->isMultiplicityConcrete() 
+                                          && $vs.multiplicity == PureOne, 
+                                    a:Any[*]|false
+                                  ])},
+                              {theSfe:SimpleFunctionExpression[1] |
+                                $state->printDebugWithDepth(|'Handling toOne');                        
+
+                                $newParamWrappers->toOne()->map(pw|^$pw(modified=true));
+                              }                              
+                            )                                                             
                         ]);
 
                     let handler = $handlers->filter(p|$p.first->eval($newSfe))->first();

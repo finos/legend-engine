@@ -1054,7 +1054,7 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting40b():B
 
   let expected = {|
         let x = today();
-        $x->toOne()->toOne();
+        $x;
     };
 
   assertRoundTrip($input, $expected);
@@ -1400,6 +1400,61 @@ function <<test.Test>> meta::pure::router::preeval::tests::testFilterNoSimplific
   let input = {o:OrganizationalEntity[1]| $o.positions(%2023-01-01)->filter(p | $p.id == true).id};
 
   let expected = {o:OrganizationalEntity[1]| $o.positions(%2023-01-01)->filter(p | $p.id == true).id};
+
+  assertRoundTrip($input, $expected);
+}
+
+
+function <<test.Test>> meta::pure::router::preeval::tests::testToOneManyElimination1():Boolean[1]
+{
+  let input = {| 'hello'->toOneMany()};
+
+  let expected = {| 'hello'};
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testToOneManyElimination2():Boolean[1]
+{
+  let input = {x:String[*]| $x->toOneMany()};
+
+  let expected = $input;
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testToOneManyElimination3():Boolean[1]
+{
+  let input = {x:String[1..*]| $x->toOneMany()};
+
+  let expected = {x:String[1..*]| $x};
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testToOneElimination1():Boolean[1]
+{
+  let input = {| 'hello'->toOne()};
+
+  let expected = {| 'hello'};
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testToOneElimination2():Boolean[1]
+{
+  let input = {x:String[*]| $x->toOne()};
+
+  let expected = $input;
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testToOneElimination3():Boolean[1]
+{
+  let input = {x:String[1]| $x->toOne()};
+
+  let expected = {x:String[1..*]| $x};
 
   assertRoundTrip($input, $expected);
 }
