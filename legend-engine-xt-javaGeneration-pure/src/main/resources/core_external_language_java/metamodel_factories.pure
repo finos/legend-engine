@@ -2025,7 +2025,7 @@ function meta::external::language::java::factory::j_invoke(class:meta::external:
 
 function meta::external::language::java::factory::j_invoke(class:meta::external::language::java::metamodel::Type[1], typeArguments:meta::external::language::java::metamodel::Type[*], methodName:String[1], args:Code[*], type:meta::external::language::java::metamodel::Type[1]):Code[1]
 {
-   assert($class->instanceOf(meta::external::language::java::metamodel::Class) || $class->instanceOf(meta::external::language::java::metamodel::Array), |'Cannot use static method on type: ' + $class->typeToString());
+   assert($class->instanceOf(meta::external::language::java::metamodel::Class) || $class->instanceOf(meta::external::language::java::metamodel::Array), |'Cannot use static method '+$methodName +' on type: ' + $class->typeToString());
    ^StaticMethodCall(class=$class, typeArguments=$typeArguments, methodName=$methodName, arguments=$args, type=$type);
 }
 

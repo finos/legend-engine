@@ -66,6 +66,7 @@ import org.pac4j.core.profile.CommonProfile;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -129,7 +130,18 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
 
         try
         {
-
+            Map<String, Object> variableMap = new HashMap<>();
+            executionState.getResults().forEach((k, v) ->
+            {
+                if (v instanceof ConstantResult)
+                {
+                    Object value = ((ConstantResult) v).getValue();
+                    if (value != null)
+                    {
+                        variableMap.put(k, value);
+                    }
+                }
+            });
 
             if ((Arrays.asList(clazz.getInterfaces()).contains(IInMemoryRootGraphFetchMergeExecutionNodeSpecifics.class)))
             {
@@ -248,6 +260,13 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
                             ExecutionState newState = new ExecutionState(executionState);
                             newState.graphObjectsBatch = inMemoryGraphObjectsBatch;
                             node.children.forEach(x -> x.accept(new ExecutionNodeExecutor(InMemoryExecutionNodeExecutor.this.pm, newState)));
+                            if (node.filter != null)
+                            {
+                                List<Object> updated = newState.graphObjectsBatch.getObjectsForNodeIndex(node.nodeIndex).stream().map(f ->
+                                        nodeSpecifics.filter(f, variableMap).orElse(null)
+                                ).filter(Objects::nonNull).collect(Collectors.toList());
+                                inMemoryGraphObjectsBatch.setObjectsForNodeIndex(node.nodeIndex, updated);
+                            }
                         }
 
                         action.accept(inMemoryGraphObjectsBatch);
@@ -257,6 +276,7 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
                 };
 
                 Stream<GraphObjectsBatch> graphObjectsBatchStream = StreamSupport.stream(graphObjectsBatchSpliterator, false);
+
 
                 return new GraphFetchResult(graphObjectsBatchStream, childResult).withGraphFetchSpan(graphFetchSpan);
             }
