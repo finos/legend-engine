@@ -20,6 +20,7 @@ import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
+import org.finos.legend.engine.plan.execution.api.request.RequestContextHelper;
 import org.finos.legend.engine.plan.execution.api.result.ResultManager;
 import org.finos.legend.engine.plan.execution.authorization.PlanExecutionAuthorizer;
 import org.finos.legend.engine.plan.execution.authorization.PlanExecutionAuthorizerInput;
@@ -99,7 +100,7 @@ public class ExecutePlan
             {
                 LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_PLAN_EXEC_START, "").toString());
                 // Assume that the input exec plan has no variables
-                Result result = planExecutor.execute((SingleExecutionPlan) execPlan, Maps.mutable.empty(), null, profiles, null, request.getSession().getId());
+                Result result = planExecutor.execute((SingleExecutionPlan) execPlan, Maps.mutable.empty(), null, profiles, null, RequestContextHelper.RequestContext(request));
                 try (Scope scope = GlobalTracer.get().buildSpan("Manage Results").startActive(true))
                 {
                     LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_PLAN_EXEC_STOP, "").toString());

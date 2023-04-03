@@ -17,6 +17,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.result;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opentracing.Span;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -33,6 +34,7 @@ import java.util.TimeZone;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.ImmutableList;
@@ -78,6 +80,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.TDSCo
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.result.SQLResultColumn;
+import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
@@ -106,24 +109,24 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
     public Span topSpan;
 
     private final SQLResultDBColumnsMetaData resultDBColumnsMetaData;
-    private final String sessionID;
+    private final RequestContext requestContext;
     public MutableList<SetImplTransformers> setTransformers = Lists.mutable.empty();
 
     public Builder builder;
 
     public RelationalResult(MutableList<ExecutionActivity> activities, RelationalExecutionNode node, List<SQLResultColumn> sqlResultColumns, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan)
     {
-        this(activities, node, sqlResultColumns, databaseType, databaseTimeZone, connection, profiles, temporaryTables, topSpan, null);
+        this(activities, node, sqlResultColumns, databaseType, databaseTimeZone, connection, profiles, temporaryTables, topSpan, new RequestContext());
     }
 
-    public RelationalResult(MutableList<ExecutionActivity> activities, RelationalExecutionNode node, List<SQLResultColumn> sqlResultColumns, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan, String sessionID)
+    public RelationalResult(MutableList<ExecutionActivity> activities, RelationalExecutionNode node, List<SQLResultColumn> sqlResultColumns, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan, RequestContext requestContext)
     {
         super(activities);
         this.databaseType = databaseType;
         this.databaseTimeZone = databaseTimeZone;
         this.temporaryTables = temporaryTables;
         this.topSpan = topSpan;
-        this.sessionID = sessionID;
+        this.requestContext = requestContext;
         try
         {
             this.connection = connection;
@@ -133,9 +136,9 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
                 this.statement.setFetchSize(100);
             }
 
-            if (sessionID != null)
+            if (requestContext != null)
             {
-                StoreExecutableManager.INSTANCE.addExecutable(sessionID, this);
+                StoreExecutableManager.INSTANCE.addExecutable(RequestContext.getSessionID(requestContext), this);
             }
 
             long start = System.currentTimeMillis();
@@ -182,7 +185,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
         this.databaseTimeZone = sqlExecutionResult.getDatabaseTimeZone();
         this.temporaryTables = sqlExecutionResult.getTemporaryTables();
         this.topSpan = sqlExecutionResult.getTopSpan();
-        this.sessionID = sqlExecutionResult.getSessionID();
+        this.requestContext = sqlExecutionResult.getRequestContext();
         try
         {
             this.connection = sqlExecutionResult.getConnection();
@@ -196,9 +199,9 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             this.resultColumns = sqlExecutionResult.getSqlResultColumns();
             this.resultDBColumnsMetaData = new SQLResultDBColumnsMetaData(this.resultColumns, this.resultSetMetaData);
             this.buildTransformersAndBuilder(node, sqlExecutionResult.getSQLExecutionNode().connection);
-            if (this.sessionID != null)
+            if (this.requestContext != null)
             {
-                StoreExecutableManager.INSTANCE.addExecutable(this.sessionID, this);
+                StoreExecutableManager.INSTANCE.addExecutable(RequestContext.getSessionID(this.requestContext), this);
             }
         }
         catch (Throwable e)
@@ -362,9 +365,9 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             });
         }
 
-        if (sessionID != null)
+        if (requestContext != null)
         {
-            StoreExecutableManager.INSTANCE.removeExecutable(sessionID, this);
+            StoreExecutableManager.INSTANCE.removeExecutable(RequestContext.getSessionID(this.requestContext), this);
         }
 
         if (resultSet != null)
@@ -649,13 +652,13 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             if (!statement.isClosed())
             {
                 statement.cancel();
-                LOGGER.info(new LogInfo(null, LoggingEventType.EXECUTABLE_CANCELLATION, "Successful cancellation of  RelationalResult " + sessionID).toString());
+                LOGGER.info(new LogInfo(null, LoggingEventType.EXECUTABLE_CANCELLATION, "Successful cancellation of  RelationalResult " + RequestContext.getSessionID(this.requestContext)).toString());
 
             }
         }
         catch (Exception e)
         {
-            LOGGER.error(new LogInfo(null, LoggingEventType.EXECUTABLE_CANCELLATION_ERROR, "Unable to cancel  RelationalResult  for session " + sessionID + " " + e.getMessage()).toString());
+            LOGGER.error(new LogInfo(null, LoggingEventType.EXECUTABLE_CANCELLATION_ERROR, "Unable to cancel  RelationalResult  for session " + RequestContext.getSessionID(this.requestContext) + " " + e.getMessage()).toString());
         }
     }
 }
