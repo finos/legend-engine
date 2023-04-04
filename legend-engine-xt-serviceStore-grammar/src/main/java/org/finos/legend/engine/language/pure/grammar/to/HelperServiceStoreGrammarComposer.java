@@ -82,7 +82,7 @@ public class HelperServiceStoreGrammarComposer
             List<String> securitySchemes = securitySchemesMap.entrySet().stream().map(x -> renderSecurityScheme(x.getKey(), x.getValue(),baseIndentation + 1)).collect(Collectors.toList());
 
             builder.append(getTabString(baseIndentation)).append("securitySchemes ").append(":\n").append(getTabString(baseIndentation)).append("{\n");
-            builder.append(getTabString(baseIndentation)).append(String.join(",\n",securitySchemes)).append("\n");
+            builder.append(String.join(",\n",securitySchemes)).append("\n");
             builder.append(getTabString(baseIndentation)).append("};\n");
         }
     }
@@ -232,7 +232,7 @@ public class HelperServiceStoreGrammarComposer
     {
         List<Function2<SecurityScheme, Integer, String>> processors = ListIterate.flatCollect(IServiceStoreGrammarComposerExtension.getExtensions(), ext -> ext.getExtraSecuritySchemesComposers());
 
-        return getTabString(1) + id + " : "  +
+        return getTabString(baseIndentation) + id + " : "  +
                 ListIterate.collect(processors, processor -> processor.value(securityScheme, baseIndentation))
                 .select(Objects::nonNull)
                 .getFirstOptional()
