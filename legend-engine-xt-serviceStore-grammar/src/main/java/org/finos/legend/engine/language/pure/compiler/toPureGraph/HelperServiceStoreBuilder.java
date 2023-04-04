@@ -226,7 +226,8 @@ public class HelperServiceStoreBuilder
     private static Map<String, Root_meta_pure_runtime_connection_authentication_AuthenticationSpecification> compileAuthenticationSpecifications(Map<String, AuthenticationSpecification> authenticationSpecificationMap, Map<String,SecurityScheme> securitySchemes, CompileContext context)
     {
         List<String> ids = authenticationSpecificationMap.keySet().stream().collect(Collectors.toList());
-        ids.forEach(id -> {
+        ids.forEach(id ->
+        {
             if (!securitySchemes.containsKey(id))
             {
                 throw new EngineException(String.format("%s security scheme not defined in service store",id), authenticationSpecificationMap.get(id).sourceInformation, EngineErrorType.COMPILATION);

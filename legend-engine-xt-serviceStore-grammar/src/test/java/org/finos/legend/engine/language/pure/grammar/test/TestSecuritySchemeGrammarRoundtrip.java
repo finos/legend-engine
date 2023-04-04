@@ -60,14 +60,14 @@ public class TestSecuritySchemeGrammarRoundtrip extends TestGrammarRoundtrip.Tes
                 "(\n" +
                 "  securitySchemes :\n" +
                 "  {\n" +
-                "    http : Http\n" +
-                "    {\n" +
-                "      scheme : 'basic';\n" +
-                "    },\n" +
                 "    api : ApiKey\n" +
                 "    {\n" +
                 "      location : 'cookie';\n" +
                 "      keyName : 'key1';\n" +
+                "    },\n" +
+                "    http : Http\n" +
+                "    {\n" +
+                "      scheme : 'basic';\n" +
                 "    }\n" +
                 "  };\n" +
                 ")\n\n\n" +
@@ -77,19 +77,19 @@ public class TestSecuritySchemeGrammarRoundtrip extends TestGrammarRoundtrip.Tes
                 "  store: meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
                 "  baseUrl: 'http://127.0.0.1:53008';\n" +
                 "  auth: {\n" +
-                "    http : # UserPassword {\n" +
-                "      username: 'username';\n" +
-                "      password: PropertiesFileSecret\n" +
-                "      {\n" +
-                "        propertyName: 'ref1';\n" +
-                "      };\n" +
-                "    }#,\n" +
                 "    api : # ApiKey {\n" +
                 "      location: 'header';\n" +
                 "      keyName: 'key1';\n" +
                 "      value: SystemPropertiesSecret\n" +
                 "      {\n" +
                 "        systemPropertyName: 'reference1';\n" +
+                "      };\n" +
+                "    }#,\n" +
+                "    http : # UserPassword {\n" +
+                "      username: 'username';\n" +
+                "      password: PropertiesFileSecret\n" +
+                "      {\n" +
+                "        propertyName: 'ref1';\n" +
                 "      };\n" +
                 "    }#\n" +
                 "  };\n" +
