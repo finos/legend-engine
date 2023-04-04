@@ -108,13 +108,13 @@ public class WindowFunction extends Value
         {
             function = (Function) node;
         }
-        if (node instanceof Field)
-        {
-            partitionByFields.add((Field) node);
-        }
         if (node instanceof OrderedField)
         {
             orderByFields.add((OrderedField) node);
+        }
+        else if (node instanceof Field)
+        {
+            partitionByFields.add((Field) node);
         }
     }
 
