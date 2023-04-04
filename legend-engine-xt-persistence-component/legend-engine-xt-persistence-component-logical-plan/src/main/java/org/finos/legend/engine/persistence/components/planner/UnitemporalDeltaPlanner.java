@@ -18,6 +18,8 @@ import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDelta;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningComparator;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningStrategyVisitors;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyVisitors;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
@@ -54,6 +56,8 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
 {
     private final Optional<String> deleteIndicatorField;
     private final List<Object> deleteIndicatorValues;
+    private final Optional<String> versioningField;
+    private final Optional<VersioningComparator> versioningComparator;
 
     private final Optional<Condition> deleteIndicatorIsNotSetCondition;
     private final Optional<Condition> deleteIndicatorIsSetCondition;
@@ -70,6 +74,8 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
         }
         this.deleteIndicatorField = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD);
         this.deleteIndicatorValues = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_VALUES);
+        this.versioningField = ingestMode.versioningStrategy().accept(VersioningStrategyVisitors.EXTRACT_VERSIONING_FIELD);
+        this.versioningComparator = ingestMode.versioningStrategy().accept(VersioningStrategyVisitors.EXTRACT_VERSIONING_COMPARATOR);
 
         this.deleteIndicatorIsNotSetCondition = deleteIndicatorField.map(field -> LogicalPlanUtils.getDeleteIndicatorIsNotSetCondition(stagingDataset(), field, deleteIndicatorValues));
         this.deleteIndicatorIsSetCondition = deleteIndicatorField.map(field -> LogicalPlanUtils.getDeleteIndicatorIsSetCondition(stagingDataset(), field, deleteIndicatorValues));
@@ -141,7 +147,14 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
 
         List<Condition> notExistsConditions = new ArrayList<>();
         notExistsConditions.add(openRecordCondition);
-        notExistsConditions.add(digestMatchCondition);
+        if (versioningField.isPresent())
+        {
+            notExistsConditions.add(LogicalPlanUtils.getVersioningCondition(mainDataset(), stagingDataset(), versioningField.get(), versioningComparator.get(), true));
+        }
+        else
+        {
+            notExistsConditions.add(digestMatchCondition);
+        }
         notExistsConditions.add(primaryKeysMatchCondition);
         if (!ingestMode().optimizationFilters().isEmpty())
         {
@@ -196,13 +209,18 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
         List<Pair<FieldValue, Value>> updatePairs = keyValuesForMilestoningUpdate();
 
         Condition digestCondition;
-        if (deleteIndicatorIsSetCondition.isPresent())
+        if (versioningField.isPresent())
         {
-            digestCondition = Or.builder().addConditions(digestDoesNotMatchCondition, deleteIndicatorIsSetCondition.get()).build();
+            digestCondition = LogicalPlanUtils.getVersioningCondition(mainDataset(), stagingDataset(), versioningField.get(), versioningComparator.get(), false);
         }
         else
         {
             digestCondition = digestDoesNotMatchCondition;
+        }
+
+        if (deleteIndicatorIsSetCondition.isPresent())
+        {
+            digestCondition = Or.builder().addConditions(digestCondition, deleteIndicatorIsSetCondition.get()).build();
         }
 
         Condition selectCondition;
