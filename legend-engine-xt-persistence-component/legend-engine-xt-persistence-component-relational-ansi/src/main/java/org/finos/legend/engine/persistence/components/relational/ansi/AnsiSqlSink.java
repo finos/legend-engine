@@ -60,6 +60,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.BatchSt
 import org.finos.legend.engine.persistence.components.logicalplan.values.Case;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DiffBinaryValueOperator;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.OrderedField;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.HashFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.InfiniteBatchIdValue;
@@ -94,6 +95,7 @@ import org.finos.legend.engine.persistence.components.relational.ansi.sql.visito
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.EqualsVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.ExistsConditionVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.FieldValueVisitor;
+import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.OrderedFieldVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.FieldVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.FunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.GreaterThanEqualToVisitor;
@@ -158,6 +160,7 @@ public class AnsiSqlSink extends RelationalSink
 
         logicalPlanVisitorByClass.put(Field.class, new FieldVisitor());
         logicalPlanVisitorByClass.put(FieldValue.class, new FieldValueVisitor());
+        logicalPlanVisitorByClass.put(OrderedField.class, new OrderedFieldVisitor());
         logicalPlanVisitorByClass.put(SchemaReference.class, new SchemaReferenceVisitor());
         logicalPlanVisitorByClass.put(SchemaDefinition.class, new SchemaDefinitionVisitor());
         logicalPlanVisitorByClass.put(DatasetReference.class, new DatasetReferenceVisitor());
