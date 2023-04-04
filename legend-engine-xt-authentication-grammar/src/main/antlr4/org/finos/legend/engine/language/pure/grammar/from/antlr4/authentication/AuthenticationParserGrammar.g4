@@ -7,7 +7,7 @@ options
     tokenVocab = AuthenticationLexerGrammar;
 }
 
-identifier:                      VALID_STRING | STRING | USER_PASSWORD_AUTHENTICATION | API_KEY_AUTHENTICATION | ENCRYPTED_PRIVATE_KEY_AUTHENTICATION | GCP_WIF_AWS_IDP_AUTHENTICATION
+identifier:                      VALID_STRING | STRING | USER_PASSWORD_AUTHENTICATION | API_KEY_AUTHENTICATION | ENCRYPTED_PRIVATE_KEY_AUTHENTICATION | GCP_WIF_AWS_IDP_AUTHENTICATION | KERBEROS_AUTHENTICATION
 ;
 
 // -------------------------------------- DEFINITION --------------------------------------
@@ -55,6 +55,12 @@ userPasswordAuthentication_username:    USER_PASSWORD_AUTHENTICATION_USERNAME CO
 
 userPasswordAuthentication_password:    USER_PASSWORD_AUTHENTICATION_PASSWORD COLON secret_value SEMI_COLON
 ;
+
+// -------------------------------------- KerberosAuthentication --------------------------------------
+
+kerberosAuthentication:                 EOF
+;
+
 
 // -------------------------------------- APIKeyAuthentication --------------------------------------
 

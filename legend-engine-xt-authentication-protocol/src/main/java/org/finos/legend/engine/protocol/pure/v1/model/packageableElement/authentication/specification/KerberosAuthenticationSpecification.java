@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,17 +14,18 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification;
 
-public interface AuthenticationSpecificationVisitor<T>
+import javax.security.auth.Subject;
+
+public class KerberosAuthenticationSpecification extends AuthenticationSpecification
 {
-    T visit(AuthenticationSpecification catchAll);
+    public KerberosAuthenticationSpecification()
+    {
 
-    T visit(ApiKeyAuthenticationSpecification authenticationSpecification);
+    }
 
-    T visit(UserPasswordAuthenticationSpecification authenticationSpecification);
-
-    T visit(EncryptedPrivateKeyPairAuthenticationSpecification authenticationSpecification);
-
-    T visit(GCPWIFWithAWSIdPAuthenticationSpecification authenticationSpecification);
-
-    T visit(KerberosAuthenticationSpecification authenticationSpecification);
+    @Override
+    public <T> T accept(AuthenticationSpecificationVisitor<T> visitor)
+    {
+        return visitor.visit(this);
+    }
 }

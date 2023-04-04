@@ -54,6 +54,18 @@ public class TestAuthenticationGrammarParser_AuthenticationTypes extends TestGra
     }
 
     @Test
+    public void kerberosAuthentication()
+    {
+        PureModelContextData test = test("###AuthenticationDemo\n" +
+                "import test::*;\n" +
+                "AuthenticationDemo demo::demo1\n" +
+                "{\n" +
+                "  authentication: # Kerberos {\n" +
+                "  }#;\n" +
+                "}\n");
+    }
+
+    @Test
     public void apiTokenAuthentication()
     {
         PureModelContextData test = test("###AuthenticationDemo\n" +
