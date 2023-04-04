@@ -881,8 +881,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   let expectedCol2 = ^PrimitiveValueSchemaColumn(name='Integer',        type=meta::external::query::sql::PrimitiveType.Integer);
   let expectedCol3 = ^EnumValueSchemaColumn(name='The Enum Value',      type=MyEnum->elementToPath());
   let expectedCol4 = ^EnumValueSchemaColumn(name='The Type',            type=FieldType->elementToPath());
-  let expectedEnum1 = ^meta::external::query::sql::Enum(type=MyEnum->elementToPath(), values=MyEnum->enumValues()->map( v:meta::external::query::sql::Enum[1]   | $v->id()));
-  let expectedEnum2 = ^meta::external::query::sql::Enum(type=FieldType->elementToPath(), values=FieldType->enumValues()->map( v:meta::external::query::sql::Enum[1]   | $v->id()));
+  let expectedEnum1 = ^meta::external::query::sql::Enum(type=MyEnum->elementToPath(), values=MyEnum->enumValues()->map(v:meta::pure::metamodel::type::Enum[1] | $v->id()));
+  let expectedEnum2 = ^meta::external::query::sql::Enum(type=FieldType->elementToPath(), values=FieldType->enumValues()->map(v:meta::pure::metamodel::type::Enum[1] | $v->id()));
   let expectedSchema = ^Schema(columns=[$expectedCol1, $expectedCol2, $expectedCol3, $expectedCol4], enums=[$expectedEnum1, $expectedEnum2]);
 
   assertEquals($expectedSchema, $actualSchema);
