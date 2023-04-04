@@ -318,7 +318,7 @@ public class HelperValueSpecificationBuilder
     {
         Class<?> _class = context.resolveClass(rootGraphFetchTree._class, rootGraphFetchTree.sourceInformation);
         ListIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.graphFetch.GraphFetchTree> children = ListIterate.collect(rootGraphFetchTree.subTrees, subTree -> buildGraphFetchTree(subTree, context, _class, openVariables, processingContext));
-        return new Root_meta_pure_graphFetch_RootGraphFetchTree_Impl<>("")
+        return new Root_meta_pure_graphFetch_RootGraphFetchTree_Impl<>("", null, context.pureModel.getClass("meta::pure::graphFetch::RootGraphFetchTree"))
                 ._class(_class)
                 ._subTrees(children);
     }

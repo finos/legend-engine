@@ -1,7 +1,7 @@
 ###MongoDB
 Database test::mongodb::mydatabase
 (
-    Collection PersonCollection
+    Collection person
     (
         validationLevel: strict;
         validationAction: warn;
@@ -13,6 +13,30 @@ Database test::mongodb::mydatabase
                     "bsonType": "string",
                     "description": "firstName of the person",
                     "minLength": 2
+                },
+                "lastName": {
+                    "bsonType": "string",
+                    "description": "lastName of the person",
+                    "minLength": 2
+                },
+                "age": {
+                    "bsonType": "int",
+                    "description": "age of the person",
+                    "minLength": 2
+                },
+                "firm": {
+                    "bsonType": "object",
+                    "description": "firm of the person",
+                    "properties": {
+                        "legalName": {
+                            "bsonType": "string",
+                            "description": "legal name of the firm"
+                        },
+                        "address": {
+                          "bsonType": "string",
+                          "description": "address of the firm"
+                        }
+                    }
                 }
             },
             "additionalProperties": false
@@ -52,7 +76,7 @@ Mapping test::mongodb::TestPersonMapping
 (
     *meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Person[Person]: MongoDB
     {
-        ~mainCollection [test::mongodb::mydatabase] PersonCollection
+        ~mainCollection [test::mongodb::mydatabase] person
         ~binding meta::external::store::mongodb::showcase::store::PersonCollectionBinding
     }
 )
@@ -62,7 +86,7 @@ MongoDBConnection test::mongodb::testConnection
 {
     database: userDatabase;
     store: test::mongodb::mydatabase;
-    serverURLs: [localhost:50322];
+    serverURLs: [localhost:51821];
     authentication: # UserPassword {
         username: 'sa';
         password: SystemPropertiesSecret
