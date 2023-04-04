@@ -22,6 +22,7 @@ import org.finos.legend.engine.plan.execution.result.ExecutionActivity;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.ResultVisitor;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutable;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutableManager;
 import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
@@ -94,6 +95,11 @@ public class SQLExecutionResult extends Result implements StoreExecutable
             RelationalExecutionActivity activity = ((RelationalExecutionActivity) activities.get(activities.size() - 1));
             String sql = activity.comment != null ? activity.comment.concat("\n").concat(activity.sql) : activity.sql;
             LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, sql).toString());
+            if (this.requestContext != null)
+            {
+                StoreExecutableManager.INSTANCE.addExecutable(RequestContext.getSessionID(this.requestContext), this);
+            }
+
             this.resultSet = this.statement.executeQuery(sql);
             LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_STOP, (double) System.currentTimeMillis() - start).toString());
             this.executedSql = sql;
@@ -109,6 +115,11 @@ public class SQLExecutionResult extends Result implements StoreExecutable
                 this.columnNames.add(columnLabel);
                 SQLResultColumn col = this.sqlResultColumns.get(i - 1);
                 this.resultColumns.add(new ResultColumn(i, col.label, col.dataType, this.resultSetMetaData.getColumnType(i)));
+            }
+
+            if (this.requestContext != null)
+            {
+                StoreExecutableManager.INSTANCE.removeExecutable(RequestContext.getSessionID(this.requestContext), this);
             }
         }
         catch (Throwable e)
