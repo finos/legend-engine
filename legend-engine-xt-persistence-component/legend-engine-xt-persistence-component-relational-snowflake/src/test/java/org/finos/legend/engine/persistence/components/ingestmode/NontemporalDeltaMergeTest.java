@@ -218,7 +218,7 @@ public class NontemporalDeltaMergeTest extends NontemporalDeltaTest
 
         String mergeSql = "MERGE INTO \"mydb\".\"main\" as sink " +
                 "USING " +
-                "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\" FROM \"mydb\".\"staging\" as stage WHERE (stage.\"bizDate\" > '2020-01-01') AND (stage.\"bizDate\" < '2020-01-03')) as stage " +
+                "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\" FROM \"mydb\".\"staging\" as stage WHERE (stage.\"biz_date\" > '2020-01-01') AND (stage.\"biz_date\" < '2020-01-03')) as stage " +
                 "ON (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\") " +
                 "WHEN MATCHED AND sink.\"digest\" <> stage.\"digest\" " +
                 "THEN UPDATE SET " +

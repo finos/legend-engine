@@ -27,7 +27,7 @@ import static org.immutables.value.Value.Style;
     optionalAcceptNullable = true,
     strictBuilder = true
 )
-public interface WindowFunctionAbstract extends Function
+public interface WindowFunctionAbstract extends Value
 {
     Function windowFunction();
 
