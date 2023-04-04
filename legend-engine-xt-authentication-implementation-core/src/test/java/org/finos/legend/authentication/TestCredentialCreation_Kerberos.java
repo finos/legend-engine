@@ -49,7 +49,7 @@ public class TestCredentialCreation_Kerberos
         Set<KerberosPrincipal> principals = new HashSet<>();
         principals.add(new KerberosPrincipal("peter@test.com"));
         testSubject = new Subject(false, principals, Sets.fixedSize.empty(), Sets.fixedSize.empty());
-        this.identity = new Identity("alice", new LegendKerberosCredential(testSubject));
+        this.identity = new Identity("peter", new LegendKerberosCredential(testSubject));
     }
 
     @Test
