@@ -15,11 +15,11 @@
 package org.finos.legend.engine.plan.execution.nodes.helpers.platform;
 
 import org.codehaus.commons.compiler.CompileException;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.factory.Lists;
-import org.eclipse.collections.impl.list.mutable.FastList;
-import org.eclipse.collections.impl.map.mutable.UnifiedMap;
+import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.plan.compilation.ExecutionPlanDependenciesFilter;
 import org.finos.legend.engine.plan.execution.result.ErrorResult;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
@@ -29,8 +29,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaCl
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPlatformImplementation;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
-import org.finos.legend.engine.shared.javaCompiler.ClassPathFilter;
-import org.finos.legend.engine.shared.javaCompiler.CompositeClassPathFilter;
+import org.finos.legend.engine.shared.javaCompiler.ClassPathFilters;
 import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
 import org.finos.legend.engine.shared.javaCompiler.JavaVersion;
@@ -38,18 +37,15 @@ import org.finos.legend.engine.shared.javaCompiler.SingleFileCompiler;
 import org.finos.legend.engine.shared.javaCompiler.StringJavaSource;
 import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class JavaHelper
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final Logger LOGGER = LoggerFactory.getLogger("Alloy Execution Server");
     private static final String DEFAULT_EXECUTION_METHOD_NAME = "execute";
 
     private JavaHelper()
@@ -92,19 +88,17 @@ public class JavaHelper
 
     private static EngineJavaCompiler createNewJavaCompiler()
     {
-        List<ClassPathFilter> filters = Lists.mutable.of(new ExecutionPlanDependenciesFilter());
-        ExecutionPlanJavaCompilerExtensionLoader.extensions().forEach(ext -> filters.add(ext.getExtraClassPathFilter()));
-        return new EngineJavaCompiler(JavaVersion.JAVA_8, new CompositeClassPathFilter(filters));
+        return new EngineJavaCompiler(JavaVersion.JAVA_8, ClassPathFilters.any(ListIterate.collect(ExecutionPlanJavaCompilerExtensionLoader.extensions(), ExecutionPlanJavaCompilerExtension::getExtraClassPathFilter, Lists.mutable.of(new ExecutionPlanDependenciesFilter()))));
     }
 
     private static EngineJavaCompiler compilePlanFast(SingleExecutionPlan singleExecutionPlan) throws JavaCompileException, IOException, CompileException
     {
-        Map<JavaPlatformImplementation, List<JavaClass>> javaClassesMap = Maps.mutable.empty();
+        MutableMap<JavaPlatformImplementation, MutableList<JavaClass>> javaClassesMap = Maps.mutable.empty();
         if (singleExecutionPlan.globalImplementationSupport != null)
         {
             JavaPlatformImplementation platformImplementation = (JavaPlatformImplementation) singleExecutionPlan.globalImplementationSupport;
-            List<JavaClass> globalImplementationSupportClasses = collectJavaClasses(platformImplementation);
-            if (!globalImplementationSupportClasses.isEmpty())
+            MutableList<JavaClass> globalImplementationSupportClasses = collectJavaClasses(platformImplementation);
+            if (globalImplementationSupportClasses.notEmpty())
             {
                 javaClassesMap.put(platformImplementation, globalImplementationSupportClasses);
             }
@@ -116,22 +110,18 @@ public class JavaHelper
         }
 
         EngineJavaCompiler javaCompiler = createNewJavaCompiler();
-        Map<JavaClass, JavaPlatformImplementation> reverseClassMap = Maps.mutable.empty();
-        List<JavaClass> executeClasses = new ArrayList<>();
-        List<JavaClass> nonExecuteClasses = new ArrayList<>();
-        javaClassesMap.forEach((jimpl, jclasses) -> jclasses.forEach(jclass ->
+        MutableMap<JavaClass, JavaPlatformImplementation> reverseClassMap = Maps.mutable.empty();
+        MutableList<JavaClass> executeClasses = Lists.mutable.empty();
+        MutableList<JavaClass> nonExecuteClasses = Lists.mutable.empty();
+        javaClassesMap.forEachKeyValue((jimpl, jclasses) -> jclasses.forEach(jclass ->
         {
             reverseClassMap.put(jclass, jimpl);
             (javaClassHasFullName(jclass, jimpl.executionClassFullName) ? executeClasses : nonExecuteClasses).add(jclass);
         }));
-        Map<String, JavaClass> classMap = nonExecuteClasses.stream().collect(Collectors.toMap(JavaHelper::getJavaClassFullName, x -> x, (x, y) ->
-        {
-            throw new RuntimeException("Conflicting classes compilation in fast mode not supported!");
-        }));
 
-        Map<String, String> classToBytecodeMap = compileJavaClasses(nonExecuteClasses, javaCompiler);
-
-        classToBytecodeMap.forEach((name, bytecode) ->
+        MutableMap<String, JavaClass> classMap = nonExecuteClasses.groupByUniqueKey(JavaHelper::getJavaClassFullName);
+        MutableMap<String, String> classToBytecodeMap = compileJavaClasses(nonExecuteClasses, javaCompiler);
+        classToBytecodeMap.forEachKeyValue((name, bytecode) ->
         {
             JavaClass _class = classMap.get(name);
             if (_class == null)
@@ -148,7 +138,7 @@ public class JavaHelper
                 _class = createGeneratedJavaClass(name);
                 if (impl.classes == null)
                 {
-                    impl.classes = FastList.newListWith(_class);
+                    impl.classes = Lists.mutable.with(_class);
                 }
                 else
                 {
@@ -172,13 +162,13 @@ public class JavaHelper
         return javaCompiler;
     }
 
-    private static void collectJavaClasses(ExecutionNode executionNode, Map<JavaPlatformImplementation, List<JavaClass>> javaClassesMap)
+    private static void collectJavaClasses(ExecutionNode executionNode, Map<JavaPlatformImplementation, ? super MutableList<JavaClass>> javaClassesMap)
     {
         if (executionNode.implementation != null)
         {
             JavaPlatformImplementation platformImplementation = (JavaPlatformImplementation) executionNode.implementation;
-            List<JavaClass> implementationJavaClasses = collectJavaClasses(platformImplementation);
-            if (!implementationJavaClasses.isEmpty())
+            MutableList<JavaClass> implementationJavaClasses = collectJavaClasses(platformImplementation);
+            if (implementationJavaClasses.notEmpty())
             {
                 javaClassesMap.put(platformImplementation, implementationJavaClasses);
             }
@@ -187,17 +177,17 @@ public class JavaHelper
         executionNode.childNodes().forEach(node -> collectJavaClasses(node, javaClassesMap));
     }
 
-    private static List<JavaClass> collectJavaClasses(JavaPlatformImplementation platformImplementation)
+    private static MutableList<JavaClass> collectJavaClasses(JavaPlatformImplementation platformImplementation)
     {
         if ((platformImplementation.code == null) &&
                 ((platformImplementation.byteCode == null) || platformImplementation.byteCode.isEmpty()) &&
                 ((platformImplementation.compiledClasses == null) || platformImplementation.compiledClasses.isEmpty()) &&
                 ((platformImplementation.classes == null) || platformImplementation.classes.isEmpty()))
         {
-            return Collections.emptyList();
+            return Lists.fixedSize.empty();
         }
 
-        Map<String, JavaClass> classMap = UnifiedMap.newMap();
+        MutableMap<String, JavaClass> classMap = Maps.mutable.empty();
 
         if (platformImplementation.code != null)
         {
@@ -235,7 +225,7 @@ public class JavaHelper
             }
         }
 
-        return FastList.newList(classMap.values());
+        return Lists.mutable.withAll(classMap.values());
     }
 
     private static EngineJavaCompiler compilePlanSlow(SingleExecutionPlan singleExecutionPlan) throws JavaCompileException
@@ -272,13 +262,12 @@ public class JavaHelper
 
     private static void compileImplementation(JavaPlatformImplementation javaPlatformImplementation, EngineJavaCompiler javaCompiler) throws JavaCompileException
     {
-        List<JavaClass> allJavaClasses = collectJavaClasses(javaPlatformImplementation);
-        if (!allJavaClasses.isEmpty())
+        MutableList<JavaClass> allJavaClasses = collectJavaClasses(javaPlatformImplementation);
+        if (allJavaClasses.notEmpty())
         {
-            Map<String, String> classToBytecodeMap = compileJavaClasses(allJavaClasses, javaCompiler);
-
-            Map<String, JavaClass> classMap = allJavaClasses.stream().collect(Collectors.toMap(JavaHelper::getJavaClassFullName, x -> x));
-            classToBytecodeMap.forEach((name, bytecode) ->
+            MutableMap<String, String> classToBytecodeMap = compileJavaClasses(allJavaClasses, javaCompiler);
+            MutableMap<String, JavaClass> classMap = allJavaClasses.groupByUniqueKey(JavaHelper::getJavaClassFullName);
+            classToBytecodeMap.forEachKeyValue((name, bytecode) ->
             {
                 JavaClass _class = classMap.get(name);
                 if (_class == null)
@@ -286,7 +275,7 @@ public class JavaHelper
                     _class = createGeneratedJavaClass(name);
                     if (javaPlatformImplementation.classes == null)
                     {
-                        javaPlatformImplementation.classes = FastList.newListWith(_class);
+                        javaPlatformImplementation.classes = Lists.mutable.with(_class);
                     }
                     else
                     {
@@ -299,22 +288,24 @@ public class JavaHelper
     }
 
 
-    private static Map<String, String> compileJavaClasses(List<JavaClass> javaClasses, EngineJavaCompiler javaCompiler) throws JavaCompileException
+    private static MutableMap<String, String> compileJavaClasses(MutableList<JavaClass> javaClasses, EngineJavaCompiler javaCompiler) throws JavaCompileException
     {
-        Map<Boolean, List<JavaClass>> partitioned = javaClasses.stream().collect(Collectors.partitioningBy(c -> c.byteCode != null));
-        List<JavaClass> javaClassesWithBytecode = partitioned.get(true);
-        List<JavaClass> javaClassesToBeCompiled = partitioned.get(false);
-
-        if (!javaClassesWithBytecode.isEmpty())
+        MutableList<StringJavaSource> toBeCompiled = Lists.mutable.empty();
+        javaClasses.forEach(c ->
         {
-            javaClassesWithBytecode.forEach(c -> javaCompiler.load(getJavaClassFullName(c), c.byteCode));
-        }
-
-        if (!javaClassesToBeCompiled.isEmpty())
+            if (c.byteCode == null)
+            {
+                toBeCompiled.add(StringJavaSource.newStringJavaSource(c._package, c.name, c.source));
+            }
+            else
+            {
+                javaCompiler.load(getJavaClassFullName(c), c.byteCode);
+            }
+        });
+        if (toBeCompiled.notEmpty())
         {
-            javaCompiler.compile(javaClassesToBeCompiled.stream().map(c -> StringJavaSource.newStringJavaSource(c._package, c.name, c.source)).collect(Collectors.toList()));
+            javaCompiler.compile(toBeCompiled);
         }
-
         return javaCompiler.save();
     }
 
