@@ -12,24 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.ingestmode.deduplication;
+package org.finos.legend.engine.persistence.components.logicalplan.values;
 
-import static org.immutables.value.Value.Immutable;
-import static org.immutables.value.Value.Style;
-
-@Immutable
-@Style(
-    typeAbstract = "*Abstract",
-    typeImmutable = "*",
-    jdkOnly = true,
-    optionalAcceptNullable = true,
-    strictBuilder = true
-)
-public interface NoDeduplicationAbstract extends InterBatchDeduplicationStrategy
+public enum Order
 {
-    @Override
-    default <T> T accept(InterBatchDeduplicationStrategyVisitor<T> visitor)
-    {
-        return visitor.visitNoDeduplication(this);
-    }
+    ASC, DESC
 }

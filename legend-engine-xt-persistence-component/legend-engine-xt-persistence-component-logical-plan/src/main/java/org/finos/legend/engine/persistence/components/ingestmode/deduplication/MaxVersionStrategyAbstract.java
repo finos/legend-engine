@@ -14,9 +14,27 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode.deduplication;
 
-public interface InterBatchDeduplicationStrategyVisitor<T>
-{
-    T visitNoDeduplication(NoDeduplicationAbstract noDeduplication);
+import org.immutables.value.Value;
 
-    T visitPickMaxVersion(PickMaxVersionAbstract pickMaxVersion);
+import static org.immutables.value.Value.Immutable;
+import static org.immutables.value.Value.Style;
+
+@Immutable
+@Style(
+    typeAbstract = "*Abstract",
+    typeImmutable = "*",
+    jdkOnly = true,
+    optionalAcceptNullable = true,
+    strictBuilder = true
+)
+public interface MaxVersionStrategyAbstract extends VersioningStrategy
+{
+    @Value.Parameter(order = 0)
+    String versioningField();
+
+    @Override
+    default <T> T accept(VersioningStrategyVisitor<T> visitor)
+    {
+        return visitor.visitMaxVersionStrategy(this);
+    }
 }

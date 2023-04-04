@@ -18,34 +18,23 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public enum FunctionName
+public enum Order
 {
-    SUM("SUM"),
-    MAX("MAX"),
-    MIN("MIN"),
-    COUNT("COUNT"),
-    COALESCE("COALESCE"),
-    CURRENT_TIME("CURRENT_TIME"),
-    CURRENT_DATE("CURRENT_DATE"),
-    HASH("HASH"),
-    CONCAT("CONCAT"),
-    RAW_TO_HEX("RAWTOHEX"),
-    CURRENT_TIMESTAMP("CURRENT_TIMESTAMP"),
-    SYSDATE("SYSDATE"),
-    ROW_NUMBER("ROW_NUMBER");
+    ASC("ASC"),
+    DESC("DESC");
 
-    private static final Map<String, FunctionName> BY_NAME = Arrays
-        .stream(FunctionName.values())
-        .collect(Collectors.toMap(FunctionName::get, java.util.function.Function.identity()));
+    private static final Map<String, Order> BY_NAME = Arrays
+        .stream(Order.values())
+        .collect(Collectors.toMap(Order::get, java.util.function.Function.identity()));
 
-    public static FunctionName fromName(String name)
+    public static Order fromName(String name)
     {
         return BY_NAME.get(name);
     }
 
     private final String name;
 
-    FunctionName(String name)
+    Order(String name)
     {
         this.name = name;
     }

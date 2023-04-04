@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.ingestmode.deduplication;
+package org.finos.legend.engine.persistence.components.logicalplan.values;
 
-import org.immutables.value.Value;
+import java.util.Optional;
 
 import static org.immutables.value.Value.Immutable;
 import static org.immutables.value.Value.Style;
@@ -27,14 +27,7 @@ import static org.immutables.value.Value.Style;
     optionalAcceptNullable = true,
     strictBuilder = true
 )
-public interface PickMaxVersionAbstract extends InterBatchDeduplicationStrategy
+public interface OrderedFieldAbstract extends FieldValueAbstract
 {
-    @Value.Parameter(order = 0)
-    String versionField();
-
-    @Override
-    default <T> T accept(InterBatchDeduplicationStrategyVisitor<T> visitor)
-    {
-        return visitor.visitPickMaxVersion(this);
-    }
+    Optional<Order> order();
 }

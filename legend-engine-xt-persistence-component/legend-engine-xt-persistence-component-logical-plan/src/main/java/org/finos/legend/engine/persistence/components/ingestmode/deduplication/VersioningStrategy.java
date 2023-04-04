@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,18 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.logicalplan.values;
+package org.finos.legend.engine.persistence.components.ingestmode.deduplication;
 
-public enum FunctionName
+public interface VersioningStrategy
 {
-    SUM,
-    MAX,
-    MIN,
-    COUNT,
-    COALESCE,
-    CURRENT_TIME,
-    CURRENT_DATE,
-    HASH,
-    CURRENT_TIMESTAMP,
-    ROW_NUMBER;
+    <T> T accept(VersioningStrategyVisitor<T> visitor);
 }
