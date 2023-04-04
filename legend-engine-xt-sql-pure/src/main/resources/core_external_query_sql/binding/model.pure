@@ -15,17 +15,24 @@
 
 Class meta::external::query::sql::SchemaColumn
 {
-  name: String[1];
+  <<equality.Key>> name: String[1];
 }
 
 Class meta::external::query::sql::PrimitiveValueSchemaColumn extends meta::external::query::sql::SchemaColumn
 {
-  type: meta::external::query::sql::PrimitiveType[1];
+  <<equality.Key>> type: meta::external::query::sql::PrimitiveType[1];
 }
+
+Class meta::external::query::sql::EnumValueSchemaColumn extends meta::external::query::sql::SchemaColumn
+{
+  <<equality.Key>> type: String[1];
+}
+
 
 Class meta::external::query::sql::Schema
 {
-  columns: meta::external::query::sql::SchemaColumn[*];
+  <<equality.Key>> columns: meta::external::query::sql::SchemaColumn[*];
+  <<equality.Key>> enums: meta::external::query::sql::Enum[*];
 }
 
 Enum meta::external::query::sql::PrimitiveType
@@ -40,6 +47,12 @@ Enum meta::external::query::sql::PrimitiveType
   Date,
   Integer,
   Decimal
+}
+
+Class meta::external::query::sql::Enum
+{
+  <<equality.Key>> type: String[1];
+  <<equality.Key>> values: String[*];
 }
 
 function meta::external::query::sql::stringToPrimitiveType(dt : String[1]) : meta::external::query::sql::PrimitiveType[1]
@@ -67,13 +80,21 @@ function meta::external::query::sql::tdsColToSchemaCol(col: TDSColumn[1]): meta:
   let columnName = $col.name;
   if($col.type->isEmpty(), |fail('Column type is empty for col: ' + $columnName), |[]);
   let tdsType = $col.type->toOne();
-  if($tdsType->instanceOf(PrimitiveType), |[], |fail('Unsupported type on column: ' + $columnName + ' (' + $tdsType->meta::pure::functions::meta::elementToPath() + '), only primitive types are supported'));
-  let columnPrimitiveType = $tdsType->meta::pure::functions::meta::elementToPath()->meta::external::query::sql::stringToPrimitiveType();
-  ^meta::external::query::sql::PrimitiveValueSchemaColumn(type=$columnPrimitiveType,name=$columnName);
+  let columnPrimitiveType = $col.type->match([
+    s:PrimitiveType[1]      | ^meta::external::query::sql::PrimitiveValueSchemaColumn(type=$tdsType->meta::pure::functions::meta::elementToPath()->meta::external::query::sql::stringToPrimitiveType(),name=$columnName),
+    e:Enumeration<Any>[1]   | ^meta::external::query::sql::EnumValueSchemaColumn(type=$tdsType->meta::pure::functions::meta::elementToPath(),name=$columnName),
+    a:Any[*]                | fail('Unsupported type on column: ' + $columnName + ' (' + $tdsType->meta::pure::functions::meta::elementToPath() + '), only primitive types and enums are supported');
+  ])->cast(@meta::external::query::sql::SchemaColumn);
 }
 
 function meta::external::query::sql::tdsColsToSchema(cols: TDSColumn[*]): meta::external::query::sql::Schema[1]
 {
-  let schemaCols = $cols->map(v:TDSColumn[1]|$v->meta::external::query::sql::tdsColToSchemaCol());
-  ^meta::external::query::sql::Schema(columns=$schemaCols);
+  let schemaCols = $cols->map(v:TDSColumn[1]  | $v->meta::external::query::sql::tdsColToSchemaCol());
+  let enums = $cols
+    ->map(c:TDSColumn[1] | $c.type->match([
+      e:Enumeration<Any>[1] | ^meta::external::query::sql::Enum(type=$e->meta::pure::functions::meta::elementToPath(), values=$e->enumValues()->map( v:Enum[1]   | $v->id())),
+      a:Any[*]              | []
+    ]))
+    ->distinct();
+  ^meta::external::query::sql::Schema(columns=$schemaCols, enums=$enums);
 }

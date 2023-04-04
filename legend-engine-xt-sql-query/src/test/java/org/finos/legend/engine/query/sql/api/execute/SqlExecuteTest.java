@@ -27,6 +27,9 @@ import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.query.sql.api.MockPac4jFeature;
 import org.finos.legend.engine.query.sql.api.sources.TestSQLSourceProvider;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.pure.generated.Root_meta_external_query_sql_Enum;
+import org.finos.legend.pure.generated.Root_meta_external_query_sql_EnumValueSchemaColumn_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_query_sql_Enum_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_query_sql_PrimitiveValueSchemaColumn_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_query_sql_Schema;
 import org.finos.legend.pure.generated.Root_meta_external_query_sql_SchemaColumn;
@@ -73,7 +76,9 @@ public class SqlExecuteTest
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum stringType = new Root_meta_pure_metamodel_type_Enum_Impl("String");
         Root_meta_external_query_sql_SchemaColumn idColumn = new Root_meta_external_query_sql_PrimitiveValueSchemaColumn_Impl((String) null)._name("Id")._type(integerType);
         Root_meta_external_query_sql_SchemaColumn nameColumn = new Root_meta_external_query_sql_PrimitiveValueSchemaColumn_Impl((String) null)._name("Name")._type(stringType);
-        Root_meta_external_query_sql_Schema schema = new Root_meta_external_query_sql_Schema_Impl((String) null)._columnsAdd(idColumn)._columnsAdd(nameColumn);
+        Root_meta_external_query_sql_SchemaColumn typeColumn = new Root_meta_external_query_sql_EnumValueSchemaColumn_Impl((String) null)._name("Employee Type")._type("demo::employeeType");
+        Root_meta_external_query_sql_Enum employeeType = new Root_meta_external_query_sql_Enum_Impl((String) null)._type("demo::employeeType")._valuesAdd("Type1")._valuesAdd("Type2");
+        Root_meta_external_query_sql_Schema schema = new Root_meta_external_query_sql_Schema_Impl((String) null)._columnsAdd(idColumn)._columnsAdd(nameColumn)._columnsAdd(typeColumn)._enumsAdd(employeeType);
         String expectedSchema = SqlExecute.serializeToJSON(schema, pureModel);
         Assert.assertEquals(expectedSchema, actualSchema);
     }
@@ -88,7 +93,9 @@ public class SqlExecuteTest
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum stringType = new Root_meta_pure_metamodel_type_Enum_Impl("String");
         Root_meta_external_query_sql_SchemaColumn idColumn = new Root_meta_external_query_sql_PrimitiveValueSchemaColumn_Impl((String) null)._name("Id")._type(integerType);
         Root_meta_external_query_sql_SchemaColumn nameColumn = new Root_meta_external_query_sql_PrimitiveValueSchemaColumn_Impl((String) null)._name("Name")._type(stringType);
-        Root_meta_external_query_sql_Schema schema = new Root_meta_external_query_sql_Schema_Impl((String) null)._columnsAdd(idColumn)._columnsAdd(nameColumn);
+        Root_meta_external_query_sql_SchemaColumn typeColumn = new Root_meta_external_query_sql_EnumValueSchemaColumn_Impl((String) null)._name("Employee Type")._type("demo::employeeType");
+        Root_meta_external_query_sql_Enum employeeType = new Root_meta_external_query_sql_Enum_Impl((String) null)._type("demo::employeeType")._valuesAdd("Type1")._valuesAdd("Type2");
+        Root_meta_external_query_sql_Schema schema = new Root_meta_external_query_sql_Schema_Impl((String) null)._columnsAdd(idColumn)._columnsAdd(nameColumn)._columnsAdd(typeColumn)._enumsAdd(employeeType);
         String expectedSchema = SqlExecute.serializeToJSON(schema, pureModel);
         Assert.assertEquals(expectedSchema, actualSchema);
     }
