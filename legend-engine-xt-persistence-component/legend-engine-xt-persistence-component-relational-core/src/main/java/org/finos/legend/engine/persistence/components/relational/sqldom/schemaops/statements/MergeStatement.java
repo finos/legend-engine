@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.statements;
 
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlDomException;
+import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.Pair;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.conditions.Condition;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.ASSIGNMENT_OPERATOR;
 import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.COMMA;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.EMPTY;
 import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.WHITE_SPACE;
 
 public class MergeStatement implements DMLStatement
@@ -154,14 +156,7 @@ public class MergeStatement implements DMLStatement
         if (values != null && values.size() > 0)
         {
             builder.append("(");
-            for (int ctr = 0; ctr < values.size(); ctr++)
-            {
-                values.get(ctr).genSql(builder);
-                if (ctr < (values.size() - 1))
-                {
-                    builder.append(COMMA);
-                }
-            }
+            SqlGen.genSqlList(builder, values, EMPTY, COMMA);
             builder.append(")");
         }
     }

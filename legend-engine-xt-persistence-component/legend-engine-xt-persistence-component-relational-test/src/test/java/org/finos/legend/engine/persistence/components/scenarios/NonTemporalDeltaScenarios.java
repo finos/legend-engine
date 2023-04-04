@@ -22,7 +22,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditin
 
 import java.util.Optional;
 
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.PickMaxVersion;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.MaxVersionStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
 
 public class NonTemporalDeltaScenarios extends BaseTest
@@ -103,7 +103,7 @@ public class NonTemporalDeltaScenarios extends BaseTest
         NontemporalDelta ingestMode = NontemporalDelta.builder()
                 .digestField(digestField)
                 .auditing(NoAuditing.builder().build())
-                .interBatchDeduplicationStrategy(PickMaxVersion.builder().build())
+                .versioningStrategy(MaxVersionStrategy.builder().build())
                 .build();
         return new TestScenario(mainTableWithBaseSchemaAndDigest, stagingTableWithFilters, ingestMode);
     }

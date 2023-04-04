@@ -15,8 +15,8 @@
 package org.finos.legend.engine.persistence.components.ingestmode;
 
 import org.finos.legend.engine.persistence.components.ingestmode.audit.Auditing;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.InterBatchDeduplicationStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.NoDeduplication;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.NoVersioningStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.NoDeletesMergeStrategy;
 
@@ -43,9 +43,9 @@ public interface NontemporalDeltaAbstract extends IngestMode
     Optional<String> dataSplitField();
 
     @Default
-    default InterBatchDeduplicationStrategy interBatchDeduplicationStrategy()
+    default VersioningStrategy versioningStrategy()
     {
-        return NoDeduplication.builder().build();
+        return NoVersioningStrategy.builder().build();
     }
 
     @Default
