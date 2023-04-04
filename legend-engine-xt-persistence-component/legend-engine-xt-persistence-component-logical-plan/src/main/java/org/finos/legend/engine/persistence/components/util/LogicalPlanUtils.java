@@ -15,11 +15,15 @@
 package org.finos.legend.engine.persistence.components.util;
 
 import java.util.UUID;
+
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningComparator;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.GreaterThan;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.GreaterThanEqualTo;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.In;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.LessThan;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.LessThanEqualTo;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.NotEquals;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.NotIn;
@@ -248,6 +252,36 @@ public class LogicalPlanUtils
             filter = Optional.of(derivedDataset.filter());
         }
         return filter;
+    }
+
+    public static Condition getVersioningCondition(Dataset main, Dataset staging, String versioningField, VersioningComparator comparator, boolean invertComparison)
+    {
+        FieldValue mainVersioningField = FieldValue.builder().datasetRef(main.datasetReference()).fieldName(versioningField).build();
+        FieldValue stagingVersioningField = FieldValue.builder().datasetRef(staging.datasetReference()).fieldName(versioningField).build();
+
+        switch (comparator)
+        {
+            case GREATER_THAN:
+                if (invertComparison)
+                {
+                    return LessThanEqualTo.of(stagingVersioningField, mainVersioningField);
+                }
+                else
+                {
+                    return GreaterThan.of(stagingVersioningField, mainVersioningField);
+                }
+            case GREATER_THAN_EQUAL_TO:
+                if (invertComparison)
+                {
+                    return LessThan.of(stagingVersioningField, mainVersioningField);
+                }
+                else
+                {
+                    return GreaterThanEqualTo.of(stagingVersioningField, mainVersioningField);
+                }
+            default:
+                throw new IllegalStateException("Unsupported versioning comparator type");
+        }
     }
 
     public static Condition getBatchIdEqualsInfiniteCondition(Dataset mainDataSet, String batchIdOutField)

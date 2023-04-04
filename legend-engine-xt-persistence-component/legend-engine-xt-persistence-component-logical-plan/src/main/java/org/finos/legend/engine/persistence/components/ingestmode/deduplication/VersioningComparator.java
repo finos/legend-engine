@@ -14,30 +14,8 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode.deduplication;
 
-import org.immutables.value.Value;
-
-import static org.immutables.value.Value.Immutable;
-import static org.immutables.value.Value.Style;
-
-@Immutable
-@Style(
-    typeAbstract = "*Abstract",
-    typeImmutable = "*",
-    jdkOnly = true,
-    optionalAcceptNullable = true,
-    strictBuilder = true
-)
-public interface MaxVersionStrategyAbstract extends VersioningStrategy
+public enum VersioningComparator
 {
-    @Value.Parameter(order = 0)
-    String versioningField();
-
-    @Value.Parameter(order = 1)
-    VersioningComparator versioningComparator();
-
-    @Override
-    default <T> T accept(VersioningStrategyVisitor<T> visitor)
-    {
-        return visitor.visitMaxVersionStrategy(this);
-    }
+    GREATER_THAN,
+    GREATER_THAN_EQUAL_TO
 }
