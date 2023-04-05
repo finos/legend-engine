@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-elasticsearch</artifactId>
-        <version>4.6.0</version>
+        <version>4.6.1-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -309,8 +309,4 @@
             </plugin>
         </plugins>
     </build>
-
-  <scm>
-    <tag>legend-engine-4.6.0</tag>
-  </scm>
 </project>
