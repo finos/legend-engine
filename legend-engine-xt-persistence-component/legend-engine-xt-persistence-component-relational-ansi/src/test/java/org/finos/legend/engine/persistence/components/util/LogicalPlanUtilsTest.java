@@ -15,12 +15,17 @@
 package org.finos.legend.engine.persistence.components.util;
 
 import org.finos.legend.engine.persistence.components.IngestModeTest;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DatasetFilterAndDeduplicator;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.MaxVersionStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.GreaterThan;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.LessThan;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
@@ -32,7 +37,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
+
+import static org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningComparator.GREATER_THAN;
 
 public class LogicalPlanUtilsTest extends IngestModeTest
 {
@@ -51,7 +57,8 @@ public class LogicalPlanUtilsTest extends IngestModeTest
         RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get());
 
         List<String> primaryKeys = Arrays.asList("id", "name");
-        Selection selection = LogicalPlanUtils.deduplicateByMaxVersionAndFilterDataset(dataset, primaryKeys, "version", Optional.empty());
+        VersioningStrategy versioningStrategy = MaxVersionStrategy.builder().versioningField("version").performDeduplication(true).versioningComparator(GREATER_THAN).build();
+        Selection selection = (Selection) versioningStrategy.accept(new DatasetFilterAndDeduplicator(dataset, primaryKeys));
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(selection).build();
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
@@ -59,22 +66,14 @@ public class LogicalPlanUtilsTest extends IngestModeTest
         String expectedSelectQuery = "(SELECT stage.\"id\",stage.\"name\",stage.\"version\",stage.\"biz_date\" FROM " +
                 "(SELECT stage.\"id\",stage.\"name\",stage.\"version\",stage.\"biz_date\"," +
                 "ROW_NUMBER() OVER (PARTITION BY stage.\"id\",stage.\"name\" ORDER BY stage.\"version\" DESC) as \"legend_persistence_row_num\" " +
-                "FROM \"my_db\".\"my_schema\".\"my_table\" as stage) as X " +
-                "WHERE X.\"legend_persistence_row_num\" = 1) as stage";
+                "FROM \"my_db\".\"my_schema\".\"my_table\" as stage) as stage " +
+                "WHERE stage.\"legend_persistence_row_num\" = 1) as stage";
         Assertions.assertEquals(expectedSelectQuery, list.get(0));
     }
 
     @Test
     public void testDeduplicateByMaxVersionAndFilterDataset()
     {
-        DatasetDefinition dataset = DatasetDefinition.builder()
-                .database("my_db")
-                .group("my_schema")
-                .name("my_table")
-                .alias("stage")
-                .schema(baseTableSchemaWithVersion)
-                .build();
-
         RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get());
         List<String> primaryKeys = Arrays.asList("id", "name");
 
@@ -89,9 +88,19 @@ public class LogicalPlanUtilsTest extends IngestModeTest
                 .leftValue(FieldValue.builder().fieldName("biz_date").datasetRefAlias("stage").build())
                 .rightValue(StringValue.of("2020-01-03"))
                 .build();
+        Condition filterCondition = And.of(Arrays.asList(filterCondition1, filterCondition2));
+        Dataset dataset = DerivedDataset.builder()
+                .database("my_db")
+                .group("my_schema")
+                .name("my_table")
+                .alias("stage")
+                .schema(baseTableSchemaWithVersion)
+                .filter(filterCondition)
+                .build();
 
-        Optional<Condition> filterCondition = Optional.of(And.of(Arrays.asList(filterCondition1, filterCondition2)));
-        Selection selection = LogicalPlanUtils.deduplicateByMaxVersionAndFilterDataset(dataset, primaryKeys, "version", filterCondition);
+        VersioningStrategy versioningStrategy = MaxVersionStrategy.builder().versioningField("version").performDeduplication(true).versioningComparator(GREATER_THAN).build();
+        Selection selection = (Selection) versioningStrategy.accept(new DatasetFilterAndDeduplicator(dataset, primaryKeys));
+
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(selection).build();
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
@@ -100,8 +109,8 @@ public class LogicalPlanUtilsTest extends IngestModeTest
                 "(SELECT stage.\"id\",stage.\"name\",stage.\"version\",stage.\"biz_date\",ROW_NUMBER() OVER " +
                 "(PARTITION BY stage.\"id\",stage.\"name\" ORDER BY stage.\"version\" DESC) as \"legend_persistence_row_num\" " +
                 "FROM \"my_db\".\"my_schema\".\"my_table\" as stage " +
-                "WHERE (stage.\"biz_date\" > '2020-01-01') AND (stage.\"biz_date\" < '2020-01-03')) as X " +
-                "WHERE X.\"legend_persistence_row_num\" = 1) as stage";
+                "WHERE (stage.\"biz_date\" > '2020-01-01') AND (stage.\"biz_date\" < '2020-01-03')) as stage " +
+                "WHERE stage.\"legend_persistence_row_num\" = 1) as stage";
         Assertions.assertEquals(expectedSelectQuery, list.get(0));
     }
 

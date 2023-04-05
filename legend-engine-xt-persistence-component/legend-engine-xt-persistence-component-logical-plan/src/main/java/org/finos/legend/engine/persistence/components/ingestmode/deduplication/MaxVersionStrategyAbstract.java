@@ -35,6 +35,12 @@ public interface MaxVersionStrategyAbstract extends VersioningStrategy
     @Value.Parameter(order = 1)
     VersioningComparator versioningComparator();
 
+    @Value.Default
+    default boolean performDeduplication()
+    {
+        return true;
+    }
+
     @Override
     default <T> T accept(VersioningStrategyVisitor<T> visitor)
     {
