@@ -217,6 +217,15 @@ public class SQLGrammarComposer
             }
 
             @Override
+            public String visit(Extract val)
+            {
+                String field = val.field.name();
+                String source = val.expression.accept(this);
+
+                return "EXTRACT(" + field + " FROM " + source + ")";
+            }
+
+            @Override
             public String visit(FrameBound val)
             {
                 String expression = val.value != null ? visit(val.value) + " " : "";
