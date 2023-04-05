@@ -18,6 +18,7 @@ import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDelta;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DatasetFilterAndDeduplicator;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningComparator;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningStrategyVisitors;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyVisitors;
@@ -57,6 +58,7 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
     private final Optional<String> deleteIndicatorField;
     private final List<Object> deleteIndicatorValues;
     private final Optional<String> versioningField;
+    private final Dataset enrichedStagingDataset;
     private final Optional<VersioningComparator> versioningComparator;
 
     private final Optional<Condition> deleteIndicatorIsNotSetCondition;
@@ -80,6 +82,9 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
         this.deleteIndicatorIsNotSetCondition = deleteIndicatorField.map(field -> LogicalPlanUtils.getDeleteIndicatorIsNotSetCondition(stagingDataset(), field, deleteIndicatorValues));
         this.deleteIndicatorIsSetCondition = deleteIndicatorField.map(field -> LogicalPlanUtils.getDeleteIndicatorIsSetCondition(stagingDataset(), field, deleteIndicatorValues));
         this.dataSplitInRangeCondition = ingestMode.dataSplitField().map(field -> LogicalPlanUtils.getDataSplitInRangeCondition(stagingDataset(), field));
+        // Perform Deduplication & Filtering of Staging Dataset
+        this.enrichedStagingDataset = ingestMode().versioningStrategy()
+                .accept(new DatasetFilterAndDeduplicator(stagingDataset(), primaryKeys));
     }
 
     @Override
@@ -191,7 +196,7 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
             }
         }
 
-        Dataset selectStage = Selection.builder().source(stagingDataset()).condition(selectCondition).addAllFields(columnsToSelect).build();
+        Dataset selectStage = Selection.builder().source(enrichedStagingDataset).condition(selectCondition).addAllFields(columnsToSelect).build();
         return Insert.of(mainDataset(), selectStage, columnsToInsert);
     }
 
@@ -235,7 +240,7 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
 
         Condition existsCondition = Exists.of(
             Selection.builder()
-                .source(stagingDataset())
+                .source(enrichedStagingDataset)
                 .condition(selectCondition)
                 .addAllFields(LogicalPlanUtils.ALL_COLUMNS())
                 .build());

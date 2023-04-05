@@ -42,9 +42,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.Infinit
 import org.finos.legend.engine.persistence.components.logicalplan.values.ObjectValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.SelectValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
-import org.finos.legend.engine.persistence.components.logicalplan.values.OrderedField;
-import org.finos.legend.engine.persistence.components.logicalplan.values.Order;
-import org.finos.legend.engine.persistence.components.logicalplan.values.WindowFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.common.OptimizationFilter;
 
@@ -74,9 +71,7 @@ public class LogicalPlanUtils
     public static final String DEFAULT_META_TABLE = "batch_metadata";
     public static final String DATA_SPLIT_LOWER_BOUND_PLACEHOLDER = "{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}";
     public static final String DATA_SPLIT_UPPER_BOUND_PLACEHOLDER = "{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}";
-
     private static final String UNDERSCORE = "_";
-    private static final String ROW_NUMBER = "legend_persistence_row_num";
 
     private LogicalPlanUtils()
     {
@@ -363,41 +358,6 @@ public class LogicalPlanUtils
         FunctionImpl countFunction = FunctionImpl.builder().functionName(FunctionName.COUNT).addValue(All.INSTANCE).alias(alias).build();
 
         return Selection.builder().source(dataset.datasetReference()).condition(condition).addFields(countFunction).build();
-    }
-
-    public static Selection deduplicateByMaxVersionAndFilterDataset(Dataset dataset, List<String> primaryKeys, String versionField, Optional<Condition> filter)
-    {
-        String innerSelectAlias = "X";
-        OrderedField orderByField = OrderedField.builder().fieldName(versionField).datasetRef(dataset.datasetReference()).order(Order.DESC).build();
-        List<Value> allColumns = new ArrayList<>(dataset.schemaReference().fieldValues());
-        List<Value> allColumnsWithRowNumber = new ArrayList<>(dataset.schemaReference().fieldValues());
-        List<FieldValue> partitionFields = primaryKeys.stream()
-                .map(field -> FieldValue.builder().fieldName(field).datasetRef(dataset.datasetReference()).build())
-                .collect(Collectors.toList());
-        Value rowNumber = WindowFunction.builder()
-                .windowFunction(FunctionImpl.builder().functionName(FunctionName.ROW_NUMBER).build())
-                .addAllPartitionByFields(partitionFields)
-                .addOrderByFields(orderByField)
-                .alias(ROW_NUMBER)
-                .build();
-        allColumnsWithRowNumber.add(rowNumber);
-        Selection selectionWithRowNumber = Selection.builder()
-                .source(dataset)
-                .addAllFields(allColumnsWithRowNumber)
-                .condition(filter)
-                .alias(innerSelectAlias)
-                .build();
-
-        Condition rowNumberFilterCondition = Equals.of(FieldValue.builder().fieldName(ROW_NUMBER).datasetRefAlias(innerSelectAlias).build(),  ObjectValue.of(1));
-
-        Selection selection = Selection.builder()
-                .source(selectionWithRowNumber)
-                .addAllFields(allColumns)
-                .condition(rowNumberFilterCondition)
-                .alias(dataset.datasetReference().alias())
-                .build();
-
-        return selection;
     }
 
     public static Set<DataType> SUPPORTED_DATA_TYPES_FOR_OPTIMIZATION_COLUMNS =
