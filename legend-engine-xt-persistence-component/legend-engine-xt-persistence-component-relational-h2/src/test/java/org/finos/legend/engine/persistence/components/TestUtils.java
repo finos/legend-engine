@@ -132,6 +132,7 @@ public class TestUtils
     public static Field digest = Field.builder().name(digestName).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).fieldAlias(digestName).build();
     public static Field digestWithLength = Field.builder().name(digestName).type(FieldType.of(DataType.VARCHAR, 2147483647, null)).fieldAlias(digestName).build();
     public static Field version = Field.builder().name(versionName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(versionName).build();
+    public static Field versionPk = Field.builder().name(versionName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(versionName).primaryKey(true).build();
     public static Field batchUpdateTimestamp = Field.builder().name(batchUpdateTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).build();
     public static Field batchIdIn = Field.builder().name(batchIdInName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(batchIdInName).build();
     public static Field batchIdOut = Field.builder().name(batchIdOutName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(batchIdOutName).build();
@@ -215,7 +216,7 @@ public class TestUtils
             .addFields(startTime)
             .addFields(expiryDate)
             .addFields(digest)
-            .addFields(version)
+            .addFields(versionPk)
             .build();
     }
 
