@@ -14,9 +14,7 @@
 
 package org.finos.legend.engine.generation.analytics.model;
 
-import java.util.List;
-
-public class DataSpaceAssociationDocumentationEntry extends DataSpaceModelDocumentationEntry
+public class DataSpacePropertyDocumentationEntry extends DataSpaceBasicDocumentationEntry
 {
-    public List<DataSpacePropertyDocumentationEntry> properties;
+    public String milestoning;
 }
