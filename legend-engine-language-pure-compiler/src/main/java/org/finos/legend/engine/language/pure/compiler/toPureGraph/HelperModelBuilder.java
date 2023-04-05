@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
-import java.util.Collections;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.procedure.Procedure;
 import org.eclipse.collections.impl.factory.Lists;
@@ -60,6 +59,7 @@ import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.slf4j.Logger;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -194,7 +194,7 @@ public class HelperModelBuilder
     {
         if (!org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.subsumes(signatureMultiplicity, actualMultiplicity))
         {
-            throw new EngineException(errorStub + " - Multiplicity error: " + org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.print(signatureMultiplicity) + " doesn't subsumes " + org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.print(actualMultiplicity), errorSourceInformation, EngineErrorType.COMPILATION);
+            throw new EngineException(errorStub + " - Multiplicity error: " + org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.print(signatureMultiplicity) + " doesn't subsume " + org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.print(actualMultiplicity), errorSourceInformation, EngineErrorType.COMPILATION);
         }
     }
 
