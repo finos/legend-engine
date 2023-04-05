@@ -14,24 +14,43 @@
 
 package org.finos.legend.engine.language.pure.grammar.integration;
 
+import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function2;
+import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.list.mutable.FastList;
+import org.eclipse.collections.impl.tuple.Tuples;
+import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperExternalFormat;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperMappingBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.grammar.integration.extensions.IMongoDBStoreCompilerExtension;
 import org.finos.legend.engine.language.pure.grammar.integration.util.MongoDBCompilerHelper;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDatabase;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.RootMongoDBClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
-import org.finos.legend.pure.generated.Root_meta_external_store_mongodb_metamodel_pure_MongoDatabase;
-import org.finos.legend.pure.generated.Root_meta_external_store_mongodb_metamodel_pure_MongoDatabase_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_Connection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.*;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Generalization;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class MongoDBCompilerExtension implements IMongoDBStoreCompilerExtension
 {
@@ -74,6 +93,55 @@ public class MongoDBCompilerExtension implements IMongoDBStoreCompilerExtension
                     if (connectionValue instanceof MongoDBConnection)
                     {
                         return MongoDBCompilerHelper.buildConnection((MongoDBConnection) connectionValue, context);
+                    }
+                    return null;
+                }
+        );
+    }
+
+    @Override
+    public List<Function3<ClassMapping, Mapping, CompileContext, Pair<SetImplementation, RichIterable<EmbeddedSetImplementation>>>> getExtraClassMappingFirstPassProcessors()
+    {
+        return Collections.singletonList(
+                (cm, parentMapping, context) ->
+                {
+                    if (cm instanceof RootMongoDBClassMapping)
+                    {
+                        RootMongoDBClassMapping classMapping = (RootMongoDBClassMapping) cm;
+                        String id = HelperMappingBuilder.getClassMappingId(classMapping, context);
+                        Root_meta_external_store_mongodb_metamodel_pure_MongoDBSetImplementation mongoDBSetImplementation = new Root_meta_external_store_mongodb_metamodel_pure_MongoDBSetImplementation_Impl(id, null, context.pureModel.getClass("meta::external::store::mongodb::metamodel::pure::MongoDBSetImplementation"));
+                        final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass = context.resolveClass(classMapping._class, classMapping.classSourceInformation);
+                        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.MappingClass mappingClass = MongoDBCompilerHelper.generateMappingClass(pureClass, id, classMapping, parentMapping, context);
+                        mongoDBSetImplementation._id(id);
+                        mongoDBSetImplementation._root(classMapping.root);
+                        mongoDBSetImplementation._class(pureClass);
+                        mongoDBSetImplementation._parent(parentMapping);
+                        mongoDBSetImplementation._mappingClass(mappingClass);
+                        Store mongoDatabase = context.pureModel.getStore(((RootMongoDBClassMapping) cm).storePath, cm.sourceInformation);
+                        mongoDBSetImplementation._storesAdd(mongoDatabase);
+                        mongoDBSetImplementation._mainCollection(((Root_meta_external_store_mongodb_metamodel_pure_MongoDatabase_Impl) mongoDatabase)._collections());
+
+                        MutableList<EmbeddedSetImplementation> embeddedSetImplementations = org.eclipse.collections.impl.factory.Lists.mutable.empty();
+
+                        Root_meta_external_shared_format_binding_Binding binding = ((Root_meta_external_shared_format_binding_Binding)context.pureModel.getStore(((RootMongoDBClassMapping) cm).bindingPath, cm.sourceInformation));
+                        mongoDBSetImplementation._binding(binding);
+
+                        Set<Class<?>> processedClasses = new HashSet<>();
+
+                        ExternalFormatExtension schemaExtension = HelperExternalFormat.getExternalFormatExtension(binding);
+                        Root_meta_external_shared_format_binding_validation_BindingDetail bindingDetail = schemaExtension.bindDetails(binding, context);
+
+                        if (bindingDetail instanceof Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail)
+                        {
+                            List<PropertyMapping> propertyMappings = MongoDBCompilerHelper.generatePropertyMappings((Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail) bindingDetail, mongoDBSetImplementation._class(), mongoDBSetImplementation._id(), embeddedSetImplementations, mongoDBSetImplementation, classMapping.sourceInformation, processedClasses, context);
+                            mongoDBSetImplementation._propertyMappings(FastList.newList(propertyMappings).toImmutable());
+                        }
+                        else
+                        {
+                            throw new EngineException("External format : '" + binding._contentType() + "' not yet supported with mongodb store mapping", classMapping.sourceInformation, EngineErrorType.COMPILATION);
+                        }
+
+                        return Tuples.pair(mongoDBSetImplementation, embeddedSetImplementations);
                     }
                     return null;
                 }
