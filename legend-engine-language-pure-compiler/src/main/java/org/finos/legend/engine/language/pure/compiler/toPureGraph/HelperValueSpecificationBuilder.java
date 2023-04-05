@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
-import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
@@ -38,7 +37,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.cla
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.graphFetch.GraphFetchTree;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
@@ -318,8 +316,13 @@ public class HelperValueSpecificationBuilder
     {
         Class<?> _class = context.resolveClass(rootGraphFetchTree._class, rootGraphFetchTree.sourceInformation);
         ListIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.graphFetch.GraphFetchTree> children = ListIterate.collect(rootGraphFetchTree.subTrees, subTree -> buildGraphFetchTree(subTree, context, _class, openVariables, processingContext));
-        return new Root_meta_pure_graphFetch_RootGraphFetchTree_Impl<>("")
+        Class<?> classifier = context.pureModel.getClass("meta::pure::graphFetch::RootGraphFetchTree");
+        GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
+                ._rawType(classifier)
+                ._typeArguments(Lists.fixedSize.of(context.pureModel.getGenericType(_class)));
+        return new Root_meta_pure_graphFetch_RootGraphFetchTree_Impl<>("", null, classifier)
                 ._class(_class)
+                ._classifierGenericType(genericType)
                 ._subTrees(children);
     }
 }

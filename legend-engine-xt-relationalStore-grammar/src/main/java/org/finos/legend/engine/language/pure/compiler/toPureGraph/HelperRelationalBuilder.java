@@ -467,7 +467,7 @@ public class HelperRelationalBuilder
 
     public static Table processDatabaseTable(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Table databaseTable, CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Schema schema)
     {
-        Table table = new Root_meta_relational_metamodel_relation_Table_Impl(databaseTable.name, null,context.pureModel.getClass("meta::relational::metamodel::relation::Table"))._name(databaseTable.name);
+        Table table = new Root_meta_relational_metamodel_relation_Table_Impl(databaseTable.name, null, context.pureModel.getClass("meta::relational::metamodel::relation::Table"))._name(databaseTable.name);
         MutableList<Column> columns = Lists.mutable.empty();
         MutableSet<String> validColumnNames = Sets.mutable.empty();
         MutableSet<String> duplicateColumns = Sets.mutable.empty();
@@ -1585,6 +1585,10 @@ public class HelperRelationalBuilder
 
         Sets.mutable.withAll(bindingClasses).forEach(clazz -> addSemiStructuredSetImplementation(parent._parent(), clazz, binding._contentType(), (RootRelationalInstanceSetImplementation) parent, context));
 
+        Class<?> classifier = context.pureModel.getClass("meta::external::shared::format::binding::BindingTransformer");
+        GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
+                ._rawType(classifier)
+                ._typeArguments(Lists.fixedSize.of(context.pureModel.getGenericType(propertyReturnType)));
         return new Root_meta_relational_mapping_SemiStructuredRelationalPropertyMapping_Impl("", null, context.pureModel.getClass("meta::relational::mapping::SemiStructuredRelationalPropertyMapping"))
                 ._sourceSetImplementationId(parent._id())
                 ._targetSetImplementationId(generateTargetSetImplementationIdForProperty(property, parent._id(), context))
@@ -1592,8 +1596,9 @@ public class HelperRelationalBuilder
                 ._owner(parent)
                 ._relationalOperationElement(processRelationalOperationElement(propertyMapping.relationalOperation, context, aliasMap, FastList.newList()))
                 ._transformer(
-                        new Root_meta_external_shared_format_binding_BindingTransformer_Impl<>("")
+                        new Root_meta_external_shared_format_binding_BindingTransformer_Impl<>("", null, classifier)
                                 ._binding(binding)
+                                ._classifierGenericType(genericType)
                                 ._class(propertyReturnType)
                 );
     }
