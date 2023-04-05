@@ -320,7 +320,7 @@ class UnitemporalDeltaTest extends BaseTest
         // 1. Load staging table
         loadStagingDataWithFilter(dataPass1);
         // 2. Execute plans and verify results
-        Map<String, Object> expectedStats = createExpectedStatsMap(6, 0, 3, 0, 0);
+        Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
         // 3. Assert that the staging table is NOT truncated
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
@@ -334,7 +334,7 @@ class UnitemporalDeltaTest extends BaseTest
         // 1. Load staging table
         loadStagingDataWithFilter(dataPass2);
         // 2. Execute plans and verify results
-        expectedStats = createExpectedStatsMap(9, 0, 1, 1, 0);
+        expectedStats = createExpectedStatsMap(3, 0, 1, 1, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
