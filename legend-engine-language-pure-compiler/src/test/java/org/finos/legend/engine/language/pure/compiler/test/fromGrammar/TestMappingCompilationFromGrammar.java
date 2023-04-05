@@ -86,6 +86,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "\n", "COMPILATION error at [15:1-21:1]: Cycle detected in mapping include hierarchy: test::M1 -> test::M2 -> test::M1");
         test(models +
                 "###Mapping\n" +
+                "import test::*;\n" +
                 "Mapping test::M1 (\n" +
                 "   include test::M2\n" +
                 "   test::A[1]: Pure {\n" +
@@ -102,14 +103,15 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "   }\n" +
                 ")\n" +
                 "Mapping test::M3 (\n" +
-                "   include test::M1\n" +
+                "   include M1\n" +
                 "   include test::M2\n" +
                 "   test::A: Pure {\n" +
                 "      ~src test::S_A\n" +
                 "      prop1: $src.prop1\n" +
                 "   }\n" +
                 ")\n" +
-                "\n", "COMPILATION error at [15:1-21:1]: Cycle detected in mapping include hierarchy: test::M1 -> test::M2 -> test::M3 -> test::M1");
+                "\n", "COMPILATION error at [16:1-22:1]: Cycle detected in mapping include hierarchy: test::M1 -> " +
+                "test::M2 -> test::M3 -> test::M1");
     }
 
     @Test
@@ -129,6 +131,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "}\n" +
                 "\n" +
                 "###Mapping\n" +
+                "import test::*;\n" +
                 "Mapping test::M1 (\n" +
                 "   test::A[1]: Pure {\n" +
                 "      ~src test::S_A\n" +
@@ -137,14 +140,15 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 ")\n" +
                 "\n" +
                 "Mapping test::M2 (\n" +
-                "   include test::M1\n" +
+                "   include M1\n" +
                 "   include test::M1\n" +
                 "   *test::A[2]: Pure {\n" +
                 "      ~src test::S_A\n" +
                 "      prop1: $src.prop1\n" +
                 "   }\n" +
                 ")\n" +
-                "\n", "COMPILATION error at [22:1-29:1]: Duplicated mapping include 'test::M1' in mapping 'test::M2'"
+                "\n", "COMPILATION error at [23:1-30:1]: Duplicated mapping include 'test::M1' in mapping " +
+                "'test::M2'"
         );
     }
 
