@@ -33,7 +33,7 @@ public class TestMongoDBMappingCompiler extends TestCompilationFromGrammar.TestC
                 "  }\n" +
                 ")\n" +
                 "###MongoDB\n" +
-                "Database test::mongodb::connection\n" +
+                "Database mongo::test::mapping::MongoDBMapping\n" +
                 "(\n" +
                 ")";
     }
@@ -41,7 +41,7 @@ public class TestMongoDBMappingCompiler extends TestCompilationFromGrammar.TestC
     @Override
     protected String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [3:1-9:1]: Error in 'mongo::test::mapping::MongoDBMapping': Can't find class 'meta::external::mongo::mapping::SomeClass'";
+        return "COMPILATION error at [11:1-13:1]: Duplicated element 'mongo::test::mapping::MongoDBMapping'";
     }
 
     @Test

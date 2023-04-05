@@ -33,7 +33,7 @@ public class TestMongoDBMappingGrammarParser extends TestGrammarParser.TestGramm
     public String getParserGrammarIdentifierInclusionTestCode(List<String> keywords)
     {
         return "###Mapping\n" +
-                "Mapping mongo::test::mapping::MongoDBMapping\n" +
+                "Mapping " + ListAdapter.adapt(keywords).makeString("::") + "\n" +
                 "(\n" +
                 "  *meta::external::mongo::mapping[id1]: MongoDB\n" +
                 "    {\n" +
