@@ -26,6 +26,7 @@ Class meta::pure::router::preeval::State
 
   debug              : DebugContext[1];
   depth              : Integer[0..1];
+  path               : FunctionDefinition<Any>[*];
 
   shouldInlineFxn    : FunctionDefinition<{Function<Any>[1] -> Boolean[1]}>[1];
   stopPreeval        : Function<{Any[1] -> Boolean[1]}>[1];
@@ -116,7 +117,9 @@ function <<access.public>> meta::pure::router::preeval::preval(f : FunctionExpre
 
 function <<access.private>> meta::pure::router::preeval::prevalInternal(item : Any[1], origState : meta::pure::router::preeval::State[1], extensions:Extension[*]):PrevalWrapper<Any>[1]
 {
-  let state = ^$origState(depth = if($origState.depth->isEmpty(), | 0, | $origState.depth->toOne() + 1));
+  let state = ^$origState(depth = if($origState.depth->isEmpty(), | 0, | $origState.depth->toOne() + 1),
+                          path = if(!$item->instanceOf(FunctionDefinition), | $origState.path, | $origState.path->concatenate($item->cast(@FunctionDefinition<Any>))));
+
 
   $state->printDebugWithDepth(|'Processing ' + $item->type()->makeString() + ' ' 
                               + $item->evaluateAndDeactivate()
@@ -310,7 +313,6 @@ function <<access.private>> meta::pure::router::preeval::prevalFunctionDefinitio
                               let r = $item->prevalInternal($state, $extensions);
 
                               let isLetFunctionValueSpecification = $r.value->instanceOf(ValueSpecification) && $r.value->cast(@ValueSpecification)->isLetFunction();
-                              assertEquals($item->isLetFunction(), $isLetFunctionValueSpecification);
 
                               if(!$isLetFunctionValueSpecification,
                                 | pair($state, list(if($p.second.values->isEmpty(), | $r, | $p.second.values->concatenate($r)))),
@@ -450,7 +452,7 @@ function <<access.private>> meta::pure::router::preeval::prevalGenericSimpleFunc
           $state->printDebugWithDepth(|'Inlining: ' + $newSfe.func->elementToPath());
           assert($newSfe.func->instanceOf(FunctionDefinition) && $newSfe.func->cast(@FunctionDefinition<Any>).expressionSequence->size() == 1);
 
-          let newState = $newSfe->addToScope($state);
+          let newState = $newSfe->addToScope($state)->map(s|^$s(path = $state.path->concatenate($newSfe.func->cast(@FunctionDefinition<Any>))));
 
           let subSfe1 = $newSfe.func->cast(@FunctionDefinition<Any>).expressionSequence->toOne()->evaluateAndDeactivate();
           let subSfe = ^$subSfe1(genericType = $subSfe1.genericType->resolveGenericType($newState).value);
@@ -460,7 +462,7 @@ function <<access.private>> meta::pure::router::preeval::prevalGenericSimpleFunc
           $sPreValWrapper->markModified();,
         | if($newSfe->canInlineEvalFunctionExpression(),
             |
-              $state->printDebugWithDepth(|'Expanding to inline: ' + $newSfe.func->elementToPath());
+              $state->printDebugWithDepth(|'Expanding to expand eval: ' + $newSfe.func->elementToPath());
 
               let func = $newSfe.parametersValues->at(0)->match([
                   iv:InstanceValue[1]|$iv.values->toOne(),
@@ -708,7 +710,33 @@ function <<access.private>> meta::pure::router::preeval::prevalGenericSimpleFunc
                                   modified = true
                                 );
                               }
-                            )                                                            
+                            ),
+                            pair(
+                              {theSfe:SimpleFunctionExpression[1] | ($theSfe.func == toOneMany_T_MANY__T_$1_MANY$_) && 
+                                  $theSfe.parametersValues->match([
+                                    vs:ValueSpecification[1]|$vs.multiplicity->isMultiplicityConcrete() && $vs.multiplicity->hasLowerBound()
+                                          && ($vs.multiplicity->getLowerBound() > 0), 
+                                    a:Any[*]|false
+                                  ])},
+                              {theSfe:SimpleFunctionExpression[1] |
+                                $state->printDebugWithDepth(|'Handling toOneMany');                        
+
+                                $newParamWrappers->toOne()->map(pw|^$pw(modified=true));
+                              }
+                            ),
+                            pair(
+                              {theSfe:SimpleFunctionExpression[1] | ($theSfe.func == toOne_T_MANY__T_1_) && 
+                                  $theSfe.parametersValues->match([
+                                    vs:VariableExpression[1]|$vs.multiplicity->isMultiplicityConcrete() 
+                                          && $vs.multiplicity == PureOne, 
+                                    a:Any[*]|false
+                                  ])},
+                              {theSfe:SimpleFunctionExpression[1] |
+                                $state->printDebugWithDepth(|'Handling toOne');                        
+
+                                $newParamWrappers->toOne()->map(pw|^$pw(modified=true));
+                              }                              
+                            )                                                             
                         ]);
 
                     let handler = $handlers->filter(p|$p.first->eval($newSfe))->first();
@@ -883,6 +911,7 @@ function <<access.private>> meta::pure::router::preeval::shouldInline(f:Function
   && !($f->instanceOf(QualifiedProperty) && $f->cast(@QualifiedProperty<Any>).owner == TDSRow)
   && !($f->instanceOf(AbstractProperty) && $f->cast(@AbstractProperty<Any>)->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype())
   && ($state.shouldInlineFxn->eval($f))
+  && ($state.path->filter(x|$x == $f)->isEmpty())
 }
 
 function <<access.private>> meta::pure::router::preeval::canInlineEvalFunctionExpression(fe:SimpleFunctionExpression[1]):Boolean[1]
