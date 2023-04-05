@@ -462,7 +462,7 @@ function <<access.private>> meta::pure::router::preeval::prevalGenericSimpleFunc
           $sPreValWrapper->markModified();,
         | if($newSfe->canInlineEvalFunctionExpression(),
             |
-              $state->printDebugWithDepth(|'Expanding to expand eval: ' + $newSfe.func->elementToPath());
+              $state->printDebugWithDepth(|'Expanding eval: ' + $newSfe.func->elementToPath());
 
               let func = $newSfe.parametersValues->at(0)->match([
                   iv:InstanceValue[1]|$iv.values->toOne(),
