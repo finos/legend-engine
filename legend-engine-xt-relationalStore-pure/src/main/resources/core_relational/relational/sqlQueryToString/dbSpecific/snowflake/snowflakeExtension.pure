@@ -49,7 +49,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateSnowflake()})),
     dynaFnToSql('convertDateTime',        $allStates,            ^ToSql(format='%s' , transform={p:String[*] | $p->convertToDateTimeSnowflake()})),
     dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='to_char(%s)')),
-    dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='datediff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->processDateDiffDurationUnitForSnowflake(),$p->at(0),$p->at(1)]})),
+    dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='datediff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->replace('\'', '')->processDateDiffDurationUnitForSnowflake(),$p->at(0),$p->at(1)]})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='Date(%s)')),
     dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='DAYOFWEEKISO(%s)')),
     dynaFnToSql('extractFromSemiStructured', $allStates,         ^ToSql(format='%s', transform={p:String[3]|$p->processExtractFromSemiStructuredParamsForSnowflake()})),

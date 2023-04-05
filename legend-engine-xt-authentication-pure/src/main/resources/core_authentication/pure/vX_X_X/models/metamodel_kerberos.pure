@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,29 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration;
+import meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::*;
 
-public enum FileGenerationType
+Class meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::KerberosAuthenticationSpecification extends meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::AuthenticationSpecification
 {
-    avro("Avro"),
-    java("Java"),
-    jsonSchema("JSON Schema"),
-    protobuf("Protobuf"),
-    slang("Slang"),
-    rosetta("Rosetta"),
-    morphir("Morphir"),
-    daml("DAML"),
-    graphql("GraphQL");
-
-    private String label;
-
-    private FileGenerationType(final String label)
-    {
-        this.label = label;
-    }
-
-    public String getLabel()
-    {
-        return this.label;
-    }
 }

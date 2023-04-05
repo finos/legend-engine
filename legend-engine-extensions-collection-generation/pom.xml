@@ -25,7 +25,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>legend-engine-extensions-collection-generation</artifactId>
-    <name>Legend Engine Extensions Collection - Generation</name>
+    <name>Legend Engine - Extensions Collection - Generation</name>
 
     <build>
         <plugins>

@@ -68,7 +68,7 @@ function meta::analytics::search::transformation::dataspace::buildDocument(datas
     name = $dataspace.name->toOne(),
     description = $dataspace.description->toOne(),
     defaultExecutionContext = $dataspace.defaultExecutionContext.name,
-    diagrams = $dataspace.featuredDiagrams->map(d|$d->elementToPath()),
+    diagrams = $dataspace.diagrams->map(d|$d.diagram->elementToPath()),
     executionContexts = $dataspace.executionContexts->map(c|$c->meta::analytics::search::transformation::dataspace::buildExecutionContextDocument()),
     taxonomies = $dataspace.taggedValues->filter(t|$t.tag.value == 'taxonomyNodes').value,
     type = meta::analytics::search::metamodel::DocumentType.DataSpace

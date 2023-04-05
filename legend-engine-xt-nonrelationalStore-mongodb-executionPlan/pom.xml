@@ -37,7 +37,7 @@
                         <id>enforce</id>
                         <configuration>
                             <rules>
-                                <dependencyConvergence />
+                                <dependencyConvergence/>
                                 <bannedDependencies>
                                     <searchTransitive>true</searchTransitive>
                                     <excludes>
@@ -149,14 +149,6 @@
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>bson</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>de.bwaldvogel</groupId>
-            <artifactId>mongo-java-server-core</artifactId>
-        </dependency>
-        <dependency>
-        <groupId>de.bwaldvogel</groupId>
-        <artifactId>mongo-java-server-memory-backend</artifactId>
         </dependency>
         <!-- Mongo DB-->
 

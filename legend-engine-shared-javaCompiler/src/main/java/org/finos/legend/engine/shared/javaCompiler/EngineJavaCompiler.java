@@ -15,56 +15,44 @@
 package org.finos.legend.engine.shared.javaCompiler;
 
 import io.github.classgraph.ClassGraph;
-import org.eclipse.collections.api.block.procedure.Procedure;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.map.MapIterable;
 import org.eclipse.collections.api.map.MutableMap;
-import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.factory.Maps;
-import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.util.Collections;
+import java.util.Map;
+import java.util.WeakHashMap;
+import javax.lang.model.SourceVersion;
 import javax.tools.DiagnosticCollector;
+import javax.tools.JavaCompiler;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
-import java.util.Base64;
-import java.util.Objects;
-import java.util.function.BiConsumer;
 
 public class EngineJavaCompiler
 {
-    private static final ClassPathFilter NULL_FILTER = new ClassPathFilter()
-    {
-        @Override
-        public boolean isPermittedPackage(String packageName)
-        {
-            return true;
-        }
+    private static final Map<ClassLoader, String> CLASSPATH_CACHE = Collections.synchronizedMap(new WeakHashMap<>());
 
-        @Override
-        public boolean isPermittedClass(String packageName, String className)
-        {
-            return true;
-        }
-    };
-
-    private final javax.tools.JavaCompiler compiler;
+    private final JavaCompiler compiler;
     private final MemoryFileManager memoryFileManager;
     private final EngineJavaCompiler parent;
     private final JavaVersion javaVersion;
     private final FilterControl filterControl;
     private MemoryClassLoader memoryClassLoader;
 
-
-    public EngineJavaCompiler()
+    public EngineJavaCompiler(JavaVersion javaVersion, EngineJavaCompiler parent, ClassPathFilter filter)
     {
-        this(JavaVersion.JAVA_7, null, NULL_FILTER);
-    }
-
-    public EngineJavaCompiler(JavaVersion javaVersion)
-    {
-        this(javaVersion, null, NULL_FILTER);
+        this.compiler = ToolProvider.getSystemJavaCompiler();
+        this.parent = parent;
+        this.javaVersion = (javaVersion != null) ? javaVersion : ((parent != null) ? parent.javaVersion : JavaVersion.JAVA_7);
+        this.filterControl = new FilterControl(filter);
+        this.memoryFileManager = new MemoryFileManager((parent == null) ? this.compiler.getStandardFileManager(null, null, null) : parent.memoryFileManager, this.filterControl);
+        this.memoryClassLoader = newClassLoader();
     }
 
     public EngineJavaCompiler(JavaVersion javaVersion, ClassPathFilter filter)
@@ -74,64 +62,59 @@ public class EngineJavaCompiler
 
     public EngineJavaCompiler(EngineJavaCompiler parent)
     {
-        this(parent == null ? JavaVersion.JAVA_7 : parent.javaVersion, parent, NULL_FILTER);
+        this(null, parent, null);
     }
 
-    public EngineJavaCompiler(JavaVersion javaVersion, EngineJavaCompiler parent, ClassPathFilter filter)
+    public EngineJavaCompiler(JavaVersion javaVersion)
     {
-        this.compiler = ToolProvider.getSystemJavaCompiler();
-        JavaFileManager delegate = parent == null ? compiler.getStandardFileManager(null, null, null) : parent.memoryFileManager;
-        this.filterControl = new FilterControl(Objects.requireNonNull(filter));
-        this.memoryFileManager = new MemoryFileManager(delegate, this.filterControl);
-        this.memoryClassLoader = parent == null ?
-                new MemoryClassLoader(this.memoryFileManager, Thread.currentThread().getContextClassLoader()) :
-                new MemoryClassLoader(this.memoryFileManager, parent.memoryClassLoader);
-        this.parent = parent;
-        this.javaVersion = javaVersion;
+        this(javaVersion, null, null);
+    }
+
+    public EngineJavaCompiler()
+    {
+        this(null, null, null);
     }
 
     public EngineJavaCompiler compile(Iterable<? extends StringJavaSource> javaSources) throws JavaCompileException
     {
         MetricsHandler.observeCount("Java compilation");
         MetricsHandler.incrementJavaCompilationCount();
-        compile(this.compiler, this.javaVersion, javaSources, this.memoryFileManager);
-        this.memoryClassLoader = parent == null ?
-                new MemoryClassLoader(this.memoryFileManager, Thread.currentThread().getContextClassLoader()) :
-                new MemoryClassLoader(this.memoryFileManager, parent.memoryClassLoader);
+        compile(this.compiler, javaSources, this.memoryFileManager, this.javaVersion, getClassPath());
+        this.memoryClassLoader = newClassLoader();
         return this;
     }
 
     public MutableMap<String, String> save()
     {
-        MutableMap<String, String> res = Maps.mutable.empty();
-        this.memoryFileManager.getCodeByName().keyValuesView().forEach((Procedure<Pair<String, ClassJavaSource>>) p -> res.put(p.getOne(), Base64.getEncoder().encodeToString(p.getTwo().getBytes())));
-        return res;
+        return this.memoryFileManager.getEncodedClassSources();
     }
 
-    public EngineJavaCompiler load(MutableMap<String, String> save)
+    public EngineJavaCompiler load(MapIterable<String, String> save)
     {
-        save.forEach((BiConsumer<String, String>) this::load);
+        save.forEachKeyValue(this::load);
         return this;
     }
 
     public EngineJavaCompiler load(String className, String encodedBytecode)
     {
+        // ---- To remove -----
+        String message = encodedBytecode;
+        if (encodedBytecode.startsWith("\""))
+        {
+            message = encodedBytecode.substring(1, encodedBytecode.length() - 1);
+        }
+        //---------------------
+
+        ClassJavaSource cl;
         try
         {
-            ClassJavaSource cl = (ClassJavaSource) this.memoryFileManager.getJavaFileForOutput(StandardLocation.CLASS_PATH, className, JavaFileObject.Kind.CLASS, null);
-            // ---- To remove -----
-            String message = encodedBytecode;
-            if (encodedBytecode.startsWith("\""))
-            {
-                message = encodedBytecode.substring(1, encodedBytecode.length() - 1);
-            }
-            //---------------------
-            cl.setBytes(Base64.getDecoder().decode(message));
+            cl = (ClassJavaSource) this.memoryFileManager.getJavaFileForOutput(StandardLocation.CLASS_PATH, className, JavaFileObject.Kind.CLASS, null);
         }
-        catch (Exception e)
+        catch (IOException e)
         {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
+        cl.setEncodedBytes(message);
         return this;
     }
 
@@ -140,25 +123,62 @@ public class EngineJavaCompiler
         return this.memoryClassLoader;
     }
 
-    private static void compile(javax.tools.JavaCompiler compiler, JavaVersion javaVersion, Iterable<? extends StringJavaSource> javaSources, JavaFileManager fileManager) throws JavaCompileException
-    {
-        MutableList<String> options = FastList.newList();
-        options.add("-source");
-        options.add(javaVersion == JavaVersion.JAVA_7 ? "7" : "8");
-        options.add("-classpath");
-        options.add(new ClassGraph().getClasspath());
-
-        DiagnosticCollector<JavaFileObject> diagnosticCollector = new DiagnosticCollector<>();
-        javax.tools.JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, diagnosticCollector, options, null, javaSources);
-        if (!task.call())
-        {
-            throw new JavaCompileException(diagnosticCollector);
-        }
-    }
-
     public void setFilteringEnabled(boolean enabled)
     {
         this.filterControl.enabled = enabled;
+    }
+
+    private MemoryClassLoader newClassLoader()
+    {
+        return new MemoryClassLoader(this.memoryFileManager, (this.parent == null) ? Thread.currentThread().getContextClassLoader() : this.parent.memoryClassLoader);
+    }
+
+    private String getClassPath()
+    {
+        return CLASSPATH_CACHE.computeIfAbsent(Thread.currentThread().getContextClassLoader(), cl -> new ClassGraph().getClasspath());
+    }
+
+    private static void compile(JavaCompiler compiler, Iterable<? extends StringJavaSource> javaSources, JavaFileManager fileManager, JavaVersion javaVersion, String classPath) throws JavaCompileException
+    {
+        MutableList<String> options = buildCompileOptions(javaVersion, classPath);
+        DiagnosticCollector<JavaFileObject> diagnosticCollector = new DiagnosticCollector<>();
+        JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, diagnosticCollector, options, null, javaSources);
+        if (!task.call())
+        {
+            throw new JavaCompileException(diagnosticCollector, options);
+        }
+    }
+
+    private static MutableList<String> buildCompileOptions(JavaVersion javaVersion, String classPath)
+    {
+        MutableList<String> options = Lists.mutable.empty();
+
+        // classpath
+        if (classPath != null)
+        {
+            options.with("-classpath").with(classPath);
+        }
+
+        // source/target/release version
+        if (javaVersion == JavaVersion.JAVA_7)
+        {
+            options.with("-source").with("7");
+        }
+        // When JDK 9+ is allowed, use this code instead:
+        // else if (Runtime.version().version().get(0) <= 8)
+        else if (SourceVersion.latest().ordinal() <= 8)
+        {
+            // if this JVM is version 8 or older, we use -source and -target options
+            options.with("-source").with("8")
+                    .with("-target").with("8");
+        }
+        else
+        {
+            // if this JVM is version 9 or newer, we use the --release option
+            options.with("--release").with("8");
+        }
+
+        return options;
     }
 
     private static class FilterControl implements ClassPathFilter
@@ -168,19 +188,19 @@ public class EngineJavaCompiler
 
         FilterControl(ClassPathFilter delegate)
         {
-            this.delegate = delegate;
+            this.delegate = (delegate == null) ? ClassPathFilters.alwaysTrue() : delegate;
         }
 
         @Override
         public boolean isPermittedPackage(String packageName)
         {
-            return !enabled || delegate.isPermittedPackage(packageName);
+            return !this.enabled || this.delegate.isPermittedPackage(packageName);
         }
 
         @Override
         public boolean isPermittedClass(String packageName, String className)
         {
-            return !enabled || delegate.isPermittedClass(packageName, className);
+            return !this.enabled || this.delegate.isPermittedClass(packageName, className);
         }
     }
 }

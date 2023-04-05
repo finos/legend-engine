@@ -47,7 +47,7 @@ public enum StoreExecutableManager
 
     public void addExecutable(String sessionID, StoreExecutable execution)
     {
-        if (isRegistered)
+        if (isRegistered && sessionID != null)
         {
             sessionExecutableMap.computeIfAbsent(sessionID, x -> Collections.synchronizedList(new ArrayList<>())).add(execution);
         }
@@ -55,7 +55,7 @@ public enum StoreExecutableManager
 
     public void removeExecutable(String sessionID, StoreExecutable executable)
     {
-        if (isRegistered)
+        if (isRegistered && sessionID != null)
         {
             try
             {
@@ -109,5 +109,11 @@ public enum StoreExecutableManager
         );
         return numberOfCancelled.get();
     }
+
+    public Integer getActiveSessionCount()
+    {
+        return sessionExecutableMap.keySet().size();
+    }
+
 }
 

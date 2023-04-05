@@ -59,6 +59,13 @@ public class AuthenticationSpecificationComposer implements AuthenticationSpecif
     }
 
     @Override
+    public String visit(KerberosAuthenticationSpecification authenticationSpecification)
+    {
+        return "# Kerberos {\n" +
+                context.getIndentationString() + getTabString(indentLevel) + "}#";
+    }
+
+    @Override
     public String visit(EncryptedPrivateKeyPairAuthenticationSpecification authenticationSpecification)
     {
         return "# EncryptedPrivateKey {\n" +

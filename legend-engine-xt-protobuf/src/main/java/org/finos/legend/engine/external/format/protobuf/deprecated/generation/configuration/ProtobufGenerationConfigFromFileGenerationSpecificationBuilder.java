@@ -16,7 +16,6 @@ package org.finos.legend.engine.external.format.protobuf.deprecated.generation.c
 
 import org.finos.legend.engine.language.pure.dsl.generation.config.ConfigBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationType;
 import org.finos.legend.engine.shared.core.operational.Assert;
 
 @Deprecated
@@ -24,7 +23,7 @@ public class ProtobufGenerationConfigFromFileGenerationSpecificationBuilder
 {
     public static ProtobufGenerationConfig build(FileGenerationSpecification fileGeneration)
     {
-        Assert.assertTrue(fileGeneration.type.equals(FileGenerationType.protobuf.name()), () -> "File generation of type of protobuf expected, got '" + fileGeneration.type + "'");
+        Assert.assertTrue(fileGeneration.type.equals("protobuf"), () -> "File generation of type of protobuf expected, got '" + fileGeneration.type + "'");
         ProtobufGenerationConfig protobufConfig = new ProtobufGenerationConfig();
         ConfigBuilder.noConfigurationPropertiesCheck(fileGeneration);
         ConfigBuilder.setScopeElements(fileGeneration, protobufConfig);

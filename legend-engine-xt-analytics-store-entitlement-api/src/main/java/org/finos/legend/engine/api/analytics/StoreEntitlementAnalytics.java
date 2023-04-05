@@ -24,11 +24,15 @@ import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.api.analytics.model.StoreEntitlementAnalyticsInput;
 import org.finos.legend.engine.entitlement.services.EntitlementServiceExtension;
 import org.finos.legend.engine.entitlement.services.EntitlementServiceExtensionLoader;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
+import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
@@ -59,11 +63,14 @@ public class StoreEntitlementAnalytics
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         List<EntitlementServiceExtension> extensions = EntitlementServiceExtensionLoader.extensions();
+        PureModel pureModel = modelManager.loadModel(input.model, PureClientVersions.production, profiles, null);
+        Mapping mapping = pureModel.getMapping(input.mappingPath);
+        Root_meta_pure_runtime_Runtime runtime = pureModel.getRuntime(input.runtimePath);
         try (Scope scope = GlobalTracer.get().buildSpan("generate datasetSpecifications").startActive(true))
         {
             try
             {
-                return ManageConstantResult.manageResult(profiles, LazyIterate.flatCollect(extensions, extension -> extension.generateDatasetSpecifications(input.query, input.runtime, input.mapping, input.model, modelManager, profiles)).toList());
+                return ManageConstantResult.manageResult(profiles, LazyIterate.flatCollect(extensions, extension -> extension.generateDatasetSpecifications(input.query, input.runtimePath, runtime, input.mappingPath, mapping, input.model, pureModel, modelManager, profiles)).toList());
             }
             catch (Exception e)
             {
@@ -80,11 +87,14 @@ public class StoreEntitlementAnalytics
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         List<EntitlementServiceExtension> extensions = EntitlementServiceExtensionLoader.extensions();
+        PureModel pureModel = modelManager.loadModel(input.model, PureClientVersions.production, profiles, null);
+        Mapping mapping = pureModel.getMapping(input.mappingPath);
+        Root_meta_pure_runtime_Runtime runtime = pureModel.getRuntime(input.runtimePath);
         try (Scope scope = GlobalTracer.get().buildSpan("check store entitlements").startActive(true))
         {
             try
             {
-                return ManageConstantResult.manageResult(profiles, LazyIterate.flatCollect(extensions, extension -> extension.generateDatasetEntitlementReports(input.query, input.runtime, input.mapping, input.model, modelManager, profiles)).toList());
+                return ManageConstantResult.manageResult(profiles, LazyIterate.flatCollect(extensions, extension -> extension.generateDatasetEntitlementReports(input.query, input.runtimePath, runtime, input.mappingPath, mapping, input.model, pureModel, modelManager, profiles)).toList());
             }
             catch (Exception e)
             {

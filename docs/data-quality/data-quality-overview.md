@@ -22,11 +22,12 @@ flowchart TD
 ```
 
 Using this features allows 
-1. Data quality expectations to be declarative specified / documented to help consumers understand the expected 
-   behaviour of the data model / services.
+1. Data quality expectations to be specified / documented in a declarative format to help consumers understand 
+   the expected behaviour of the data model / services.
 2. Data quality expectations are attached to the model/service, so are versioned / live alongside  and share the same 
    lifecycle as the data models themselves
-3. Data quality expectations are executable so can be used to find defects / issues against a given data set.
+3. Data quality expectations are executable / machine readable so can be used to find defects / issues against a 
+   given data set.
 
 ### Structural Validations
 
@@ -50,7 +51,12 @@ Enum domain::model::JobTitle
   on the Employee object has multiplicity [1], then we can infer that it should never be null / empty in the data 
   source)
 - If a field is defined as an Enum (e.g. `jobTitle` might be an Enum with values: `Analyst`, `Manager`, etc.), then we
-  can infer that there should not be any values in the data source that are not defined in this set/domain 
+  can infer that there should not be any values in the data source that are not defined in this set/domain
+  
+Legend has features to support execution / enforcement of these validations.  For more details see 
+[graphFetchChecked](../queries/queries.md#checked-graphfetch-graphfetchchecked-graphfetchunexpanded-graphfetchcheckedunexpanded)
+on the [Queries](../queries/queries.md) page
+
 
 ### Model Constraints
 
@@ -80,6 +86,10 @@ Class domain::model::Employee
   if the `Employee` is not a remote worker.  In the model structure the `officeLocation` value is optional, so we 
   can not know when it's expected to be set.  However, the constraint provide validation for when it's expected to be
   set / have a value.
+
+Legend has features to support execution / enforcement of these validations.  For more details see
+[graphFetchChecked](../queries/queries.md#checked-graphfetch-graphfetchchecked-graphfetchunexpanded-graphfetchcheckedunexpanded)
+on the [Queries](../queries/queries.md) page
  
 ### Service Post Validations
 

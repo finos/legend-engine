@@ -38,8 +38,6 @@ Class meta::pure::metamodel::dataSpace::DataSpace extends PackageableElement
   executables: DataSpaceExecutable[*];
 
   supportInfo: DataSpaceSupportInfo[0..1];
-
-  << doc.deprecated >> featuredDiagrams: Diagram[*];
 }
 
 Class meta::pure::metamodel::dataSpace::DataSpaceExecutionContext

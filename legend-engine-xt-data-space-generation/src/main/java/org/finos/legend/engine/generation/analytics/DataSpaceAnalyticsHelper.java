@@ -74,7 +74,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Lambda
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.ServiceLoader;
 import java.util.stream.Collectors;
 
@@ -172,7 +171,6 @@ public class DataSpaceAnalyticsHelper
         result.defaultExecutionContext = dataSpace._defaultExecutionContext()._name();
 
         // diagrams
-        result.featuredDiagrams = dataSpace._featuredDiagrams() != null ? dataSpace._featuredDiagrams().collect(diagram -> HelperModelBuilder.getElementFullPath(diagram, pureModel.getExecutionSupport())).toList() : Lists.mutable.empty();
         result.diagrams = dataSpace._diagrams() != null ? ListIterate.collect(dataSpace._diagrams().toList(), diagram ->
         {
             DataSpaceDiagramAnalysisResult diagramAnalysisResult = new DataSpaceDiagramAnalysisResult();
@@ -189,9 +187,7 @@ public class DataSpaceAnalyticsHelper
         PureModelContextData associations = PureModelContextDataGenerator.generatePureModelContextDataFromAssociations(diagramAnalysisResult._associations(), clientVersion, pureModel.getExecutionSupport());
         PureModelContextData.Builder builder = PureModelContextData.newBuilder();
         // add diagrams to model
-        List<String> allDiagramPaths = ListIterate.collect(result.diagrams, diagram -> diagram.diagram);
-        allDiagramPaths.addAll(result.featuredDiagrams);
-        pureModelContextData.getElements().stream().filter(el -> allDiagramPaths.contains(el.getPath())).forEach(builder::addElement);
+        pureModelContextData.getElements().stream().filter(el -> ListIterate.collect(result.diagrams, diagram -> diagram.diagram).contains(el.getPath())).forEach(builder::addElement);
         result.model = builder.build().combine(classes).combine(enums).combine(_profiles).combine(associations);
 
         // elements

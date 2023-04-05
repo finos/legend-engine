@@ -49,7 +49,7 @@ PAREN_CLOSE:                                ')';
 COLON:                                      ':';
 DOT:                                        '.';
 DOLLAR:                                     '$';
-DOT_DOT:                                     '..';
+DOT_DOT:                                    '..';
 SEMI_COLON:                                 ';';
 NEW_SYMBOL:                                 '^';
 PIPE:                                       '|';
