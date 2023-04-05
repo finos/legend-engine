@@ -22,6 +22,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.NumericalValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
@@ -78,6 +79,7 @@ public class BaseTest
     protected String stagingTableWithoutDuplicatesAlias = "stage";
 
     protected String digestField = "digest";
+    protected String versionField = "version";
     protected String dataSplitField = "data_split";
     protected String batchUpdateTimeField = "batch_update_time";
     protected String batchIdInField = "batch_id_in";
@@ -123,6 +125,7 @@ public class BaseTest
 
     // Milestoning Columns
     protected Field digest = Field.builder().name(digestField).type(FieldType.of(DataType.STRING, Optional.empty(), Optional.empty())).build();
+    protected Field version = Field.builder().name(versionField).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).build();
     protected Field dataSplit = Field.builder().name(dataSplitField).type(FieldType.of(DataType.BIGINT, Optional.empty(), Optional.empty())).primaryKey(true).build();
     protected Field batchUpdateTime = Field.builder().name(batchUpdateTimeField).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).build();
 
@@ -231,6 +234,17 @@ public class BaseTest
         .addFields(batchIdOut)
         .build();
 
+    protected SchemaDefinition mainTableBatchIdAndVersionBasedSchema = SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(amount)
+            .addFields(bizDate)
+            .addFields(digest)
+            .addFields(version)
+            .addFields(batchIdIn)
+            .addFields(batchIdOut)
+            .build();
+
     protected SchemaDefinition mainTableBatchIdBasedSchemaWithBatchIdInNotPrimary = SchemaDefinition.builder()
         .addFields(id)
         .addFields(name)
@@ -268,6 +282,15 @@ public class BaseTest
         .addFields(bizDate)
         .addFields(digest)
         .build();
+
+    protected SchemaDefinition baseTableSchemaWithDigestAndVersion = SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(amount)
+            .addFields(bizDate)
+            .addFields(digest)
+            .addFields(version)
+            .build();
 
     protected SchemaDefinition baseTableSchemaWithNoPrimaryKeys = SchemaDefinition.builder()
         .addFields(idNonPrimary)
@@ -583,6 +606,25 @@ public class BaseTest
             .schema(baseTableSchemaWithDigest)
             .build();
 
+    protected Dataset stagingTableWithFilter = DerivedDataset.builder()
+            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
+            .schema(baseTableSchemaWithDigest)
+            .filter(GreaterThan.of(FieldValue.builder().fieldName(batchIdInField).build(),
+                    NumericalValue.of(5L)))
+            .build();
+
+    protected Dataset stagingTableWithFilterAndVersion = DerivedDataset.builder()
+            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
+            .schema(baseTableSchemaWithDigestAndVersion)
+            .filter(GreaterThan.of(FieldValue.builder().fieldName(batchIdInField).build(),
+                    NumericalValue.of(5L)))
+            .build();
+
+    protected Dataset stagingTableWithVersion = DatasetDefinition.builder()
+            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
+            .schema(baseTableSchemaWithDigestAndVersion)
+            .build();
+
     Condition filterCondition1 = GreaterThan
             .builder()
             .leftValue(FieldValue.builder().fieldName("biz_date").datasetRefAlias("stage").build())
@@ -634,6 +676,12 @@ public class BaseTest
     protected Dataset mainTableWithBatchIdBasedSchema = DatasetDefinition.builder()
             .database(mainDbName).name(mainTableName).alias(mainTableAlias)
             .schema(mainTableBatchIdBasedSchema)
+            .build();
+
+
+    protected Dataset mainTableWithBatchIdAndVersionBasedSchema = DatasetDefinition.builder()
+            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
+            .schema(mainTableBatchIdAndVersionBasedSchema)
             .build();
 
     protected Dataset stagingTableWithDeleteIndicator = DatasetDefinition.builder()
