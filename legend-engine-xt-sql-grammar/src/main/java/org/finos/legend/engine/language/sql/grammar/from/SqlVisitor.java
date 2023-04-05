@@ -731,7 +731,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
         }
 
         query.orderBy = orderBy;
-        query.limit = limit.orElse(null);;
+        query.limit = limit.orElse(null);
 
         return query;
     }
@@ -1290,7 +1290,13 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitExtract(SqlBaseParser.ExtractContext context)
     {
-        return unsupported();
+        StringLiteral field = (StringLiteral) visit(context.stringLiteralOrIdentifier());
+
+        Extract extract = new Extract();
+        extract.expression = (Expression) visit(context.expr());
+        extract.field = ExtractField.valueOf(field.value.toUpperCase());
+
+        return extract;
     }
 
     @Override
