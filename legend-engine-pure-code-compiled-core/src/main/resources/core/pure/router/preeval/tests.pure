@@ -1468,7 +1468,7 @@ function <<test.Test>> meta::pure::router::preeval::tests::testRecursiveSimpleCo
   let input = {s:Class<Any>[1]|meta::pure::functions::meta::hierarchicalProperties($s)};
 
   let expected = {s:Class<Any>[1]| 
-    if($s == Any, {|[]}, {|$s.properties->concatenate($s.generalizations->map({g:Generalization[1]|$g.general.rawType->cast(Any)
+    if($s == Any, {|[]}, {|$s.properties->concatenate($s.generalizations->map({g|$g.general.rawType->cast(Any)
       ->toOne()
       ->hierarchicalProperties()}))
       ->removeDuplicates([], [])})
