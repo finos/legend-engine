@@ -56,6 +56,11 @@ public class MemsqlTestArtifacts
     public static String expectedBaseTableCreateQueryWithAuditAndNoPKs = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`main`" +
             "(`id` INTEGER,`name` VARCHAR(256),`amount` DOUBLE,`biz_date` DATE,`digest` VARCHAR(256),`batch_update_time` DATETIME)";
 
+    public static String expectedMainTableBatchIdAndVersionBasedCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`main`(" +
+            "`id` INTEGER NOT NULL,`name` VARCHAR(256) NOT NULL,`amount` DOUBLE,`biz_date` DATE,`digest` VARCHAR(256),`version` INTEGER," +
+            "`batch_id_in` INTEGER NOT NULL,`batch_id_out` INTEGER,PRIMARY KEY (`id`, `name`, `batch_id_in`))";
+
+
     public static String expectedBaseTablePlusDigestPlusUpdateTimestampCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`main`(" +
             "`id` INTEGER NOT NULL," +
             "`name` VARCHAR(256) NOT NULL," +
