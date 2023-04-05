@@ -268,7 +268,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
                     }
                     catch (IllegalArgumentException e)
                     {
-                        throw new IllegalArgumentException(e + "\n" + config.dateTimeFormat + " is not a valid dateTime format in SerializationConfig");
+                        throw new IllegalArgumentException(config.dateTimeFormat + " is not a valid dateTime format in SerializationConfig", e);
                     }
                 }
                 return ExecutionNodeSerializerHelper.executeSerialize(nodeSpecifics, config, childResult, context);
