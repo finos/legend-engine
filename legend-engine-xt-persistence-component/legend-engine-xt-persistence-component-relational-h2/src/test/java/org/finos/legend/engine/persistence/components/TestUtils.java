@@ -233,6 +233,20 @@ public class TestUtils
             .build();
     }
 
+    public static SchemaDefinition getStagingSchemaWithFilterWithVersionForDB()
+    {
+        return SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(income)
+            .addFields(startTime)
+            .addFields(expiryDate)
+            .addFields(digest)
+            .addFields(versionPk)
+            .addFields(batch)
+            .build();
+    }
+
     public static SchemaDefinition getStagingSchemaWithDataSplits()
     {
         return SchemaDefinition.builder()
@@ -304,6 +318,15 @@ public class TestUtils
             .build();
     }
 
+    public static DatasetDefinition getStagingTableWithFilterWithVersionForDB()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(getStagingSchemaWithFilterWithVersionForDB())
+            .build();
+    }
+
     public static DerivedDataset getDerivedStagingTableWithFilter()
     {
         return DerivedDataset.builder()
@@ -324,6 +347,34 @@ public class TestUtils
             .group(testSchemaName)
             .name(stagingTableName)
             .schema(getStagingSchema())
+            .alias(stagingTableName)
+            .filter(GreaterThanEqualTo.of(FieldValue.builder()
+                .fieldName(batchName)
+                .datasetRefAlias(stagingTableName)
+                .build(), NumericalValue.of(3L)))
+            .build();
+    }
+
+    public static DerivedDataset getDerivedStagingTableWithFilterWithVersion()
+    {
+        return DerivedDataset.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(getStagingSchemaWithVersion())
+            .alias(stagingTableName)
+            .filter(GreaterThanEqualTo.of(FieldValue.builder()
+                .fieldName(batchName)
+                .datasetRefAlias(stagingTableName)
+                .build(), NumericalValue.of(2L)))
+            .build();
+    }
+
+    public static DerivedDataset getStagingTableWithFilterWithVersionSecondPass()
+    {
+        return DerivedDataset.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(getStagingSchemaWithVersion())
             .alias(stagingTableName)
             .filter(GreaterThanEqualTo.of(FieldValue.builder()
                 .fieldName(batchName)
