@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.grammar.test;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
@@ -34,6 +35,11 @@ public class TestGrammarRoundtrip
 
     public static class TestGrammarRoundtripTestSuite
     {
+        protected void testParsedProtocol(String val, String expectedProtocol) throws JsonProcessingException
+        {
+            Assert.assertEquals(expectedProtocol, objectMapper.writeValueAsString(PureGrammarParser.newInstance().parseModel(val, false)));
+        }
+
         public void testFrom(String code, String expectedProtocolPath)
         {
             String expectedProtocol = new Scanner(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream(expectedProtocolPath), "Can't find resource '" + expectedProtocolPath + "'"), "UTF-8").useDelimiter("\\A").next();
@@ -47,6 +53,13 @@ public class TestGrammarRoundtrip
             {
                 throw new RuntimeException(e);
             }
+        }
+
+        protected void testComposedGrammar(String protocol, String expected) throws JsonProcessingException
+        {
+
+            PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());
+            Assert.assertEquals(expected, grammarTransformer.renderPureModelContextData(objectMapper.readValue(protocol, PureModelContextData.class)));
         }
 
         /**

@@ -835,7 +835,26 @@ public class PureModel implements IPureModel
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association getAssociation_safe(String fullPath)
     {
-        return this.associationsIndex.get(addPrefixToTypeReference(fullPath));
+        String fullPathWithPrefix = addPrefixToTypeReference(fullPath);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association association = this.associationsIndex.get(fullPathWithPrefix);
+        if (association == null)
+        {
+            // Search for system types in the Pure graph
+            try
+            {
+                association = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association) executionSupport.getMetadata("meta::pure::metamodel::relationship::Association", "Root::" + fullPath);
+            }
+            catch (Exception ignored)
+            {
+                // do nothing
+            }
+            if (association != null)
+            {
+                this.immutables.add(fullPathWithPrefix);
+                this.associationsIndex.put(fullPathWithPrefix, association);
+            }
+        }
+        return association;
     }
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile getProfile(String fullPath)

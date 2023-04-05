@@ -117,6 +117,14 @@ public class AuthenticationParseTreeWalker
         return authenticationSpecification;
     }
 
+    public AuthenticationSpecification visitKerberosAuthentication(AuthenticationParserGrammar.KerberosAuthenticationContext ctx)
+    {
+        KerberosAuthenticationSpecification authenticationSpecification = new KerberosAuthenticationSpecification();
+        authenticationSpecification.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        return authenticationSpecification;
+    }
+
     public AuthenticationSpecification visitUserPasswordAuthentication(AuthenticationParserGrammar.UserPasswordAuthenticationContext ctx)
     {
         UserPasswordAuthenticationSpecification authenticationSpecification = new UserPasswordAuthenticationSpecification();

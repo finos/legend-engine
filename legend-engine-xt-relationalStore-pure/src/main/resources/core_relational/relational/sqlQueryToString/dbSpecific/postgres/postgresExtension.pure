@@ -86,7 +86,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
 {
   let enumList = [DurationUnit.YEARS,DurationUnit.MONTHS,DurationUnit.WEEKS,DurationUnit.DAYS,DurationUnit.HOURS,DurationUnit.MINUTES,DurationUnit.SECONDS,DurationUnit.MILLISECONDS]->map(e|$e->toString());
 
-  let indexOfDiff = $enumList->indexOf($params->at(2)->replace('Text', ''));
+  let indexOfDiff = $enumList->indexOf($params->at(2)->replace('\'', '')->replace('Text', ''));
 
   let dbSpecificUnits = [
 

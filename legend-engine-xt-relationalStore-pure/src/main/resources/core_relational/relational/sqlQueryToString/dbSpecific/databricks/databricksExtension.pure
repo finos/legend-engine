@@ -241,7 +241,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 {
     // dateDiff(d1: Date[1], d2: Date[1], du: DurationUnit[1]): Integer[1]
     // This returns an integer, hence a need to round results to int
-    let interval = if($p->size() == 2, |'DAY', |$p->at(2)->mapToDBUnitType());
+    let interval = if($p->size() == 2, |'DAY', |$p->at(2)->replace('\'', '')->mapToDBUnitType());
     let cmd = if ($interval == 'YEAR',
         | 'year('+ $p->at(1) +') - year('+ $p->at(0) +')',
         | if ($interval == 'MONTH',

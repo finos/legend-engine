@@ -40,7 +40,7 @@ public class DataSpace extends PackageableElement
     public String defaultExecutionContext;
 
     // For now, these can only include classes, enumerations, associations
-    public List<PackageableElementPointer> elements;
+    public List<DataSpaceElementPointer> elements;
     public List<DataSpaceExecutable> executables;
     public List<DataSpaceDiagram> diagrams;
 

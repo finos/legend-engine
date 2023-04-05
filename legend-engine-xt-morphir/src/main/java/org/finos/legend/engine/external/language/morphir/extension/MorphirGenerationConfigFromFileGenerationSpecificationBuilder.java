@@ -17,14 +17,13 @@ package org.finos.legend.engine.external.language.morphir.extension;
 import org.finos.legend.engine.external.language.morphir.model.MorphirGenerationConfig;
 import org.finos.legend.engine.language.pure.dsl.generation.config.ConfigBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationType;
 import org.finos.legend.engine.shared.core.operational.Assert;
 
 public class MorphirGenerationConfigFromFileGenerationSpecificationBuilder
 {
     public static MorphirGenerationConfig build(FileGenerationSpecification fileGeneration)
     {
-        Assert.assertTrue(fileGeneration.type.equals(FileGenerationType.morphir.name()), () -> "File generation of type of morphir expected, got '" + fileGeneration.type + "'");
+        Assert.assertTrue(fileGeneration.type.equals("morphir"), () -> "File generation of type of morphir expected, got '" + fileGeneration.type + "'");
         MorphirGenerationConfig morphirGenerationConfig = new MorphirGenerationConfig();
         ConfigBuilder.noConfigurationPropertiesCheck(fileGeneration);
         ConfigBuilder.setScopeElements(fileGeneration, morphirGenerationConfig);

@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.5.1-SNAPSHOT</version>
+    <version>4.6.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -276,7 +276,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>4.3.3</legend.pure.version>
+        <legend.pure.version>4.3.4</legend.pure.version>
         <legend.shared.version>0.23.3</legend.shared.version>
 
         <!-- SONAR -->
@@ -301,7 +301,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.release>8</maven.compiler.release>
         <maven.enforcer.requireJavaVersion>[11.0.10,12)</maven.enforcer.requireJavaVersion>
-        <project.build.outputTimestamp>1680115922</project.build.outputTimestamp>
+        <project.build.outputTimestamp>1680713468</project.build.outputTimestamp>
         <surefire.vm.params>-XX:SoftRefLRUPolicyMSPerMB=1</surefire.vm.params>
 
         <!-- Databases -->

@@ -553,12 +553,12 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNode(srcNode
                                                                                                                                                                                                                   |[])),
                                                                                                      |[]));
    let subTrees = $requiredTgtSubTrees->fold({st,n | $n->enrichSourceTreeNodeForProperty($setImplementation, $st, $extensions)}, $srcNode);
-   if($setImplementation.filter->isNotEmpty(),
-      {| 
-         let srcClass = $setImplementation.srcClass->toOne()->cast(@Class<Any>);
-         $subTrees->enrichSourceTreeNodeForExpression($srcClass, $setImplementation.filter.expressionSequence->at(0));
-      },
-      | $subTrees
+   let srcClass = $setImplementation.srcClass->toOne()->cast(@Class<Any>);
+   let srcNodeOwner = $srcNode->typeFromGraphFetchTree();
+
+   if($setImplementation.filter->isNotEmpty() && $srcClass == $srcNodeOwner,
+      | $subTrees->enrichSourceTreeNodeForExpression($srcClass, $setImplementation.filter.expressionSequence->at(0)),
+      | $subTrees   
    );
 }
 

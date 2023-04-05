@@ -7,7 +7,7 @@ options
     tokenVocab = AuthenticationLexerGrammar;
 }
 
-identifier:                      VALID_STRING | STRING | USER_PASSWORD_AUTHENTICATION | API_KEY_AUTHENTICATION | ENCRYPTED_PRIVATE_KEY_AUTHENTICATION | GCP_WIF_AWS_IDP_AUTHENTICATION
+identifier:                      VALID_STRING | STRING | USER_PASSWORD_AUTHENTICATION | API_KEY_AUTHENTICATION | ENCRYPTED_PRIVATE_KEY_AUTHENTICATION | GCP_WIF_AWS_IDP_AUTHENTICATION | KERBEROS_AUTHENTICATION
 ;
 
 // -------------------------------------- DEFINITION --------------------------------------
@@ -56,6 +56,12 @@ userPasswordAuthentication_username:    USER_PASSWORD_AUTHENTICATION_USERNAME CO
 userPasswordAuthentication_password:    USER_PASSWORD_AUTHENTICATION_PASSWORD COLON secret_value SEMI_COLON
 ;
 
+// -------------------------------------- KerberosAuthentication --------------------------------------
+
+kerberosAuthentication:                 EOF
+;
+
+
 // -------------------------------------- APIKeyAuthentication --------------------------------------
 
 apiKeyAuthentication :          (
@@ -73,7 +79,7 @@ apiKeyAuthentication_keyName:    API_KEY_AUTHENTICATION_KEY_NAME COLON STRING SE
 apiKeyAuthentication_location:    API_KEY_AUTHENTICATION_LOCATION COLON STRING SEMI_COLON
 ;
 
-apiKeyAuthentication_value:    API_KEY_AUTHENTICATION_VALUE COLON secret_value
+apiKeyAuthentication_value:    API_KEY_AUTHENTICATION_VALUE COLON secret_value SEMI_COLON
 ;
 
 // -------------------------------------- Encrypted Private Key Authentication --------------------------------------
@@ -89,11 +95,11 @@ encryptedPrivateKeyAuthentication :     (
 encryptedPrivateKeyAuthentication_userName:     ENCRYPTED_PRIVATE_KEY_USERNAME COLON STRING SEMI_COLON
 ;
 
-encryptedPrivateKeyAuthentication_privateKey:    ENCRYPTED_PRIVATE_KEY_PRIVATE_KEY COLON secret_value
+encryptedPrivateKeyAuthentication_privateKey:    ENCRYPTED_PRIVATE_KEY_PRIVATE_KEY COLON secret_value SEMI_COLON
 ;
 
 
-encryptedPrivateKeyAuthentication_passphrase:    ENCRYPTED_PRIVATE_KEY_PASSPHRASE COLON secret_value
+encryptedPrivateKeyAuthentication_passphrase:    ENCRYPTED_PRIVATE_KEY_PASSPHRASE COLON secret_value SEMI_COLON
 ;
 
 // -------------------------------------- GCP WIF With AWS IdP Authentication --------------------------------------
@@ -242,10 +248,10 @@ awsStaticCredentialsValue:  AWS_CREDENTIALS_STATIC
                             BRACE_CLOSE
 ;
 
-awsStaticCredentialsValue_accessKeyId:  AWS_CREDENTIALS_STATIC_ACCESSKEYID COLON secret_value
+awsStaticCredentialsValue_accessKeyId:  AWS_CREDENTIALS_STATIC_ACCESSKEYID COLON secret_value SEMI_COLON
 ;
 
-awsStaticCredentialsValue_secretAccessKey:  AWS_CREDENTIALS_STATIC_SECRETACCESSKEY COLON secret_value
+awsStaticCredentialsValue_secretAccessKey:  AWS_CREDENTIALS_STATIC_SECRETACCESSKEY COLON secret_value SEMI_COLON
 ;
 
 awsSTSAssumeRoleCredentialsValue:  AWS_CREDENTIALS_STS_ASSUMEROLE

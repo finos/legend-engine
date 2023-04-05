@@ -14,13 +14,13 @@
 
 package org.finos.legend.engine.shared.javaCompiler;
 
-import javax.tools.SimpleJavaFileObject;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.util.Base64;
+import javax.tools.SimpleJavaFileObject;
 
 class ClassJavaSource extends SimpleJavaFileObject
 {
@@ -32,7 +32,7 @@ class ClassJavaSource extends SimpleJavaFileObject
     }
 
     @Override
-    public InputStream openInputStream() throws IOException
+    public InputStream openInputStream()
     {
         return new ByteArrayInputStream(this.bytes);
     }
@@ -40,7 +40,19 @@ class ClassJavaSource extends SimpleJavaFileObject
     @Override
     public OutputStream openOutputStream()
     {
-        return new ClassJavaSource.ClassJavaSourceOutputStream(1024);
+        return openOutputStream(1024);
+    }
+
+    OutputStream openOutputStream(int size)
+    {
+        return new ByteArrayOutputStream(size)
+        {
+            @Override
+            public synchronized void close()
+            {
+                setBytes_internal(toByteArray());
+            }
+        };
     }
 
     byte[] getBytes()
@@ -48,16 +60,31 @@ class ClassJavaSource extends SimpleJavaFileObject
         return this.bytes;
     }
 
+    String getEncodedBytes()
+    {
+        return Base64.getEncoder().encodeToString(getBytes());
+    }
+
     void setBytes(byte[] bytes)
     {
         setBytes(bytes, 0, bytes.length);
+    }
+
+    void setEncodedBytes(String encodedBytes)
+    {
+        setBytes_internal(Base64.getDecoder().decode(encodedBytes));
     }
 
     private void setBytes(byte[] bytes, int offset, int length)
     {
         byte[] newBytes = new byte[length];
         System.arraycopy(bytes, offset, newBytes, 0, length);
-        this.bytes = newBytes;
+        setBytes_internal(newBytes);
+    }
+
+    private void setBytes_internal(byte[] bytes)
+    {
+        this.bytes = bytes;
     }
 
     String inferBinaryName()
@@ -66,54 +93,6 @@ class ClassJavaSource extends SimpleJavaFileObject
         int lastDot = fileName.lastIndexOf('.');
         String nameWithoutExtension = (lastDot == -1) ? fileName.substring(1) : fileName.substring(1, lastDot);
         return nameWithoutExtension.replace('/', '.');
-    }
-
-    private class ClassJavaSourceOutputStream extends ByteArrayOutputStream
-    {
-        private boolean closed = false;
-
-        private ClassJavaSourceOutputStream(int size)
-        {
-            super(size);
-        }
-
-        @Override
-        public synchronized void write(int b)
-        {
-            checkOpen();
-            super.write(b);
-        }
-
-        @Override
-        public synchronized void write(byte[] b, int off, int len)
-        {
-            checkOpen();
-            super.write(b, off, len);
-        }
-
-        @Override
-        public synchronized void close()
-        {
-            if (!this.closed)
-            {
-                this.closed = true;
-
-                // Write contents to byte array
-                setBytes(this.buf, 0, this.count);
-
-                // Clear data
-                reset();
-                this.buf = new byte[0];
-            }
-        }
-
-        private void checkOpen()
-        {
-            if (this.closed)
-            {
-                throw new IllegalStateException("Stream has been closed");
-            }
-        }
     }
 
     public static ClassJavaSource fromClassName(String className)

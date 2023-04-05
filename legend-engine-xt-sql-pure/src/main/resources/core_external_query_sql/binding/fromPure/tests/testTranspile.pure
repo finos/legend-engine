@@ -16,7 +16,9 @@
 import meta::external::query::sql::transformation::queryToPure::*;
 import meta::external::query::sql::metamodel::*;
 import meta::external::query::sql::transformation::queryToPure::tests::*;
+import meta::external::query::sql::*;
 import meta::legend::service::metamodel::*;
+import meta::pure::functions::meta::*;
 import meta::pure::mapping::*;
 import meta::pure::metamodel::serialization::grammar::*;
 
@@ -303,7 +305,19 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   let expected = {| FlatInput.all()->project(
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
           [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
-        )->groupBy(['String', 'bool'], agg('sum', row | $row.getInteger('Integer'), y | $y->sum()))
+        )->renameColumns(pair('Boolean', 'bool'))->groupBy(['String', 'bool'], agg('sum', row | $row.getInteger('Integer'), y | $y->sum()))
+      };
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByWithAlias():Boolean[1]
+{
+  let sqlString = 'SELECT String, sum(Integer) AS "sum", Boolean AS "bool" FROM service."/service/service1" GROUP BY String, "bool"';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
+        )->renameColumns(pair('Boolean', 'bool'))->groupBy(['String', 'bool'], agg('sum', row | $row.getInteger('Integer'), y | $y->sum()))
       };
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
@@ -360,7 +374,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 //CAST
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testCasts():Boolean[1]
 {
-  let sqlString = 'SELECT CAST(\'2023-01-01\' AS DATE) AS "constant", CAST(String AS VARCHAR) AS "string", CAST(String AS DATE) AS "date",'
+  let sqlString = 'SELECT CAST(\'2023-01-01\' AS DATE) AS "constant", CAST(String AS VARCHAR) AS "string", CAST(String AS TEXT) AS "text", CAST(String AS DATE) AS "date",'
                 + ' CAST(String AS INTEGER) AS "integer", CAST(String AS BOOLEAN) AS "boolean", CAST(String AS DOUBLE) AS "double" FROM service."/service/service1"';
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {| FlatInput.all()->project(
@@ -369,6 +383,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         )->project([
           col(row:TDSRow[1] | parseDate('2023-01-01'), 'constant'),
           col(row:TDSRow[1] | toString($row.getString('String')), 'string'),
+          col(row:TDSRow[1] | toString($row.getString('String')), 'text'),
           col(row:TDSRow[1] | parseDate($row.getString('String')), 'date'),
           col(row:TDSRow[1] | parseInteger($row.getString('String')), 'integer'),
           col(row:TDSRow[1] | parseBoolean($row.getString('String')), 'boolean'),
@@ -380,7 +395,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testNullCasts():Boolean[1]
 {
-  let sqlString = 'SELECT CAST(NULL AS VARCHAR) AS "string", CAST(NULL AS DATE) AS "date",'
+  let sqlString = 'SELECT CAST(NULL AS VARCHAR) AS "string", CAST(NULL AS TEXT) AS "text", CAST(NULL AS DATE) AS "date",'
                 + ' CAST(NULL AS INTEGER) AS "integer", CAST(NULL AS BOOLEAN) AS "boolean", CAST(NULL AS DOUBLE) AS "double" FROM service."/service/service1"';
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {| FlatInput.all()->project(
@@ -388,6 +403,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
         )->project([
           col(row:TDSRow[1] | cast([], @String), 'string'),
+          col(row:TDSRow[1] | cast([], @String), 'text'),
           col(row:TDSRow[1] | cast([], @Date), 'date'),
           col(row:TDSRow[1] | cast([], @Integer), 'integer'),
           col(row:TDSRow[1] | cast([], @Boolean), 'boolean'),
@@ -643,11 +659,38 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
 
+//EXTRACT
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testExtract():Boolean[1]
+{
+  let sqlString = 'SELECT EXTRACT(\'year\' FROM StrictDate) AS "YEAR", EXTRACT(\'quarter\' FROM CAST(\'2023-01-01\' AS DATE)) AS "QUARTER", EXTRACT(\'month\' FROM StrictDate) AS "MONTH", EXTRACT(\'week\' FROM StrictDate) AS "WEEK", ' +
+                  'EXTRACT(\'dow\' FROM StrictDate) AS "DOW", EXTRACT(\'day\' FROM StrictDate) AS "DAY", EXTRACT(\'hour\' FROM StrictDate) AS "HOUR", EXTRACT(\'minute\' FROM StrictDate) AS "MINUTE", EXTRACT(\'second\' FROM StrictDate) AS "SECOND" FROM service."/service/service1"';
+
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->project([
+                col(row:TDSRow[1] | year($row.getStrictDate('StrictDate')), 'YEAR'),
+                col(row:TDSRow[1] | quarterNumber(parseDate('2023-01-01')), 'QUARTER'),
+                col(row:TDSRow[1] | monthNumber($row.getStrictDate('StrictDate')), 'MONTH'),
+                col(row:TDSRow[1] | weekOfYear($row.getStrictDate('StrictDate')), 'WEEK'),
+                col(row:TDSRow[1] | dayOfWeekNumber($row.getStrictDate('StrictDate')), 'DOW'),
+                col(row:TDSRow[1] | dayOfMonth($row.getStrictDate('StrictDate')), 'DAY'),
+                col(row:TDSRow[1] | hour($row.getStrictDate('StrictDate')), 'HOUR'),
+                col(row:TDSRow[1] | minute($row.getStrictDate('StrictDate')), 'MINUTE'),
+                col(row:TDSRow[1] | second($row.getStrictDate('StrictDate')), 'SECOND')
+              ])
+      };
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+}
+
 //STRING FUNCTIONS
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testStringFunctions():Boolean[1]
 {
   let sqlString = 'SELECT regexp_like(String, \'test\') AS "MATCH", char_length(String) AS "LENGTH", upper(String) AS "UPPER", lower(String) AS "LOWER", replace(String, \'A\', \'a\') AS "REPLACE", ' +
-                  'starts_with(String, \'a\') AS "STARTSWITH", substring(String, 1) AS "SUBSTRING", substr(String, 1, 2) AS "SUBSTR" FROM service."/service/service1"';
+                  'starts_with(String, \'a\') AS "STARTSWITH", substring(String, 1) AS "SUBSTRING", substr(String, 1, 2) AS "SUBSTR", btrim(String) AS "TRIM", btrim(String, \' \') AS "TRIM2" FROM service."/service/service1"';
 
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {|
@@ -663,7 +706,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 col(row:TDSRow[1] | replace($row.getString('String'), 'A', 'a'), 'REPLACE'),
                 col(row:TDSRow[1] | startsWith($row.getString('String'), 'a'), 'STARTSWITH'),
                 col(row:TDSRow[1] | substring($row.getString('String'), 1), 'SUBSTRING'),
-                col(row:TDSRow[1] | substring($row.getString('String'), 1, 2), 'SUBSTR')
+                col(row:TDSRow[1] | substring($row.getString('String'), 1, 2), 'SUBSTR'),
+                col(row:TDSRow[1] | trim($row.getString('String')), 'TRIM'),
+                col(row:TDSRow[1] | trim($row.getString('String')), 'TRIM2')
               ])
       };
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
@@ -712,9 +757,13 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 }
 
 //WINDOW FUNCTIONS
-function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure::tests::testWindowFunctions():Boolean[1]
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testWindowFunctions():Boolean[1]
 {
-  let sqlString = 'SELECT String, sum(Integer) AS "SUM", row_number() OVER (PARTITION BY String ORDER BY Integer ASC) AS "ROW" FROM service."/service/service1"';
+  let sqlString = 'SELECT String, Integer, ' + 
+                  'row_number() OVER (PARTITION BY String ORDER BY Integer ASC) AS "ROW", ' + 
+                  'dense_rank() OVER (PARTITION BY String ORDER BY Integer DESC) AS "DENSE RANK", ' + 
+                  'rank() OVER (PARTITION BY String ORDER BY Integer ASC) AS "RANK" ' + 
+                  'FROM service."/service/service1"';
 
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {|
@@ -722,8 +771,59 @@ function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure:
             ->project(
               [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
               [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
-            ->groupBy('String', agg('SUM', row | $row.getInteger('Integer'), y | $y->sum()))
+            ->restrict(['String', 'Integer'])
             ->olapGroupBy(['String'], asc('Integer'), y | $y->meta::pure::functions::math::olap::rowNumber(), 'ROW')
+            ->olapGroupBy(['String'], desc('Integer'), y | $y->meta::pure::functions::math::olap::denseRank(), 'DENSE RANK')
+            ->olapGroupBy(['String'], asc('Integer'), y | $y->meta::pure::functions::math::olap::rank(), 'RANK')
+      };
+
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testProjectWithWindowFunctions():Boolean[1]
+{
+  let sqlString = 'SELECT String, abs(Integer) AS "ABS", ' + 
+                  'row_number() OVER (PARTITION BY String ORDER BY Integer ASC) AS "ROW", ' + 
+                  'dense_rank() OVER (PARTITION BY String ORDER BY Integer DESC) AS "DENSE RANK", ' + 
+                  'rank() OVER (PARTITION BY String ORDER BY Integer ASC) AS "RANK" ' + 
+                  'FROM service."/service/service1"';
+
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->project([
+              col(row:TDSRow[1] | $row.getString('String'), 'String'),
+              col(row:TDSRow[1] | abs($row.getInteger('Integer')), 'ABS')
+            ])
+            ->olapGroupBy(['String'], asc('Integer'), y | $y->meta::pure::functions::math::olap::rowNumber(), 'ROW')
+            ->olapGroupBy(['String'], desc('Integer'), y | $y->meta::pure::functions::math::olap::denseRank(), 'DENSE RANK')
+            ->olapGroupBy(['String'], asc('Integer'), y | $y->meta::pure::functions::math::olap::rank(), 'RANK')
+      };
+
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByWithWindowFunctions():Boolean[1]
+{
+  let sqlString = 'SELECT String, Integer, sum(Integer) AS "SUM", ' + 
+                  'row_number() OVER (PARTITION BY String ORDER BY Integer ASC) AS "ROW", ' + 
+                  'dense_rank() OVER (PARTITION BY String ORDER BY Integer DESC) AS "DENSE RANK", ' + 
+                  'rank() OVER (PARTITION BY String ORDER BY Integer ASC) AS "RANK" ' + 
+                  'FROM service."/service/service1" GROUP BY String, Integer';
+
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->groupBy(['String', 'Integer'], agg('SUM', row | $row.getInteger('Integer'), y | $y->sum()))
+            ->olapGroupBy(['String'], asc('Integer'), y | $y->meta::pure::functions::math::olap::rowNumber(), 'ROW')
+            ->olapGroupBy(['String'], desc('Integer'), y | $y->meta::pure::functions::math::olap::denseRank(), 'DENSE RANK')
+            ->olapGroupBy(['String'], asc('Integer'), y | $y->meta::pure::functions::math::olap::rank(), 'RANK')
       };
 
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
@@ -786,34 +886,49 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 {
   let sqlString = 'SELECT * FROM service."/service/service1"';
 
-  let schema = $sqlString->processQuery(true).columns()->meta::external::query::sql::tdsColsToSchema();
-  assertEquals($schema.columns->at(0).name, 'Boolean');
-  assertEquals($schema.columns->at(0)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.Boolean);
-  assertEquals($schema.columns->at(1).name, 'Integer');
-  assertEquals($schema.columns->at(1)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.Integer);
-  assertEquals($schema.columns->at(2).name, 'Float');
-  assertEquals($schema.columns->at(2)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.Float);
-  assertEquals($schema.columns->at(3).name, 'Decimal');
-  assertEquals($schema.columns->at(3)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.Decimal);
-  assertEquals($schema.columns->at(4).name, 'StrictDate');
-  assertEquals($schema.columns->at(4)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.StrictDate);
-  assertEquals($schema.columns->at(5).name, 'DateTime');
-  assertEquals($schema.columns->at(5)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.DateTime);
-  assertEquals($schema.columns->at(6).name, 'String');
-  assertEquals($schema.columns->at(6)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.String);
+  let actualSchema = $sqlString->processQuery(true).columns()->meta::external::query::sql::tdsColsToSchema();
+
+  let expectedCol1 = ^PrimitiveValueSchemaColumn(name='Boolean',      type=meta::external::query::sql::PrimitiveType.Boolean);
+  let expectedCol2 = ^PrimitiveValueSchemaColumn(name='Integer',      type=meta::external::query::sql::PrimitiveType.Integer);
+  let expectedCol3 = ^PrimitiveValueSchemaColumn(name='Float',        type=meta::external::query::sql::PrimitiveType.Float);
+  let expectedCol4 = ^PrimitiveValueSchemaColumn(name='Decimal',      type=meta::external::query::sql::PrimitiveType.Decimal);
+  let expectedCol5 = ^PrimitiveValueSchemaColumn(name='StrictDate',   type=meta::external::query::sql::PrimitiveType.StrictDate);
+  let expectedCol6 = ^PrimitiveValueSchemaColumn(name='DateTime',     type=meta::external::query::sql::PrimitiveType.DateTime);
+  let expectedCol7 = ^PrimitiveValueSchemaColumn(name='String',       type=meta::external::query::sql::PrimitiveType.String);
+  let expectedSchema = ^Schema(columns=[$expectedCol1, $expectedCol2, $expectedCol3, $expectedCol4, $expectedCol5, $expectedCol6, $expectedCol7]);
+  
+  assertEquals($expectedSchema, $actualSchema);
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSchemaService2():Boolean[1]
 {
   let sqlString = 'SELECT * FROM service."/service/service2"';
 
-  let schema = $sqlString->processQuery(true).columns()->meta::external::query::sql::tdsColsToSchema();
-  assertEquals($schema.columns->at(0).name, 'ID');
-  assertEquals($schema.columns->at(0)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.Integer);
-  assertEquals($schema.columns->at(1).name, 'Integer');
-  assertEquals($schema.columns->at(1)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.Integer);
-  assertEquals($schema.columns->at(2).name, 'String');
-  assertEquals($schema.columns->at(2)->cast(@meta::external::query::sql::PrimitiveValueSchemaColumn).type, meta::external::query::sql::PrimitiveType.String);
+  let actualSchema = $sqlString->processQuery(true).columns()->meta::external::query::sql::tdsColsToSchema();
+
+  let expectedCol1 = ^PrimitiveValueSchemaColumn(name='ID',             type=meta::external::query::sql::PrimitiveType.Integer);
+  let expectedCol2 = ^PrimitiveValueSchemaColumn(name='Integer',        type=meta::external::query::sql::PrimitiveType.Integer);
+  let expectedCol3 = ^PrimitiveValueSchemaColumn(name='String',         type=meta::external::query::sql::PrimitiveType.String);
+  let expectedSchema = ^Schema(columns=[$expectedCol1, $expectedCol2, $expectedCol3]);
+
+  assertEquals($expectedSchema, $actualSchema);
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSchemaService3():Boolean[1]
+{
+  let sqlString = 'SELECT * FROM service."/service/service3"';
+
+  let actualSchema = $sqlString->processQuery(true).columns()->meta::external::query::sql::tdsColsToSchema();
+
+  let expectedCol1 = ^PrimitiveValueSchemaColumn(name='ID',             type=meta::external::query::sql::PrimitiveType.Integer);
+  let expectedCol2 = ^PrimitiveValueSchemaColumn(name='Integer',        type=meta::external::query::sql::PrimitiveType.Integer);
+  let expectedCol3 = ^EnumValueSchemaColumn(name='The Enum Value',      type=MyEnum->elementToPath());
+  let expectedCol4 = ^EnumValueSchemaColumn(name='The Type',            type=FieldType->elementToPath());
+  let expectedEnum1 = ^meta::external::query::sql::Enum(type=MyEnum->elementToPath(), values=MyEnum->enumValues()->map(v:meta::pure::metamodel::type::Enum[1] | $v->id()));
+  let expectedEnum2 = ^meta::external::query::sql::Enum(type=FieldType->elementToPath(), values=FieldType->enumValues()->map(v:meta::pure::metamodel::type::Enum[1] | $v->id()));
+  let expectedSchema = ^Schema(columns=[$expectedCol1, $expectedCol2, $expectedCol3, $expectedCol4], enums=[$expectedEnum1, $expectedEnum2]);
+
+  assertEquals($expectedSchema, $actualSchema);
 }
 
 function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1]): SqlTransformContext[1]
@@ -840,5 +955,5 @@ function meta::external::query::sql::transformation::queryToPure::tests::process
 
 function meta::external::query::sql::transformation::queryToPure::tests::forceGetStringType(col: TDSColumn[1]): String[1]
 {
-  $col.type->toOne()->meta::pure::functions::meta::elementToPath();
+  $col.type->toOne()->elementToPath();
 }
