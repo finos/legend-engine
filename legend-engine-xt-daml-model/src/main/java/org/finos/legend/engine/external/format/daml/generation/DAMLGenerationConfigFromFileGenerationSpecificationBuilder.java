@@ -16,7 +16,6 @@ package org.finos.legend.engine.external.format.daml.generation;
 
 import org.finos.legend.engine.language.pure.dsl.generation.config.ConfigBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationType;
 import org.finos.legend.engine.shared.core.operational.Assert;
 
 @Deprecated
@@ -24,7 +23,7 @@ public class DAMLGenerationConfigFromFileGenerationSpecificationBuilder
 {
     public static DAMLGenerationConfig build(FileGenerationSpecification fileGeneration)
     {
-        Assert.assertTrue(fileGeneration.type.equals(FileGenerationType.daml.name()), () -> "File generation of type of " + FileGenerationType.daml.name() + " expected, got '" + fileGeneration.type + "'");
+        Assert.assertTrue(fileGeneration.type.equals("daml"), () -> "File generation of type of daml expected, got '" + fileGeneration.type + "'");
         DAMLGenerationConfig damlConfig = new DAMLGenerationConfig();
         ConfigBuilder.duplicateCheck(fileGeneration.configurationProperties);
         ConfigBuilder.setScopeElements(fileGeneration, damlConfig);
