@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.block.predicate.Predicate;
 import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
@@ -111,7 +112,6 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Predicate;
 
 public class PureModel implements IPureModel
 {
@@ -513,9 +513,9 @@ public class PureModel implements IPureModel
         loadOtherElements(pure, p -> p.getPrerequisiteClasses().contains(PackageableConnection.class) || p.getPrerequisiteClasses().contains(PackageableRuntime.class));
     }
 
-    private void loadOtherElements(PureModelContextDataIndex pure, Predicate<Processor> filter)
+    private void loadOtherElements(PureModelContextDataIndex pure, Predicate<? super Processor<?>> filter)
     {
-        this.extensions.sortExtraProcessors(pure.otherElementsByProcessor.keysView(), filter).forEach(p ->
+        this.extensions.sortExtraProcessors(pure.otherElementsByProcessor.keysView().select(filter)).forEach(p ->
         {
             MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> elements = pure.otherElementsByProcessor.get(p);
             elements.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
