@@ -125,7 +125,7 @@
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-extension-dsl-mapping</artifactId>
-            <scope>runtime</scope>
+            <scope>test</scope>
         </dependency>
         <!-- Pure -->
 
