@@ -16,11 +16,15 @@ package org.finos.legend.engine.application.query.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Field;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
+import com.mongodb.client.model.Sorts;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.eclipse.collections.api.factory.Lists;
@@ -39,10 +43,10 @@ import javax.lang.model.SourceVersion;
 import javax.ws.rs.core.Response;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Pattern;
-
-import static com.mongodb.client.model.Sorts.descending;
 
 public class QueryStoreManager
 {
@@ -58,6 +62,8 @@ public class QueryStoreManager
     // so that it records the dataSpace it is created from
     private static final String QUERY_PROFILE_PATH = "meta::pure::profiles::query";
     private static final String QUERY_PROFILE_TAG_DATA_SPACE = "dataSpace";
+
+    private static final List<String> LIGHT_QUERY_PROJECTION = Arrays.asList("id", "name", "versionId", "groupId", "artifactId", "owner", "createdAt", "lastUpdatedAt");
 
     private final MongoClient mongoClient;
 
@@ -197,22 +203,16 @@ public class QueryStoreManager
         // TODO: we can potentially create a pattern check for version
     }
 
-    public List<Query> getQuerySearchResults(QuerySearchSpecification searchSpecification, List<Bson> filters)
-    {
-        return LazyIterate.collect(this.getQueryCollection()
-                .find(filters.isEmpty() ? EMPTY_FILTER : Filters.and(filters))
-                .sort(searchSpecification.showLatestQueriesFirst != null && searchSpecification.showLatestQueriesFirst ? descending("lastUpdatedAt") : EMPTY_FILTER)
-                // NOTE: return a light version of the query to save bandwidth
-                .projection(Projections.include("id", "name", "versionId", "groupId", "artifactId", "owner", "createdAt", "lastUpdatedAt"))
-                .limit(Math.min(MAX_NUMBER_OF_QUERIES, searchSpecification.limit == null ? Integer.MAX_VALUE : searchSpecification.limit)), QueryStoreManager::documentToQuery).toList();
-    }
-
     public List<Query> getQueries(QuerySearchSpecification searchSpecification, String currentUser)
     {
         List<Bson> filters = new ArrayList<>();
         if (searchSpecification.searchTerm != null)
         {
-            filters.add(Filters.or(Filters.regex("name", Pattern.quote(searchSpecification.searchTerm), "i"), Filters.regex("id", Pattern.quote(searchSpecification.searchTerm), "i")));
+            filters.add(Filters.or(Filters.regex("name", Pattern.quote(searchSpecification.searchTerm), "i"), Filters.eq("id", searchSpecification.searchTerm)));
+        }
+        if (searchSpecification.showCurrentUserQueriesOnly != null && searchSpecification.showCurrentUserQueriesOnly)
+        {
+            filters.add(Filters.in("owner", currentUser, null));
         }
         if (searchSpecification.projectCoordinates != null && !searchSpecification.projectCoordinates.isEmpty())
         {
@@ -231,9 +231,9 @@ public class QueryStoreManager
         }
         if (searchSpecification.taggedValues != null && !searchSpecification.taggedValues.isEmpty())
         {
-            filters.add(Filters.and(
-                    ListIterate.collect(searchSpecification.taggedValues, taggedValue ->
-                            Filters.and(Filters.eq("taggedValues.tag.profile", taggedValue.tag.profile), Filters.eq("taggedValues.tag.value", taggedValue.tag.value), Filters.eq("taggedValues.value", taggedValue.value)))));
+            List taggedValueFilters = ListIterate.collect(searchSpecification.taggedValues, taggedValue ->
+                    Filters.and(Filters.eq("taggedValues.tag.profile", taggedValue.tag.profile), Filters.eq("taggedValues.tag.value", taggedValue.tag.value), Filters.eq("taggedValues.value", taggedValue.value)));
+            filters.add(searchSpecification.combineTaggedValuesCondition != null && searchSpecification.combineTaggedValuesCondition ? Filters.and(taggedValueFilters) : Filters.or(taggedValueFilters));
         }
         if (searchSpecification.stereotypes != null && !searchSpecification.stereotypes.isEmpty())
         {
@@ -241,20 +241,20 @@ public class QueryStoreManager
                     ListIterate.collect(searchSpecification.stereotypes, stereotype ->
                             Filters.and(Filters.eq("stereotypes.profile", stereotype.profile), Filters.eq("stereotypes.value", stereotype.value)))));
         }
-        filters.add(Filters.in("owner", currentUser, null));
-        List<Query> currentUserQueryResults = this.getQuerySearchResults(searchSpecification, filters);
-        if (searchSpecification.showCurrentUserQueriesOnly != null && searchSpecification.showCurrentUserQueriesOnly)
+
+        List<Query> queries = new ArrayList<>();
+        AggregateIterable<Document> documents = this.getQueryCollection()
+                .aggregate(Arrays.asList(
+                        Aggregates.addFields(new Field("isCurrentUser", new Document("$eq", Arrays.asList("$owner", currentUser)))),
+                        Aggregates.match(filters.isEmpty() ? EMPTY_FILTER : Filters.and(filters)),
+                        Aggregates.sort(Sorts.descending("isCurrentUser")),
+                        Aggregates.project(Projections.include(LIGHT_QUERY_PROJECTION)),
+                        Aggregates.limit(Math.min(MAX_NUMBER_OF_QUERIES, searchSpecification.limit == null ? Integer.MAX_VALUE : searchSpecification.limit))));
+        for (Document doc: documents)
         {
-            return currentUserQueryResults;
+            queries.add(documentToQuery(doc));
         }
-        filters.remove(Filters.in("owner", currentUser, null));
-        filters.add(Filters.nin("owner", currentUser, null));
-        searchSpecification.limit = searchSpecification.limit != null ? searchSpecification.limit - currentUserQueryResults.size() : Integer.MAX_VALUE - currentUserQueryResults.size();
-        if (searchSpecification.limit > 0)
-        {
-            currentUserQueryResults.addAll(this.getQuerySearchResults(searchSpecification, filters));
-        }
-        return currentUserQueryResults;
+        return queries;
     }
 
     public Query getQuery(String queryId)
