@@ -15,14 +15,18 @@
 package org.finos.legend.engine.persistence.components;
 
 import com.opencsv.CSVReader;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.GreaterThanEqualTo;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.CsvExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.JsonExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.NumericalValue;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.junit.jupiter.api.Assertions;
@@ -97,6 +101,7 @@ public class TestUtils
     public static String startDateTimeName = "start_datetime";
     public static String endDateTimeName = "end_datetime";
     public static String dataSplitName = "data_split";
+    public static String batchName = "batch";
 
     public static HashMap<String, Set<String>> partitionFilter = new HashMap<String, Set<String>>()
     {{
@@ -144,6 +149,7 @@ public class TestUtils
     public static Field startDateTime = Field.builder().name(startDateTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(startDateTimeName).primaryKey(true).build();
     public static Field endDateTime = Field.builder().name(endDateTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(endDateTimeName).build();
     public static Field dataSplit = Field.builder().name(dataSplitName).type(FieldType.of(DataType.BIGINT, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(dataSplitName).build();
+    public static Field batch = Field.builder().name(batchName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(batchName).primaryKey(true).build();
 
     public static DatasetDefinition getBasicMainTable()
     {
@@ -213,6 +219,19 @@ public class TestUtils
             .build();
     }
 
+    public static SchemaDefinition getStagingSchemaWithFilterForDB()
+    {
+        return SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(income)
+            .addFields(startTime)
+            .addFields(expiryDate)
+            .addFields(digest)
+            .addFields(batch)
+            .build();
+    }
+
     public static SchemaDefinition getStagingSchemaWithDataSplits()
     {
         return SchemaDefinition.builder()
@@ -272,6 +291,43 @@ public class TestUtils
             .group(testSchemaName)
             .name(stagingTableName)
             .schema(getStagingSchemaWithVersion())
+            .build();
+    }
+
+    public static DatasetDefinition getStagingTableWithFilterForDB()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(getStagingSchemaWithFilterForDB())
+            .build();
+    }
+
+    public static DerivedDataset getDerivedStagingTableWithFilter()
+    {
+        return DerivedDataset.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(getStagingSchema())
+            .alias(stagingTableName)
+            .filter(GreaterThanEqualTo.of(FieldValue.builder()
+                .fieldName(batchName)
+                .datasetRefAlias(stagingTableName)
+                .build(), NumericalValue.of(2L)))
+            .build();
+    }
+
+    public static DerivedDataset getStagingTableWithFilterSecondPass()
+    {
+        return DerivedDataset.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(getStagingSchema())
+            .alias(stagingTableName)
+            .filter(GreaterThanEqualTo.of(FieldValue.builder()
+                .fieldName(batchName)
+                .datasetRefAlias(stagingTableName)
+                .build(), NumericalValue.of(3L)))
             .build();
     }
 

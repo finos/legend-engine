@@ -20,6 +20,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
@@ -99,6 +100,14 @@ public class BaseTest
     }
 
     protected void createStagingTable(DatasetDefinition stagingTable) throws Exception
+    {
+        RelationalTransformer transformer = new RelationalTransformer(H2Sink.get());
+        LogicalPlan tableCreationPlan = LogicalPlanFactory.getDatasetCreationPlan(stagingTable, true);
+        SqlPlan tableCreationPhysicalPlan = transformer.generatePhysicalPlan(tableCreationPlan);
+        executor.executePhysicalPlan(tableCreationPhysicalPlan);
+    }
+
+    protected void createStagingTable(DerivedDataset stagingTable) throws Exception
     {
         RelationalTransformer transformer = new RelationalTransformer(H2Sink.get());
         LogicalPlan tableCreationPlan = LogicalPlanFactory.getDatasetCreationPlan(stagingTable, true);
@@ -284,6 +293,16 @@ public class BaseTest
             "INSERT INTO \"TEST\".\"staging\"(id, name, income, start_time ,expiry_date, digest, version) " +
             "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", BIGINT), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE), digest, CONVERT( \"version\",INT)" +
             " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, digest, version', NULL )";
+        h2Sink.executeStatement(loadSql);
+    }
+
+    protected void loadStagingDataWithFilter(String path) throws Exception
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+            "INSERT INTO \"TEST\".\"staging\"(id, name, income, start_time ,expiry_date, digest, batch) " +
+            "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", BIGINT), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE), digest, CONVERT( \"batch\",INT)" +
+            " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, digest, batch', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 

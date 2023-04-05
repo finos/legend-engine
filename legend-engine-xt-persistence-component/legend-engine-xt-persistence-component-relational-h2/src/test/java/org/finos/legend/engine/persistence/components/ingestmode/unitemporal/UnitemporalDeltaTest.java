@@ -24,6 +24,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteInd
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTime;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -199,8 +200,8 @@ class UnitemporalDeltaTest extends BaseTest
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
         // ------------ Perform Pass1 ------------------------
-        String dataPass1 = basePathForInput + "with_versioning/greater_than/staging_data_pass1.csv";
-        String expectedDataPass1 = basePathForExpected + "with_versioning/greater_than/expected_pass1.csv";
+        String dataPass1 = basePathForInput + "with_max_versioning/greater_than/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "with_max_versioning/greater_than/expected_pass1.csv";
         // 1. Load staging table
         loadStagingDataWithVersion(dataPass1);
         // 2. Execute plans and verify results
@@ -211,8 +212,8 @@ class UnitemporalDeltaTest extends BaseTest
         Assertions.assertEquals(stagingTableList.size(), 3);
 
         // ------------ Perform Pass2 ------------------------
-        String dataPass2 = basePathForInput + "with_versioning/greater_than/staging_data_pass2.csv";
-        String expectedDataPass2 = basePathForExpected + "with_versioning/greater_than/expected_pass2.csv";
+        String dataPass2 = basePathForInput + "with_max_versioning/greater_than/staging_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "with_max_versioning/greater_than/expected_pass2.csv";
         // 1. Load staging table
         loadStagingDataWithVersion(dataPass2);
         // 2. Execute plans and verify results
@@ -220,8 +221,8 @@ class UnitemporalDeltaTest extends BaseTest
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
-        String dataPass3 = basePathForInput + "with_versioning/greater_than/staging_data_pass3.csv";
-        String expectedDataPass3 = basePathForExpected + "with_versioning/greater_than/expected_pass3.csv";
+        String dataPass3 = basePathForInput + "with_max_versioning/greater_than/staging_data_pass3.csv";
+        String expectedDataPass3 = basePathForExpected + "with_max_versioning/greater_than/expected_pass3.csv";
         // 1. Load staging table
         loadStagingDataWithVersion(dataPass3);
         // 2. Execute plans and verify results
@@ -258,8 +259,8 @@ class UnitemporalDeltaTest extends BaseTest
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
         // ------------ Perform Pass1 ------------------------
-        String dataPass1 = basePathForInput + "with_versioning/greater_than_equal_to/staging_data_pass1.csv";
-        String expectedDataPass1 = basePathForExpected + "with_versioning/greater_than_equal_to/expected_pass1.csv";
+        String dataPass1 = basePathForInput + "with_max_versioning/greater_than_equal_to/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "with_max_versioning/greater_than_equal_to/expected_pass1.csv";
         // 1. Load staging table
         loadStagingDataWithVersion(dataPass1);
         // 2. Execute plans and verify results
@@ -270,8 +271,8 @@ class UnitemporalDeltaTest extends BaseTest
         Assertions.assertEquals(stagingTableList.size(), 3);
 
         // ------------ Perform Pass2 ------------------------
-        String dataPass2 = basePathForInput + "with_versioning/greater_than_equal_to/staging_data_pass2.csv";
-        String expectedDataPass2 = basePathForExpected + "with_versioning/greater_than_equal_to/expected_pass2.csv";
+        String dataPass2 = basePathForInput + "with_max_versioning/greater_than_equal_to/staging_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "with_max_versioning/greater_than_equal_to/expected_pass2.csv";
         // 1. Load staging table
         loadStagingDataWithVersion(dataPass2);
         // 2. Execute plans and verify results
@@ -279,10 +280,68 @@ class UnitemporalDeltaTest extends BaseTest
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
-        String dataPass3 = basePathForInput + "with_versioning/greater_than_equal_to/staging_data_pass3.csv";
-        String expectedDataPass3 = basePathForExpected + "with_versioning/greater_than_equal_to/expected_pass3.csv";
+        String dataPass3 = basePathForInput + "with_max_versioning/greater_than_equal_to/staging_data_pass3.csv";
+        String expectedDataPass3 = basePathForExpected + "with_max_versioning/greater_than_equal_to/expected_pass3.csv";
         // 1. Load staging table
         loadStagingDataWithVersion(dataPass3);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
+    }
+
+    @Test
+    void testMilestoningWithFilterStagingTable() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
+        DerivedDataset stagingTable = TestUtils.getDerivedStagingTableWithFilter();
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
+
+        // Create staging table
+        DatasetDefinition stagingTableForDB = TestUtils.getStagingTableWithFilterForDB();
+        createStagingTable(stagingTableForDB);
+
+        UnitemporalDelta ingestMode = UnitemporalDelta.builder()
+            .digestField(digestName)
+            .transactionMilestoning(BatchIdAndDateTime.builder()
+                .batchIdInName(batchIdInName)
+                .batchIdOutName(batchIdOutName)
+                .dateTimeInName(batchTimeInName)
+                .dateTimeOutName(batchTimeOutName)
+                .build())
+            .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        // ------------ Perform Pass1 ------------------------
+        String dataPass1 = basePathForInput + "with_staging_filter/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "with_staging_filter/expected_pass1.csv";
+        // 1. Load staging table
+        loadStagingDataWithFilter(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = createExpectedStatsMap(6, 0, 3, 0, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
+        // 3. Assert that the staging table is NOT truncated
+        List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
+        Assertions.assertEquals(stagingTableList.size(), 6);
+
+        // ------------ Perform Pass2 ------------------------
+        // 0. Create new filter
+        datasets = Datasets.of(mainTable, TestUtils.getStagingTableWithFilterSecondPass());
+        String dataPass2 = basePathForInput + "with_staging_filter/staging_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "with_staging_filter/expected_pass2.csv";
+        // 1. Load staging table
+        loadStagingDataWithFilter(dataPass2);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(9, 0, 1, 1, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
+
+        // ------------ Perform Pass3 empty batch (No Impact) -------------------------
+        String dataPass3 = basePathForInput + "with_staging_filter/staging_data_pass3.csv";
+        String expectedDataPass3 = basePathForExpected + "with_staging_filter/expected_pass3.csv";
+        // 1. Load staging table
+        loadStagingDataWithFilter(dataPass3);
         // 2. Execute plans and verify results
         expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
