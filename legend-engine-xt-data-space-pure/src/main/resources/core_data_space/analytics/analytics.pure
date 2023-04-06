@@ -86,6 +86,8 @@ Class meta::pure::metamodel::dataSpace::analytics::DataSpaceBasicDocumentationEn
 Class meta::pure::metamodel::dataSpace::analytics::DataSpacePropertyDocumentationEntry extends DataSpaceBasicDocumentationEntry
 {
   milestoning: String[0..1];
+  type: String[0..1];
+  multiplicity: Multiplicity[1];
 }
 
 Class meta::pure::metamodel::dataSpace::analytics::DataSpaceModelDocumentationEntry extends DataSpaceBasicDocumentationEntry
@@ -137,7 +139,9 @@ function <<access.private>> meta::pure::metamodel::dataSpace::analytics::getClas
     milestoning = $class->getClassMilestoning(),
     properties = $allDefinedProperties->map(p|^DataSpacePropertyDocumentationEntry(
       name=if($p->instanceOf(QualifiedProperty), | $p.name->toOne() + '()', | $p.name->toOne()), docs=getDocs($p),
-      milestoning=$p->getPropertyMilestoning()
+      milestoning=$p->getPropertyMilestoning(),
+      multiplicity=$p.multiplicity,
+      type=if(!$p.genericType.rawType->isEmpty(), | $p.genericType.rawType->toOne()->elementToPath(), | [])
     ))
   );
 }
@@ -166,7 +170,9 @@ function <<access.private>> meta::pure::metamodel::dataSpace::analytics::getAsso
      ->reverseMilestoningTransforms()
      ->map(p|^DataSpacePropertyDocumentationEntry(
       name=if($p->instanceOf(QualifiedProperty), | $p.name->toOne() + '()', | $p.name->toOne()), docs=getDocs($p),
-      milestoning=$p->getPropertyMilestoning()
+      milestoning=$p->getPropertyMilestoning(),
+      multiplicity=$p.multiplicity,
+      type=if(!$p.genericType.rawType->isEmpty(), | $p.genericType.rawType->toOne()->elementToPath(), | [])
     ))
   )
 }
