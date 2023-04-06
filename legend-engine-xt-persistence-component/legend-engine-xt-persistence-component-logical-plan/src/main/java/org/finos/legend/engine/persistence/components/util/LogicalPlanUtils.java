@@ -330,4 +330,5 @@ public class LogicalPlanUtils
     public static Set<DataType> SUPPORTED_DATA_TYPES_FOR_OPTIMIZATION_COLUMNS =
             new HashSet<>(Arrays.asList(INT, INTEGER, INT64, BIGINT, FLOAT, DOUBLE, DECIMAL, DATE));
 
+    public static Set<DataType> SUPPORTED_DATA_TYPES_FOR_VERSIONING_COLUMNS = DataType.getComparableDataTypes();
 }
