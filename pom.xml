@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.6.1-SNAPSHOT</version>
+    <version>4.6.1</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -301,7 +301,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.release>8</maven.compiler.release>
         <maven.enforcer.requireJavaVersion>[11.0.10,12)</maven.enforcer.requireJavaVersion>
-        <project.build.outputTimestamp>1680713468</project.build.outputTimestamp>
+        <project.build.outputTimestamp>1680740049</project.build.outputTimestamp>
         <surefire.vm.params>-XX:SoftRefLRUPolicyMSPerMB=1</surefire.vm.params>
 
         <!-- Databases -->
@@ -390,7 +390,7 @@
 
     <scm>
         <developerConnection>scm:git:https://github.com/finos/legend-engine</developerConnection>
-        <tag>HEAD</tag>
+        <tag>legend-engine-4.6.1</tag>
     </scm>
 
     <build>
