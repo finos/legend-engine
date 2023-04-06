@@ -721,6 +721,53 @@ class UnitemporalDeltaTest extends BaseTest
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
     }
 
+    @Test
+    void testMilestoningWithMaxVersioningFail() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getUnitemporalMainTableWithVersion();
+        DatasetDefinition stagingTable = TestUtils.getStagingTableWithVersion();
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+        UnitemporalDelta ingestMode = UnitemporalDelta.builder()
+            .digestField(digestName)
+            .transactionMilestoning(BatchIdAndDateTime.builder()
+                .batchIdInName(batchIdInName)
+                .batchIdOutName(batchIdOutName)
+                .dateTimeInName(batchTimeInName)
+                .dateTimeOutName(batchTimeOutName)
+                .build())
+            .versioningStrategy(MaxVersionStrategy.builder()
+                .versioningField(nameName)
+                .versioningComparator(VersioningComparator.GREATER_THAN)
+                .performDeduplication(false)
+                .build())
+            .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        String dataPass1 = basePathForInput + "with_max_versioning/greater_than/without_dedup/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "with_max_versioning/greater_than/without_dedup/expected_pass1.csv";
+        // 1. Load staging table
+        loadStagingDataWithVersion(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
+
+        try
+        {
+            executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
+            Assertions.fail("Exception was not thrown");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Versioning field's data type [VARCHAR] is not supported", e.getMessage());
+        }
+    }
+
     /*
     Scenario: Test milestoning Logic when staging data comes from CSV and has less columns than main dataset
     */

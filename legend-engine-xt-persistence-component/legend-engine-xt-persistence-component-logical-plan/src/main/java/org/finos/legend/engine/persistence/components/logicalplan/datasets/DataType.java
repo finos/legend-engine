@@ -16,7 +16,9 @@ package org.finos.legend.engine.persistence.components.logicalplan.datasets;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public enum DataType
 {
@@ -67,5 +69,11 @@ public enum DataType
     {
         List<DataType> stringDatatype = new ArrayList<DataType>(Arrays.asList(CHAR, CHARACTER, VARCHAR, LONGVARCHAR, NCHAR, NVARCHAR, LONGNVARCHAR, LONGTEXT, TEXT, JSON, STRING));
         return stringDatatype.contains(type);
+    }
+
+    public static Set<DataType> getComparableDataTypes()
+    {
+        return new HashSet<>(Arrays.asList(INT, INTEGER, BIGINT, TINYINT, SMALLINT, INT64, REAL, DECIMAL, FLOAT, DOUBLE, NUMBER, NUMERIC,
+            TIME, TIMESTAMP, TIMESTAMP_NTZ, TIMESTAMP_TZ, TIMESTAMP_LTZ, DATETIME, TIMESTAMPTZ, DATE));
     }
 }

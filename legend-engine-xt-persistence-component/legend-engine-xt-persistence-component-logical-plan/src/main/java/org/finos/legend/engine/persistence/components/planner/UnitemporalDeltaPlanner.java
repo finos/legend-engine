@@ -73,6 +73,9 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
         {
             validateOptimizationFilters(ingestMode.optimizationFilters(), stagingDataset());
         }
+        // Validate if the versioningField are comparable if a versioningStrategy is present
+        validateVersioningField(ingestMode().versioningStrategy(), stagingDataset());
+
         this.deleteIndicatorField = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD);
         this.deleteIndicatorValues = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_VALUES);
 
