@@ -16,6 +16,7 @@ package org.finos.legend.engine.persistence.components.relational.ansi.sql.visit
 
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNode;
 import org.finos.legend.engine.persistence.components.logicalplan.values.WindowFunction;
+import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
@@ -33,6 +34,10 @@ public class WindowFunctionVisitor implements LogicalPlanVisitor<WindowFunction>
             new org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.WindowFunction(
                 current.alias().orElse(null),
                 context.quoteIdentifier());
+        for (Optimizer optimizer : context.optimizers())
+        {
+            windowFunction = (org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.WindowFunction) optimizer.optimize(windowFunction);
+        }
         prev.push(windowFunction);
 
         List<LogicalPlanNode> logicalPlanNodeList = new ArrayList<>();
