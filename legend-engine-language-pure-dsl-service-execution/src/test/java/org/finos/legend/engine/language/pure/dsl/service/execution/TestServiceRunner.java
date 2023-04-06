@@ -376,6 +376,42 @@ public class TestServiceRunner
         Assert.assertEquals("{\"wheels\":55}", result);
     }
 
+    private static class SimpleM2MServiceRunnerForDateTimeSerialization extends AbstractServicePlanExecutor
+    {
+        SimpleM2MServiceRunnerForDateTimeSerialization(String function)
+        {
+            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleM2MService.pure", function), true);
+        }
+
+        @Override
+        public List<ServiceVariable> getServiceVariables()
+        {
+            return Collections.emptyList();
+        }
+    }
+
+    private void testServiceExecutionWithDateTimeSerialization(String fetchFunction, String expectedResult)
+    {
+        SimpleM2MServiceRunnerForDateTimeSerialization serviceRunner = new SimpleM2MServiceRunnerForDateTimeSerialization(fetchFunction);
+        ServiceRunnerInput serviceRunnerInputWithEnumParameter = ServiceRunnerInput
+                .newInstance()
+                .withSerializationFormat(SerializationFormat.PURE);
+        String result = serviceRunner.run(serviceRunnerInputWithEnumParameter);
+        Assert.assertEquals(expectedResult, result);
+    }
+
+    @Test
+    public void SimpleM2MServiceRunnerForDateTimeSerialization()
+    {
+        this.testServiceExecutionWithDateTimeSerialization("test::serializeDateTimeWithoutFormat__String_1_", "{\"birthDate\":\"2014-02-27T15:01:35.231\"}");
+        this.testServiceExecutionWithDateTimeSerialization("test::serializeDateTime__String_1_", "{\"birthDate\":\"2014-02-27T15:01:35.231+0000\"}");
+        this.testServiceExecutionWithDateTimeSerialization("test::serializeDateTimeStrictDatePattern__String_1_", "{\"birthDate\":\"2014-02-27\"}");
+        this.testServiceExecutionWithDateTimeSerialization("test::serializeDateTimeCustomPattern__String_1_", "{\"birthDate\":\"02/27/2014 at 03:01PM GMT\"}");
+
+        RuntimeException e1 = Assert.assertThrows(RuntimeException.class, () -> new SimpleM2MServiceRunnerForDateTimeSerialization("test::serializeInvalidDateTimeFormat__String_1_"));
+        Assert.assertEquals("Assert failure at (resource:/platform/pure/basics/tests/assert.pure line:26 column:5), \"DateTime Pattern yyyy-MMM-dd\"T\"HH:mm:ss.SSSZ is invalid. It should be one of yyyy-MM-dd\"T\"HH:mm:ss, yyyy-MM-dd\"T\"HH:mm:ss.SSS, yyyy-MM-dd HH:mm:ss.SSS, yyyy-MM-dd HH:mm:ss, yyyy-MM-dd\"T\"HH:mm:ss.SSSZ, yyyy-MM-dd\"T\"HH:mm:ssZ, yy-MM-dd\"T\"HH:mm:ss.\"000000\", MM/dd/yyyy \"at\" hh:mma z, yyyy-MM-dd, yyyyMMdd, MM/dd/yyyy, dd/MM/yyyy, yyyy/mm/dd\"", e1.getMessage());
+    }
+
     private static class EnumParamServiceRunner extends AbstractServicePlanExecutor
     {
         private String argName;
