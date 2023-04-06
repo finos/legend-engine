@@ -18,6 +18,6 @@ import java.util.List;
 
 public class DataSpaceClassDocumentationEntry extends DataSpaceModelDocumentationEntry
 {
-    public List<DataSpaceBasicDocumentationEntry> properties;
-    public List<DataSpaceBasicDocumentationEntry> inheritedProperties;
+    public List<DataSpacePropertyDocumentationEntry> properties;
+    public String milestoning;
 }
