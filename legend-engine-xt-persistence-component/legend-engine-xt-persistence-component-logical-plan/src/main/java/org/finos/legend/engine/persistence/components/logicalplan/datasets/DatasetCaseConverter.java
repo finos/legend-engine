@@ -73,14 +73,12 @@ public class DatasetCaseConverter
             newShardSpecification = shardSpecification.withShardKeys(newShardKeys);
         }
 
-        if (dataset.datasetReference().alias().isPresent())
+        if (dataset instanceof DatasetDefinition)
         {
-            String alias = dataset.datasetReference().alias().get();
-            return DatasetDefinition.builder()
+            DatasetDefinition datasetDefinition = DatasetDefinition.builder()
                     .name(newName)
                     .group(newSchemaName)
                     .database(newDatabaseName)
-                    .alias(alias)
                     .schema(SchemaDefinition.builder()
                             .addAllFields(newDatasetFields)
                             .addAllIndexes(newDatasetIndices)
@@ -88,18 +86,36 @@ public class DatasetCaseConverter
                             .shardSpecification(newShardSpecification)
                             .build())
                     .build();
+
+            if (dataset.datasetReference().alias().isPresent())
+            {
+                datasetDefinition = datasetDefinition.withAlias(dataset.datasetReference().alias().get());
+            }
+            return datasetDefinition;
         }
 
-        return DatasetDefinition.builder()
-            .name(newName)
-            .group(newSchemaName)
-            .database(newDatabaseName)
-            .schema(SchemaDefinition.builder()
-                .addAllFields(newDatasetFields)
-                .addAllIndexes(newDatasetIndices)
-                .columnStoreSpecification(newColumnStoreSpecification)
-                .shardSpecification(newShardSpecification)
-                .build())
-            .build();
+        if (dataset instanceof DerivedDataset)
+        {
+            DerivedDataset derivedDataset = DerivedDataset.builder()
+                    .name(newName)
+                    .group(newSchemaName)
+                    .database(newDatabaseName)
+                    .schema(SchemaDefinition.builder()
+                            .addAllFields(newDatasetFields)
+                            .addAllIndexes(newDatasetIndices)
+                            .columnStoreSpecification(newColumnStoreSpecification)
+                            .shardSpecification(newShardSpecification)
+                            .build())
+                    .filter(((DerivedDataset) dataset).filter())
+                    .build();
+
+            if (dataset.datasetReference().alias().isPresent())
+            {
+                derivedDataset = derivedDataset.withAlias(dataset.datasetReference().alias().get());
+            }
+            return derivedDataset;
+        }
+
+        throw new UnsupportedOperationException("Unsupported Dataset Conversion");
     }
 }
