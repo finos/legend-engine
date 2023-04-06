@@ -59,6 +59,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime_Impl;
+import org.finos.legend.pure.m3.coreinstance.Package;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Stereotype;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Tag;
@@ -83,7 +84,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     @Override
     public PackageableElement visit(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
     {
-        return this.context.getExtraProcessorOrThrow(element).processFirstPass(element, this.context);
+        return setNameAndPackage(this.context.getExtraProcessorOrThrow(element).processFirstPass(element, this.context), element);
     }
 
     @Override
@@ -92,6 +93,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         String fullPath = this.context.pureModel.buildPackageString(profile._package, profile.name);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile targetProfile = new Root_meta_pure_metamodel_extension_Profile_Impl(profile.name, SourceInformationHelper.toM3SourceInformation(profile.sourceInformation), this.context.pureModel.getClass("meta::pure::metamodel::extension::Profile"));
         this.context.pureModel.profilesIndex.put(fullPath, targetProfile);
+        setNameAndPackage(targetProfile, profile);
         return targetProfile
                 ._p_stereotypes(ListIterate.collect(profile.stereotypes, st -> newStereotype(targetProfile, st)))
                 ._p_tags(ListIterate.collect(profile.tags, t -> newTag(targetProfile, t)));
@@ -105,6 +107,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         this.context.pureModel.typesIndex.put(fullPath, en);
         GenericType genericType = newGenericType(en);
         this.context.pureModel.typesGenericTypeIndex.put(fullPath, genericType);
+        setNameAndPackage(en, _enum);
         return en._classifierGenericType(newGenericType(this.context.pureModel.getClass("meta::pure::metamodel::type::Enumeration"), genericType))
                 ._stereotypes(ListIterate.collect(_enum.stereotypes, this::resolveStereotype))
                 ._taggedValues(ListIterate.collect(_enum.taggedValues, this::newTaggedValue))
@@ -123,6 +126,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         this.context.pureModel.typesIndex.put(fullPath, targetClass);
         GenericType genericType = newGenericType(targetClass);
         this.context.pureModel.typesGenericTypeIndex.put(fullPath, genericType);
+        setNameAndPackage(targetClass, _class);
         return targetClass._classifierGenericType(newGenericType(this.context.pureModel.getType("meta::pure::metamodel::type::Class"), genericType))
                 ._stereotypes(ListIterate.collect(_class.stereotypes, this::resolveStereotype))
                 ._taggedValues(ListIterate.collect(_class.taggedValues, this::newTaggedValue));
@@ -139,7 +143,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         targetMeasure._classifierGenericType(newGenericType(this.context.pureModel.getType("meta::pure::metamodel::type::Measure")));
         HelperMeasureBuilder.processUnitPackageableElementFirstPass(measure.canonicalUnit, this.context);
         measure.nonCanonicalUnits.forEach(ncu -> HelperMeasureBuilder.processUnitPackageableElementFirstPass(ncu, this.context));
-        return targetMeasure;
+        return setNameAndPackage(targetMeasure, measure);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -154,6 +158,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         {
             throw new EngineException("Expected 2 properties for an association '" + packageString + "'", srcAssociation.sourceInformation, EngineErrorType.COMPILATION);
         }
+        setNameAndPackage(association, srcAssociation);
 
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class source = this.context.resolveClass(srcAssociation.properties.get(0).type, srcAssociation.properties.get(0).sourceInformation);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class target = this.context.resolveClass(srcAssociation.properties.get(1).type, srcAssociation.properties.get(1).sourceInformation);
@@ -205,7 +210,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
 
         ProcessingContext ctx = new ProcessingContext("Function '" + functionFullName + "' First Pass");
 
-        targetFunc
+        setNameAndPackage(targetFunc, function)
                 ._functionName(functionName) // function name to be used in the handler map -> meta::pure::functions::date::isAfterDay
                 ._classifierGenericType(newGenericType(this.context.pureModel.getType("meta::pure::metamodel::function::ConcreteFunctionDefinition"), PureModel.buildFunctionType(ListIterate.collect(function.parameters, p -> (VariableExpression) p.accept(new ValueSpecificationBuilder(this.context, Lists.mutable.empty(), ctx))), this.context.resolveGenericType(function.returnType, function.sourceInformation), this.context.pureModel.getMultiplicity(function.returnMultiplicity), this.context.pureModel)))
                 ._stereotypes(ListIterate.collect(function.stereotypes, this::resolveStereotype))
@@ -246,7 +251,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         this.context.pureModel.mappingsIndex.put(this.context.pureModel.buildPackageString(mapping._package, mapping.name), pureMapping);
         GenericType mappingGenericType = newGenericType(this.context.pureModel.getType("meta::pure::mapping::Mapping"));
         pureMapping._classifierGenericType(mappingGenericType);
-        return pureMapping;
+        return setNameAndPackage(pureMapping, mapping);
     }
 
     @Override
@@ -261,7 +266,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         Root_meta_pure_runtime_Runtime pureRuntime = new Root_meta_pure_runtime_Runtime_Impl("Root::meta::pure::runtime::Runtime", null, this.context.pureModel.getClass("meta::pure::runtime::Runtime"));
         this.context.pureModel.runtimesIndex.put(this.context.pureModel.buildPackageString(packageableRuntime._package, packageableRuntime.name), pureRuntime);
 
-        return metamodel;
+        return setNameAndPackage(metamodel, packageableRuntime);
     }
 
     @Override
@@ -272,7 +277,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         // NOTE: the whole point of this processing is to put the Pure Connection in an index
         Root_meta_pure_runtime_Connection connection = packageableConnection.connectionValue.accept(new ConnectionFirstPassBuilder(this.context));
         this.context.pureModel.connectionsIndex.put(this.context.pureModel.buildPackageString(packageableConnection._package, packageableConnection.name), connection);
-        return metamodel;
+        return setNameAndPackage(metamodel, packageableConnection);
     }
 
     @Override
@@ -281,7 +286,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         Root_meta_pure_metamodel_section_SectionIndex stub = new Root_meta_pure_metamodel_section_SectionIndex_Impl(sectionIndex.name, null, this.context.pureModel.getClass("meta::pure::metamodel::section::SectionIndex"));
         // NOTE: we don't really need to add section index to the PURE graph
         sectionIndex.sections.forEach(section -> section.elements.forEach(elementPath -> this.context.pureModel.sectionsIndex.putIfAbsent(elementPath, section)));
-        return stub;
+        return setNameAndPackage(stub, sectionIndex);
     }
 
     @Override
@@ -289,6 +294,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     {
         Root_meta_pure_data_DataElement compiled = new Root_meta_pure_data_DataElement_Impl(dataElement.name);
         GenericType mappingGenericType = newGenericType(this.context.pureModel.getType("meta::pure::data::DataElement"));
+        setNameAndPackage(compiled, dataElement);
         return compiled._classifierGenericType(mappingGenericType)
                 ._stereotypes(ListIterate.collect(dataElement.stereotypes, this::resolveStereotype))
                 ._taggedValues(ListIterate.collect(dataElement.taggedValues, this::newTaggedValue));
@@ -303,11 +309,6 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     private GenericType newGenericType(Type rawType, GenericType typeArgument)
     {
         return newGenericType(rawType, Lists.fixedSize.with(typeArgument));
-    }
-
-    private GenericType newGenericType(Type rawType, GenericType... typeArguments)
-    {
-        return newGenericType(rawType, Lists.mutable.with(typeArguments));
     }
 
     private GenericType newGenericType(Type rawType, RichIterable<? extends GenericType> typeArguments)
@@ -344,5 +345,30 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     private Stereotype resolveStereotype(StereotypePtr stereotypePointer)
     {
         return this.context.resolveStereotype(stereotypePointer.profile, stereotypePointer.value, stereotypePointer.profileSourceInformation, stereotypePointer.sourceInformation);
+    }
+
+    private <T extends PackageableElement, S extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> T setNameAndPackage(T pureElement, S sourceElement)
+    {
+        // Validate and set name
+        String name = sourceElement.name;
+        if ((name == null) || name.isEmpty())
+        {
+            throw new EngineException("PackageableElement name may not be null or empty", sourceElement.sourceInformation, EngineErrorType.COMPILATION);
+        }
+        if (!name.equals(pureElement.getName()))
+        {
+            throw new EngineException("PackageableElement name '" + name + "' must match CoreInstance name '" + pureElement.getName() + "'", sourceElement.sourceInformation, EngineErrorType.COMPILATION);
+        }
+        pureElement._name(name);
+
+        // Validate and set package
+        Package pack = this.context.pureModel.getOrCreatePackage(sourceElement._package);
+        if (pack._children().anySatisfy(c -> name.equals(c._name())))
+        {
+            throw new EngineException("An element named '" + name + "' already exists in the package '" + sourceElement._package + "'", sourceElement.sourceInformation, EngineErrorType.COMPILATION);
+        }
+        pureElement._package(pack);
+        pack._childrenAdd(pureElement);
+        return pureElement;
     }
 }

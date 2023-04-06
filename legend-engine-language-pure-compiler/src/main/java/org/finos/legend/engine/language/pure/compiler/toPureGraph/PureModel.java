@@ -520,32 +520,7 @@ public class PureModel implements IPureModel
 
     private org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement processFirstPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
     {
-        // Validate source element name
-        String name = element.name;
-        if ((name == null) || name.isEmpty())
-        {
-            throw new EngineException("PackageableElement name may not be null or empty", element.sourceInformation, EngineErrorType.COMPILATION);
-        }
-
-        // First pass
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement result = visitWithErrorHandling(element, new PackageableElementFirstPassBuilder(getContext(element)));
-
-        // Validate and set name
-        if (!name.equals(result.getName()))
-        {
-            throw new EngineException("PackageableElement name '" + name + "' must match CoreInstance name '" + result.getName() + "'", element.sourceInformation, EngineErrorType.COMPILATION);
-        }
-        result._name(name);
-
-        // Validate and set package
-        Package pack = getOrCreatePackage(element._package);
-        if (pack._children().anySatisfy(c -> name.equals(c._name())))
-        {
-            throw new EngineException("An element named '" + name + "' already exists in the package '" + element._package + "'", element.sourceInformation, EngineErrorType.COMPILATION);
-        }
-        result._package(pack);
-        pack._childrenAdd(result);
-        return result;
+        return visitWithErrorHandling(element, new PackageableElementFirstPassBuilder(getContext(element)));
     }
 
     private void processSecondPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
