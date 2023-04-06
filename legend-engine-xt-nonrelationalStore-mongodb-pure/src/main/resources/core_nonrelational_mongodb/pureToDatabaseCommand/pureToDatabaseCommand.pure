@@ -66,6 +66,20 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
   $functionExpression.parametersValues->at($index)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).parametersValues;
 }
 
+function meta::external::store::mongodb::functions::pureToDatabaseCommand::buildFilterPath(simpleFunctionExpression: SimpleFunctionExpression[1], path: String[1]): String[1]
+{
+  if ($simpleFunctionExpression.func != map_T_$0_1$__Function_1__V_$0_1$_,
+  | 
+    let leftPath = $simpleFunctionExpression.func.name->toOne();
+    $leftPath + '.' + $path;,
+  | 
+    let rightPart = $simpleFunctionExpression.parametersValues->at(1)->cast(@StoreMappingRoutedValueSpecification).value->cast(@FunctionRoutedValueSpecification).originalFunction->cast(@LambdaFunction<Any>).expressionSequence->cast(@SimpleFunctionExpression).func.name->toOne();
+    let leftPart = $simpleFunctionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression);
+    let currentPath = if ($path == '', | $rightPart, | $rightPart + '.' + $path);
+    buildFilterPath($leftPart, $currentPath);
+  );
+}
+
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::processEqual(functionExpression: FunctionExpression[1], databaseCommand: DatabaseCommand[1], mapping: Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]): EqOperatorExpression[1]
 {
   let parameterValues = processSimpleFunctionExpression($functionExpression, 0);
@@ -73,11 +87,9 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
 
   let path = if($firstParameterValue->instanceOf(VariableExpression),
     | 
-      let root = $functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name->toOne();,
+      $functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name->toOne(),
     | 
-      let root = $functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name->toOne();
-      let embedded = $functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).parametersValues->at(1)->cast(@StoreMappingRoutedValueSpecification).value->cast(@FunctionRoutedValueSpecification).originalFunction->cast(@LambdaFunction<Any>).expressionSequence->cast(@SimpleFunctionExpression).func.name->toOne();
-      $root + '.' + $embedded;
+      buildFilterPath($functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression), '')
   );
 
   let fieldPath = '$' + $path;
