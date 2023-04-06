@@ -25,5 +25,6 @@ public enum FunctionName
     CURRENT_DATE,
     HASH,
     CURRENT_TIMESTAMP,
+    UPPER,
     ROW_NUMBER;
 }
