@@ -32,8 +32,11 @@ public interface MaxVersionStrategyAbstract extends VersioningStrategy
     @Value.Parameter(order = 0)
     String versioningField();
 
-    @Value.Parameter(order = 1)
-    VersioningComparator versioningComparator();
+    @Value.Default
+    default VersioningComparator versioningComparator()
+    {
+        return VersioningComparator.GREATER_THAN;
+    }
 
     @Value.Default
     default boolean performDeduplication()
