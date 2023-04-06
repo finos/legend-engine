@@ -44,8 +44,12 @@ function meta::pure::executionPlan::platformBinding::legendJava::platform::seria
    let tree      = $fe.parametersValues->at(1)->cast(@InstanceValue).values->cast(@RootGraphFetchTree<Any>)->toOne();
    let config    = if ($fe.parametersValues->size() > 2,
                        |$fe.parametersValues->at(2)->match([
-                          i:InstanceValue[1] | $i.values->cast(@AlloySerializationConfig)->toOne(),
-                          f:SimpleFunctionExpression [1] | $f->reactivate()->cast(@AlloySerializationConfig)->toOne();
+                          i:InstanceValue[1] | let config = $i.values->cast(@AlloySerializationConfig)->toOne();
+                                               validateDateTimeFormat($config);
+                                               $config;,
+                          f:SimpleFunctionExpression [1] | let config = $f->reactivate()->cast(@AlloySerializationConfig)->toOne();
+                                                           validateDateTimeFormat($config);
+                                                           $config;
                        ]),
                        |[]
                    );
@@ -59,6 +63,14 @@ function meta::pure::executionPlan::platformBinding::legendJava::platform::seria
    );
 
    ^$context(typeInfos=$newInfo, nodeInfos=$context.nodeInfos->concatenate(^NodeInfo(path=$path, returnType=^SimpleJavaType(pureType=String, javaType=javaString()), data=$data, graphFetchTrees=$data.tree->concatenate($data.auxiliaryTrees))));
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::validateDateTimeFormat(config: AlloySerializationConfig[1]):Boolean[1]
+{
+   let validDateTimeFormats = ['yyyy-MM-dd"T"HH:mm:ss', 'yyyy-MM-dd"T"HH:mm:ss.SSS', 'yyyy-MM-dd HH:mm:ss.SSS', 'yyyy-MM-dd HH:mm:ss', 'yyyy-MM-dd"T"HH:mm:ss.SSSZ', 'yyyy-MM-dd"T"HH:mm:ssZ', 'yy-MM-dd"T"HH:mm:ss."000000"', 'MM/dd/yyyy "at" hh:mma z', 'yyyy-MM-dd', 'yyyyMMdd', 'MM/dd/yyyy',  'dd/MM/yyyy'];
+   if($config.dateTimeFormat->isNotEmpty(), 
+      | assert($config.dateTimeFormat->toOne()->in($validDateTimeFormats),'DateTime Pattern ' + $config.dateTimeFormat->toOne() + ' is invalid. It should be one of ' + $validDateTimeFormats->makeString('', ', ', '')), 
+      | true);                                     
 }
 
 function meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::generateImplementionForSerialize(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): GeneratedCode[1]
