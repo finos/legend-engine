@@ -73,18 +73,20 @@ public class DatasetCaseConverter
             newShardSpecification = shardSpecification.withShardKeys(newShardKeys);
         }
 
+        SchemaDefinition schemaDefinition = SchemaDefinition.builder()
+            .addAllFields(newDatasetFields)
+            .addAllIndexes(newDatasetIndices)
+            .columnStoreSpecification(newColumnStoreSpecification)
+            .shardSpecification(newShardSpecification)
+            .build();
+
         if (dataset instanceof DatasetDefinition)
         {
             DatasetDefinition datasetDefinition = DatasetDefinition.builder()
                     .name(newName)
                     .group(newSchemaName)
                     .database(newDatabaseName)
-                    .schema(SchemaDefinition.builder()
-                            .addAllFields(newDatasetFields)
-                            .addAllIndexes(newDatasetIndices)
-                            .columnStoreSpecification(newColumnStoreSpecification)
-                            .shardSpecification(newShardSpecification)
-                            .build())
+                    .schema(schemaDefinition)
                     .build();
 
             if (dataset.datasetReference().alias().isPresent())
@@ -100,12 +102,7 @@ public class DatasetCaseConverter
                     .name(newName)
                     .group(newSchemaName)
                     .database(newDatabaseName)
-                    .schema(SchemaDefinition.builder()
-                            .addAllFields(newDatasetFields)
-                            .addAllIndexes(newDatasetIndices)
-                            .columnStoreSpecification(newColumnStoreSpecification)
-                            .shardSpecification(newShardSpecification)
-                            .build())
+                    .schema(schemaDefinition)
                     .filter(((DerivedDataset) dataset).filter())
                     .build();
 
