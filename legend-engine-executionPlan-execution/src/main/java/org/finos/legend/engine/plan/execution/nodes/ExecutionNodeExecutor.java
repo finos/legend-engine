@@ -88,7 +88,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.cla
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.DoubleSummaryStatistics;
@@ -260,17 +259,6 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 
                 AppliedFunction f = (AppliedFunction) pureExpressionPlatformExecutionNode.pure;
                 SerializationConfig config = f.parameters.size() == 3 ? (SerializationConfig) ((ClassInstance) f.parameters.get(2)).value : null;
-                if (config != null && config.dateTimeFormat != null)
-                {
-                    try
-                    {
-                        DateTimeFormatter.ofPattern(config.dateTimeFormat.replaceAll("\"","'"));
-                    }
-                    catch (IllegalArgumentException e)
-                    {
-                        throw new IllegalArgumentException(config.dateTimeFormat + " is not a valid dateTime format in SerializationConfig", e);
-                    }
-                }
                 return ExecutionNodeSerializerHelper.executeSerialize(nodeSpecifics, config, childResult, context);
             }
             catch (InstantiationException | IllegalAccessException e)
