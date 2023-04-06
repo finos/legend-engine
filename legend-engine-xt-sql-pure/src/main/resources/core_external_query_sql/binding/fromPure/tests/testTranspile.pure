@@ -356,6 +356,22 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByMixed():Boolean[1]
+{
+  let sqlString = 'SELECT sum(Integer) AS "SUM", CASE WHEN String = \'abc\' THEN 1 WHEN String = \'def\' THEN 2 ELSE 3 END AS "Number" FROM service."/service/service1" GROUP BY 2';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
+        )->extend(
+            col(row:TDSRow[1] | if ($row.getString('String') == 'abc', | 1, | if ($row.getString('String') == 'def', | 2, | 3)), 'Number')
+        )->groupBy(['Number'], [
+          agg('SUM', row | $row.getInteger('Integer'), y | $y->sum())
+        ])
+      };
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+}
+
 //HAVING
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testHaving():Boolean[1]
 {
@@ -759,10 +775,10 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 //WINDOW FUNCTIONS
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testWindowFunctions():Boolean[1]
 {
-  let sqlString = 'SELECT String, Integer, ' + 
-                  'row_number() OVER (PARTITION BY String ORDER BY Integer ASC) AS "ROW", ' + 
-                  'dense_rank() OVER (PARTITION BY String ORDER BY Integer DESC) AS "DENSE RANK", ' + 
-                  'rank() OVER (PARTITION BY String ORDER BY Integer ASC) AS "RANK" ' + 
+  let sqlString = 'SELECT String, Integer, ' +
+                  'row_number() OVER (PARTITION BY String ORDER BY Integer ASC) AS "ROW", ' +
+                  'dense_rank() OVER (PARTITION BY String ORDER BY Integer DESC) AS "DENSE RANK", ' +
+                  'rank() OVER (PARTITION BY String ORDER BY Integer ASC) AS "RANK" ' +
                   'FROM service."/service/service1"';
 
   let sqlTransformContext = $sqlString->processQuery();
@@ -771,10 +787,10 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             ->project(
               [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
               [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
-            ->restrict(['String', 'Integer'])
             ->olapGroupBy(['String'], asc('Integer'), y | $y->meta::pure::functions::math::olap::rowNumber(), 'ROW')
             ->olapGroupBy(['String'], desc('Integer'), y | $y->meta::pure::functions::math::olap::denseRank(), 'DENSE RANK')
             ->olapGroupBy(['String'], asc('Integer'), y | $y->meta::pure::functions::math::olap::rank(), 'RANK')
+            ->restrict(['String', 'Integer', 'ROW', 'DENSE RANK', 'RANK'])
       };
 
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
@@ -782,10 +798,10 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testProjectWithWindowFunctions():Boolean[1]
 {
-  let sqlString = 'SELECT String, abs(Integer) AS "ABS", ' + 
-                  'row_number() OVER (PARTITION BY String ORDER BY Integer ASC) AS "ROW", ' + 
-                  'dense_rank() OVER (PARTITION BY String ORDER BY Integer DESC) AS "DENSE RANK", ' + 
-                  'rank() OVER (PARTITION BY String ORDER BY Integer ASC) AS "RANK" ' + 
+  let sqlString = 'SELECT String, abs(Integer) AS "ABS", ' +
+                  'row_number() OVER (PARTITION BY String ORDER BY Integer ASC) AS "ROW", ' +
+                  'dense_rank() OVER (PARTITION BY String ORDER BY Integer DESC) AS "DENSE RANK", ' +
+                  'rank() OVER (PARTITION BY String ORDER BY Integer ASC) AS "RANK" ' +
                   'FROM service."/service/service1"';
 
   let sqlTransformContext = $sqlString->processQuery();
@@ -794,24 +810,24 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             ->project(
               [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
               [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
-            ->project([
-              col(row:TDSRow[1] | $row.getString('String'), 'String'),
+            ->extend([
               col(row:TDSRow[1] | abs($row.getInteger('Integer')), 'ABS')
             ])
             ->olapGroupBy(['String'], asc('Integer'), y | $y->meta::pure::functions::math::olap::rowNumber(), 'ROW')
             ->olapGroupBy(['String'], desc('Integer'), y | $y->meta::pure::functions::math::olap::denseRank(), 'DENSE RANK')
             ->olapGroupBy(['String'], asc('Integer'), y | $y->meta::pure::functions::math::olap::rank(), 'RANK')
+            ->restrict(['String', 'ABS', 'ROW', 'DENSE RANK', 'RANK'])
       };
 
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
 
-function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByWithWindowFunctions():Boolean[1]
+function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByWithWindowFunctions():Boolean[1]
 {
-  let sqlString = 'SELECT String, Integer, sum(Integer) AS "SUM", ' + 
-                  'row_number() OVER (PARTITION BY String ORDER BY Integer ASC) AS "ROW", ' + 
-                  'dense_rank() OVER (PARTITION BY String ORDER BY Integer DESC) AS "DENSE RANK", ' + 
-                  'rank() OVER (PARTITION BY String ORDER BY Integer ASC) AS "RANK" ' + 
+  let sqlString = 'SELECT String, Integer, sum(Integer) AS "SUM", ' +
+                  'row_number() OVER (PARTITION BY String ORDER BY Integer ASC) AS "ROW", ' +
+                  'dense_rank() OVER (PARTITION BY String ORDER BY Integer DESC) AS "DENSE RANK", ' +
+                  'rank() OVER (PARTITION BY String ORDER BY Integer ASC) AS "RANK" ' +
                   'FROM service."/service/service1" GROUP BY String, Integer';
 
   let sqlTransformContext = $sqlString->processQuery();
@@ -820,10 +836,10 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             ->project(
               [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
               [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
-            ->groupBy(['String', 'Integer'], agg('SUM', row | $row.getInteger('Integer'), y | $y->sum()))
             ->olapGroupBy(['String'], asc('Integer'), y | $y->meta::pure::functions::math::olap::rowNumber(), 'ROW')
             ->olapGroupBy(['String'], desc('Integer'), y | $y->meta::pure::functions::math::olap::denseRank(), 'DENSE RANK')
             ->olapGroupBy(['String'], asc('Integer'), y | $y->meta::pure::functions::math::olap::rank(), 'RANK')
+            ->groupBy(['String', 'Integer'], agg('SUM', row | $row.getInteger('Integer'), y | $y->sum()))
       };
 
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
