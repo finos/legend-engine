@@ -16,15 +16,33 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authen
 
 public interface AuthenticationSpecificationVisitor<T>
 {
-    T visit(AuthenticationSpecification catchAll);
+    default T visit(AuthenticationSpecification catchAll)
+    {
+        throw new RuntimeException("Not implemented!");
+    }
 
-    T visit(ApiKeyAuthenticationSpecification authenticationSpecification);
+    default T visit(ApiKeyAuthenticationSpecification authenticationSpecification)
+    {
+        throw new RuntimeException("Not implemented!");
+    }
 
-    T visit(UserPasswordAuthenticationSpecification authenticationSpecification);
+    default T visit(UserPasswordAuthenticationSpecification authenticationSpecification)
+    {
+        throw new RuntimeException("Not implemented!");
+    }
 
-    T visit(EncryptedPrivateKeyPairAuthenticationSpecification authenticationSpecification);
+    default T visit(EncryptedPrivateKeyPairAuthenticationSpecification authenticationSpecification)
+    {
+        throw new RuntimeException("Not implemented!");
+    }
 
-    T visit(GCPWIFWithAWSIdPAuthenticationSpecification authenticationSpecification);
+    default T visit(GCPWIFWithAWSIdPAuthenticationSpecification authenticationSpecification)
+    {
+        throw new RuntimeException("Not implemented!");
+    }
 
-    T visit(KerberosAuthenticationSpecification authenticationSpecification);
+    default T visit(KerberosAuthenticationSpecification authenticationSpecification)
+    {
+        throw new RuntimeException("Not implemented!");
+    }
 }

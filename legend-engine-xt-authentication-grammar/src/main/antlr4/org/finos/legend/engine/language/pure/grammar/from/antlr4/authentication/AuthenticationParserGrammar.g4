@@ -76,7 +76,7 @@ apiKeyAuthentication :          (
 apiKeyAuthentication_keyName:    API_KEY_AUTHENTICATION_KEY_NAME COLON STRING SEMI_COLON
 ;
 
-apiKeyAuthentication_location:    API_KEY_AUTHENTICATION_LOCATION COLON STRING SEMI_COLON
+apiKeyAuthentication_location:    API_KEY_AUTHENTICATION_LOCATION COLON identifier SEMI_COLON
 ;
 
 apiKeyAuthentication_value:    API_KEY_AUTHENTICATION_VALUE COLON secret_value SEMI_COLON

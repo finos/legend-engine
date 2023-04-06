@@ -104,7 +104,7 @@ public class AuthenticationParseTreeWalker
         authenticationSpecification.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         AuthenticationParserGrammar.ApiKeyAuthentication_locationContext locationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.apiKeyAuthentication_location(), "location", authenticationSpecification.getSourceInformation());
-        String location = PureGrammarParserUtility.fromGrammarString(locationContext.STRING().getText(), true);
+        String location = PureGrammarParserUtility.fromIdentifier(locationContext.identifier());
         authenticationSpecification.location = ApiKeyAuthenticationSpecification.Location.valueOf(location.toUpperCase());
 
         AuthenticationParserGrammar.ApiKeyAuthentication_keyNameContext keyNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.apiKeyAuthentication_keyName(), "keyName", authenticationSpecification.getSourceInformation());

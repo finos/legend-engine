@@ -73,7 +73,7 @@ public class TestAuthenticationGrammarParser_AuthenticationTypes extends TestGra
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
                 "  authentication: # ApiKey {\n" +
-                "    location: 'header';\n" +
+                "    location: header;\n" +
                 "    keyName: 'key1';\n" +
                 "    value: PropertiesFileSecret\n" +
                 "    {\n" +
