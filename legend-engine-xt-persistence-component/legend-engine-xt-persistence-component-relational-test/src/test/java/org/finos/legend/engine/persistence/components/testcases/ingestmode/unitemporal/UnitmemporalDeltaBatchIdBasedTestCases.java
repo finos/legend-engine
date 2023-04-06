@@ -311,7 +311,7 @@ public abstract class UnitmemporalDeltaBatchIdBasedTestCases extends BaseTest
     public abstract void verifyUnitemporalDeltaWithMaxVersioningNoDedupWithoutStagingFilters(GeneratorResult operations);
 
     @Test
-    void testUnitemporalDeltaWithMaxVersioningDedupEnabledWithoutStagingFilters()
+    void testUnitemporalDeltaWithMaxVersioningDedupEnabledAndUpperCaseWithoutStagingFilters()
     {
         TestScenario scenario = scenarios.BATCH_ID_BASED__MAX_VERSIONING_WITH_GREATER_THAN_EQUAL__DEDUP__WITHOUT_STAGING_FILTER();
 
@@ -320,12 +320,13 @@ public abstract class UnitmemporalDeltaBatchIdBasedTestCases extends BaseTest
                 .relationalSink(getRelationalSink())
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .cleanupStagingData(true)
+                .caseConversion(CaseConversion.TO_UPPER)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
-        this.verifyUnitemporalDeltaWithMaxVersioningDedupEnabledWithoutStagingFilters(operations);
+        this.verifyUnitemporalDeltaWithMaxVersioningDedupEnabledAndUpperCaseWithoutStagingFilters(operations);
     }
 
-    public abstract void verifyUnitemporalDeltaWithMaxVersioningDedupEnabledWithoutStagingFilters(GeneratorResult operations);
+    public abstract void verifyUnitemporalDeltaWithMaxVersioningDedupEnabledAndUpperCaseWithoutStagingFilters(GeneratorResult operations);
 
     public abstract RelationalSink getRelationalSink();
 }
