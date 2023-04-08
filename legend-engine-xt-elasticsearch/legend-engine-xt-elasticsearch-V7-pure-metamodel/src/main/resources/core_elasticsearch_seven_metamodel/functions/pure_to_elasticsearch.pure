@@ -55,16 +55,50 @@ Class meta::external::store::elasticsearch::v7::pureToEs::State
   }:Any[0];
 
   tdsESDetails: TDSESDetail[*];
+
+  supportedRoutingFunctions: Pair<LambdaFunction<{Function<Any>[1]->Boolean[1]}>, Function<{FunctionExpression[1],  State[1]->State[1]}>>[1..*];
+  supportedFilterFunctions: Pair<LambdaFunction<{Function<Any>[1]->Boolean[1]}>, Function<{FunctionExpression[1],  State[1]->State[1]}>>[1..*];
 }
 
 Class meta::external::store::elasticsearch::v7::pureToEs::TDSESDetail
 { 
-  <<equality.Key>> name: String[1..*];
-  property: PropertyBase[1];
+  <<equality.Key>> name: String[1];
   resultPath: ResultPath[1];
   path(){
-    $this.name->joinStrings('.')
+    $this.resultPath.path()
   }:String[1];
+}
+
+function meta::external::store::elasticsearch::v7::pureToEs::processSelectAllTds(vs : FunctionExpression[1], req: State[1]): State[1] 
+{
+  $req.debug(|'Processing ->indexToTds');
+  let store = $vs.parametersValues->at(0)->cast(@InstanceValue).values->toOne()->cast(@Elasticsearch7Store);
+  let indexName = $vs.parametersValues->at(1)->cast(@InstanceValue).values->toOne()->cast(@String);
+  
+  let index = $store.index($indexName)->toOne('No index found on store: ' + $indexName); 
+
+  let primitiveProperties = $index.properties->collectPrimitiveTypeProperties();
+
+  let resultPaths = $primitiveProperties->map(x | getResultPath($x.second, $x.first.values));
+
+  ^$req(
+    lazyIndex = $index, 
+    search = resultPathToQuery($resultPaths, $req.search), 
+    tdsESDetails = $resultPaths->map(x | ^TDSESDetail(name = $x.path(), resultPath = $x))
+  );
+}
+
+function meta::external::store::elasticsearch::v7::pureToEs::getResultPath(property: PropertyBase[1], path: String[*]): ResultPath[1] 
+{
+  // todo handle other result path base on property type?
+  ^SourceFieldResultPath(property = $property, fieldPath = $path->toOneMany());
+}
+
+function meta::external::store::elasticsearch::v7::pureToEs::resultPathToQuery(resultPaths: ResultPath[*], search: SearchRequestBody[1]): SearchRequestBody[1] 
+{
+  let source = $search._source->toOne();
+  // todo better handling of result path to query "source"
+  ^$search(_source = ^$source(filter = ^SourceFilter(includes = $resultPaths.path())));
 }
 
 function meta::external::store::elasticsearch::v7::pureToEs::processProject(vs : FunctionExpression[1], initReq: State[1]): State[1] 
@@ -73,15 +107,23 @@ function meta::external::store::elasticsearch::v7::pureToEs::processProject(vs :
   let currReq = process($vs.parametersValues->at(0), ^$initReq(inProject = true));
   let cols = $vs->instanceValuesAtParameter(1, $currReq.sq.inScopeVars);
   let fields = $cols->match([
-    tdsCols: ColumnSpecification<TDSRow>[*] | $tdsCols.name->map(x | $currReq.tdsESDetails->filter(f | $f.name == $x)->toOne('Projection %s not found on existing fields: %s'->format([$x, $currReq.tdsESDetails.name->joinStrings(', ')])))
+    tdsCols: BasicColumnSpecification<TDSRow>[*] | $tdsCols->map(x | $x->processProjectColumn($currReq))
   ]);
   let search = $currReq.search;
-  let source = $search._source->toOne();
   ^$currReq(
-    search = ^$search(_source = ^$source(filter = ^SourceFilter(includes = $fields.path()))),
-    tdsESDetails = $currReq.tdsESDetails->filter(x | $x->in($fields)),
+    search = resultPathToQuery($fields.resultPath, $search),
+    tdsESDetails = $fields,
     inProject = false
   );
+}
+
+function meta::external::store::elasticsearch::v7::pureToEs::processProjectColumn(vs : BasicColumnSpecification<TDSRow>[1], initReq: State[1]): TDSESDetail[1] 
+{
+  let expr = $vs.func->cast(@FunctionDefinition<Any>).expressionSequence;
+  assert($expr->size() == 1, |'at the moment, tds column projection only supports simple expressions, like $x.getString(\'colname\')');
+  let name = $vs.name;
+  let tdsDetail = $expr->toOne()->extractSimpleValue($initReq)->cast(@TDSESDetail)->toOne();
+  ^$tdsDetail(name = $name);
 }
 
 function meta::external::store::elasticsearch::v7::pureToEs::processLimit(vs : FunctionExpression[1], initReq: State[1]): State[1] 
@@ -102,22 +144,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processDrop(vs : Fu
   let drop = $vs->instanceValuesAtParameter(1, $currReq.sq.inScopeVars)->cast(@Integer)->toOne();
   let search = $currReq.search;
   assertFalse($currReq.aggregationQuery, |'Drop not supported in aggreagtion queries');
-  ^$currReq(search = ^$search(from = $drop));
-}
-
-
-function meta::external::store::elasticsearch::v7::pureToEs::processSelectAllTds(vs : FunctionExpression[1], req: State[1]): State[1] 
-{
-  $req.debug(|'Processing ->indexToTds');
-  let indexTds = $vs->reactivate($req.sq.inScopeVars)->cast(@IndexTDS)->toOne();
-  let fields = $indexTds.columns.name;
-  let search = $req.search;
-  let source = $search._source->toOne();
-  ^$req(
-    search = ^$search(_source = ^$source(filter = ^SourceFilter(includes = $fields))), 
-    lazyIndex = $indexTds.index, 
-    tdsESDetails = $indexTds.index.properties->collectPrimitiveTypeProperties()->map(x | ^TDSESDetail(name = $x.first.values->toOneMany(), property = $x.second, resultPath = ^SourceFieldResultPath(fieldPath = $x.first.values->toOneMany())))
-  );
+  ^$currReq(search = ^$search(from = $drop, size = min([(10000 - $drop), $search.size->toOne()])));
 }
 
 function meta::external::store::elasticsearch::v7::pureToEs::processFilter(vs : FunctionExpression[1], initReq: State[1]): State[1]
@@ -140,9 +167,9 @@ function meta::external::store::elasticsearch::v7::pureToEs::processFilterLambda
         $iv.values->match([
           f: FunctionDefinition<Any>[1 ] | $f.expressionSequence->at(0)->processFilterLambda($req),
           any: Any[1] |   fail('not supported: ' + $iv.values->type()->toString());$req;  
-        ]),   
-    fe: FunctionExpression[1] |  supportedFilterFunctions()->findAndEvalSupportedFunction($fe, $req),
-    any: Any[1] | fail('not supported: ' + $any->type()->toString());$req;  
+        ]),
+    fe: FunctionExpression[1] |  $req.supportedFilterFunctions->findAndEvalSupportedFunction($fe, $req),
+    any: Any[1] | fail('not supported: ' + $any->printValueSpecification(''));$req;  
   ]);
 }
 
@@ -150,42 +177,44 @@ function meta::external::store::elasticsearch::v7::pureToEs::process(vs : ValueS
 {
   $req.debug(|'-- processing VS ' + $vs->type()->toString() + ': ' + $vs->printValueSpecification('\n'));
   $vs->match([
-    fe: FunctionExpression[1] | supportedRoutingFunctions()->findAndEvalSupportedFunction($fe, $req),
+    fe: FunctionExpression[1] | $req.supportedRoutingFunctions->findAndEvalSupportedFunction($fe, $req),
     tds: TDSRoutedValueSpecification[1] | $tds.value->process($req),
     ervs: ExtendedRoutedValueSpecification[1] | $ervs.value->process($req),
     any: Any[1] | fail('not supported: ' + $any->type()->toString());$req;  
   ]);
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::findAndEvalSupportedFunction(funcs: Pair<Function<Any>, Function<{FunctionExpression[1], State[1]->State[1]}>>[*], fe : FunctionExpression[1], req: State[1]): State[1] 
+function meta::external::store::elasticsearch::v7::pureToEs::findAndEvalSupportedFunction(funcs: Pair<LambdaFunction<{Function<Any>[1]->Boolean[1]}>, Function<{FunctionExpression[1], State[1]->State[1]}>>[*], fe : FunctionExpression[1], req: State[1]): State[1] 
 {
-  eval($funcs->filter(x|$x.first == $fe.func)->toOne('function not supported yet: ' + $fe.func->toString()).second, $fe, $req);
+  eval($funcs->filter(x|$x.first->eval($fe.func))->toOne('function not supported yet: ' + $fe.func->toString()).second, $fe, $req);
 }
 
 function meta::external::store::elasticsearch::v7::pureToEs::process(sq:StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[0..1], exeCtx:Elasticsearch7ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]): State[1] 
 {
   let req = ^State(    
-    search = ^SearchRequestBody(_source = ^SourceConfig(filter = ^SourceFilter())),
+    search = ^SearchRequestBody(size = 10000, _source = ^SourceConfig(filter = ^SourceFilter())),
     inFilter = false,
     inProject = false,
     aggregationQuery = false,
     sq = $sq,
     ext = $ext,
-    debug = $debug
+    debug = $debug,
+    supportedFilterFunctions = supportedFilterFunctions()->toOneMany(),
+    supportedRoutingFunctions = supportedRoutingFunctions()->toOneMany()
   );
   
   let processedReq = $sq.fe->process($req);  
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::supportedRoutingFunctions():Pair<Function<Any>, Function<{FunctionExpression[1], State[1]->State[1]}>>[*]
+function meta::external::store::elasticsearch::v7::pureToEs::supportedRoutingFunctions():Pair<LambdaFunction<{Function<Any>[1]->Boolean[1]}>, Function<{FunctionExpression[1], State[1]->State[1]}>>[*]
 {
   let supported = [
-    pair(indexToTDS_Elasticsearch7Store_1__String_1__TabularDataSet_1_,                          processSelectAllTds_FunctionExpression_1__State_1__State_1_),
-    pair(meta::pure::tds::filter_TabularDataSet_1__Function_1__TabularDataSet_1_,                processFilter_FunctionExpression_1__State_1__State_1_),
-    pair(meta::pure::tds::project_TabularDataSet_1__ColumnSpecification_MANY__TabularDataSet_1_, processProject_FunctionExpression_1__State_1__State_1_),
-    pair(meta::pure::tds::limit_TabularDataSet_1__Integer_1__TabularDataSet_1_,                  processLimit_FunctionExpression_1__State_1__State_1_),
-    pair(meta::pure::tds::take_TabularDataSet_1__Integer_1__TabularDataSet_1_,                   processLimit_FunctionExpression_1__State_1__State_1_),
-    pair(meta::pure::tds::drop_TabularDataSet_1__Integer_1__TabularDataSet_1_,                   processDrop_FunctionExpression_1__State_1__State_1_)
+    pair(x: Function<Any>[1] | $x == indexToTDS_Elasticsearch7Store_1__String_1__TabularDataSet_1_,                          processSelectAllTds_FunctionExpression_1__State_1__State_1_),
+    pair(x: Function<Any>[1] | $x == meta::pure::tds::filter_TabularDataSet_1__Function_1__TabularDataSet_1_,                processFilter_FunctionExpression_1__State_1__State_1_),
+    pair(x: Function<Any>[1] | $x == meta::pure::tds::project_TabularDataSet_1__ColumnSpecification_MANY__TabularDataSet_1_, processProject_FunctionExpression_1__State_1__State_1_),
+    pair(x: Function<Any>[1] | $x == meta::pure::tds::limit_TabularDataSet_1__Integer_1__TabularDataSet_1_,                  processLimit_FunctionExpression_1__State_1__State_1_),
+    pair(x: Function<Any>[1] | $x == meta::pure::tds::take_TabularDataSet_1__Integer_1__TabularDataSet_1_,                   processLimit_FunctionExpression_1__State_1__State_1_),
+    pair(x: Function<Any>[1] | $x == meta::pure::tds::drop_TabularDataSet_1__Integer_1__TabularDataSet_1_,                   processDrop_FunctionExpression_1__State_1__State_1_)
   ];
 }
 
@@ -213,9 +242,160 @@ function meta::external::store::elasticsearch::v7::pureToEs::processEqual(vs : F
         ))
       );
     ,
+    none: Any[0] | 
+      let exists = ^QueryContainer(exists = ^ExistsQuery(field = $tdsESDetail.path()));
+      ^QueryContainer(bool = ^BoolQuery(must_not = $exists));
+    ,
     any: Any[*] | fail('not supported equality type: ' + $any->type()->toString() + '.  Only support simple data types')->cast(@QueryContainer);
   ]);
   
+  let search = $req.search;
+  ^$req(search = ^$search(query = $query));
+}
+
+function meta::external::store::elasticsearch::v7::pureToEs::processGreaterThan(vs : FunctionExpression[1], req: State[1]): State[1] 
+{
+  $vs->processRangeQuery([pair(x: Float[1] | ^NumberRangeQuery(gt = $x), x: String[1] | ^DateRangeQuery(gt = $x)), pair(x: Float[1] | ^NumberRangeQuery(lt = $x), x: String[1] | ^DateRangeQuery(lt = $x))], $req);
+}
+
+function meta::external::store::elasticsearch::v7::pureToEs::processGreaterThanEqual(vs : FunctionExpression[1], req: State[1]): State[1] 
+{
+  $vs->processRangeQuery([pair(x: Float[1] | ^NumberRangeQuery(gte = $x), x: String[1] | ^DateRangeQuery(gte = $x)), pair(x: Float[1] | ^NumberRangeQuery(lte = $x), x: String[1] | ^DateRangeQuery(lte = $x))], $req);
+}
+
+function meta::external::store::elasticsearch::v7::pureToEs::processLessThan(vs : FunctionExpression[1], req: State[1]): State[1] 
+{
+  $vs->processRangeQuery([pair(x: Float[1] | ^NumberRangeQuery(lt = $x), x: String[1] | ^DateRangeQuery(lt = $x)), pair(x: Float[1] | ^NumberRangeQuery(gt = $x), x: String[1] | ^DateRangeQuery(gt = $x))], $req);
+}
+
+function meta::external::store::elasticsearch::v7::pureToEs::processLessThanEqual(vs : FunctionExpression[1], req: State[1]): State[1] 
+{
+  $vs->processRangeQuery([pair(x: Float[1] | ^NumberRangeQuery(lte = $x), x: String[1] | ^DateRangeQuery(lte = $x)), pair(x: Float[1] | ^NumberRangeQuery(gte = $x), x: String[1] | ^DateRangeQuery(gte = $x))], $req);
+}
+
+function meta::external::store::elasticsearch::v7::pureToEs::processRangeQuery(vs : FunctionExpression[1], options: Pair<Function<{Float[1]->NumberRangeQuery[1]}>, Function<{String[1]->DateRangeQuery[1]}>>[2], req: State[1]): State[1] 
+{
+  assert($req.inFilter, 'range only supporter on filter context');
+  let leftSide = $vs.parametersValues->at(0)->extractSimpleValue($req)->toOne();
+  let rightSide = $vs.parametersValues->at(1)->extractSimpleValue($req)->toOne();
+  
+  let inputs = if($leftSide->instanceOf(TDSESDetail),
+    |pair($leftSide->cast(@TDSESDetail), pair($options->at(0), $rightSide)),
+    |
+      assert($rightSide->instanceOf(TDSESDetail), 'range should include an index property');
+      pair($rightSide->cast(@TDSESDetail), pair($options->at(1), $leftSide));
+  );
+
+  let tdsESDetail = $inputs.first;
+  let option = $inputs.second.first;
+  let value = $inputs.second.second;
+
+  // todo support dates?
+  let number = $option.first->eval($value->cast(@Number)->toFloat());
+  
+  let range = ^RangeQuery(number = $number);
+
+  let query = ^QueryContainer(
+    range = newMap(pair($tdsESDetail.path(), $range))
+  );
+
+  let search = $req.search;
+  ^$req(search = ^$search(query = $query));
+}
+
+function meta::external::store::elasticsearch::v7::pureToEs::processTdsIsNotNull(vs : FunctionExpression[1], req: State[1]): State[1] 
+{
+  assert($req.inFilter, 'TdsRow.isNotNull only supporter on filter context');
+  let columnForNullCheck = $vs.func->cast(@QualifiedProperty<Any>)->extractSimpleValue($vs.parametersValues, $req)->cast(@TDSESDetail)->toOne();
+  let query = ^QueryContainer(exists = ^ExistsQuery(field = $columnForNullCheck.path()));
+  let search = $req.search;
+  ^$req(search = ^$search(query = $query));
+}
+
+function meta::external::store::elasticsearch::v7::pureToEs::processTdsIsNull(vs : FunctionExpression[1], req: State[1]): State[1] 
+{
+  assert($req.inFilter, 'TdsRow.isNull only supporter on filter context');
+  let columnForNullCheck = $vs.func->cast(@QualifiedProperty<Any>)->extractSimpleValue($vs.parametersValues, $req)->cast(@TDSESDetail)->toOne();
+  let exists = ^QueryContainer(exists = ^ExistsQuery(field = $columnForNullCheck.path()));
+  let query = ^QueryContainer(bool = ^BoolQuery(must_not = $exists));
+  let search = $req.search;
+  ^$req(search = ^$search(query = $query));
+}
+
+function meta::external::store::elasticsearch::v7::pureToEs::processStartsWith(vs : FunctionExpression[1], req: State[1]): State[1] 
+{
+  assert($req.inFilter, 'startsWith only supporter on filter context');
+  let leftSide = $vs.parametersValues->at(0)->extractSimpleValue($req)->toOne('missing startsWith source value?');
+  let rightSide = $vs.parametersValues->at(1)->extractSimpleValue($req)->toOne();
+  
+  assert($leftSide->instanceOf(TDSESDetail), |'at the moment, startsWith only works when source value comes from index property');
+
+  let tdsESDetail = $leftSide->cast(@TDSESDetail);
+  let val = $rightSide->cast(@String);
+
+  let query = $tdsESDetail.resultPath.property->match([
+    keyword: KeywordProperty[1] | ^QueryContainer(prefix = newMap(pair($tdsESDetail.path(), ^PrefixQuery(value = $val)))),
+    any: Any[1] | fail('not supported startsWith type: ' + $any->type()->toString() + '.'); $req.search.query;
+  ]);
+
+  let search = $req.search;
+  ^$req(search = ^$search(query = $query));
+}
+
+function meta::external::store::elasticsearch::v7::pureToEs::processEndsWith(vs : FunctionExpression[1], req: State[1]): State[1] 
+{
+  assert($req.inFilter, 'endsWithh only supporter on filter context');
+  let leftSide = $vs.parametersValues->at(0)->extractSimpleValue($req)->toOne('missing endsWith source value?');
+  let rightSide = $vs.parametersValues->at(1)->extractSimpleValue($req)->toOne();
+  
+  assert($leftSide->instanceOf(TDSESDetail), |'at the moment, endsWith only works when source value comes from index property');
+
+  let tdsESDetail = $leftSide->cast(@TDSESDetail);
+  let val = $rightSide->cast(@String);
+
+  let query = $tdsESDetail.resultPath.property->match([
+    keyword: KeywordProperty[1] | ^QueryContainer(wildcard = newMap(pair($tdsESDetail.path(), ^WildcardQuery(wildcard = '*' + $val)))),
+    any: Any[1] | fail('not supported endsWith type: ' + $any->type()->toString() + '.'); $req.search.query;
+  ]);
+
+  let search = $req.search;
+  ^$req(search = ^$search(query = $query));
+}
+
+function meta::external::store::elasticsearch::v7::pureToEs::processNot(vs : FunctionExpression[1], req: State[1]): State[1] 
+{
+  assert($req.inFilter, 'or only supporter on filter context');
+  let toNot = $vs.parametersValues->at(0)->processFilterLambda($req);
+  
+  let bool = ^BoolQuery(must_not = $toNot.search.query->toOne());
+  let query = ^QueryContainer( bool = $bool );
+
+  let search = $req.search;
+  ^$req(search = ^$search(query = $query));
+}
+
+function meta::external::store::elasticsearch::v7::pureToEs::processOr(vs : FunctionExpression[1], req: State[1]): State[1] 
+{
+  assert($req.inFilter, 'or only supporter on filter context');
+  let leftSide = $vs.parametersValues->at(0)->processFilterLambda($req);
+  let rightSide = $vs.parametersValues->at(1)->processFilterLambda($req);
+  
+  let bool = ^BoolQuery(minimum_should_match = '1', should = [ $leftSide.search.query->toOne(), $rightSide.search.query->toOne() ]);
+  let query = ^QueryContainer( bool = $bool );
+
+  let search = $req.search;
+  ^$req(search = ^$search(query = $query));
+}
+
+function meta::external::store::elasticsearch::v7::pureToEs::processAnd(vs : FunctionExpression[1], req: State[1]): State[1] 
+{
+  assert($req.inFilter, 'and only supporter on filter context');
+  let leftSide = $vs.parametersValues->at(0)->processFilterLambda($req);
+  let rightSide = $vs.parametersValues->at(1)->processFilterLambda($req);
+  
+  let bool = ^BoolQuery(filter = [ $leftSide.search.query->toOne(), $rightSide.search.query->toOne() ]);
+  let query = ^QueryContainer( bool = $bool );
+
   let search = $req.search;
   ^$req(search = ^$search(query = $query));
 }
@@ -241,7 +421,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::extractSimpleValue(
 function meta::external::store::elasticsearch::v7::pureToEs::extractSimpleValue(qp : QualifiedProperty<Any>[1], params: ValueSpecification[*], req: State[1]): Any[1] 
 {
   assert($params->at(0)->byPassRouterInfo().genericType.rawType->toOne() == TDSRow, 'Only TDSRow operations supported');
-  let tdsProperties = ['getNumber', 'getInteger', 'getString', 'getFloat', 'getDate', 'getBoolean', 'getEnum', 'getDateTime', 'getStrictDate'];
+  let tdsProperties = ['getNumber', 'getInteger', 'getString', 'getFloat', 'getDate', 'getBoolean', 'getEnum', 'getDateTime', 'getStrictDate', 'isNull', 'isNotNull'];
 
   let funcName = $qp.functionName->toOne();
   let valid = $tdsProperties->contains($funcName);
@@ -253,13 +433,34 @@ function meta::external::store::elasticsearch::v7::pureToEs::extractSimpleValue(
   ])->toOne()->toString();
 
   $req.tdsESDetails->filter(f | $f.name == $propertyName)
-                    ->toOne('Property \'%s\' not found on query project'->format($propertyName));
+                    ->toOne('Property \'%s\' not found on query project.  Available: [%s]'->format([$propertyName, $req.tdsESDetails.name->joinStrings('\'', '\', \'', '\'')]));
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::supportedFilterFunctions():Pair<Function<Any>, Function<{FunctionExpression[1],  State[1]->State[1]}>>[*]
+function meta::external::store::elasticsearch::v7::pureToEs::supportedFilterFunctions():Pair<LambdaFunction<{Function<Any>[1]->Boolean[1]}>, Function<{FunctionExpression[1],  State[1]->State[1]}>>[*]
 {
   let supported = [
-    pair(meta::pure::functions::boolean::equal_Any_MANY__Any_MANY__Boolean_1_, meta::external::store::elasticsearch::v7::pureToEs::processEqual_FunctionExpression_1__State_1__State_1_)
+     pair(x: Function<Any>[1] | $x == meta::pure::functions::boolean::equal_Any_MANY__Any_MANY__Boolean_1_, meta::external::store::elasticsearch::v7::pureToEs::processEqual_FunctionExpression_1__State_1__State_1_)
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::boolean::or_Boolean_1__Boolean_1__Boolean_1_,  meta::external::store::elasticsearch::v7::pureToEs::processOr_FunctionExpression_1__State_1__State_1_)
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_, meta::external::store::elasticsearch::v7::pureToEs::processAnd_FunctionExpression_1__State_1__State_1_)
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::boolean::not_Boolean_1__Boolean_1_,            meta::external::store::elasticsearch::v7::pureToEs::processNot_FunctionExpression_1__State_1__State_1_)
+    
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::boolean::greaterThan_Number_1__Number_1__Boolean_1_, meta::external::store::elasticsearch::v7::pureToEs::processGreaterThan_FunctionExpression_1__State_1__State_1_)
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::boolean::greaterThanEqual_Number_1__Number_1__Boolean_1_, meta::external::store::elasticsearch::v7::pureToEs::processGreaterThanEqual_FunctionExpression_1__State_1__State_1_)
+    
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::boolean::greaterThan_Date_1__Date_1__Boolean_1_, meta::external::store::elasticsearch::v7::pureToEs::processGreaterThan_FunctionExpression_1__State_1__State_1_)
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::boolean::greaterThanEqual_Date_1__Date_1__Boolean_1_, meta::external::store::elasticsearch::v7::pureToEs::processGreaterThanEqual_FunctionExpression_1__State_1__State_1_)
+
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::boolean::lessThan_Number_1__Number_1__Boolean_1_, meta::external::store::elasticsearch::v7::pureToEs::processLessThan_FunctionExpression_1__State_1__State_1_)
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::boolean::lessThanEqual_Number_1__Number_1__Boolean_1_, meta::external::store::elasticsearch::v7::pureToEs::processLessThanEqual_FunctionExpression_1__State_1__State_1_)
+    
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::boolean::lessThan_Date_1__Date_1__Boolean_1_, meta::external::store::elasticsearch::v7::pureToEs::processLessThan_FunctionExpression_1__State_1__State_1_)
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::boolean::lessThanEqual_Date_1__Date_1__Boolean_1_, meta::external::store::elasticsearch::v7::pureToEs::processLessThanEqual_FunctionExpression_1__State_1__State_1_)
+
+    ,pair(x: Function<Any>[1] | $x->instanceOf(QualifiedProperty) && $x->cast(@QualifiedProperty<Any>).name == 'isNull',    meta::external::store::elasticsearch::v7::pureToEs::processTdsIsNull_FunctionExpression_1__State_1__State_1_)
+    ,pair(x: Function<Any>[1] | $x->instanceOf(QualifiedProperty) && $x->cast(@QualifiedProperty<Any>).name == 'isNotNull', meta::external::store::elasticsearch::v7::pureToEs::processTdsIsNotNull_FunctionExpression_1__State_1__State_1_)
+    
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::string::startsWith_String_1__String_1__Boolean_1_,  meta::external::store::elasticsearch::v7::pureToEs::processStartsWith_FunctionExpression_1__State_1__State_1_)
+    ,pair(x: Function<Any>[1] | $x == meta::pure::functions::string::endsWith_String_1__String_1__Boolean_1_,    meta::external::store::elasticsearch::v7::pureToEs::processEndsWith_FunctionExpression_1__State_1__State_1_)
   ];
 }
 

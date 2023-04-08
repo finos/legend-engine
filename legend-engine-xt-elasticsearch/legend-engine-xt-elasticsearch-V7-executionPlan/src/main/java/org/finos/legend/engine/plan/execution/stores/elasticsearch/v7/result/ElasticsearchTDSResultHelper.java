@@ -70,23 +70,15 @@ public final class ElasticsearchTDSResultHelper
                         for (String field : sourceFieldResultPath.fieldPath)
                         {
                             Assert.assertTrue(value.isObject(), () -> String.format("Field '%s' in field path '%s' is not a map.  ID: %s", field, nameAsString, hit._id));
-                            value = value.get(field);
-                            if (value.isNull())
+                            value = value.path(field);
+                            if (value.isNull() || value.isMissingNode())
                             {
-                                break;
+                                return null;
                             }
                         }
 
                         Assert.assertFalse(value.isContainerNode(), () -> String.format("Complex types (arrays, maps) not supported on ES TDS results.  Found on path '%s' for id '%s", nameAsString, hit._id));
-
-                        if (!value.isNull())
-                        {
-                            return tdsTransformer.apply(value);
-                        }
-                        else
-                        {
-                            return null;
-                        }
+                        return tdsTransformer.apply(value);
                     }
                     catch (Exception e)
                     {

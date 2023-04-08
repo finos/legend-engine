@@ -25,6 +25,10 @@ import meta::pure::extension::*;
 function meta::external::store::elasticsearch::v7::protocol::vX_X_X::elasticsearchV7StoreExtension(type: String[1]): SerializerExtension[1]
 {
   ^SerializerExtension_vX_X_X(
+      transfers_store_transformConnection2 = extensions: Extension[*] | [
+          conn: Elasticsearch7StoreConnection[1] | $conn->meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::transformConnection($extensions)
+      ],
+
       transfers_executionPlan_transformNode = {mapping:Mapping[1], extensions:Extension[*] |
           [
               esNode: Elasticsearch7RequestExecutionNode[1] | ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::Elasticsearch7RequestExecutionNode(

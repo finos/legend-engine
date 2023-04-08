@@ -14,6 +14,10 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import java.io.ByteArrayInputStream;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function3;
@@ -30,9 +34,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applica
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedQualifiedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.UnknownAppliedFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CByteStream;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.AggregateValue;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CByteStream;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDecimal;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFloat;
@@ -72,12 +75,31 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.cla
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.PropertyPathElement;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.Root_meta_pure_functions_collection_AggregateValue_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_functions_collection_Pair_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_functions_lang_KeyExpression_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_graphFetch_execution_AlloySerializationConfig;
+import org.finos.legend.pure.generated.Root_meta_pure_graphFetch_execution_AlloySerializationConfig_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_path_Path_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_path_PropertyPathElement_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_PrimitiveType_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime;
+import org.finos.legend.pure.generated.Root_meta_pure_tds_AggregateValue_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_tds_BasicColumnSpecification_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_tds_SortInformation_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_tds_TdsOlapAggregation_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_tds_TdsOlapRank_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.FunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
@@ -88,12 +110,6 @@ import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.DateFormat;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.LatestDate;
 import org.finos.legend.pure.m4.coreinstance.primitive.strictTime.StrictTimeFormat;
-
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
 import static org.finos.legend.pure.generated.core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_functionReturnType_Function_1__GenericType_1_;
 
@@ -255,7 +271,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     @Override
     public ValueSpecification visit(ClassInstance iv)
     {
-        Function3<Object, CompileContext, ProcessingContext, ValueSpecification> extension =  this.context.getCompilerExtensions().getExtraClassInstanceProcessors().get(iv.type);
+        Function3<Object, CompileContext, ProcessingContext, ValueSpecification> extension = this.context.getCompilerExtensions().getExtraClassInstanceProcessors().get(iv.type);
         if (extension != null)
         {
             return extension.value(iv.value, context, processingContext);
@@ -541,9 +557,16 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
         processingContext.pop();
         Assert.assertTrue(func != null, () -> "Can't find a match for function '" + appliedFunction.function + "(?)'", appliedFunction.sourceInformation, EngineErrorType.COMPILATION);
         Assert.assertTrue(func.getOne() != null, () -> "Can't find a match for function '" + appliedFunction.function + "(" + (func.getTwo() == null ? "?" : LazyIterate.collect(func.getTwo(), v -> (v._genericType() == null ? "?" : v._genericType()._rawType()._name()) + org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.print(v._multiplicity())).makeString(",")) + ")'", appliedFunction.sourceInformation, EngineErrorType.COMPILATION);
-        ValueSpecification result = func.getOne();
+        SimpleFunctionExpression result = func.getOne();
         result.setSourceInformation(SourceInformationHelper.toM3SourceInformation(appliedFunction.sourceInformation));
         MilestoningDatePropagationHelper.updateMilestoningContextFromValidSources(result, processingContext);
+
+        if (result instanceof FunctionExpression)
+        {
+            FunctionExpression exp = result;
+            exp._resolvedTypeParameters(result._genericType()._typeArguments());
+        }
+
         return result;
     }
 
