@@ -525,6 +525,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
         GenericType _genericType = collection.values.isEmpty()
                 ? this.context.pureModel.getGenericType(M3Paths.Nil)
                 : MostCommonType.mostCommon(transformed.collect(ValueSpecificationAccessor::_genericType).distinct(), this.context.pureModel);
+        _genericType._classifierGenericType(this.context.pureModel.getGenericType(M3Paths.GenericType));
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                 ._genericType(_genericType)
                 ._multiplicity(this.context.pureModel.getMultiplicity(collection.multiplicity))

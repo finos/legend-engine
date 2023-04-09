@@ -16,6 +16,7 @@ package org.finos.legend.engine.protocol.store.elasticsearch.v7.specification;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -25,10 +26,40 @@ import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.glo
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.search.SearchRequestBody;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.indices.create.CreateRequestBody;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.indices.types.IndexSettings;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.*;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.*;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.mapping.*;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.querydsl.*;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.CoordsGeoBounds;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.FieldSort;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.FieldValue;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.GeoBounds;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.GeoHashLocation;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.GeoLocation;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.LatLonGeoLocation;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.SortCombinations;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.SortOptions;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.SortOrder;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.Time;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.TopLeftBottomRightGeoBounds;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.TopRightBottomLeftGeoBounds;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.WktGeoBounds;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.Aggregate;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.AggregationContainer;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.Buckets;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.CompositeAggregate;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.CompositeBucket;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.MaxAggregate;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.MaxAggregation;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.SamplerAggregate;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.SignificantStringTermsAggregate;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.SumAggregate;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.mapping.IntegerNumberProperty;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.mapping.KeywordProperty;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.mapping.Property;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.mapping.TextProperty;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.mapping.TypeMapping;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.querydsl.DateDecayFunction;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.querydsl.DecayFunction;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.querydsl.DecayPlacement;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.querydsl.GeoDecayFunction;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.querydsl.NumericDecayFunction;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -381,6 +412,105 @@ public class TestElasticsearchProtocol
                         "  },\n" +
                         "  \"timed_out\": false,\n" +
                         "  \"took\": 0\n" +
+                        "}";
+
+        assertWithElasticsearchJsonRoundTrip(responseBody, expectedJson);
+    }
+
+    @Test
+    public void testCompositeArrayBucketsAggregate() throws JsonProcessingException
+    {
+        ResponseBody<Object> responseBody = new ResponseBody<>();
+        responseBody.took = 0L;
+        responseBody.timed_out = false;
+
+        Aggregate aggregate = new Aggregate();
+        responseBody.aggregations.put("agg", aggregate);
+
+        aggregate.composite = new CompositeAggregate();
+        aggregate.composite.buckets = new Buckets<>();
+        aggregate.composite.buckets.array = new ArrayList<>();
+
+        CompositeBucket compositeBucket = new CompositeBucket();
+        aggregate.composite.buckets.array.add(compositeBucket);
+
+        FieldValue keyValue = new FieldValue();
+        compositeBucket.key.put("field", keyValue);
+        keyValue.string = "value";
+
+        Aggregate otherAgg = new Aggregate();
+        compositeBucket.__additionalProperties.put("otherAgg", otherAgg);
+        otherAgg.sum = new SumAggregate();
+        otherAgg.sum.value = 1234.0;
+
+        String expectedJson =
+                "{\n" +
+                        " \"aggregations\": {\n" +
+                        "  \"composite#agg\": {\n" +
+                        "   \"buckets\": [\n" +
+                        "    {\n" +
+                        "     \"doc_count\": 0,\n" +
+                        "     \"key\": {\n" +
+                        "      \"field\": \"value\"\n" +
+                        "     },\n" +
+                        "     \"sum#otherAgg\": {\n" +
+                        "      \"value\": 1234.0\n" +
+                        "     }\n" +
+                        "    }\n" +
+                        "   ]\n" +
+                        "  }\n" +
+                        " },\n" +
+                        " \"timed_out\": false,\n" +
+                        " \"took\": 0\n" +
+                        "}";
+
+        assertWithElasticsearchJsonRoundTrip(responseBody, expectedJson);
+    }
+
+    @Test
+    public void testCompositeKeyedBucketsAggregate() throws JsonProcessingException
+    {
+        ResponseBody<Object> responseBody = new ResponseBody<>();
+        responseBody.took = 0L;
+        responseBody.timed_out = false;
+
+        Aggregate aggregate = new Aggregate();
+        responseBody.aggregations.put("agg", aggregate);
+
+        aggregate.composite = new CompositeAggregate();
+        aggregate.composite.buckets = new Buckets<>();
+
+        CompositeBucket compositeBucket = new CompositeBucket();
+        aggregate.composite.buckets.keyed.put("keyedBucket", compositeBucket);
+
+        FieldValue keyValue = new FieldValue();
+        compositeBucket.key.put("field", keyValue);
+        keyValue.string = "value";
+
+        Aggregate otherAgg = new Aggregate();
+        compositeBucket.__additionalProperties.put("otherAgg", otherAgg);
+        otherAgg.sum = new SumAggregate();
+        otherAgg.sum.value = 1234.0;
+
+        String expectedJson =
+                "{\n" +
+                        " \"aggregations\": {\n" +
+                        "  \"composite#agg\": {\n" +
+                        "   \"buckets\": {\n" +
+                        "    \"keyedBucket\": {\n" +
+                        "     \"doc_count\": 0,\n" +
+                        "     \"key\": {\n" +
+                        "      \"field\": \"value\"\n" +
+                        "     },\n" +
+                        "     \"sum#otherAgg\": {\n" +
+                        "      \"value\": 1234.0\n" +
+                        "     }\n" +
+                        "    }\n" +
+                        "   }\n" +
+                        "  }\n" +
+                        " },\n" +
+                        " \"timed_out\": false,\n" +
+                        " \"took\": 0\n" +
                         "}";
 
         assertWithElasticsearchJsonRoundTrip(responseBody, expectedJson);

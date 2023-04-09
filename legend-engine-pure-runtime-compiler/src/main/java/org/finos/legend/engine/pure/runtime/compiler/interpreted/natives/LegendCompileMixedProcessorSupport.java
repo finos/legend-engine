@@ -67,15 +67,20 @@ public class LegendCompileMixedProcessorSupport extends M3ProcessorSupport
                     return type;
                 }
             }
-            return any.getClassifier();
         }
-        return instance.getClassifier();
+        CoreInstance classifier = instance.getClassifier();
+
+        if (classifier == null && instance instanceof GenericType)
+        {
+            return this.newGenericType(null, null, false);
+        }
+        return classifier;
     }
 
     @Override
     public CoreInstance newGenericType(SourceInformation sourceInformation, CoreInstance source, boolean inferred)
     {
-        CoreInstance coreInstance = _Package.getByUserPath("meta::pure::metamodel::type::generics::GenericType", this.originalProcessorSupport);
+        CoreInstance coreInstance = _Package.getByUserPath(M3Paths.GenericType, this.originalProcessorSupport);
         return this.modelRepository.newCoreInstance("", coreInstance, null);
     }
 

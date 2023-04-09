@@ -36,10 +36,10 @@ meta::external::store::elasticsearch::executionTest::testCase::tds::filter::bool
 
 function 
   <<paramTest.Test>>
-  {doc.doc = 'Test NOT filter on Elasticsearch'} 
+  {doc.doc = 'Test AND conditions filter on Elasticsearch'} 
 meta::external::store::elasticsearch::executionTest::testCase::tds::filter::bool::testNot(config:TestConfig[1]):Boolean[1]
 {
-  $config->testTdsExpression(x | $x->filter(x | $x.getString('Title') != 'Iron Man'));
+  $config->testTdsExpression(x | $x->filter(x | !($x.getString('Title') == 'Iron Man 2' &&  $x.getString('Director') == 'Jon Favreau')));
 }
 
 function 

@@ -28,6 +28,14 @@ meta::external::store::elasticsearch::executionTest::testCase::tds::filter::keyw
 
 function 
   <<paramTest.Test>>
+  {doc.doc = 'Test NOT filter on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::keyword::testNotEqualValueFilter(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getString('Title') != 'Iron Man'));
+}
+
+function 
+  <<paramTest.Test>>
   {doc.doc = 'Test startWith filter on Elasticsearch Keyword property mapping'} 
 meta::external::store::elasticsearch::executionTest::testCase::tds::filter::keyword::testStartWithFilter(config:TestConfig[1]):Boolean[1]
 {

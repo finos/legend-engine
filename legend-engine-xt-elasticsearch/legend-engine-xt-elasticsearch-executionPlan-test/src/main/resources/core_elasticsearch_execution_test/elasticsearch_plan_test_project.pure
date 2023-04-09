@@ -36,3 +36,18 @@ meta::external::store::elasticsearch::executionTest::testCase::tds::project::tes
   $config->testTdsExpression(x|$x->project([col(x: TDSRow[1] | $x.getInteger('Budget'), 'Hello')]));
 }
 
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch Float property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::testProjectFloat(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->project([col(x: TDSRow[1] | $x.getFloat('Revenue'), 'Hello')]));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch Date property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::testProjectDate(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->project([col(x: TDSRow[1] | $x.getDate('ReleaseDate'), 'Hello')]));
+}

@@ -21,6 +21,22 @@ import meta::external::store::elasticsearch::executionTest::utils::*;
 
 function 
   <<paramTest.Test>>
+  {doc.doc = 'Test equal filter on Elasticsearch Keyword property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::integer::testEqualValueFilter(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getInteger('Budget') == 170));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test equal filter on Elasticsearch Keyword property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::integer::testNotEqualValueFilter(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getInteger('Budget') != 170));
+}
+
+function 
+  <<paramTest.Test>>
   {doc.doc = 'Test greater than filter on Elasticsearch Integer property mapping'} 
 meta::external::store::elasticsearch::executionTest::testCase::tds::filter::integer::testGreaterThanInteger(config:TestConfig[1]):Boolean[1]
 {

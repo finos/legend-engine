@@ -21,14 +21,26 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UncheckedIOException;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Collections;
-import org.apache.http.client.methods.*;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.ElasticsearchObjectMapperProvider;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.bulk.*;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.bulk.BulkRequest;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.bulk.CreateOperation;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.bulk.DeleteOperation;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.bulk.IndexOperation;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.bulk.OperationBase;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.bulk.OperationBaseVisitor;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.bulk.OperationType;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.bulk.UpdateOperation;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.bulk.WriteOperation;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.closepointintime.ClosePointInTimeRequest;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.count.CountRequest;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.index.IndexRequest;
@@ -37,10 +49,11 @@ import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.glo
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.indices.create.CreateRequest;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.indices.delete.DeleteRequest;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.indices.get.GetRequest;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.RequestBaseVisitor;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.AbstractRequestBaseVisitor;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.RequestBase;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 
-public class ElasticsearchV7RequestToHttpRequestVisitor implements RequestBaseVisitor<HttpUriRequest>
+public class ElasticsearchV7RequestToHttpRequestVisitor extends AbstractRequestBaseVisitor<HttpUriRequest>
 {
     private static final ObjectMapper PROTOCOL_MAPPER = ObjectMapperFactory.getNewStandardObjectMapper();
     private final URI url;
@@ -48,6 +61,12 @@ public class ElasticsearchV7RequestToHttpRequestVisitor implements RequestBaseVi
     public ElasticsearchV7RequestToHttpRequestVisitor(URI url)
     {
         this.url = url;
+    }
+
+    @Override
+    protected HttpUriRequest defaultValue(RequestBase val)
+    {
+        throw new UnsupportedOperationException();
     }
 
     @Override
