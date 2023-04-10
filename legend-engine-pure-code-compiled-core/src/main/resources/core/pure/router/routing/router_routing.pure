@@ -489,7 +489,53 @@ function meta::pure::router::routing::processColSpecParams(fe:FunctionExpression
    let params    = $routedFe.value->evaluateAndDeactivate()->cast(@FunctionExpression)->toOne().parametersValues->map(p|$p->byPassRouterInfo()->match([r:FunctionRoutedValueSpecification[1]|$r.originalFunction;, v:ValueSpecification[1]|$v]))->cast(@ValueSpecification);
    let newParams = $params->map(p|if($p->instanceOf(SimpleFunctionExpression),| $p->processColumnSpecification($state, $executionContext, $vars, $inScopeVars, $extensions, $debug).value->cast(@ValueSpecification),| $p));
    let nfe       = ^$fe(parametersValues=$newParams); 
-   $nfe->reactivate($inScopeVars)->evaluateAndDeactivate();
+   $nfe->reactivateWithDummyValuesForOpenVariables($inScopeVars)->evaluateAndDeactivate();        //Tofix - passInscopeVars properly , for now add dummy values for lambda open vars 
+}
+
+function  meta::pure::router::routing::reactivateWithDummyValuesForOpenVariables(vs:ValueSpecification[1], inScopeVars:Map<String, List<Any>>[1]) : Any[*]
+{
+   let lambdas = $vs->extractLambdasFromVS();         //TODO cleanup needed
+   let newInScopeVars = $lambdas->fold( {l, vars | $vars->meta::pure::router::routing::addDummyValuesforOpenVariables($l)}, $inScopeVars) ;
+   $vs->reactivate($newInScopeVars);    
+} 
+
+function  meta::pure::router::routing::addDummyValuesforOpenVariables( inScopeVars : Map<String, List<Any>>[1], l :LambdaFunction<Any>[1] ) : Map<String, List<Any>>[1]
+{
+  $l.openVariables->fold({v, vars| if($vars->get($v)->isEmpty(), |  $vars-> meta::pure::functions::collection::put($v, list([])); , | $vars) }, $inScopeVars);
+}
+
+function meta::pure::router::routing::extractLambdasFromAny(a:Any[1]): LambdaFunction<Any>[*]
+{
+  $a->match([
+      f:Function<Any>[1]          | $f->extractLambdasFromFunction();,
+      vs: ValueSpecification[1]   | $vs->extractLambdasFromVS();,
+      other: Any[1]               | []
+  ]);
+}
+
+function  meta::pure::router::routing::extractLambdasFromVS(vs:ValueSpecification[1]):LambdaFunction<Any>[*]
+{
+  $vs->match([
+         e:ExtendedRoutedValueSpecification[1]  | $e.value->extractLambdasFromVS() ,
+         f:FunctionRoutedValueSpecification[1]  | $f.value->extractLambdasFromVS(),
+         r:NoSetRoutedValueSpecification[1]     | $r.value->extractLambdasFromVS(),
+         fe:FunctionExpression[1]               | $fe.func->extractLambdasFromFunction()->concatenate($fe.parametersValues->map(p| $p->extractLambdasFromVS())),
+         i:InstanceValue[1]                     | $i.values->evaluateAndDeactivate()->map(v|$v->extractLambdasFromAny()),
+         va:VariableExpression[1]               | [],
+         vs:ValueSpecification[1]               | []
+      ]);
+}
+
+function  meta::pure::router::routing::extractLambdasFromFunction(f:Function<Any>[1]): LambdaFunction<Any>[*]
+{
+  $f->match([
+    p:Property<Nil,Any|*>[1]                         | [],
+    nf:NativeFunction<Any>[1]                        | [],
+    l: LambdaFunction<Any>[1]                        | $l,
+    qp:QualifiedProperty<Any>[1]                     | $qp.expressionSequence->map(vs|$vs->extractLambdasFromVS());,
+    cfd:ConcreteFunctionDefinition<Any>[1]           | $cfd.expressionSequence->map(vs|$vs->extractLambdasFromVS());,
+    f:Function<Any>[1]                               | []
+  ]);
 }
 
 function meta::pure::router::routing::processAggregationFunctionExpression(aggFuncExpr:FunctionExpression[1], routed:ExtendedRoutedValueSpecification[*], v:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
