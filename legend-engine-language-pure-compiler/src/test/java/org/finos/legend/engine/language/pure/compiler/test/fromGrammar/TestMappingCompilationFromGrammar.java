@@ -826,10 +826,10 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                         "  {\n" +
                         "    ~src ui::Person\n" +
                         "    name: 'aa',\n" +
-                        "    dog: $src.dog\n" +
+                        "    dog: $src.name\n" +
                         "  }\n" +
                         ")\n",
-                "COMPILATION error at [20:5-17]: Can't find class mapping 'ui_Dog'");
+                "COMPILATION error at [20:5-18]: Can't find class mapping 'ui_Dog'");
     }
 
     @Test
@@ -1875,5 +1875,230 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
 
     }
 
+    @Test
+    public void testComplexPropertyMappedToComplexSourceWithoutClassMapping()
+    {
+        test("###Pure\n" +
+                "Class test::dest::Person\n" +
+                "{\n" +
+                "   firstName: String[1];\n" +
+                "   lastName: String[1];\n" +
+                "   firm: test::shared::Firm[1];\n" +
+                "}\n" +
+                "Class test::src::Person\n" +
+                "{\n" +
+                "   fullName: String[1];\n" +
+                "   firm: test::shared::Firm[1];\n" +
+                "}\n" +
+                "Class test::shared::Firm\n" +
+                "{\n" +
+                "   id: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::Mapping\n" +
+                "(\n" +
+                "  *test::dest::Person: Pure\n" +
+                "  {\n" +
+                "    ~src test::src::Person\n" +
+                "    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
+                "    lastName: $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),\n" +
+                "    firm: $src.firm\n" +
+                "  }\n" +
+                ")\n");
 
+        test("###Pure\n" +
+                "Class test::dest::Person\n" +
+                "{\n" +
+                "   firstName: String[1];\n" +
+                "   lastName: String[1];\n" +
+                "   firm: test::shared::Firm[1];\n" +
+                "}\n" +
+                "Class test::src::Person\n" +
+                "{\n" +
+                "   fullName: String[1];\n" +
+                "   firm: test::shared::BigFirm[1];\n" +
+                "}\n" +
+                "Class test::shared::Firm\n" +
+                "{\n" +
+                "   id: String[1];\n" +
+                "}\n" +
+                "Class test::shared::BigFirm extends test::shared::Firm\n" +
+                "{\n" +
+                "   size: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::Mapping\n" +
+                "(\n" +
+                "  *test::dest::Person: Pure\n" +
+                "  {\n" +
+                "    ~src test::src::Person\n" +
+                "    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
+                "    lastName: $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),\n" +
+                "    firm: $src.firm\n" +
+                "  }\n" +
+                ")\n");
+
+        test("###Pure\n" +
+                "Class test::dest::Person\n" +
+                "{\n" +
+                "   firstName: String[1];\n" +
+                "   lastName: String[1];\n" +
+                "   firm: test::shared::Firm[1];\n" +
+                "}\n" +
+                "Class test::src::Person\n" +
+                "{\n" +
+                "   fullName: String[1];\n" +
+                "   firm: test::shared::Corporation[1];\n" +
+                "}\n" +
+                "Class test::shared::Firm\n" +
+                "{\n" +
+                "   id: String[1];\n" +
+                "}\n" +
+                "Class test::shared::BigFirm extends test::shared::Firm\n" +
+                "{\n" +
+                "   size: Integer[1];\n" +
+                "}\n" +
+                "Class test::shared::Corporation extends test::shared::BigFirm\n" +
+                "{\n" +
+                "   legalName: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::Mapping\n" +
+                "(\n" +
+                "  *test::dest::Person: Pure\n" +
+                "  {\n" +
+                "    ~src test::src::Person\n" +
+                "    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
+                "    lastName: $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),\n" +
+                "    firm: $src.firm\n" +
+                "  }\n" +
+                ")\n");
+
+        test("###Pure\n" +
+                "Class test::dest::Person\n" +
+                "{\n" +
+                "   firstName: String[1];\n" +
+                "   lastName: String[1];\n" +
+                "   firm: test::shared::BigFirm[1];\n" +
+                "}\n" +
+                "Class test::src::Person\n" +
+                "{\n" +
+                "   fullName: String[1];\n" +
+                "   firm: test::shared::Corporation[1];\n" +
+                "}\n" +
+                "Class test::shared::Firm\n" +
+                "{\n" +
+                "   id: String[1];\n" +
+                "}\n" +
+                "Class test::shared::BigFirm extends test::shared::Firm\n" +
+                "{\n" +
+                "   size: Integer[1];\n" +
+                "}\n" +
+                "Class test::shared::Corporation extends test::shared::BigFirm\n" +
+                "{\n" +
+                "   legalName: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::Mapping\n" +
+                "(\n" +
+                "  *test::dest::Person: Pure\n" +
+                "  {\n" +
+                "    ~src test::src::Person\n" +
+                "    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
+                "    lastName: $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),\n" +
+                "    firm: $src.firm\n" +
+                "  }\n" +
+                ")\n");
+
+        test("###Pure\n" +
+                "Class test::dest::Person\n" +
+                "{\n" +
+                "   firstName: String[1];\n" +
+                "   lastName: String[1];\n" +
+                "   firm: test::shared::Firm[1];\n" +
+                "}\n" +
+                "Class test::src::Person\n" +
+                "{\n" +
+                "   fullName: String[1];\n" +
+                "   firm: test::shared::Firm[*];\n" +
+                "}\n" +
+                "Class test::shared::Firm\n" +
+                "{\n" +
+                "   id: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::Mapping\n" +
+                "(\n" +
+                "  *test::dest::Person: Pure\n" +
+                "  {\n" +
+                "    ~src test::src::Person\n" +
+                "    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
+                "    lastName: $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),\n" +
+                "    firm: $src.firm\n" +
+                "  }\n" +
+                ")\n", "COMPILATION error at [26:16-19]: Error in class mapping 'test::Mapping' for property 'firm' - Multiplicity error: [1] doesn't subsumes [*]");
+
+        test("###Pure\n" +
+                "Class test::dest::Person\n" +
+                "{\n" +
+                "   firstName: String[1];\n" +
+                "   lastName: String[1];\n" +
+                "   firm: test::shared::Firm[*];\n" +
+                "}\n" +
+                "Class test::src::Person\n" +
+                "{\n" +
+                "   fullName: String[1];\n" +
+                "   firm: test::shared::Firm[1];\n" +
+                "}\n" +
+                "Class test::shared::Firm\n" +
+                "{\n" +
+                "   id: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::Mapping\n" +
+                "(\n" +
+                "  *test::dest::Person: Pure\n" +
+                "  {\n" +
+                "    ~src test::src::Person\n" +
+                "    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
+                "    lastName: $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),\n" +
+                "    firm: $src.firm\n" +
+                "  }\n" +
+                ")\n");
+
+        test("###Pure\n" +
+                "Class test::dest::Person\n" +
+                "{\n" +
+                "   firstName: String[1];\n" +
+                "   lastName: String[1];\n" +
+                "   firm: test::shared::Firm[*];\n" +
+                "}\n" +
+                "Class test::src::Person\n" +
+                "{\n" +
+                "   fullName: String[1];\n" +
+                "   firm: test::shared::Firm[*];\n" +
+                "}\n" +
+                "Class test::shared::Firm\n" +
+                "{\n" +
+                "   id: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::Mapping\n" +
+                "(\n" +
+                "  *test::dest::Person: Pure\n" +
+                "  {\n" +
+                "    ~src test::src::Person\n" +
+                "    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
+                "    lastName: $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),\n" +
+                "    firm: $src.firm\n" +
+                "  }\n" +
+                ")\n");
+    }
 }

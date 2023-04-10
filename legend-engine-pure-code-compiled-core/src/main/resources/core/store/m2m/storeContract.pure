@@ -24,7 +24,8 @@ function meta::pure::mapping::modelToModel::contract::modelStoreContract():Store
      id = 'modelStore',
      executeStoreQuery = meta::pure::mapping::modelToModel::contract::execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__Result_1_,
      supports = meta::pure::mapping::modelToModel::contract::supports_FunctionExpression_1__Boolean_1_,
-     
+     isPropertyAutoMapped = {property:Property<Nil, Any|*>[1], set:InstanceSetImplementation[1] | meta::pure::mapping::modelToModel::contract::isPropertyAutoMapped($property, $set)},
+
      planExecution = meta::pure::mapping::modelToModel::contract::planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_,
      planGraphFetchExecution = meta::pure::mapping::modelToModel::contract::planGraphFetchExecution_StoreMappingLocalGraphFetchExecutionNodeGenerationInput_1__LocalGraphFetchExecutionNode_1_,
      planCrossGraphFetchExecution = meta::pure::mapping::modelToModel::contract::planCrossGraphFetchExecution_StoreMappingCrossLocalGraphFetchExecutionNodeGenerationInput_1__LocalGraphFetchExecutionNode_1_,
@@ -57,6 +58,29 @@ function meta::pure::mapping::modelToModel::contract::supports(f:FunctionExpress
 {
    $f.func == meta::json::toJSON_T_MANY__LambdaFunction_MANY__String_1_
       || ($f.func->isWithinPackage(meta::pure) && !($f->isSerialize() || $f->isLetFunction() || $f.func->in([meta::pure::graphFetch::execution::graphFetchUnexpanded_T_MANY__RootGraphFetchTree_1__T_MANY_, meta::pure::graphFetch::execution::graphFetchCheckedUnexpanded_T_MANY__RootGraphFetchTree_1__Checked_MANY_])));
+}
+
+function meta::pure::mapping::modelToModel::contract::isPropertyAutoMapped(property:AbstractProperty<Any>[1], set:InstanceSetImplementation[1]):Boolean[1]
+{
+  if($set->instanceOf(PureInstanceSetImplementation),
+    | let pureSet              = $set->cast(@PureInstanceSetImplementation);
+      let propertyType         = $property.genericType.rawType->toOne();
+      let purePropertyMappings = $pureSet->_propertyMappingsByPropertyName($property.name->toOne());
+
+      if($propertyType->instanceOf(DataType),
+        |let srcProperty            = $pureSet.srcClass->filter(c| $c->instanceOf(Class))->cast(@Class<Any>)->map(c | $c->propertyByName($property.name->toOne()));
+         let srcPropCanBeAutoMapped = $srcProperty->match([
+                                                        s:Property<Nil,Any|*>[1] | $s.genericType.rawType->toOne()->_subTypeOf($propertyType) && $property.multiplicity->multiplicitySubsumes($s.multiplicity),
+                                                        a:Any[*]                 | false
+                                                    ]);
+         $purePropertyMappings->size() == 0 && $srcPropCanBeAutoMapped;,
+        | // We stop routing complex properties further if complexProperties is mapped to a transform which returns result of type matching property type.
+          // We also ensure user has not explicitly attached a setImplementation to be used for the complex property. If its provoided we use the explicit set
+         $purePropertyMappings->size() == 1 && $purePropertyMappings->toOne()->instanceOf(PurePropertyMapping)
+          && $purePropertyMappings->toOne().targetSetImplementationId == ''                                         
+          && $purePropertyMappings->toOne()->cast(@PurePropertyMapping).transform.expressionSequence->last()->evaluateAndDeactivate().genericType.rawType->toOne()->_subTypeOf($propertyType);
+      );,
+    | false);
 }
 
 function meta::pure::mapping::modelToModel::contract::planExecution(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[0..1], exeCtx:ExecutionContext[1], extension:Extension[*], debug:DebugContext[1]):ExecutionNode[1]

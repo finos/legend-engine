@@ -139,8 +139,6 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   );
 }
 
-
-
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processProjection(select: Select[1], groupBy: meta::external::query::sql::metamodel::Expression[*], context: SqlTransformContext[1]): SqlTransformContext[1]
 {
   debug('processProjection');
@@ -148,19 +146,25 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let aggregates = $select.selectItems->filter(si | $si->isSelectItemAggregate());
   let windows = $select.selectItems->filter(si | $si->isSelectItemWindow());
   let standard = $select.selectItems->removeAll($aggregates)->removeAll($windows);
+  let extensions = $standard->filter(si | !$si->isSelectItemColumnReference());
 
   let isAggregate = $groupBy->isNotEmpty() || anyColumnAggregate($select);
+  let isWindow = $windows->isNotEmpty();
 
-  let project = if ($standard->isNotEmpty() && !$isAggregate,
+  let project = if ($standard->isNotEmpty() && !($isAggregate || $isWindow),
                   | processSelect(^$select(selectItems = $standard), $context),
                   | $context.expression->toOne());
 
-  let group = if ($isAggregate,
-                  | processGroupBy($select, $groupBy, $windows, ^$context(expression = $project)),
+  let extend = if ($extensions->isNotEmpty() && ($isAggregate || $isWindow),
+                  | processExtend(^$select(selectItems = $extensions), ^$context(expression = $project)),
                   | $project);
 
-  let olapGroupBy = if ($windows->isNotEmpty(),
-                  | processOlapGroupBy(^$select(selectItems = $windows), ^$context(expression = $group)),
+  let group = if ($isAggregate,
+                  | processGroupBy($select, $groupBy, $windows, $extensions, ^$context(expression = $extend)),
+                  | $extend);
+
+  let olapGroupBy = if ($isWindow,
+                  | processOlapGroupBy($select, $windows, ^$context(expression = $group)),
                   | $group);
 
   let distinctExp = if($select.distinct,
@@ -189,19 +193,22 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   ]);
 }
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::processOlapGroupBy(select: Select[1], context: SqlTransformContext[1]):FunctionExpression[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processOlapGroupBy(select: Select[1], windows:SelectItem[*], context: SqlTransformContext[1]):FunctionExpression[1]
 {
-  $select.selectItems->cast(@SingleColumn)->fold({item, acc | processWindowSingleColumn($item, $acc, $context)}, $context.expression->toOne());
+  let olap = $windows->cast(@SingleColumn)->fold({item, acc | processWindowSingleColumn($item, $acc, $context)}, $context.expression->toOne());
+  processRestrict($select.selectItems->cast(@SingleColumn)->map(column | extractNameFromSingleColumn($column)), ^$context(expression = $olap));
 }
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::processGroupBy(select: Select[1], groupBy: meta::external::query::sql::metamodel::Expression[*], windows:SelectItem[*], context: SqlTransformContext[1]):FunctionExpression[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processGroupBy(select: Select[1], groupBy: meta::external::query::sql::metamodel::Expression[*], windows:SelectItem[*], extensions:SelectItem[*], context: SqlTransformContext[1]):FunctionExpression[1]
 {
   debug('processGroupBy');
+  assert($windows->isEmpty(), | 'combining aggregations with window functions not currently supported');
+
   let groupByColumns = $groupBy->map(g | $g->extractGroupByColumnNameFromExpression($select));
 
   let aggregates = $select.selectItems->filter(s | $s->instanceOf(SingleColumn) && $s->cast(@SingleColumn).expression->instanceOf(FunctionCall) && $s->cast(@SingleColumn).expression->cast(@FunctionCall).window->isEmpty());
 
-  let rename = processRename($select.selectItems->removeAll($aggregates)->removeAll($windows)->cast(@SingleColumn), $context);
+  let rename = processRename($select.selectItems->removeAll($aggregates)->removeAll($windows)->removeAll($extensions)->cast(@SingleColumn), $context);
 
   //TODO should use equals on the expression instead of name checking in groupBy, cannot at moment due to no equality key.
   let aggregations = $aggregates->cast(@SingleColumn)
@@ -302,6 +309,21 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   assert($processor.isAggregate, | 'function ' + extractNameFromQualifiedName($functionCall.name) + ' is not currently supported as aggregate function');
 }
 
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processExtend(select: Select[1], context: SqlTransformContext[1]):FunctionExpression[1]
+{
+  debug('processExtend');
+  let genericType = ^GenericType(rawType = TDSRow);
+
+  let args = $select.selectItems->processSelectItems($context)->map(item |
+    sfe(col_Function_1__String_1__BasicColumnSpecification_1_, $genericType, [$item.first->iv(), $item.second->iv()]);
+  );
+
+  let iv = iv($args);
+
+  appendTdsFunc($context.expression->toOne(), extend_TabularDataSet_1__BasicColumnSpecification_MANY__TabularDataSet_1_, list($iv));
+
+}
+
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processSelect(select: Select[1], context: SqlTransformContext[1]):FunctionExpression[1]
 {
 
@@ -333,6 +355,11 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   && $si->cast(@SingleColumn).expression->cast(@FunctionCall).window->isNotEmpty()
 }
 
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::isSelectItemColumnReference(si:SelectItem[1]):Boolean[1]
+{
+  $si->instanceOf(SingleColumn) && $si->cast(@SingleColumn).expression->instanceOf(QualifiedNameReference)
+}
+
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processSelectToProject(select: Select[1], context: SqlTransformContext[1]):FunctionExpression[1]
 {
   debug('processSelectToProject');
@@ -352,9 +379,12 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   debug('processSelectToRestrict');
 
   let rename = $select.selectItems->cast(@SingleColumn)->processRename($context);
-  let args = $select.selectItems->processSelectItems($context).second;
+  processRestrict($select.selectItems->processSelectItems($context).second, ^$context(expression = $rename));
+}
 
-  appendTdsFunc($rename, restrict_TabularDataSet_1__String_MANY__TabularDataSet_1_, list(iv($args)));
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processRestrict(columns:String[*], context: SqlTransformContext[1]):FunctionExpression[1]
+{
+  appendTdsFunc($context.expression->toOne(), restrict_TabularDataSet_1__String_MANY__TabularDataSet_1_, list(iv($columns)));
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processRename(selectItems:SingleColumn[*], context: SqlTransformContext[1]):FunctionExpression[1]
@@ -754,7 +784,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     pair(ExtractField.DAY, 'day'),
     pair(ExtractField.HOUR, 'hour'),
     pair(ExtractField.MINUTE, 'minute'),
-    pair(ExtractField.SECOND, 'second')    
+    pair(ExtractField.SECOND, 'second')
   ]->getValue($e.field);
 
   processFunctionCall(^FunctionCall(name = ^QualifiedName(parts = 'date_part'), arguments = [^StringLiteral(value = $part, quoted = false), $e.expression], distinct = false), $expContext, $context);
@@ -896,7 +926,12 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::createTdsColumn(qualifiedName:QualifiedName[1], var:VariableExpression[1], context: SqlTransformContext[1]):ValueSpecification[1]
 {
 
-  if ($qualifiedName.parts->isEmpty(), | $var, | createTdsColumn($context.columnByNameParts($qualifiedName.parts)->toOne(), $var, $context));
+  if ($qualifiedName.parts->isEmpty(),
+    | $var,
+    | let column = $context.columnByNameParts($qualifiedName.parts);
+      assert($column->isNotEmpty(), | 'no column found named ' + $qualifiedName.parts->joinStrings('.'));
+      createTdsColumn($column->toOne(), $var, $context);
+  );
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::createTdsColumn(name:String[1], var:VariableExpression[1], context: SqlTransformContext[1]):SimpleFunctionExpression[1]
@@ -1040,8 +1075,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       processor('substr', false, processSubstring_ValueSpecification_MANY__SimpleFunctionExpression_1_),
       processor('btrim', false, {args |
         assert($args->size() == 1 || $args->size() == 2, 'incorrect number of args');
-
-        assert($args->size() == 1 || ($args->size() == 2 && $args->at(1)->reactivate() == ' '), 'only empty string trim is currently supported');
+        assert($args->size() == 1 || ($args->at(1)->reactivate() == ' '), 'only empty string trim is currently supported');
 
         sfe(trim_String_1__String_1_, $args->at(0));
       }),      

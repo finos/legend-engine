@@ -49,6 +49,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.ResultType;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.TDSResultType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
@@ -73,7 +74,6 @@ import org.finos.legend.pure.generated.core_data_space_analytics_analytics;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
-import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.ServiceLoader;
@@ -81,8 +81,6 @@ import java.util.stream.Collectors;
 
 public class DataSpaceAnalyticsHelper
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
-
     private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
 
     private static DataSpaceBasicDocumentationEntry buildBasicDocumentationEntry(Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceBasicDocumentationEntry entry)
@@ -99,6 +97,8 @@ public class DataSpaceAnalyticsHelper
         docEntry.name = entry._name();
         docEntry.docs = new ArrayList<>(entry._docs().toList());
         docEntry.milestoning = entry._milestoning();
+        docEntry.type = entry._type();
+        docEntry.multiplicity = new Multiplicity(entry._multiplicity()._lowerBound()._value().intValue(), entry._multiplicity()._upperBound()._value() != null ? entry._multiplicity()._upperBound()._value().intValue() : null);
         return docEntry;
     }
 
