@@ -142,7 +142,7 @@ public class ServiceStoreTestUtils
         return result.flush(new JsonStreamToJsonDefaultSerializer(result));
     }
 
-    public static CredentialProviderProvider configureCredentialProviders()
+    private static CredentialProviderProvider configureCredentialProviders()
     {
         Properties properties = new Properties();
         properties.setProperty("property1", "value1");

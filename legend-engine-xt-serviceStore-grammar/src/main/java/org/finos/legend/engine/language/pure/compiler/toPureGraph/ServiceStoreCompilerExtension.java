@@ -124,18 +124,16 @@ public class ServiceStoreCompilerExtension implements IServiceStoreCompilerExten
             if (scheme instanceof HttpSecurityScheme)
             {
                 HttpSecurityScheme httpSecurityScheme = (HttpSecurityScheme) scheme;
-                String scheme_enum_path = "meta::external::store::service::metamodel::Scheme";
                 return new Root_meta_external_store_service_metamodel_HttpSecurityScheme_Impl("", null, context.pureModel.getClass("meta::external::store::service::metamodel::HttpSecurityScheme"))
-                        ._scheme(context.resolveEnumValue(scheme_enum_path, httpSecurityScheme.scheme.name()))
+                        ._scheme(context.resolveEnumValue("meta::external::store::service::metamodel::Scheme", httpSecurityScheme.scheme.name()))
                         ._bearerFormat(httpSecurityScheme.bearerFormat);
 
             }
             else if (scheme instanceof ApiKeySecurityScheme)
             {
                 ApiKeySecurityScheme apiKeySecurityScheme = (ApiKeySecurityScheme) scheme;
-                String apiLocation_enum_path = "meta::external::store::service::metamodel::ApiKeyLocation";
                 return new Root_meta_external_store_service_metamodel_ApiKeySecurityScheme_Impl("", null, context.pureModel.getClass("meta::external::store::service::metamodel::ApiKeySecurityScheme"))
-                        ._location(context.resolveEnumValue(apiLocation_enum_path, apiKeySecurityScheme.location.name()))
+                        ._location(context.resolveEnumValue("meta::external::store::service::metamodel::ApiKeyLocation", apiKeySecurityScheme.location.name()))
                         ._keyName(apiKeySecurityScheme.keyName);
             }
             return null;

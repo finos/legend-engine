@@ -93,7 +93,7 @@ public class HelperServiceStoreGrammarComposer
         {
             Stream<String> authSpecs = authenticationSpecificationMap.entrySet().stream().map(entry -> renderAuthenticationSpecification(entry.getKey(), entry.getValue(), 2, context));
             return "\n" + context.getIndentationString() + getTabString() +
-                    "auth: {\n" +
+                    "authentication:\n" + getTabString(1) + "{\n" +
                     getTabString(1) + authSpecs.collect(Collectors.joining(",\n" + getTabString(1))) +
                     "\n" + context.getIndentationString() + getTabString() + "};";
         }

@@ -51,7 +51,7 @@ public class TestSecuritySchemeGrammarParser extends TestGrammarParser.TestGramm
                 "   {\n" +
                 "       http : Http\n" +
                 "       {\n" +
-                "          scheme : 'basic';\n" +
+                "          scheme : basic;\n" +
                 "       }" +
                 "   };\n" +
                 ")\n" +
@@ -60,7 +60,7 @@ public class TestSecuritySchemeGrammarParser extends TestGrammarParser.TestGramm
                 "{\n" +
                 "    store   : meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
                 "    baseUrl : 'http://127.0.0.1:53008';\n" +
-                "    auth: " +
+                "    authentication: " +
                 "    {\n" +
                 "       http : # UserPassword\n" +
                 "       {\n" +
@@ -86,7 +86,7 @@ public class TestSecuritySchemeGrammarParser extends TestGrammarParser.TestGramm
                 "   {\n" +
                 "       api : ApiKey\n" +
                 "       {\n" +
-                "           location : 'cookie';\n" +
+                "           location : cookie;\n" +
                 "           keyName : 'key1';\n" +
                 "       }" +
                 "   };\n" +
@@ -96,7 +96,7 @@ public class TestSecuritySchemeGrammarParser extends TestGrammarParser.TestGramm
                 "{\n" +
                 "    store   : meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
                 "    baseUrl : 'http://127.0.0.1:53008';\n" +
-                "    auth: " +
+                "    authentication: " +
                 "    {\n" +
                 "        api : # ApiKey\n" +
                 "        {\n" +
@@ -122,12 +122,12 @@ public class TestSecuritySchemeGrammarParser extends TestGrammarParser.TestGramm
                 "   {\n" +
                 "       api : ApiKey\n" +
                 "       {\n" +
-                "           location : 'cookie';\n" +
+                "           location : cookie;\n" +
                 "           keyName : 'key1';\n" +
                 "       },\n" +
                 "       api : ApiKey\n" +
                 "       {\n" +
-                "           location : 'cookie';\n" +
+                "           location : cookie;\n" +
                 "           keyName : 'key2';\n" +
                 "       }" +
                 "   };\n" +
@@ -146,7 +146,7 @@ public class TestSecuritySchemeGrammarParser extends TestGrammarParser.TestGramm
                 "   {\n" +
                 "       http : Http\n" +
                 "       {\n" +
-                "           scheme : 'basic';\n" +
+                "           scheme : basic;\n" +
                 "       },\n" +
                 "       api : ApiKey\n" +
                 "       {\n" +

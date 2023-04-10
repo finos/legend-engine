@@ -6,4 +6,4 @@ import CoreLexerGrammar;
 
 STORE:                                  'store';
 BASE_URL:                               'baseUrl';
-AUTH_SPECS:                             'auth';
+AUTH_SPECS:                             'authentication';

@@ -31,9 +31,11 @@ definition:                                 (serviceStore)*
 ;
 serviceStore:                               SERVICE_STORE qualifiedName
                                                 PAREN_OPEN
-                                                    ( description )?
-                                                    ( securitySchemes )?
-                                                    ( serviceStoreElement )*
+                                                (
+                                                    description |
+                                                    securitySchemes |
+                                                    serviceStoreElement
+                                                )*
                                                 PAREN_CLOSE
 ;
 description:                                DESCRIPTION COLON identifier SEMI_COLON

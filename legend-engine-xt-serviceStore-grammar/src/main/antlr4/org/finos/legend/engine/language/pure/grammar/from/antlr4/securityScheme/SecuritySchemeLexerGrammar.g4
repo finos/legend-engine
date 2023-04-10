@@ -9,5 +9,3 @@ API_KEY_SECURITY_SCHEME:                                    'ApiKey';
 LOCATION:                                                   'location';
 KEYNAME:                                                    'keyName';
 
-BRACKET_OPEN:                                               '[';
-BRACKET_CLOSE:                                              ']';

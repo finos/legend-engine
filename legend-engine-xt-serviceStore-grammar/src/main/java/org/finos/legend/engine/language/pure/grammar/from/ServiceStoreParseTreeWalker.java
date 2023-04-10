@@ -16,7 +16,6 @@ package org.finos.legend.engine.language.pure.grammar.from;
 
 import org.antlr.v4.runtime.misc.Interval;
 import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
@@ -53,6 +52,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.s
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServicePtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceStore;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceStoreElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SingleSecuritySchemeRequirement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.StringTypeReference;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.TypeReference;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
@@ -68,6 +68,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class ServiceStoreParseTreeWalker
@@ -103,7 +104,7 @@ public class ServiceStoreParseTreeWalker
         serviceStore._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
         serviceStore.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
 
-        ServiceStoreParserGrammar.SecuritySchemesContext securitySchemeCtx = ctx.securitySchemes();
+        ServiceStoreParserGrammar.SecuritySchemesContext securitySchemeCtx = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.securitySchemes(),"securitySchemes",serviceStore.sourceInformation);
         if (securitySchemeCtx != null)
         {
             MutableList<Pair<String, SecurityScheme>> securitySchemeList = ListIterate.collect(securitySchemeCtx.securitySchemeObject(), this::visitSecuritySchemeObject);
@@ -169,7 +170,7 @@ public class ServiceStoreParseTreeWalker
 
 
         List<IServiceStoreGrammarParserExtension> extensions = IServiceStoreGrammarParserExtension.getExtensions();
-        SecurityScheme securityScheme = IServiceStoreGrammarParserExtension.process(code, ListIterate.flatCollect(extensions, IServiceStoreGrammarParserExtension::getExtraSecuritySchemesParsers));
+        SecurityScheme securityScheme = IServiceStoreGrammarParserExtension.process(code, ListIterate.flatCollect(extensions, IServiceStoreGrammarParserExtension::getExtraSecuritySchemeParsers));
 
         String id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
         return Tuples.pair(id, securityScheme);
@@ -421,14 +422,21 @@ public class ServiceStoreParseTreeWalker
     private SecuritySchemeRequirement visitSecurity(ServiceStoreParserGrammar.IdentifierContext securityCtx, Map<String,SecurityScheme> securitySchemeMap)
     {
         String securitySchemeId = securityCtx.getText();
-        List<Function2<String, Map<String,SecurityScheme>, SecuritySchemeRequirement>> processors = ListIterate.flatCollect(IServiceStoreGrammarParserExtension.getExtensions(), ext -> ext.getExtraSecurityParsers());
+        SecurityScheme securityScheme = securitySchemeMap.get(securitySchemeId);
+        if (securityScheme != null)
+        {
+            return new SingleSecuritySchemeRequirement(securitySchemeId,securityScheme);
+        }
 
-        return ListIterate
-                .collect(processors, processor -> processor.value(securitySchemeId,securitySchemeMap))
+        List<Function<String,SecurityScheme>> processors = ListIterate.flatCollect(IServiceStoreGrammarParserExtension.getExtensions(), ext -> ext.getLegacySecurityParsers());
+        securityScheme = ListIterate
+                .collect(processors, processor -> processor.apply(securitySchemeId))
                 .select(Objects::nonNull)
                 .getFirstOptional()
                 .orElseThrow(() -> new EngineException(String.format("%s security scheme not defined",securitySchemeId), this.walkerSourceInformation.getSourceInformation(securityCtx), EngineErrorType.PARSER));
 
+        securitySchemeMap.put(securitySchemeId,securityScheme);
+        return new SingleSecuritySchemeRequirement(securitySchemeId,securityScheme);
     }
 
 

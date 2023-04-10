@@ -7,7 +7,7 @@ options
     tokenVocab = SecuritySchemeLexerGrammar;
 }
 
-identifier:                      VALID_STRING
+identifier:                                 VALID_STRING | STRING
 ;
 
 // ----------------------------- SERVICE STORE SECURITY SCHEME-----------------------------
@@ -21,7 +21,7 @@ httpSecurityScheme:                         HTTP_SECURITY_SCHEME
                                             BRACE_CLOSE
 ;
 
-scheme:                                     SCHEME COLON STRING SEMI_COLON
+scheme:                                     SCHEME COLON identifier SEMI_COLON
 ;
 
 bearerFormat:                               BEARER_FORMAT COLON STRING SEMI_COLON
@@ -36,7 +36,7 @@ apiKeySecurityScheme:                       API_KEY_SECURITY_SCHEME
                                             BRACE_CLOSE
 ;
 
-location:                                   LOCATION COLON STRING SEMI_COLON
+location:                                   LOCATION COLON identifier SEMI_COLON
 ;
 keyname:                                    KEYNAME COLON STRING SEMI_COLON
 ;

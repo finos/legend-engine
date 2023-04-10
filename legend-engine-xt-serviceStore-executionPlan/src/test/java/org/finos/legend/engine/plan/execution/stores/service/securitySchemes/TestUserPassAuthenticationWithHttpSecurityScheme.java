@@ -39,7 +39,7 @@ public class TestUserPassAuthenticationWithHttpSecurityScheme extends ServiceSto
                 "{\n" +
                 "    store   : meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
                 "    baseUrl : 'http://127.0.0.1:" + getPort() + "';\n" +
-                "    auth    : " +
+                "    authentication:\n" +
                 "    {\n" +
                 "       http : # UserPassword\n" +
                 "       {\n" +
@@ -50,7 +50,7 @@ public class TestUserPassAuthenticationWithHttpSecurityScheme extends ServiceSto
                 "           };\n" +
                 "       }#\n" +
                 "    };\n" +
-                "}";
+                "}\n";
 
         pureGrammar = ServiceStoreTestUtils.readGrammarFromPureFile("/securitySchemes/testGrammarWithHttpSecurityScheme.pure") + "\n\n" + serviceStoreConnection;
     }
@@ -58,11 +58,29 @@ public class TestUserPassAuthenticationWithHttpSecurityScheme extends ServiceSto
     @Test
     public void testUserPassAuthentication()
     {
+        String query = "###Pure\n" +
+                "function showcase::query(): Any[1]\n" +
+                "{\n" +
+                "   {|meta::external::store::service::showcase::domain::S_Trade.all()" +
+                "       ->graphFetch(#{" +
+                "           meta::external::store::service::showcase::domain::S_Trade {" +
+                "               s_tradeId," +
+                "               s_traderDetails," +
+                "               s_tradeDetails" +
+                "       }}#)" +
+                "       ->serialize(#{" +
+                "           meta::external::store::service::showcase::domain::S_Trade {" +
+                "               s_tradeId," +
+                "               s_traderDetails," +
+                "               s_tradeDetails" +
+                "       }}#)};\n" +
+                "}";
+
         // Set the value of the password in the system properties
         System.setProperty("property1", "password");
         try
         {
-            SingleExecutionPlan plan = buildPlanForQuery(pureGrammar);
+            SingleExecutionPlan plan = buildPlanForQuery(pureGrammar + query);
             String result = executePlan(plan);
             Assert.assertEquals("{\"builder\":{\"_type\":\"json\"},\"values\":[{\"s_tradeId\":\"1\",\"s_traderDetails\":\"abc:F_Name_1:L_Name_1\",\"s_tradeDetails\":\"30:100\"},{\"s_tradeId\":\"2\",\"s_traderDetails\":\"abc:F_Name_1:L_Name_1\",\"s_tradeDetails\":\"31:200\"},{\"s_tradeId\":\"3\",\"s_traderDetails\":\"abc:F_Name_2:L_Name_2\",\"s_tradeDetails\":\"30:300\"},{\"s_tradeId\":\"4\",\"s_traderDetails\":\"abc:F_Name_2:L_Name_2\",\"s_tradeDetails\":\"31:400\"}]}", result);
         }

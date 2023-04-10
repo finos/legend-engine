@@ -51,7 +51,7 @@ public class TestServiceStoreSecuritySchemesCompilationFromGrammar extends TestC
                 "   {\n" +
                 "       http : Http\n" +
                 "       {\n" +
-                "          scheme : 'basic';\n" +
+                "          scheme : basic;\n" +
                 "       }" +
                 "   };\n" +
                 ")\n" +
@@ -60,7 +60,7 @@ public class TestServiceStoreSecuritySchemesCompilationFromGrammar extends TestC
                 "{\n" +
                 "    store   : meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
                 "    baseUrl : 'http://127.0.0.1:53008';\n" +
-                "    auth: " +
+                "    authentication:\n" +
                 "    {\n" +
                 "        http : # UserPassword\n" +
                 "        {\n" +
@@ -86,7 +86,7 @@ public class TestServiceStoreSecuritySchemesCompilationFromGrammar extends TestC
                 "   {\n" +
                 "       api : ApiKey\n" +
                 "       {\n" +
-                "           location : 'cookie';\n" +
+                "           location : cookie;\n" +
                 "           keyName : 'key1';\n" +
                 "       }" +
                 "   };\n" +
@@ -96,7 +96,7 @@ public class TestServiceStoreSecuritySchemesCompilationFromGrammar extends TestC
                 "{\n" +
                 "    store   : meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
                 "    baseUrl : 'http://127.0.0.1:53008';\n" +
-                "    auth: " +
+                "    authentication:\n" +
                 "    {\n" +
                 "       api : # ApiKey\n" +
                 "       {\n" +
@@ -123,7 +123,7 @@ public class TestServiceStoreSecuritySchemesCompilationFromGrammar extends TestC
                 "   {\n" +
                 "       api : ApiKey\n" +
                 "       {\n" +
-                "           location : 'header';\n" +
+                "           location : header;\n" +
                 "           keyName : 'key1';\n" +
                 "       }" +
                 "   };\n" +
@@ -133,7 +133,7 @@ public class TestServiceStoreSecuritySchemesCompilationFromGrammar extends TestC
                 "{\n" +
                 "    store   : meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
                 "    baseUrl : 'http://127.0.0.1:53008';\n" +
-                "    auth: " +
+                "    authentication:\n" +
                 "    {\n" +
                 "       api : # ApiKey\n" +
                 "       {\n" +
@@ -156,7 +156,8 @@ public class TestServiceStoreSecuritySchemesCompilationFromGrammar extends TestC
                 "{\n" +
                 "    store   : meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
                 "    baseUrl : 'http://127.0.0.1:53008';\n" +
-                "    auth: {\n" +
+                "    authentication:\n" +
+                "    {\n" +
                 "       api : # ApiKey\n" +
                 "       {\n" +
                 "           location : 'header';\n" +
@@ -172,6 +173,6 @@ public class TestServiceStoreSecuritySchemesCompilationFromGrammar extends TestC
                 "ServiceStore meta::external::store::service::showcase::store::TradeProductServiceStore\n" +
                 "(\n" +
                 "   description : 'Showcase Service Store';\n" +
-                ")\n", "COMPILATION error at [8:12-14:12]: api security scheme not defined in service store");
+                ")\n", "COMPILATION error at [9:12-15:12]: api security scheme not defined in service store");
     }
 }

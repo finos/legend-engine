@@ -113,7 +113,7 @@ public class ServiceStoreGrammarParserExtension implements IServiceStoreGrammarP
     }
 
     @Override
-    public List<Function<SpecificationSourceCode, SecurityScheme>> getExtraSecuritySchemesParsers()
+    public List<Function<SpecificationSourceCode, SecurityScheme>> getExtraSecuritySchemeParsers()
     {
         return Lists.mutable.with(code ->
         {
@@ -128,19 +128,6 @@ public class ServiceStoreGrammarParserExtension implements IServiceStoreGrammarP
                     return null;
             }
         });
-    }
-
-    @Override
-    public List<Function2<String, Map<String,SecurityScheme>, SecuritySchemeRequirement>> getExtraSecurityParsers()
-    {
-       return Lists.mutable.with((securitySchemeId,securitySchemes) ->
-       {
-           if (securitySchemes != null && securitySchemes.get(securitySchemeId) != null)
-           {
-               return new SingleSecuritySchemeRequirement(securitySchemeId,securitySchemes.get(securitySchemeId));
-           }
-           return null;
-       });
     }
 
     @Override

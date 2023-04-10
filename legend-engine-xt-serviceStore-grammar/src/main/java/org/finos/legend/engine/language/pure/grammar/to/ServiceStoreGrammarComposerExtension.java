@@ -133,7 +133,7 @@ public class ServiceStoreGrammarComposerExtension implements IServiceStoreGramma
                 }
                 return "Http\n" +
                         getTabString(baseIndentation) + "{\n" +
-                        getTabString(baseIndentation + 1) + "scheme : " + convertString(httpSecurityScheme.scheme.toString().toLowerCase(), true) + ";\n" +
+                        getTabString(baseIndentation + 1) + "scheme : " + httpSecurityScheme.scheme.toString().toLowerCase() + ";\n" +
                         bearerFormart +
                         getTabString(baseIndentation) + "}";
             }
@@ -142,7 +142,7 @@ public class ServiceStoreGrammarComposerExtension implements IServiceStoreGramma
                 ApiKeySecurityScheme apiKeySecurityScheme = (ApiKeySecurityScheme) scheme;
                 return "ApiKey\n" +
                         getTabString(baseIndentation) + "{\n" +
-                        getTabString(baseIndentation + 1) + "location : " + convertString(apiKeySecurityScheme.location.toString().toLowerCase(), true) + ";\n" +
+                        getTabString(baseIndentation + 1) + "location : " + apiKeySecurityScheme.location.toString().toLowerCase() + ";\n" +
                         getTabString(baseIndentation + 1) + "keyName : " + convertString(apiKeySecurityScheme.keyName, true) + ";\n" +
                         getTabString(baseIndentation) + "}";
             }

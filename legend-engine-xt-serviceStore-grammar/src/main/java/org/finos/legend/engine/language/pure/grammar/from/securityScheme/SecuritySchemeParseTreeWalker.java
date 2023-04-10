@@ -15,13 +15,19 @@
 
 package org.finos.legend.engine.language.pure.grammar.from.securityScheme;
 
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.SpecificationSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.securityScheme.SecuritySchemeParserGrammar;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ApiKeySecurityScheme;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.HttpSecurityScheme;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.HttpSecurityScheme.Scheme;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ApiKeySecurityScheme.Location;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+
+import java.util.List;
 
 public class SecuritySchemeParseTreeWalker
 {
@@ -30,8 +36,15 @@ public class SecuritySchemeParseTreeWalker
     {
         HttpSecurityScheme securityScheme = new HttpSecurityScheme();
         securityScheme.sourceInformation = code.getSourceInformation();
+
         SecuritySchemeParserGrammar.SchemeContext schemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(securitySchemeCtx.scheme(), "scheme", securityScheme.sourceInformation);
-        securityScheme.scheme = Scheme.valueOf(PureGrammarParserUtility.fromGrammarString(schemeContext.STRING().getText(), true).toUpperCase());
+        String providedScheme = PureGrammarParserUtility.fromIdentifier(schemeContext.identifier()).toUpperCase();
+        List<String> supportedSchemes = ListIterate.collect(Lists.mutable.with(Scheme.values()), Scheme::toString);
+        if (!supportedSchemes.contains(providedScheme))
+        {
+            throw new EngineException("Unsupported Scheme - " + providedScheme + ". Supported schemes are - " + String.join(",", ListIterate.collect(supportedSchemes, String::toLowerCase)), code.getWalkerSourceInformation().getSourceInformation(schemeContext), EngineErrorType.PARSER);
+        }
+        securityScheme.scheme = Scheme.valueOf(providedScheme);
 
         SecuritySchemeParserGrammar.BearerFormatContext bearerFormatContext = PureGrammarParserUtility.validateAndExtractOptionalField(securitySchemeCtx.bearerFormat(),"bearerFormat",securityScheme.sourceInformation);
         if (bearerFormatContext != null)
@@ -46,8 +59,15 @@ public class SecuritySchemeParseTreeWalker
     {
         ApiKeySecurityScheme securityScheme = new ApiKeySecurityScheme();
         securityScheme.sourceInformation = code.getSourceInformation();
+
         SecuritySchemeParserGrammar.LocationContext locationContext = PureGrammarParserUtility.validateAndExtractRequiredField(securitySchemeCtx.location(), "location", securityScheme.sourceInformation);
-        securityScheme.location = Location.valueOf(PureGrammarParserUtility.fromGrammarString(locationContext.STRING().getText(), true).toUpperCase());
+        String providedLocation = PureGrammarParserUtility.fromIdentifier(locationContext.identifier()).toUpperCase();
+        List<String> supportedLocations = ListIterate.collect(Lists.mutable.with(Location.values()), Location::toString);
+        if (!supportedLocations.contains(providedLocation))
+        {
+            throw new EngineException("Unsupported Api Key location - " + providedLocation + ". Supported locations are - " + String.join(",", ListIterate.collect(supportedLocations, String::toLowerCase)), code.getWalkerSourceInformation().getSourceInformation(locationContext), EngineErrorType.PARSER);
+        }
+        securityScheme.location = Location.valueOf(providedLocation);
 
         SecuritySchemeParserGrammar.KeynameContext keynameContext = PureGrammarParserUtility.validateAndExtractRequiredField(securitySchemeCtx.keyname(), "keyNamme", securityScheme.sourceInformation);
         securityScheme.keyName = PureGrammarParserUtility.fromGrammarString(keynameContext.STRING().getText(), true);
