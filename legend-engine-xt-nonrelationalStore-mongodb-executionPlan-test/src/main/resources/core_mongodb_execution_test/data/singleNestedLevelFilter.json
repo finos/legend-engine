@@ -1,0 +1,23 @@
+{
+  "values": [
+    {
+      "firstName": "John",
+      "lastName": "Doe",
+      "firm":       {
+        "legalName": "Goldman Sachs",
+        "address": "Address of Goldman Sachs"
+      }
+    },
+    {
+      "firstName": "Jane",
+      "lastName": "Doe",
+      "firm":       {
+        "legalName": "Goldman Sachs",
+        "address": "Address of Goldman Sachs"
+      }
+    }
+  ],
+  "builder":   {
+    "_type": "json"
+  }
+}

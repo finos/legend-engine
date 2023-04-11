@@ -1,0 +1,16 @@
+import meta::external::store::mongodb::executionTest::domain::*;
+
+Class meta::external::store::mongodb::executionTest::domain::Person
+{
+  firstName : String[0..1];
+  lastName  : String[0..1];
+  age:        Integer[0..1];
+  firm      : Firm[0..1];
+}
+
+Class meta::external::store::mongodb::executionTest::domain::Firm
+{
+  legalName : String[0..1];
+  address: String[0..1];
+}
+
