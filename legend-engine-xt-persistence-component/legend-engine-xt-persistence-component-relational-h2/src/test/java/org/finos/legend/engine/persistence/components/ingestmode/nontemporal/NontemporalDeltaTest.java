@@ -22,6 +22,8 @@ import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalDelta;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.MaxVersionStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningComparator;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
@@ -45,6 +47,7 @@ import static org.finos.legend.engine.persistence.components.TestUtils.incomeNam
 import static org.finos.legend.engine.persistence.components.TestUtils.nameName;
 import static org.finos.legend.engine.persistence.components.TestUtils.startTimeName;
 import static org.finos.legend.engine.persistence.components.TestUtils.dataSplitName;
+import static org.finos.legend.engine.persistence.components.TestUtils.versionName;
 
 class NontemporalDeltaTest extends BaseTest
 {
@@ -320,5 +323,111 @@ class NontemporalDeltaTest extends BaseTest
         expectedStatsList.add(expectedStats1);
         expectedStatsList.add(expectedStats2);
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStatsList, dataSplitRanges);
+    }
+
+    @Test
+    void testNonTemporalDeltaWithMaxVersioningGreaterThan() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getBasicMainTableWithVersion();
+        DatasetDefinition stagingTable = TestUtils.getStagingTableWithVersion();
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+        // Generate the milestoning object
+        NontemporalDelta ingestMode = NontemporalDelta.builder()
+            .digestField(digestName)
+            .auditing(NoAuditing.builder().build())
+            .versioningStrategy(MaxVersionStrategy.builder()
+                .versioningField(versionName)
+                .versioningComparator(VersioningComparator.GREATER_THAN)
+                .performDeduplication(false)
+                .build())
+            .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName};
+
+        // ------------ Perform incremental (delta) milestoning Pass1 ------------------------
+        String dataPass1 = basePath + "input/with_max_versioning/greater_than/data_pass1.csv";
+        String expectedDataPass1 = basePath + "expected/with_max_versioning/greater_than/expected_pass1.csv";
+        // 1. Load staging table
+        loadStagingDataWithVersion(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = new HashMap<>();
+        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
+        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
+        // 3. Assert that the staging table is NOT truncated
+        List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
+        Assertions.assertEquals(stagingTableList.size(), 3);
+
+        // ------------ Perform incremental (delta) milestoning Pass2 ------------------------
+        String dataPass2 = basePath + "input/with_max_versioning/greater_than/data_pass2.csv";
+        String expectedDataPass2 = basePath + "expected/with_max_versioning/greater_than/expected_pass2.csv";
+        // 1. Load staging table
+        loadStagingDataWithVersion(dataPass2);
+        // 2. Execute plans and verify results
+        expectedStats = new HashMap<>();
+        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 4);
+        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
+    }
+
+    @Test
+    void testNonTemporalDeltaWithMaxVersioningGreaterThanEqualTo() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getBasicMainTableWithVersion();
+        DatasetDefinition stagingTable = TestUtils.getStagingTableWithVersion();
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+        // Generate the milestoning object
+        NontemporalDelta ingestMode = NontemporalDelta.builder()
+            .digestField(digestName)
+            .auditing(NoAuditing.builder().build())
+            .versioningStrategy(MaxVersionStrategy.builder()
+                .versioningField(versionName)
+                .versioningComparator(VersioningComparator.GREATER_THAN_EQUAL_TO)
+                .performDeduplication(false)
+                .build())
+            .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName};
+
+        // ------------ Perform incremental (delta) milestoning Pass1 ------------------------
+        String dataPass1 = basePath + "input/with_max_versioning/greater_than_equal_to/data_pass1.csv";
+        String expectedDataPass1 = basePath + "expected/with_max_versioning/greater_than_equal_to/expected_pass1.csv";
+        // 1. Load staging table
+        loadStagingDataWithVersion(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = new HashMap<>();
+        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
+        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
+        // 3. Assert that the staging table is NOT truncated
+        List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
+        Assertions.assertEquals(stagingTableList.size(), 3);
+
+        // ------------ Perform incremental (delta) milestoning Pass2 ------------------------
+        String dataPass2 = basePath + "input/with_max_versioning/greater_than_equal_to/data_pass2.csv";
+        String expectedDataPass2 = basePath + "expected/with_max_versioning/greater_than_equal_to/expected_pass2.csv";
+        // 1. Load staging table
+        loadStagingDataWithVersion(dataPass2);
+        // 2. Execute plans and verify results
+        expectedStats = new HashMap<>();
+        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 4);
+        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
     }
 }

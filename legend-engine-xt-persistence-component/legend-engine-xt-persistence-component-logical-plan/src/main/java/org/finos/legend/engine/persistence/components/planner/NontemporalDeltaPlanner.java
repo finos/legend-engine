@@ -20,6 +20,7 @@ import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalDelta;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitors;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningConditionVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyVisitors;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
@@ -66,6 +67,9 @@ class NontemporalDeltaPlanner extends Planner
 
     private final Optional<Condition> dataSplitInRangeCondition;
 
+    private final Condition versioningCondition;
+    private final Condition inverseVersioningCondition;
+
     NontemporalDeltaPlanner(Datasets datasets, NontemporalDelta ingestMode, PlannerOptions plannerOptions)
     {
         super(datasets, ingestMode, plannerOptions);
@@ -88,6 +92,11 @@ class NontemporalDeltaPlanner extends Planner
         this.batchStartTimestamp = BatchStartTimestamp.INSTANCE;
 
         this.dataSplitInRangeCondition = ingestMode.dataSplitField().map(field -> LogicalPlanUtils.getDataSplitInRangeCondition(stagingDataset(), field));
+
+        this.versioningCondition = ingestMode().versioningStrategy()
+            .accept(new VersioningConditionVisitor(mainDataset(), stagingDataset(), false, ingestMode().digestField()));
+        this.inverseVersioningCondition = ingestMode.versioningStrategy()
+            .accept(new VersioningConditionVisitor(mainDataset(), stagingDataset(), true, ingestMode().digestField()));
     }
 
     @Override
@@ -124,6 +133,7 @@ class NontemporalDeltaPlanner extends Planner
         return LogicalPlan.of(operations);
     }
 
+    // TODO: what to do for using versioning column? Is it delete when delete indicator is true and version equals?
     /*
         DELETE FROM main_table WHERE EXIST (SELECT * FROM staging_table WHERE pk_match AND digest_match AND staging.delete_indicator_is_match)
      */
@@ -168,7 +178,6 @@ class NontemporalDeltaPlanner extends Planner
                 FieldValue.builder().datasetRef(stagingDataset().datasetReference()).fieldName(field.fieldName()).build()))
             .collect(Collectors.toList());
 
-        Condition digestCondition;
         Dataset stagingDataset = stagingDataset();
 
         if (ingestMode().dataSplitField().isPresent())
@@ -184,13 +193,14 @@ class NontemporalDeltaPlanner extends Planner
             stagingDataset = Selection.builder().source(stagingDataset()).condition(this.stagingDatasetFilterCondition).addAllFields(fieldsToSelect).alias(stagingDataset().datasetReference().alias()).build();
         }
 
+        Condition versioningCondition;
         if (this.deleteIndicatorIsNotSetCondition.isPresent())
         {
-            digestCondition = And.builder().addConditions(this.digestDoesNotMatchCondition, this.deleteIndicatorIsNotSetCondition.get()).build();
+            versioningCondition = And.builder().addConditions(this.versioningCondition, this.deleteIndicatorIsNotSetCondition.get()).build();
         }
         else
         {
-            digestCondition = this.digestDoesNotMatchCondition;
+            versioningCondition = this.versioningCondition;
         }
 
         Merge merge = Merge.builder()
@@ -199,7 +209,7 @@ class NontemporalDeltaPlanner extends Planner
             .addAllMatchedKeyValuePairs(keyValuePairs)
             .addAllUnmatchedKeyValuePairs(keyValuePairs)
             .onCondition(this.pkMatchCondition)
-            .matchedCondition(digestCondition)
+            .matchedCondition(versioningCondition)
             .build();
 
         if (ingestMode().auditing().accept(AUDIT_ENABLED))
@@ -223,7 +233,7 @@ class NontemporalDeltaPlanner extends Planner
      */
     private Update getUpdateOperation()
     {
-        Condition joinCondition = And.builder().addConditions(this.pkMatchCondition, this.digestDoesNotMatchCondition).build();
+        Condition joinCondition = And.builder().addConditions(this.pkMatchCondition, this.versioningCondition).build();
         Dataset stagingDataset = stagingDataset();
 
         List<Pair<FieldValue, Value>> keyValuePairs = stagingDataset().schemaReference().fieldValues()
@@ -275,7 +285,7 @@ class NontemporalDeltaPlanner extends Planner
         Condition notExistInSinkCondition = Not.of(Exists.of(
             Selection.builder()
                 .source(mainDataset())
-                .condition(And.builder().addConditions(this.pkMatchCondition, this.digestMatchCondition).build())
+                .condition(And.builder().addConditions(this.pkMatchCondition, this.inverseVersioningCondition).build())
                 .addAllFields(LogicalPlanUtils.ALL_COLUMNS())
                 .build())
         );
@@ -370,7 +380,7 @@ class NontemporalDeltaPlanner extends Planner
                                 .source(Selection.builder()
                                         .source(stagingDataset())
                                         .addAllFields(stagingFields)
-                                        .condition(And.builder().addConditions(this.pkMatchCondition, this.digestMatchCondition, this.deleteIndicatorIsSetCondition.get()).build())
+                                        .condition(And.builder().addConditions(this.pkMatchCondition, this.inverseVersioningCondition, this.deleteIndicatorIsSetCondition.get()).build())
                                         .build())
                                 .build()))).build();
 
