@@ -61,7 +61,7 @@ class NontemporalDeltaPlanner extends Planner
 
     private final Optional<Condition> deleteIndicatorIsNotSetCondition;
     private final Optional<Condition> deleteIndicatorIsSetCondition;
-    private final Optional<Condition> staginDatasetFilterCondition;
+    private final Optional<Condition> stagingDatasetFilterCondition;
     private final BatchStartTimestamp batchStartTimestamp;
 
     private final Optional<Condition> dataSplitInRangeCondition;
@@ -84,7 +84,7 @@ class NontemporalDeltaPlanner extends Planner
         this.deleteIndicatorIsNotSetCondition = deleteIndicatorField.map(field -> LogicalPlanUtils.getDeleteIndicatorIsNotSetCondition(stagingDataset(), field, deleteIndicatorValues));
         this.deleteIndicatorIsSetCondition = deleteIndicatorField.map(field -> LogicalPlanUtils.getDeleteIndicatorIsSetCondition(stagingDataset(), field, deleteIndicatorValues));
 
-        this.staginDatasetFilterCondition = LogicalPlanUtils.getDatasetFilterCondition(stagingDataset());
+        this.stagingDatasetFilterCondition = LogicalPlanUtils.getDatasetFilterCondition(stagingDataset());
         this.batchStartTimestamp = BatchStartTimestamp.INSTANCE;
 
         this.dataSplitInRangeCondition = ingestMode.dataSplitField().map(field -> LogicalPlanUtils.getDataSplitInRangeCondition(stagingDataset(), field));
@@ -178,10 +178,10 @@ class NontemporalDeltaPlanner extends Planner
             LogicalPlanUtils.removeField(fieldsToSelect, ingestMode().dataSplitField().get());
             stagingDataset = Selection.builder().source(stagingDataset()).condition(this.dataSplitInRangeCondition).addAllFields(fieldsToSelect).alias(stagingDataset().datasetReference().alias()).build();
         }
-        if (this.staginDatasetFilterCondition.isPresent())
+        if (this.stagingDatasetFilterCondition.isPresent())
         {
             List<Value> fieldsToSelect = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
-            stagingDataset = Selection.builder().source(stagingDataset()).condition(this.staginDatasetFilterCondition).addAllFields(fieldsToSelect).alias(stagingDataset().datasetReference().alias()).build();
+            stagingDataset = Selection.builder().source(stagingDataset()).condition(this.stagingDatasetFilterCondition).addAllFields(fieldsToSelect).alias(stagingDataset().datasetReference().alias()).build();
         }
 
         if (this.deleteIndicatorIsNotSetCondition.isPresent())
@@ -245,9 +245,9 @@ class NontemporalDeltaPlanner extends Planner
             keyValuePairs.removeIf(field -> field.key().fieldName().equals(ingestMode().dataSplitField().get()));
             stagingDataset = Selection.builder().source(stagingDataset()).condition(this.dataSplitInRangeCondition).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).alias(stagingDataset().datasetReference().alias()).build();
         }
-        if (this.staginDatasetFilterCondition.isPresent())
+        if (this.stagingDatasetFilterCondition.isPresent())
         {
-            stagingDataset = Selection.builder().source(stagingDataset()).condition(this.staginDatasetFilterCondition).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).alias(stagingDataset().datasetReference().alias()).build();
+            stagingDataset = Selection.builder().source(stagingDataset()).condition(this.stagingDatasetFilterCondition).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).alias(stagingDataset().datasetReference().alias()).build();
         }
         Update update = UpdateAbstract.of(mainDataset(), stagingDataset, keyValuePairs, joinCondition);
 
@@ -287,9 +287,9 @@ class NontemporalDeltaPlanner extends Planner
             LogicalPlanUtils.removeField(fieldsToInsert, ingestMode().dataSplitField().get());
             selectCondition = And.builder().addConditions(this.dataSplitInRangeCondition.get(), notExistInSinkCondition).build();
         }
-        if (this.staginDatasetFilterCondition.isPresent())
+        if (this.stagingDatasetFilterCondition.isPresent())
         {
-            selectCondition = And.builder().addConditions(this.staginDatasetFilterCondition.get(), notExistInSinkCondition).build();
+            selectCondition = And.builder().addConditions(this.stagingDatasetFilterCondition.get(), notExistInSinkCondition).build();
         }
 
         if (ingestMode().auditing().accept(AUDIT_ENABLED))
