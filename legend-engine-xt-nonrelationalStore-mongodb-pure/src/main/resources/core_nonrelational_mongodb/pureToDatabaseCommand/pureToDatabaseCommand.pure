@@ -39,6 +39,8 @@ Class meta::external::store::mongodb::functions::pureToDatabaseCommand::PureFunc
 
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::toDatabaseCommand(functionExpression:FunctionExpression[1], mapping:Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1], extensions:Extension[*]): MongoDBOperationElement[1]
 {
+   println('toDatabaseCommand');
+   println($functionExpression, 9);
    processValueSpecification($functionExpression, ^DatabaseCommand(type='aggregate'), $mapping, $inScopeVars, $debug);
 }
 
@@ -87,6 +89,20 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
   ^EqOperatorExpression(expressions=[$leftSide, $rightSide]);
 }
 
+function meta::external::store::mongodb::functions::pureToDatabaseCommand::processIsNotEmpty(functionExpression: FunctionExpression[1], databaseCommand: DatabaseCommand[1], mapping: Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]): ArgumentExpression[1]
+{
+  ^ArgumentExpression();
+}
+
+function meta::external::store::mongodb::functions::pureToDatabaseCommand::processGreaterThan(functionExpression: FunctionExpression[1], databaseCommand: DatabaseCommand[1], mapping: Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]): GTEOperatorExpression[1]
+{
+  println('processGreaterThan');
+  let fieldPath = $functionExpression->cast(@SimpleFunctionExpression).parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name->toOne();
+  let leftSide = ^FieldPathExpression(fieldPath=$fieldPath);
+  let rightSide = processValueSpecification($functionExpression->cast(@SimpleFunctionExpression).parametersValues->at(1), $databaseCommand, $mapping, $inScopeVars, $debug)->cast(@LiteralValue);
+  ^GTEOperatorExpression(expressions=[$leftSide, $rightSide]);
+}
+
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::processNot(functionExpression: FunctionExpression[1], databaseCommand: DatabaseCommand[1], mapping: Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]): NEOperatorExpression[1]
 {
   let eqOperatorExpression = processValueSpecification($functionExpression.parametersValues->at(0), $databaseCommand, $mapping, $inScopeVars, $debug)->cast(@ComparisonOperatorExpression);
@@ -96,7 +112,8 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::processInstanceValue(i: InstanceValue[1], databaseCommand: DatabaseCommand[1], mapping: Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]): MongoDBOperationElement[1]
 {
   $i.values->match([
-    s: String[1] | ^LiteralValue(value=^StringTypeValue(value=$s));,
+    s: String[1] | ^LiteralValue(value=^StringTypeValue(value=$s)),
+    s: Integer[1] | ^LiteralValue(value=^IntTypeValue(value=$s)),
     l: LambdaFunction<Any>[1] |
       let fe = $i.values->cast(@LambdaFunction<Any>).expressionSequence->cast(@SimpleFunctionExpression);
       processFunctionExpression($fe->toOne(), $databaseCommand, $mapping, $inScopeVars, $debug);
@@ -152,7 +169,8 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
 {
   let leftSide = processValueSpecification($functionExpression.parametersValues->at(0), $databaseCommand, $mapping, $inScopeVars, $debug)->match([
     c: ComparisonOperatorExpression[1] | $c,
-    l: LogicalOperatorExpression[1]    | $l
+    l: LogicalOperatorExpression[1]    | $l,
+    a: ArgumentExpression[1]           | $a
   ]);
   let rightSide = processValueSpecification($functionExpression.parametersValues->at(1), $databaseCommand, $mapping, $inScopeVars, $debug)->cast(@ComparisonOperatorExpression);
   ^AndOperatorExpression(expressions=[$leftSide, $rightSide]);
@@ -189,6 +207,8 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::getSu
 {
    newMap([
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::equal_Any_MANY__Any_MANY__Boolean_1_, second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processEqual_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__EqOperatorExpression_1_),
+      ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::collection::isNotEmpty_Any_$0_1$__Boolean_1_,second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processIsNotEmpty_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__ArgumentExpression_1_),
+      ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::greaterThan_Number_1__Number_1__Boolean_1_,second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processGreaterThan_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__GTEOperatorExpression_1_),
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::not_Boolean_1__Boolean_1_, second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processNot_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__NEOperatorExpression_1_),
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::collection::filter_T_MANY__Function_1__T_MANY_, second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processFilter_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__DatabaseCommand_1_),
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::collection::getAll_Class_1__T_MANY_, second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processGetAll_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__DatabaseCommand_1_),
