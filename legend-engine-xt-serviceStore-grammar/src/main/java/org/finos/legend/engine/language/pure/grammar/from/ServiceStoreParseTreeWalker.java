@@ -428,7 +428,7 @@ public class ServiceStoreParseTreeWalker
             return new SingleSecuritySchemeRequirement(securitySchemeId,securityScheme);
         }
 
-        List<Function<String,SecurityScheme>> processors = ListIterate.flatCollect(IServiceStoreGrammarParserExtension.getExtensions(), ext -> ext.getLegacySecurityParsers());
+        List<Function<String,SecurityScheme>> processors = ListIterate.flatCollect(IServiceStoreGrammarParserExtension.getExtensions(), ext -> ext.getExtraSecuritySchemesParsers());
         securityScheme = ListIterate
                 .collect(processors, processor -> processor.apply(securitySchemeId))
                 .select(Objects::nonNull)

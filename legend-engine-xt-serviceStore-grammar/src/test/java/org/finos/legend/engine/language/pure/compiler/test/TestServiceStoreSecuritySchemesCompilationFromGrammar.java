@@ -42,7 +42,6 @@ public class TestServiceStoreSecuritySchemesCompilationFromGrammar extends TestC
     @Test
     public void testHttpSecurityScheme() throws Exception
     {
-
         test("###ServiceStore\n" +
                 "ServiceStore meta::external::store::service::showcase::store::TradeProductServiceStore\n" +
                 "(\n" +
@@ -75,9 +74,77 @@ public class TestServiceStoreSecuritySchemesCompilationFromGrammar extends TestC
     }
 
     @Test
+    public void testHttpSecuritySchemeWithBearerFormat() throws Exception
+    {
+        test("###ServiceStore\n" +
+                "ServiceStore meta::external::store::service::showcase::store::TradeProductServiceStore\n" +
+                "(\n" +
+                "   description : 'Showcase Service Store';\n" +
+                "   securitySchemes : " +
+                "   {\n" +
+                "       http : Http\n" +
+                "       {\n" +
+                "          scheme : basic;\n" +
+                "          bearerFormat: 'JWT';\n " +
+                "       }" +
+                "   };\n" +
+                ")\n" +
+                "###Connection\n" +
+                "ServiceStoreConnection meta::external::store::service::showcase::connection::serviceStoreConnection\n" +
+                "{\n" +
+                "    store   : meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
+                "    baseUrl : 'http://127.0.0.1:53008';\n" +
+                "    authentication:\n" +
+                "    {\n" +
+                "        http : # UserPassword\n" +
+                "        {\n" +
+                "           username : 'username';\n" +
+                "           password : PropertiesFileSecret\n" +
+                "           {\n" +
+                "               propertyName : 'ref1';\n" +
+                "           };\n" +
+                "        }#" +
+                "    };\n" +
+                "}");
+    }
+
+    @Test
+    public void testHttpSecuritySchemeWithInvalidScheme() throws Exception
+    {
+        test("###ServiceStore\n" +
+                "ServiceStore meta::external::store::service::showcase::store::TradeProductServiceStore\n" +
+                "(\n" +
+                "   description : 'Showcase Service Store';\n" +
+                "   securitySchemes : " +
+                "   {\n" +
+                "       http : Http\n" +
+                "       {\n" +
+                "          scheme : abcd;\n" +
+                "       }" +
+                "   };\n" +
+                ")\n" +
+                "###Connection\n" +
+                "ServiceStoreConnection meta::external::store::service::showcase::connection::serviceStoreConnection\n" +
+                "{\n" +
+                "    store   : meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
+                "    baseUrl : 'http://127.0.0.1:53008';\n" +
+                "    authentication:\n" +
+                "    {\n" +
+                "        http : # UserPassword\n" +
+                "        {\n" +
+                "           username : 'username';\n" +
+                "           password : PropertiesFileSecret\n" +
+                "           {\n" +
+                "               propertyName : 'ref1';\n" +
+                "           };\n" +
+                "        }#" +
+                "    };\n" +
+                "}","PARSER error at [7:11-24]: Unsupported Scheme - ABCD. Supported schemes are - basic,bearer");
+    }
+
+    @Test
     public void testApiKeySecuritySchemeWithCookieLocation() throws Exception
     {
-
         test("###ServiceStore\n" +
                 "ServiceStore meta::external::store::service::showcase::store::TradeProductServiceStore\n" +
                 "(\n" +
@@ -112,9 +179,44 @@ public class TestServiceStoreSecuritySchemesCompilationFromGrammar extends TestC
     }
 
     @Test
+    public void testApiKeySecuritySchemeWithQueryLocation() throws Exception
+    {
+        test("###ServiceStore\n" +
+                "ServiceStore meta::external::store::service::showcase::store::TradeProductServiceStore\n" +
+                "(\n" +
+                "   description : 'Showcase Service Store';\n" +
+                "   securitySchemes : " +
+                "   {\n" +
+                "       api : ApiKey\n" +
+                "       {\n" +
+                "           location : query;\n" +
+                "           keyName : 'key1';\n" +
+                "       }" +
+                "   };\n" +
+                ")\n" +
+                "###Connection\n" +
+                "ServiceStoreConnection meta::external::store::service::showcase::connection::serviceStoreConnection\n" +
+                "{\n" +
+                "    store   : meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
+                "    baseUrl : 'http://127.0.0.1:53008';\n" +
+                "    authentication:\n" +
+                "    {\n" +
+                "       api : # ApiKey\n" +
+                "       {\n" +
+                "           location : 'cookie';\n" +
+                "           keyName : 'key1';\n" +
+                "           value : SystemPropertiesSecret\n" +
+                "           {\n" +
+                "               systemPropertyName : 'reference1';\n" +
+                "           };\n" +
+                "       }#" +
+                "    };\n" +
+                "}");
+    }
+
+    @Test
     public void testApiKeySecuritySchemeWithHeaderLocation() throws Exception
     {
-
         test("###ServiceStore\n" +
                 "ServiceStore meta::external::store::service::showcase::store::TradeProductServiceStore\n" +
                 "(\n" +
@@ -148,6 +250,41 @@ public class TestServiceStoreSecuritySchemesCompilationFromGrammar extends TestC
                 "}");
     }
 
+    @Test
+    public void testApiKeySecuritySchemeWithInvalidLocation() throws Exception
+    {
+        test("###ServiceStore\n" +
+                "ServiceStore meta::external::store::service::showcase::store::TradeProductServiceStore\n" +
+                "(\n" +
+                "   description : 'Showcase Service Store';\n" +
+                "   securitySchemes : " +
+                "   {\n" +
+                "       api : ApiKey\n" +
+                "       {\n" +
+                "           location : abcd;\n" +
+                "           keyName : 'key1';\n" +
+                "       }" +
+                "   };\n" +
+                ")\n" +
+                "###Connection\n" +
+                "ServiceStoreConnection meta::external::store::service::showcase::connection::serviceStoreConnection\n" +
+                "{\n" +
+                "    store   : meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
+                "    baseUrl : 'http://127.0.0.1:53008';\n" +
+                "    authentication:\n" +
+                "    {\n" +
+                "       api : # ApiKey\n" +
+                "       {\n" +
+                "           location : 'header';\n" +
+                "           keyName : 'key1';\n" +
+                "           value : SystemPropertiesSecret\n" +
+                "           {\n" +
+                "               systemPropertyName : 'reference1';\n" +
+                "           };\n" +
+                "       }#" +
+                "    };\n" +
+                "}","PARSER error at [7:12-27]: Unsupported Api Key location - ABCD. Supported locations are - header,cookie,query");
+    }
     @Test
     public void testAuthentication()
     {

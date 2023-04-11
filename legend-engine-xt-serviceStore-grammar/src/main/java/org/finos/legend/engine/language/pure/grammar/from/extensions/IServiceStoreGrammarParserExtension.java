@@ -44,18 +44,12 @@ public interface IServiceStoreGrammarParserExtension extends PureGrammarParserEx
                 .orElseThrow(() -> new EngineException("Unsupported security scheme type '" + code.getType() + "'", code.getSourceInformation(), EngineErrorType.PARSER));
     }
 
-    @Deprecated
     default List<Function<String, SecurityScheme>> getExtraSecuritySchemesParsers()
     {
         return Collections.emptyList();
     }
 
     default List<Function<SpecificationSourceCode, SecurityScheme>> getExtraSecuritySchemeParsers()
-    {
-        return Collections.emptyList();
-    }
-
-    default List<Function<String,SecurityScheme>> getLegacySecurityParsers()
     {
         return Collections.emptyList();
     }
