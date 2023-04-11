@@ -34,10 +34,13 @@ public class Test_ExecutionPlan_JavaPlatform_CodeGeneration_UsingPureClient exte
                 () ->
                 {
                     CompiledExecutionSupport executionSupport = PureTestHelper.getClassLoaderExecutionSupport();
-                    String func = "meta::pure::executionPlan::platformBinding::legendJava::tests::utils::javaPureTestWrapper_FunctionDefinition_1__Boolean_1_";
-                    CoreInstance runner = executionSupport.getProcessorSupport().package_getByUserPath(func);
+                    String runnerFunc = "meta::pure::executionPlan::platformBinding::legendJava::tests::utils::javaPureTestWrapper_FunctionDefinition_1__Boolean_1_";
+                    CoreInstance runner = executionSupport.getProcessorSupport().package_getByUserPath(runnerFunc);
+
+                    String collectionGenerator = "meta::pure::executionPlan::platformBinding::legendJava::library::tests::collectTestsForJavaGeneration__PureTestCollection_1_";
+                    CoreInstance collectionGeneratorInstance = executionSupport.getProcessorSupport().package_getByUserPath(collectionGenerator);
                     TestSuite suite = new TestSuite();
-                    TestCollection testCollection = TestCollection.collectTests("meta::pure::executionPlan::platformBinding::legendJava::library::tests", executionSupport.getProcessorSupport(), fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport), null);
+                    TestCollection testCollection = PureTestBuilderCompiled.generatePureTestCollection(collectionGeneratorInstance, executionSupport);
                     suite.addTest(PureTestHelper.buildJavaPureTestSuite(testCollection, executionSupport, runner));
                     return suite;
                 });
