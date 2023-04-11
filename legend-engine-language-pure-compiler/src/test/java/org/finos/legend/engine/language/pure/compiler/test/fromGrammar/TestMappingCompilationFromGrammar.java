@@ -998,7 +998,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "   {\n" +
                 "       lastName : ['1', '2']\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [7:19-28]: Error in class mapping 'a::mapping' for property 'lastName' - Multiplicity error: [1] doesn't subsumes [2]");
+                ")", "COMPILATION error at [7:19-28]: Error in class mapping 'a::mapping' for property 'lastName' - Multiplicity error: [1] doesn't subsume [2]");
     }
 
     @Test
@@ -2041,7 +2041,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "    lastName: $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),\n" +
                 "    firm: $src.firm\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [26:16-19]: Error in class mapping 'test::Mapping' for property 'firm' - Multiplicity error: [1] doesn't subsumes [*]");
+                ")\n", "COMPILATION error at [26:16-19]: Error in class mapping 'test::Mapping' for property 'firm' - Multiplicity error: [1] doesn't subsume [*]");
 
         test("###Pure\n" +
                 "Class test::dest::Person\n" +
