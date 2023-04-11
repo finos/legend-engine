@@ -44,7 +44,7 @@ public class SecuritySchemeParseTreeWalker
         {
             throw new EngineException("Unsupported Scheme - " + providedScheme + ". Supported schemes are - " + String.join(",", ListIterate.collect(supportedSchemes, String::toLowerCase)), code.getWalkerSourceInformation().getSourceInformation(schemeContext), EngineErrorType.PARSER);
         }
-        securityScheme.scheme = Scheme.valueOf(providedScheme);
+        securityScheme.scheme = Scheme.valueOf(providedScheme.toUpperCase());
 
         SecuritySchemeParserGrammar.BearerFormatContext bearerFormatContext = PureGrammarParserUtility.validateAndExtractOptionalField(securitySchemeCtx.bearerFormat(),"bearerFormat",securityScheme.sourceInformation);
         if (bearerFormatContext != null)
@@ -67,7 +67,7 @@ public class SecuritySchemeParseTreeWalker
         {
             throw new EngineException("Unsupported Api Key location - " + providedLocation + ". Supported locations are - " + String.join(",", ListIterate.collect(supportedLocations, String::toLowerCase)), code.getWalkerSourceInformation().getSourceInformation(locationContext), EngineErrorType.PARSER);
         }
-        securityScheme.location = Location.valueOf(providedLocation);
+        securityScheme.location = Location.valueOf(providedLocation.toUpperCase());
 
         SecuritySchemeParserGrammar.KeynameContext keynameContext = PureGrammarParserUtility.validateAndExtractRequiredField(securitySchemeCtx.keyname(), "keyNamme", securityScheme.sourceInformation);
         securityScheme.keyName = PureGrammarParserUtility.fromGrammarString(keynameContext.STRING().getText(), true);
