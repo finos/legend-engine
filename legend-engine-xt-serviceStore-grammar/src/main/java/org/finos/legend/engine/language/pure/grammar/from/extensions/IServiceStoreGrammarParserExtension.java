@@ -20,6 +20,7 @@ import org.finos.legend.engine.language.pure.grammar.from.SpecificationSourceCod
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecurityScheme;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecuritySchemeRequirement;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Collections;
@@ -44,6 +45,7 @@ public interface IServiceStoreGrammarParserExtension extends PureGrammarParserEx
                 .orElseThrow(() -> new EngineException("Unsupported security scheme type '" + code.getType() + "'", code.getSourceInformation(), EngineErrorType.PARSER));
     }
 
+    @Deprecated
     default List<Function<String, SecurityScheme>> getExtraSecuritySchemesParsers()
     {
         return Collections.emptyList();
@@ -53,4 +55,10 @@ public interface IServiceStoreGrammarParserExtension extends PureGrammarParserEx
     {
         return Collections.emptyList();
     }
+
+    default List<Function<String, SecuritySchemeRequirement>> getExtraSecurityParsers()
+    {
+        return Collections.emptyList();
+    }
+
 }

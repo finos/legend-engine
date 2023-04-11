@@ -285,6 +285,7 @@ public class TestServiceStoreSecuritySchemesCompilationFromGrammar extends TestC
                 "    };\n" +
                 "}","PARSER error at [7:12-27]: Unsupported Api Key location - ABCD. Supported locations are - header,cookie,query");
     }
+
     @Test
     public void testAuthentication()
     {

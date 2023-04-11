@@ -428,15 +428,16 @@ public class ServiceStoreParseTreeWalker
             return new SingleSecuritySchemeRequirement(securitySchemeId,securityScheme);
         }
 
-        List<Function<String,SecurityScheme>> processors = ListIterate.flatCollect(IServiceStoreGrammarParserExtension.getExtensions(), ext -> ext.getExtraSecuritySchemesParsers());
-        securityScheme = ListIterate
+        List<Function<String,SecuritySchemeRequirement>> processors = ListIterate.flatCollect(IServiceStoreGrammarParserExtension.getExtensions(), ext -> ext.getExtraSecurityParsers());
+        SecuritySchemeRequirement securitySchemeRequirement = ListIterate
                 .collect(processors, processor -> processor.apply(securitySchemeId))
                 .select(Objects::nonNull)
                 .getFirstOptional()
                 .orElseThrow(() -> new EngineException(String.format("%s security scheme not defined",securitySchemeId), this.walkerSourceInformation.getSourceInformation(securityCtx), EngineErrorType.PARSER));
 
-        securitySchemeMap.put(securitySchemeId,securityScheme);
-        return new SingleSecuritySchemeRequirement(securitySchemeId,securityScheme);
+        SingleSecuritySchemeRequirement singleSecuritySchemeRequirement = (SingleSecuritySchemeRequirement) securitySchemeRequirement;
+        securitySchemeMap.put(singleSecuritySchemeRequirement.securitySchemeId,singleSecuritySchemeRequirement.securityScheme);
+        return securitySchemeRequirement;
     }
 
 
