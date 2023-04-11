@@ -38,9 +38,9 @@ public class SecuritySchemeParseTreeWalker
         securityScheme.sourceInformation = code.getSourceInformation();
 
         SecuritySchemeParserGrammar.SchemeContext schemeContext = PureGrammarParserUtility.validateAndExtractRequiredField(securitySchemeCtx.scheme(), "scheme", securityScheme.sourceInformation);
-        String providedScheme = PureGrammarParserUtility.fromIdentifier(schemeContext.identifier()).toUpperCase();
+        String providedScheme = PureGrammarParserUtility.fromIdentifier(schemeContext.identifier());
         List<String> supportedSchemes = ListIterate.collect(Lists.mutable.with(Scheme.values()), Scheme::toString);
-        if (!supportedSchemes.contains(providedScheme))
+        if (!supportedSchemes.contains(providedScheme.toUpperCase()))
         {
             throw new EngineException("Unsupported Scheme - " + providedScheme + ". Supported schemes are - " + String.join(",", ListIterate.collect(supportedSchemes, String::toLowerCase)), code.getWalkerSourceInformation().getSourceInformation(schemeContext), EngineErrorType.PARSER);
         }
@@ -61,9 +61,9 @@ public class SecuritySchemeParseTreeWalker
         securityScheme.sourceInformation = code.getSourceInformation();
 
         SecuritySchemeParserGrammar.LocationContext locationContext = PureGrammarParserUtility.validateAndExtractRequiredField(securitySchemeCtx.location(), "location", securityScheme.sourceInformation);
-        String providedLocation = PureGrammarParserUtility.fromIdentifier(locationContext.identifier()).toUpperCase();
+        String providedLocation = PureGrammarParserUtility.fromIdentifier(locationContext.identifier());
         List<String> supportedLocations = ListIterate.collect(Lists.mutable.with(Location.values()), Location::toString);
-        if (!supportedLocations.contains(providedLocation))
+        if (!supportedLocations.contains(providedLocation.toUpperCase()))
         {
             throw new EngineException("Unsupported Api Key location - " + providedLocation + ". Supported locations are - " + String.join(",", ListIterate.collect(supportedLocations, String::toLowerCase)), code.getWalkerSourceInformation().getSourceInformation(locationContext), EngineErrorType.PARSER);
         }

@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -139,7 +139,7 @@ public class TestServiceStoreSecuritySchemesCompilationFromGrammar extends TestC
                 "           };\n" +
                 "        }#" +
                 "    };\n" +
-                "}","PARSER error at [7:11-24]: Unsupported Scheme - ABCD. Supported schemes are - basic,bearer");
+                "}","PARSER error at [7:11-24]: Unsupported Scheme - abcd. Supported schemes are - basic,bearer");
     }
 
     @Test
@@ -283,7 +283,7 @@ public class TestServiceStoreSecuritySchemesCompilationFromGrammar extends TestC
                 "           };\n" +
                 "       }#" +
                 "    };\n" +
-                "}","PARSER error at [7:12-27]: Unsupported Api Key location - ABCD. Supported locations are - header,cookie,query");
+                "}","PARSER error at [7:12-27]: Unsupported Api Key location - abcd. Supported locations are - header,cookie,query");
     }
 
     @Test

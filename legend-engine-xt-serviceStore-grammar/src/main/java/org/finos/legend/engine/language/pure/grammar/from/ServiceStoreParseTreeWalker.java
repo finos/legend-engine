@@ -437,7 +437,7 @@ public class ServiceStoreParseTreeWalker
 
         SingleSecuritySchemeRequirement singleSecuritySchemeRequirement = (SingleSecuritySchemeRequirement) securitySchemeRequirement;
         securitySchemeMap.put(singleSecuritySchemeRequirement.securitySchemeId,singleSecuritySchemeRequirement.securityScheme);
-        return securitySchemeRequirement;
+        return singleSecuritySchemeRequirement;
     }
 
 
