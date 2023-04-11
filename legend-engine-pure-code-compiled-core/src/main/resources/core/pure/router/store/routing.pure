@@ -104,7 +104,7 @@ function <<access.private>> meta::pure::router::store::routing::routeFunctionExp
                         print(if($debug.debug,|$debug.space+$fe->asString()+'\n',|''));
                         let targetType = $p.classifierGenericType.typeArguments->at(1).rawType->toOne();
                         if($targetType->instanceOf(DataType),
-                           |let sourceClass = $fe.parametersValues->at(0).genericType.rawType->toOne();
+                          | let sourceClass = $fe.parametersValues->at(0).genericType.rawType->toOne();
 
                             let subTypes = $sourceClass->cast(@Class<Any>)->getMappedLeafClasses($mapping, $v);
                             let classes = if ($subTypes->isEmpty(), | $sourceClass, | $subTypes);
@@ -143,7 +143,8 @@ function <<access.private>> meta::pure::router::store::routing::routeFunctionExp
                                   ^$last(
                                     value= $routed
                                   );,
-                                | let foundSets = $p->findMappingsFromProperty($mapping, $last.value->match([v:StoreMappingRoutedValueSpecification[1]|$v.sets, a:Any[1]|[]->cast(@SetImplementation)]), $v, $extensions);//is this for embedded?
+                                | let srcSets   = $last.value->match([v:StoreMappingRoutedValueSpecification[1]|$v.sets, a:Any[1]|[]->cast(@SetImplementation)]);
+                                  let foundSets = $p->findMappingsFromProperty($mapping, $srcSets, $v, $extensions);//is this for embedded?
                                   if ($foundSets->isEmpty(),
                                     |^$last(value=^$fe(parametersValues = $newPV)),
                                     | // Can't assert because of embedded
@@ -174,11 +175,13 @@ function <<access.private>> meta::pure::router::store::routing::routeFunctionExp
                                                         value = ^$fe(parametersValues = $newPV),
                                                         routingStrategy = $updatedRoutingStrategy
                                                     );
+                                      let shouldStopPropertyRouting       = $srcSets->isPropertyAutoMapped($p, $extensions);
                                       ^$last(
                                           counter = if (!$existingSetCanBeUsed,|$last.counter+1,|$last.counter),
                                           routingStrategy = $updatedRoutingStrategy, 
                                           propertyMap = ^$oldPropertyMap(v += pair($propId, $added->cast(@Any))),  
-                                          value= $added
+                                          value= $added,
+                                          shouldBeRouted = $last.shouldBeRouted && !$shouldStopPropertyRouting
                                       );
                                   );
                             );
@@ -376,6 +379,13 @@ function meta::pure::router::store::routing::processProperty(p:AbstractProperty<
         print(if($debug.debug,|$debug.space+'~>P '+$p.name->toOne()+') ('+$res.routingStrategy->cast(@StoreMappingRoutingStrategy).sets->size()->toString()+') '+$routed->evaluateAndDeactivate()->asString()+'\n',|''));
         $res;
    );
+}
+
+function meta::pure::router::store::routing::isPropertyAutoMapped(srcSets:SetImplementation[*], p:AbstractProperty<Any>[1], extensions:meta::pure::extension::Extension[*]): Boolean[1]
+{
+  $srcSets->size() == 1 && $srcSets->toOne()->instanceOf(InstanceSetImplementation)                   // We only support pass through mapping when source set is InstanceSetImpls and not OperationSetImpls
+  && $extensions->meta::pure::extension::_storeContractForSetImplementation($srcSets->toOne()).isPropertyAutoMapped->isNotEmpty()
+  && $extensions->meta::pure::extension::_storeContractForSetImplementation($srcSets->toOne()).isPropertyAutoMapped->toOne()->eval($p, $srcSets->toOne()->cast(@InstanceSetImplementation));
 }
 
 function meta::pure::router::routing::getClassMappings(c:Class<Any>[1], r:RoutingState[1]):SetImplementation[*]

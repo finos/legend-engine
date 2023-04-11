@@ -32,6 +32,7 @@ import org.finos.legend.engine.generation.analytics.model.DataSpaceExecutableTDS
 import org.finos.legend.engine.generation.analytics.model.DataSpaceExecutableTDSResultColumn;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceExecutionContextAnalysisResult;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceModelDocumentationEntry;
+import org.finos.legend.engine.generation.analytics.model.DataSpacePropertyDocumentationEntry;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceServiceExecutableInfo;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceStereotypeInfo;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceTaggedValueInfo;
@@ -48,6 +49,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.ResultType;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.TDSResultType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
@@ -65,13 +67,13 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_analyt
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceClassDocumentationEntry;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceEnumerationDocumentationEntry;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceExecutionContextAnalysisResult;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_analytics_DataSpacePropertyDocumentationEntry;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_analytics_modelCoverage_DiagramModelCoverageAnalysisResult;
 import org.finos.legend.pure.generated.core_analytics_mapping_modelCoverage_serializer;
 import org.finos.legend.pure.generated.core_data_space_analytics_analytics;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
-import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.ServiceLoader;
@@ -79,8 +81,6 @@ import java.util.stream.Collectors;
 
 public class DataSpaceAnalyticsHelper
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
-
     private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
 
     private static DataSpaceBasicDocumentationEntry buildBasicDocumentationEntry(Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceBasicDocumentationEntry entry)
@@ -88,6 +88,17 @@ public class DataSpaceAnalyticsHelper
         DataSpaceBasicDocumentationEntry docEntry = new DataSpaceBasicDocumentationEntry();
         docEntry.name = entry._name();
         docEntry.docs = new ArrayList<>(entry._docs().toList());
+        return docEntry;
+    }
+
+    private static DataSpacePropertyDocumentationEntry buildPropertyDocumentationEntry(Root_meta_pure_metamodel_dataSpace_analytics_DataSpacePropertyDocumentationEntry entry)
+    {
+        DataSpacePropertyDocumentationEntry docEntry = new DataSpacePropertyDocumentationEntry();
+        docEntry.name = entry._name();
+        docEntry.docs = new ArrayList<>(entry._docs().toList());
+        docEntry.milestoning = entry._milestoning();
+        docEntry.type = entry._type();
+        docEntry.multiplicity = new Multiplicity(entry._multiplicity()._lowerBound()._value().intValue(), entry._multiplicity()._upperBound()._value() != null ? entry._multiplicity()._upperBound()._value().intValue() : null);
         return docEntry;
     }
 
@@ -203,8 +214,8 @@ public class DataSpaceAnalyticsHelper
                 ed.docs = new ArrayList<>(elementDoc._docs().toList());
 
                 Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceClassDocumentationEntry doc = (Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceClassDocumentationEntry) elementDoc;
-                ed.properties = doc._properties().toList().collect(DataSpaceAnalyticsHelper::buildBasicDocumentationEntry);
-                ed.inheritedProperties = doc._inheritedProperties().toList().collect(DataSpaceAnalyticsHelper::buildBasicDocumentationEntry);
+                ed.properties = doc._properties().toList().collect(DataSpaceAnalyticsHelper::buildPropertyDocumentationEntry);
+                ed.milestoning = doc._milestoning();
                 return ed;
             }
             else if (elementDoc instanceof Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceEnumerationDocumentationEntry)
@@ -226,7 +237,7 @@ public class DataSpaceAnalyticsHelper
                 ed.docs = new ArrayList<>(elementDoc._docs().toList());
 
                 Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceAssociationDocumentationEntry doc = (Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceAssociationDocumentationEntry) elementDoc;
-                ed.properties = doc._properties().toList().collect(DataSpaceAnalyticsHelper::buildBasicDocumentationEntry);
+                ed.properties = doc._properties().toList().collect(DataSpaceAnalyticsHelper::buildPropertyDocumentationEntry);
                 return ed;
             }
             DataSpaceModelDocumentationEntry ed = new DataSpaceModelDocumentationEntry();

@@ -136,10 +136,10 @@ public class LegendExecuteTest
     public static Collection<Object[]> modes() throws Exception
     {
         return Arrays.asList(new Object[][]
-            {
-                { "compiled",  compileExecution() },
-                { "interpreted", interpretedExecution() }
-            }
+                {
+                        { "compiled",  compileExecution() },
+                        { "interpreted", interpretedExecution() }
+                }
         );
     }
 
@@ -270,7 +270,7 @@ public class LegendExecuteTest
         {
             List<String> lines = IOUtils.readLines(is, StandardCharsets.UTF_8);
             lines.add("function test():Any[*]{");
-            lines.add("  let extensions = meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingExtensionsWithLegendJavaPlatformBinding([]);");
+            lines.add("  let extensions = meta::pure::extension::defaultExtensions();");
             lines.add("  let runtime = ^Runtime(");
             lines.add("                      connections = [");
             lines.add("                        ^JsonModelConnection(");
