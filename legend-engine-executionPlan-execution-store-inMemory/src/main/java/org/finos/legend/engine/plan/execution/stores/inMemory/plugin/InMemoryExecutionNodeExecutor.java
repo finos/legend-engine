@@ -28,7 +28,9 @@ import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMe
 import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMemoryRootGraphFetchExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IInMemoryRootGraphFetchMergeExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch.IStoreStreamReadingExecutionNodeSpecifics;
+import org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;
 import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
+import org.finos.legend.engine.plan.execution.nodes.helpers.platform.DefaultExecutionNodeContext;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionNodeJavaPlatformHelper;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
@@ -66,6 +68,7 @@ import org.pac4j.core.profile.CommonProfile;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -129,7 +132,18 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
 
         try
         {
-
+            Map<String, Object> variableMap = new HashMap<>();
+            executionState.getResults().forEach((k, v) ->
+            {
+                if (v instanceof ConstantResult)
+                {
+                    Object value = ((ConstantResult) v).getValue();
+                    if (value != null)
+                    {
+                        variableMap.put(k, value);
+                    }
+                }
+            });
 
             if ((Arrays.asList(clazz.getInterfaces()).contains(IInMemoryRootGraphFetchMergeExecutionNodeSpecifics.class)))
             {
@@ -157,6 +171,7 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
                 }
 
                 AtomicLong batchIndex = new AtomicLong(0L);
+                IExecutionNodeContext context = new DefaultExecutionNodeContext(executionState, childResult);
 
                 Spliterator<GraphObjectsBatch> graphObjectsBatchSpliterator = new Spliterators.AbstractSpliterator<GraphObjectsBatch>(Long.MAX_VALUE, Spliterator.ORDERED)
                 {
@@ -242,14 +257,25 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
                         }
 
                         inMemoryGraphObjectsBatch.setObjectsForNodeIndex(node.nodeIndex, resultObjects);
+                        ExecutionState newState = new ExecutionState(executionState);
 
                         if (!resultObjects.isEmpty() && (!isLeaf))
                         {
-                            ExecutionState newState = new ExecutionState(executionState);
                             newState.graphObjectsBatch = inMemoryGraphObjectsBatch;
                             node.children.forEach(x -> x.accept(new ExecutionNodeExecutor(InMemoryExecutionNodeExecutor.this.pm, newState)));
-                        }
 
+                        }
+                        if (!resultObjects.isEmpty() && node.filter  && newState.graphObjectsBatch != null)
+                        {
+                            List<Object> updated = newState.graphObjectsBatch.getObjectsForNodeIndex(node.nodeIndex).stream().filter(f ->
+                                    nodeSpecifics.filter(f, context)
+                            ).filter(Objects::nonNull).collect(Collectors.toList());
+                            if (updated.isEmpty() && objectCount != 0)
+                            {
+                                objectCount -= 1;
+                            }
+                            inMemoryGraphObjectsBatch.setObjectsForNodeIndex(node.nodeIndex, updated);
+                        }
                         action.accept(inMemoryGraphObjectsBatch);
 
                         return objectCount != 0;
@@ -257,6 +283,7 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
                 };
 
                 Stream<GraphObjectsBatch> graphObjectsBatchStream = StreamSupport.stream(graphObjectsBatchSpliterator, false);
+
 
                 return new GraphFetchResult(graphObjectsBatchStream, childResult).withGraphFetchSpan(graphFetchSpan);
             }

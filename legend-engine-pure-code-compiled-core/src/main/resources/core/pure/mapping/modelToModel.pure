@@ -224,6 +224,8 @@ Class meta::pure::mapping::modelToModel::graphFetch::executionPlan::StoreStreamR
 Class <<typemodifiers.abstract>> meta::pure::mapping::modelToModel::graphFetch::executionPlan::InMemoryGraphFetchExecutionNode extends LocalGraphFetchExecutionNode
 {
    children : InMemoryGraphFetchExecutionNode[*];
+   filter:LambdaFunction<Any>[0..1];
+   parameters:Map<String,List<Any>>[0..1];
 }
 
 Class meta::pure::mapping::modelToModel::graphFetch::executionPlan::InMemoryPropertyGraphFetchExecutionNode extends InMemoryGraphFetchExecutionNode
@@ -293,8 +295,16 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planRootG
    assert($connection->concatenate($chainConnection)->isNotEmpty(), | 'No connection available for source class - ' + $rootTree.sets->toOne()->cast(@PureInstanceSetImplementation).srcClass.name->toOne());
    let updatedConnection = $connection->concatenate($chainConnection)->first()->toOne();
 
-   let sourceTree         = calculateSourceTree($rootTree, $mapping, $extensions);
-   let sourceTreeExtended = if($enableConstraints, | $sourceTree->ensureConstraintsRequirements(), | $sourceTree);
+   let sourceTree         = calculateSourceTree($rootTree, $mapping, $extensions); //add filter requirements as well
+   let sourceTreeWithConstraint = if($enableConstraints, | $sourceTree->ensureConstraintsRequirements(), | $sourceTree);
+   
+    let possibleFilter =  $fe->graphFetchFilter()->evaluateAndDeactivate();
+
+   let sourceTreeExtended  = if($possibleFilter->isNotEmpty(),
+                                    | meta::pure::graphFetch::ensureFunctionRequirementsFromLambda($sourceTreeWithConstraint->cast(@GraphFetchTree), $sourceTreeWithConstraint.class, $possibleFilter.parametersValues->at(1)->cast(@FunctionRoutedValueSpecification).originalFunction,[], true),
+                                    |$sourceTreeWithConstraint
+                                  )->cast(@RootGraphFetchTree<Any>);  
+
   
    let chainConnectionNodeGeneration = {mcc: ModelChainConnection[1] |
       $fe->planModelChainConnectionGraphFetchExecution($mcc, $sourceTreeExtended, $mapping, $runtime, $exeCtx, $ext, $sq.inScopeVars, [], $enableConstraints, $checked, $extensions, $debug)
@@ -328,8 +338,27 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planRootG
       batchSize         = $batchSize,
       checked           = $checked,
       children          = $rootTree->generateInMemoryChildGraphNodes($rootTree->nodePathName(), $orderedPaths, $debug),
-      executionNodes    = $updatedConnection->meta::pure::executionPlan::nodeFromConnection($sourceTreeExtended, $enableConstraints, $checked, $extensions, [$chainConnectionNodeGeneration, $modelQueryConnectionNodeGeneration, $defaultGenerateExecutionNode])
+      executionNodes    = $updatedConnection->meta::pure::executionPlan::nodeFromConnection($sourceTreeExtended, $enableConstraints, $checked, $extensions, [$chainConnectionNodeGeneration, $modelQueryConnectionNodeGeneration, $defaultGenerateExecutionNode]),
+      filter =    if($possibleFilter->isNotEmpty(),| $possibleFilter->toOne().parametersValues->at(1)->cast(@FunctionRoutedValueSpecification).originalFunction->cast(@LambdaFunction<Any>),|[]),
+      requiredVariableInputs =  $sq.inScopeVars->keyValues()->filter(v|$v.second.values->at(0)->instanceOf(PlanVarPlaceHolder))
+                                                                     ->map(var | let placeholder =  $var.second.values->at(0)->cast(@PlanVarPlaceHolder);
+                                                                                 ^VariableInput(name = $var.first,
+                                                                                                type = $placeholder.type,
+                                                                                                multiplicity = $placeholder.multiplicity->toOne());
+                                                                        )
+                                                                                                                      
+      
+      
+      
+      
    );
+}
+function  meta::pure::mapping::modelToModel::graphFetch::executionPlan::graphFetchFilter(fe:FunctionExpression[1]):SimpleFunctionExpression[0..1]
+{  
+  let func =  $fe.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value;   
+   if($func->instanceOf(SimpleFunctionExpression)  && $func->cast(@SimpleFunctionExpression).functionName=='filter',
+        | $func->cast(@SimpleFunctionExpression),
+         | []);
 }
 
 function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planCrossStoreGraphFetchExecutionInMemory(clusteredTree: StoreMappingClusteredGraphFetchTree[1], orderedPaths: String[*], parentPath: String[1], inScopeVars: Map<String, List<Any>>[1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: Extension[*], debug: DebugContext[1]): InMemoryCrossStoreGraphFetchExecutionNode[1]
@@ -601,7 +630,9 @@ function <<access.private>> meta::pure::mapping::modelToModel::graphFetch::execu
                                                        executionNodes = $nodes.localGraphFetchExecutionNode->cast(@InMemoryRootGraphFetchExecutionNode),
                                                        checked=$firstlocal.checked,
                                                         nodeIndex=   $firstlocal.nodeIndex,
-                                                        batchSize=1
+                                                        batchSize=1,
+                                                        filter =$firstlocal.filter,
+                                                        requiredVariableInputs = $firstlocal.requiredVariableInputs
                                                        );
   ^$firstNode(localGraphFetchExecutionNode=$newLocal );
 }

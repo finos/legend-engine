@@ -15,10 +15,12 @@
 package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory;
 
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.LocalGraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 
 import java.util.List;
 
 public abstract class InMemoryGraphFetchExecutionNode extends LocalGraphFetchExecutionNode
 {
     public List<InMemoryGraphFetchExecutionNode> children;
+    public boolean filter;
 }
