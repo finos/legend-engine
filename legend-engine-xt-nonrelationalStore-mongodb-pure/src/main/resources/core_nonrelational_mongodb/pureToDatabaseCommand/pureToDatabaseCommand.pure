@@ -39,9 +39,7 @@ Class meta::external::store::mongodb::functions::pureToDatabaseCommand::PureFunc
 
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::toDatabaseCommand(functionExpression:FunctionExpression[1], mapping:Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1], extensions:Extension[*]): MongoDBOperationElement[1]
 {
-   println('toDatabaseCommand');
-   println($functionExpression, 9);
-   processValueSpecification($functionExpression, ^DatabaseCommand(type='aggregate'), $mapping, $inScopeVars, $debug);
+  processValueSpecification($functionExpression, ^DatabaseCommand(type='aggregate'), $mapping, $inScopeVars, $debug);
 }
 
 
@@ -77,6 +75,7 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
     | 
       let root = $functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name->toOne();,
     | 
+      // start using the processSimpleFunctionExpression, to dig in some levels without having to manually write it every time. can we use the processValueSpecification as well to dig in?
       let root = $functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name->toOne();
       let embedded = $functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).parametersValues->at(1)->cast(@StoreMappingRoutedValueSpecification).value->cast(@FunctionRoutedValueSpecification).originalFunction->cast(@LambdaFunction<Any>).expressionSequence->cast(@SimpleFunctionExpression).func.name->toOne();
       $root + '.' + $embedded;
@@ -91,6 +90,8 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
 
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::processIsNotEmpty(functionExpression: FunctionExpression[1], databaseCommand: DatabaseCommand[1], mapping: Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]): ArgumentExpression[1]
 {
+  println('processIsNotEmpty');
+  println($functionExpression);
   ^ArgumentExpression();
 }
 
