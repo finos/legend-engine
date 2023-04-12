@@ -57,6 +57,7 @@ class NontemporalDeltaPlanner extends Planner
     private final Dataset enrichedStagingDataset;
     private final Condition pkMatchCondition;
     private final Condition digestMatchCondition;
+    private final Condition versioningCondition;
 
     private final Optional<String> deleteIndicatorField;
     private final List<Object> deleteIndicatorValues;
@@ -66,9 +67,6 @@ class NontemporalDeltaPlanner extends Planner
     private final BatchStartTimestamp batchStartTimestamp;
 
     private final Optional<Condition> dataSplitInRangeCondition;
-
-    private final Condition versioningCondition;
-    private final Condition inverseVersioningCondition;
 
     NontemporalDeltaPlanner(Datasets datasets, NontemporalDelta ingestMode, PlannerOptions plannerOptions)
     {
@@ -80,6 +78,8 @@ class NontemporalDeltaPlanner extends Planner
         // TODO validate interBatchDedup Strategies
         this.pkMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(mainDataset(), stagingDataset(), primaryKeys.toArray(new String[0]));
         this.digestMatchCondition = LogicalPlanUtils.getDigestMatchCondition(mainDataset(), stagingDataset(), ingestMode().digestField());
+        this.versioningCondition = ingestMode().versioningStrategy()
+            .accept(new VersioningConditionVisitor(mainDataset(), stagingDataset(), false, ingestMode().digestField()));
 
         this.deleteIndicatorField = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD);
         this.deleteIndicatorValues = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_VALUES);
@@ -94,10 +94,6 @@ class NontemporalDeltaPlanner extends Planner
         // Perform Deduplication & Filtering of Staging Dataset
         this.enrichedStagingDataset = ingestMode().versioningStrategy()
             .accept(new DatasetFilterAndDeduplicator(stagingDataset(), primaryKeys));
-        this.versioningCondition = ingestMode().versioningStrategy()
-            .accept(new VersioningConditionVisitor(mainDataset(), stagingDataset(), false, ingestMode().digestField()));
-        this.inverseVersioningCondition = ingestMode.versioningStrategy()
-            .accept(new VersioningConditionVisitor(mainDataset(), stagingDataset(), true, ingestMode().digestField()));
     }
 
     @Override
