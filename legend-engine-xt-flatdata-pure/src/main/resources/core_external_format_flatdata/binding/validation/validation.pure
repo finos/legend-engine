@@ -55,7 +55,7 @@ Class meta::external::format::flatdata::binding::validation::FieldToProperty
 
 function meta::external::format::flatdata::binding::validation::bindDetails(binding: Binding[1]): BindingDetail[1]
 {
-   assert($binding.schemaSet.format == 'FlatData');
+   assert($binding.schemaSet.format == 'FlatData', 'Unexpected format encountered with flatdata binding validation');
    
    let flatData  = if($binding.schemaId->isEmpty(),
                       | $binding.schemaSet.schemas->at(0).detail->cast(@FlatData),

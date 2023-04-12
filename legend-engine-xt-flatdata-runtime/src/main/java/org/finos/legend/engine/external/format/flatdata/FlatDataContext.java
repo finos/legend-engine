@@ -15,13 +15,13 @@
 package org.finos.legend.engine.external.format.flatdata;
 
 import org.eclipse.collections.api.factory.Maps;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataDriverDescription;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.FlatDataProcessor;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.ObjectToParsedFlatData;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.ParsedFlatDataToObject;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatData;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordType;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataSection;
+import org.finos.legend.engine.external.format.flatdata.driver.spi.FlatDataDriverDescription;
+import org.finos.legend.engine.external.format.flatdata.driver.spi.FlatDataProcessor;
+import org.finos.legend.engine.external.format.flatdata.driver.spi.ObjectToParsedFlatData;
+import org.finos.legend.engine.external.format.flatdata.driver.spi.ParsedFlatDataToObject;
+import org.finos.legend.engine.external.format.flatdata.metamodel.FlatData;
+import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataRecordType;
+import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataSection;
 
 import java.util.List;
 import java.util.Map;
@@ -56,12 +56,12 @@ public class FlatDataContext<T>
 
     public FlatDataProcessor<T> createProcessor()
     {
-        FlatDataSection firstSection = flatData.getSections().get(0);
+        FlatDataSection firstSection = flatData.sections.get(0);
         FlatDataProcessor.Builder<T> builder = descriptionFor(firstSection).<T>getProcessorBuilderFactory().apply(flatData).withDefiningPath(definingPath);
 
-        for (FlatDataSection section : flatData.getSections())
+        for (FlatDataSection section : flatData.sections)
         {
-            String sectionName = section.getName();
+            String sectionName = section.name;
             if (toObjectFactories.containsKey(sectionName))
             {
                 builder.withToObjectFactoryFactory(sectionName, toObjectFactories.get(sectionName));
@@ -91,8 +91,8 @@ public class FlatDataContext<T>
     private FlatDataDriverDescription descriptionFor(FlatDataSection section)
     {
         return descriptions.stream()
-                .filter(d -> d.getId().equals(section.getDriverId()))
+                .filter(d -> d.getId().equals(section.driverId))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("No driver for: '" + section.getDriverId() + "'"));
+                .orElseThrow(() -> new RuntimeException("No driver for: '" + section.driverId + "'"));
     }
 }
