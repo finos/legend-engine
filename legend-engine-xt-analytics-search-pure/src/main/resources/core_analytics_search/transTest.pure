@@ -26,7 +26,7 @@ function meta::analytics::search::transformation::test::buildTestProjectCoordina
 
 function <<meta::pure::profiles::test.Test>> meta::analytics::search::transformation::test::testClassDocumentGeneration(): Boolean[1]
 {
-  let result = meta::analytics::search::transformation::buildDocument(meta::analytics::search::transformation::test::Person, meta::analytics::search::transformation::test::buildTestProjectCoordinates())->cast(@meta::analytics::search::metamodel::class::RootDocument);
+  let result = meta::analytics::search::transformation::buildDocument(meta::analytics::search::transformation::test::Person, meta::analytics::search::transformation::test::buildTestProjectCoordinates())->cast(@meta::analytics::search::metamodel::class::ClassDocument);
   assert($result.id == 'meta::analytics::search::transformation::test::Person');
   assert($result.package == 'meta::analytics::search::transformation::test');
   assert($result.name == 'Person');
@@ -34,14 +34,29 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::search::transforma
   assert($result.projectCoordinates.groupId == 'org.finos.test');
   assert($result.projectCoordinates.artifactId == 'test-project');
   assert($result.projectCoordinates.versionId == '0.0.1-SNAPSHOT');
-  
+
   let json = $result->alloyToJSON();
-  assert($json == '{"package":"meta::analytics::search::transformation::test","name":"Person","projectCoordinates":{"versionId":"0.0.1-SNAPSHOT","groupId":"org.finos.test","artifactId":"test-project"},"id":"meta::analytics::search::transformation::test::Person","type":"Class","properties":["firstName","lastName"]}');
+  assert($json == '{"taggedValues":{"doc.doc":"Person Details"},"package":"meta::analytics::search::transformation::test","name":"Person","description":"Person Details","projectCoordinates":{"versionId":"0.0.1-SNAPSHOT","groupId":"org.finos.test","artifactId":"test-project"},"id":"meta::analytics::search::transformation::test::Person","type":"Class","properties":[{"taggedValues":{"doc.doc":"firstName of the person"},"name":"firstName"},{"taggedValues":{"doc.doc":"lastName of the person"},"name":"lastName"}]}');
+}
+
+function <<meta::pure::profiles::test.Test>> meta::analytics::search::transformation::test::testClassDocumentGeneration_WithStereotypes(): Boolean[1]
+{
+  let result = meta::analytics::search::transformation::buildDocument(meta::analytics::search::transformation::test::LegalEntity, meta::analytics::search::transformation::test::buildTestProjectCoordinates())->cast(@meta::analytics::search::metamodel::class::ClassDocument);
+  assert($result.id == 'meta::analytics::search::transformation::test::LegalEntity');
+  assert($result.package == 'meta::analytics::search::transformation::test');
+  assert($result.name == 'LegalEntity');
+  assert($result.properties->size() == 4);
+  assert($result.projectCoordinates.groupId == 'org.finos.test');
+  assert($result.projectCoordinates.artifactId == 'test-project');
+  assert($result.projectCoordinates.versionId == '0.0.1-SNAPSHOT');
+
+  let json = $result->alloyToJSON();
+  assert($json == '{"taggedValues":{"doc.doc":"Entity Details"},"stereotypes":["temporal.processingtemporal","test.Test"],"package":"meta::analytics::search::transformation::test","name":"LegalEntity","description":"To add further details,Entity Details","projectCoordinates":{"versionId":"0.0.1-SNAPSHOT","groupId":"org.finos.test","artifactId":"test-project"},"id":"meta::analytics::search::transformation::test::LegalEntity","type":"Class","properties":[{"taggedValues":{},"stereotypes":["temporal.processingtemporal"],"name":"legalName"},{"taggedValues":{},"name":"address"},{"taggedValues":{},"stereotypes":["milestoning.generatedmilestoningdateproperty"],"name":"processingDate"},{"taggedValues":{},"stereotypes":["milestoning.generatedmilestoningdateproperty"],"name":"milestoning"}]}');
 }
 
 function <<meta::pure::profiles::test.Test>> meta::analytics::search::transformation::test::testMappingDocumentGeneration(): Boolean[1]
 {
-  let result = meta::analytics::search::transformation::buildDocument(meta::analytics::search::transformation::test::sampleRelationalMapping, meta::analytics::search::transformation::test::buildTestProjectCoordinates())->cast(@meta::analytics::search::metamodel::mapping::RootDocument);
+  let result = meta::analytics::search::transformation::buildDocument(meta::analytics::search::transformation::test::sampleRelationalMapping, meta::analytics::search::transformation::test::buildTestProjectCoordinates())->cast(@meta::analytics::search::metamodel::mapping::MappingDocument);
   assert($result.id == 'meta::analytics::search::transformation::test::sampleRelationalMapping');
   assert($result.package == 'meta::analytics::search::transformation::test');
   assert($result.name == 'sampleRelationalMapping');
@@ -49,14 +64,192 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::search::transforma
   assert($result.projectCoordinates.groupId == 'org.finos.test');
   assert($result.projectCoordinates.artifactId == 'test-project');
   assert($result.projectCoordinates.versionId == '0.0.1-SNAPSHOT');
-  
+
   let json = $result->alloyToJSON();
-  assert($json == '{"package":"meta::analytics::search::transformation::test","classes":[{"package":"meta::analytics::search::transformation::test","name":"Firm","properties":["id","employees","address"]},{"package":"meta::analytics::search::transformation::test","name":"Person","properties":["firstName","lastName"]},{"package":"meta::analytics::search::transformation::test","name":"LegalEntity"},{"package":"meta::analytics::search::transformation::test","name":"Address"},{"package":"meta::analytics::search::transformation::test","name":"Street"}],"name":"sampleRelationalMapping","projectCoordinates":{"versionId":"0.0.1-SNAPSHOT","groupId":"org.finos.test","artifactId":"test-project"},"id":"meta::analytics::search::transformation::test::sampleRelationalMapping","type":"Mapping"}');
+  assert($json == '{"taggedValues":{},"package":"meta::analytics::search::transformation::test","includedMappings":["meta::analytics::search::transformation::test::sampleMappingTest"],"classes":[{"taggedValues":{},"stereotypes":["temporal.processingtemporal"],"package":"meta::analytics::search::transformation::test","name":"Firm","properties":[{"taggedValues":{},"name":"id"},{"taggedValues":{},"name":"employees"},{"taggedValues":{},"name":"address"}]},{"taggedValues":{"doc.doc":"Person Details"},"package":"meta::analytics::search::transformation::test","name":"Person","properties":[{"taggedValues":{"doc.doc":"firstName of the person"},"name":"firstName"},{"taggedValues":{"doc.doc":"lastName of the person"},"name":"lastName"}]},{"taggedValues":{"doc.doc":"Entity Details"},"stereotypes":["temporal.processingtemporal","test.Test"],"package":"meta::analytics::search::transformation::test","name":"LegalEntity"},{"taggedValues":{},"package":"meta::analytics::search::transformation::test","name":"Address"},{"taggedValues":{},"package":"meta::analytics::search::transformation::test","name":"Street"}],"name":"sampleRelationalMapping","projectCoordinates":{"versionId":"0.0.1-SNAPSHOT","groupId":"org.finos.test","artifactId":"test-project"},"id":"meta::analytics::search::transformation::test::sampleRelationalMapping","type":"Mapping"}');
 }
+
+function <<meta::pure::profiles::test.Test>> meta::analytics::search::transformation::test::testDatabaseDocumentGeneration(): Boolean[1]
+{
+  let result = meta::analytics::search::transformation::buildDocument(meta::analytics::search::transformation::test::sampleDB, meta::analytics::search::transformation::test::buildTestProjectCoordinates())->cast(@meta::analytics::search::metamodel::database::DatabaseDocument);
+  assert($result.id == 'meta::analytics::search::transformation::test::sampleDB');
+  assert($result.name == 'sampleDB');
+  let json = $result->alloyToJSON();
+  assert($json == '{"taggedValues":{},"package":"meta::analytics::search::transformation::test","includedStores":["meta::analytics::search::transformation::test::sampleDBTest"],"schemas":[{"tables":[{"columns":["id","name"],"name":"sampleTable"}],"name":"sampleSchema"},{"tables":[{"columns":["id","legalName"],"name":"FirmTable"},{"columns":["id","firmID","firstName","lastName"],"name":"PersonTable"},{"columns":["id","firmID","name"],"name":"AddressTable"}],"name":"default"}],"name":"sampleDB","projectCoordinates":{"versionId":"0.0.1-SNAPSHOT","groupId":"org.finos.test","artifactId":"test-project"},"id":"meta::analytics::search::transformation::test::sampleDB","type":"DatabaseStore"}');
+}
+
+function <<meta::pure::profiles::test.Test>> meta::analytics::search::transformation::test::testServiceDocumentGeneration(): Boolean[1]
+{
+  let result = meta::analytics::search::transformation::buildDocument(meta::analytics::search::transformation::test::getService(), meta::analytics::search::transformation::test::buildTestProjectCoordinates())->cast(@meta::analytics::search::metamodel::service::ServiceDocument);
+  assert($result.type == meta::analytics::search::metamodel::DocumentType.Service);
+  assert($result.id == 'meta::analytics::search::transformation::test::personDetailsService');
+  assert($result.name == '/personDetails');
+  let json = $result->alloyToJSON();
+  assert($json == '{"taggedValues":{},"executions":[{"mapping":"meta::analytics::search::transformation::test::sampleRelationalMapping","databaseColumns":[{"schema":"default","database":"sampleDB","columns":["lastName"],"table":"PersonTable"}],"classes":[{"taggedValues":{"doc.doc":"Person Details"},"package":"meta::analytics::search::transformation::test::Person","name":"Person","properties":[{"taggedValues":{"doc.doc":"lastName of the person"},"name":"lastName"}]}]}],"package":"meta::analytics::search::transformation::test","name":"\\/personDetails","description":"person details","owners":["xyz","abc"],"projectCoordinates":{"versionId":"0.0.1-SNAPSHOT","groupId":"org.finos.test","artifactId":"test-project"},"id":"meta::analytics::search::transformation::test::personDetailsService","type":"Service"}');
+}
+
+function <<meta::pure::profiles::test.Test>> meta::analytics::search::transformation::test::testPackageableFunctionDocumentGeneration(): Boolean[1]
+{
+  let result = meta::analytics::search::transformation::buildDocument(meta::analytics::search::transformation::test::testPackageableFunction(), meta::analytics::search::transformation::test::buildTestProjectCoordinates())->cast(@meta::analytics::search::metamodel::BaseRootDocument);
+  assert($result.type == meta::analytics::search::metamodel::DocumentType.Function);
+  let json = $result->alloyToJSON();
+  assert($json == '{"taggedValues":{},"package":"meta::analytics::search::transformation::test","name":"testPackageableFunction","projectCoordinates":{"versionId":"0.0.1-SNAPSHOT","groupId":"org.finos.test","artifactId":"test-project"},"id":"meta::analytics::search::transformation::test::testPackageableFunction","type":"Function"}');
+}
+
+function <<meta::pure::profiles::test.Test>> meta::analytics::search::transformation::test::testPackageableConnectionDocumentGeneration(): Boolean[1]
+{
+  let result = meta::analytics::search::transformation::buildDocument(meta::analytics::search::transformation::test::getConnectionElement()->toOne(), meta::analytics::search::transformation::test::buildTestProjectCoordinates())->cast(@meta::analytics::search::metamodel::BaseRootDocument);
+  assert($result.type == meta::analytics::search::metamodel::DocumentType.Connection);
+  let json = $result->alloyToJSON();
+  assert($json == '{"taggedValues":{},"package":"meta::analytics::search::transformation::test","name":"MyConnection","projectCoordinates":{"versionId":"0.0.1-SNAPSHOT","groupId":"org.finos.test","artifactId":"test-project"},"id":"meta::analytics::search::transformation::test::MyConnection","type":"Connection"}');
+}
+
+function <<meta::pure::profiles::test.Test>> meta::analytics::search::transformation::test::testPackageableRuntimeDocumentGeneration(): Boolean[1]
+{
+  let result = meta::analytics::search::transformation::buildDocument(meta::analytics::search::transformation::test::getPackageableElement()->at(0), meta::analytics::search::transformation::test::buildTestProjectCoordinates())->cast(@meta::analytics::search::metamodel::BaseRootDocument);
+  assert($result.type == meta::analytics::search::metamodel::DocumentType.Runtime);
+  let json = $result->alloyToJSON();
+  assert($json == '{"taggedValues":{},"package":"meta::analytics::search::transformation::test","name":"sampleRuntime","projectCoordinates":{"versionId":"0.0.1-SNAPSHOT","groupId":"org.finos.test","artifactId":"test-project"},"id":"meta::analytics::search::transformation::test::sampleRuntime","type":"Runtime"}');
+}
+
+function meta::analytics::search::transformation::test::testPackageableFunction(): PackageableElement[1]
+{
+  ^PackageableFunction<Any>(
+    name = 'testPackageableFunction',
+    package = ^Package(
+      name = 'test',
+      package = ^Package(
+        name = 'transformation',
+        package = ^Package(
+          name = 'search',
+          package = ^Package(
+            name = 'analytics',
+              package = ^Package(
+                name = 'meta',
+                package = ^Package()
+            )
+          )
+        )
+      )
+    )
+  )
+}
+
+function meta::analytics::search::transformation::test::getConnectionElement(): meta::pure::metamodel::PackageableElement[*]
+{
+   meta::legend::compileLegendGrammar('###Connection\n'+
+  'RelationalDatabaseConnection meta::analytics::search::transformation::test::MyConnection\n'+
+  '{\n'+
+    'store: store::TestDB;\n'+
+    'type: H2;\n'+
+    'specification: LocalH2\n'+
+    '{\n'+
+      'testDataSetupSqls: [];\n'+
+    '};\n'+
+    'auth: DefaultH2;\n'+
+  '}'
+  );
+}
+
+function meta::analytics::search::transformation::test::getPackageableElement(): meta::pure::metamodel::PackageableElement[*]
+{
+  meta::legend::compileLegendGrammar('###Runtime\n'+
+  'Runtime meta::analytics::search::transformation::test::sampleRuntime\n'+
+  '{\n'+
+    'mappings:\n'+
+    '[\n'+
+      'meta::analytics::search::transformation::test::sampleRelationalMapping\n'+
+    '];\n'+
+    'connections:\n'+
+    '[\n'+
+      ' meta::analytics::search::transformation::test::sampleDB:\n'+
+       '[\n'+
+        'connection_1 : #{\n' +
+                 'RelationalDatabaseConnection\n'+
+                  '{\n'+
+                    'store: meta::analytics::search::transformation::test::sampleDB;\n'+
+                    'type: H2;\n'+
+                    'specification: LocalH2\n'+
+                    '{\n'+
+                      'testDataSetupSqls: [];\n'+
+                    '};\n'+
+                    'auth: DefaultH2;\n'+
+                  '}\n' +
+            '}#\n' +
+       ']\n'+
+    '];\n'+
+  '}\n'+
+  '###Mapping\n'+
+  'Mapping meta::analytics::search::transformation::test::sampleRelationalMapping\n' +
+  '(\n'+
+  ')\n'+
+  '###Relational\n'+
+  'Database meta::analytics::search::transformation::test::sampleDB\n'+
+  '(\n'+
+  'Schema sampleSchema\n'+
+  '(\n'+
+  'Table sampleTable\n'+
+  '(\n'+
+  'id INTEGER,\n'+
+  'name VARCHAR(200)\n'+
+  ')\n'+
+  ')\n'+
+  'Table FirmTable\n'+
+  '(\n'+
+  'id INTEGER PRIMARY KEY,\n'+
+  'legalName VARCHAR(200)\n'+
+  ')\n'+
+  'Table PersonTable\n'+
+  '(\n'+
+  'id INTEGER PRIMARY KEY,\n'+
+  'firmID INTEGER,\n'+
+  'firstName VARCHAR(200),\n'+
+  'lastName VARCHAR(200)\n'+
+  ')\n'+
+  'Table AddressTable\n'+
+  '(\n'+
+  'id INTEGER PRIMARY KEY,\n'+
+  'firmID INTEGER,\n'+
+  'name VARCHAR(200)\n'+
+  ')\n'+
+
+'Join firm_person(PersonTable.firmID = FirmTable.id)\n'+
+'Join firm_address(AddressTable.firmID = FirmTable.id)\n'+
+  ')'
+  );
+}
+
+function meta::analytics::search::transformation::test::getService(): meta::legend::service::metamodel::Service[1]
+{
+  ^meta::legend::service::metamodel::Service(
+    pattern = '/personDetails',
+    owners = ['xyz', 'abc'],
+    documentation = 'person details',
+    execution = ^meta::legend::service::metamodel::PureSingleExecution
+    (
+      func = |meta::analytics::search::transformation::test::Person.all()->project([x|$x.lastName], ['Last Name']),
+      mapping = meta::analytics::search::transformation::test::sampleRelationalMapping,
+      runtime =  meta::analytics::search::transformation::test::getPackageableElement()->filter(x| $x->instanceOf(meta::pure::runtime::PackageableRuntime))->cast(@meta::pure::runtime::PackageableRuntime).runtimeValue->toOne()
+    ),
+    autoActivateUpdates = true,
+    name = 'personDetailsService',
+    package = meta::analytics::search::transformation::test
+  )
+}
+
 
 ###Relational
 Database meta::analytics::search::transformation::test::sampleDB
 (
+  include meta::analytics::search::transformation::test::sampleDBTest
+  Schema sampleSchema
+  (
+    Table sampleTable
+    (
+      id INTEGER,
+      name VARCHAR(200)
+    )
+  )
   Table FirmTable
   (
     id INTEGER PRIMARY KEY,
@@ -80,6 +273,16 @@ Database meta::analytics::search::transformation::test::sampleDB
   Join firm_address(AddressTable.firmID = FirmTable.id)
 )
 
+###Relational
+Database meta::analytics::search::transformation::test::sampleDBTest
+(
+  Table testTable
+  (
+    col1 INTEGER,
+    col2 INTEGER
+  )
+)
+
 
 ###Pure
 Enum meta::analytics::search::transformation::test::IncType
@@ -88,13 +291,13 @@ Enum meta::analytics::search::transformation::test::IncType
   LLC
 }
 
-Class meta::analytics::search::transformation::test::LegalEntity
+Class <<temporal.processingtemporal, test.Test>> {doc.doc = 'To add further details', doc.doc = 'Entity Details'} meta::analytics::search::transformation::test::LegalEntity
 {
-  legalName: String[1];
+  <<temporal.processingtemporal>> legalName: String[1];
   address: meta::analytics::search::transformation::test::Address[1];
 }
 
-Class meta::analytics::search::transformation::test::Firm extends meta::analytics::search::transformation::test::LegalEntity
+Class <<temporal.processingtemporal>> meta::analytics::search::transformation::test::Firm extends meta::analytics::search::transformation::test::LegalEntity
 {
   id: Decimal[1];
   employees: meta::analytics::search::transformation::test::Person[1..*];
@@ -102,9 +305,12 @@ Class meta::analytics::search::transformation::test::Firm extends meta::analytic
   employeeSize() {$this.employees->count()}: Number[1];
 }
 
-Class meta::analytics::search::transformation::test::Person
+
+Class {doc.doc = 'Person Details'} meta::analytics::search::transformation::test::Person
 {
+  {doc.doc = 'firstName of the person'}
   firstName: String[1];
+  {doc.doc = 'lastName of the person'}
   lastName: String[1];
 }
 
@@ -121,6 +327,7 @@ Class meta::analytics::search::transformation::test::Street extends meta::analyt
 ###Mapping
 Mapping meta::analytics::search::transformation::test::sampleRelationalMapping
 (
+  include meta::analytics::search::transformation::test::sampleMappingTest
   *meta::analytics::search::transformation::test::Firm: Relational
   {
     ~primaryKey
@@ -176,3 +383,11 @@ Mapping meta::analytics::search::transformation::test::sampleRelationalMapping
     zipcode: [meta::analytics::search::transformation::test::sampleDB]AddressTable.id
   }
 )
+
+###Mapping
+Mapping meta::analytics::search::transformation::test::sampleMappingTest
+(
+
+)
+
+
