@@ -20,6 +20,7 @@ import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalDelta;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitors;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DatasetFilterAndDeduplicator;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningConditionVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyVisitors;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
@@ -53,8 +54,8 @@ import static org.finos.legend.engine.persistence.components.common.StatisticNam
 
 class NontemporalDeltaPlanner extends Planner
 {
+    private final Dataset enrichedStagingDataset;
     private final Condition pkMatchCondition;
-    private final Condition digestDoesNotMatchCondition;
     private final Condition digestMatchCondition;
 
     private final Optional<String> deleteIndicatorField;
@@ -62,7 +63,6 @@ class NontemporalDeltaPlanner extends Planner
 
     private final Optional<Condition> deleteIndicatorIsNotSetCondition;
     private final Optional<Condition> deleteIndicatorIsSetCondition;
-    private final Optional<Condition> stagingDatasetFilterCondition;
     private final BatchStartTimestamp batchStartTimestamp;
 
     private final Optional<Condition> dataSplitInRangeCondition;
@@ -79,7 +79,6 @@ class NontemporalDeltaPlanner extends Planner
 
         // TODO validate interBatchDedup Strategies
         this.pkMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(mainDataset(), stagingDataset(), primaryKeys.toArray(new String[0]));
-        this.digestDoesNotMatchCondition = LogicalPlanUtils.getDigestDoesNotMatchCondition(mainDataset(), stagingDataset(), ingestMode().digestField());
         this.digestMatchCondition = LogicalPlanUtils.getDigestMatchCondition(mainDataset(), stagingDataset(), ingestMode().digestField());
 
         this.deleteIndicatorField = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD);
@@ -88,11 +87,13 @@ class NontemporalDeltaPlanner extends Planner
         this.deleteIndicatorIsNotSetCondition = deleteIndicatorField.map(field -> LogicalPlanUtils.getDeleteIndicatorIsNotSetCondition(stagingDataset(), field, deleteIndicatorValues));
         this.deleteIndicatorIsSetCondition = deleteIndicatorField.map(field -> LogicalPlanUtils.getDeleteIndicatorIsSetCondition(stagingDataset(), field, deleteIndicatorValues));
 
-        this.stagingDatasetFilterCondition = LogicalPlanUtils.getDatasetFilterCondition(stagingDataset());
         this.batchStartTimestamp = BatchStartTimestamp.INSTANCE;
 
         this.dataSplitInRangeCondition = ingestMode.dataSplitField().map(field -> LogicalPlanUtils.getDataSplitInRangeCondition(stagingDataset(), field));
 
+        // Perform Deduplication & Filtering of Staging Dataset
+        this.enrichedStagingDataset = ingestMode().versioningStrategy()
+            .accept(new DatasetFilterAndDeduplicator(stagingDataset(), primaryKeys));
         this.versioningCondition = ingestMode().versioningStrategy()
             .accept(new VersioningConditionVisitor(mainDataset(), stagingDataset(), false, ingestMode().digestField()));
         this.inverseVersioningCondition = ingestMode.versioningStrategy()
@@ -148,7 +149,7 @@ class NontemporalDeltaPlanner extends Planner
                 .dataset(mainDataset())
                 .condition(Exists.builder()
                     .source(Selection.builder()
-                        .source(stagingDataset())
+                        .source(this.enrichedStagingDataset)
                         .addAllFields(stagingFields)
                         .condition(And.builder().addConditions(this.pkMatchCondition, this.digestMatchCondition, this.deleteIndicatorIsSetCondition.get()).build())
                         .build())
@@ -178,19 +179,14 @@ class NontemporalDeltaPlanner extends Planner
                 FieldValue.builder().datasetRef(stagingDataset().datasetReference()).fieldName(field.fieldName()).build()))
             .collect(Collectors.toList());
 
-        Dataset stagingDataset = stagingDataset();
+        Dataset stagingDataset = this.enrichedStagingDataset;
 
         if (ingestMode().dataSplitField().isPresent())
         {
             keyValuePairs.removeIf(field -> field.key().fieldName().equals(ingestMode().dataSplitField().get()));
             List<Value> fieldsToSelect = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
             LogicalPlanUtils.removeField(fieldsToSelect, ingestMode().dataSplitField().get());
-            stagingDataset = Selection.builder().source(stagingDataset()).condition(this.dataSplitInRangeCondition).addAllFields(fieldsToSelect).alias(stagingDataset().datasetReference().alias()).build();
-        }
-        if (this.stagingDatasetFilterCondition.isPresent())
-        {
-            List<Value> fieldsToSelect = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
-            stagingDataset = Selection.builder().source(stagingDataset()).condition(this.stagingDatasetFilterCondition).addAllFields(fieldsToSelect).alias(stagingDataset().datasetReference().alias()).build();
+            stagingDataset = Selection.builder().source(stagingDataset).condition(this.dataSplitInRangeCondition).addAllFields(fieldsToSelect).alias(stagingDataset().datasetReference().alias()).build();
         }
 
         Condition versioningCondition;
@@ -234,7 +230,7 @@ class NontemporalDeltaPlanner extends Planner
     private Update getUpdateOperation()
     {
         Condition joinCondition = And.builder().addConditions(this.pkMatchCondition, this.versioningCondition).build();
-        Dataset stagingDataset = stagingDataset();
+        Dataset stagingDataset = this.enrichedStagingDataset;
 
         List<Pair<FieldValue, Value>> keyValuePairs = stagingDataset().schemaReference().fieldValues()
             .stream()
@@ -253,11 +249,7 @@ class NontemporalDeltaPlanner extends Planner
         if (ingestMode().dataSplitField().isPresent())
         {
             keyValuePairs.removeIf(field -> field.key().fieldName().equals(ingestMode().dataSplitField().get()));
-            stagingDataset = Selection.builder().source(stagingDataset()).condition(this.dataSplitInRangeCondition).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).alias(stagingDataset().datasetReference().alias()).build();
-        }
-        if (this.stagingDatasetFilterCondition.isPresent())
-        {
-            stagingDataset = Selection.builder().source(stagingDataset()).condition(this.stagingDatasetFilterCondition).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).alias(stagingDataset().datasetReference().alias()).build();
+            stagingDataset = Selection.builder().source(stagingDataset).condition(this.dataSplitInRangeCondition).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).alias(stagingDataset().datasetReference().alias()).build();
         }
         Update update = UpdateAbstract.of(mainDataset(), stagingDataset, keyValuePairs, joinCondition);
 
@@ -297,10 +289,6 @@ class NontemporalDeltaPlanner extends Planner
             LogicalPlanUtils.removeField(fieldsToInsert, ingestMode().dataSplitField().get());
             selectCondition = And.builder().addConditions(this.dataSplitInRangeCondition.get(), notExistInSinkCondition).build();
         }
-        if (this.stagingDatasetFilterCondition.isPresent())
-        {
-            selectCondition = And.builder().addConditions(this.stagingDatasetFilterCondition.get(), notExistInSinkCondition).build();
-        }
 
         if (ingestMode().auditing().accept(AUDIT_ENABLED))
         {
@@ -312,7 +300,7 @@ class NontemporalDeltaPlanner extends Planner
         {
             fieldsToSelect = LogicalPlanUtils.ALL_COLUMNS();
         }
-        Dataset selectStage = Selection.builder().source(stagingDataset()).condition(selectCondition).addAllFields(fieldsToSelect).build();
+        Dataset selectStage = Selection.builder().source(this.enrichedStagingDataset).condition(selectCondition).addAllFields(fieldsToSelect).build();
         return Insert.of(mainDataset(), selectStage, fieldsToInsert);
     }
 
@@ -380,7 +368,7 @@ class NontemporalDeltaPlanner extends Planner
                                 .source(Selection.builder()
                                         .source(stagingDataset())
                                         .addAllFields(stagingFields)
-                                        .condition(And.builder().addConditions(this.pkMatchCondition, this.inverseVersioningCondition, this.deleteIndicatorIsSetCondition.get()).build())
+                                        .condition(And.builder().addConditions(this.pkMatchCondition, this.digestMatchCondition, this.deleteIndicatorIsSetCondition.get()).build())
                                         .build())
                                 .build()))).build();
 
