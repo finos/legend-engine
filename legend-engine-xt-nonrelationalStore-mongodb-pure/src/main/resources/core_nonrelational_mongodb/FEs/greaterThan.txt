@@ -1,0 +1,146 @@
+//Person.all()->from($compiledMapping, $compiledRuntime)->filter(x|  $x.age > 29)->graphFetch($personTree)->serialize($personTree)
+
+Anonymous_StripedId instance SimpleFunctionExpression
+    func(Property):
+        [X] filter_T_MANY__Function_1__T_MANY_ instance NativeFunction
+    functionName(Property):
+        filter instance String
+    parametersValues(Property):
+        Anonymous_StripedId instance StoreMappingRoutedValueSpecification
+            value(Property):
+                Anonymous_StripedId instance SimpleFunctionExpression
+                    func(Property):
+                        [X] getAll_Class_1__T_MANY_ instance NativeFunction
+                    functionName(Property):
+                        getAll instance String
+                    parametersValues(Property):
+                        Anonymous_StripedId instance StoreMappingRoutedValueSpecification
+                            value(Property):
+                                Anonymous_StripedId instance InstanceValue
+                                    values(Property):
+                                        [X] Person instance Class
+        Anonymous_StripedId instance FunctionRoutedValueSpecification
+            originalFunction(Property):
+                go$1$system$imports$import__welcome_pure_1$2 instance LambdaFunction
+                    expressionSequence(Property):
+                        Anonymous_StripedId instance SimpleFunctionExpression
+                            func(Property):
+                                [X] greaterThan_Number_$0_1$__Number_1__Boolean_1_ instance ConcreteFunctionDefinition
+                            functionName(Property):
+                                greaterThan instance String
+                            parametersValues(Property):
+                                Anonymous_StripedId instance SimpleFunctionExpression
+                                    func(Property):
+                                        age instance Property
+                                            aggregation(Property):
+                                                None instance AggregationKind
+                                                    name(Property):
+                                                        None instance String
+                                            name(Property):
+                                                age instance String
+                                    parametersValues(Property):
+                                        Anonymous_StripedId instance VariableExpression
+                                            name(Property):
+                                                x instance String
+                                Anonymous_StripedId instance InstanceValue
+                                    values(Property):
+                                        29 instance Integer
+                                Anonymous_StripedId instance NonExecutableValueSpecification
+                                    values(Property):
+                                        Anonymous_StripedId instance StoreMappingRoutedValueSpecification
+                                            value(Property):
+                                                Anonymous_StripedId instance SimpleFunctionExpression
+                                                    func(Property):
+                                                        [X] getAll_Class_1__T_MANY_ instance NativeFunction
+                                                    functionName(Property):
+                                                        getAll instance String
+                                                    genericType(Property):
+                                                         instance GenericType
+                                                            rawType(Property):
+                                                                [X] Person instance Class
+                                                    importGroup(Property):
+                                                        [X] import__welcome_pure_1 instance ImportGroup
+                                                    multiplicity(Property):
+                                                        [X] ZeroMany instance PackageableMultiplicity
+                                                    parametersValues(Property):
+                                                        Anonymous_StripedId instance StoreMappingRoutedValueSpecification
+                                                            value(Property):
+                                                                Anonymous_StripedId instance NonExecutableValueSpecification
+                                                                    genericType(Property):
+                                                                         instance GenericType
+                                                                            rawType(Property):
+                                                                                [X] InstanceValue instance Class
+                                                                    multiplicity(Property):
+                                                                        [X] PureOne instance PackageableMultiplicity
+                                                                    values(Property):
+                                                                        Anonymous_StripedId instance InstanceValue
+                                                                            genericType(Property):
+                                                                                [>9]  instance GenericType
+                                                                            multiplicity(Property):
+                                                                                [X] PureOne instance PackageableMultiplicity
+                                                                            usageContext(Property):
+                                                                                [>9] Anonymous_StripedId instance ParameterValueSpecificationContext
+                                                                            values(Property):
+                                                                                [~>] Person instance Class
+            value(Property):
+                Anonymous_StripedId instance InstanceValue
+                    values(Property):
+                        Anonymous_StripedId instance LambdaFunction
+                            expressionSequence(Property):
+                                Anonymous_StripedId instance SimpleFunctionExpression
+                                    func(Property):
+                                        [X] and_Boolean_1__Boolean_1__Boolean_1_ instance NativeFunction
+                                    functionName(Property):
+                                        and instance String
+                                    parametersValues(Property):
+                                        Anonymous_StripedId instance SimpleFunctionExpression
+                                            func(Property):
+                                                [X] isNotEmpty_Any_$0_1$__Boolean_1_ instance ConcreteFunctionDefinition
+                                            functionName(Property):
+                                                isNotEmpty instance String
+                                            parametersValues(Property):
+                                                Anonymous_StripedId instance StoreMappingRoutedValueSpecification
+                                                    value(Property):
+                                                        Anonymous_StripedId instance SimpleFunctionExpression
+                                                            func(Property):
+                                                                age instance Property
+                                                                    aggregation(Property):
+                                                                        None instance AggregationKind
+                                                                            name(Property):
+                                                                                [>9] None instance String
+                                                                    name(Property):
+                                                                        age instance String
+                                        Anonymous_StripedId instance SimpleFunctionExpression
+                                            func(Property):
+                                                [X] greaterThan_Number_1__Number_1__Boolean_1_ instance ConcreteFunctionDefinition
+                                            functionName(Property):
+                                                greaterThan instance String
+                                            parametersValues(Property):
+                                                Anonymous_StripedId instance StoreMappingRoutedValueSpecification
+                                                    value(Property):
+                                                        Anonymous_StripedId instance SimpleFunctionExpression
+                                                            func(Property):
+                                                                [X] toOne_T_MANY__T_1_ instance NativeFunction
+                                                            functionName(Property):
+                                                                toOne instance String
+                                                            parametersValues(Property):
+                                                                Anonymous_StripedId instance StoreMappingRoutedValueSpecification
+                                                                    value(Property):
+                                                                        Anonymous_StripedId instance SimpleFunctionExpression
+                                                                            func(Property):
+                                                                                [>9] age instance Property
+                                                                            genericType(Property):
+                                                                                [>9]  instance GenericType
+                                                                            importGroup(Property):
+                                                                                [X] import__welcome_pure_1 instance ImportGroup
+                                                                            multiplicity(Property):
+                                                                                [X] ZeroOne instance PackageableMultiplicity
+                                                                            parametersValues(Property):
+                                                                                [>9] Anonymous_StripedId instance StoreMappingRoutedValueSpecification
+                                                                            propertyName(Property):
+                                                                                [>9] go$1$system$imports$import__welcome_pure_1$1 instance InstanceValue
+                                                                            usageContext(Property):
+                                                                                [>9] Anonymous_StripedId instance ParameterValueSpecificationContext
+                                                Anonymous_StripedId instance InstanceValue
+                                                    values(Property):
+                                                        29 instance Integer

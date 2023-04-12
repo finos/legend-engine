@@ -1,0 +1,20 @@
+firm.legalName
+
+Anonymous_StripedId instance SimpleFunctionExpression
+    parametersValues(Property):
+        Anonymous_StripedId instance StoreMappingRoutedValueSpecification
+            value(Property):
+                Anonymous_StripedId instance SimpleFunctionExpression
+                    func(Property):
+                        firm instance Property
+        Anonymous_StripedId instance StoreMappingRoutedValueSpecification
+            value(Property):
+                Anonymous_StripedId instance FunctionRoutedValueSpecification
+                    originalFunction(Property):
+                        go$1$system$imports$import__welcome_pure_1$2 instance LambdaFunction
+                            expressionSequence(Property):
+                                Anonymous_StripedId instance SimpleFunctionExpression
+                                    func(Property):
+                                        legalName instance Property
+                                            name(Property):
+                                                legalName instance String
