@@ -260,7 +260,7 @@ class NontemporalDeltaPlanner extends Planner
     insert into main_table (staging_columns)
     (select staging_columns from stage_table
     where not exists
-    (select * from main_table where digest_match and pks match )
+    (select * from main_table where pks match)
     */
     private Insert getInsertOperation()
     {
@@ -277,7 +277,7 @@ class NontemporalDeltaPlanner extends Planner
         Condition notExistInSinkCondition = Not.of(Exists.of(
             Selection.builder()
                 .source(mainDataset())
-                .condition(And.builder().addConditions(this.pkMatchCondition, this.inverseVersioningCondition).build())
+                .condition(this.pkMatchCondition)
                 .addAllFields(LogicalPlanUtils.ALL_COLUMNS())
                 .build())
         );
@@ -296,7 +296,7 @@ class NontemporalDeltaPlanner extends Planner
             fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(auditField).build());
             fieldsToSelect.add(this.batchStartTimestamp);
         }
-        else if (!ingestMode().dataSplitField().isPresent())
+        else if (!ingestMode().dataSplitField().isPresent() && !this.deleteIndicatorField.isPresent())
         {
             fieldsToSelect = LogicalPlanUtils.ALL_COLUMNS();
         }
