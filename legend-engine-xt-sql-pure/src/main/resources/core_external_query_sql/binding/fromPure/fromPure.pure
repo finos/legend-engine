@@ -275,7 +275,11 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   if ($allGroupByColumns->isEmpty() && $aggregations->isEmpty(),
                             | $rename,
-                            | appendTdsFunc($rename, groupBy_TabularDataSet_1__String_MANY__AggregateValue_MANY__TabularDataSet_1_, [list($allGroupByColumns), list($aggregations)]));
+                            | if ($allGroupByColumns->isNotEmpty() && $aggregations->isEmpty(),
+                                | 
+                                  let restrict = processRestrict($allGroupByColumns, ^$context(expression = $rename));
+                                  appendTdsFunc($restrict, distinct_TabularDataSet_1__TabularDataSet_1_, []);,
+                                | appendTdsFunc($rename, groupBy_TabularDataSet_1__String_MANY__AggregateValue_MANY__TabularDataSet_1_, [list($allGroupByColumns), list($aggregations)])));
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processAggregationLambda(functionCall:FunctionCall[1], type:Type[1], context:SqlTransformContext[1]):LambdaFunction<Any>[1]
