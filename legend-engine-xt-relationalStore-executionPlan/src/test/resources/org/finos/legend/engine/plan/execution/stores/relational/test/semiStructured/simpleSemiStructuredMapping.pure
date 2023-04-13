@@ -87,6 +87,23 @@ Database simple::store::H2DB
   Join manager(PERSON_SCHEMA.PERSON_TABLE.MANAGERID = {target}.ID)
 )
 
+Database simple::store::MemSQLDB
+(
+  Schema PERSON_SCHEMA
+  (
+    Table PERSON_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100),
+      LASTNAME VARCHAR(100),
+      FIRM_DETAILS JSON,
+      MANAGERID INTEGER
+    )
+  )
+
+  Join manager(PERSON_SCHEMA.PERSON_TABLE.MANAGERID = {target}.ID)
+)
+
 
 ###ExternalFormat
 Binding simple::store::FirmBinding
@@ -113,6 +130,22 @@ Mapping simple::mapping::SnowflakeMapping
     lastName: [simple::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.LASTNAME,
     firm: Binding simple::store::FirmBinding : [simple::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.FIRM_DETAILS,
     manager[simple_model_Person]: [simple::store::SnowflakeDB]@manager
+  }
+)
+
+Mapping simple::mapping::MemSQLMapping
+(
+  simple::model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [simple::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.ID
+    )
+    ~mainTable [simple::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE
+    firstName: [simple::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.FIRSTNAME,
+    lastName: [simple::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.LASTNAME,
+    firm: Binding simple::store::FirmBinding : [simple::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.FIRM_DETAILS,
+    manager[simple_model_Person]: [simple::store::MemSQLDB]@manager
   }
 )
 
@@ -147,6 +180,28 @@ Runtime simple::runtime::SnowflakeRuntime
                 RelationalDatabaseConnection {
                     store: simple::store::SnowflakeDB;
                     type: Snowflake;
+                    specification: LocalH2{};
+                    auth: Test;
+                }
+            }#
+        ]
+    ];
+}
+
+Runtime simple::runtime::MemSQLRuntime
+{
+    mappings :
+    [
+        simple::mapping::MemSQLMapping
+    ];
+    connections :
+    [
+        simple::store::MemSQLDB :
+        [
+            connection_1 : #{
+                RelationalDatabaseConnection {
+                    store: simple::store::MemSQLDB;
+                    type: MemSQL;
                     specification: LocalH2{};
                     auth: Test;
                 }

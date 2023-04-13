@@ -177,6 +177,20 @@ public class TestRelationalMappingGrammarRoundtrip extends TestGrammarRoundtrip.
     }
 
     @Test
+    public void testJsonColumn()
+    {
+        test("###Relational\n" +
+                "Database simple::DB\n" +
+                "(\n" +
+                "  Table personTable\n" +
+                "  (\n" +
+                "    FIRSTNAME VARCHAR(10),\n" +
+                "    FIRM JSON\n" +
+                "  )\n" +
+                ")\n");
+    }
+
+    @Test
     public void testRelationalPropertyMappingWithBindingTransformer()
     {
         test("###Mapping\n" +

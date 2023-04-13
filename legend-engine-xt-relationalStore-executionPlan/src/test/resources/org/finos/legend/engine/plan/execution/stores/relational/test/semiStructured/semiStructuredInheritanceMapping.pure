@@ -72,6 +72,21 @@ Database inheritance::store::SnowflakeDB
   )
 )
 
+Database inheritance::store::MemSQLDB
+(
+  Schema PERSON_SCHEMA
+  (
+    Table PERSON_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100),
+      LASTNAME VARCHAR(100),
+      FIRM_DETAILS JSON,
+      MANAGERID INTEGER
+    )
+  )
+)
+
 Database inheritance::store::H2DB
 (
   Schema PERSON_SCHEMA
@@ -119,6 +134,21 @@ Mapping inheritance::mapping::SnowflakeMapping
   }
 )
 
+Mapping inheritance::mapping::MemSQLMapping
+(
+  inheritance::model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [inheritance::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.ID
+    )
+    ~mainTable [inheritance::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE
+    firstName: [inheritance::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.FIRSTNAME,
+    lastName: [inheritance::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.LASTNAME,
+    firm: Binding inheritance::store::FirmBinding : [inheritance::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.FIRM_DETAILS
+  }
+)
+
 Mapping inheritance::mapping::H2Mapping
 (
   inheritance::model::Person: Relational
@@ -149,6 +179,28 @@ Runtime inheritance::runtime::SnowflakeRuntime
                 RelationalDatabaseConnection {
                     store: inheritance::store::SnowflakeDB;
                     type: Snowflake;
+                    specification: LocalH2{};
+                    auth: Test;
+                }
+            }#
+        ]
+    ];
+}
+
+Runtime inheritance::runtime::MemSQLRuntime
+{
+    mappings :
+    [
+        inheritance::mapping::MemSQLMapping
+    ];
+    connections :
+    [
+        inheritance::store::MemSQLDB :
+        [
+            connection_1 : #{
+                RelationalDatabaseConnection {
+                    store: inheritance::store::MemSQLDB;
+                    type: MemSQL;
                     specification: LocalH2{};
                     auth: Test;
                 }
