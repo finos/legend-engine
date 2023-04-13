@@ -15,35 +15,24 @@
 package org.finos.legend.engine.plan.execution.stores.inMemory.union;
 
 import org.eclipse.collections.api.factory.Lists;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.concurrent.TestConcurrentExecutionNodeExecution;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamToPureFormatSerializer;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
-import org.finos.legend.engine.plan.generation.PlanGenerator;
-import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
-import org.finos.legend.engine.plan.platform.PlanPlatform;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.url.NamedInputStream;
 import org.finos.legend.engine.shared.core.url.NamedInputStreamProvider;
-import org.finos.legend.pure.generated.core_java_platform_binding_legendJavaPlatformBinding_store_m2m_m2mLegendJavaPlatformBindingExtension;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static org.finos.legend.engine.plan.execution.stores.inMemory.utils.TestUtils.buildPlanForQuery;
+import static org.finos.legend.engine.plan.execution.stores.inMemory.utils.TestUtils.readGrammarFromPureFile;
 
 public class TestUnion
 {
@@ -102,39 +91,6 @@ public class TestUnion
         String expected = "[{\"tradeId\":1,\"quantity\":100,\"product\":{\"productId\":\"30\",\"productName\":\"Product A\",\"description\":\"\"},\"trader\":{\"kerberos\":\"abc\",\"firstName\":\"F_Name_1\",\"lastName\":\"L_Name_1\"}},{\"tradeId\":2,\"quantity\":200,\"product\":{\"productId\":\"31\",\"productName\":\"Product B\",\"description\":\"\"},\"trader\":{\"kerberos\":\"abc\",\"firstName\":\"F_Name_1\",\"lastName\":\"L_Name_1\"}},{\"tradeId\":3,\"quantity\":300,\"product\":{\"productId\":\"30\",\"productName\":\"Product A\",\"description\":\"\"},\"trader\":{\"kerberos\":\"abc\",\"firstName\":\"F_Name_2\",\"lastName\":\"L_Name_2\"}},{\"tradeId\":4,\"quantity\":400,\"product\":{\"productId\":\"31\",\"productName\":\"Product B\",\"description\":\"\"},\"trader\":{\"kerberos\":\"abc\",\"firstName\":\"F_Name_2\",\"lastName\":\"L_Name_2\"}},{\"tradeId\":5,\"quantity\":100,\"product\":{\"productId\":\"30\",\"productName\":\"Product A\",\"description\":\"Desc A\"},\"trader\":{\"kerberos\":\"abc\",\"firstName\":\"F_Name_1\",\"lastName\":\"L_Name_1\"}},{\"tradeId\":6,\"quantity\":200,\"product\":{\"productId\":\"31\",\"productName\":\"Product B\",\"description\":\"Desc B\"},\"trader\":{\"kerberos\":\"abc\",\"firstName\":\"F_Name_1\",\"lastName\":\"L_Name_1\"}},{\"tradeId\":7,\"quantity\":300,\"product\":{\"productId\":\"30\",\"productName\":\"Product A\",\"description\":\"Desc C\"},\"trader\":{\"kerberos\":\"abc\",\"firstName\":\"F_Name_2\",\"lastName\":\"L_Name_2\"}},{\"tradeId\":8,\"quantity\":400,\"product\":{\"productId\":\"31\",\"productName\":\"Product B\",\"description\":\"Desc D\"},\"trader\":{\"kerberos\":\"abc\",\"firstName\":\"F_Name_2\",\"lastName\":\"L_Name_2\"}}]";
 
         assertResults(TestConcurrentExecutionNodeExecution.executePlanConcurrently(executeArgs, 10, 1, 1, "[Running, pool size = 2, active threads = 0, queued tasks = 0, completed tasks = 2]"), expected);
-    }
-
-    private static SingleExecutionPlan buildPlanForQuery(String grammar, String mapping, String runtime)
-    {
-        PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(grammar);
-        PureModel pureModel = org.finos.legend.engine.language.pure.compiler.Compiler.compile(contextData, null, null);
-
-        Function queryFunctionExpressions = contextData.getElementsOfType(Function.class).get(0);
-
-        return PlanGenerator.generateExecutionPlan(
-                HelperValueSpecificationBuilder.buildLambda(((Lambda) queryFunctionExpressions.body.get(0)).body, ((Lambda) queryFunctionExpressions.body.get(0)).parameters, pureModel.getContext()),
-                pureModel.getMapping(mapping),
-                pureModel.getRuntime(runtime),
-                null,
-                pureModel,
-                "vX_X_X",
-                PlanPlatform.JAVA,
-                null,
-                core_java_platform_binding_legendJavaPlatformBinding_store_m2m_m2mLegendJavaPlatformBindingExtension.Root_meta_pure_mapping_modelToModel_executionPlan_platformBinding_legendJava_inMemoryExtensionsWithLegendJavaPlatformBinding__Extension_MANY_(pureModel.getExecutionSupport()),
-                LegendPlanTransformers.transformers
-        );
-    }
-
-    private static String readGrammarFromPureFile(String path)
-    {
-        try (BufferedReader buffer = new BufferedReader(new InputStreamReader(TestUnion.class.getResourceAsStream(path))))
-        {
-            return buffer.lines().collect(Collectors.joining("\n"));
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
     }
 
     private void assertResults(List<Result> results, String expectedResult)

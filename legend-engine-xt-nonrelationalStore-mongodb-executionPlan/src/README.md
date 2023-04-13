@@ -23,7 +23,7 @@
     - Click "Apply"
 - Run MongoTestServerInvoker.java
   - By running this, a dockerized mongo db spins up, and contains the data from this file: src/test/resources/mongoData/person.json
-  - After running the MongoTestServerInvoker, in the console you will see the Running port. You will need to use this port when running the execute
+  - After running the MongoTestServerInvoker, in the console you will see the Running port. You will need to use this port when running the execute function in the welcome.pure
 - Use the welcome.pure pasted on the section below to execute the query. Change the port variable on welcome.pure with the port that the MongoTestServerInvoker generated on the previous step
 
 #### Welcome.pure
@@ -69,9 +69,10 @@
         $personQuery,
         [],
         $executionContext,
-        meta::external::store::mongodb::extension::mongoDBExtensions()->concatenate(meta::external::format::json::extension::jsonSchemaFormatExtension())
-      )->meta::json::parseJSON()->meta::json::toPrettyJSONString();
-      println($result);
+        meta::external::store::mongodb::executionPlan::platformBinding::legendJava::mongoDBLegendJavaPlatformBindingExtensions()
+      );
+      println($result->meta::json::parseJSON()->meta::json::toPrettyJSONString());
+
     }
 </div>
 </div>

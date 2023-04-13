@@ -236,6 +236,12 @@ public class TestSQLRoundTrip
         check("SELECT *, ROW_NUMBER() OVER (PARTITION BY group ORDER BY price ASC) FROM table");
     }
 
+    @Test
+    public void testExtract()
+    {
+        check("SELECT EXTRACT(DOW FROM Date) FROM table");
+    }
+
     private void fail(String sql, int start, int end, String message)
     {
         try

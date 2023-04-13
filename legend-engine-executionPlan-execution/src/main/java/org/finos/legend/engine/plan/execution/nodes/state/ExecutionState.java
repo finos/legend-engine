@@ -35,6 +35,7 @@ import org.finos.legend.engine.plan.execution.result.graphFetch.GraphObjectsBatc
 import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
+import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.pac4j.core.profile.CommonProfile;
 
@@ -68,7 +69,7 @@ public class ExecutionState
 
     public final List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> extraNodeExecutors;
     public final List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> extraSequenceNodeExecutors;
-    public String sessionID;
+    public RequestContext requestContext;
     private final CredentialProviderProvider credentialProviderProvider;
 
     public ExecutionState(ExecutionState state)
@@ -94,16 +95,16 @@ public class ExecutionState
         List<ExecutionExtension> extensions = ExecutionExtensionLoader.extensions();
         this.extraNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraNodeExecutors);
         this.extraSequenceNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraSequenceNodeExecutors);
-        this.sessionID = state.sessionID;
+        this.requestContext = state.requestContext;
         this.credentialProviderProvider = state.credentialProviderProvider;
     }
 
     public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed, long graphFetchBatchMemoryLimit)
     {
-        this(res, templateFunctions, extraStates, isJavaCompilationAllowed, graphFetchBatchMemoryLimit, null, null);
+        this(res, templateFunctions, extraStates, isJavaCompilationAllowed, graphFetchBatchMemoryLimit, new RequestContext(), null);
     }
 
-    public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed, long graphFetchBatchMemoryLimit, String sessionID, CredentialProviderProvider credentialProviderProvider)
+    public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed, long graphFetchBatchMemoryLimit, RequestContext requestContext, CredentialProviderProvider credentialProviderProvider)
     {
         this.inAllocation = false;
         this.inLake = false;
@@ -117,7 +118,7 @@ public class ExecutionState
         List<ExecutionExtension> extensions = ExecutionExtensionLoader.extensions();
         this.extraNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraNodeExecutors);
         this.extraSequenceNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraSequenceNodeExecutors);
-        this.sessionID = sessionID;
+        this.requestContext = requestContext;
         this.credentialProviderProvider = credentialProviderProvider;
     }
 
@@ -136,7 +137,7 @@ public class ExecutionState
         Map<String, Result> resCopy = Maps.mutable.ofMap(this.res);
         List<? extends String> templateFunctionsCopy = Lists.mutable.ofAll(this.templateFunctions);
         List<? extends StoreExecutionState> extraStatesCopy = this.states.values().stream().map(StoreExecutionState::copy).collect(Collectors.toList());
-        ExecutionState copy = new ExecutionState(resCopy, templateFunctionsCopy, extraStatesCopy, this.isJavaCompilationAllowed, this.graphFetchBatchMemoryLimit, this.sessionID, this.credentialProviderProvider);
+        ExecutionState copy = new ExecutionState(resCopy, templateFunctionsCopy, extraStatesCopy, this.isJavaCompilationAllowed, this.graphFetchBatchMemoryLimit, this.requestContext, this.credentialProviderProvider);
 
         copy.activities = Lists.mutable.withAll(this.activities);
         copy.allocationNodeName = this.allocationNodeName;
@@ -151,6 +152,7 @@ public class ExecutionState
         copy.graphFetchCaches = null;   // Explicitly making this null, to prevent conflicts during concurrent executions
         copy.javaCompiler = this.javaCompiler;
         copy.topSpan = this.topSpan;
+        copy.requestContext = this.requestContext;
         return copy;
     }
 
@@ -287,14 +289,14 @@ public class ExecutionState
         return Collections.unmodifiableList(this.templateFunctions);
     }
 
-    public String getSessionID()
+    public RequestContext getRequestContext()
     {
-        return sessionID;
+        return requestContext;
     }
 
-    public void setSessionID(String sessionID)
+    public void setRequestContext(RequestContext requestContext)
     {
-        this.sessionID = sessionID;
+        this.requestContext = requestContext;
     }
 
     public CredentialProviderProvider getCredentialProviderProvider()

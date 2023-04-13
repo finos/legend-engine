@@ -108,7 +108,8 @@ Class meta::pure::executionPlan::platformBinding::localBinding::LocalPlatformBin
 function meta::pure::executionPlan::platformBinding::localBinding::bindTestPlanToPlatformLocally(plan: ExecutionPlan[1], extensions: Extension[*]): ExecutionPlan[1]
 {
    let localPlatformBinderFunctions = LocalPlatformBinding->stereotype('TestPlanBinder').modelElements->cast(@ConcreteFunctionDefinition<{->LocalPlatformBinder[1]}>);
-   let filtered = $localPlatformBinderFunctions->filter(f | $f->eval().overrides->containsAll($localPlatformBinderFunctions->remove($f)));
+   let overridenBinderFunctions     = $localPlatformBinderFunctions->map(f | $f->eval().overrides)->removeDuplicates();
+   let filtered                     = $localPlatformBinderFunctions->filter(f | !$f->in($overridenBinderFunctions));
    assert($filtered->size() == 1, 'Did not find a local platform binder which overrides all other platform binders in: ' + $localPlatformBinderFunctions->map(x | $x->elementToPath())->joinStrings('[', ', ', ']'));
 
    $filtered->toOne()->eval().bindingFunction->eval($plan, $extensions);

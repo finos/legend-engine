@@ -41,6 +41,10 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::authentic
                       keyName = $a.keyName,
                       value = $a.value->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::authentication::transformSecretSpecification()
                 ),
+      k:meta::pure::runtime::connection::authentication::KerberosAuthenticationSpecification [1] |
+                      ^meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::KerberosAuthenticationSpecification(
+                            _type = 'kerberos'
+                 ),
       other: meta::pure::runtime::connection::authentication::AuthenticationSpecification[1] |
                fail('Unsupported AuthenticationSpecification. TODO - epsstan');
                ^meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::AuthenticationSpecification(

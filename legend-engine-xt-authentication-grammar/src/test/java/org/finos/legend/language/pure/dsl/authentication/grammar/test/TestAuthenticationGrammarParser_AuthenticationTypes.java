@@ -54,6 +54,18 @@ public class TestAuthenticationGrammarParser_AuthenticationTypes extends TestGra
     }
 
     @Test
+    public void kerberosAuthentication()
+    {
+        PureModelContextData test = test("###AuthenticationDemo\n" +
+                "import test::*;\n" +
+                "AuthenticationDemo demo::demo1\n" +
+                "{\n" +
+                "  authentication: # Kerberos {\n" +
+                "  }#;\n" +
+                "}\n");
+    }
+
+    @Test
     public void apiTokenAuthentication()
     {
         PureModelContextData test = test("###AuthenticationDemo\n" +
@@ -66,7 +78,7 @@ public class TestAuthenticationGrammarParser_AuthenticationTypes extends TestGra
                 "    value: PropertiesFileSecret\n" +
                 "    {\n" +
                 "      propertyName: 'property1';\n" +
-                "    }\n" +
+                "    };\n" +
                 "  }#;\n" +
                 "}\n");
     }
@@ -83,11 +95,11 @@ public class TestAuthenticationGrammarParser_AuthenticationTypes extends TestGra
                 "    privateKey: PropertiesFileSecret\n" +
                 "    {\n" +
                 "      propertyName: 'property1';\n" +
-                "    }\n" +
+                "    };\n" +
                 "    passphrase: PropertiesFileSecret\n" +
                 "    {\n" +
                 "      propertyName: 'property1';\n" +
-                "    }\n" +
+                "    };\n" +
                 "  }#;\n" +
                 "}\n");
     }
@@ -111,11 +123,11 @@ public class TestAuthenticationGrammarParser_AuthenticationTypes extends TestGra
                 "           accessKeyId: PropertiesFileSecret\n" +
                 "           {\n" +
                 "              propertyName: 'property1';\n" +
-                "           }\n" +
+                "           };\n" +
                 "           secretAccessKey: PropertiesFileSecret\n" +
                 "           {\n" +
                 "              propertyName: 'property1';\n" +
-                "           }\n" +
+                "           };\n" +
                 "      }" +
                 "    }\n" +
                 "    workload: GCPWorkload\n" +

@@ -19,6 +19,7 @@ import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.utility.Iterate;
+import org.finos.legend.engine.external.format.flatdata.driver.spi.FlatDataDriverDescription;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
 import org.finos.legend.engine.generation.DataSpaceAnalyticsArtifactGenerationExtension;
@@ -91,6 +92,12 @@ public class TestExtensions
     public void testExpectedExternalFormatExtensionsArePresent()
     {
         assertHasExtensions(getExpectedExternalFormatExtensions(), ExternalFormatExtension.class);
+    }
+
+    @Test
+    public void testFlatDataDriverDescription()
+    {
+        assertHasExtensions(getExpectedFlatDataDriverDescriptionExtensions(), FlatDataDriverDescription.class);
     }
 
     @Test
@@ -320,6 +327,7 @@ public class TestExtensions
         return Lists.mutable.<Class<? extends PlanGeneratorExtension>>empty()
                 .with(org.finos.legend.engine.plan.generation.extension.LegendPlanGeneratorExtension.class)
                 .with(org.finos.legend.engine.language.stores.elasticsearch.v7.plan.generation.ElasticsearchPlanGeneratorExtension.class)
+                .with(org.finos.legend.engine.language.pure.grammar.integration.plan.MongoDBPlanGeneratorExtension.class)
                 ;
     }
 
@@ -334,6 +342,20 @@ public class TestExtensions
                 .with(org.finos.legend.engine.query.graphQL.api.format.GraphQLFormatExtension.class)
                 .with(org.finos.legend.engine.query.graphQL.api.format.GraphQLSDLFormatExtension.class)
                 .with(org.finos.legend.engine.external.format.daml.DamlFormatExtension.class);
+    }
+
+    protected Iterable<? extends Class<? extends FlatDataDriverDescription>> getExpectedFlatDataDriverDescriptionExtensions()
+    {
+        // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
+        return Lists.mutable.<Class<? extends FlatDataDriverDescription>>empty()
+                .with(org.finos.legend.engine.external.format.flatdata.driver.core.DelimitedWithHeadingsDriverDescription.class)
+                .with(org.finos.legend.engine.external.format.flatdata.driver.core.DelimitedWithoutHeadingsDriverDescription.class)
+                .with(org.finos.legend.engine.external.format.flatdata.driver.core.FixedWidthDriverDescription.class)
+                .with(org.finos.legend.engine.external.format.flatdata.driver.core.ImmaterialLinesDriverDescription.class)
+                .with(org.finos.legend.engine.external.format.flatdata.driver.bloomberg.BloombergActionsDriverDescription.class)
+                .with(org.finos.legend.engine.external.format.flatdata.driver.bloomberg.BloombergDataDriverDescription.class)
+                .with(org.finos.legend.engine.external.format.flatdata.driver.bloomberg.BloombergExtendActionDriverDescription.class)
+                .with(org.finos.legend.engine.external.format.flatdata.driver.bloomberg.BloombergMetadataDriverDescription.class);
     }
 
     protected Iterable<? extends Class<? extends ArtifactGenerationExtension>> getExpectedArtifactGenerationExtensions()

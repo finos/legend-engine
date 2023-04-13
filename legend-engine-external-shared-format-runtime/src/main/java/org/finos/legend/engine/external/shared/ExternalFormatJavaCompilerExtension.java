@@ -23,8 +23,8 @@ import org.finos.legend.engine.external.shared.runtime.dependencies.IExternalDat
 import org.finos.legend.engine.external.shared.runtime.dependencies.IExternalDataFactory;
 import org.finos.legend.engine.plan.compilation.GeneratePureConfig;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionPlanJavaCompilerExtension;
-import org.finos.legend.engine.shared.javaCompiler.ClassListFilter;
 import org.finos.legend.engine.shared.javaCompiler.ClassPathFilter;
+import org.finos.legend.engine.shared.javaCompiler.ClassPathFilters;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -49,7 +49,7 @@ public class ExternalFormatJavaCompilerExtension implements ExecutionPlanJavaCom
     @Override
     public ClassPathFilter getExtraClassPathFilter()
     {
-        return new ClassListFilter(DEPENDENCIES.values());
+        return ClassPathFilters.fromClasses(DEPENDENCIES.values());
     }
 
     /**

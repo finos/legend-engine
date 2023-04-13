@@ -240,6 +240,12 @@ Class meta::external::query::sql::metamodel::WhenClause extends meta::external::
   result: meta::external::query::sql::metamodel::Expression[1];
 }
 
+Class meta::external::query::sql::metamodel::Extract extends meta::external::query::sql::metamodel::Expression
+{
+  expression: meta::external::query::sql::metamodel::Expression[1];
+  field: meta::external::query::sql::metamodel::ExtractField[1];
+}
+
 Class meta::external::query::sql::metamodel::Join extends meta::external::query::sql::metamodel::Relation
 {
   type: meta::external::query::sql::metamodel::JoinType[1];
@@ -380,4 +386,25 @@ Enum meta::external::query::sql::metamodel::CurrentTimeType
   DATE,
   TIME,
   TIMESTAMP
+}
+
+Enum meta::external::query::sql::metamodel::ExtractField
+{
+  CENTURY,
+  YEAR,
+  QUARTER,
+  MONTH,
+  WEEK,
+  DAY,
+  DAY_OF_MONTH,
+  DAY_OF_WEEK,
+  DOW,
+  DAY_OF_YEAR,
+  DOY,
+  HOUR,
+  MINUTE,
+  SECOND,
+  TIMEZONE_HOUR,
+  TIMEZONE_MINUTE,
+  EPOCH
 }

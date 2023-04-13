@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.5.1-SNAPSHOT</version>
+        <version>4.6.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -195,7 +195,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-code-compiled-core-configuration</artifactId>
+            <artifactId>legend-engine-xt-javaPlatformBinding-pure</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

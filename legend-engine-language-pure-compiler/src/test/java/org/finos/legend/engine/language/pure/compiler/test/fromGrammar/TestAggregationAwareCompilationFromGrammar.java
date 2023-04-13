@@ -16,14 +16,13 @@ package org.finos.legend.engine.language.pure.compiler.test.fromGrammar;
 
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.InstanceSetImplementation;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyOwnerImplementationAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.aggregationAware.AggregationAwareSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelToModel.PureInstanceSetImplementation;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.util.Comparator;
 
 public class TestAggregationAwareCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
 {
@@ -50,11 +49,6 @@ public class TestAggregationAwareCompilationFromGrammar extends TestCompilationF
                 "{\n" +
                 "  salesDate: test::FiscalCalendar[1];\n" +
                 "  netRevenue: Float[1];\n" +
-                "}\n" +
-                "\n" +
-                "function meta::pure::functions::math::sum(numbers: Float[*]): Float[1]\n" +
-                "{\n" +
-                "   $numbers->plus()\n" +
                 "}\n" +
                 "\n" +
                 "\n" +
@@ -99,14 +93,7 @@ public class TestAggregationAwareCompilationFromGrammar extends TestCompilationF
                 "  }\n" +
                 ")\n").getTwo();
 
-        InstanceSetImplementation setImpl = (InstanceSetImplementation) pureModel.getMapping("test::map")._classMappings().toSortedList(new Comparator<SetImplementation>()
-        {
-            @Override
-            public int compare(SetImplementation o1, SetImplementation o2)
-            {
-                return o1._id().compareTo(o2._id());
-            }
-        }).get(0);
+        InstanceSetImplementation setImpl = (InstanceSetImplementation) pureModel.getMapping("test::map")._classMappings().minBy(PropertyOwnerImplementationAccessor::_id);
 
         Assert.assertTrue(setImpl instanceof AggregationAwareSetImplementation);
 
@@ -118,12 +105,12 @@ public class TestAggregationAwareCompilationFromGrammar extends TestCompilationF
         Assert.assertEquals("a_Main", aggSetImpl._mainSetImplementation()._id());
 
         Assert.assertNotNull(aggSetImpl._aggregateSetImplementations());
-        Assert.assertTrue(aggSetImpl._aggregateSetImplementations().size() == 1);
+        Assert.assertEquals(1, aggSetImpl._aggregateSetImplementations().size());
 
         Assert.assertNotNull(aggSetImpl._aggregateSetImplementations().toList().get(0)._aggregateSpecification());
         Assert.assertTrue(aggSetImpl._aggregateSetImplementations().toList().get(0)._aggregateSpecification()._canAggregate());
-        Assert.assertTrue(aggSetImpl._aggregateSetImplementations().toList().get(0)._aggregateSpecification()._groupByFunctions().size() == 1);
-        Assert.assertTrue(aggSetImpl._aggregateSetImplementations().toList().get(0)._aggregateSpecification()._aggregateValues().size() == 1);
+        Assert.assertEquals(1, aggSetImpl._aggregateSetImplementations().toList().get(0)._aggregateSpecification()._groupByFunctions().size());
+        Assert.assertEquals(1, aggSetImpl._aggregateSetImplementations().toList().get(0)._aggregateSpecification()._aggregateValues().size());
 
         Assert.assertTrue(aggSetImpl._aggregateSetImplementations().toList().get(0)._setImplementation() instanceof PureInstanceSetImplementation);
         Assert.assertEquals("a_Aggregate_0", aggSetImpl._aggregateSetImplementations().toList().get(0)._setImplementation()._id());
@@ -158,11 +145,6 @@ public class TestAggregationAwareCompilationFromGrammar extends TestCompilationF
                 "{\n" +
                 "  salesQtrFirstDate: test::FiscalCalendar[1];\n" +
                 "  netRevenue: Float[1];\n" +
-                "}\n" +
-                "\n" +
-                "function meta::pure::functions::math::sum(numbers: Float[*]): Float[1]\n" +
-                "{\n" +
-                "   $numbers->plus()\n" +
                 "}\n" +
                 "\n" +
                 "\n" +
@@ -226,14 +208,7 @@ public class TestAggregationAwareCompilationFromGrammar extends TestCompilationF
                 "  }\n" +
                 ")\n").getTwo();
 
-        InstanceSetImplementation setImpl = (InstanceSetImplementation) pureModel.getMapping("test::map")._classMappings().toSortedList(new Comparator<SetImplementation>()
-        {
-            @Override
-            public int compare(SetImplementation o1, SetImplementation o2)
-            {
-                return o1._id().compareTo(o2._id());
-            }
-        }).get(0);
+        InstanceSetImplementation setImpl = (InstanceSetImplementation) pureModel.getMapping("test::map")._classMappings().minBy(PropertyOwnerImplementationAccessor::_id);
 
         Assert.assertTrue(setImpl instanceof AggregationAwareSetImplementation);
 
@@ -245,20 +220,20 @@ public class TestAggregationAwareCompilationFromGrammar extends TestCompilationF
         Assert.assertEquals("a_Main", aggSetImpl._mainSetImplementation()._id());
 
         Assert.assertNotNull(aggSetImpl._aggregateSetImplementations());
-        Assert.assertTrue(aggSetImpl._aggregateSetImplementations().size() == 2);
+        Assert.assertEquals(2, aggSetImpl._aggregateSetImplementations().size());
 
         Assert.assertNotNull(aggSetImpl._aggregateSetImplementations().toList().get(0)._aggregateSpecification());
         Assert.assertFalse(aggSetImpl._aggregateSetImplementations().toList().get(0)._aggregateSpecification()._canAggregate());
-        Assert.assertTrue(aggSetImpl._aggregateSetImplementations().toList().get(0)._aggregateSpecification()._groupByFunctions().size() == 2);
-        Assert.assertTrue(aggSetImpl._aggregateSetImplementations().toList().get(0)._aggregateSpecification()._aggregateValues().size() == 1);
+        Assert.assertEquals(2, aggSetImpl._aggregateSetImplementations().toList().get(0)._aggregateSpecification()._groupByFunctions().size());
+        Assert.assertEquals(1, aggSetImpl._aggregateSetImplementations().toList().get(0)._aggregateSpecification()._aggregateValues().size());
 
         Assert.assertTrue(aggSetImpl._aggregateSetImplementations().toList().get(0)._setImplementation() instanceof PureInstanceSetImplementation);
         Assert.assertEquals("a_Aggregate_0", aggSetImpl._aggregateSetImplementations().toList().get(0)._setImplementation()._id());
 
         Assert.assertNotNull(aggSetImpl._aggregateSetImplementations().toList().get(1)._aggregateSpecification());
         Assert.assertTrue(aggSetImpl._aggregateSetImplementations().toList().get(1)._aggregateSpecification()._canAggregate());
-        Assert.assertTrue(aggSetImpl._aggregateSetImplementations().toList().get(1)._aggregateSpecification()._groupByFunctions().size() == 1);
-        Assert.assertTrue(aggSetImpl._aggregateSetImplementations().toList().get(1)._aggregateSpecification()._aggregateValues().size() == 1);
+        Assert.assertEquals(1, aggSetImpl._aggregateSetImplementations().toList().get(1)._aggregateSpecification()._groupByFunctions().size());
+        Assert.assertEquals(1, aggSetImpl._aggregateSetImplementations().toList().get(1)._aggregateSpecification()._aggregateValues().size());
 
         Assert.assertTrue(aggSetImpl._aggregateSetImplementations().toList().get(1)._setImplementation() instanceof PureInstanceSetImplementation);
         Assert.assertEquals("a_Aggregate_1", aggSetImpl._aggregateSetImplementations().toList().get(1)._setImplementation()._id());
@@ -293,11 +268,6 @@ public class TestAggregationAwareCompilationFromGrammar extends TestCompilationF
                 "{\n" +
                 "  salesQtrFirstDate: test::FiscalCalendar[1];\n" +
                 "  netRevenue: Float[1];\n" +
-                "}\n" +
-                "\n" +
-                "function meta::pure::functions::math::sum(numbers: Float[*]): Float[1]\n" +
-                "{\n" +
-                "   $numbers->plus()\n" +
                 "}\n" +
                 "\n" +
                 "\n" +
@@ -362,14 +332,7 @@ public class TestAggregationAwareCompilationFromGrammar extends TestCompilationF
                 "  }\n" +
                 ")\n").getTwo();
 
-        InstanceSetImplementation setImpl = (InstanceSetImplementation) pureModel.getMapping("test::map")._classMappings().toSortedList(new Comparator<SetImplementation>()
-        {
-            @Override
-            public int compare(SetImplementation o1, SetImplementation o2)
-            {
-                return o1._id().compareTo(o2._id());
-            }
-        }).get(0);
+        InstanceSetImplementation setImpl = (InstanceSetImplementation) pureModel.getMapping("test::map")._classMappings().minBy(PropertyOwnerImplementationAccessor::_id);
 
         Assert.assertTrue(setImpl instanceof AggregationAwareSetImplementation);
 
@@ -381,20 +344,20 @@ public class TestAggregationAwareCompilationFromGrammar extends TestCompilationF
         Assert.assertEquals("a_Main", aggSetImpl._mainSetImplementation()._id());
 
         Assert.assertNotNull(aggSetImpl._aggregateSetImplementations());
-        Assert.assertTrue(aggSetImpl._aggregateSetImplementations().size() == 2);
+        Assert.assertEquals(2, aggSetImpl._aggregateSetImplementations().size());
 
         Assert.assertNotNull(aggSetImpl._aggregateSetImplementations().toList().get(0)._aggregateSpecification());
         Assert.assertFalse(aggSetImpl._aggregateSetImplementations().toList().get(0)._aggregateSpecification()._canAggregate());
-        Assert.assertTrue(aggSetImpl._aggregateSetImplementations().toList().get(0)._aggregateSpecification()._groupByFunctions().size() == 2);
-        Assert.assertTrue(aggSetImpl._aggregateSetImplementations().toList().get(0)._aggregateSpecification()._aggregateValues().size() == 1);
+        Assert.assertEquals(2, aggSetImpl._aggregateSetImplementations().toList().get(0)._aggregateSpecification()._groupByFunctions().size());
+        Assert.assertEquals(1, aggSetImpl._aggregateSetImplementations().toList().get(0)._aggregateSpecification()._aggregateValues().size());
 
         Assert.assertTrue(aggSetImpl._aggregateSetImplementations().toList().get(0)._setImplementation() instanceof PureInstanceSetImplementation);
         Assert.assertEquals("a_Aggregate_0", aggSetImpl._aggregateSetImplementations().toList().get(0)._setImplementation()._id());
 
         Assert.assertNotNull(aggSetImpl._aggregateSetImplementations().toList().get(1)._aggregateSpecification());
         Assert.assertTrue(aggSetImpl._aggregateSetImplementations().toList().get(1)._aggregateSpecification()._canAggregate());
-        Assert.assertTrue(aggSetImpl._aggregateSetImplementations().toList().get(1)._aggregateSpecification()._groupByFunctions().size() == 1);
-        Assert.assertTrue(aggSetImpl._aggregateSetImplementations().toList().get(1)._aggregateSpecification()._aggregateValues().size() == 2);
+        Assert.assertEquals(1, aggSetImpl._aggregateSetImplementations().toList().get(1)._aggregateSpecification()._groupByFunctions().size());
+        Assert.assertEquals(2, aggSetImpl._aggregateSetImplementations().toList().get(1)._aggregateSpecification()._aggregateValues().size());
 
         Assert.assertTrue(aggSetImpl._aggregateSetImplementations().toList().get(1)._setImplementation() instanceof PureInstanceSetImplementation);
         Assert.assertEquals("a_Aggregate_1", aggSetImpl._aggregateSetImplementations().toList().get(1)._setImplementation()._id());
@@ -403,480 +366,420 @@ public class TestAggregationAwareCompilationFromGrammar extends TestCompilationF
     @Test
     public void testAggregationAwareMappingErrorInMainSetImplementationTarget()
     {
-        try
-        {
-            test("###Pure\n" +
-                    "Class test::Sales\n" +
-                    "{\n" +
-                    "  id: Integer[1];\n" +
-                    "  salesDate: test::FiscalCalendar[1];\n" +
-                    "  revenue: Float[1];\n" +
-                    "}\n" +
-                    "\n" +
-                    "Class test::FiscalCalendar\n" +
-                    "{\n" +
-                    "  date: Date[1];\n" +
-                    "  fiscalYear: Integer[1];\n" +
-                    "  fiscalMonth: Integer[1];\n" +
-                    "  fiscalQtr: Integer[1];\n" +
-                    "}\n" +
-                    "\n" +
-                    "Class test::Sales_By_Date\n" +
-                    "{\n" +
-                    "  salesDate: test::FiscalCalendar[1];\n" +
-                    "  netRevenue: Float[1];\n" +
-                    "}\n" +
-                    "\n" +
-                    "function meta::pure::functions::math::sum(numbers: Float[*]): Float[1]\n" +
-                    "{\n" +
-                    "   $numbers->plus()\n" +
-                    "}\n" +
-                    "\n" +
-                    "\n" +
-                    "###Mapping\n" +
-                    "Mapping test::map\n" +
-                    "(\n" +
-                    "  test::FiscalCalendar[b]: Pure\n" +
-                    "  {\n" +
-                    "    ~src test::FiscalCalendar\n" +
-                    "    date: $src.date,\n" +
-                    "    fiscalYear: $src.fiscalYear,\n" +
-                    "    fiscalMonth: $src.fiscalMonth,\n" +
-                    "    fiscalQtr: $src.fiscalQtr\n" +
-                    "  }\n" +
-                    "  test::Sales[a]: AggregationAware \n" +
-                    "  {\n" +
-                    "    Views: [\n" +
-                    "      (\n" +
-                    "        ~modelOperation: {\n" +
-                    "          ~canAggregate true,\n" +
-                    "          ~groupByFunctions (\n" +
-                    "            $this.salesDate\n" +
-                    "          ),\n" +
-                    "          ~aggregateValues (\n" +
-                    "            ( ~mapFn:$this.revenue , ~aggregateFn: $mapped->sum() )\n" +
-                    "          )\n" +
-                    "        },\n" +
-                    "        ~aggregateMapping: Pure\n" +
-                    "        {\n" +
-                    "          ~src test::Sales_By_Date\n" +
-                    "          salesDate[b]: $src.salesDate,\n" +
-                    "          revenue: $src.netRevenue\n" +
-                    "        }\n" +
-                    "      )\n" +
-                    "    ],\n" +
-                    "    ~mainMapping: Pure\n" +
-                    "    {\n" +
-                    "      ~src test::Sales\n" +
-                    "      salesDate[b]: $src.salesDate_NonExistent,\n" +
-                    "      revenue: $src.revenue\n" +
-                    "    }\n" +
-                    "  }\n" +
-                    ")\n");
-            Assert.fail();
-        }
-        catch (Exception e)
-        {
-            Assert.assertEquals("Can't find property 'salesDate_NonExistent' in class 'test::Sales'", e.getMessage());
-        }
+        EngineException e = Assert.assertThrows(EngineException.class, () -> test("###Pure\n" +
+                "Class test::Sales\n" +
+                "{\n" +
+                "  id: Integer[1];\n" +
+                "  salesDate: test::FiscalCalendar[1];\n" +
+                "  revenue: Float[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::FiscalCalendar\n" +
+                "{\n" +
+                "  date: Date[1];\n" +
+                "  fiscalYear: Integer[1];\n" +
+                "  fiscalMonth: Integer[1];\n" +
+                "  fiscalQtr: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::Sales_By_Date\n" +
+                "{\n" +
+                "  salesDate: test::FiscalCalendar[1];\n" +
+                "  netRevenue: Float[1];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::map\n" +
+                "(\n" +
+                "  test::FiscalCalendar[b]: Pure\n" +
+                "  {\n" +
+                "    ~src test::FiscalCalendar\n" +
+                "    date: $src.date,\n" +
+                "    fiscalYear: $src.fiscalYear,\n" +
+                "    fiscalMonth: $src.fiscalMonth,\n" +
+                "    fiscalQtr: $src.fiscalQtr\n" +
+                "  }\n" +
+                "  test::Sales[a]: AggregationAware \n" +
+                "  {\n" +
+                "    Views: [\n" +
+                "      (\n" +
+                "        ~modelOperation: {\n" +
+                "          ~canAggregate true,\n" +
+                "          ~groupByFunctions (\n" +
+                "            $this.salesDate\n" +
+                "          ),\n" +
+                "          ~aggregateValues (\n" +
+                "            ( ~mapFn:$this.revenue , ~aggregateFn: $mapped->sum() )\n" +
+                "          )\n" +
+                "        },\n" +
+                "        ~aggregateMapping: Pure\n" +
+                "        {\n" +
+                "          ~src test::Sales_By_Date\n" +
+                "          salesDate[b]: $src.salesDate,\n" +
+                "          revenue: $src.netRevenue\n" +
+                "        }\n" +
+                "      )\n" +
+                "    ],\n" +
+                "    ~mainMapping: Pure\n" +
+                "    {\n" +
+                "      ~src test::Sales\n" +
+                "      salesDate[b]: $src.salesDate_NonExistent,\n" +
+                "      revenue: $src.revenue\n" +
+                "    }\n" +
+                "  }\n" +
+                ")\n"));
+        Assert.assertEquals("Can't find property 'salesDate_NonExistent' in class 'test::Sales'", e.getMessage());
     }
 
     @Test
     public void testAggregationAwareMappingErrorInMainSetImplementationProperty()
     {
-        try
-        {
-            test("###Pure\n" +
-                    "Class test::Sales\n" +
-                    "{\n" +
-                    "  id: Integer[1];\n" +
-                    "  salesDate: test::FiscalCalendar[1];\n" +
-                    "  revenue: Float[1];\n" +
-                    "}\n" +
-                    "\n" +
-                    "Class test::FiscalCalendar\n" +
-                    "{\n" +
-                    "  date: Date[1];\n" +
-                    "  fiscalYear: Integer[1];\n" +
-                    "  fiscalMonth: Integer[1];\n" +
-                    "  fiscalQtr: Integer[1];\n" +
-                    "}\n" +
-                    "\n" +
-                    "Class test::Sales_By_Date\n" +
-                    "{\n" +
-                    "  salesDate: test::FiscalCalendar[1];\n" +
-                    "  netRevenue: Float[1];\n" +
-                    "}\n" +
-                    "\n" +
-                    "function meta::pure::functions::math::sum(numbers: Float[*]): Float[1]\n" +
-                    "{\n" +
-                    "   $numbers->plus()\n" +
-                    "}\n" +
-                    "\n" +
-                    "\n" +
-                    "###Mapping\n" +
-                    "Mapping test::map\n" +
-                    "(\n" +
-                    "  test::FiscalCalendar[b]: Pure\n" +
-                    "  {\n" +
-                    "    ~src test::FiscalCalendar\n" +
-                    "    date: $src.date,\n" +
-                    "    fiscalYear: $src.fiscalYear,\n" +
-                    "    fiscalMonth: $src.fiscalMonth,\n" +
-                    "    fiscalQtr: $src.fiscalQtr\n" +
-                    "  }\n" +
-                    "  test::Sales[a]: AggregationAware \n" +
-                    "  {\n" +
-                    "    Views: [\n" +
-                    "      (\n" +
-                    "        ~modelOperation: {\n" +
-                    "          ~canAggregate true,\n" +
-                    "          ~groupByFunctions (\n" +
-                    "            $this.salesDate\n" +
-                    "          ),\n" +
-                    "          ~aggregateValues (\n" +
-                    "            ( ~mapFn:$this.revenue , ~aggregateFn: $mapped->sum() )\n" +
-                    "          )\n" +
-                    "        },\n" +
-                    "        ~aggregateMapping: Pure\n" +
-                    "        {\n" +
-                    "          ~src test::Sales_By_Date\n" +
-                    "          salesDate[b]: $src.salesDate,\n" +
-                    "          revenue: $src.netRevenue\n" +
-                    "        }\n" +
-                    "      )\n" +
-                    "    ],\n" +
-                    "    ~mainMapping: Pure\n" +
-                    "    {\n" +
-                    "      ~src test::Sales\n" +
-                    "      salesDate_nonExistent[b]: $src.salesDate,\n" +
-                    "      revenue: $src.revenue\n" +
-                    "    }\n" +
-                    "  }\n" +
-                    ")\n");
-            Assert.fail();
-        }
-        catch (Exception e)
-        {
-            Assert.assertEquals("Can't find property 'salesDate_nonExistent' in [Sales, Any]", e.getMessage());
-        }
+        EngineException e = Assert.assertThrows(EngineException.class, () -> test(
+                "###Pure\n" +
+                        "Class test::Sales\n" +
+                        "{\n" +
+                        "  id: Integer[1];\n" +
+                        "  salesDate: test::FiscalCalendar[1];\n" +
+                        "  revenue: Float[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "Class test::FiscalCalendar\n" +
+                        "{\n" +
+                        "  date: Date[1];\n" +
+                        "  fiscalYear: Integer[1];\n" +
+                        "  fiscalMonth: Integer[1];\n" +
+                        "  fiscalQtr: Integer[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "Class test::Sales_By_Date\n" +
+                        "{\n" +
+                        "  salesDate: test::FiscalCalendar[1];\n" +
+                        "  netRevenue: Float[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "\n" +
+                        "###Mapping\n" +
+                        "Mapping test::map\n" +
+                        "(\n" +
+                        "  test::FiscalCalendar[b]: Pure\n" +
+                        "  {\n" +
+                        "    ~src test::FiscalCalendar\n" +
+                        "    date: $src.date,\n" +
+                        "    fiscalYear: $src.fiscalYear,\n" +
+                        "    fiscalMonth: $src.fiscalMonth,\n" +
+                        "    fiscalQtr: $src.fiscalQtr\n" +
+                        "  }\n" +
+                        "  test::Sales[a]: AggregationAware \n" +
+                        "  {\n" +
+                        "    Views: [\n" +
+                        "      (\n" +
+                        "        ~modelOperation: {\n" +
+                        "          ~canAggregate true,\n" +
+                        "          ~groupByFunctions (\n" +
+                        "            $this.salesDate\n" +
+                        "          ),\n" +
+                        "          ~aggregateValues (\n" +
+                        "            ( ~mapFn:$this.revenue , ~aggregateFn: $mapped->sum() )\n" +
+                        "          )\n" +
+                        "        },\n" +
+                        "        ~aggregateMapping: Pure\n" +
+                        "        {\n" +
+                        "          ~src test::Sales_By_Date\n" +
+                        "          salesDate[b]: $src.salesDate,\n" +
+                        "          revenue: $src.netRevenue\n" +
+                        "        }\n" +
+                        "      )\n" +
+                        "    ],\n" +
+                        "    ~mainMapping: Pure\n" +
+                        "    {\n" +
+                        "      ~src test::Sales\n" +
+                        "      salesDate_nonExistent[b]: $src.salesDate,\n" +
+                        "      revenue: $src.revenue\n" +
+                        "    }\n" +
+                        "  }\n" +
+                        ")\n"));
+        Assert.assertEquals("Can't find property 'salesDate_nonExistent' in [Sales, Any]", e.getMessage());
     }
 
     @Test
     public void testAggregationAwareMappingErrorInAggregateViewTarget()
     {
-        try
-        {
-            test("###Pure\n" +
-                    "Class test::Sales\n" +
-                    "{\n" +
-                    "  id: Integer[1];\n" +
-                    "  salesDate: test::FiscalCalendar[1];\n" +
-                    "  revenue: Float[1];\n" +
-                    "}\n" +
-                    "\n" +
-                    "Class test::FiscalCalendar\n" +
-                    "{\n" +
-                    "  date: Date[1];\n" +
-                    "  fiscalYear: Integer[1];\n" +
-                    "  fiscalMonth: Integer[1];\n" +
-                    "  fiscalQtr: Integer[1];\n" +
-                    "}\n" +
-                    "\n" +
-                    "Class test::Sales_By_Date\n" +
-                    "{\n" +
-                    "  salesDate: test::FiscalCalendar[1];\n" +
-                    "  netRevenue: Float[1];\n" +
-                    "}\n" +
-                    "\n" +
-                    "function meta::pure::functions::math::sum(numbers: Float[*]): Float[1]\n" +
-                    "{\n" +
-                    "   $numbers->plus()\n" +
-                    "}\n" +
-                    "\n" +
-                    "\n" +
-                    "###Mapping\n" +
-                    "Mapping test::map\n" +
-                    "(\n" +
-                    "  test::FiscalCalendar[b]: Pure\n" +
-                    "  {\n" +
-                    "    ~src test::FiscalCalendar\n" +
-                    "    date: $src.date,\n" +
-                    "    fiscalYear: $src.fiscalYear,\n" +
-                    "    fiscalMonth: $src.fiscalMonth,\n" +
-                    "    fiscalQtr: $src.fiscalQtr\n" +
-                    "  }\n" +
-                    "  test::Sales[a]: AggregationAware \n" +
-                    "  {\n" +
-                    "    Views: [\n" +
-                    "      (\n" +
-                    "        ~modelOperation: {\n" +
-                    "          ~canAggregate true,\n" +
-                    "          ~groupByFunctions (\n" +
-                    "            $this.salesDate\n" +
-                    "          ),\n" +
-                    "          ~aggregateValues (\n" +
-                    "            ( ~mapFn:$this.revenue , ~aggregateFn: $mapped->sum() )\n" +
-                    "          )\n" +
-                    "        },\n" +
-                    "        ~aggregateMapping: Pure\n" +
-                    "        {\n" +
-                    "          ~src test::Sales_By_Date\n" +
-                    "          salesDate[b]: $src.salesDate_NonExistent,\n" +
-                    "          revenue: $src.netRevenue\n" +
-                    "        }\n" +
-                    "      )\n" +
-                    "    ],\n" +
-                    "    ~mainMapping: Pure\n" +
-                    "    {\n" +
-                    "      ~src test::Sales\n" +
-                    "      salesDate[b]: $src.salesDate,\n" +
-                    "      revenue: $src.revenue\n" +
-                    "    }\n" +
-                    "  }\n" +
-                    ")\n"
-            );
-            Assert.fail();
-        }
-        catch (Exception e)
-        {
-            Assert.assertEquals("Can't find property 'salesDate_NonExistent' in class 'test::Sales_By_Date'", e.getMessage());
-        }
+        EngineException e = Assert.assertThrows(EngineException.class, () -> test(
+                "###Pure\n" +
+                        "Class test::Sales\n" +
+                        "{\n" +
+                        "  id: Integer[1];\n" +
+                        "  salesDate: test::FiscalCalendar[1];\n" +
+                        "  revenue: Float[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "Class test::FiscalCalendar\n" +
+                        "{\n" +
+                        "  date: Date[1];\n" +
+                        "  fiscalYear: Integer[1];\n" +
+                        "  fiscalMonth: Integer[1];\n" +
+                        "  fiscalQtr: Integer[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "Class test::Sales_By_Date\n" +
+                        "{\n" +
+                        "  salesDate: test::FiscalCalendar[1];\n" +
+                        "  netRevenue: Float[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "\n" +
+                        "###Mapping\n" +
+                        "Mapping test::map\n" +
+                        "(\n" +
+                        "  test::FiscalCalendar[b]: Pure\n" +
+                        "  {\n" +
+                        "    ~src test::FiscalCalendar\n" +
+                        "    date: $src.date,\n" +
+                        "    fiscalYear: $src.fiscalYear,\n" +
+                        "    fiscalMonth: $src.fiscalMonth,\n" +
+                        "    fiscalQtr: $src.fiscalQtr\n" +
+                        "  }\n" +
+                        "  test::Sales[a]: AggregationAware \n" +
+                        "  {\n" +
+                        "    Views: [\n" +
+                        "      (\n" +
+                        "        ~modelOperation: {\n" +
+                        "          ~canAggregate true,\n" +
+                        "          ~groupByFunctions (\n" +
+                        "            $this.salesDate\n" +
+                        "          ),\n" +
+                        "          ~aggregateValues (\n" +
+                        "            ( ~mapFn:$this.revenue , ~aggregateFn: $mapped->sum() )\n" +
+                        "          )\n" +
+                        "        },\n" +
+                        "        ~aggregateMapping: Pure\n" +
+                        "        {\n" +
+                        "          ~src test::Sales_By_Date\n" +
+                        "          salesDate[b]: $src.salesDate_NonExistent,\n" +
+                        "          revenue: $src.netRevenue\n" +
+                        "        }\n" +
+                        "      )\n" +
+                        "    ],\n" +
+                        "    ~mainMapping: Pure\n" +
+                        "    {\n" +
+                        "      ~src test::Sales\n" +
+                        "      salesDate[b]: $src.salesDate,\n" +
+                        "      revenue: $src.revenue\n" +
+                        "    }\n" +
+                        "  }\n" +
+                        ")\n"
+        ));
+        Assert.assertEquals("Can't find property 'salesDate_NonExistent' in class 'test::Sales_By_Date'", e.getMessage());
     }
 
     @Test
     public void testAggregationAwareMappingErrorInAggregateViewProperty()
     {
-        try
-        {
-            test(
-                    "###Pure\n" +
-                            "Class test::Sales\n" +
-                            "{\n" +
-                            "  id: Integer[1];\n" +
-                            "  salesDate: test::FiscalCalendar[1];\n" +
-                            "  revenue: Float[1];\n" +
-                            "}\n" +
-                            "\n" +
-                            "Class test::FiscalCalendar\n" +
-                            "{\n" +
-                            "  date: Date[1];\n" +
-                            "  fiscalYear: Integer[1];\n" +
-                            "  fiscalMonth: Integer[1];\n" +
-                            "  fiscalQtr: Integer[1];\n" +
-                            "}\n" +
-                            "\n" +
-                            "Class test::Sales_By_Date\n" +
-                            "{\n" +
-                            "  salesDate: test::FiscalCalendar[1];\n" +
-                            "  netRevenue: Float[1];\n" +
-                            "}\n" +
-                            "\n" +
-                            "function meta::pure::functions::math::sum(numbers: Float[*]): Float[1]\n" +
-                            "{\n" +
-                            "   $numbers->plus()\n" +
-                            "}\n" +
-                            "\n" +
-                            "\n" +
-                            "###Mapping\n" +
-                            "Mapping test::map\n" +
-                            "(\n" +
-                            "  test::FiscalCalendar[b]: Pure\n" +
-                            "  {\n" +
-                            "    ~src test::FiscalCalendar\n" +
-                            "    date: $src.date,\n" +
-                            "    fiscalYear: $src.fiscalYear,\n" +
-                            "    fiscalMonth: $src.fiscalMonth,\n" +
-                            "    fiscalQtr: $src.fiscalQtr\n" +
-                            "  }\n" +
-                            "  test::Sales[a]: AggregationAware \n" +
-                            "  {\n" +
-                            "    Views: [\n" +
-                            "      (\n" +
-                            "        ~modelOperation: {\n" +
-                            "          ~canAggregate true,\n" +
-                            "          ~groupByFunctions (\n" +
-                            "            $this.salesDate\n" +
-                            "          ),\n" +
-                            "          ~aggregateValues (\n" +
-                            "            ( ~mapFn:$this.revenue , ~aggregateFn: $mapped->sum() )\n" +
-                            "          )\n" +
-                            "        },\n" +
-                            "        ~aggregateMapping: Pure\n" +
-                            "        {\n" +
-                            "          ~src test::Sales_By_Date\n" +
-                            "          salesDate_NonExistent[b]: $src.salesDate,\n" +
-                            "          revenue: $src.netRevenue\n" +
-                            "        }\n" +
-                            "      )\n" +
-                            "    ],\n" +
-                            "    ~mainMapping: Pure\n" +
-                            "    {\n" +
-                            "      ~src test::Sales\n" +
-                            "      salesDate[b]: $src.salesDate,\n" +
-                            "      revenue: $src.revenue\n" +
-                            "    }\n" +
-                            "  }\n" +
-                            ")\n");
-            Assert.fail();
-        }
-        catch (Exception e)
-        {
-            Assert.assertEquals("Can't find property 'salesDate_NonExistent' in [Sales, Any]", e.getMessage());
-        }
+        EngineException e = Assert.assertThrows(EngineException.class, () -> test(
+                "###Pure\n" +
+                        "Class test::Sales\n" +
+                        "{\n" +
+                        "  id: Integer[1];\n" +
+                        "  salesDate: test::FiscalCalendar[1];\n" +
+                        "  revenue: Float[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "Class test::FiscalCalendar\n" +
+                        "{\n" +
+                        "  date: Date[1];\n" +
+                        "  fiscalYear: Integer[1];\n" +
+                        "  fiscalMonth: Integer[1];\n" +
+                        "  fiscalQtr: Integer[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "Class test::Sales_By_Date\n" +
+                        "{\n" +
+                        "  salesDate: test::FiscalCalendar[1];\n" +
+                        "  netRevenue: Float[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "\n" +
+                        "###Mapping\n" +
+                        "Mapping test::map\n" +
+                        "(\n" +
+                        "  test::FiscalCalendar[b]: Pure\n" +
+                        "  {\n" +
+                        "    ~src test::FiscalCalendar\n" +
+                        "    date: $src.date,\n" +
+                        "    fiscalYear: $src.fiscalYear,\n" +
+                        "    fiscalMonth: $src.fiscalMonth,\n" +
+                        "    fiscalQtr: $src.fiscalQtr\n" +
+                        "  }\n" +
+                        "  test::Sales[a]: AggregationAware \n" +
+                        "  {\n" +
+                        "    Views: [\n" +
+                        "      (\n" +
+                        "        ~modelOperation: {\n" +
+                        "          ~canAggregate true,\n" +
+                        "          ~groupByFunctions (\n" +
+                        "            $this.salesDate\n" +
+                        "          ),\n" +
+                        "          ~aggregateValues (\n" +
+                        "            ( ~mapFn:$this.revenue , ~aggregateFn: $mapped->sum() )\n" +
+                        "          )\n" +
+                        "        },\n" +
+                        "        ~aggregateMapping: Pure\n" +
+                        "        {\n" +
+                        "          ~src test::Sales_By_Date\n" +
+                        "          salesDate_NonExistent[b]: $src.salesDate,\n" +
+                        "          revenue: $src.netRevenue\n" +
+                        "        }\n" +
+                        "      )\n" +
+                        "    ],\n" +
+                        "    ~mainMapping: Pure\n" +
+                        "    {\n" +
+                        "      ~src test::Sales\n" +
+                        "      salesDate[b]: $src.salesDate,\n" +
+                        "      revenue: $src.revenue\n" +
+                        "    }\n" +
+                        "  }\n" +
+                        ")\n"));
+        Assert.assertEquals("Can't find property 'salesDate_NonExistent' in [Sales, Any]", e.getMessage());
     }
 
     @Test
     public void testAggregationAwareMappingErrorInAggregateViewModelOperationGroupByFunction()
     {
-        try
-        {
-            test(
-                    "###Pure\n" +
-                            "Class test::Sales\n" +
-                            "{\n" +
-                            "  id: Integer[1];\n" +
-                            "  salesDate: test::FiscalCalendar[1];\n" +
-                            "  revenue: Float[1];\n" +
-                            "}\n" +
-                            "\n" +
-                            "Class test::FiscalCalendar\n" +
-                            "{\n" +
-                            "  date: Date[1];\n" +
-                            "  fiscalYear: Integer[1];\n" +
-                            "  fiscalMonth: Integer[1];\n" +
-                            "  fiscalQtr: Integer[1];\n" +
-                            "}\n" +
-                            "\n" +
-                            "Class test::Sales_By_Date\n" +
-                            "{\n" +
-                            "  salesDate: test::FiscalCalendar[1];\n" +
-                            "  netRevenue: Float[1];\n" +
-                            "}\n" +
-                            "\n" +
-                            "\n" +
-                            "###Mapping\n" +
-                            "Mapping test::map\n" +
-                            "(\n" +
-                            "  test::FiscalCalendar[b]: Pure\n" +
-                            "  {\n" +
-                            "    ~src test::FiscalCalendar\n" +
-                            "    date: $src.date,\n" +
-                            "    fiscalYear: $src.fiscalYear,\n" +
-                            "    fiscalMonth: $src.fiscalMonth,\n" +
-                            "    fiscalQtr: $src.fiscalQtr\n" +
-                            "  }\n" +
-                            "  test::Sales[a]: AggregationAware \n" +
-                            "  {\n" +
-                            "    Views: [\n" +
-                            "      (\n" +
-                            "        ~modelOperation: {\n" +
-                            "          ~canAggregate true,\n" +
-                            "          ~groupByFunctions (\n" +
-                            "            $this.salesDate_NonExistent\n" +
-                            "          ),\n" +
-                            "          ~aggregateValues (\n" +
-                            "            ( ~mapFn:$this.revenue , ~aggregateFn: $mapped->sum() )\n" +
-                            "          )\n" +
-                            "        },\n" +
-                            "        ~aggregateMapping: Pure\n" +
-                            "        {\n" +
-                            "          ~src test::Sales_By_Date\n" +
-                            "          salesDate[b]: $src.salesDate,\n" +
-                            "          revenue: $src.netRevenue\n" +
-                            "        }\n" +
-                            "      )\n" +
-                            "    ],\n" +
-                            "    ~mainMapping: Pure\n" +
-                            "    {\n" +
-                            "      ~src test::Sales\n" +
-                            "      salesDate[b]: $src.salesDate,\n" +
-                            "      revenue: $src.revenue\n" +
-                            "    }\n" +
-                            "  }\n" +
-                            ")\n");
-            Assert.fail();
-        }
-        catch (Exception e)
-        {
-            Assert.assertEquals("Can't find property 'salesDate_NonExistent' in class 'test::Sales'", e.getMessage());
-        }
+        EngineException e = Assert.assertThrows(EngineException.class, () -> test(
+                "###Pure\n" +
+                        "Class test::Sales\n" +
+                        "{\n" +
+                        "  id: Integer[1];\n" +
+                        "  salesDate: test::FiscalCalendar[1];\n" +
+                        "  revenue: Float[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "Class test::FiscalCalendar\n" +
+                        "{\n" +
+                        "  date: Date[1];\n" +
+                        "  fiscalYear: Integer[1];\n" +
+                        "  fiscalMonth: Integer[1];\n" +
+                        "  fiscalQtr: Integer[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "Class test::Sales_By_Date\n" +
+                        "{\n" +
+                        "  salesDate: test::FiscalCalendar[1];\n" +
+                        "  netRevenue: Float[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "\n" +
+                        "###Mapping\n" +
+                        "Mapping test::map\n" +
+                        "(\n" +
+                        "  test::FiscalCalendar[b]: Pure\n" +
+                        "  {\n" +
+                        "    ~src test::FiscalCalendar\n" +
+                        "    date: $src.date,\n" +
+                        "    fiscalYear: $src.fiscalYear,\n" +
+                        "    fiscalMonth: $src.fiscalMonth,\n" +
+                        "    fiscalQtr: $src.fiscalQtr\n" +
+                        "  }\n" +
+                        "  test::Sales[a]: AggregationAware \n" +
+                        "  {\n" +
+                        "    Views: [\n" +
+                        "      (\n" +
+                        "        ~modelOperation: {\n" +
+                        "          ~canAggregate true,\n" +
+                        "          ~groupByFunctions (\n" +
+                        "            $this.salesDate_NonExistent\n" +
+                        "          ),\n" +
+                        "          ~aggregateValues (\n" +
+                        "            ( ~mapFn:$this.revenue , ~aggregateFn: $mapped->sum() )\n" +
+                        "          )\n" +
+                        "        },\n" +
+                        "        ~aggregateMapping: Pure\n" +
+                        "        {\n" +
+                        "          ~src test::Sales_By_Date\n" +
+                        "          salesDate[b]: $src.salesDate,\n" +
+                        "          revenue: $src.netRevenue\n" +
+                        "        }\n" +
+                        "      )\n" +
+                        "    ],\n" +
+                        "    ~mainMapping: Pure\n" +
+                        "    {\n" +
+                        "      ~src test::Sales\n" +
+                        "      salesDate[b]: $src.salesDate,\n" +
+                        "      revenue: $src.revenue\n" +
+                        "    }\n" +
+                        "  }\n" +
+                        ")\n"));
+        Assert.assertEquals("Can't find property 'salesDate_NonExistent' in class 'test::Sales'", e.getMessage());
     }
 
     @Test
     public void testAggregationAwareMappingErrorInAggregateViewModelOperationAggregateFunction()
     {
-        try
-        {
-            test("###Pure\n" +
-                    "Class test::Sales\n" +
-                    "{\n" +
-                    "  id: Integer[1];\n" +
-                    "  salesDate: test::FiscalCalendar[1];\n" +
-                    "  revenue: Float[1];\n" +
-                    "}\n" +
-                    "\n" +
-                    "Class test::FiscalCalendar\n" +
-                    "{\n" +
-                    "  date: Date[1];\n" +
-                    "  fiscalYear: Integer[1];\n" +
-                    "  fiscalMonth: Integer[1];\n" +
-                    "  fiscalQtr: Integer[1];\n" +
-                    "}\n" +
-                    "\n" +
-                    "Class test::Sales_By_Date\n" +
-                    "{\n" +
-                    "  salesDate: test::FiscalCalendar[1];\n" +
-                    "  netRevenue: Float[1];\n" +
-                    "}\n" +
-                    "\n" +
-                    "\n" +
-                    "###Mapping\n" +
-                    "Mapping test::map\n" +
-                    "(\n" +
-                    "  test::FiscalCalendar[b]: Pure\n" +
-                    "  {\n" +
-                    "    ~src test::FiscalCalendar\n" +
-                    "    date: $src.date,\n" +
-                    "    fiscalYear: $src.fiscalYear,\n" +
-                    "    fiscalMonth: $src.fiscalMonth,\n" +
-                    "    fiscalQtr: $src.fiscalQtr\n" +
-                    "  }\n" +
-                    "  test::Sales[a]: AggregationAware \n" +
-                    "  {\n" +
-                    "    Views: [\n" +
-                    "      (\n" +
-                    "        ~modelOperation: {\n" +
-                    "          ~canAggregate true,\n" +
-                    "          ~groupByFunctions (\n" +
-                    "            $this.salesDate\n" +
-                    "          ),\n" +
-                    "          ~aggregateValues (\n" +
-                    "            ( ~mapFn:$this.revenue , ~aggregateFn: $mapped->summation() )\n" +
-                    "          )\n" +
-                    "        },\n" +
-                    "        ~aggregateMapping: Pure\n" +
-                    "        {\n" +
-                    "          ~src test::Sales_By_Date\n" +
-                    "          salesDate[b]: $src.salesDate,\n" +
-                    "          revenue: $src.netRevenue\n" +
-                    "        }\n" +
-                    "      )\n" +
-                    "    ],\n" +
-                    "    ~mainMapping: Pure\n" +
-                    "    {\n" +
-                    "      ~src test::Sales\n" +
-                    "      salesDate[b]: $src.salesDate,\n" +
-                    "      revenue: $src.revenue\n" +
-                    "    }\n" +
-                    "  }\n" +
-                    ")\n");
-            Assert.fail();
-        }
-        catch (Exception e)
-        {
-            Assert.assertEquals("Can't resolve the builder for function 'summation' - stack:[Lambda, new lambda, Applying summation]", e.getMessage());
-        }
+        EngineException e = Assert.assertThrows(EngineException.class, () -> test("###Pure\n" +
+                "Class test::Sales\n" +
+                "{\n" +
+                "  id: Integer[1];\n" +
+                "  salesDate: test::FiscalCalendar[1];\n" +
+                "  revenue: Float[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::FiscalCalendar\n" +
+                "{\n" +
+                "  date: Date[1];\n" +
+                "  fiscalYear: Integer[1];\n" +
+                "  fiscalMonth: Integer[1];\n" +
+                "  fiscalQtr: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::Sales_By_Date\n" +
+                "{\n" +
+                "  salesDate: test::FiscalCalendar[1];\n" +
+                "  netRevenue: Float[1];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::map\n" +
+                "(\n" +
+                "  test::FiscalCalendar[b]: Pure\n" +
+                "  {\n" +
+                "    ~src test::FiscalCalendar\n" +
+                "    date: $src.date,\n" +
+                "    fiscalYear: $src.fiscalYear,\n" +
+                "    fiscalMonth: $src.fiscalMonth,\n" +
+                "    fiscalQtr: $src.fiscalQtr\n" +
+                "  }\n" +
+                "  test::Sales[a]: AggregationAware \n" +
+                "  {\n" +
+                "    Views: [\n" +
+                "      (\n" +
+                "        ~modelOperation: {\n" +
+                "          ~canAggregate true,\n" +
+                "          ~groupByFunctions (\n" +
+                "            $this.salesDate\n" +
+                "          ),\n" +
+                "          ~aggregateValues (\n" +
+                "            ( ~mapFn:$this.revenue , ~aggregateFn: $mapped->summation() )\n" +
+                "          )\n" +
+                "        },\n" +
+                "        ~aggregateMapping: Pure\n" +
+                "        {\n" +
+                "          ~src test::Sales_By_Date\n" +
+                "          salesDate[b]: $src.salesDate,\n" +
+                "          revenue: $src.netRevenue\n" +
+                "        }\n" +
+                "      )\n" +
+                "    ],\n" +
+                "    ~mainMapping: Pure\n" +
+                "    {\n" +
+                "      ~src test::Sales\n" +
+                "      salesDate[b]: $src.salesDate,\n" +
+                "      revenue: $src.revenue\n" +
+                "    }\n" +
+                "  }\n" +
+                ")\n"));
+        Assert.assertEquals("Can't resolve the builder for function 'summation' - stack:[Lambda, new lambda, Applying summation]", e.getMessage());
     }
 
     @Override

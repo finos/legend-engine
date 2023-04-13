@@ -123,7 +123,9 @@ diagramPath:                        DATA_SPACE_DIAGRAM COLON qualifiedName SEMI_
 ;
 
 
-elements:                           DATA_SPACE_ELEMENTS COLON BRACKET_OPEN ( qualifiedName (COMMA qualifiedName)* )? BRACKET_CLOSE SEMI_COLON
+elements:                           DATA_SPACE_ELEMENTS COLON BRACKET_OPEN ( elementScopePath (COMMA elementScopePath)* )? BRACKET_CLOSE SEMI_COLON
+;
+elementScopePath:                   ( MINUS )? qualifiedName
 ;
 
 executables:                        DATA_SPACE_EXECUTABLES COLON BRACKET_OPEN ( executable (COMMA executable)* )? BRACKET_CLOSE SEMI_COLON

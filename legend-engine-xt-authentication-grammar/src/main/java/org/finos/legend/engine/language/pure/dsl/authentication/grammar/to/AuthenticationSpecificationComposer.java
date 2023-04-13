@@ -44,7 +44,7 @@ public class AuthenticationSpecificationComposer implements AuthenticationSpecif
         return "# ApiKey {\n" +
                 context.getIndentationString() + getTabString(indentLevel + 1) + "location: '" + authenticationSpecification.location.name().toLowerCase() + "';\n" +
                 context.getIndentationString() + getTabString(indentLevel + 1) + "keyName: '" + authenticationSpecification.keyName + "';\n" +
-                context.getIndentationString() + getTabString(indentLevel + 1) + "value: " + renderCredentialVaultSecret(authenticationSpecification.value, indentLevel + 1) + "\n" +
+                context.getIndentationString() + getTabString(indentLevel + 1) + "value: " + renderCredentialVaultSecret(authenticationSpecification.value, indentLevel + 1) + ";\n" +
                 context.getIndentationString() + getTabString(indentLevel) + "}#";
     }
 
@@ -59,12 +59,19 @@ public class AuthenticationSpecificationComposer implements AuthenticationSpecif
     }
 
     @Override
+    public String visit(KerberosAuthenticationSpecification authenticationSpecification)
+    {
+        return "# Kerberos {\n" +
+                context.getIndentationString() + getTabString(indentLevel) + "}#";
+    }
+
+    @Override
     public String visit(EncryptedPrivateKeyPairAuthenticationSpecification authenticationSpecification)
     {
         return "# EncryptedPrivateKey {\n" +
                 context.getIndentationString() + getTabString(indentLevel + 1) + "userName: '" + authenticationSpecification.userName + "';\n" +
-                context.getIndentationString() + getTabString(indentLevel + 1) + "privateKey: " + renderCredentialVaultSecret(authenticationSpecification.privateKey, indentLevel + 1) + "\n" +
-                context.getIndentationString() + getTabString(indentLevel + 1) + "passphrase: " + renderCredentialVaultSecret(authenticationSpecification.passphrase, indentLevel + 1) + "\n" +
+                context.getIndentationString() + getTabString(indentLevel + 1) + "privateKey: " + renderCredentialVaultSecret(authenticationSpecification.privateKey, indentLevel + 1) + ";\n" +
+                context.getIndentationString() + getTabString(indentLevel + 1) + "passphrase: " + renderCredentialVaultSecret(authenticationSpecification.passphrase, indentLevel + 1) + ";\n" +
                 context.getIndentationString() + getTabString(indentLevel) + "}#";
     }
 
@@ -168,8 +175,8 @@ public class AuthenticationSpecificationComposer implements AuthenticationSpecif
         {
             return "Static\n" +
                     getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel + 1) + "accessKeyId: " + renderCredentialVaultSecret(awsStaticCredentials.accessKeyId, indentLevel + 1) + "\n" +
-                    getTabString(indentLevel + 1) + "secretAccessKey: " + renderCredentialVaultSecret(awsStaticCredentials.secretAccessKey, indentLevel + 1) + "\n" +
+                    getTabString(indentLevel + 1) + "accessKeyId: " + renderCredentialVaultSecret(awsStaticCredentials.accessKeyId, indentLevel + 1) + ";\n" +
+                    getTabString(indentLevel + 1) + "secretAccessKey: " + renderCredentialVaultSecret(awsStaticCredentials.secretAccessKey, indentLevel + 1) + ";\n" +
                     getTabString(indentLevel) + "}";
         }
 

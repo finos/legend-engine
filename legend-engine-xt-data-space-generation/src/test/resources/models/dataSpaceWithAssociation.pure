@@ -68,9 +68,12 @@ DataSpace domain::COVIDDatapace
   defaultExecutionContext: 'dummyContext';
   title: 'COVID Sample Data';
   description: 'Not over yet?';
-  featuredDiagrams:
+  diagrams:
   [
-    domain::COVIDDataDiagram
+    {
+      title: '';
+      diagram: domain::COVIDDataDiagram;
+    }
   ];
 }
 

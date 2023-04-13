@@ -14,6 +14,37 @@
 
 import meta::external::format::flatdata::metamodel::*;
 
+Class meta::external::format::flatdata::metamodel::FlatData
+{
+  sections   : FlatDataSection[*];
+}
+
+Class meta::external::format::flatdata::metamodel::FlatDataSection
+{
+  driverId          : String[1];
+  name              : String[1];
+  sectionProperties : meta::external::format::flatdata::metamodel::FlatDataProperty[*];
+  recordType        : meta::external::format::flatdata::metamodel::FlatDataRecordType[0..1];
+}
+
+Class meta::external::format::flatdata::metamodel::FlatDataProperty
+{
+  name: String[1];
+  values: Any[*];
+}
+
+Class meta::external::format::flatdata::metamodel::FlatDataRecordType
+{
+  fields: FlatDataRecordField[*];
+}
+
+Class meta::external::format::flatdata::metamodel::FlatDataRecordField
+{
+  <<meta::pure::profiles::equality.Key>> label: String[1];
+  address: String[0..1];
+  type: FlatDataDataType[1];
+}
+
 Class meta::external::format::flatdata::metamodel::FlatDataDataType
 {
   optional: Boolean[1];
@@ -54,40 +85,4 @@ Class meta::external::format::flatdata::metamodel::FlatDataDate extends FlatData
 Class meta::external::format::flatdata::metamodel::FlatDataDateTime extends FlatDataTemporal
 {
    timeZone   : String[0..1];
-}
-
-Class meta::external::format::flatdata::metamodel::FlatDataProperty
-{
-  name: String[1];
-  value: Any[*];
-}
-
-Class meta::external::format::flatdata::metamodel::FlatDataRecordType
-{
-  fields: FlatDataRecordField[*];
-}
-
-Class meta::external::format::flatdata::metamodel::FlatDataRecordField
-{
-  <<meta::pure::profiles::equality.Key>> label: String[1];
-  address: String[0..1];
-  type: FlatDataDataType[1];
-}
-
-Class <<meta::pure::profiles::typemodifiers.abstract>> meta::external::format::flatdata::metamodel::FlatDataSectionEnd
-{
-}
-
-Class meta::external::format::flatdata::metamodel::FlatData
-{
-   constraints: meta::pure::metamodel::constraint::Constraint[*];
-   sections   : FlatDataSection[*];
-}
-
-Class <<typemodifiers.abstract>> meta::external::format::flatdata::metamodel::FlatDataSection
-{
-   driverId          : String[1];
-   name              : String[1];
-   sectionProperties : meta::external::format::flatdata::metamodel::FlatDataProperty[*];
-   recordType        : meta::external::format::flatdata::metamodel::FlatDataRecordType[0..1];
 }

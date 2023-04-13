@@ -132,8 +132,7 @@ function meta::pure::lineage::scanProperties::scanProperties(vs:ValueSpecificati
 
 function <<access.private>> meta::pure::lineage::scanProperties::internal_scanProperties(vs:ValueSpecification[1], processed:Function<Any>[*], vars:Map<String,List<PropertyPathNode>>[1], scanClasses:Boolean[1], debug: meta::pure::tools::DebugContext[1]):Res[0..1]
 {
-  let varsStr= $vars->keys()->map(k| '{' + $k + ' : ' +$vars->get($k)->printPropertyNodeLists('') + '}')->makeString(', ');
-  print(if($debug.debug,|$debug.space+'Context : ' + $varsStr + '\n',|''));
+  print(if($debug.debug,|$vars->keyValues()->map(kv | '{' + $kv.first + ' : ' + $kv.second->printPropertyNodeLists('') + '}')->makeString($debug.space + 'Context : ', ', ', '\n'),|''));
 
    let res = $vs->match([
                fe:FunctionExpression[1] | print(if($debug.debug,|$debug.space+'Processing Function Expression\n',|''));

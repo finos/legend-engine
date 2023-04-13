@@ -19,7 +19,6 @@ import org.junit.Test;
 
 public class TestMappingGrammarFrom extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
-
     @Test
     public void testSimpleModelToModelMapping()
     {
@@ -33,6 +32,4 @@ public class TestMappingGrammarFrom extends TestGrammarRoundtrip.TestGrammarRoun
                 "  }\n" +
                 ")\n", "SimpleM2MMapping.json");
     }
-
-
 }

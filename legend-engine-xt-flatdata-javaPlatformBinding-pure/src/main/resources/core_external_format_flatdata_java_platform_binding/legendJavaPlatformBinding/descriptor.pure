@@ -30,3 +30,34 @@ function meta::external::format::flatdata::executionPlan::platformBinding::legen
     internalizeDescriptor      = getExternalFormatInternalizeJavaBindingDescriptor()
   )
 }
+
+
+###Pure
+
+import meta::external::format::flatdata::executionPlan::platformBinding::legendJava::*;
+import meta::external::shared::format::executionPlan::platformBinding::legendJava::*;
+import meta::pure::executionPlan::*;
+import meta::pure::extension::*;
+import meta::pure::executionPlan::platformBinding::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::executionPlan::platformBinding::localBinding::*;
+import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::*;
+
+function <<LocalPlatformBinding.TestPlanBinder>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::bindFlatdataTestPlanToPlatform(): LocalPlatformBinder[1]
+{
+   ^LocalPlatformBinder
+   (
+      overrides = [],
+      
+      bindingFunction = {plan: ExecutionPlan[1], extensions: Extension[*] |
+         
+         let legendJavaPlatformBindings = [inMemoryLegendJavaPlatformBindingExtension(),
+                                           bindingLegendJavaPlatformBindingExtension(flatDataJavaBindingDescriptor())];
+         let extensionsWithPlatformBindings = $extensions->concatenate(platformBindingExtension([legendJavaPlatformBinding($legendJavaPlatformBindings)]));
+
+         // Using LegendJava as the default for local platform binding
+         generatePlatformCode($plan, legendJavaPlatformBindingId(), ^LegendJavaPlatformBindingConfig(), $extensionsWithPlatformBindings);
+      
+      }
+   ) 
+}

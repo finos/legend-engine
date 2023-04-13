@@ -58,6 +58,7 @@ import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.ind
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.indices.delete.DeleteRequest;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.indices.get.GetRequest;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.RequestBaseVisitor;
+import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionCategory;
@@ -161,7 +162,7 @@ public class ExecutionRequestVisitor implements RequestBaseVisitor<Result>
                     stream,
                     new TDSBuilder(this.node),
                     Collections.singletonList(new ElasticsearchV7ExecutionActivity(this.request.getURI(), query)),
-                    this.executionState.getSessionID()
+                    RequestContext.getSessionID(this.executionState.getRequestContext())
             );
         }
         catch (IOException e)

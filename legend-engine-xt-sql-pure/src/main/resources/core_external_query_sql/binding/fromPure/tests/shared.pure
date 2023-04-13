@@ -24,11 +24,17 @@ Class meta::external::query::sql::transformation::queryToPure::tests::FlatInput
   dateTimeIn: DateTime[1];
   stringIn: String[1];
   enumVal: meta::external::query::sql::transformation::queryToPure::tests::MyEnum[1];
+  type: meta::external::query::sql::transformation::queryToPure::tests::FieldType[1];
 }
 
 Enum meta::external::query::sql::transformation::queryToPure::tests::MyEnum
 {
    Value1, Value2, Value_3, VALUE__4
+}
+
+Enum meta::external::query::sql::transformation::queryToPure::tests::FieldType
+{
+   Type1, Type2, Type_3, Type__4
 }
 
 ###Mapping
@@ -188,10 +194,10 @@ function meta::external::query::sql::transformation::queryToPure::tests::Service
     (
       func = | FlatInput.all()->project(
         [
-          x | $x.idIn, x | $x.integerIn, x | $x.enumVal
+          x | $x.idIn, x | $x.integerIn, x | $x.enumVal, x | $x.type
         ],
         [
-          'ID', 'Integer', 'The Enum Value'
+          'ID', 'Integer', 'The Enum Value', 'The Type'
         ]
       ),
       mapping = dummyMapping,

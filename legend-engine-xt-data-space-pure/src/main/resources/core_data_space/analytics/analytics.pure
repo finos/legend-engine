@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::milestoning::*;
 import meta::pure::metamodel::dataSpace::*;
 import meta::pure::metamodel::dataSpace::analytics::*;
 import meta::pure::runtime::*;
@@ -29,7 +30,7 @@ function meta::pure::metamodel::dataSpace::analytics::analyzeDataSpace(dataSpace
 {
   ^DataSpaceAnalysisResult
   (
-    diagramModels = meta::pure::metamodel::diagram::analytics::modelCoverage::getDiagramModelCoverage($dataSpace.featuredDiagrams->concatenate($dataSpace.diagrams.diagram)->removeDuplicates()),
+    diagramModels = meta::pure::metamodel::diagram::analytics::modelCoverage::getDiagramModelCoverage($dataSpace.diagrams.diagram),
     executionContexts = analyzeDataSpaceExecutionContexts($dataSpace, $allAvailableRuntimes),
     elementDocs = getModelsDoc($dataSpace)
   );
@@ -48,7 +49,7 @@ Class meta::pure::metamodel::dataSpace::analytics::DataSpaceExecutionContextAnal
 function <<access.private>> meta::pure::metamodel::dataSpace::analytics::analyzeDataSpaceExecutionContexts(dataSpace: DataSpace[1], allAvailableRuntimes: PackageableRuntime[*]): DataSpaceExecutionContextAnalysisResult[*]
 {
   $dataSpace.executionContexts->map(context|^DataSpaceExecutionContextAnalysisResult(
-    name = $context.name, 
+    name = $context.name,
     compatibleRuntimes = getMappingCompatibleRuntimes($context.mapping, $allAvailableRuntimes),
     mappingCoverage = meta::analytics::mapping::modelCoverage::analyze($context.mapping, false, false)
   ));
@@ -82,6 +83,13 @@ Class meta::pure::metamodel::dataSpace::analytics::DataSpaceBasicDocumentationEn
   docs: String[*];
 }
 
+Class meta::pure::metamodel::dataSpace::analytics::DataSpacePropertyDocumentationEntry extends DataSpaceBasicDocumentationEntry
+{
+  milestoning: String[0..1];
+  type: String[0..1];
+  multiplicity: Multiplicity[1];
+}
+
 Class meta::pure::metamodel::dataSpace::analytics::DataSpaceModelDocumentationEntry extends DataSpaceBasicDocumentationEntry
 {
   element: PackageableElement[1];
@@ -90,8 +98,8 @@ Class meta::pure::metamodel::dataSpace::analytics::DataSpaceModelDocumentationEn
 
 Class meta::pure::metamodel::dataSpace::analytics::DataSpaceClassDocumentationEntry extends DataSpaceModelDocumentationEntry
 {
-  properties: DataSpaceBasicDocumentationEntry[*];
-  inheritedProperties: DataSpaceBasicDocumentationEntry[*];
+  properties: DataSpacePropertyDocumentationEntry[*];
+  milestoning: String[0..1];
 }
 
 Class meta::pure::metamodel::dataSpace::analytics::DataSpaceEnumerationDocumentationEntry extends DataSpaceModelDocumentationEntry
@@ -101,24 +109,40 @@ Class meta::pure::metamodel::dataSpace::analytics::DataSpaceEnumerationDocumenta
 
 Class meta::pure::metamodel::dataSpace::analytics::DataSpaceAssociationDocumentationEntry extends DataSpaceModelDocumentationEntry
 {
-  properties: DataSpaceBasicDocumentationEntry[*];
+  properties: DataSpacePropertyDocumentationEntry[*];
+}
+
+function <<access.private>> meta::pure::metamodel::dataSpace::analytics::getClassMilestoning(class: Class<Any>[1]): String[0..1]
+{
+  if (
+    ['bitemporal']->exists(s| $class->hasStereotype($s, temporal)), | 'bitemporal', | if (
+    ['businesstemporal']->exists(s| $class->hasStereotype($s, temporal)), | 'businesstemporal', | if (
+    ['processingtemporal']->exists(s| $class->hasStereotype($s, temporal)), | 'processingtemporal', | []))
+  );
+}
+
+function <<access.private>> meta::pure::metamodel::dataSpace::analytics::getPropertyMilestoning(property: AbstractProperty<Any>[1]): String[0..1]
+{
+  let type = $property.genericType.rawType;
+  if (!$type->isEmpty() && $type->toOne()->instanceOf(Class), | $type->toOne()->cast(@Class<Any>)->getClassMilestoning(), | []);
 }
 
 function <<access.private>> meta::pure::metamodel::dataSpace::analytics::getClassDoc(class: Class<Any>[1]): DataSpaceClassDocumentationEntry[1]
 {
-  let allDefinedProperties = $class->allProperties();
-  let allInheritedProperties = []
-    ->concatenate($class->hierarchicalProperties())
-    ->concatenate($class->hierarchicalPropertiesFromAssociations())
-    ->concatenate($class->hierarchicalQualifiedProperties())->removeAll($allDefinedProperties)->removeDuplicates();
+  let allDefinedProperties = $class->allProperties()->reverseMilestoningTransforms();
 
   ^DataSpaceClassDocumentationEntry(
     element = $class,
     name = $class.name->toOne(),
     path = $class->elementToPath(),
     docs = getDocs($class),
-    properties = $allDefinedProperties->map(p|^DataSpaceBasicDocumentationEntry(name=if($p->instanceOf(QualifiedProperty), | $p.name->toOne() + '()', | $p.name->toOne()), docs=getDocs($p))),
-    inheritedProperties = $allInheritedProperties->map(p|^DataSpaceBasicDocumentationEntry(name=if($p->instanceOf(QualifiedProperty), | $p.name->toOne() + '()', | $p.name->toOne()), docs=getDocs($p)))
+    milestoning = $class->getClassMilestoning(),
+    properties = $allDefinedProperties->map(p|^DataSpacePropertyDocumentationEntry(
+      name=if($p->instanceOf(QualifiedProperty), | $p.name->toOne() + '()', | $p.name->toOne()), docs=getDocs($p),
+      milestoning=$p->getPropertyMilestoning(),
+      multiplicity=$p.multiplicity,
+      type=if(!$p.genericType.rawType->isEmpty(), | $p.genericType.rawType->toOne()->elementToPath(), | [])
+    ))
   );
 }
 
@@ -143,7 +167,13 @@ function <<access.private>> meta::pure::metamodel::dataSpace::analytics::getAsso
     properties = []
      ->concatenate($association.properties)
      ->concatenate($association.qualifiedProperties)
-     ->map(p|^DataSpaceBasicDocumentationEntry(name=if($p->instanceOf(QualifiedProperty), | $p.name->toOne() + '()', | $p.name->toOne()), docs=getDocs($p)))
+     ->reverseMilestoningTransforms()
+     ->map(p|^DataSpacePropertyDocumentationEntry(
+      name=if($p->instanceOf(QualifiedProperty), | $p.name->toOne() + '()', | $p.name->toOne()), docs=getDocs($p),
+      milestoning=$p->getPropertyMilestoning(),
+      multiplicity=$p.multiplicity,
+      type=if(!$p.genericType.rawType->isEmpty(), | $p.genericType.rawType->toOne()->elementToPath(), | [])
+    ))
   )
 }
 
