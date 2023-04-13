@@ -47,7 +47,7 @@ public class TestQueryStoreManager
         public List<StereotypePtr> stereotypes;
         public Integer limit;
         public Boolean showCurrentUserQueriesOnly;
-        public Boolean searchExactName;
+        public Boolean exactMatchName;
         public Boolean combineTaggedValuesCondition;
 
         TestQuerySearchSpecificationBuilder withSearchTerm(String searchTerm)
@@ -86,9 +86,9 @@ public class TestQueryStoreManager
             return this;
         }
 
-        TestQuerySearchSpecificationBuilder withExactNameSearch(Boolean searchExactName)
+        TestQuerySearchSpecificationBuilder withExactNameSearch(Boolean exactMatchName)
         {
-            this.searchExactName = searchExactName;
+            this.exactMatchName = exactMatchName;
             return this;
         }
 
@@ -107,7 +107,7 @@ public class TestQueryStoreManager
             searchSpecification.stereotypes = this.stereotypes;
             searchSpecification.limit = this.limit;
             searchSpecification.showCurrentUserQueriesOnly = this.showCurrentUserQueriesOnly;
-            searchSpecification.searchExactName = this.searchExactName;
+            searchSpecification.exactMatchName = this.exactMatchName;
             searchSpecification.combineTaggedValuesCondition = this.combineTaggedValuesCondition;
             return searchSpecification;
         }
@@ -344,7 +344,7 @@ public class TestQueryStoreManager
     }
 
     @Test
-    public void testSearchExactNameQuery() throws Exception
+    public void testMatchExactNameQuery() throws Exception
     {
         String currentUser = "testUser";
         Query newQuery = TestQueryBuilder.create("1", "Test Query 1", currentUser).withGroupId("test.group").withArtifactId("test-artifact").build();

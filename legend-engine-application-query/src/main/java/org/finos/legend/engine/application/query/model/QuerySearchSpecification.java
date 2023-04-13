@@ -27,7 +27,7 @@ public class QuerySearchSpecification
     public List<StereotypePtr> stereotypes;
     public Integer limit;
     public Boolean showCurrentUserQueriesOnly;
-    public Boolean searchExactName;
+    public Boolean exactMatchName;
     // This boolean flag helps to perform And condition on filter we apply for tagged values
     // so that we can search if a query contains all the taggedValues specified in the
     // search specification
