@@ -88,6 +88,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Uni
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Whatever;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.AggregateValue;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.PureList;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.TdsOlapAggregation;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.TdsOlapRank;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.GraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.GraphFetchTreeVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.PropertyGraphFetchTree;
@@ -712,6 +714,12 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             case "aggregateValue":
                 AggregateValue aggregateValue = (AggregateValue) iv.value;
                 return (this.isRenderingHTML() ? "<span class='pureGrammar-function'>" : "") + "agg" + (this.isRenderingHTML() ? "</span>" : "") + "(" + aggregateValue.mapFn.accept(this) + ", " + aggregateValue.aggregateFn.accept(this) + ")";
+            case "tdsOlapRank":
+                TdsOlapRank tdsOlapRank = (TdsOlapRank)iv.value;
+                return (this.isRenderingHTML() ? "<span class='pureGrammar-function'>" : "") + "olapGroupBy" + (this.isRenderingHTML() ? "</span>" : "") + "(" + tdsOlapRank.function.accept(this)  + ")";
+            case "tdsOlapAggregation":
+                TdsOlapAggregation tdsOlapAggregation = (TdsOlapAggregation)iv.value;
+                return (this.isRenderingHTML() ? "<span class='pureGrammar-function'>" : "") + "olapGroupBy" + (this.isRenderingHTML() ? "</span>" : "") + "(" + tdsOlapAggregation.function.accept(this)  + ")";
             default:
                 PureGrammarComposerContext context = this.toContext();
                 Function2<Object, PureGrammarComposerContext, String> val = context.extraEmbeddedPureComposers.get(iv.type);
