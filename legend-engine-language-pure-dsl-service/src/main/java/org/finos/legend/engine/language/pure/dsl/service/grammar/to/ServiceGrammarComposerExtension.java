@@ -88,14 +88,13 @@ public class ServiceGrammarComposerExtension implements PureGrammarComposerExten
             }
             else if (composableExecEnvironment.isEmpty())
             {
-                return new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, el -> ServiceGrammarComposerExtension.renderService(el, context)).makeString("###" + ServiceParserExtension.NAME + "\n", "\n\n", ""), composableElements);
+                return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, el -> ServiceGrammarComposerExtension.renderService(el, context)).makeString("###" + ServiceParserExtension.NAME + "\n", "\n\n", ""), composableElements);
             }
-            else if (composableElements.isEmpty())
+            else
             {
                 return new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableExecEnvironment, el -> renderExecutionEnvironment(el, context)).makeString("###" + ServiceParserExtension.NAME + "\n", "\n\n", ""), composableExecEnvironment);
 
             }
-            return null;
         });
     }
 
