@@ -242,6 +242,12 @@ public class TestSQLRoundTrip
         check("SELECT EXTRACT(DOW FROM Date) FROM table");
     }
 
+    @Test
+    public void testInterval()
+    {
+        check("SELECT INTERVAL '1 YEAR 2 MONTHS 3 WEEKS 4 DAYS 5 HOURS 6 MINUTES 7 SECONDS' FROM table");
+    }
+
     private void fail(String sql, int start, int end, String message)
     {
         try
