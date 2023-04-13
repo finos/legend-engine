@@ -82,7 +82,7 @@
           }
         }
       ],
-      "name": "funcx__Any_MANY_",
+      "name": "funcx",
       "package": "test",
       "parameters": [],
       "postConstraints": [],
