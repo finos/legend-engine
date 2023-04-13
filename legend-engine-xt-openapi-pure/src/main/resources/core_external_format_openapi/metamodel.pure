@@ -70,7 +70,6 @@ Class meta::external::format::openapi::metamodel::Operation
 
 Class meta::external::format::openapi::metamodel::ParameterOrReference
 {
-  _type: String[1];
 }
 
 Class meta::external::format::openapi::metamodel::Parameter extends ParameterOrReference
@@ -119,7 +118,6 @@ Class meta::external::format::openapi::metamodel::Components
 
 Class meta::external::format::openapi::metamodel::SchemaOrReference
 {
-  _type: String[1];
 }
 
 Class meta::external::format::openapi::metamodel::Schema extends SchemaOrReference
@@ -140,6 +138,7 @@ Class meta::external::format::openapi::metamodel::Schema extends SchemaOrReferen
   items: SchemaOrReference[0..*];
 }
 
+// doc.doc
 Class meta::external::format::openapi::metamodel::Reference extends ParameterOrReference,SchemaOrReference
 {
   ref: String[1];

@@ -272,6 +272,7 @@
         <module>legend-engine-server-integration-tests</module>
         <module>legend-engine-extensions-collection-execution</module>
         <module>legend-engine-extensions-collection-generation</module>
+        <module>legend-engine-xt-openapi-pure</module>
         <!-- NOTE: Do not change the ordering of this block, we want to build these modules last -->
     </modules>
 
@@ -1818,6 +1819,12 @@
                 <artifactId>legend-engine-xt-analytics-store-entitlement-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-openapi-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-openapi-generation</artifactId>
