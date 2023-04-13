@@ -12,33 +12,16 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package org.finos.legend.engine.entitlement.model.specification;
+package org.finos.legend.engine.entitlement;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
+import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProvider;
+import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type", visible = true)
-public class DatasetSpecification
+public class RelationalDatabaseStoreEntitlementCodeRepositoryProvider implements CodeRepositoryProvider
 {
-    private String name;
-    private String type;
-
-    public DatasetSpecification(String name, String type)
+    public CodeRepository repository()
     {
-        this.name = name;
-        this.type = type;
-    }
-
-    public DatasetSpecification()
-    {
-    }
-
-    public String getType()
-    {
-        return type;
-    }
-
-    public String getName()
-    {
-        return name;
+        return GenericCodeRepository.build("core_relational_database_store_entitlement.definition.json");
     }
 }

@@ -12,33 +12,19 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package org.finos.legend.engine.entitlement.model.specification;
+package org.finos.legend.engine.entitlement.model.entitlementReport;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.finos.legend.engine.entitlement.model.specification.DatasetSpecification;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type", visible = true)
-public class DatasetSpecification
+public class DatasetEntitlementAccessGrantedReport extends DatasetEntitlementReport
 {
-    private String name;
-    private String type;
-
-    public DatasetSpecification(String name, String type)
+    public DatasetEntitlementAccessGrantedReport(DatasetSpecification dataset)
     {
-        this.name = name;
-        this.type = type;
+        super(dataset);
     }
 
-    public DatasetSpecification()
+    public DatasetEntitlementAccessGrantedReport()
     {
-    }
-
-    public String getType()
-    {
-        return type;
-    }
-
-    public String getName()
-    {
-        return name;
+        // DO NOT DELETE: this resets the default constructor for Jackson
     }
 }

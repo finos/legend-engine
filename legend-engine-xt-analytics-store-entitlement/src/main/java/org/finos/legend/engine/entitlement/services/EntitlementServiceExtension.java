@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.entitlement.services;
 
+import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.entitlement.model.entitlementReport.DatasetEntitlementReport;
 import org.finos.legend.engine.entitlement.model.specification.DatasetSpecification;
@@ -35,7 +36,12 @@ public interface EntitlementServiceExtension
       return Collections.emptyList();
    }
 
-   default List<DatasetEntitlementReport> generateDatasetEntitlementReports(Lambda query, String runtimePath, Root_meta_pure_runtime_Runtime runtime, String mappingPath, Mapping mapping, PureModelContext model, PureModel pureModel, ModelManager modelManager, MutableList<CommonProfile> profiles)
+   default List<DatasetEntitlementReport> generateDatasetEntitlementReports(List<DatasetSpecification> datasets, Lambda query, String runtimePath, Root_meta_pure_runtime_Runtime runtime, String mappingPath, Mapping mapping, PureModelContext model, PureModel pureModel, ModelManager modelManager, MutableList<CommonProfile> profiles)
+   {
+      return Collections.emptyList();
+   }
+
+   default List<Function0<List<EntitlementSubtypeInfo<?>>>> getExtraEntitlementSubTypeInfoCollectors()
    {
       return Collections.emptyList();
    }

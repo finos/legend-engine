@@ -12,33 +12,27 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package org.finos.legend.engine.entitlement.model.specification;
+package org.finos.legend.engine.api.analytics.model;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.finos.legend.engine.entitlement.model.entitlementReport.DatasetEntitlementReport;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type", visible = true)
-public class DatasetSpecification
+import java.util.List;
+
+public class CheckEntitlementsResult
 {
-    private String name;
-    private String type;
+    private List<DatasetEntitlementReport> reports;
 
-    public DatasetSpecification(String name, String type)
+    public CheckEntitlementsResult(List<DatasetEntitlementReport> reports)
     {
-        this.name = name;
-        this.type = type;
+        this.reports = reports;
     }
 
-    public DatasetSpecification()
+    public List<DatasetEntitlementReport> getReports()
     {
+        return reports;
     }
 
-    public String getType()
+    public CheckEntitlementsResult()
     {
-        return type;
-    }
-
-    public String getName()
-    {
-        return name;
     }
 }
