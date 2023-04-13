@@ -14,12 +14,15 @@
 
 package org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors;
 
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Field;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
+
+import java.util.Optional;
 
 public class FieldValueVisitor implements LogicalPlanVisitor<FieldValue>
 {
@@ -28,7 +31,7 @@ public class FieldValueVisitor implements LogicalPlanVisitor<FieldValue>
     public VisitorResult visit(PhysicalPlanNode prev, FieldValue current, VisitorContext context)
     {
         Field field = new Field(
-            getDatasetReferenceAlias(current),
+            getDatasetReferenceAlias(current.datasetRef(), current.datasetRefAlias()),
             current.fieldName(),
             context.quoteIdentifier(),
             current.alias().orElse(null));
@@ -43,12 +46,17 @@ public class FieldValueVisitor implements LogicalPlanVisitor<FieldValue>
         return new VisitorResult(null);
     }
 
-    private String getDatasetReferenceAlias(FieldValue current)
+    public static String getDatasetReferenceAlias(Optional<DatasetReference> datasetRef, Optional<String> datasetRefAlias)
     {
-        if (!current.datasetRef().isPresent())
+        String datasetReferenceAlias = null;
+        if (datasetRef.isPresent())
         {
-            return null;
+            datasetReferenceAlias = datasetRef.get().alias().orElse(null);
         }
-        return current.datasetRef().get().alias().orElse(null);
+        else if (datasetRefAlias.isPresent())
+        {
+            datasetReferenceAlias = datasetRefAlias.get();
+        }
+        return datasetReferenceAlias;
     }
 }

@@ -208,5 +208,21 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
 
     public abstract void verifyNontemporalDeltaPostActionSqlAndCleanStagingData(GeneratorResult operations);
 
+    @Test
+    void testNontemporalDeltaWithDerivedDataset()
+    {
+        TestScenario testScenario = scenarios.DERIVED_DATASET_NO_DEDUP_STRATEGY();
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(testScenario.getIngestMode())
+                .relationalSink(getRelationalSink())
+                .collectStatistics(true)
+                .build();
+
+        GeneratorResult operations = generator.generateOperations(testScenario.getDatasets());
+        verifyNontemporalDeltaWithDerivedDataset(operations);
+    }
+
+    public abstract void verifyNontemporalDeltaWithDerivedDataset(GeneratorResult operations);
+
     public abstract RelationalSink getRelationalSink();
 }
