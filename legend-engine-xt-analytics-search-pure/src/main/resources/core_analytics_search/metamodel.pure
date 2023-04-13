@@ -67,6 +67,9 @@ Class meta::analytics::search::metamodel::class::ClassProperty
 }
 
 // DATASPACE DOCUMENT
+Class <<doc.deprecated>> meta::analytics::search::metamodel::dataspace::RootDocument extends meta::analytics::search::metamodel::dataspace::DataSpaceDocument
+{
+}
 Class meta::analytics::search::metamodel::dataspace::DataSpaceDocument extends meta::analytics::search::metamodel::PackageableRootDocument
 {
   defaultExecutionContext: String[1];
@@ -75,6 +78,9 @@ Class meta::analytics::search::metamodel::dataspace::DataSpaceDocument extends m
   taxonomies: String[*];
 }
 
+Class <<doc.deprecated>> meta::analytics::search::metamodel::dataspace::ExecutionContextDocument extends meta::analytics::search::metamodel::dataspace::ExecutionContext
+{
+}
 Class meta::analytics::search::metamodel::dataspace::ExecutionContext
 {
   name: String[1];
@@ -97,6 +103,9 @@ Class meta::analytics::search::metamodel::mapping::MappingDocument extends meta:
   includedMappings: String[*];
 }
 
+Class <<doc.deprecated>> meta::analytics::search::metamodel::mapping::DatabaseColumnDocument extends meta::analytics::search::metamodel::mapping::DatabaseColumn
+{
+}
 Class meta::analytics::search::metamodel::mapping::DatabaseColumn
 {
   database: String[1];
