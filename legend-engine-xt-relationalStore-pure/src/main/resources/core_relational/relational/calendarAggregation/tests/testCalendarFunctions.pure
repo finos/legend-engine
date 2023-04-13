@@ -199,7 +199,6 @@ function <<test.BeforePackage>> meta::relational::tests::functions::pureToSqlQue
   executeInDb('insert into LegendCalendarSchema.NY_Calendar ('+$columnNames+') values (\'2021-10-15\',288,\'Fri\',\'2021-10-15\', -63,199,11,11,5,\'2021-09-18\',\'2021-07-24\',\'2020-10-17\',10,\'2021-10-29\',4,41,\'2021-10-11\',2021,\'2021-10-14\', 9,3,2020,21,252);', $connection);
   executeInDb('insert into LegendCalendarSchema.NY_Calendar ('+$columnNames+') values (\'2021-10-16\',289,\'Sat\',\'2021-10-18\', -62,200,12,12,1,\'2021-09-18\',\'2021-07-24\',\'2020-10-17\',10,\'2021-10-29\',4,42,\'2021-10-18\',2021,\'2021-10-15\', 9,3,2020,21,252);', $connection);
 
-
   true;
 }
 
