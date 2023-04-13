@@ -244,7 +244,7 @@ function <<access.private>> meta::pure::tds::schema::resolveSchemaImpl(fe : Func
             let tdsSchema = resolveSchemaImpl($fe.parametersValues->at(0), $openVars, $extensions);
             let colNamesToGroupBy = $fe.parametersValues->at(1)->reactivate($openVars)->cast(@String);
 
-            let aggSpecifications = $fe.parametersValues->at(2)->reactivate($openVars)->cast(@meta::pure::tds::AggregateValue<Any,Any>)->toOneMany();
+            let aggSpecifications = $fe.parametersValues->at(2)->reactivate($openVars)->cast(@meta::pure::tds::AggregateValue<Any,Any>);
 
             let aggColumns = $aggSpecifications->map(aggSpecification |
                ^TDSColumn(name=$aggSpecification.name, type=$aggSpecification.aggregateFn->functionReturnType().rawType->toOne()->cast(@DataType));
