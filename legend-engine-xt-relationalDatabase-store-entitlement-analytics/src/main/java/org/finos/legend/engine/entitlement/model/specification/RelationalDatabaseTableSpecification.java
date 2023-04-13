@@ -15,32 +15,40 @@
 package org.finos.legend.engine.entitlement.model.specification;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type", visible = true)
-public class DatasetSpecification
+public class RelationalDatabaseTableSpecification extends DatasetSpecification
 {
-    private String name;
-    private String type;
+    private String database;
+    private String schema;
+    private String table;
 
-    public DatasetSpecification(String name, String type)
+    public RelationalDatabaseTableSpecification(String name, String type, String database, String schema, String table)
     {
-        this.name = name;
-        this.type = type;
+        super(name, type);
+        this.database = database;
+        this.schema = schema;
+        this.table = table;
     }
 
-    public DatasetSpecification()
+    public RelationalDatabaseTableSpecification()
     {
+        // DO NOT DELETE: this resets the default constructor for Jackson
     }
 
-    public String getType()
+    public String getDatabase()
     {
-        return type;
+        return this.database;
     }
 
-    public String getName()
+    public String getTable()
     {
-        return name;
+        return this.table;
+    }
+
+    public String getSchema()
+    {
+        return this.schema;
     }
 }

@@ -169,6 +169,11 @@
         <module>legend-engine-xt-data-space-generation</module>
         <module>legend-engine-xt-data-space-api</module>
 
+        <module>legend-engine-xt-analytics-store-entitlement</module>
+        <module>legend-engine-xt-analytics-store-entitlement-api</module>
+        <module>legend-engine-xt-relationalDatabase-store-entitlement-analytics</module>
+        <module>legend-engine-xt-relationalDatabase-store-entitlement-pure</module>
+
         <module>legend-engine-xt-analytics-mapping-api</module>
         <module>legend-engine-xt-analytics-mapping-protocol</module>
         <module>legend-engine-xt-analytics-mapping-pure</module>
@@ -262,8 +267,6 @@
         <module>legend-engine-xt-nonrelationalStore-mongodb-protocol</module>
         <module>legend-engine-xt-nonrelationalStore-mongodb-executionPlan</module>
         <module>legend-engine-xt-nonrelationalStore-mongodb-javaPlatformBinding-pure</module>
-        <module>legend-engine-xt-analytics-store-entitlement</module>
-        <module>legend-engine-xt-analytics-store-entitlement-api</module>
         <module>legend-engine-xt-artifact-generation-api</module>
 
         <!-- NOTE: Do not change the ordering of this block, we want to build these modules last -->
@@ -1335,6 +1338,27 @@
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-store-entitlement</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-store-entitlement-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalDatabase-store-entitlement-analytics</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalDatabase-store-entitlement-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-analytics-mapping-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1820,16 +1844,7 @@
                 <artifactId>legend-engine-xt-nonrelationalStore-mongodb-javaPlatformBinding-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-analytics-store-entitlement</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-analytics-store-entitlement-api</artifactId>
-                <version>${project.version}</version>
-            </dependency>
+
             <!-- ENGINE -->
 
             <!-- PURE -->

@@ -15,6 +15,7 @@
 package org.finos.legend.engine.entitlement.services;
 
 import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.impl.utility.LazyIterate;
 
 import java.util.List;
 import java.util.ServiceLoader;
@@ -22,8 +23,16 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class EntitlementServiceExtensionLoader
 {
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Engine Execution Server");
     private static final AtomicReference<List<EntitlementServiceExtension>> INSTANCE = new AtomicReference<>();
+
+    public static void logExtensionList()
+    {
+        if (LOGGER.isDebugEnabled())
+        {
+            LOGGER.debug(LazyIterate.collect(extensions(), extension -> "- " + extension.getClass().getSimpleName()).makeString("EntitlementServiceExtensionLoader loaded:\n", "\n", ""));
+        }
+    }
 
     public static List<EntitlementServiceExtension> extensions()
     {

@@ -14,28 +14,17 @@
 
 package org.finos.legend.engine.entitlement.model.entitlementReport;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.entitlement.model.specification.DatasetSpecification;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type", defaultImpl = DatasetEntitlementUnsupportedReport.class)
-public abstract class DatasetEntitlementReport
+public class DatasetEntitlementAccessRequestedReport extends DatasetEntitlementReport
 {
-    private DatasetSpecification dataset;
-
-    public DatasetEntitlementReport(DatasetSpecification dataset)
+    public DatasetEntitlementAccessRequestedReport(DatasetSpecification dataset)
     {
-        this.dataset = dataset;
+        super(dataset);
     }
 
-    public DatasetEntitlementReport()
+    public DatasetEntitlementAccessRequestedReport()
     {
         // DO NOT DELETE: this resets the default constructor for Jackson
-    }
-
-    public DatasetSpecification getDataset()
-    {
-        return dataset;
     }
 }
