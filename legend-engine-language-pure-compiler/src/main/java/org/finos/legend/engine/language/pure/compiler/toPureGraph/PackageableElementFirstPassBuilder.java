@@ -20,6 +20,7 @@ import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.UserDefinedFunctionHandler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.TypeAndMultiplicity;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
@@ -210,7 +211,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
 
         ProcessingContext ctx = new ProcessingContext("Function '" + functionFullName + "' First Pass");
 
-        setNameAndPackage(targetFunc, function)
+        setNameAndPackage(targetFunc, functionSignature, function._package, function.sourceInformation)
                 ._functionName(functionName) // function name to be used in the handler map -> meta::pure::functions::date::isAfterDay
                 ._classifierGenericType(newGenericType(this.context.pureModel.getType("meta::pure::metamodel::function::ConcreteFunctionDefinition"), PureModel.buildFunctionType(ListIterate.collect(function.parameters, p -> (VariableExpression) p.accept(new ValueSpecificationBuilder(this.context, Lists.mutable.empty(), ctx))), this.context.resolveGenericType(function.returnType, function.sourceInformation), this.context.pureModel.getMultiplicity(function.returnMultiplicity), this.context.pureModel)))
                 ._stereotypes(ListIterate.collect(function.stereotypes, this::resolveStereotype))
@@ -347,25 +348,29 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         return this.context.resolveStereotype(stereotypePointer.profile, stereotypePointer.value, stereotypePointer.profileSourceInformation, stereotypePointer.sourceInformation);
     }
 
-    private <T extends PackageableElement, S extends org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> T setNameAndPackage(T pureElement, S sourceElement)
+    private <T extends PackageableElement> T setNameAndPackage(T pureElement, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement sourceElement)
+    {
+        return setNameAndPackage(pureElement, sourceElement.name, sourceElement._package, sourceElement.sourceInformation);
+    }
+
+    private <T extends PackageableElement> T setNameAndPackage(T pureElement, String name, String packagePath, SourceInformation sourceInformation)
     {
         // Validate and set name
-        String name = sourceElement.name;
         if ((name == null) || name.isEmpty())
         {
-            throw new EngineException("PackageableElement name may not be null or empty", sourceElement.sourceInformation, EngineErrorType.COMPILATION);
+            throw new EngineException("PackageableElement name may not be null or empty", sourceInformation, EngineErrorType.COMPILATION);
         }
         if (!name.equals(pureElement.getName()))
         {
-            throw new EngineException("PackageableElement name '" + name + "' must match CoreInstance name '" + pureElement.getName() + "'", sourceElement.sourceInformation, EngineErrorType.COMPILATION);
+            throw new EngineException("PackageableElement name '" + name + "' must match CoreInstance name '" + pureElement.getName() + "'", sourceInformation, EngineErrorType.COMPILATION);
         }
         pureElement._name(name);
 
         // Validate and set package
-        Package pack = this.context.pureModel.getOrCreatePackage(sourceElement._package);
+        Package pack = this.context.pureModel.getOrCreatePackage(packagePath);
         if (pack._children().anySatisfy(c -> name.equals(c._name())))
         {
-            throw new EngineException("An element named '" + name + "' already exists in the package '" + sourceElement._package + "'", sourceElement.sourceInformation, EngineErrorType.COMPILATION);
+            throw new EngineException("An element named '" + name + "' already exists in the package '" + packagePath + "'", sourceInformation, EngineErrorType.COMPILATION);
         }
         pureElement._package(pack);
         pack._childrenAdd(pureElement);

@@ -22,7 +22,7 @@
           ]
         }
       ],
-      "name": "func1__Date_1_",
+      "name": "func1",
       "package": "model::domain::test",
       "parameters": [],
       "postConstraints": [],
