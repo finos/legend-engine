@@ -212,7 +212,8 @@ public class QueryStoreManager
             {
                 filters.add(Filters.eq("name", searchSpecification.searchTerm));
             }
-            else {
+            else
+            {
                 filters.add(Filters.or(Filters.regex("name", Pattern.quote(searchSpecification.searchTerm), "i"), Filters.eq("id", searchSpecification.searchTerm)));
             }
         }
