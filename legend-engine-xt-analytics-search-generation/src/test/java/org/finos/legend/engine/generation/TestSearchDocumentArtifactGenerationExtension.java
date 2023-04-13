@@ -69,10 +69,10 @@ public class TestSearchDocumentArtifactGenerationExtension
         List<Artifact> outputs = extension.generate(packageableElement, pureModel, pureModelContextData, PureClientVersions.production);
         Assert.assertEquals(1, outputs.size());
         Artifact searchDocumentResult = outputs.get(0);
-        Assert.assertEquals("json", searchDocumentResult.format);
-        Assert.assertEquals(FILE_NAME, searchDocumentResult.path);
+        Assert.assertEquals(searchDocumentResult.format, "json");
+        Assert.assertEquals(searchDocumentResult.path, FILE_NAME);
         Assert.assertNotNull(searchDocumentResult.content);
-        Assert.assertEquals("{\"taggedValues\":{},\"package\":\"model\",\"name\":\"Person\",\"description\":\"\",\"projectCoordinates\":{\"versionId\":\"UNKNOWN\",\"groupId\":\"UNKNOWN\",\"artifactId\":\"UNKNOWN\"},\"id\":\"model::Person\",\"type\":\"Class\",\"properties\":[{\"taggedValues\":{},\"name\":\"firstName\"},{\"taggedValues\":{},\"name\":\"lastName\"}]}", searchDocumentResult.content);
+        Assert.assertEquals(searchDocumentResult.content, "{\"package\":\"model\",\"name\":\"Person\",\"projectCoordinates\":{\"versionId\":\"UNKNOWN\",\"groupId\":\"UNKNOWN\",\"artifactId\":\"UNKNOWN\"},\"id\":\"model::Person\",\"type\":\"Class\",\"properties\":[\"firstName\",\"lastName\"]}");
     }
 
     @Test
@@ -99,9 +99,9 @@ public class TestSearchDocumentArtifactGenerationExtension
         List<Artifact> outputs = extension.generate(packageableElement, pureModel, pureModelContextDataWithOrigin, PureClientVersions.production);
         Assert.assertEquals(1, outputs.size());
         Artifact searchDocumentResult = outputs.get(0);
-        Assert.assertEquals("json", searchDocumentResult.format);
-        Assert.assertEquals(FILE_NAME, searchDocumentResult.path);
+        Assert.assertEquals(searchDocumentResult.format, "json");
+        Assert.assertEquals(searchDocumentResult.path, FILE_NAME);
         Assert.assertNotNull(searchDocumentResult.content);
-        Assert.assertEquals("{\"taggedValues\":{},\"package\":\"model\",\"name\":\"Person\",\"description\":\"\",\"projectCoordinates\":{\"versionId\":\"0.0.1-SNAPSHOT\",\"groupId\":\"org.finos.test\",\"artifactId\":\"test-project\"},\"id\":\"model::Person\",\"type\":\"Class\",\"properties\":[{\"taggedValues\":{},\"name\":\"firstName\"},{\"taggedValues\":{},\"name\":\"lastName\"}]}",searchDocumentResult.content);
+        Assert.assertEquals(searchDocumentResult.content, "{\"package\":\"model\",\"name\":\"Person\",\"projectCoordinates\":{\"versionId\":\"0.0.1-SNAPSHOT\",\"groupId\":\"org.finos.test\",\"artifactId\":\"test-project\"},\"id\":\"model::Person\",\"type\":\"Class\",\"properties\":[\"firstName\",\"lastName\"]}");
     }
 }
