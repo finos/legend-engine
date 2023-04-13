@@ -214,6 +214,10 @@ public class QueryStoreManager
         {
             filters.add(Filters.in("owner", currentUser, null));
         }
+        if (searchSpecification.searchExactName != null && searchSpecification.searchExactName)
+        {
+            filters.add(Filters.eq("name", searchSpecification.searchTerm));
+        }
         if (searchSpecification.projectCoordinates != null && !searchSpecification.projectCoordinates.isEmpty())
         {
             filters.add(Filters.or(
