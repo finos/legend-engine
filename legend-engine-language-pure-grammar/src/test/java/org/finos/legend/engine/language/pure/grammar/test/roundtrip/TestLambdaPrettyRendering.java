@@ -271,8 +271,8 @@ public class TestLambdaPrettyRendering
                         "    y|$y->sum()\n" +
                         "  ),\n" +
                         "  'testCol3'\n" +
-                        ")"
-                , RenderStyle.PRETTY);
+                        ")",
+                 RenderStyle.PRETTY);
 
         testLambda("var: String[1]|Person.all()->filter(\n" +
                         "  p|$p.firstName ==\n" +
@@ -335,8 +335,8 @@ public class TestLambdaPrettyRendering
                         "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-var'>y</span>|<span class='pureGrammar-var'>$y</span><span class='pureGrammar-arrow'>-></span><span class='pureGrammar-function'>sum</span>()</BR>\n" +
                         "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>),</BR>\n" +
                         "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-string'>'testCol3'</span></BR>\n" +
-                        ")"
-                , RenderStyle.PRETTY_HTML);
+                        ")",
+                 RenderStyle.PRETTY_HTML);
 
 
     }
