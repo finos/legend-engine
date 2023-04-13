@@ -24,9 +24,9 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>legend-engine-xt-relationalDatabase-store-entitlement-analytics</artifactId>
+    <artifactId>legend-engine-xt-relationalStore-store-entitlement-analytics</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Engine - XT - Relational Database - Store - Entitlement - Analytics</name>
+    <name>Legend Engine - XT - Relational Store - Analytics - Store Entitlement</name>
 
     <dependencies>
         <dependency>
@@ -47,7 +47,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalDatabase-store-entitlement-pure</artifactId>
+            <artifactId>legend-engine-xt-relationalStore-store-entitlement-pure</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

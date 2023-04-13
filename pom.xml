@@ -171,8 +171,8 @@
 
         <module>legend-engine-xt-analytics-store-entitlement</module>
         <module>legend-engine-xt-analytics-store-entitlement-api</module>
-        <module>legend-engine-xt-relationalDatabase-store-entitlement-analytics</module>
-        <module>legend-engine-xt-relationalDatabase-store-entitlement-pure</module>
+        <module>legend-engine-xt-relationalStore-store-entitlement-analytics</module>
+        <module>legend-engine-xt-relationalStore-store-entitlement-pure</module>
 
         <module>legend-engine-xt-analytics-mapping-api</module>
         <module>legend-engine-xt-analytics-mapping-protocol</module>

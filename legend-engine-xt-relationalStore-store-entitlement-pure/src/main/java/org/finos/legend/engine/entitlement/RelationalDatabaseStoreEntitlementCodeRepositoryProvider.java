@@ -22,6 +22,6 @@ public class RelationalDatabaseStoreEntitlementCodeRepositoryProvider implements
 {
     public CodeRepository repository()
     {
-        return GenericCodeRepository.build("core_relational_database_store_entitlement.definition.json");
+        return GenericCodeRepository.build("core_relational_store_entitlement.definition.json");
     }
 }

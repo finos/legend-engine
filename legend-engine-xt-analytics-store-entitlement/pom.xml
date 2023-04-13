@@ -25,7 +25,7 @@
 
     <artifactId>legend-engine-xt-analytics-store-entitlement</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Engine - XT - Analytics - Store - Entitlement</name>
+    <name>Legend Engine - XT - Analytics - Store Entitlement</name>
 
     <dependencies>
 

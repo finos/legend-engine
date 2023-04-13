@@ -25,9 +25,9 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>legend-engine-xt-relationalDatabase-store-entitlement-pure</artifactId>
+    <artifactId>legend-engine-xt-relationalStore-store-entitlement-pure</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Engine - XT - Relational Database - Store - Entitlement - Pure</name>
+    <name>Legend Engine - XT - Relational Store - Analytics - Store Entitlement - Pure</name>
 
     <build>
         <plugins>
@@ -41,11 +41,11 @@
                         <repository>platform</repository>
                         <repository>core</repository>
                         <repository>core_relational</repository>
-                        <repository>core_relational_database_store_entitlement</repository>
+                        <repository>core_relational_store_entitlement</repository>
                     </repositories>
                     <extraRepositories>
                         <extraRepository>
-                            ${project.basedir}/src/main/resources/core_relational_database_store_entitlement.definition.json
+                            ${project.basedir}/src/main/resources/core_relational_store_entitlement.definition.json
                         </extraRepository>
                     </extraRepositories>
                 </configuration>
@@ -115,7 +115,7 @@
                             <generationType>modular</generationType>
                             <useSingleDir>true</useSingleDir>
                             <repositories>
-                                <repository>core_relational_database_store_entitlement</repository>
+                                <repository>core_relational_store_entitlement</repository>
                             </repositories>
                         </configuration>
                     </execution>
