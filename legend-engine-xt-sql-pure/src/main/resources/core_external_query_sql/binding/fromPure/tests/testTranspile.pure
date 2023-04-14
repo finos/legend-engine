@@ -287,6 +287,19 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
 
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByNoAggregates():Boolean[1]
+{
+  let sqlString = 'SELECT String FROM service."/service/service1" GROUP BY 1';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
+        )->restrict('String')->distinct()
+      };
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByIndex():Boolean[1]
 {
   let sqlString = 'SELECT String, sum(Integer) AS "sum" FROM service."/service/service1" GROUP BY 1';
