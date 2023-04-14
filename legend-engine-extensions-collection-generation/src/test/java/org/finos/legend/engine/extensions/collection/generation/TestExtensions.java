@@ -396,6 +396,7 @@ public class TestExtensions
                 .with("core_relational_bigquery")
                 .with("core_relational_spanner")
                 .with("core_relational_trino")
+                .with("core_relational_store_entitlement")
                 .with("core_servicestore")
                 .with("core_authentication")
                 .with("core_text_metamodel")
