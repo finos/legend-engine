@@ -393,6 +393,48 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testWithFu
    assertEquals($expected->asString(true), $sourceTree->asString(true));
 }
 
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testWithFunctionsWithNewVarDeclarationInIfClause():Boolean[1]
+{
+   let tree = #{
+      A {
+         a1,
+         a2,
+         a3
+      }
+   }#;
+   
+   let sourceTree = calculateSourceTree($tree, testMappingWithNewVarDeclarationInIfClause, meta::pure::extension::defaultExtensions())->sortTree();
+   let expected = #{
+      _A {
+         a1 {
+            b {
+               c1
+            }
+         },
+         a2 {
+            b {
+               c2
+            }
+         },
+         a3,
+         a4 {
+            d1 {
+               c1
+            },
+            d2 {
+               e
+            }
+         },
+         a6 {
+            d2 {
+               e
+            }
+         }
+      }
+   }#;
+   assertEquals($expected->asString(true), $sourceTree->asString(true));
+}
+
 Class meta::pure::graphFetch::tests::sourceTreeCalc::withFunctions::A
 {
    a1: String[1];
@@ -441,6 +483,17 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withFunctions::testMappin
       {
          ~src _A
          a1: if($src.a3 > 10, |$src.a1.b.c1, |$src.a2.b.c2),
+         a2: $src.a4->filter(x| $x.d1.c1->in(['A', 'B','C'])).d2.e,
+         a3: $src.a6->at(0).d2.e
+      }
+)
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withFunctions::testMappingWithNewVarDeclarationInIfClause
+(
+   A: Pure
+      {
+         ~src _A
+         a1: if($src.a3 > 10, |let myVar1 = $src.a1.b; $myVar1.c1; , |$src.a2.b.c2),
          a2: $src.a4->filter(x| $x.d1.c1->in(['A', 'B','C'])).d2.e,
          a3: $src.a6->at(0).d2.e
       }
@@ -1062,7 +1115,7 @@ Class meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Person
 {
    address: Location[1];
 }
- 
+
 Class meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location
 {
    zipCode: String[1];
