@@ -36,7 +36,7 @@ public class DataSpaceAnalyticsArtifactGenerationExtension implements ArtifactGe
 {
     public final String ROOT_PATH = "dataSpace-analytics";
 
-    public static ObjectMapper objectMapper = DataSpaceAnalyticsHelper.getObjectMapper();
+    public static ObjectMapper objectMapper = DataSpaceAnalyticsHelper.getNewObjectMapper();
 
     @Override
     public String getKey()

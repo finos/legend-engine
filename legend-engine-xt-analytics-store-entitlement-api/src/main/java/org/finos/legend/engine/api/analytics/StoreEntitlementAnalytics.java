@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.api.analytics;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
@@ -29,7 +30,6 @@ import org.finos.legend.engine.entitlement.model.entitlementReport.DatasetEntitl
 import org.finos.legend.engine.entitlement.model.specification.DatasetSpecification;
 import org.finos.legend.engine.entitlement.services.EntitlementModelObjectMapperFactory;
 import org.finos.legend.engine.entitlement.services.EntitlementServiceExtension;
-import org.finos.legend.engine.entitlement.services.EntitlementServiceExtensionLoader;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
@@ -43,22 +43,28 @@ import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
 
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
-@Api(tags = "Analytics - Entitlements")
-@Path("pure/v1/analytics/entitlements")
+@Api(tags = "Analytics - Store Entitlement")
+@Path("pure/v1/analytics/store-entitlement")
 public class StoreEntitlementAnalytics
 {
+    private static final ObjectMapper objectMapper = EntitlementModelObjectMapperFactory.getNewObjectMapper();
     private final ModelManager modelManager;
+    private List<EntitlementServiceExtension> entitlementServiceExtensions;
 
-    public StoreEntitlementAnalytics(ModelManager modelManager)
+    public StoreEntitlementAnalytics(ModelManager modelManager, List<EntitlementServiceExtension> entitlementServiceExtensions)
     {
         this.modelManager = modelManager;
+        this.entitlementServiceExtensions = entitlementServiceExtensions;
     }
 
     @POST
@@ -69,14 +75,13 @@ public class StoreEntitlementAnalytics
     public Response generateDatasetSpecifications(StoreEntitlementAnalyticsInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        List<EntitlementServiceExtension> extensions = EntitlementServiceExtensionLoader.extensions();
         PureModel pureModel = modelManager.loadModel(input.model, input.clientVersion == null ? PureClientVersions.production : input.clientVersion, profiles, null);
         Mapping mapping = pureModel.getMapping(input.mappingPath);
         Root_meta_pure_runtime_Runtime runtime = pureModel.getRuntime(input.runtimePath);
         try (Scope scope = GlobalTracer.get().buildSpan("generate dataset specifications").startActive(true))
         {
-            List<DatasetSpecification> datasets = LazyIterate.flatCollect(extensions, extension -> extension.generateDatasetSpecifications(input.query, input.runtimePath, runtime, input.mappingPath, mapping, input.model, pureModel)).toList();
-            return ManageConstantResult.manageResult(profiles, new SurveyDatasetsResult(datasets), EntitlementModelObjectMapperFactory.getNewObjectMapper());
+            List<DatasetSpecification> datasets = LazyIterate.flatCollect(this.entitlementServiceExtensions, extension -> extension.generateDatasetSpecifications(input.query, input.runtimePath, runtime, input.mappingPath, mapping, input.model, pureModel)).toList();
+            return ManageConstantResult.manageResult(profiles, new SurveyDatasetsResult(datasets), objectMapper);
         }
         catch (Exception e)
         {
@@ -85,22 +90,21 @@ public class StoreEntitlementAnalytics
     }
 
     @POST
-    @Path("checkEntitlements")
-    @ApiOperation(value = "check entitlements")
+    @Path("checkDatasetEntitlements")
+    @ApiOperation(value = "check data set entitlements")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
     public Response generateEntitlementReports(EntitlementReportAnalyticsInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        List<EntitlementServiceExtension> extensions = EntitlementServiceExtensionLoader.extensions();
         StoreEntitlementAnalyticsInput storeEntitlementAnalyticsInput = input.getStoreEntitlementAnalyticsInput();
         PureModel pureModel = modelManager.loadModel(storeEntitlementAnalyticsInput.model, storeEntitlementAnalyticsInput.clientVersion == null ? PureClientVersions.production : storeEntitlementAnalyticsInput.clientVersion, profiles, null);
         Mapping mapping = pureModel.getMapping(storeEntitlementAnalyticsInput.mappingPath);
         Root_meta_pure_runtime_Runtime runtime = pureModel.getRuntime(storeEntitlementAnalyticsInput.runtimePath);
         try (Scope scope = GlobalTracer.get().buildSpan("check entitlements").startActive(true))
         {
-            List<DatasetEntitlementReport> reports = LazyIterate.flatCollect(extensions, extension -> extension.generateDatasetEntitlementReports(input.getReports(), storeEntitlementAnalyticsInput.query, storeEntitlementAnalyticsInput.runtimePath, runtime, storeEntitlementAnalyticsInput.mappingPath, mapping, storeEntitlementAnalyticsInput.model, pureModel, profiles)).toList();
-            return ManageConstantResult.manageResult(profiles,  new CheckEntitlementsResult(reports), EntitlementModelObjectMapperFactory.getNewObjectMapper());
+            List<DatasetEntitlementReport> reports = LazyIterate.flatCollect(this.entitlementServiceExtensions, extension -> extension.generateDatasetEntitlementReports(input.getReports(), storeEntitlementAnalyticsInput.query, storeEntitlementAnalyticsInput.runtimePath, runtime, storeEntitlementAnalyticsInput.mappingPath, mapping, storeEntitlementAnalyticsInput.model, pureModel, profiles)).toList();
+            return ManageConstantResult.manageResult(profiles, new CheckEntitlementsResult(reports), objectMapper);
         }
         catch (Exception e)
         {

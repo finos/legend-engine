@@ -77,4 +77,10 @@ public class TestRelationalStoreEntitlementAnalytics
     {
         testStoreEntitlementAnalyticsRelationalStoreExtension("models/relationalModel.pure", "runtime::SnowflakeRuntime", "mapping::CovidDataMapping", "[{\"name\":\"default.DEMOGRAPHICS\",\"type\":\"Snowflake\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"DEMOGRAPHICS\"},{\"name\":\"default.COVID_DATA\",\"type\":\"Snowflake\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"COVID_DATA\"}]");
     }
+
+    @Test
+    public void testStoreEntitlementAnalyticsForComplexRuntime() throws Exception
+    {
+        testStoreEntitlementAnalyticsRelationalStoreExtension("models/relationalModel.pure", "runtime::CompoundRuntime", "mapping::CovidDataMapping", "[{\"name\":\"default.DEMOGRAPHICS\",\"type\":\"H2\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"DEMOGRAPHICS\"},{\"name\":\"default.COVID_DATA\",\"type\":\"H2\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"COVID_DATA\"},{\"name\":\"default.DEMOGRAPHICS\",\"type\":\"Snowflake\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"DEMOGRAPHICS\"},{\"name\":\"default.COVID_DATA\",\"type\":\"Snowflake\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"COVID_DATA\"}]");
+    }
 }

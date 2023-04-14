@@ -16,7 +16,7 @@ package org.finos.legend.engine.entitlement.model.specification;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type", visible = true)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 public class DatasetSpecification
 {
     private String name;

@@ -35,7 +35,7 @@ import java.util.List;
 
 public class TestDataSpaceAnalyticsArtifactGenerationExtension
 {
-    private static final ObjectMapper objectMapper = DataSpaceAnalyticsHelper.getObjectMapper();
+    private static final ObjectMapper objectMapper = DataSpaceAnalyticsHelper.getNewObjectMapper();
     private static final String minimumPureClientVersion = "v1_20_0";
     private static final ImmutableList<String> testVersions = PureClientVersions.versionsSince(minimumPureClientVersion);
 
