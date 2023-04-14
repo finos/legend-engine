@@ -48,6 +48,8 @@ import org.finos.legend.engine.api.analytics.StoreEntitlementAnalytics;
 import org.finos.legend.engine.application.query.api.ApplicationQuery;
 import org.finos.legend.engine.application.query.configuration.ApplicationQueryConfiguration;
 import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
+import org.finos.legend.engine.entitlement.services.EntitlementServiceExtension;
+import org.finos.legend.engine.entitlement.services.EntitlementServiceExtensionLoader;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.extension.GenerationMode;
 import org.finos.legend.engine.external.shared.format.generations.loaders.CodeGenerators;
@@ -326,11 +328,12 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new ArtifactGenerationExtensionApi(modelManager));
 
         // Analytics
+        List<EntitlementServiceExtension> entitlementServiceExtensions = EntitlementServiceExtensionLoader.extensions();
         environment.jersey().register(new MappingAnalytics(modelManager));
         environment.jersey().register(new DiagramAnalytics(modelManager));
-        environment.jersey().register(new DataSpaceAnalytics(modelManager, generatorExtensions));
+        environment.jersey().register(new DataSpaceAnalytics(modelManager, generatorExtensions, entitlementServiceExtensions));
         environment.jersey().register(new LineageAnalytics(modelManager));
-        environment.jersey().register(new StoreEntitlementAnalytics(modelManager));
+        environment.jersey().register(new StoreEntitlementAnalytics(modelManager, entitlementServiceExtensions));
 
         // Testable
         environment.jersey().register(new Testable(modelManager));

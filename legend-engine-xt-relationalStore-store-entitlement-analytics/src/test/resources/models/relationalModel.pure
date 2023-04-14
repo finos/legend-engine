@@ -128,3 +128,20 @@ Runtime runtime::SnowflakeRuntime
     ]
   ];
 }
+
+###Runtime
+Runtime runtime::CompoundRuntime
+{
+  mappings:
+  [
+    mapping::CovidDataMapping
+  ];
+  connections:
+  [
+    store::CovidDataStore:
+    [
+      connection_1: runtime::connection::H2Connection,
+      connection_2: runtime::connection::SnowflakeConnection
+    ]
+  ];
+}

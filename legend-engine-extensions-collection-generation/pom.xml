@@ -340,9 +340,11 @@
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-analytics-store-entitlement</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-store-entitlement-analytics</artifactId>
-            <scope>runtime</scope>
-            <version>${project.version}</version>
         </dependency>
 
 
