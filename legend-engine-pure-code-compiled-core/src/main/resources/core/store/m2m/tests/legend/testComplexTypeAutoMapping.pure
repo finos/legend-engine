@@ -435,7 +435,5 @@ import meta::pure::runtime::*;
 
 function meta::pure::mapping::modelToModel::test::alloy::autoMapping::helper::executeReflectively(f: FunctionDefinition<Any>[1]): String[1]
 {
-  let fStr = 'meta::legend::execute_FunctionDefinition_1__Pair_MANY__ExecutionContext_1__Extension_MANY__String_1_';
-  let func = $fStr->pathToElement()->cast(@Function<{FunctionDefinition<Any>[1], Pair<String, Any>[*], ExecutionContext[1], Extension[*]->String[1]}>);
-  $func->eval($f, [], ^ExecutionContext(), meta::pure::extension::defaultExtensions());
+  meta::legend::executeLegendQuery($f, [], ^ExecutionContext(), meta::pure::extension::defaultExtensions());
 }

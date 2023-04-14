@@ -238,6 +238,109 @@ public class TestLambdaPrettyRendering
                 ")->take(30)", RenderStyle.PRETTY);
     }
 
+    @Test
+    public void testOlapGroupByRendering()
+    {
+        testLambda("var: String[1]|Person.all()->filter(\n" +
+                        "  p|$p.firstName ==\n" +
+                        "    $var\n" +
+                        ")->project(\n" +
+                        "  [\n" +
+                        "    col(\n" +
+                        "      p|$p.firstName,\n" +
+                        "      'firstName'\n" +
+                        "    ),\n" +
+                        "    col(\n" +
+                        "      p|$p.lastName,\n" +
+                        "      'lastName'\n" +
+                        "    ),\n" +
+                        "    col(\n" +
+                        "      p|$p.lastName->length(),\n" +
+                        "      'age'\n" +
+                        "    )\n" +
+                        "  ]\n" +
+                        ")->olapGroupBy(\n" +
+                        "  ['firstName'],\n" +
+                        "  desc('lastName'),\n" +
+                        "  y|$y->rank(),\n" +
+                        "  'testCol1'\n" +
+                        ")->olapGroupBy(\n" +
+                        "  ['firstName'],\n" +
+                        "  asc('lastName'),\n" +
+                        "  'age'->func(\n" +
+                        "    y|$y->sum()\n" +
+                        "  ),\n" +
+                        "  'testCol3'\n" +
+                        ")",
+                 RenderStyle.PRETTY);
+
+        testLambda("var: String[1]|Person.all()->filter(\n" +
+                        "  p|$p.firstName ==\n" +
+                        "    $var\n" +
+                        ")->project(\n" +
+                        "  [\n" +
+                        "    col(\n" +
+                        "      p|$p.firstName,\n" +
+                        "      'firstName'\n" +
+                        "    ),\n" +
+                        "    col(\n" +
+                        "      p|$p.lastName,\n" +
+                        "      'lastName'\n" +
+                        "    ),\n" +
+                        "    col(\n" +
+                        "      p|$p.lastName->length(),\n" +
+                        "      'age'\n" +
+                        "    )\n" +
+                        "  ]\n" +
+                        ")->olapGroupBy(\n" +
+                        "  ['firstName'],\n" +
+                        "  desc('lastName'),\n" +
+                        "  y|$y->rank(),\n" +
+                        "  'testCol1'\n" +
+                        ")->olapGroupBy(\n" +
+                        "  ['firstName'],\n" +
+                        "  asc('lastName'),\n" +
+                        "  'age'->func(\n" +
+                        "    y|$y->sum()\n" +
+                        "  ),\n" +
+                        "  'testCol3'\n" +
+                        ")",
+                "<span class='pureGrammar-var'>var</span>: <span class='pureGrammar-packageableElement'>String</span>[1]|<span class='pureGrammar-packageableElement'>Person</span>.<span class='pureGrammar-function'>all</span>()<span class='pureGrammar-arrow'>-></span><span class='pureGrammar-function'>filter</span>(</BR>\n" +
+                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-var'>p</span>|<span class='pureGrammar-var'>$p</span>.<span class=pureGrammar-property>firstName</span> ==</BR>\n" +
+                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-var'>$var</span></BR>\n" +
+                        ")<span class='pureGrammar-arrow'>-></span><span class='pureGrammar-function'>project</span>(</BR>\n" +
+                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>[</BR>\n" +
+                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-function'>col</span>(</BR>\n" +
+                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-var'>p</span>|<span class='pureGrammar-var'>$p</span>.<span class=pureGrammar-property>firstName</span>,</BR>\n" +
+                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-string'>'firstName'</span></BR>\n" +
+                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>),</BR>\n" +
+                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-function'>col</span>(</BR>\n" +
+                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-var'>p</span>|<span class='pureGrammar-var'>$p</span>.<span class=pureGrammar-property>lastName</span>,</BR>\n" +
+                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-string'>'lastName'</span></BR>\n" +
+                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>),</BR>\n" +
+                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-function'>col</span>(</BR>\n" +
+                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-var'>p</span>|<span class='pureGrammar-var'>$p</span>.<span class=pureGrammar-property>lastName</span><span class='pureGrammar-arrow'>-></span><span class='pureGrammar-function'>length</span>(),</BR>\n" +
+                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-string'>'age'</span></BR>\n" +
+                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>)</BR>\n" +
+                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>]</BR>\n" +
+                        ")<span class='pureGrammar-arrow'>-></span><span class='pureGrammar-function'>olapGroupBy</span>(</BR>\n" +
+                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>[<span class='pureGrammar-string'>'firstName'</span>],</BR>\n" +
+                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-function'>desc</span>(<span class='pureGrammar-string'>'lastName'</span>),</BR>\n" +
+                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-var'>y</span>|<span class='pureGrammar-var'>$y</span><span class='pureGrammar-arrow'>-></span><span class='pureGrammar-function'>rank</span>(),</BR>\n" +
+                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-string'>'testCol1'</span></BR>\n" +
+                        ")<span class='pureGrammar-arrow'>-></span><span class='pureGrammar-function'>olapGroupBy</span>(</BR>\n" +
+                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>[<span class='pureGrammar-string'>'firstName'</span>],</BR>\n" +
+                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-function'>asc</span>(<span class='pureGrammar-string'>'lastName'</span>),</BR>\n" +
+                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-string'>'age'</span><span class='pureGrammar-arrow'>-></span><span class='pureGrammar-function'>func</span>(</BR>\n" +
+                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-var'>y</span>|<span class='pureGrammar-var'>$y</span><span class='pureGrammar-arrow'>-></span><span class='pureGrammar-function'>sum</span>()</BR>\n" +
+                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span>),</BR>\n" +
+                        "<span class='pureGrammar-space'></span><span class='pureGrammar-space'></span><span class='pureGrammar-string'>'testCol3'</span></BR>\n" +
+                        ")",
+                 RenderStyle.PRETTY_HTML);
+
+
+    }
+
     private static void testLambda(String text, RenderStyle renderStyle)
     {
         testLambda(text, text, renderStyle);

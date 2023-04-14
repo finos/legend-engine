@@ -47,6 +47,7 @@ public class TestQueryStoreManager
         public List<StereotypePtr> stereotypes;
         public Integer limit;
         public Boolean showCurrentUserQueriesOnly;
+        public Boolean exactMatchName;
         public Boolean combineTaggedValuesCondition;
 
         TestQuerySearchSpecificationBuilder withSearchTerm(String searchTerm)
@@ -85,6 +86,12 @@ public class TestQueryStoreManager
             return this;
         }
 
+        TestQuerySearchSpecificationBuilder withExactNameSearch(Boolean exactMatchName)
+        {
+            this.exactMatchName = exactMatchName;
+            return this;
+        }
+
         TestQuerySearchSpecificationBuilder withCombineTaggedValuesCondition(Boolean combineTaggedValuesCondition)
         {
             this.combineTaggedValuesCondition = combineTaggedValuesCondition;
@@ -100,6 +107,7 @@ public class TestQueryStoreManager
             searchSpecification.stereotypes = this.stereotypes;
             searchSpecification.limit = this.limit;
             searchSpecification.showCurrentUserQueriesOnly = this.showCurrentUserQueriesOnly;
+            searchSpecification.exactMatchName = this.exactMatchName;
             searchSpecification.combineTaggedValuesCondition = this.combineTaggedValuesCondition;
             return searchSpecification;
         }
@@ -335,6 +343,21 @@ public class TestQueryStoreManager
         Assert.assertNull(lightQuery.taggedValues);
     }
 
+    @Test
+    public void testMatchExactNameQuery() throws Exception
+    {
+        String currentUser = "testUser";
+        Query newQuery = TestQueryBuilder.create("1", "Test Query 1", currentUser).withGroupId("test.group").withArtifactId("test-artifact").build();
+        Query newQueryTwo = TestQueryBuilder.create("2", "Test Query 12", currentUser).withGroupId("test.group").withArtifactId("test-artifact").build();
+        Query newQueryThree = TestQueryBuilder.create("3", "Test Query 13", currentUser).withGroupId("test.group").withArtifactId("test-artifact").build();
+        queryStoreManager.createQuery(newQuery, currentUser);
+        queryStoreManager.createQuery(newQueryTwo, currentUser);
+        queryStoreManager.createQuery(newQueryThree, currentUser);
+        List<Query> queriesGeneralSearch = queryStoreManager.getQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("Test Query 1").build(), currentUser);
+        Assert.assertEquals(3, queriesGeneralSearch.size());
+        List<Query> queriesExactSearch = queryStoreManager.getQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("Test Query 1").withExactNameSearch(true).build(), currentUser);
+        Assert.assertEquals(1, queriesExactSearch.size());
+    }
 
     @Test
     public void testGetQueryStats() throws Exception

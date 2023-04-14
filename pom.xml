@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.6.3-SNAPSHOT</version>
+    <version>4.7.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -84,6 +84,8 @@
         <module>legend-engine-xt-flatdata-shared</module>
         <module>legend-engine-xt-flatdata-runtime</module>
         <module>legend-engine-xt-flatdata-pure</module>
+        <module>legend-engine-xt-flatdata-test</module>
+        <module>legend-engine-xt-flatdata-driver-bloomberg</module>
 
         <module>legend-engine-xt-json-model</module>
         <module>legend-engine-xt-json-runtime</module>
@@ -276,7 +278,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>4.3.4</legend.pure.version>
+        <legend.pure.version>4.4.0</legend.pure.version>
         <legend.shared.version>0.23.3</legend.shared.version>
 
         <!-- SONAR -->
@@ -301,7 +303,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.release>8</maven.compiler.release>
         <maven.enforcer.requireJavaVersion>[11.0.10,12)</maven.enforcer.requireJavaVersion>
-        <project.build.outputTimestamp>1680968380</project.build.outputTimestamp>
+        <project.build.outputTimestamp>1681421843</project.build.outputTimestamp>
         <surefire.vm.params>-XX:SoftRefLRUPolicyMSPerMB=1</surefire.vm.params>
 
         <!-- Databases -->
@@ -1100,6 +1102,12 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-flatdata-model</artifactId>
+                <type>test-jar</type>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-flatdata-runtime</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1111,6 +1119,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-flatdata-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-flatdata-driver-bloomberg</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

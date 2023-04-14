@@ -178,7 +178,7 @@ function <<access.private>> meta::external::format::flatdata::transformation::to
       
       let pName        = if($context.config.purifyNames, |$section.name->purifyPropertyName(), |$section.name);
       let pMult        = $section.sectionProperties
-                            ->filter(sp| $sp.name == 'scope.forNumberOfLines').value->cast(@Integer)
+                            ->filter(sp| $sp.name == 'scope.forNumberOfLines').values->cast(@Integer)
                             ->map(n|  ^Multiplicity(lowerBound=^MultiplicityValue(value=$n), upperBound=^MultiplicityValue(value=$n)))
                             ->first()->orElse(ZeroMany);
       let p2           = newProperty($pName, ^GenericType(rawType=$cls), ^GenericType(rawType=$sectionClass), $pMult);
