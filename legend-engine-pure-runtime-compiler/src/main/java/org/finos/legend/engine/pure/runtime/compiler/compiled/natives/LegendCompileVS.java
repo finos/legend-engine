@@ -43,6 +43,19 @@ public class LegendCompileVS extends AbstractNative
         return "org.finos.legend.engine.pure.runtime.compiler.compiled.natives.LegendCompileVS.compileExecVS(" + code + ", es)";
     }
 
+    @Override
+    public String buildBody()
+    {
+        return "new SharedPureFunction<Object>()\n" +
+                "        {\n" +
+                "            @Override\n" +
+                "            public Object execute(ListIterable<?> vars, final ExecutionSupport es)\n" +
+                "            {\n" +
+                "                return org.finos.legend.engine.pure.runtime.compiler.compiled.natives.LegendCompileVS.compileExecVS((String) vars.get(0), es);\n" +
+                "            }\n" +
+                "        }";
+    }
+
     public static Object compileExecVS(String code, final ExecutionSupport es)
     {
         Metadata metadata = ((CompiledExecutionSupport) es).getProcessorSupport().getMetadata();
