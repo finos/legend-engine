@@ -12,12 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.entitlement.model.entitlementReport;
+package org.finos.legend.engine.test.runner.mapping.api;
 
-public enum EntitlementStatus
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
+
+public class LegacyMappingTestRunnerInput
 {
-    ACCESS_GRANTED,
-    ACCESS_NOT_GRANTED,
-    ACCESS_REQUESTED,
-    ACCESS_APPROVED
+
+    public String pureClientVersion;
+
+    @JsonProperty(required = true)
+    public PureModelContext model;
+
+    @JsonProperty(required = true)
+    public String mapping;
+
+    // We don't use test name because name is not unique alongside all mapping tests
+    public List<Integer> mappingTestIndexes;
+
+
 }

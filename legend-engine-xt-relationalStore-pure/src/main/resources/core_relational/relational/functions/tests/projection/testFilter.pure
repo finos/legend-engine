@@ -102,3 +102,33 @@ function <<test.Test>> meta::relational::tests::projection::filter::testCompress
    assertEquals('select concat("root".FIRSTNAME, \' \', "root".LASTNAME) as "Name", "locationtable_0".PLACE as "place", "locationtable_1".date as "CD" from personTable as "root" left outer join locationTable as "locationtable_0" on ("root".ID = "locationtable_0".PERSONID and "locationtable_0".PLACE = \'New York\') left outer join locationTable as "locationtable_1" on ("root".ID = "locationtable_1".PERSONID and "locationtable_1".PLACE in (\'New York\', \'Hoboken\'))', $result->sqlRemoveFormatting());
 }
 
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::projection::filter::testParametrizedEnumFilter(): Boolean[1]
+{
+  let runtime = meta::relational::tests::testRuntime();
+  let connection = $runtime.connections->at(0)->cast(@meta::relational::runtime::TestDatabaseConnection);
+  
+  let runtimeWithTestData = ^$runtime(
+    connections = ^$connection(
+      testDataSetupCsv =
+        'default\n'+
+        'addressTable\n'+
+        'ID,TYPE,NAME\n'+
+        '1,1,Address_1\n'+
+        '2,2,Address_2\n'+
+        '-----\n'
+      )
+  );
+ 
+  let func = {g: GeographicEntityType[1]|
+    Address.all()
+      ->filter(a | $a.type == $g)
+      ->meta::pure::graphFetch::execution::graphFetch(#{Address{ name }}#)
+      ->meta::pure::graphFetch::execution::serialize(#{Address{ name }}#)
+      ->meta::pure::mapping::from(simpleRelationalMapping, $runtimeWithTestData);
+  };
+  
+  let res = meta::legend::executeLegendQuery($func, [pair('g', 'CITY')], ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions());
+
+  assertJsonStringsEqual('{"builder":{"_type":"json"},"values":{"name":"Address_1"}}', $res);
+}
+
