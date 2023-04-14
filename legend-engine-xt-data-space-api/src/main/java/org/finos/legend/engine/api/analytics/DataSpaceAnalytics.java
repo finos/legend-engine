@@ -31,7 +31,6 @@ import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
-import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.Assert;
@@ -49,14 +48,13 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
 import java.util.ServiceLoader;
 
 @Api(tags = "Analytics - Model")
 @Path("pure/v1/analytics/dataSpace")
 public class DataSpaceAnalytics
 {
-    private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+    private static final ObjectMapper objectMapper = DataSpaceAnalyticsHelper.getObjectMapper();
 
     private final ModelManager modelManager;
     private final MutableList<PlanGeneratorExtension> generatorExtensions;

@@ -12,36 +12,19 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package org.finos.legend.engine.entitlement.model.specification.relationalDatabase;
+package org.finos.legend.engine.entitlement.model.entitlementReport;
 
 import org.finos.legend.engine.entitlement.model.specification.DatasetSpecification;
 
-public class RelationalDatabaseTableSpecification extends DatasetSpecification
+public class DatasetEntitlementAccessNotGrantedReport extends DatasetEntitlementReport
 {
-    private String database;
-    private String schema;
-    private String table;
-
-    public RelationalDatabaseTableSpecification(String name, String type, String database, String schema, String table)
+    public DatasetEntitlementAccessNotGrantedReport(DatasetSpecification dataset)
     {
-        super(name, type);
-        this.database = database;
-        this.schema = schema;
-        this.table = table;
+        super(dataset);
     }
 
-    public String getDatabase()
+    public DatasetEntitlementAccessNotGrantedReport()
     {
-        return this.database;
-    }
-
-    public String getTable()
-    {
-        return this.table;
-    }
-
-    public String getSchema()
-    {
-        return this.schema;
+        // DO NOT DELETE: this resets the default constructor for Jackson
     }
 }
