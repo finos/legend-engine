@@ -130,7 +130,6 @@ class NontemporalDeltaPlanner extends Planner
         return LogicalPlan.of(operations);
     }
 
-    // TODO: what to do for using versioning column? Is it delete when delete indicator is true and version equals?
     /*
         DELETE FROM main_table WHERE EXIST (SELECT * FROM staging_table WHERE pk_match AND digest_match AND staging.delete_indicator_is_match)
      */
