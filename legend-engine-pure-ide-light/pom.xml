@@ -144,6 +144,11 @@
             <artifactId>legend-engine-xt-xml-runtime</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-executionPlan</artifactId>
+            <scope>runtime</scope>
+        </dependency>
         <!-- Access to Legend Execute in IDE Light -->
 
     </dependencies>
