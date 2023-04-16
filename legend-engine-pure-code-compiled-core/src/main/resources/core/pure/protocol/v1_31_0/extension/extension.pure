@@ -50,6 +50,8 @@ Class meta::protocols::pure::v1_31_0::extension::SerializerExtension_v1_31_0 ext
    
    scan_buildBasePureModel_buildPureModelFromMapping1 : Function<{Nil[1]->Store[*]}>[*];
    scan_buildBasePureModel_buildPureModelFromMapping2 : Store[*];
+   
+   scan_buildBasePureModel_getExtraElementsFromStores : Function<{Store[*], meta::pure::extension::Extension[*]->meta::protocols::pure::v1_31_0::metamodel::PackageableElement[*]}>[0..1];
 
    scan_buildPureModelAsText_getAllElementsFromMapping : Function<{Store[*]->Store[*]}>[0..1];
    scan_buildPureModelAsText_getAllElementsFromMapping2 : Function<{Store[*]->PackageableElement[*]}>[0..1];

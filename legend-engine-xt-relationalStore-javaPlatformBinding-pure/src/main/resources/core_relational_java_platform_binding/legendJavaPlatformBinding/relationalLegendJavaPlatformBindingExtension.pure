@@ -65,7 +65,7 @@ function meta::relational::executionPlan::platformBinding::legendJava::relationa
                let relationalGraphImplUpdateFunction = {impl: meta::external::language::java::metamodel::Class[1] |
                   $impl->enrichForRelationalGraphExecution($r, $context, $extensions, $debug)
                };
-               let baseProject  = $r->generateBaseProjectForLocalGraphFetchNode($path, $context, $relationalGraphImplUpdateFunction, $debug);
+               let baseProject  = $r->generateBaseProjectForLocalGraphFetchNode($path, $context, $relationalGraphImplUpdateFunction, $extensions, $debug);
                let storeProject = $r->generateRelationalStoreGraphFetchProject($path, $context, $extensions, $debug);
 
                generatedCode(

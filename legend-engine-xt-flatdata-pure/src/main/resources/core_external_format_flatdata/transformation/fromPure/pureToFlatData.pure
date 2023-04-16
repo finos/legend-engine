@@ -108,7 +108,7 @@ function <<access.private>> meta::external::format::flatdata::transformation::fr
    let section = ^FlatDataSection(
       name              = $cls.name->toOne(),
       driverId          = 'DelimitedWithHeadings',
-      sectionProperties = [^FlatDataProperty(name = 'scope.untilEof', value=true), ^FlatDataProperty(name = 'delimiter', value=',')],
+      sectionProperties = [^FlatDataProperty(name = 'scope.untilEof', values=true), ^FlatDataProperty(name = 'delimiter', values=',')],
       recordType        = ^FlatDataRecordType(fields=$fields)
    );
    ^FlatData(sections = $section);

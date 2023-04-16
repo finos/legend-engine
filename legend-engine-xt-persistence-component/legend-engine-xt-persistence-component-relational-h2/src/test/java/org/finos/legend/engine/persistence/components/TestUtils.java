@@ -15,14 +15,18 @@
 package org.finos.legend.engine.persistence.components;
 
 import com.opencsv.CSVReader;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.GreaterThanEqualTo;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.CsvExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.JsonExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.NumericalValue;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.junit.jupiter.api.Assertions;
@@ -82,6 +86,7 @@ public class TestUtils
 
     // Special columns
     public static String digestName = "digest";
+    public static String versionName = "version";
     public static String batchUpdateTimeName = "batch_update_time";
     public static String batchIdInName = "batch_id_in";
     public static String batchIdOutName = "batch_id_out";
@@ -96,6 +101,7 @@ public class TestUtils
     public static String startDateTimeName = "start_datetime";
     public static String endDateTimeName = "end_datetime";
     public static String dataSplitName = "data_split";
+    public static String batchName = "batch";
 
     public static HashMap<String, Set<String>> partitionFilter = new HashMap<String, Set<String>>()
     {{
@@ -125,6 +131,8 @@ public class TestUtils
     public static Field dateOut = Field.builder().name(dateOutName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(dateOutName).build();
     public static Field digest = Field.builder().name(digestName).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).fieldAlias(digestName).build();
     public static Field digestWithLength = Field.builder().name(digestName).type(FieldType.of(DataType.VARCHAR, 2147483647, null)).fieldAlias(digestName).build();
+    public static Field version = Field.builder().name(versionName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(versionName).build();
+    public static Field versionPk = Field.builder().name(versionName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(versionName).primaryKey(true).build();
     public static Field batchUpdateTimestamp = Field.builder().name(batchUpdateTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).build();
     public static Field batchIdIn = Field.builder().name(batchIdInName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(batchIdInName).build();
     public static Field batchIdOut = Field.builder().name(batchIdOutName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(batchIdOutName).build();
@@ -142,6 +150,7 @@ public class TestUtils
     public static Field startDateTime = Field.builder().name(startDateTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(startDateTimeName).primaryKey(true).build();
     public static Field endDateTime = Field.builder().name(endDateTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(endDateTimeName).build();
     public static Field dataSplit = Field.builder().name(dataSplitName).type(FieldType.of(DataType.BIGINT, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(dataSplitName).build();
+    public static Field batch = Field.builder().name(batchName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(batchName).primaryKey(true).build();
 
     public static DatasetDefinition getBasicMainTable()
     {
@@ -198,6 +207,46 @@ public class TestUtils
             .build();
     }
 
+    public static SchemaDefinition getStagingSchemaWithVersion()
+    {
+        return SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(income)
+            .addFields(startTime)
+            .addFields(expiryDate)
+            .addFields(digest)
+            .addFields(versionPk)
+            .build();
+    }
+
+    public static SchemaDefinition getStagingSchemaWithFilterForDB()
+    {
+        return SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(income)
+            .addFields(startTime)
+            .addFields(expiryDate)
+            .addFields(digest)
+            .addFields(batch)
+            .build();
+    }
+
+    public static SchemaDefinition getStagingSchemaWithFilterWithVersionForDB()
+    {
+        return SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(income)
+            .addFields(startTime)
+            .addFields(expiryDate)
+            .addFields(digest)
+            .addFields(versionPk)
+            .addFields(batch)
+            .build();
+    }
+
     public static SchemaDefinition getStagingSchemaWithDataSplits()
     {
         return SchemaDefinition.builder()
@@ -248,6 +297,89 @@ public class TestUtils
             .group(testSchemaName)
             .name(stagingTableName)
             .schema(getStagingSchema())
+            .build();
+    }
+
+    public static DatasetDefinition getStagingTableWithVersion()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(getStagingSchemaWithVersion())
+            .build();
+    }
+
+    public static DatasetDefinition getStagingTableWithFilterForDB()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(getStagingSchemaWithFilterForDB())
+            .build();
+    }
+
+    public static DatasetDefinition getStagingTableWithFilterWithVersionForDB()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(getStagingSchemaWithFilterWithVersionForDB())
+            .build();
+    }
+
+    public static DerivedDataset getDerivedStagingTableWithFilter()
+    {
+        return DerivedDataset.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(getStagingSchema())
+            .alias(stagingTableName)
+            .filter(GreaterThanEqualTo.of(FieldValue.builder()
+                .fieldName(batchName)
+                .datasetRefAlias(stagingTableName)
+                .build(), NumericalValue.of(2L)))
+            .build();
+    }
+
+    public static DerivedDataset getStagingTableWithFilterSecondPass()
+    {
+        return DerivedDataset.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(getStagingSchema())
+            .alias(stagingTableName)
+            .filter(GreaterThanEqualTo.of(FieldValue.builder()
+                .fieldName(batchName)
+                .datasetRefAlias(stagingTableName)
+                .build(), NumericalValue.of(3L)))
+            .build();
+    }
+
+    public static DerivedDataset getDerivedStagingTableWithFilterWithVersion()
+    {
+        return DerivedDataset.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(getStagingSchemaWithVersion())
+            .alias(stagingTableName)
+            .filter(GreaterThanEqualTo.of(FieldValue.builder()
+                .fieldName(batchName)
+                .datasetRefAlias(stagingTableName)
+                .build(), NumericalValue.of(2L)))
+            .build();
+    }
+
+    public static DerivedDataset getStagingTableWithFilterWithVersionSecondPass()
+    {
+        return DerivedDataset.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(getStagingSchemaWithVersion())
+            .alias(stagingTableName)
+            .filter(GreaterThanEqualTo.of(FieldValue.builder()
+                .fieldName(batchName)
+                .datasetRefAlias(stagingTableName)
+                .build(), NumericalValue.of(3L)))
             .build();
     }
 
@@ -349,6 +481,28 @@ public class TestUtils
                 .addFields(startTime)
                 .addFields(expiryDate)
                 .addFields(digest)
+                .addFields(batchIdIn)
+                .addFields(batchIdOut)
+                .addFields(batchTimeIn)
+                .addFields(batchTimeOut)
+                .build()
+            )
+            .build();
+    }
+
+    public static DatasetDefinition getUnitemporalMainTableWithVersion()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(income)
+                .addFields(startTime)
+                .addFields(expiryDate)
+                .addFields(digest)
+                .addFields(version)
                 .addFields(batchIdIn)
                 .addFields(batchIdOut)
                 .addFields(batchTimeIn)

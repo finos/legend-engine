@@ -20,6 +20,11 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeA
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditingAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitor;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningStrategyVisitor;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.MaxVersionStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.MaxVersionStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.NoVersioningStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.NoDeletesMergeStrategyAbstract;
@@ -93,6 +98,7 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                 .dataSplitField(applyCase(nontemporalDelta.dataSplitField()))
                 .mergeStrategy(nontemporalDelta.mergeStrategy().accept(new MergeStrategyCaseConverter()))
                 .auditing(nontemporalDelta.auditing().accept(new AuditingCaseConverter()))
+                .versioningStrategy(nontemporalDelta.versioningStrategy().accept(new VersionStrategyCaseConverter()))
                 .build();
     }
 
@@ -118,6 +124,7 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                 .addAllOptimizationFilters(unitemporalDelta.optimizationFilters().stream().map(filter -> applyCase(filter)).collect(Collectors.toList()))
                 .transactionMilestoning(unitemporalDelta.transactionMilestoning().accept(new TransactionMilestoningCaseConverter()))
                 .mergeStrategy(unitemporalDelta.mergeStrategy().accept(new MergeStrategyCaseConverter()))
+                .versioningStrategy(unitemporalDelta.versioningStrategy().accept(new VersionStrategyCaseConverter()))
                 .build();
     }
 
@@ -281,6 +288,26 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                     .builder()
                     .sourceDateTimeFromField(applyCase(sourceSpecifiesFromAndThruDateTime.sourceDateTimeFromField()))
                     .sourceDateTimeThruField(applyCase(sourceSpecifiesFromAndThruDateTime.sourceDateTimeThruField()))
+                    .build();
+        }
+    }
+
+    private class VersionStrategyCaseConverter implements VersioningStrategyVisitor<VersioningStrategy>
+    {
+        @Override
+        public VersioningStrategy visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy)
+        {
+            return noVersioningStrategy;
+        }
+
+        @Override
+        public VersioningStrategy visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
+        {
+            return MaxVersionStrategy
+                    .builder()
+                    .versioningComparator(maxVersionStrategy.versioningComparator())
+                    .versioningField(strategy.apply(maxVersionStrategy.versioningField()))
+                    .performDeduplication(maxVersionStrategy.performDeduplication())
                     .build();
         }
     }

@@ -1,7 +1,7 @@
 # Binding
 
-`Binding` links External Format (via SchemaSet) to pure models. If a binding is modeled and added to a legend project it provides compile time validations and ensure linked pure models and external format schema's remain in sync. <br>
-It is used in context of query to declare an internalize/externalize (deserialization/serialisation) relationship between data in some format and a model.
+`Binding` links External Format SchemaSet to pure models. If a binding is modeled and added to a legend project it provides compile time validations and ensure linked pure models and external format schema's remain in sync. <br>
+It is also used in context of query to declare internalize/externalize (deserialization/serialisation) relationship between data (aligning with linked SchemaSet) and model instances.
 
 ```mermaid
 graph LR

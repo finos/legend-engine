@@ -214,9 +214,9 @@ function <<access.private>> meta::pure::lineage::scanProperties::internal_scanPr
                                                                                print(if($debug.debug,|$debug.space+'  - param 0\n',|''));
                                                                                let testPath = $params->at(0)->internal_scanProperties($processed, $vars, $scanClasses, ^$debug(space=$debug.space+'    '))->orElseEmptyPath();
                                                                                print(if($debug.debug,|$debug.space+'  - param 1\n',|''));
-                                                                               let thenPath = $params->at(1)->internal_scanProperties($processed, $vars, $scanClasses, ^$debug(space=$debug.space+'    '))->orElseEmptyPath();
+                                                                               let thenPath = $params->at(1)->findFunction()->processFunction([], $vars, $processed,  $scanClasses, ^$debug(space=$debug.space+'    '));
                                                                                print(if($debug.debug,|$debug.space+'  - param 2\n',|''));
-                                                                               let elsePath = $params->at(2)->internal_scanProperties($processed, $vars, $scanClasses, ^$debug(space=$debug.space+'    '))->orElseEmptyPath();
+                                                                               let elsePath = $params->at(2)->findFunction()->processFunction([], $vars, $processed,  $scanClasses, ^$debug(space=$debug.space+'    '));
                                                                                ^Res(
                                                                                   current = $thenPath.current->concatenate($elsePath.current)->removeEmptyPaths()->first()->orElseEmptyPath(),  // TODO handle when both paths are relevant 
                                                                                   result  = $testPath.result->concatenate($thenPath.result)->concatenate($elsePath.result)

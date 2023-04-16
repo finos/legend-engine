@@ -20,6 +20,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
@@ -99,6 +100,14 @@ public class BaseTest
     }
 
     protected void createStagingTable(DatasetDefinition stagingTable) throws Exception
+    {
+        RelationalTransformer transformer = new RelationalTransformer(H2Sink.get());
+        LogicalPlan tableCreationPlan = LogicalPlanFactory.getDatasetCreationPlan(stagingTable, true);
+        SqlPlan tableCreationPhysicalPlan = transformer.generatePhysicalPlan(tableCreationPlan);
+        executor.executePhysicalPlan(tableCreationPhysicalPlan);
+    }
+
+    protected void createStagingTable(DerivedDataset stagingTable) throws Exception
     {
         RelationalTransformer transformer = new RelationalTransformer(H2Sink.get());
         LogicalPlan tableCreationPlan = LogicalPlanFactory.getDatasetCreationPlan(stagingTable, true);
@@ -206,10 +215,15 @@ public class BaseTest
 
     public IngestorResult executePlansAndVerifyForCaseConversion(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats) throws Exception
     {
+        return executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, Clock.systemUTC());
+    }
+
+    public IngestorResult executePlansAndVerifyForCaseConversion(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats, Clock executionTimestampClock) throws Exception
+    {
         RelationalIngestor ingestor = RelationalIngestor.builder()
                 .ingestMode(ingestMode)
                 .relationalSink(H2Sink.get())
-                .executionTimestampClock(Clock.systemUTC())
+                .executionTimestampClock(executionTimestampClock)
                 .cleanupStagingData(options.cleanupStagingData())
                 .collectStatistics(options.collectStatistics())
                 .enableSchemaEvolution(options.enableSchemaEvolution())
@@ -274,6 +288,46 @@ public class BaseTest
             "INSERT INTO \"TEST\".\"staging\"(id, name, income, start_time ,expiry_date, digest, delete_indicator) " +
             "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", BIGINT), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE) ,  \"digest\", \"delete_indicator\"" +
             " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, digest, delete_indicator', NULL )";
+        h2Sink.executeStatement(loadSql);
+    }
+
+    protected void loadStagingDataWithVersion(String path) throws Exception
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+            "INSERT INTO \"TEST\".\"staging\"(id, name, income, start_time ,expiry_date, digest, version) " +
+            "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", BIGINT), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE), digest, CONVERT( \"version\",INT)" +
+            " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, digest, version', NULL )";
+        h2Sink.executeStatement(loadSql);
+    }
+
+    protected void loadStagingDataWithFilter(String path) throws Exception
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+            "INSERT INTO \"TEST\".\"staging\"(id, name, income, start_time ,expiry_date, digest, batch) " +
+            "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", BIGINT), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE), digest, CONVERT( \"batch\",INT)" +
+            " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, digest, batch', NULL )";
+        h2Sink.executeStatement(loadSql);
+    }
+
+    protected void loadStagingDataWithFilterWithVersion(String path) throws Exception
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+            "INSERT INTO \"TEST\".\"staging\"(id, name, income, start_time ,expiry_date, digest, version, batch) " +
+            "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", BIGINT), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE), digest, CONVERT( \"version\",INT), CONVERT( \"batch\",INT)" +
+            " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, digest, version, batch', NULL )";
+        h2Sink.executeStatement(loadSql);
+    }
+
+    protected void loadStagingDataWithFilterWithVersionInUpperCase(String path) throws Exception
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"STAGING\";" +
+            "INSERT INTO \"TEST\".\"STAGING\"(ID, NAME, INCOME, START_TIME ,EXPIRY_DATE, DIGEST, VERSION, BATCH) " +
+            "SELECT CONVERT( \"ID\",INT ), \"NAME\", CONVERT( \"INCOME\", BIGINT), CONVERT( \"START_TIME\", DATETIME), CONVERT( \"EXPIRY_DATE\", DATE), DIGEST, CONVERT( \"VERSION\",INT), CONVERT( \"BATCH\",INT)" +
+            " FROM CSVREAD( '" + path + "', 'ID, NAME, INCOME, START_TIME, EXPIRY_DATE, DIGEST, VERSION, BATCH', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 

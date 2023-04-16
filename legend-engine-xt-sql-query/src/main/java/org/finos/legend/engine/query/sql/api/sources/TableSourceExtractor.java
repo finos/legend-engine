@@ -143,6 +143,12 @@ public class TableSourceExtractor implements NodeVisitor<List<TableSource>>
     }
 
     @Override
+    public List<TableSource> visit(IntervalLiteral val)
+    {
+        return Collections.emptyList();
+    }
+
+    @Override
     public List<TableSource> visit(IsNotNullPredicate val)
     {
         return val.value.accept(this);

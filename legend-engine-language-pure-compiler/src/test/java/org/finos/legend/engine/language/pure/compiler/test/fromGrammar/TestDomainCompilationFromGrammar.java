@@ -1422,7 +1422,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "   names : String[*];\n" +
                 "   prop() {$this.names} : String[1];\n" +
-                "}", "COMPILATION error at [4:18-22]: Error in derived property 'A.prop' - Multiplicity error: [1] doesn't subsumes [*]");
+                "}", "COMPILATION error at [4:18-22]: Error in derived property 'A.prop' - Multiplicity error: [1] doesn't subsume [*]");
     }
 
     @Test
