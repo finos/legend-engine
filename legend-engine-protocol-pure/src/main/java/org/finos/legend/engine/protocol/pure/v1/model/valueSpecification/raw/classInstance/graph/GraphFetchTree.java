@@ -25,12 +25,14 @@ import java.util.List;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = RootGraphFetchTree.class, name = "rootGraphFetchTree"),
-        @JsonSubTypes.Type(value = PropertyGraphFetchTree.class, name = "propertyGraphFetchTree")
+        @JsonSubTypes.Type(value = PropertyGraphFetchTree.class, name = "propertyGraphFetchTree"),
+        @JsonSubTypes.Type(value = SubTypeGraphFetchTree.class, name = "subTypeGraphFetchTree")
 })
 public abstract class GraphFetchTree
 {
     public SourceInformation sourceInformation;
     public List<GraphFetchTree> subTrees = Collections.emptyList();
+    public List<SubTypeGraphFetchTree> subTypeTrees = Collections.emptyList();
 
     public abstract <T> T accept(GraphFetchTreeVisitor<T> visitor);
 }

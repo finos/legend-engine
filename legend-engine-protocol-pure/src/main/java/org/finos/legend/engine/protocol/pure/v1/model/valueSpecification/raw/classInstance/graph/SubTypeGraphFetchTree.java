@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,11 +14,14 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph;
 
-public interface GraphFetchTreeVisitor<T>
+public class SubTypeGraphFetchTree extends GraphFetchTree
 {
-    T visit(PropertyGraphFetchTree valueSpecification);
+    public String _type = "subTypeGraphFetchTree";
+    public String subTypeClass;
 
-    T visit(RootGraphFetchTree valueSpecification);
-
-    T visit(SubTypeGraphFetchTree valueSpecification);
+    @Override
+    public <T> T accept(GraphFetchTreeVisitor<T> visitor)
+    {
+        return visitor.visit(this);
+    }
 }
