@@ -293,9 +293,7 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
     ->concatenate($wrongResults);
 }
 
-function <<test.TestCollection, test.AlloyOnly>> 
-{  meta::pure::executionPlan::profiles::serverVersion.start='v1_19_0' }
-meta::pure::executionPlan::platformBinding::legendJava::library::tests::collectTestsForJavaGeneration():PureTestCollection[1]
+function <<test.TestCollection>> meta::pure::executionPlan::platformBinding::legendJava::library::tests::collectTestsForJavaGeneration():PureTestCollection[1]
 {
   let root = meta::pure::functions;
   let pkgsToExclude = getPackagesToExclude();
