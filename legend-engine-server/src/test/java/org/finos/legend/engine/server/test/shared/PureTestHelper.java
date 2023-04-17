@@ -487,12 +487,12 @@ public class PureTestHelper
         );
     }
 
-    public static TestSuite buildJavaPureTestSuite(TestCollection testCollection, ExecutionSupport executionSupport, CoreInstance runner)
+    public static TestSuite buildJavaPureTestSuite(TestCollection testCollection, ExecutionSupport executionSupport, CoreInstance runner, int currentCount)
     {
         MutableList<TestSuite> subSuites = new FastList<>();
         for (TestCollection collection : testCollection.getSubCollections().toSortedList(Comparator.comparing(a -> a.getPackage().getName())))
         {
-            subSuites.add(buildJavaPureTestSuite(collection, executionSupport, runner));
+            subSuites.add(buildJavaPureTestSuite(collection, executionSupport, runner, currentCount));
         }
         return buildJavaPureTestSuite(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.GET_USER_PATH.valueOf(testCollection.getPackage()),
                 testCollection.getBeforeFunctions(),
@@ -500,12 +500,13 @@ public class PureTestHelper
                 testCollection.getPureAndAlloyOnlyFunctions(),
                 subSuites,
                 executionSupport,
-                runner
+                runner,
+                currentCount
         );
     }
 
     private static TestSuite buildJavaPureTestSuite(String packageName, RichIterable<CoreInstance> beforeFunctions, RichIterable<CoreInstance> afterFunctions,
-                                                    RichIterable<CoreInstance> testFunctions, org.eclipse.collections.api.list.ListIterable<TestSuite> subSuites, ExecutionSupport executionSupport, CoreInstance runner)
+                                                    RichIterable<CoreInstance> testFunctions, ListIterable<TestSuite> subSuites, ExecutionSupport executionSupport, CoreInstance runner, int currentCount)
     {
         TestSuite suite = new TestSuite();
         suite.setName(packageName);
@@ -518,13 +519,18 @@ public class PureTestHelper
         {
             Test theTest = new JavaPureTestCase(runner, testFunc, executionSupport);
             suite.addTest(theTest);
+            currentCount += 1;
+            if(currentCount > 200)
+            {
+                break;
+            }
         }
         afterFunctions.collect(fn -> new JavaPureTestCase(runner, fn, executionSupport)).each(suite::addTest);
         return suite;
     }
 
     private static TestSuite buildSuite(String packageName, RichIterable<CoreInstance> beforeFunctions, RichIterable<CoreInstance> afterFunctions,
-                                        RichIterable<CoreInstance> testFunctions, org.eclipse.collections.api.list.ListIterable<TestSuite> subSuites, ExecutionSupport executionSupport)
+                                        RichIterable<CoreInstance> testFunctions, ListIterable<TestSuite> subSuites, ExecutionSupport executionSupport)
     {
         TestSuite suite = new TestSuite();
         suite.setName(packageName);

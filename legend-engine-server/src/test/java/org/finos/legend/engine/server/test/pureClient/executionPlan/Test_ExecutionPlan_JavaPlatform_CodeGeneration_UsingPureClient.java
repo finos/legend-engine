@@ -41,7 +41,7 @@ public class Test_ExecutionPlan_JavaPlatform_CodeGeneration_UsingPureClient exte
                     CoreInstance collectionGeneratorInstance = executionSupport.getProcessorSupport().package_getByUserPath(collectionGenerator);
                     TestSuite suite = new TestSuite();
                     TestCollection testCollection = PureTestBuilderCompiled.generatePureTestCollection(collectionGeneratorInstance, executionSupport);
-                    suite.addTest(PureTestHelper.buildJavaPureTestSuite(testCollection, executionSupport, runner));
+                    suite.addTest(PureTestHelper.buildJavaPureTestSuite(testCollection, executionSupport, runner, 0));
                     return suite;
                 });
     }
