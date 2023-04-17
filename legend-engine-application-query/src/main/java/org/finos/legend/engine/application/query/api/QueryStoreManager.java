@@ -208,7 +208,14 @@ public class QueryStoreManager
         List<Bson> filters = new ArrayList<>();
         if (searchSpecification.searchTerm != null)
         {
-            filters.add(Filters.or(Filters.regex("name", Pattern.quote(searchSpecification.searchTerm), "i"), Filters.eq("id", searchSpecification.searchTerm)));
+            if (searchSpecification.exactMatchName != null && searchSpecification.exactMatchName)
+            {
+                filters.add(Filters.eq("name", searchSpecification.searchTerm));
+            }
+            else
+            {
+                filters.add(Filters.or(Filters.regex("name", Pattern.quote(searchSpecification.searchTerm), "i"), Filters.eq("id", searchSpecification.searchTerm)));
+            }
         }
         if (searchSpecification.showCurrentUserQueriesOnly != null && searchSpecification.showCurrentUserQueriesOnly)
         {

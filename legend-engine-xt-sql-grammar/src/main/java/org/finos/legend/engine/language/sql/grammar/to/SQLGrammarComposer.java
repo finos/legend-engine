@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.sql.grammar.to;
 
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.map.mutable.UnifiedMap;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.sql.metamodel.*;
@@ -249,6 +250,29 @@ public class SQLGrammarComposer
             public String visit(IntegerLiteral val)
             {
                 return String.valueOf(val.value);
+            }
+
+            @Override
+            public String visit(IntervalLiteral val)
+            {
+                List<String> parts = FastList.newList();
+                addIntervalPart(val.years, "YEARS", parts);
+                addIntervalPart(val.months, "MONTHS", parts);
+                addIntervalPart(val.weeks, "WEEKS", parts);
+                addIntervalPart(val.days, "DAYS", parts);
+                addIntervalPart(val.hours, "HOURS", parts);
+                addIntervalPart(val.minutes, "MINUTES", parts);
+                addIntervalPart(val.seconds, "SECONDS", parts);
+                return "INTERVAL '" + String.join(" ", parts) + "'";
+            }
+
+            private void addIntervalPart(Long value, String part, List<String> parts)
+            {
+                if (value != null)
+                {
+                    String partName = value == 1L ? part.replaceAll("S$", "") : part;
+                    parts.add(value + " " + partName);
+                }
             }
 
             @Override

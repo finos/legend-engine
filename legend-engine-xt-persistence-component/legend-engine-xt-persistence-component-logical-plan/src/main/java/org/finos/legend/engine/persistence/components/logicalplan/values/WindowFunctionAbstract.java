@@ -12,12 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.entitlement.model.entitlementReport;
+package org.finos.legend.engine.persistence.components.logicalplan.values;
 
-public enum EntitlementStatus
+import java.util.List;
+
+import static org.immutables.value.Value.Immutable;
+import static org.immutables.value.Value.Style;
+
+@Immutable
+@Style(
+    typeAbstract = "*Abstract",
+    typeImmutable = "*",
+    jdkOnly = true,
+    optionalAcceptNullable = true,
+    strictBuilder = true
+)
+public interface WindowFunctionAbstract extends Value
 {
-    ACCESS_GRANTED,
-    ACCESS_NOT_GRANTED,
-    ACCESS_REQUESTED,
-    ACCESS_APPROVED
+    Function windowFunction();
+
+    List<FieldValue> partitionByFields();
+
+    List<OrderedField> orderByFields();
 }
