@@ -26,3 +26,10 @@ function meta::legend::executeLegendQuery(f: FunctionDefinition<Any>[1], vars: P
   let func = $fStr->pathToElement()->cast(@Function<{FunctionDefinition<Any>[1], Pair<String, Any>[*], meta::pure::runtime::ExecutionContext[1], meta::pure::extension::Extension[*]->String[1]}>);
   $func->eval($f, $vars, $exeCtx, $extensions);
 }
+
+function meta::legend::compileLegendValueSpecification(s : String[1]):Any[1]
+{
+  let fStr = 'meta::legend::compileVS_String_1__Any_1_';
+  let func = $fStr->pathToElement()->cast(@Function<{String[1]->Any[1]}>);
+  $func->eval($s);
+}

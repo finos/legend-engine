@@ -31,8 +31,12 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::meta::
          fc2(instanceOf_Any_1__Type_1__Boolean_1_,                     {ctx,candidate,type       | $candidate->j_cast(javaObject())->j_instanceof($type->cast(@Cast).expression.type->toBoxed());}),
          fc(extractEnumValue_Enumeration_1__String_1__T_1_,            extractEnumValue_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_),
          fc(enumValues_Enumeration_1__T_MANY_,                         enumValues_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_),
-         fc1(typeName_Any_1__String_1_,                              { ctx,obj | j_string($ctx.params->at(0).genericType.rawType.name->toOne()) }),         
-         fc1(typePath_Any_1__String_1_,                              { ctx,obj | j_string($ctx.params->at(0).genericType.rawType->toOne()->elementToPath())})
+         fc1(typeName_Any_1__String_1_,                                { ctx,obj | if($ctx.params->at(0).genericType.rawType->toOne()->instanceOf(meta::pure::metamodel::type::Class),
+                                                                                      | $obj->j_invoke(typeNameMethod(), [], javaString()),
+                                                                                      | j_string($ctx.params->at(0).genericType.rawType.name->toOne()))}),         
+         fc1(typePath_Any_1__String_1_,                                { ctx,obj | if($ctx.params->at(0).genericType.rawType->toOne()->instanceOf(meta::pure::metamodel::type::Class),
+                                                                                      | $obj->j_invoke(typePathMethod(), [], javaString()),
+                                                                                      | j_string($ctx.params->at(0).genericType.rawType->toOne()->elementToPath()))})
       ]);
    
     $conventions->registerClassCoder(
@@ -104,10 +108,10 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::meta::
 function meta::pure::executionPlan::platformBinding::legendJava::library::meta::generateEnumerationIfInValidJavaIdentifier(type:meta::pure::metamodel::type::Type[1], conventions: Conventions[1], enums: Any[*], debug: DebugContext[1]): meta::external::language::java::metamodel::Class[1]
 {
    print(if($debug.debug,|$debug.space+'generateEnumerationIfInvalidJavaIdentifier : \''+$type.name->toOne()+'\'\n', |''));
-   let enumPkgAndName     = $conventions->className($type);
+   let enumPkgAndName      = $conventions->className($type);
    let mapType             = javaMap(javaString(), $enumPkgAndName);
-   let pureName               = j_parameter(javaString(), 'pureName');
-   let pureNameToEnumMap     = javaField(['private', 'static', 'final'], $mapType, 'pureNameToEnumMap', 'initValues()');
+   let pureName            = j_parameter(javaString(), 'pureName');
+   let pureNameToEnumMap   = javaField(['private', 'static', 'final'], $mapType, 'pureNameToEnumMap', 'initValues()');
    let values              = j_variable($mapType, 'values');
    
    let addValues           = $enums->size()->range()->map(index | $values->j_invoke('put',  [j_string($enums->at($index)->cast(@Enum).name), $enumPkgAndName->j_field('ENUM' + $index->toString())]));

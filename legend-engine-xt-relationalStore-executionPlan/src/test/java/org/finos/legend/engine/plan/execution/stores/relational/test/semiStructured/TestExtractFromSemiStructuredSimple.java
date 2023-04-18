@@ -22,13 +22,17 @@ public class TestExtractFromSemiStructuredSimple extends AbstractTestSemiStructu
     private static final String snowflakeMapping = "simple::mapping::SnowflakeMapping";
     private static final String snowflakeRuntime = "simple::runtime::SnowflakeRuntime";
 
+    private static final String memSQLMapping = "simple::mapping::MemSQLMapping";
+    private static final String memSQLRuntime = "simple::runtime::MemSQLRuntime";
+
     private static final String h2Mapping = "simple::mapping::H2Mapping";
     private static final String h2Runtime = "simple::runtime::H2Runtime";
     
     @Test
     public void testDotAndBracketNotationAccess()
     {
-        String snowflakePlan = this.buildExecutionPlanString("simple::dotAndBracketNotationAccess__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
+        String queryFunction = "simple::dotAndBracketNotationAccess__TabularDataSet_1_";
+        String snowflakePlan = this.buildExecutionPlanString(queryFunction, snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected =
                 "    Relational\n" +
                 "    (\n" +
@@ -40,7 +44,18 @@ public class TestExtractFromSemiStructuredSimple extends AbstractTestSemiStructu
         String TDSType = "  type = TDS[(Id, Integer, INT, \"\"), (Dot Only, StrictDate, \"\", \"\"), (Bracket Only, DateTime, \"\", \"\"), (Dot & Bracket, String, \"\", \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
 
-        String h2Result = this.executeFunction("simple::dotAndBracketNotationAccess__TabularDataSet_1_", h2Mapping, h2Runtime);
+        String memSQLPlan = this.buildExecutionPlanString(queryFunction, memSQLMapping, memSQLRuntime);
+        String memSQLExpected =
+                "Relational\n" +
+                "(\n" +
+                "  type = TDS[(Id, Integer, INT, \"\"), (Dot Only, StrictDate, \"\", \"\"), (Bracket Only, DateTime, \"\", \"\"), (Dot & Bracket, String, \"\", \"\")]\n" +
+                "  resultColumns = [(\"Id\", INT), (\"Dot Only\", \"\"), (\"Bracket Only\", \"\"), (\"Dot & Bracket\", \"\")]\n" +
+                "  sql = select `root`.ID as `Id`, date(json_extract_string(`root`.FIRM_DETAILS, 'dates', 'estDate')) as `Dot Only`, timestamp(json_extract_string(`root`.FIRM_DETAILS, 'dates', 'last Update')) as `Bracket Only`, json_extract_string(`root`.FIRM_DETAILS, 'address', 'lines', '1', 'details') as `Dot & Bracket` from FIRM_SCHEMA.FIRM_TABLE as `root`\n" +
+                "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
+                ")\n";
+        Assert.assertEquals(memSQLExpected, memSQLPlan);
+
+        String h2Result = this.executeFunction(queryFunction, h2Mapping, h2Runtime);
         Assert.assertEquals("1,2010-03-04,2022-01-16 01:00:00.0,D2\n" +
                 "2,2012-11-13,2022-02-14 03:00:00.0,D5\n" +
                 "3,2017-07-07,2022-09-01 06:00:00.0,D6\n", h2Result.replace("\r\n", "\n"));
@@ -49,7 +64,8 @@ public class TestExtractFromSemiStructuredSimple extends AbstractTestSemiStructu
     @Test
     public void testArrayElementNoFlattenAccess()
     {
-        String snowflakePlan = this.buildExecutionPlanString("simple::arrayElementNoFlattenAccess__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
+        String queryFunction = "simple::arrayElementNoFlattenAccess__TabularDataSet_1_";
+        String snowflakePlan = this.buildExecutionPlanString(queryFunction, snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected =
                 "    Relational\n" +
                 "    (\n" +
@@ -61,7 +77,18 @@ public class TestExtractFromSemiStructuredSimple extends AbstractTestSemiStructu
         String TDSType = "  type = TDS[(Id, Integer, INT, \"\"), (Second Line of Address, String, \"\", \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
 
-        String h2Result = this.executeFunction("simple::arrayElementNoFlattenAccess__TabularDataSet_1_", h2Mapping, h2Runtime);
+        String memSQLPlan = this.buildExecutionPlanString(queryFunction, memSQLMapping, memSQLRuntime);
+        String memSQLExpected =
+                "Relational\n" +
+                "(\n" +
+                "  type = TDS[(Id, Integer, INT, \"\"), (Second Line of Address, String, \"\", \"\")]\n" +
+                "  resultColumns = [(\"Id\", INT), (\"Second Line of Address\", \"\")]\n" +
+                "  sql = select `root`.ID as `Id`, json_extract_string(`root`.FIRM_DETAILS, 'address', 'lines', '1', 'details') as `Second Line of Address` from FIRM_SCHEMA.FIRM_TABLE as `root`\n" +
+                "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
+                ")\n";
+        Assert.assertEquals(memSQLExpected, memSQLPlan);
+
+        String h2Result = this.executeFunction(queryFunction, h2Mapping, h2Runtime);
         Assert.assertEquals("1,D2\n" +
                 "2,D5\n" +
                 "3,D6\n", h2Result.replace("\r\n", "\n"));
@@ -70,7 +97,8 @@ public class TestExtractFromSemiStructuredSimple extends AbstractTestSemiStructu
     @Test
     public void testExtractEnumProperty()
     {
-        String snowflakePlan = this.buildExecutionPlanString("simple::extractEnumProperty__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
+        String queryFunction = "simple::extractEnumProperty__TabularDataSet_1_";
+        String snowflakePlan = this.buildExecutionPlanString(queryFunction, snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected =
                 "    Relational\n" +
                 "    (\n" +
@@ -82,8 +110,19 @@ public class TestExtractFromSemiStructuredSimple extends AbstractTestSemiStructu
         String TDSType = "  type = TDS[(Id, Integer, INT, \"\"), (Entity Type, simple::model::EntityType, \"\", \"\", simple_model_EntityType)]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
 
+        String memSQLPlan = this.buildExecutionPlanString(queryFunction, memSQLMapping, memSQLRuntime);
+        String memSQLExpected =
+                "Relational\n" +
+                "(\n" +
+                "  type = TDS[(Id, Integer, INT, \"\"), (Entity Type, simple::model::EntityType, \"\", \"\", simple_model_EntityType)]\n" +
+                "  resultColumns = [(\"Id\", INT), (\"Entity Type\", \"\")]\n" +
+                "  sql = select `root`.ID as `Id`, json_extract_string(`root`.FIRM_DETAILS, 'entity', 'entityType') as `Entity Type` from FIRM_SCHEMA.FIRM_TABLE as `root`\n" +
+                "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
+                ")\n";
+        Assert.assertEquals(memSQLExpected, memSQLPlan);
+
         //this needs to be fixed. works fine in studio but not here.
-        String h2Result = this.executeFunction("simple::extractEnumProperty__TabularDataSet_1_", h2Mapping, h2Runtime);
+        String h2Result = this.executeFunction(queryFunction, h2Mapping, h2Runtime);
         Assert.assertEquals("1,O\n" +
                 "2,O\n" +
                 "3,C\n", h2Result.replace("\r\n", "\n"));
@@ -92,7 +131,8 @@ public class TestExtractFromSemiStructuredSimple extends AbstractTestSemiStructu
     @Test
     public void testAllDataTypesAccess()
     {
-        String snowflakePlan = this.buildExecutionPlanString("simple::allDataTypesAccess__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
+        String queryFunction = "simple::allDataTypesAccess__TabularDataSet_1_";
+        String snowflakePlan = this.buildExecutionPlanString(queryFunction, snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected =
                 "    Relational\n" +
                 "    (\n" +
@@ -104,7 +144,18 @@ public class TestExtractFromSemiStructuredSimple extends AbstractTestSemiStructu
         String TDSType = "  type = TDS[(Id, Integer, INT, \"\"), (Legal Name, String, \"\", \"\"), (Est Date, StrictDate, \"\", \"\"), (Mnc, Boolean, \"\", \"\"), (Employee Count, Integer, \"\", \"\"), (Last Update, DateTime, \"\", \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
 
-        String h2Result = this.executeFunction("simple::allDataTypesAccess__TabularDataSet_1_", h2Mapping, h2Runtime);
+        String memSQLPlan = this.buildExecutionPlanString(queryFunction, memSQLMapping, memSQLRuntime);
+        String memSQLExpected =
+                "Relational\n" +
+                "(\n" +
+                "  type = TDS[(Id, Integer, INT, \"\"), (Legal Name, String, \"\", \"\"), (Est Date, StrictDate, \"\", \"\"), (Mnc, Boolean, \"\", \"\"), (Employee Count, Integer, \"\", \"\"), (Last Update, DateTime, \"\", \"\")]\n" +
+                "  resultColumns = [(\"Id\", INT), (\"Legal Name\", \"\"), (\"Est Date\", \"\"), (\"Mnc\", \"\"), (\"Employee Count\", \"\"), (\"Last Update\", \"\")]\n" +
+                "  sql = select `root`.ID as `Id`, json_extract_string(`root`.FIRM_DETAILS, 'legalName') as `Legal Name`, date(json_extract_string(`root`.FIRM_DETAILS, 'dates', 'estDate')) as `Est Date`, json_extract_json(`root`.FIRM_DETAILS, 'mnc') as `Mnc`, json_extract_double(`root`.FIRM_DETAILS, 'employeeCount') as `Employee Count`, timestamp(json_extract_string(`root`.FIRM_DETAILS, 'dates', 'last Update')) as `Last Update` from FIRM_SCHEMA.FIRM_TABLE as `root`\n" +
+                "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
+                ")\n";
+        Assert.assertEquals(memSQLExpected, memSQLPlan);
+
+        String h2Result = this.executeFunction(queryFunction, h2Mapping, h2Runtime);
         Assert.assertEquals("1,Firm X,2010-03-04,true,4,2022-01-16 01:00:00.0\n" +
                 "2,Firm A,2012-11-13,false,1,2022-02-14 03:00:00.0\n" +
                 "3,Firm B,2017-07-07,true,2,2022-09-01 06:00:00.0\n", h2Result.replace("\r\n", "\n"));

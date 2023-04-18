@@ -56,6 +56,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Decimal;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Double;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Float;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Json;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Numeric;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Other;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Real;
@@ -105,6 +106,7 @@ import org.finos.legend.pure.generated.Root_meta_relational_metamodel_TableAlias
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_datatype_Binary_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_datatype_Char_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_datatype_Decimal_Impl;
+import org.finos.legend.pure.generated.Root_meta_relational_metamodel_datatype_Json_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_datatype_Numeric_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_datatype_Other_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_datatype_Real_Impl;
@@ -783,6 +785,10 @@ public class HelperRelationalBuilder
         else if (dataType instanceof SemiStructured)
         {
             return new Root_meta_relational_metamodel_datatype_SemiStructured_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::datatype::SemiStructured"));
+        }
+        else if (dataType instanceof Json)
+        {
+            return new Root_meta_relational_metamodel_datatype_Json_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::datatype::Json"));
         }
         throw new UnsupportedOperationException();
     }

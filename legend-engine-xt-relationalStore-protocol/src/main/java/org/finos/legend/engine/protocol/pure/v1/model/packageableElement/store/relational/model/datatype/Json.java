@@ -12,13 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype;
 
-public interface GraphFetchTreeVisitor<T>
+public class Json extends DataType
 {
-    T visit(PropertyGraphFetchTree valueSpecification);
-
-    T visit(RootGraphFetchTree valueSpecification);
-
-    T visit(SubTypeGraphFetchTree valueSpecification);
 }
