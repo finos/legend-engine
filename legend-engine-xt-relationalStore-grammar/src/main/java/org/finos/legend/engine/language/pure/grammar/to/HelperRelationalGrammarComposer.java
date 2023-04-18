@@ -54,6 +54,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Char;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Date;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Decimal;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Json;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Numeric;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Other;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Real;
@@ -400,6 +401,10 @@ public class HelperRelationalGrammarComposer
         else if (column.type instanceof SemiStructured)
         {
             builder.append("SEMISTRUCTURED");
+        }
+        else if (column.type instanceof Json)
+        {
+            builder.append("JSON");
         }
         else
         {

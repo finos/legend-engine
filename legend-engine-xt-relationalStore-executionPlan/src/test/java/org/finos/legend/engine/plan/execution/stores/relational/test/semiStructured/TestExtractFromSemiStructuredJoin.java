@@ -22,13 +22,17 @@ public class TestExtractFromSemiStructuredJoin extends AbstractTestSemiStructure
     private static final String snowflakeMapping = "join::mapping::SnowflakeMapping";
     private static final String snowflakeRuntime = "join::runtime::SnowflakeRuntime";
 
+    private static final String memSQLMapping = "join::mapping::MemSQLMapping";
+    private static final String memSQLRuntime = "join::runtime::MemSQLRuntime";
+
     private static final String h2Mapping = "join::mapping::H2Mapping";
     private static final String h2Runtime = "join::runtime::H2Runtime";
 
     @Test
     public void testJoinOnSemiStructuredProperty()
     {
-        String h2Result = this.executeFunction("join::testJoinOnSemiStructuredProperty__TabularDataSet_1_", h2Mapping, h2Runtime);
+        String queryFunction = "join::testJoinOnSemiStructuredProperty__TabularDataSet_1_";
+        String h2Result = this.executeFunction(queryFunction, h2Mapping, h2Runtime);
         Assert.assertEquals("Peter,Smith,Firm X\n" +
                 "John,Johnson,Firm X\n" +
                 "John,Hill,Firm X\n" +
@@ -37,7 +41,7 @@ public class TestExtractFromSemiStructuredJoin extends AbstractTestSemiStructure
                 "Oliver,Hill,Firm B\n" +
                 "David,Harris,Firm B\n", h2Result.replace("\r\n", "\n"));
 
-        String snowflakePlan = this.buildExecutionPlanString("join::testJoinOnSemiStructuredProperty__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString(queryFunction, snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected =
                 "    Relational\n" +
                 "    (\n" +
@@ -48,6 +52,17 @@ public class TestExtractFromSemiStructuredJoin extends AbstractTestSemiStructure
                 "    )\n";
         String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Last Name, String, VARCHAR(100), \"\"), (Firm/Legal Name, String, \"\", \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
+
+        String memSQLPlan = this.buildExecutionPlanString(queryFunction, memSQLMapping, memSQLRuntime);
+        String memSQLExpected =
+                "Relational\n" +
+                "(\n" +
+                "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Last Name, String, VARCHAR(100), \"\"), (Firm/Legal Name, String, \"\", \"\")]\n" +
+                "  resultColumns = [(\"First Name\", VARCHAR(100)), (\"Last Name\", VARCHAR(100)), (\"Firm/Legal Name\", \"\")]\n" +
+                "  sql = select `root`.FIRSTNAME as `First Name`, `root`.LASTNAME as `Last Name`, `firm_table_0`.FIRM_DETAILS::$legalName as `Firm/Legal Name` from PERSON_SCHEMA.PERSON_TABLE as `root` left outer join FIRM_SCHEMA.FIRM_TABLE as `firm_table_0` on (json_extract_double(`root`.FIRM, 'ID') = json_extract_double(`firm_table_0`.FIRM_DETAILS, 'ID'))\n" +
+                "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
+                ")\n";
+        Assert.assertEquals(memSQLExpected, memSQLPlan);
     }
 
     public String modelResourcePath()

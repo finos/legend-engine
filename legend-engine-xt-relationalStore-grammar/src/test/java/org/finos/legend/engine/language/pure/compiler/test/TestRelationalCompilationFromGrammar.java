@@ -28,6 +28,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Column;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.RelationalOperationElement;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAliasColumn;
+import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Json;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.SemiStructured;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Table;
 import org.junit.Assert;
@@ -1348,6 +1349,23 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
         Assert.assertTrue(column._type() instanceof SemiStructured);
     }
 
+    @Test
+    public void testJsonColumn()
+    {
+        Pair<PureModelContextData, PureModel> res = test("###Relational\n" +
+                "Database simple::DB\n" +
+                "(\n" +
+                "  Table personTable\n" +
+                "  (\n" +
+                "    FIRSTNAME VARCHAR(10),\n" +
+                "    FIRM JSON\n" +
+                "  )\n" +
+                ")\n");
+
+        Database database = (Database) res.getTwo().getStore("simple::DB");
+        Column column = (Column) database._schemas().detect(schema -> schema._name().equals("default"))._tables().detect(table -> table._name().equals("personTable"))._columns().detect(col -> col.getName().equals("FIRM"));
+        Assert.assertTrue(column._type() instanceof Json);
+    }
 
     @Test
     public void testRelationalPropertyMappingWithBindingTransformer()
@@ -1375,7 +1393,8 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "    FIRSTNAME VARCHAR(200),\n" +
                 "    LASTNAME VARCHAR(200),\n" +
                 "    AGE INTEGER,\n" +
-                "    FIRM SEMISTRUCTURED\n" +
+                "    FIRM SEMISTRUCTURED,\n" +
+                "    FIRM_JSON JSON\n" +
                 "  )\n" +
                 "\n" +
                 "  Join personSelfJoin(personTable.ID = {target}.ID)\n" +
@@ -1400,7 +1419,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "    lastName: [simple::dbInc]personTable.LASTNAME,\n" +
                 "    age: Binding simple::TestBinding: [simple::dbInc]personTable.AGE\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [45:8-68]: Binding transformer can be used with complex properties only. Property 'age' return type is 'Integer'");
+                ")\n", "COMPILATION error at [46:8-68]: Binding transformer can be used with complex properties only. Property 'age' return type is 'Integer'");
 
         test(model +
                 "###Mapping\n" +
@@ -1414,7 +1433,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "    age: [simple::dbInc]personTable.AGE,\n" +
                 "    manager: Binding simple::TestBinding: [simple::dbInc]personTable.FIRM\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [46:12-73]: Class: simple::Person should be included in modelUnit for binding: simple::TestBinding");
+                ")\n", "COMPILATION error at [47:12-73]: Class: simple::Person should be included in modelUnit for binding: simple::TestBinding");
 
         test(model +
                 "###Mapping\n" +
@@ -1440,7 +1459,35 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "    firstName: [simple::dbInc]personTable.FIRSTNAME,\n" +
                 "    lastName: [simple::dbInc]personTable.LASTNAME,\n" +
                 "    age: [simple::dbInc]personTable.AGE,\n" +
+                "    firm: Binding simple::TestBinding: [simple::dbInc]personTable.FIRM_JSON\n" +
+                "  }\n" +
+                ")\n");
+
+        test(model +
+                "###Mapping\n" +
+                "Mapping simple::simpleRelationalMappingInc\n" +
+                "(\n" +
+                "  simple::Person: Relational\n" +
+                "  {\n" +
+                "    ~mainTable [simple::dbInc]personTable\n" +
+                "    firstName: [simple::dbInc]personTable.FIRSTNAME,\n" +
+                "    lastName: [simple::dbInc]personTable.LASTNAME,\n" +
+                "    age: [simple::dbInc]personTable.AGE,\n" +
                 "    firm: Binding simple::TestBinding: [simple::dbInc]@personSelfJoin | [simple::dbInc]personTable.FIRM\n" +
+                "  }\n" +
+                ")\n");
+
+        test(model +
+                "###Mapping\n" +
+                "Mapping simple::simpleRelationalMappingInc\n" +
+                "(\n" +
+                "  simple::Person: Relational\n" +
+                "  {\n" +
+                "    ~mainTable [simple::dbInc]personTable\n" +
+                "    firstName: [simple::dbInc]personTable.FIRSTNAME,\n" +
+                "    lastName: [simple::dbInc]personTable.LASTNAME,\n" +
+                "    age: [simple::dbInc]personTable.AGE,\n" +
+                "    firm: Binding simple::TestBinding: [simple::dbInc]@personSelfJoin | [simple::dbInc]personTable.FIRM_JSON\n" +
                 "  }\n" +
                 ")\n");
     }
