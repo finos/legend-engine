@@ -14,10 +14,14 @@
 
 package org.finos.legend.engine.persistence.components;
 
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.ClusterKey;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
 
 import java.util.Optional;
 
@@ -47,6 +51,14 @@ public class BaseTestUtils
     public static Field colArray = Field.builder().name("col_array").type(FieldType.of(DataType.ARRAY, Optional.empty(), Optional.empty())).build();
     public static Field colMap = Field.builder().name("col_map").type(FieldType.of(DataType.MAP, Optional.empty(), Optional.empty())).build();
 
+    public static ClusterKey clusterKey1 = ClusterKey.builder().clusterKeyValue(FieldValue.builder().fieldName("col_timestamp").build()).build();
+    public static ClusterKey clusterKey2 = ClusterKey.builder()
+        .clusterKeyValue(FunctionImpl.builder()
+            .functionName(FunctionName.SUM)
+            .addValue(FieldValue.builder().fieldName("col_int").build(), FieldValue.builder().fieldName("col_integer").build())
+            .build())
+        .build();
+
     public static SchemaDefinition schemaWithAllColumns = SchemaDefinition.builder()
         .addFields(colInt)
         .addFields(colInteger)
@@ -68,5 +80,14 @@ public class BaseTestUtils
         .addFields(colNumeric)
         .addFields(colBoolean)
         .addFields(colVarBinary)
+        .build();
+
+    public static SchemaDefinition schemaWithClusteringKey = SchemaDefinition.builder()
+        .addFields(colInt)
+        .addFields(colInteger)
+        .addFields(colString)
+        .addFields(colTimestamp)
+        .addFields(colDouble)
+        .addClusterKeys(clusterKey1, clusterKey2)
         .build();
 }
