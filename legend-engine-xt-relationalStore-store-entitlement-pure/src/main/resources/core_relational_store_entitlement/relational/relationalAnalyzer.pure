@@ -21,7 +21,7 @@ import meta::pure::mapping::*;
 function meta::analytics::store::entitlements::getGeneralRelationalTablesFromMapping(mapping:Mapping[1], runtime: Runtime[1]):TableWithType[*]
 {
    let relationalDatabaseConnections = getRelationalDatabaseConnection($runtime);
-   let tablesFromMapping = getTablesFromMapping($mapping, $runtime);
+   let tablesFromMapping = getTablesFromMapping($mapping);
    let tablesWithTypeFromRuntime = $relationalDatabaseConnections->map(c| let tables = getTablesFromDatabase($c.element->cast(@Database));
                                                                        $tables->map(tb|^TableWithType(table = $tb, type = $c.type.name)););
    let tablesWithType = $tablesWithTypeFromRuntime->filter(tb|$tb.table->in($tablesFromMapping));
