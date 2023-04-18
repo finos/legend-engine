@@ -44,7 +44,15 @@ public class OpenApiArtifactGenerationExtension implements ArtifactGenerationExt
     @Override
     public boolean canGenerate(PackageableElement element)
     {
-        return element instanceof Root_meta_legend_service_metamodel_Service;
+        return element instanceof Root_meta_legend_service_metamodel_Service && checkIfOpenApiProfile(element);
+    }
+
+    private boolean checkIfOpenApiProfile(PackageableElement element)
+    {
+        return element._stereotypes() != null && element._stereotypes().anySatisfy(stereotype ->
+                        stereotype._profile()._name().equals("ServiceSpecGeneration") &&
+                                stereotype._profile()._p_stereotypes().anySatisfy(s -> s.getName().equals("OpenAPI"))
+                );
     }
 
     @Override

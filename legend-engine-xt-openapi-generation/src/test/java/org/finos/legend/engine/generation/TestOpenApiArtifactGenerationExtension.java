@@ -28,6 +28,7 @@ import java.net.URL;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class TestOpenApiArtifactGenerationExtension
@@ -52,7 +53,7 @@ public class TestOpenApiArtifactGenerationExtension
     }
 
     @Test
-    public void testOpenApiServiceSpecArtifactGenerationForLegendService()
+    public void testOpenApiServiceSpecArtifactGenerationForOpenApiProfileLegendService()
     {
         String pureServiceString = getResourceAsString("testService.pure");
         PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(pureServiceString);
@@ -65,5 +66,16 @@ public class TestOpenApiArtifactGenerationExtension
         assertEquals(1, outputs.size());
         Artifact openapiGenerationResult = outputs.get(0);
         assertTrue(openapiGenerationResult.content.contains("/service/test"));
+    }
+
+    @Test
+    public void testArtifactGenerationShouldSkipForNonOpenApiProfileLegendService()
+    {
+        String pureServiceString = getResourceAsString("TestServiceNoProfile.pure");
+        PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(pureServiceString);
+        PureModel model = Compiler.compile(contextData, DeploymentMode.TEST, null);
+        OpenApiArtifactGenerationExtension extension = new OpenApiArtifactGenerationExtension();
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = model.getPackageableElement("test::TestServiceNoProfile");
+        assertFalse(extension.canGenerate(packageableElement));
     }
 }

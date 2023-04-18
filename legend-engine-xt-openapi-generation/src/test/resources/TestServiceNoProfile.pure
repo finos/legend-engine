@@ -62,7 +62,7 @@ Class test::model::Person {
 }
 
 ###Service
-Service <<meta::external::format::openapi::profiles::ServiceSpecGeneration.OpenAPI>> {doc.doc='testOpenapi'} test::TestService
+Service test::TestServiceNoProfile
 {
   pattern: '/service/test';
   owners:

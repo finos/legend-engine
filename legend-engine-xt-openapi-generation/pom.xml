@@ -72,6 +72,14 @@
         </dependency>
         <!--ENGINE-->
 
+        <!--COLLECTIONS API-->
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
+        <!--COLLECTIONS API-->
+
+
         <!--LOG-->
         <dependency>
             <groupId>org.slf4j</groupId>
