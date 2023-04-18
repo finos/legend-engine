@@ -69,6 +69,7 @@ function meta::external::query::sql::transformation::queryToPure::getSchemaFromS
 function meta::external::query::sql::transformation::queryToPure::processQuery(
                                                                           sources: SQLSource[*],
                                                                           query: meta::external::query::sql::metamodel::Node[1],
+                                                                          extensions: meta::pure::extension::Extension[*]
                                                                       ): SqlTransformContext[1]
 {
   let context = ^SqlTransformContext(
