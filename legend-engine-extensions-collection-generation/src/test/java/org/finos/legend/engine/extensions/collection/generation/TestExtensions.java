@@ -400,6 +400,7 @@ public class TestExtensions
                 .with("core_external_language_morphir")
                 .with("core_external_format_flatdata")
                 .with("core_external_format_json")
+                .with("core_external_format_openapi")
                 .with("core_external_format_protobuf")
                 .with("core_external_format_xml")
                 .with("core_external_query_graphql")
