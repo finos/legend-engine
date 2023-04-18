@@ -355,19 +355,23 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByFunctions():Boolean[1]
 {
-  let sqlString = 'SELECT count(Integer) AS "count", SUM(Integer) AS "sum", avg(Integer) AS "avg", stddev_pop(Integer) AS "stdDevPop", stddev_samp(Integer) AS "stdDevSamp", stddev(Integer) AS "stdDev" FROM service."/service/service1" GROUP BY String';
+  let sqlString = 'SELECT count(Integer) AS "count", count(DISTINCT Integer) AS "distinctCount", SUM(Integer) AS "sum", avg(Integer) AS "avg", ' +
+                  'stddev_pop(Integer) AS "stdDevPop", stddev_samp(Integer) AS "stdDevSamp", stddev(Integer) AS "stdDev", ' +
+                  'string_agg(String) AS "stringAgg" FROM service."/service/service1" GROUP BY String';
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {| FlatInput.all()->project(
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
           [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
         )->groupBy('String', [
           agg('count', row | $row.getInteger('Integer'), y | $y->count()),
+          agg('distinctCount', row | $row.getInteger('Integer'), y | $y->distinct()->count()),
           agg('sum', row | $row.getInteger('Integer'), y | $y->sum()),
           agg('avg', row | $row.getInteger('Integer'), y | $y->average()),
           agg('stdDevPop', row | $row.getInteger('Integer'), y | $y->stdDevPopulation()),
           agg('stdDevSamp', row | $row.getInteger('Integer'), y | $y->stdDevSample()),
-          agg('stdDev', row | $row.getInteger('Integer'), y | $y->stdDevSample())
-        ])->restrict(['count', 'sum', 'avg', 'stdDevPop', 'stdDevSamp', 'stdDev'])
+          agg('stdDev', row | $row.getInteger('Integer'), y | $y->stdDevSample()),
+          agg('stringAgg', row | $row.getString('String'), y | $y->joinStrings())
+        ])->restrict(['count', 'distinctCount', 'sum', 'avg', 'stdDevPop', 'stdDevSamp', 'stdDev', 'stringAgg'])
       };
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
@@ -424,16 +428,19 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testHavingNoGroupby():Boolean[1]
 {
-  let sqlString = 'SELECT \'abc\' FROM service."/service/service1" HAVING count(1) > 0';
+  let sqlString = 'SELECT \'abc\', pi() AS "pi" FROM service."/service/service1" HAVING count(1) > 0 AND count(1) < 1000';
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {| FlatInput.all()->project(
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
           [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
-        )->extend(col(row:TDSRow[1] | 'abc', 'abc'))
-        ->groupBy(['abc'], [
+        )->extend([
+          col(row:TDSRow[1] | 'abc', 'abc'), 
+          col(row:TDSRow[1] | pi(), 'pi')
+        ])
+        ->groupBy(['abc', 'pi'], [
           agg('count(1)', row | $row, y | count(1))
-        ])->filter(row | ($row.getInteger('count(1)') > 0))
-          ->restrict('abc')
+        ])->filter(row | ($row.getInteger('count(1)') > 0) && ($row.getInteger('count(1)') < 1000))
+          ->restrict(['abc', 'pi'])
 
       };
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
@@ -489,14 +496,14 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 //CASE
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testMultiSearchedCaseWhen():Boolean[1]
 {
-  let sqlString = 'SELECT CASE WHEN String = \'abc\' THEN 1 WHEN String = \'def\' THEN 2 ELSE 3 END AS "Number" FROM service."/service/service1"';
+  let sqlString = 'SELECT CASE WHEN String = \'abc\' THEN 1 WHEN String = \'def\' THEN NULL ELSE 3 END AS "Number" FROM service."/service/service1"';
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {| FlatInput.all()->project(
         [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
         ->project(
           [
-            col(row:TDSRow[1] | if ($row.getString('String') == 'abc', | 1, | if ($row.getString('String') == 'def', | 2, | 3)), 'Number')
+            col(row:TDSRow[1] | if ($row.getString('String') == 'abc', | 1, | if ($row.getString('String') == 'def', | [], | 3)), 'Number')
           ]
         )
       };
