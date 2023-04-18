@@ -577,7 +577,7 @@ public class DomainParseTreeWalker
             }
             if (!arth.isEmpty())
             {
-                result = this.arithmeticPart(arth, result, exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+                result = this.arithmeticPart(arth, boolResult, exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
             }
             else if (!bool.isEmpty())
             {
