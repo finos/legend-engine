@@ -492,7 +492,7 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
 
          let withNextSetImpl     = $childSetImpls->fold(
                                       {setImpl, tree |
-                                         let appendAtPaths = $propertyPaths.current->filter(path| $path.values->isNotEmpty());
+                                         let appendAtPaths = $propertyPaths.current;
                                          if($appendAtPaths->isEmpty(),
                                             | $tree->enrichSourceTreeNode($setImpl, $tgtPgft, $extensions),
                                             | $appendAtPaths->fold({path,tree | $tree->enrichSourceTreeNodeAtPath($path, $setImpl, $tgtPgft, $extensions)}, $tree)
@@ -573,13 +573,18 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNode(srcNode
 
 function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeAtPath(srcNode:GraphFetchTree[1], path:List<PropertyPathNode>[1], setImplementation: PureInstanceSetImplementation[1], tgtPgft:PropertyGraphFetchTree[1], extensions:meta::pure::extension::Extension[*]): GraphFetchTree[1]
 {
-   let head = $path.values->at(0);
-   let tail = $path.values->tail();
-   
-   if($tail->isEmpty(),
-      | ^$srcNode(subTrees=$srcNode.subTrees->cast(@PropertyGraphFetchTree)->map(st|if($st.property == $head.property, |$st->enrichSourceTreeNode($setImplementation, $tgtPgft, $extensions), |$st))),
-      | ^$srcNode(subTrees=$srcNode.subTrees->cast(@PropertyGraphFetchTree)->map(st|if($st.property == $head.property, |$st->enrichSourceTreeNodeAtPath(list($tail), $setImplementation, $tgtPgft, $extensions), |$st)))
-   );
+  // If path is empty then we are enriching the source node rather than the subTrees
+   if($path.values->isEmpty(),
+      | let enrichedSourceNode = enrichSourceTreeNode($srcNode, $setImplementation, $tgtPgft, $extensions);
+        ^$enrichedSourceNode(subTrees=$enrichedSourceNode.subTrees->concatenate($srcNode.subTrees)->removeDuplicates());,
+      | let head = $path.values->at(0);
+        let tail = $path.values->tail();
+        
+        if($tail->isEmpty(),
+            | ^$srcNode(subTrees=$srcNode.subTrees->cast(@PropertyGraphFetchTree)->map(st|if($st.property == $head.property, |$st->enrichSourceTreeNode($setImplementation, $tgtPgft, $extensions), |$st))),
+            | ^$srcNode(subTrees=$srcNode.subTrees->cast(@PropertyGraphFetchTree)->map(st|if($st.property == $head.property, |$st->enrichSourceTreeNodeAtPath(list($tail), $setImplementation, $tgtPgft, $extensions), |$st)))
+        );
+   ); 
 }
 
 function <<access.private>> meta::pure::graphFetch::addPassThroughSubTrees(srcNode:GraphFetchTree[1], tgtNode:GraphFetchTree[1], extensions:meta::pure::extension::Extension[*]): GraphFetchTree[1]

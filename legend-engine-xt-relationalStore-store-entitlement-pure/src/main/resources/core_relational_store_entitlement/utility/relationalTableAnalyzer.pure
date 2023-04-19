@@ -73,7 +73,7 @@ function meta::analytics::store::entitlements::runMappersOnTables(tables:Table[*
                );
 }
 
-function meta::analytics::store::entitlements::getTablesFromMapping(mapping:Mapping[1], runtime: Runtime[1]):Table[*]
+function meta::analytics::store::entitlements::getTablesFromMapping(mapping:Mapping[1]):Table[*]
 {
    let classMappings = $mapping->map(m|$m->meta::pure::mapping::classMappings());
    let rootMappings = $classMappings->filter(cm |$cm.root)
@@ -98,8 +98,8 @@ function meta::analytics::store::entitlements::getTablesFromMapping(mapping:Mapp
                    )
                );
    let queries = $sql.data.alias.relationalElement->cast(@UnionAll).queries;
-   let tables1 = $queries->map(q|$q.data.alias.relationalElement->cast(@Table)->toOne())->removeDuplicatesBy(t|$t.schema.name + $t.name);
-   let allTables = $tables->concatenate($tables1)->removeDuplicatesBy(t|$t.schema.name + $t.name);
+   let tablesFromUnionQuery = $queries->map(q|$q.data.alias.relationalElement->cast(@Table)->toOne())->removeDuplicatesBy(t|$t.schema.name + $t.name);
+   let allTables = $tables->concatenate($tablesFromUnionQuery)->removeDuplicatesBy(t|$t.schema.name + $t.name);
 }
 
 function <<access.private>> meta::analytics::store::entitlements::processTableMappers(t:meta::relational::metamodel::relation::Table[1], tableNameMappers:meta::pure::alloy::connections::TableNameMapper[*]):meta::relational::metamodel::relation::Table[0..1]{
