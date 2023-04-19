@@ -24,7 +24,7 @@ import meta::pure::extension::*;
  native function meta::external::store::mongodb::executionTest::utils::stopMongoDBTestServer(imageTag: String[1]): Nil[0];
 
 //<<LocalPlatformBinding.TestPlanBinder>>
-function meta::external::store::mongodb::executionTest::utils::bindMongoDBTestPlanToPlatform(): LocalPlatformBinder[1]
+function <<LocalPlatformBinding.TestPlanBinder>> meta::external::store::mongodb::executionTest::utils::bindMongoDBTestPlanToPlatform(): LocalPlatformBinder[1]
 {
    ^LocalPlatformBinder
    (
