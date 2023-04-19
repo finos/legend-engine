@@ -8,9 +8,7 @@
 "Technology"
       ],
       "address":       {
-        "country": [
-"United States"
-        ],
+        "country": "United States",
         "city": null,
         "street": "382 Towne Plaza",
         "postalCode": "81010"
@@ -19,9 +17,7 @@
     },
     "phoneNumber": "+1 301 842 7614",
     "address":     {
-      "country": [
-"United States"
-      ],
+      "country": "United States",
       "city": "Hyattsville",
       "street": "338 Evergreen Place",
       "postalCode": "20784"

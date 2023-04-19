@@ -2,9 +2,7 @@
   "values":   {
     "firm":     {
       "address":       {
-        "country": [
-"United States"
-        ]
+        "country": "United States"
       }
     }
   },

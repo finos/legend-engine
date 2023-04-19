@@ -11,9 +11,7 @@
 "n\/a"
       ],
       "address":       {
-        "country": [
-"United States"
-        ],
+        "country": "United States",
         "city": null,
         "street": "974 Sunbrook Crossing",
         "postalCode": "55103"
@@ -22,9 +20,7 @@
     },
     "phoneNumber": "+1 501 883 4607",
     "address":     {
-      "country": [
-"United States"
-      ],
+      "country": "United States",
       "city": "Little Rock",
       "street": "99 Bonner Plaza",
       "postalCode": "72215"
