@@ -14,9 +14,6 @@
 
 package org.finos.legend.engine.entitlement.model.specification;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class RelationalDatabaseTableSpecification extends DatasetSpecification
 {
     private String database;
