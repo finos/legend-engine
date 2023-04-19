@@ -48,6 +48,7 @@ import org.finos.legend.engine.api.analytics.StoreEntitlementAnalytics;
 import org.finos.legend.engine.application.query.api.ApplicationQuery;
 import org.finos.legend.engine.application.query.configuration.ApplicationQueryConfiguration;
 import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
+import org.finos.legend.engine.entitlement.services.EntitlementModelObjectMapperFactory;
 import org.finos.legend.engine.entitlement.services.EntitlementServiceExtension;
 import org.finos.legend.engine.entitlement.services.EntitlementServiceExtensionLoader;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
@@ -170,6 +171,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(bootstrap.getConfigurationSourceProvider(), new EnvironmentVariableSubstitutor(true)));
 
         PureProtocolObjectMapperFactory.withPureProtocolExtensions(bootstrap.getObjectMapper());
+        EntitlementModelObjectMapperFactory.withEntitlementModelExtensions(bootstrap.getObjectMapper());
         VaultFactory.withVaultConfigurationExtensions(bootstrap.getObjectMapper());
         ObjectMapperFactory.withStandardConfigurations(bootstrap.getObjectMapper());
 
