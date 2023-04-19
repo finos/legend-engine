@@ -16,10 +16,12 @@ package org.finos.legend.engine.entitlement.model.entitlementReport;
 
 public class DatasetEntitlementAccessErrorReport
 {
+    private String errorMessage;
     private String stackTrace;
 
-    public DatasetEntitlementAccessErrorReport(String stackTrace)
+    public DatasetEntitlementAccessErrorReport(String errorMessage, String stackTrace)
     {
+        this.errorMessage = errorMessage;
         this.stackTrace = stackTrace;
     }
 
