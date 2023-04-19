@@ -37,7 +37,7 @@ Class meta::external::store::mongodb::functions::pureToDatabaseCommand::PureFunc
 {
 }
 
-Class meta::external::store::mongodb::functions::pureToDatabaseCommand::PureFunctionToComparisonOperatorPair extends Pair<meta::pure::metamodel::function::Function<Any>,Class<ComparisonOperatorExpression>>
+Class meta::external::store::mongodb::functions::pureToDatabaseCommand::PureFunctionToLambdaComparisonOperatorPair extends Pair<meta::pure::metamodel::function::Function<Any>,LambdaFunction<{ArgumentExpression[1], ArgumentExpression[1]->ComparisonOperatorExpression[1]}>>
 {
 }
 
@@ -45,12 +45,12 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
 {
    let func = findSupportedComparisonFunction($f, getSupportedComparisonOperators());
    if(!$func->isEmpty(),
-      | $func->toOne()->dynamicNew([^KeyValue(key='expressions', value=[$leftSide, $rightSide] ) ])->cast(@ComparisonOperatorExpression);,
+      | $func->toOne()->eval($leftSide, $rightSide);,
       | fail($f.func.name->toOne() + ' is not a supported comparison function with mongo store !!'); ^ComparisonOperatorExpression(expressions = [^ArgumentExpression(), ^ArgumentExpression()]);
    );
 }
 
-function meta::external::store::mongodb::functions::pureToDatabaseCommand::findSupportedComparisonFunction(fe:FunctionExpression[1], supportedFunctions:Map<meta::pure::metamodel::function::Function<Any>,Class<ComparisonOperatorExpression>>[1]):Class<ComparisonOperatorExpression>[0..1]
+function meta::external::store::mongodb::functions::pureToDatabaseCommand::findSupportedComparisonFunction(fe:FunctionExpression[1], supportedFunctions:Map<meta::pure::metamodel::function::Function<Any>, LambdaFunction<{ArgumentExpression[1], ArgumentExpression[1]->ComparisonOperatorExpression[1]}>>[1]):LambdaFunction<{ArgumentExpression[1], ArgumentExpression[1]->ComparisonOperatorExpression[1]}>[0..1]
 {
    $supportedFunctions->get($fe.func);
 }
@@ -229,6 +229,7 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::findS
    $supportedFunctions->get($fe.func);
 }
 
+
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::findSupportedComparisonFunction(fe:FunctionExpression[1], leftSide: ArgumentExpression[1], rightSide: ArgumentExpression[1], supportedFunctions:Map<meta::pure::metamodel::function::Function<Any>,ComparisonOperatorExpression>[1]):ComparisonOperatorExpression[0..1]
 {
    $supportedFunctions->get($fe.func);
@@ -260,23 +261,23 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::getSu
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_, second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processNoOp_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__MongoDBOperationElement_1_),
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::collection::map_T_MANY__Function_1__V_MANY_, second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processNoOp_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__MongoDBOperationElement_1_),
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::collection::map_T_m__Function_1__V_m_, second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processNoOp_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__MongoDBOperationElement_1_)
-      //^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::collection::map_T_$0_1$__Function_1__V_$0_1$_, second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processNoOp_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__MongoDBOperationElement_1_)
       ])
 }
 
-function meta::external::store::mongodb::functions::pureToDatabaseCommand::getSupportedComparisonOperators():Map<meta::pure::metamodel::function::Function<Any>,Class<ComparisonOperatorExpression>>[1]
+
+function meta::external::store::mongodb::functions::pureToDatabaseCommand::getSupportedComparisonOperators():Map<meta::pure::metamodel::function::Function<Any>, LambdaFunction<{ArgumentExpression[1], ArgumentExpression[1]->ComparisonOperatorExpression[1]}>>[1]
 {
    newMap([
-      ^PureFunctionToComparisonOperatorPair(first=meta::pure::functions::boolean::greaterThan_Number_1__Number_1__Boolean_1_,second=GTOperatorExpression),
-      ^PureFunctionToComparisonOperatorPair(first=meta::pure::functions::boolean::greaterThan_String_1__String_1__Boolean_1_,second=GTOperatorExpression),
+      ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::greaterThan_Number_1__Number_1__Boolean_1_,second={leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^GTOperatorExpression(expressions=[$leftSide, $rightSide])}),
+      ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::greaterThan_String_1__String_1__Boolean_1_,second={ leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^GTOperatorExpression(expressions=[$leftSide, $rightSide])}),
 
-      ^PureFunctionToComparisonOperatorPair(first=meta::pure::functions::boolean::greaterThanEqual_Number_1__Number_1__Boolean_1_,second=GTEOperatorExpression),
-      ^PureFunctionToComparisonOperatorPair(first=meta::pure::functions::boolean::greaterThanEqual_String_1__String_1__Boolean_1_,second=GTEOperatorExpression),
+      ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::greaterThanEqual_Number_1__Number_1__Boolean_1_,second= { leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^GTEOperatorExpression(expressions=[$leftSide, $rightSide])}),
+      ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::greaterThanEqual_String_1__String_1__Boolean_1_,second= { leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^GTEOperatorExpression(expressions=[$leftSide, $rightSide])}),
 
-      ^PureFunctionToComparisonOperatorPair(first=meta::pure::functions::boolean::lessThan_Number_1__Number_1__Boolean_1_,second=LTOperatorExpression),
-      ^PureFunctionToComparisonOperatorPair(first=meta::pure::functions::boolean::lessThan_String_1__String_1__Boolean_1_,second=LTOperatorExpression),
+      ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::lessThan_Number_1__Number_1__Boolean_1_,second= { leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^LTOperatorExpression(expressions=[$leftSide, $rightSide])}),
+      ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::lessThan_String_1__String_1__Boolean_1_,second= { leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^LTOperatorExpression(expressions=[$leftSide, $rightSide])}),
 
-      ^PureFunctionToComparisonOperatorPair(first=meta::pure::functions::boolean::lessThanEqual_Number_1__Number_1__Boolean_1_,second=LTEOperatorExpression),
-      ^PureFunctionToComparisonOperatorPair(first=meta::pure::functions::boolean::lessThanEqual_String_1__String_1__Boolean_1_,second=LTEOperatorExpression)
+      ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::lessThanEqual_Number_1__Number_1__Boolean_1_,second= { leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^LTEOperatorExpression(expressions=[$leftSide, $rightSide])}),
+      ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::lessThanEqual_String_1__String_1__Boolean_1_,second= { leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^LTEOperatorExpression(expressions=[$leftSide, $rightSide])})
       ]);
 }
