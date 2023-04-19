@@ -84,20 +84,30 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
   $functionExpression.parametersValues->at($index)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).parametersValues;
 }
 
+function meta::external::store::mongodb::functions::pureToDatabaseCommand::buildFilterPath(simpleFunctionExpression: SimpleFunctionExpression[1], path: String[1]): String[1]
+{
+  if ($simpleFunctionExpression.func != map_T_$0_1$__Function_1__V_$0_1$_,
+  |
+    let leftPath = $simpleFunctionExpression.func.name->toOne();
+    $leftPath + '.' + $path;,
+  |
+    let rightPart = $simpleFunctionExpression.parametersValues->at(1)->cast(@StoreMappingRoutedValueSpecification).value->cast(@FunctionRoutedValueSpecification).originalFunction->cast(@LambdaFunction<Any>).expressionSequence->cast(@SimpleFunctionExpression).func.name->toOne();
+    let leftPart = $simpleFunctionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression);
+    let currentPath = if ($path == '', | $rightPart, | $rightPart + '.' + $path);
+    buildFilterPath($leftPart, $currentPath);
+  );
+}
+
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::processEqual(functionExpression: FunctionExpression[1], databaseCommand: DatabaseCommand[1], mapping: Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]): EqOperatorExpression[1]
 {
   let parameterValues = processSimpleFunctionExpression($functionExpression, 0);
   let firstParameterValue = $parameterValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value;
 
   let path = if($firstParameterValue->instanceOf(VariableExpression),
+    | 
+      $functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name->toOne(),
     |
-      let root = $functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name->toOne();,
-    |
-      // start using the processSimpleFunctionExpression, to dig in some levels without having to manually write it every time. can we use the processValueSpecification as well to dig in?
-      let nestedParameterValues = processSimpleFunctionExpression($functionExpression, 0);
-      let root = $nestedParameterValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression).func.name->toOne();
-      let embedded = $nestedParameterValues->at(1)->cast(@StoreMappingRoutedValueSpecification).value->cast(@FunctionRoutedValueSpecification).originalFunction->cast(@LambdaFunction<Any>).expressionSequence->cast(@SimpleFunctionExpression).func.name->toOne();
-      $root + '.' + $embedded;
+      buildFilterPath($functionExpression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).value->cast(@SimpleFunctionExpression), '')
   );
 
   let fieldPath = '$' + $path;
@@ -204,7 +214,10 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
 
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::processOr(functionExpression: FunctionExpression[1], databaseCommand: DatabaseCommand [1], mapping: Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]): OrOperatorExpression[1]
 {
-  let leftSide = processValueSpecification($functionExpression.parametersValues->at(0), $databaseCommand, $mapping, $inScopeVars, $debug)->cast(@ComparisonOperatorExpression);
+  let leftSide = processValueSpecification($functionExpression.parametersValues->at(0), $databaseCommand, $mapping, $inScopeVars, $debug)->match([
+    c: ComparisonOperatorExpression[1] | $c,
+    l: LogicalOperatorExpression[1]    | $l
+  ]);
   let rightSide = processValueSpecification($functionExpression.parametersValues->at(1), $databaseCommand, $mapping, $inScopeVars, $debug)->match([
     c: ComparisonOperatorExpression[1] | $c,
     l: LogicalOperatorExpression[1]    | $l
