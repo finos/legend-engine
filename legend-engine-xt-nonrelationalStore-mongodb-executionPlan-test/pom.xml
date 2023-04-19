@@ -26,7 +26,7 @@
 
     <artifactId>legend-engine-xt-nonrelationalStore-mongodb-executionPlan-test</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Engine - XT - NonRelational Store MongoDB - Execution Plan - Test</name>
+    <name>Legend Engine - XT - Non-Relational Store - MongoDB - Execution Plan - Test</name>
 
     <dependencies>
         <dependency>
@@ -40,6 +40,10 @@
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-engine-interpreted</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
@@ -102,6 +106,30 @@
             <artifactId>legend-engine-pure-platform-java</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-shared-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <version>${testcontainers.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>mongodb</artifactId>
+            <version>1.17.6</version>
+        </dependency>
+        <!-- Mongo DB-->
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongo-java-driver</artifactId>
+        </dependency>
+        <!-- Mongo DB-->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections</artifactId>
         </dependency>
@@ -114,8 +142,8 @@
             <artifactId>junit</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>testcontainers</artifactId>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
         </dependency>
 
         <!-- TEST  -->
@@ -132,7 +160,7 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-nonrelationalStore-mongodb-grammar-integration</artifactId>
-            <scope>test</scope>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

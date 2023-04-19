@@ -17,14 +17,14 @@ import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::executionPlan::platformBinding::localBinding::*;
 import meta::pure::extension::*;
 
-// native function meta::external::store::elasticsearch::executionTest::utils::startElasticsearchTestServer(imageTag: String[1]): meta::pure::functions::io::http::URL[1];
+ native function meta::external::store::mongodb::executionTest::utils::startMongoDBTestServer(imageTag: String[1]): meta::pure::functions::io::http::URL[1];
 
-// native function meta::external::store::elasticsearch::executionTest::utils::requestElasticsearchTestServer(imageTag: String[1], requestJson: String[1]): String[1];
+ native function meta::external::store::mongodb::executionTest::utils::requestMongoDBTestServer(imageTag: String[1], requestJson: String[1]): String[1];
 
-// native function meta::external::store::elasticsearch::executionTest::utils::stopElasticsearchTestServer(imageTag: String[1]): Nil[0];
+ native function meta::external::store::mongodb::executionTest::utils::stopMongoDBTestServer(imageTag: String[1]): Nil[0];
 
-//  <<LocalPlatformBinding.TestPlanBinder>>
-function <<LocalPlatformBinding.TestPlanBinder>> meta::external::store::mongodb::executionTest::utils::bindMongoDBTestPlanToPlatform(): LocalPlatformBinder[1]
+//<<LocalPlatformBinding.TestPlanBinder>>
+function meta::external::store::mongodb::executionTest::utils::bindMongoDBTestPlanToPlatform(): LocalPlatformBinder[1]
 {
    ^LocalPlatformBinder
    (
@@ -33,7 +33,7 @@ function <<LocalPlatformBinding.TestPlanBinder>> meta::external::store::mongodb:
       bindingFunction = {plan: ExecutionPlan[1], extensions: Extension[*] |
 
        // let extensionsWithPlatformBindings = meta::external::store::mongodb::executionTest::utils::mongoDBLegendJavaPlatformBindingExtensions();
-           let extensionsWithPlatformBindings = meta::external::store::mongodb::executionPlan::platformBinding::legendJava::mongoDBLegendJavaPlatformBindingExtensions();
+           let extensionsWithPlatformBindings = meta::external::store::mongodb::executionTest::utils::mongoDBLegendJavaPlatformBindingExtensions();
          // Using LegendJava as the default for local platform binding
          generatePlatformCode($plan, legendJavaPlatformBindingId(), ^LegendJavaPlatformBindingConfig(), $extensionsWithPlatformBindings);
 

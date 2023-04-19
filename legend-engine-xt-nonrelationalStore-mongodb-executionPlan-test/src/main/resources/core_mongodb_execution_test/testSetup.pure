@@ -5,12 +5,26 @@ Class meta::external::store::mongodb::executionTest::domain::Person
   firstName : String[0..1];
   lastName  : String[0..1];
   age:        Integer[0..1];
+  phoneNumber:String[0..1];
+  otherPhoneNumbers:String[0..*];
+  email:String[0..1];
+  address      : Address[0..1];
   firm      : Firm[0..1];
 }
 
 Class meta::external::store::mongodb::executionTest::domain::Firm
 {
   legalName : String[0..1];
-  address: String[0..1];
+  dateFounded: String[0..1];
+  industrySectors: String[0..*];
+  address: Address[0..1];
 }
 
+
+Class meta::external::store::mongodb::executionTest::domain::Address
+{
+  street : String[0..1];
+  city: String[0..1];
+  postalCode: String[0..1];
+  country: String[0..*];
+}

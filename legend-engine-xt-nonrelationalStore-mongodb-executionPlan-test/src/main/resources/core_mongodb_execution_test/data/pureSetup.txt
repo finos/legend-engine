@@ -66,7 +66,8 @@ Binding meta::external::store::mongodb::showcase::store::PersonCollectionBinding
     contentType   : 'application/json';
     modelIncludes : [
         meta::external::store::mongodb::executionTest::domain::Person,
-        meta::external::store::mongodb::executionTest::domain::Firm
+        meta::external::store::mongodb::executionTest::domain::Firm,
+        meta::external::store::mongodb::executionTest::domain::Address
     ];
 }
 
@@ -85,7 +86,7 @@ MongoDBConnection test::mongodb::testConnection
 {
     database: userDatabase;
     store: test::mongodb::mydatabase;
-    serverURLs: [localhost:53781];
+    serverURLs: [localhost:__PORT_TOKEN__];
     authentication: # UserPassword {
         username: 'sa';
         password: SystemPropertiesSecret
