@@ -178,6 +178,24 @@ public class TestUtils
                 .build();
     }
 
+    public static DatasetDefinition getBasicMainTableWithVersion()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(income)
+                .addFields(startTime)
+                .addFields(expiryDate)
+                .addFields(digest)
+                .addFields(version)
+                .build()
+            )
+            .build();
+    }
+
     public static DatasetDefinition getMainTableWithBatchUpdateTimeField()
     {
         return DatasetDefinition.builder()
