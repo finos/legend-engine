@@ -122,9 +122,10 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
             try (TemporaryFile tempFile = new TemporaryFile(config.tempPath, RequestIdGenerator.generateId()))
             {
                 CsvSerializer csvSerializer;
+                boolean withHeader = false;
                 if (result instanceof RelationalResult)
                 {
-                    csvSerializer = new RelationalResultToCSVSerializer((RelationalResult) result, true);
+                    csvSerializer = new RelationalResultToCSVSerializer((RelationalResult) result, withHeader);
                     tempFile.writeFile(csvSerializer);
                     try (Statement statement = connection.createStatement())
                     {
@@ -145,7 +146,7 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
                 else if (result instanceof RealizedRelationalResult)
                 {
                     RealizedRelationalResult realizedRelationalResult = (RealizedRelationalResult) this.result;
-                    csvSerializer = new RealizedRelationalResultCSVSerializer(realizedRelationalResult, this.databaseTimeZone, false, false);
+                    csvSerializer = new RealizedRelationalResultCSVSerializer(realizedRelationalResult, this.databaseTimeZone, withHeader, false);
                     tempFile.writeFile(csvSerializer);
                     try (Statement statement = connection.createStatement())
                     {
@@ -155,7 +156,7 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
                 }
                 else if (result instanceof StreamingObjectResult)
                 {
-                    csvSerializer = new StreamingObjectResultCSVSerializer((StreamingObjectResult) result, true);
+                    csvSerializer = new StreamingObjectResultCSVSerializer((StreamingObjectResult) result, withHeader);
                     tempFile.writeFile(csvSerializer);
                     try (Statement statement = connection.createStatement())
                     {
@@ -165,7 +166,7 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
                 }
                 else if (result instanceof TempTableStreamingResult)
                 {
-                    csvSerializer = new StreamingTempTableResultCSVSerializer((TempTableStreamingResult) result, true);
+                    csvSerializer = new StreamingTempTableResultCSVSerializer((TempTableStreamingResult) result, withHeader);
                     tempFile.writeFile(csvSerializer);
                     try (Statement statement = connection.createStatement())
                     {
@@ -210,9 +211,10 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
             try (TemporaryFile tempFile = new TemporaryFile(config.tempPath))
             {
                 CsvSerializer csvSerializer;
+                boolean withHeader = true;
                 if (result instanceof RelationalResult)
                 {
-                    csvSerializer = new RelationalResultToCSVSerializer((RelationalResult) result, true);
+                    csvSerializer = new RelationalResultToCSVSerializer((RelationalResult) result, withHeader);
                     tempFile.writeFile(csvSerializer);
                     try (Statement statement = connection.createStatement())
                     {
@@ -232,7 +234,7 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
                 }
                 else if (result instanceof RealizedRelationalResult)
                 {
-                    csvSerializer = new RealizedRelationalResultCSVSerializer((RealizedRelationalResult) result, this.databaseTimeZone, true, false);
+                    csvSerializer = new RealizedRelationalResultCSVSerializer((RealizedRelationalResult) result, this.databaseTimeZone, withHeader, false);
                     tempFile.writeFile(csvSerializer);
                     try (Statement statement = connection.createStatement())
                     {
@@ -243,7 +245,7 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
                 }
                 else if (result instanceof StreamingObjectResult)
                 {
-                    csvSerializer = new StreamingObjectResultCSVSerializer((StreamingObjectResult) result, true);
+                    csvSerializer = new StreamingObjectResultCSVSerializer((StreamingObjectResult) result, withHeader);
                     tempFile.writeFile(csvSerializer);
                     try (Statement statement = connection.createStatement())
                     {
@@ -253,7 +255,7 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
                 }
                 else if (result instanceof TempTableStreamingResult)
                 {
-                    csvSerializer = new StreamingTempTableResultCSVSerializer((TempTableStreamingResult) result, true);
+                    csvSerializer = new StreamingTempTableResultCSVSerializer((TempTableStreamingResult) result, withHeader);
                     tempFile.writeFile(csvSerializer);
                     try (Statement statement = connection.createStatement())
                     {
