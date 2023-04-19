@@ -264,7 +264,7 @@ Mapping meta::pure::mapping::modelToModel::test::alloy::explosion::enumExplosion
    Trade : Pure
    {
       ~src _Trade
-      side*: EnumerationMapping Side : range(3)->map(x | $src.side)
+      side*: EnumerationMapping Side : [$src.side, $src.side, $src.side]
    }
 
    Side : EnumerationMapping Side
