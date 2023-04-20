@@ -26,10 +26,11 @@ import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.M3Properties;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m3.navigation.PrimitiveUtilities;
-import org.finos.legend.pure.m3.serialization.filesystem.PureCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositorySet;
-import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.MutableCodeStorage;
+import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.MutableRepositoryCodeStorage;
+import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.ClassLoaderCodeStorage;
+import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.composite.CompositeCodeStorage;
 import org.finos.legend.pure.m3.tests.AbstractPureTestWithCoreCompiled;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
@@ -37,13 +38,9 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
 import javax.lang.model.SourceVersion;
+import java.lang.reflect.Array;
+import java.util.*;
 
 public class TestPureResultBuilder extends AbstractPureTestWithCoreCompiled
 {
@@ -57,14 +54,14 @@ public class TestPureResultBuilder extends AbstractPureTestWithCoreCompiled
         resultBuilder = new PureResultBuilder(processorSupport);
     }
 
-    protected static MutableCodeStorage getCodeStorage()
+    protected static MutableRepositoryCodeStorage getCodeStorage()
     {
         CodeRepositorySet repositories = CodeRepositorySet.newBuilder()
                 .withCodeRepositories(CodeRepositoryProviderHelper.findCodeRepositories(true))
                 .build()
                 .subset("core_external_language_java_compiler");
 
-        return PureCodeStorage.createCodeStorage(null, repositories.getRepositories());
+        return new CompositeCodeStorage(new ClassLoaderCodeStorage(repositories.getRepositories()));
     }
 
     @Test

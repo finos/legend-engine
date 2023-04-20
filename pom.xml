@@ -278,12 +278,13 @@
         <module>legend-engine-server-integration-tests</module>
         <module>legend-engine-extensions-collection-execution</module>
         <module>legend-engine-extensions-collection-generation</module>
-        <!-- NOTE: Do not change the ordering of this block, we want to build these modules last -->
+        <!-- NOTE: Do not change the ordering of this block, we want to build these modules lastue
+         -->
     </modules>
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>4.4.0</legend.pure.version>
+        <legend.pure.version>4.5.0</legend.pure.version>
         <legend.shared.version>0.23.3</legend.shared.version>
 
         <!-- SONAR -->
