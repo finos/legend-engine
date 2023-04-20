@@ -1,0 +1,154 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::openapi::metamodel::*;
+
+Class meta::external::format::openapi::metamodel::OpenApi
+{
+  openapi: String[1];
+  info: Info[1];
+  externalDocs: ExternalDocumentation[0..1];
+  servers: Server[0..*];
+  paths: Map<String, PathItem>[1];
+  components: Components[1];
+  //security
+}
+
+Class meta::external::format::openapi::metamodel::Info
+{
+  title: String[0..1];
+  version: String[0..1];
+  description: String[0..1];
+  termsOfService: String[0..1];
+  // license: License[0..1];
+  // contact: Contact[0..1];
+}
+
+Class meta::external::format::openapi::metamodel::Server
+{
+  url: String[1];
+}
+
+Class meta::external::format::openapi::metamodel::ExternalDocumentation
+{
+  description: String[0..1];
+  url: String[0..1];
+  extensions: Map<String, Any>[1];
+}
+
+Class meta::external::format::openapi::metamodel::PathItem
+{
+  get: Operation[0..1];
+  put: Operation[0..1];
+  post: Operation[0..1];
+  delete: Operation[0..1];
+  options: Operation[0..1];
+  head: Operation[0..1];
+  patch: Operation[0..1];
+}
+
+Class meta::external::format::openapi::metamodel::Operation
+{
+  tags: String[*];
+  description: String[*];
+  operationId: String[*];
+  parameters: ParameterOrReference[*];
+  requestBody: SchemaOrReference[0..1];
+  responses: Map<String, Response>[1];
+}
+
+Class meta::external::format::openapi::metamodel::ParameterOrReference
+{
+}
+
+Class meta::external::format::openapi::metamodel::Parameter extends ParameterOrReference
+[
+  if ($this.in == In.path, |assert(!$this.required->isEmpty() && $this.required->toOne(),'path is required'), |true),
+  if ($this.in == In.body, |assert(!$this.schema->isEmpty(), 'schema should not be empty'),|true)
+]
+{
+  name: String[0..1];
+  in: In[0..1];
+  description: String[*];
+  required: Boolean[0..1];
+  deprecated: Boolean[0..1];
+  allowEmptyValue: Boolean[0..1];
+  explode: Boolean[0..1];
+  style: Style[0..1];
+  schema: SchemaOrReference[0..1];
+}
+
+Class meta::external::format::openapi::metamodel::Response
+{
+  description: String[1];
+  content: Map<String, MediaType>[0..1];
+}
+
+Class meta::external::format::openapi::metamodel::MediaType
+{
+  schema: SchemaOrReference[0..1];
+}
+
+Enum meta::external::format::openapi::metamodel::Style
+{
+  matrix,
+  label,
+  form,
+  simple,
+  spaceDelimited,
+  pipeDelimited,
+  deepObject
+}
+
+Class meta::external::format::openapi::metamodel::Components
+{
+  schemas: Map<String, SchemaOrReference>[1];
+}
+
+Class meta::external::format::openapi::metamodel::SchemaOrReference
+{
+}
+
+Class meta::external::format::openapi::metamodel::Schema extends SchemaOrReference
+{
+  name: String[0..1];
+  title: String[0..1];
+  type: String[1];
+  required: Boolean[0..1];
+  properties: Map<String, SchemaOrReference>[0..1];
+  additionalProperties: Any[0..1];
+  description: String[0..1];
+  format: String[0..1];
+  enum: String[*];
+
+  allOf: SchemaOrReference[0..*];
+  anyOf: SchemaOrReference[0..*];
+  oneOf: SchemaOrReference[0..*];
+  items: SchemaOrReference[0..*];
+}
+
+// doc.doc
+Class meta::external::format::openapi::metamodel::Reference extends ParameterOrReference,SchemaOrReference
+{
+  ref: String[1];
+}
+
+Enum meta::external::format::openapi::metamodel::In
+{
+  query,
+  header,
+  path,
+  formData,
+  body
+}
