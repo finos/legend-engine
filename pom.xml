@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.7.2-SNAPSHOT</version>
+    <version>4.8.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -268,8 +268,9 @@
         <module>legend-engine-xt-nonrelationalStore-mongodb-executionPlan</module>
         <module>legend-engine-xt-nonrelationalStore-mongodb-javaPlatformBinding-pure</module>
         <module>legend-engine-xt-artifact-generation-api</module>
+        <module>legend-engine-xt-openapi-generation</module>
         <module>legend-engine-test-runner-mapping-api</module>
-
+        <module>legend-engine-xt-openapi-pure</module>
 
         <!-- NOTE: Do not change the ordering of this block, we want to build these modules last -->
         <module>legend-engine-test-reports</module>
@@ -278,12 +279,13 @@
         <module>legend-engine-server-integration-tests</module>
         <module>legend-engine-extensions-collection-execution</module>
         <module>legend-engine-extensions-collection-generation</module>
-        <!-- NOTE: Do not change the ordering of this block, we want to build these modules last -->
+        <!-- NOTE: Do not change the ordering of this block, we want to build these modules lastue
+         -->
     </modules>
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>4.4.0</legend.pure.version>
+        <legend.pure.version>4.5.0</legend.pure.version>
         <legend.shared.version>0.23.3</legend.shared.version>
 
         <!-- SONAR -->
@@ -1850,7 +1852,17 @@
                 <artifactId>legend-engine-xt-nonrelationalStore-mongodb-javaPlatformBinding-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-openapi-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-openapi-generation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <!-- ENGINE -->
 
             <!-- PURE -->

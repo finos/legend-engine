@@ -17,10 +17,11 @@ package org.finos.legend.engine.external.language.java.runtime.compiler;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.finos.legend.pure.m3.exception.PureAssertFailException;
-import org.finos.legend.pure.m3.serialization.filesystem.PureCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositorySet;
-import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.MutableCodeStorage;
+import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.MutableRepositoryCodeStorage;
+import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.ClassLoaderCodeStorage;
+import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.composite.CompositeCodeStorage;
 import org.finos.legend.pure.m3.tests.AbstractPureTestWithCoreCompiled;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.m4.exception.PureCompilationException;
@@ -295,14 +296,14 @@ public abstract class AbstractTestCompileAndExecuteJava extends AbstractPureTest
         }
     }
 
-    protected static MutableCodeStorage getCodeStorage()
+    protected static MutableRepositoryCodeStorage getCodeStorage()
     {
         CodeRepositorySet repositories = CodeRepositorySet.newBuilder()
                 .withCodeRepositories(CodeRepositoryProviderHelper.findCodeRepositories(true))
                 .build()
                 .subset("core_external_language_java_compiler");
 
-        return PureCodeStorage.createCodeStorage(null, repositories.getRepositories());
+        return new CompositeCodeStorage(new ClassLoaderCodeStorage(repositories.getRepositories()));
     }
 
     private static String loadSourceCodeEscaped(String className)
