@@ -22,7 +22,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
-
 import java.util.Properties;
 
 public class MySQLManager extends DatabaseManager
