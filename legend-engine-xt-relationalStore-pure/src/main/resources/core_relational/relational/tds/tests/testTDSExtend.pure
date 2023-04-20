@@ -211,6 +211,30 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testDateLiteral(
       $result->sqlRemoveFormatting());   
 }
 
+function <<test.Test>> meta::relational::tests::tds::tdsExtend::testNoopFunctions():Boolean[1]
+{
+   let result = execute(
+      |Person.all()
+         ->project(p|$p.firstName,'firstName')
+         ->extend([
+          col({r:TDSRow[1]|$r.getString('firstName')->toOne()}, 'toOne'),
+          col({r:TDSRow[1]|$r.getString('firstName')->first()}, 'first'),
+          col({r:TDSRow[1]|[]->cast(@String)}, 'castNull'),
+          col({r:TDSRow[1]|$r.getString('firstName')->cast(@String)}, 'cast')
+          ]),
+      simpleRelationalMapping, 
+      testRuntime(), meta::relational::extension::relationalExtensions());
+
+   assertSize($result.values.columns, 5);   
+   
+   assertEquals('Peter|Peter|Peter|TDSNull|Peter,John|John|John|TDSNull|John,John|John|John|TDSNull|John,Anthony|Anthony|Anthony|TDSNull|Anthony,Fabrice|Fabrice|Fabrice|TDSNull|Fabrice,Oliver|Oliver|Oliver|TDSNull|Oliver,David|David|David|TDSNull|David',
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
+   
+   assertEquals('select "root".FIRSTNAME as "firstName", "root".FIRSTNAME as "toOne", "root".FIRSTNAME as "first", null as "castNull", "root".FIRSTNAME as "cast" from personTable as "root"', 
+      $result->sqlRemoveFormatting());   
+}
+
+
 // Alloy exclusion reason: 10. Tricky usage of variables
 function <<test.Test, test.ExcludeAlloy>> {test.excludePlatform = 'Java compiled'} meta::relational::tests::tds::tdsExtend::testExtendWithVariables1():Boolean[1]
 {
