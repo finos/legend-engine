@@ -268,9 +268,8 @@
         <module>legend-engine-xt-nonrelationalStore-mongodb-executionPlan</module>
         <module>legend-engine-xt-nonrelationalStore-mongodb-javaPlatformBinding-pure</module>
         <module>legend-engine-xt-artifact-generation-api</module>
-        <module>legend-engine-xt-openapi-generation</module>
         <module>legend-engine-test-runner-mapping-api</module>
-        <module>legend-engine-xt-openapi-pure</module>
+
 
         <!-- NOTE: Do not change the ordering of this block, we want to build these modules last -->
         <module>legend-engine-test-reports</module>
@@ -1851,17 +1850,7 @@
                 <artifactId>legend-engine-xt-nonrelationalStore-mongodb-javaPlatformBinding-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-openapi-pure</artifactId>
-                <version>${project.version}</version>
-            </dependency>
 
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-openapi-generation</artifactId>
-                <version>${project.version}</version>
-            </dependency>
             <!-- ENGINE -->
 
             <!-- PURE -->
