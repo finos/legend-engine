@@ -67,7 +67,8 @@ Binding meta::external::store::mongodb::showcase::store::PersonCollectionBinding
     modelIncludes : [
         meta::external::store::mongodb::executionTest::domain::Person,
         meta::external::store::mongodb::executionTest::domain::Firm,
-        meta::external::store::mongodb::executionTest::domain::Address
+        meta::external::store::mongodb::executionTest::domain::Address,
+        meta::external::store::mongodb::executionTest::domain::Country
     ];
 }
 

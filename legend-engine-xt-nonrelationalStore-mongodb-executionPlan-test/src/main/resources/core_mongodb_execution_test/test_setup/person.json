@@ -11,10 +11,13 @@
         "+1 347 336 3704"
       ],
       "address": {
+        "country": {
+          "countryCode": "US",
+          "continent": "America"
+        },
         "street": "0459 Kings Crossing",
         "city": "Washington",
-        "postalCode": "20508",
-        "country": "United States"
+        "postalCode": "20508"
       },
       "firm": {
         "legalName": "Babblestorm",
@@ -25,9 +28,13 @@
           "Consumer Non-Durables"
         ],
         "address": {
+          "country": {
+            "countryCode": "US",
+            "continent": "America"
+          },
           "street": "1 Farmco Road",
-          "postalCode": "02208",
-          "country": "United States"
+          "city": "Boston",
+          "postalCode": "02208"
         }
       }
     },
@@ -42,10 +49,13 @@
         "+1 515 165 0534"
       ],
       "address": {
+        "country": {
+          "countryCode": "US",
+          "continent": "America"
+        },
         "street": "338 Evergreen Place",
         "city": "Hyattsville",
-        "postalCode": "20784",
-        "country": "United States"
+        "postalCode": "20784"
       },
       "firm": {
         "legalName": "Yodoo",
@@ -54,9 +64,13 @@
           "Technology"
         ],
         "address": {
+          "country": {
+            "countryCode": "US",
+            "continent": "America"
+          },
           "street": "382 Towne Plaza",
-          "postalCode": "81010",
-          "country": "United States"
+          "city": "Pueblo",
+          "postalCode": "81010"
         }
       }
     },
@@ -72,10 +86,13 @@
         "+1 414 760 1884"
       ],
       "address": {
+        "country": {
+          "countryCode": "US",
+          "continent": "America"
+        },
         "street": "99 Bonner Plaza",
         "city": "Little Rock",
-        "postalCode": "72215",
-        "country": "United States"
+        "postalCode": "72215"
       },
       "firm": {
         "legalName": "Devpoint",
@@ -87,9 +104,13 @@
           "n/a"
         ],
         "address": {
+          "country": {
+            "countryCode": "US",
+            "continent": "America"
+          },
           "street": "974 Sunbrook Crossing",
-          "postalCode": "55103",
-          "country": "United States"
+          "city": "Saint Paul",
+          "postalCode": "55103"
         }
       }
     },
@@ -104,10 +125,13 @@
         "+1 814 987 3881"
       ],
       "address": {
+        "country": {
+          "countryCode": "US",
+          "continent": "America"
+        },
         "street": "540 Arrowood Trail",
         "city": "Sacramento",
-        "postalCode": "95813",
-        "country": "United States"
+        "postalCode": "95813"
       },
       "firm": {
         "legalName": "Voolia",
@@ -116,9 +140,13 @@
           "Health Care"
         ],
         "address": {
+          "country": {
+            "countryCode": "UK",
+            "continent": "Europe"
+          },
           "street": "59 Leroy Parkway",
-          "postalCode": "CB4",
-          "country": "United Kingdom"
+          "city": "London",
+          "postalCode": "CB4"
         }
       }
     },
@@ -133,10 +161,13 @@
         "+1 904 162 3004"
       ],
       "address": {
+        "country": {
+          "countryCode": "US",
+          "continent": "America"
+        },
         "street": "214 Nelson Point",
         "city": "Phoenix",
-        "postalCode": "85010",
-        "country": "United States"
+        "postalCode": "85010"
       },
       "firm": {
         "legalName": "Gabspot",
@@ -145,9 +176,13 @@
           "Consumer Services"
         ],
         "address": {
+          "country": {
+            "countryCode": "US",
+            "continent": "America"
+          },
           "street": "794 New Castle Hill",
-          "postalCode": "75342",
-          "country": "United States"
+          "city": "Dallas",
+          "postalCode": "75342"
         }
       }
     }

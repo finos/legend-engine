@@ -26,5 +26,11 @@ Class meta::external::store::mongodb::executionTest::domain::Address
   street : String[0..1];
   city: String[0..1];
   postalCode: String[0..1];
-  country: String[0..1];
+  country: Country[0..1];
+}
+
+Class meta::external::store::mongodb::executionTest::domain::Country
+{
+  continent:   String[0..1];
+  countryCode: String[1];
 }

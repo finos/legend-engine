@@ -24,6 +24,16 @@ Database test::mongodb::mydatabase
                     "description": "age of the person",
                     "minLength": 2
                 },
+                "phoneNumber": {
+                     "bsonType": "string",
+                     "description": "phoneNumber of the person",
+                     "minLength": 2
+                },
+                "email": {
+                     "bsonType": "string",
+                     "description": "email of the person",
+                     "minLength": 2
+                },
                 "firm": {
                     "bsonType": "object",
                     "description": "firm of the person",
@@ -49,6 +59,10 @@ Database test::mongodb::mydatabase
                                   "description": "countryCode of the firm"
                                 }
                               }
+                            },
+                            "city": {
+                              "bsonType": "string",
+                              "description": "city of the firm"
                             },
                             "street": {
                               "bsonType": "string",
@@ -107,7 +121,7 @@ MongoDBConnection test::mongodb::testConnection
 {
     database: userDatabase;
     store: test::mongodb::mydatabase;
-    serverURLs: [localhost:49400];
+    serverURLs: [localhost:52988];
     authentication: # UserPassword {
         username: 'sa';
         password: SystemPropertiesSecret

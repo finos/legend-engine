@@ -2,7 +2,10 @@
   "values":   {
     "firm":     {
       "address":       {
-        "country": "United States"
+        "country":         {
+          "continent": "America",
+          "countryCode": "US"
+        }
       }
     }
   },

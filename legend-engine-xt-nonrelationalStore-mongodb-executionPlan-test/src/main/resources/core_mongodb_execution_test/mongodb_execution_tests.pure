@@ -104,20 +104,26 @@ function  meta::external::store::mongodb::executionTest::personTreeFull(): meta:
         phoneNumber,
         otherPhoneNumbers,
         address {
+          country {
+            continent,
+            countryCode
+          },
           street,
           city,
-          postalCode,
-          country
+          postalCode
         },
         firm {
           legalName,
           dateFounded,
           industrySectors,
           address {
+            country {
+              continent,
+              countryCode
+            },
             street,
             city,
-            postalCode,
-            country
+            postalCode
           }
         }
       }
@@ -195,6 +201,14 @@ function
 {
   let filterLambda = { x: Person[1] | $x.age != 23};
   testFilterExecution($config, $filterLambda, '/core_mongodb_execution_test/data/not_equal/testSelectNotEqualNumber.json', personTreeSmall());
+}
+
+function
+<<paramTest.Test>>
+ meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::notEqual::testSelectNotEqualAndString(config:TestConfig[1]):Boolean[1]
+{
+  let filterLambda = { x: Person[1] | !($x.firstName == 'Coralie' && $x.lastName == 'Batie')};
+  testFilterExecution($config, $filterLambda, '/core_mongodb_execution_test/data/not_equal/testSelectNotEqualString.json', personTreeSmall());
 }
 
 
@@ -334,7 +348,10 @@ function
           Person {
             firm {
               address {
-                country
+                country {
+                  continent,
+                  countryCode
+                }
               }
             }
           }
@@ -369,13 +386,13 @@ function
 {doc.doc = 'Test multiple nested level Filters'} 
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::combinations::testMultipleNestedSelectEqualFilters(config:TestConfig[1]):Boolean[1]
 {
-  let filterLambda = { x: Person[1] | $x.firm.legalName == 'Devpoint' && $x.address.country == 'United States'};
+  let filterLambda = { x: Person[1] | $x.firm.legalName == 'Devpoint' && $x.address.country.countryCode == 'US'};
   testFilterExecution($config, $filterLambda, '/core_mongodb_execution_test/data/combinations/testMultipleNestedSelectEqualFilters.json', personTreeFull());
 }
 
 
 function
- <<paramTest.Ignore>>
+ <<paramTest.Test>>
 {doc.doc = 'Test multiple nested level Filters'} 
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::combinations::testSelectNotEqualNotAnd(config:TestConfig[1]):Boolean[1]
 {
@@ -383,7 +400,14 @@ function
   testFilterExecution($config, $filterLambda, '/core_mongodb_execution_test/data/combinations/testSelectNotEqualNotAnd.json', personTreeSmall());
 }
 
-
+function
+ <<paramTest.Test>>
+{doc.doc = 'Test multiple nested level Filters with an And'} 
+ meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::combinations::testMultipleNestedFiltersWithAnd(config:TestConfig[1]):Boolean[1]
+{
+  let filterLambda = { p: Person[1] | ($p.firm.address.country.countryCode == 'UK') && ($p.firstName == 'Franz') && ($p.age > 60) && ($p.address.city == 'Sacramento') && ($p.firm.legalName == 'Voolia') && ($p.address.street == '540 Arrowood Trail') };
+  testFilterExecution($config, $filterLambda, '/core_mongodb_execution_test/data/combinations/testMultipleAndNestedFilters.json', personTreeFull());
+}
 
 
 // UTILS
@@ -438,7 +462,7 @@ function <<access.private>> meta::external::store::mongodb::executionTest::v7::c
 {
     println('meta::external::store::mongodb::executionTest::v7::collectTest(');
 
-  // meta::external::store::mongodb::executionTest::utils::stopMongoDBTestServer('testing');
+  meta::external::store::mongodb::executionTest::utils::stopMongoDBTestServer($tag);
   let url = meta::external::store::mongodb::executionTest::utils::startMongoDBTestServer($tag);
 
   let testDataToInsert = meta::pure::functions::io::readFile('/core_mongodb_execution_test/test_setup/person.json')->toOne();

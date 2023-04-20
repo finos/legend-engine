@@ -10,8 +10,11 @@
 "Consumer Non-Durables"
       ],
       "address":       {
-        "country": "United States",
-        "city": null,
+        "country":         {
+          "continent": "America",
+          "countryCode": "US"
+        },
+        "city": "Boston",
         "street": "1 Farmco Road",
         "postalCode": "02208"
       },
@@ -19,7 +22,10 @@
     },
     "phoneNumber": "+1 202 704 9709",
     "address":     {
-      "country": "United States",
+      "country":       {
+        "continent": "America",
+        "countryCode": "US"
+      },
       "city": "Washington",
       "street": "0459 Kings Crossing",
       "postalCode": "20508"

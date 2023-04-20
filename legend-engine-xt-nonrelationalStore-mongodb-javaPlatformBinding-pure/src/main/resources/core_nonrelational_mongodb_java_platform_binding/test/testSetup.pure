@@ -35,30 +35,38 @@ Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava
 
 Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Person
 {
-  firstName : String[0..1];
-  lastName  : String[0..1];
-  age:        Integer[0..1];
-  firm      : Firm[0..1];
-  //addresses : Address[*];
+  firstName:         String[0..1];
+  lastName:          String[1];
+  age:               Integer[1];
+  phoneNumber:       String[1];
+  otherPhoneNumbers: String[0..*];
+  email:             String[1];
+  address:           Address[0..1];
+  firm:              Firm[1];
 }
 
 Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Firm
 {
-  legalName : String[0..1];
-  address: Address[0..1];
+  legalName :      String[0..1];
+  dateFounded:     String[1];
+  industrySectors: String[0..*];
+  address:         Address[1];
 }
 
 Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Address
 {
-  street : String[0..1];
-  country: Country[0..1];
+  street:     String[1];
+  city:       String[0..1];
+  postalCode: String[1];
+  country:    Country[0..1];
 }
 
 Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Country
 {
-  continent : String[0..1];
-  countryCode: String[0..1];
+  continent:   String[0..1];
+  countryCode: String[1];
 }
+
 
 function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::getSimpleSchema(): SchemaSet[1]
 {
