@@ -44,14 +44,7 @@ public class Builder
         {
             LegendHandlerConfig config = (LegendHandlerConfig) serverConfig.getHandler();
             CookieStore cookieStore = new BasicCookieStore();
-
-            if (config.getSessionCookie() != null)
-            {
-                BasicClientCookie legendSdlcJsessionid = new BasicClientCookie("LEGEND_SDLC_JSESSIONID", config.getSessionCookie());
-                legendSdlcJsessionid.setDomain("localhost");
-                cookieStore.addCookie(legendSdlcJsessionid);
-            }
-            LegendTdsClient client = new LegendTdsClient(config.getProtocol(), config.getHost(), config.getPort(), config.getProjectId(), cookieStore);
+            LegendTdsClient client = new LegendTdsClient(config.getProtocol(), config.getHost(), config.getPort(), cookieStore);
             return new LegendSessionFactory(client);
         }
         else

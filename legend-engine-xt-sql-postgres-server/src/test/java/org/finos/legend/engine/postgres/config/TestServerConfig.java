@@ -52,14 +52,12 @@ public class TestServerConfig
         ServerConfig serverConfig = objectMapper.readValue(inputStream, ServerConfig.class);
         Assert.assertEquals(LegendHandlerConfig.class, serverConfig.getHandler().getClass());
         Assert.assertEquals(9998L, serverConfig.getPort().longValue());
-        Assert.assertEquals(AuthenticationMethodType.PASSWORD, serverConfig.getAuthenticationMethod());
-        Assert.assertEquals(IdentityType.KERBEROS, serverConfig.getIdentityType());
+        Assert.assertEquals(AuthenticationMethodType.NO_PASSWORD, serverConfig.getAuthenticationMethod());
+        Assert.assertEquals(IdentityType.ANONYMOUS, serverConfig.getIdentityType());
         LegendHandlerConfig legendHandlerConfig = (LegendHandlerConfig) serverConfig.getHandler();
         Assert.assertEquals("http", legendHandlerConfig.getProtocol());
         Assert.assertEquals("localhost", legendHandlerConfig.getHost());
-        Assert.assertEquals("123", legendHandlerConfig.getPort());
-        Assert.assertEquals("project", legendHandlerConfig.getProjectId());
-        Assert.assertEquals("cookie", legendHandlerConfig.getSessionCookie());
+        Assert.assertEquals("6300", legendHandlerConfig.getPort());
         Assert.assertEquals(HandlerType.LEGEND, legendHandlerConfig.getType());
     }
 }

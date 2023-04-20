@@ -58,11 +58,12 @@ public class PostgresServerTypeMappingTest
     {
         CookieStore cookieStore = new BasicCookieStore();
         CloseableHttpClient httpClient = (CloseableHttpClient) HttpClientBuilder.getHttpClient(cookieStore);
-        LegendTdsClient client = new LegendTdsClient("http", "localhost", "" + wireMockRule.port(), "SAMPLE-123", new BasicCookieStore());
+        LegendTdsClient client = new LegendTdsClient("http", "localhost", "" + wireMockRule.port(), new BasicCookieStore());
         LegendSessionFactory legendSessionFactory = new LegendSessionFactory(client);
         testPostgresServer = new TestPostgresServer(0, legendSessionFactory, (user, connectionProperties) -> new NoPasswordAuthenticationMethod(new AnonymousIdentityProvider()));
         testPostgresServer.startUp();
-        wireMockRule.stubFor(post(urlEqualTo("/api/sql/v1/execution/executeQueryString/SAMPLE-123"))
+        //stub to handle miscellaneous message that we don't care about
+        wireMockRule.stubFor(post(urlEqualTo("/api/sql/v1/execution/executeQueryString"))
                 .willReturn(aResponse()
                         .withBody("{}"))
         );
@@ -147,10 +148,16 @@ public class PostgresServerTypeMappingTest
     public void validate(String legendDataType, String legendValue, String expectedColumnType, Object expectedValue) throws Exception
     {
 
-        String message = buildLegendResponseMessage(legendDataType, legendValue);
-        wireMockRule.stubFor(post(urlEqualTo("/api/sql/v1/execution/executeQueryString/SAMPLE-123"))
+        String schemaMessage = buildLegendSchemaMessage(legendDataType);
+        wireMockRule.stubFor(post(urlEqualTo("/api/sql/v1/execution/getSchemaFromQueryString"))
                 .withRequestBody(equalTo("SELECT * FROM service.\"/testData\""))
-                .willReturn(aResponse().withBody(message))
+                .willReturn(aResponse().withBody(schemaMessage))
+        );
+
+        String responseMessage = buildLegendResponseMessage(legendDataType, legendValue);
+        wireMockRule.stubFor(post(urlEqualTo("/api/sql/v1/execution/executeQueryString"))
+                .withRequestBody(equalTo("SELECT * FROM service.\"/testData\""))
+                .willReturn(aResponse().withBody(responseMessage))
         );
         try (
                 Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
@@ -204,4 +211,22 @@ public class PostgresServerTypeMappingTest
                 "}";
         return String.format(responseTemplate, columnType, value);
     }
+
+
+    private static String buildLegendSchemaMessage(String columnType)
+    {
+        String responseTemplate = "{\n" +
+                "  \"__TYPE\": \"meta::external::query::sql::Schema\",\n" +
+                "  \"columns\": [\n" +
+                "    {\n" +
+                "      \"__TYPE\": \"meta::external::query::sql::PrimitiveValueSchemaColumn\",\n" +
+                "      \"type\": \"%s\",\n" +
+                "      \"name\": \"column1\"\n" +
+                "    }\n" +
+                "  ],\n" +
+                "  \"enums\": []\n" +
+                "}";
+        return String.format(responseTemplate, columnType);
+    }
+
 }
