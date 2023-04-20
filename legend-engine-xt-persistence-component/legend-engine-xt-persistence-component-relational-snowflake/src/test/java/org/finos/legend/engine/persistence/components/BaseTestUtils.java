@@ -22,6 +22,8 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Schem
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
+import org.finos.legend.engine.persistence.components.logicalplan.values.ModuloBinaryValueOperator;
+import org.finos.legend.engine.persistence.components.logicalplan.values.ObjectValue;
 
 import java.util.Optional;
 
@@ -54,9 +56,13 @@ public class BaseTestUtils
     public static ClusterKey clusterKey1 = ClusterKey.builder().clusterKeyValue(FieldValue.builder().fieldName("col_timestamp").build()).build();
     public static ClusterKey clusterKey2 = ClusterKey.builder()
         .clusterKeyValue(FunctionImpl.builder()
-            .functionName(FunctionName.SUM)
-            .addValue(FieldValue.builder().fieldName("col_int").build(), FieldValue.builder().fieldName("col_integer").build())
+            .functionName(FunctionName.SUBSTRING)
+            .addValue(FieldValue.builder().fieldName("col_int").build(), ObjectValue.of(1), ObjectValue.of(4))
             .build())
+        .build();
+
+    public static ClusterKey clusterKey3 = ClusterKey.builder()
+        .clusterKeyValue(ModuloBinaryValueOperator.of(FieldValue.builder().fieldName("col_integer").build(), ObjectValue.of(7)))
         .build();
 
     public static SchemaDefinition schemaWithAllColumns = SchemaDefinition.builder()
@@ -88,6 +94,6 @@ public class BaseTestUtils
         .addFields(colString)
         .addFields(colTimestamp)
         .addFields(colDouble)
-        .addClusterKeys(clusterKey1, clusterKey2)
+        .addClusterKeys(clusterKey1, clusterKey2, clusterKey3)
         .build();
 }

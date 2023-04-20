@@ -104,8 +104,8 @@ public class CreateTableTest
             "\"col_integer\" INTEGER NOT NULL UNIQUE," +
             "\"col_string\" VARCHAR," +
             "\"col_timestamp\" TIMESTAMP," +
-            "\"col_double\" DOUBLE) " +
-            "CLUSTER BY (\"col_timestamp\",SUM(\"col_int\",\"col_integer\"))";
+            "\"col_double\" DOUBLE)" +
+            " CLUSTER BY (\"col_timestamp\",SUBSTRING(\"col_int\",1,4),\"col_integer\"%7)";
 
         Assertions.assertEquals(expected, list.get(0));
     }
@@ -128,10 +128,10 @@ public class CreateTableTest
         String expected = "CREATE TABLE IF NOT EXISTS \"MY_DB\".\"MY_SCHEMA\".\"MY_TABLE\"" +
             "(\"COL_INT\" INTEGER NOT NULL PRIMARY KEY," +
             "\"COL_INTEGER\" INTEGER NOT NULL UNIQUE," +
-            "\"COL_STRING\" VARCHAR," +
-            "\"COL_TIMESTAMP\" TIMESTAMP," +
+            "\"COL_STRING\" VARCHAR" +
+            ",\"COL_TIMESTAMP\" TIMESTAMP," +
             "\"COL_DOUBLE\" DOUBLE) " +
-            "CLUSTER BY (\"COL_TIMESTAMP\",SUM(\"COL_INT\",\"COL_INTEGER\"))";
+            "CLUSTER BY (\"COL_TIMESTAMP\",SUBSTRING(\"COL_INT\",1,4),\"COL_INTEGER\"%7)";
 
         Assertions.assertEquals(expected, list.get(0));
     }
