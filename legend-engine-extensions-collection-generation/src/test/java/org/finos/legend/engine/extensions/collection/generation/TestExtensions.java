@@ -118,7 +118,7 @@ public class TestExtensions
     @Test
     public void testCodeRepositories()
     {
-        Assert.assertEquals(Lists.mutable.withAll(getExpectedCodeRepositories()).sortThis(), CodeRepositoryProviderHelper.findCodeRepositories().collect(CodeRepository::getName, Lists.mutable.empty()).select(c -> !c.startsWith("platform_")).sortThis());
+        Assert.assertEquals(Lists.mutable.withAll(getExpectedCodeRepositories()).sortThis(), CodeRepositoryProviderHelper.findCodeRepositories().collect(CodeRepository::getName, Lists.mutable.empty()).select(c -> !c.startsWith("platform")).sortThis());
     }
 
     @Test

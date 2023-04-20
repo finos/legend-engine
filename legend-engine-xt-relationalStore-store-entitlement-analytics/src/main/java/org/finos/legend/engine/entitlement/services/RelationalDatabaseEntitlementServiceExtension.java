@@ -62,7 +62,7 @@ public class RelationalDatabaseEntitlementServiceExtension implements Entitlemen
     @Override
     public List<DatasetEntitlementReport> generateDatasetEntitlementReports(List<DatasetSpecification> datasets, Lambda query, String runtimePath, Root_meta_pure_runtime_Runtime runtime, String mappingPath, Mapping mapping, PureModelContext model, PureModel pureModel, MutableList<CommonProfile> profiles)
     {
-        return datasets.stream().map(specification -> specification.getType().equals(DatabaseType.H2.name()) ? new DatasetEntitlementAccessGrantedReport(specification) : new DatasetEntitlementUnsupportedReport(specification)).collect(Collectors.toList());
+        return datasets.stream().filter(specification -> specification instanceof RelationalDatabaseTableSpecification).map(specification -> specification.getType().equals(DatabaseType.H2.name()) ? new DatasetEntitlementAccessGrantedReport(specification) : new DatasetEntitlementUnsupportedReport(specification)).collect(Collectors.toList());
     }
 
     private LambdaFunction<?> buildPureLambda(Lambda lambda, PureModel pureModel)

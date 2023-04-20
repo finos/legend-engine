@@ -22,17 +22,12 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.pure.runtime.compiler.interpreted.natives.LegendCompileMixedProcessorSupport;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
-import org.finos.legend.pure.m3.serialization.filesystem.PureCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositorySet;
-import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.CodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.ClassLoaderCodeStorage;
-import org.finos.legend.pure.m3.serialization.runtime.Message;
-import org.finos.legend.pure.m3.serialization.runtime.GraphLoader;
-import org.finos.legend.pure.m3.serialization.runtime.PureRuntime;
-import org.finos.legend.pure.m3.serialization.runtime.PureRuntimeBuilder;
-import org.finos.legend.pure.m3.serialization.runtime.VoidPureRuntimeStatus;
+import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.composite.CompositeCodeStorage;
+import org.finos.legend.pure.m3.serialization.runtime.*;
 import org.finos.legend.pure.m3.serialization.runtime.binary.PureRepositoryJarLibrary;
 import org.finos.legend.pure.m3.serialization.runtime.binary.SimplePureRepositoryJarLibrary;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
@@ -75,11 +70,11 @@ public class Tools
                 });
     }
 
-    public static Pair<FunctionExecution, PureRuntime> initialize(Function<PureCodeStorage, PureRuntime> runtimeBuilder, Function2<PureRuntime, Message, FunctionExecution> exec)
+    public static Pair<FunctionExecution, PureRuntime> initialize(Function<CompositeCodeStorage, PureRuntime> runtimeBuilder, Function2<PureRuntime, Message, FunctionExecution> exec)
     {
         RichIterable<CodeRepository> repositories = CodeRepositorySet.newBuilder().withCodeRepositories(CodeRepositoryProviderHelper.findCodeRepositories(true)).build().getRepositories().select(p -> !p.getName().startsWith("other_") && !p.getName().startsWith("test_"));
         System.out.println(repositories.collect(CodeRepository::getName).makeString(", "));
-        PureCodeStorage codeStorage = new PureCodeStorage(null, new ClassLoaderCodeStorage(repositories));
+        CompositeCodeStorage codeStorage = new CompositeCodeStorage(new ClassLoaderCodeStorage(repositories));
 
         PureRuntime runtime = runtimeBuilder.apply(codeStorage);
 

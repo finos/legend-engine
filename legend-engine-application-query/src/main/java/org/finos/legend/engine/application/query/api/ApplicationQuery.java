@@ -41,6 +41,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.List;
 
 @Api(tags = "Application - Query")
 @Path("pure/v1/query")
@@ -68,7 +69,27 @@ public class ApplicationQuery
     {
         try
         {
-            return Response.ok().entity(this.queryStoreManager.getQueries(searchSpecification, getCurrentUser(profileManager))).build();
+            return Response.ok().entity(this.queryStoreManager.searchQueries(searchSpecification, getCurrentUser(profileManager))).build();
+        }
+        catch (Exception e)
+        {
+            if (e instanceof ApplicationQueryException)
+            {
+                return ((ApplicationQueryException) e).toResponse();
+            }
+            return ExceptionTool.exceptionManager(e, LoggingEventType.SEARCH_QUERIES_ERROR, null);
+        }
+    }
+
+    @GET
+    @Path("batch")
+    @ApiOperation(value = "Get the queries with specified IDs")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response getQueries(@QueryParam("queryIds") @ApiParam("The list of query IDs to fetch (must contain no more than 50 items)") List<String> queryIds)
+    {
+        try
+        {
+            return Response.ok(this.queryStoreManager.getQueries(queryIds)).build();
         }
         catch (Exception e)
         {
@@ -99,7 +120,6 @@ public class ApplicationQuery
             return ExceptionTool.exceptionManager(e, LoggingEventType.GET_QUERY_ERROR, null);
         }
     }
-
 
     @GET
     @Path("/stats")

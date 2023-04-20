@@ -17,7 +17,6 @@ package org.finos.legend.engine.ide;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.pure.runtime.compiler.interpreted.natives.LegendCompileMixedProcessorSupport;
-import org.finos.legend.pure.ide.light.PureIDECodeRepository;
 import org.finos.legend.pure.ide.light.PureIDEServer;
 import org.finos.legend.pure.ide.light.SourceLocationConfiguration;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
@@ -26,7 +25,6 @@ import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.fs.Muta
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
 
 import java.nio.file.Paths;
-import java.util.Optional;
 
 public class PureIDELight extends PureIDEServer
 {
