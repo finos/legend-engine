@@ -19,6 +19,9 @@ import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.utility.Iterate;
+import org.finos.legend.engine.entitlement.services.EntitlementServiceExtension;
+import org.finos.legend.engine.entitlement.services.EntitlementServiceExtensionLoader;
+import org.finos.legend.engine.entitlement.services.RelationalDatabaseEntitlementServiceExtension;
 import org.finos.legend.engine.external.format.flatdata.driver.spi.FlatDataDriverDescription;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
@@ -103,6 +106,12 @@ public class TestExtensions
     public void testExpectedArtifactGenerationExtensionsArePresent()
     {
         assertHasExtensions(ArtifactGenerationExtensionLoader.extensions(), getExpectedArtifactGenerationExtensions(), ArtifactGenerationExtension.class);
+    }
+
+    @Test
+    public void testExpectedEntitlementServiceExtensionsArePresent()
+    {
+        assertHasExtensions(EntitlementServiceExtensionLoader.extensions(), getExpectedEntitlementServiceExtensions(), EntitlementServiceExtension.class);
     }
 
     @Test
@@ -365,6 +374,13 @@ public class TestExtensions
                 .with(SearchDocumentArtifactGenerationExtension.class);
     }
 
+    protected Iterable<? extends Class<? extends EntitlementServiceExtension>> getExpectedEntitlementServiceExtensions()
+    {
+        // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
+        return Lists.mutable.<Class<? extends EntitlementServiceExtension>>empty()
+                .with(RelationalDatabaseEntitlementServiceExtension.class);
+    }
+
     protected Iterable<String> getExpectedCodeRepositories()
     {
         // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
@@ -396,6 +412,7 @@ public class TestExtensions
                 .with("core_relational_bigquery")
                 .with("core_relational_spanner")
                 .with("core_relational_trino")
+                .with("core_relational_store_entitlement")
                 .with("core_servicestore")
                 .with("core_authentication")
                 .with("core_text_metamodel")

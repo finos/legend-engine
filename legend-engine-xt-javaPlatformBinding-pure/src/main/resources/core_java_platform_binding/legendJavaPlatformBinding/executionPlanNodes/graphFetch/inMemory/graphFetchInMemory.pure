@@ -619,6 +619,11 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
 /* Property mapping helpers */
 
 function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::generatePropertyMappingTransform(setImpl: InstanceSetImplementation[1], property: Property<Nil,Any|*>[1], propertyMapping: PropertyMapping[0..1], src: Code[1], conventions: Conventions[1], extensions: Extension[*], debug: DebugContext[1]): Code[0..1]
+{
+   generatePropertyMappingTransform($setImpl, $property, $propertyMapping, $src, $conventions, $extensions, false, $debug)
+}
+
+function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::generatePropertyMappingTransform(setImpl: InstanceSetImplementation[1], property: Property<Nil,Any|*>[1], propertyMapping: PropertyMapping[0..1], src: Code[1], conventions: Conventions[1], extensions: Extension[*], explodeProperty: Boolean[1], debug: DebugContext[1]): Code[0..1]
 {  
    print(if($debug.debug,|$debug.space+'generatePropertyMappingTransform: \''+$property.name->toOne()+'\'\n', |''));
    
@@ -649,10 +654,10 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
                   {|
                     let inMemoryAdhocExtensions = $extensions->extractLegendJavaAdhocExtensionsOfType(LegendJavaInMemoryGraphFetchExtension);
                     let transformFunction = $propertyMapping->toOne()->match($inMemoryAdhocExtensions.mappingTransformExtractors->toOneMany());
-                    let transformType     = $conventions->pureTypeToJavaType(if($transformFunction->functionReturnType().rawType == Nil, | $property->functionReturnType(), | $transformFunction->functionReturnType()), $property->functionReturnMultiplicity());
+                    let transformType     = $conventions->pureTypeToJavaType(if($transformFunction->functionReturnType().rawType == Nil, | $property->functionReturnType(), | $transformFunction->functionReturnType()), if ($explodeProperty, | ZeroMany, | $property->functionReturnMultiplicity()));
                     let javaExpression    = $transformFunction.expressionSequence->at(0)->evaluateAndDeactivate()->generateJava($conventions, $debug->indent());
                     let valueTransformer  = $propertyMapping->toOne()->match($inMemoryAdhocExtensions.valueTransformerExtractors->toOneMany());
-                    let code              = if ($valueTransformer->isEmpty(), | $javaExpression, | $javaExpression->applyTransformer($valueTransformer->toOne(), $conventions, $debug->indent()));
+                    let code              = if ($valueTransformer->isEmpty(), | $javaExpression, | $javaExpression->applyTransformer($valueTransformer->toOne(), $conventions, $explodeProperty, $debug->indent()));
                     let returnType        = if ($valueTransformer->isEmpty(), | $transformType,  | if($transformType->isJavaList(), | $conventions->enumerationType($valueTransformer->toOne())->javaList(), | $conventions->enumerationType($valueTransformer->toOne())));
 
                     $code->castExpressionToReturnType($returnType);
@@ -681,7 +686,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
 
 /* Value transformer helpers */
 
-function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::applyTransformer(expression: Code[1], transformer: ValueTransformer<Any>[1], conventions: Conventions[1], debug: DebugContext[1]): Code[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::applyTransformer(expression: Code[1], transformer: ValueTransformer<Any>[1], conventions: Conventions[1], explodeProperty: Boolean[1], debug: DebugContext[1]): Code[1]
 {
    assert($transformer->instanceOf(EnumerationMapping), |'Unsupported transformer type: ' + $transformer->type()->elementToPath());
    
@@ -689,9 +694,12 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
 
    let enumerationType  = $conventions->enumerationType($transformer);
    let transformerClass = $transformer->generateTransformer($conventions, $debug->indent());
-   let transformrCode   = if ($expression.type->isJavaList(),
-                              | $expression->j_streamOf()->js_map($transformerClass->j_methodReference('toDomainValue'))->js_resolve($enumerationType->javaList()),
-                              | $transformerClass->j_invoke('toDomainValue', $expression)
+   let transformrCode   = if ($explodeProperty,
+                              | $expression->j_streamOf()->js_mapAllowingNullValues($transformerClass->j_methodReference('toDomainValue'))->js_resolve($enumerationType->javaList()),
+                              | if ($expression.type->isJavaList(),
+                                    | $expression->j_streamOf()->js_map($transformerClass->j_methodReference('toDomainValue'))->js_resolve($enumerationType->javaList()),
+                                    | $transformerClass->j_invoke('toDomainValue', $expression)
+                                )
                           );
    
    $transformrCode->dependsOn($transformerClass->typeToString()->newDependency($transformerClass));
@@ -779,8 +787,9 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
    let idx                 = j_parameter(javaInt(), 'idx');
    
    let explodeListInitCodes = $explodeProperties->size()->range()->map({i |
-      let propertyMapping = $set->_propertyMappingsByPropertyName($explodeProperties->at($i).name->toOne())->cast(@PurePropertyMapping);
-      $explodePropertyVars->at($i)->j_declare($propertyMapping.transform.expressionSequence->at(0)->evaluateAndDeactivate()->generateJava($conventions->updateConventionsForExplosion(), $debug->indent()));                                    
+      let property = $explodeProperties->at($i);
+      let propertyMapping = $set->_propertyMappingsByPropertyName($property.name->toOne())->cast(@PurePropertyMapping)->at(0);
+      $explodePropertyVars->at($i)->j_declare($set->generatePropertyMappingTransform($property, $propertyMapping, $src, $conventions->updateConventionsForExplosion(), $extensions, true, $debug->indent())->toOne());                                  
    });
    
    let explodeListLengthCode = $explodeListLength->j_declare($explodePropertyVars->at(0)->j_invoke('size', [], javaInt()));

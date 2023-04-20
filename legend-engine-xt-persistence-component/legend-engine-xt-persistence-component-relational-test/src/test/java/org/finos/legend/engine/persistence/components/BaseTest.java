@@ -80,6 +80,7 @@ public class BaseTest
 
     protected String digestField = "digest";
     protected String versionField = "version";
+    protected String snapshotIdField = "snapshot_id";
     protected String dataSplitField = "data_split";
     protected String batchUpdateTimeField = "batch_update_time";
     protected String batchIdInField = "batch_id_in";
@@ -624,6 +625,18 @@ public class BaseTest
             .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
             .schema(baseTableSchemaWithDigestAndVersion)
             .build();
+
+    protected Dataset stagingTableWithVersionAndSnapshotId = DerivedDataset.builder()
+        .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
+        .schema(baseTableSchemaWithDigestAndVersion)
+        .filter(GreaterThan.of(FieldValue.builder().fieldName(snapshotIdField).build(),
+            NumericalValue.of(18972L)))
+        .build();
+
+    protected Dataset mainTableWithVersion = DatasetDefinition.builder()
+        .database(mainDbName).name(mainTableName).alias(mainTableAlias)
+        .schema(baseTableSchemaWithDigestAndVersion)
+        .build();
 
     Condition filterCondition1 = GreaterThan
             .builder()

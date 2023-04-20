@@ -19,10 +19,10 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.api.analytics.DataSpaceAnalytics;
 import org.finos.legend.engine.api.analytics.model.DataSpaceAnalysisInput;
+import org.finos.legend.engine.generation.analytics.DataSpaceAnalyticsHelper;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.junit.Assert;
@@ -35,7 +35,7 @@ import java.util.Objects;
 public class TestDataSpaceAnalyticsApi
 {
     private final DataSpaceAnalytics api = new DataSpaceAnalytics(new ModelManager(DeploymentMode.TEST));
-    private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+    private static final ObjectMapper objectMapper = DataSpaceAnalyticsHelper.getNewObjectMapper();
     private static final String minimumPureClientVersion = "v1_20_0";
     private static final ImmutableList<String> testVersions = PureClientVersions.versionsSince(minimumPureClientVersion);
 
@@ -56,7 +56,7 @@ public class TestDataSpaceAnalyticsApi
     public void testDataSpaceAnalysis() throws IOException
     {
         PureModelContextData modelContextData = objectMapper.readValue(Objects.requireNonNull(getClass().getClassLoader().getResource("dataSpaceAnalyticsTestData.json")), PureModelContextData.class);
-        String expected = "{\"defaultExecutionContext\":\"dummyContext\",\"diagrams\":[],\"elementDocs\":[],\"elements\":[],\"executables\":[],\"executionContexts\":[{\"compatibleRuntimes\":[\"model::dummyRuntime\"],\"defaultRuntime\":\"model::dummyRuntime\",\"mapping\":\"model::dummyMapping\",\"mappingModelCoverageAnalysisResult\":{\"mappedEntities\":[]},\"name\":\"dummyContext\"}],\"model\":{\"_type\":\"data\",\"elements\":[]},\"name\":\"AnimalDS\",\"package\":\"model::animal\",\"path\":\"model::animal::AnimalDS\",\"stereotypes\":[],\"taggedValues\":[]}";
+        String expected = "{\"defaultExecutionContext\":\"dummyContext\",\"diagrams\":[],\"elementDocs\":[],\"elements\":[],\"executables\":[],\"executionContexts\":[{\"compatibleRuntimes\":[\"model::dummyRuntime\"],\"datasets\":[],\"defaultRuntime\":\"model::dummyRuntime\",\"mapping\":\"model::dummyMapping\",\"mappingModelCoverageAnalysisResult\":{\"mappedEntities\":[]},\"name\":\"dummyContext\"}],\"model\":{\"_type\":\"data\",\"elements\":[]},\"name\":\"AnimalDS\",\"package\":\"model::animal\",\"path\":\"model::animal::AnimalDS\",\"stereotypes\":[],\"taggedValues\":[]}";
         testAnalyticsWithVersions(expected, modelContextData, "model::animal::AnimalDS");
     }
 

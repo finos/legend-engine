@@ -203,6 +203,20 @@ meta::pure::mapping::modelToModel::test::alloy::explosion::testExplosionAtProper
    assert(jsonEquivalent('{"name": "Anonymous Company","firmEmployees": [{"firmName": "Anonymous Company","fullName": "PersonA","streetAddress": "first","dateOfBirth": null},{"firmName": "Anonymous Company","fullName": "PersonB","streetAddress": null,"dateOfBirth": "2020-11-10"}]}'->parseJSON(), $result.values->toOne()->parseJSON()));
 }
 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {meta::pure::executionPlan::profiles::serverVersion.start='v1_19_0'}
+meta::pure::mapping::modelToModel::test::alloy::explosion::testExplosionWithEnums(): Boolean[1]
+{
+   let tree = #{Trade{ side }}#;
+
+   let result = execute(
+      |Trade.all()->graphFetch($tree)->serialize($tree),
+      enumExplosionMapping,
+      ^Runtime(connections = ^JsonModelConnection(element=^ModelStore(), class=_Trade, url='data:application/json,{"side": 1}')),
+      meta::pure::extension::defaultExtensions()
+   );
+   assertJsonStringsEqual('[{"side":"Buy"},{"side":"Buy"},{"side":"Buy"}]', $result.values->toOne());
+}
+
 Class meta::pure::mapping::modelToModel::test::alloy::explosion::FirmEmployeeWithConstraint
 [  hasLongName: $this.fullName->size() > 4 ]
 {
@@ -242,6 +256,22 @@ Mapping meta::pure::mapping::modelToModel::test::alloy::explosion::multipleExplo
                fullName* : $src.simpleEmployees.fullName,
                streetAddress* : $src.simpleEmployees.address.street
             }
+)
+
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::explosion::enumExplosionMapping
+(
+   Trade : Pure
+   {
+      ~src _Trade
+      side*: EnumerationMapping Side : [$src.side, $src.side, $src.side]
+   }
+
+   Side : EnumerationMapping Side
+   {
+      Buy  : 1,
+      Sell : 2
+   }
 )
 
 Mapping meta::pure::mapping::modelToModel::test::alloy::explosion::explosionWithConstraintMapping

@@ -19,11 +19,11 @@
     <parent>
         <artifactId>legend-engine</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.7.1-SNAPSHOT</version>
+        <version>4.7.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-xt-analytics-store-entitlement-api</artifactId>
-    <name>Legend Engine - XT - Analytics - Store - Entitlement - API</name>
+    <name>Legend Engine - XT - Analytics - Store Entitlement - API</name>
 
     <dependencies>
         <dependency>
@@ -100,9 +100,15 @@
         </dependency>
         <!-- ANNOTATIONS -->
 
+        <!-- JACKSON -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <!-- JACKSON -->
     </dependencies>
 </project>
