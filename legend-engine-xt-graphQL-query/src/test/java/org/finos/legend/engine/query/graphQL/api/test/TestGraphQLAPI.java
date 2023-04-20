@@ -57,7 +57,9 @@ import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
 import javax.servlet.http.Cookie;
@@ -344,9 +346,13 @@ public class TestGraphQLAPI
 
     }
 
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
     @Test
-    public void testGraphQLExecuteDevAPI_RelationalWithInvalidParameter() throws Exception
+    public void testGraphQLExecuteDevAPI_RelationalWithMissingMandatoryArgument() throws Exception
     {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("Missing external parameter(s): legalName:String[1]");
         ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
         PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
         MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
@@ -364,8 +370,7 @@ public class TestGraphQLAPI
                 "    }\n" +
                 "  }";
         Response response = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
-        String expectedErrorMessage = "name arguement not defined";
-        Assert.assertEquals(expectedErrorMessage, responseAsString(response));
+        responseAsString(response);
     }
 
     @Test
