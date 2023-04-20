@@ -68,6 +68,10 @@ Class <<access.private>> meta::external::format::avro::generation::tests::E2 ext
    e2: Date[0..1];
 }
 
+Class <<access.private>> meta::external::format::avro::generation::tests::E3 extends E2
+{
+   e3: Date[0..1];
+}
 
 Class <<access.private>> meta::external::format::avro::generation::tests::EHolder 
 {
@@ -510,7 +514,7 @@ function <<test.Test>> {serverVersion.start='v1_20_0'} meta::external::format::a
 function <<test.Test>> meta::external::format::avro::generation::tests::transformTypeWithLogicalTypeInheritence(): Boolean[1]
 {
    let schema = classToAvroSchema(EHolder, ^AvroConfig(generateLogicalTypes=true))->meta::external::format::avro::serialization::avroSchemaToJSON()->toCompactJSONString();
-    assertEquals('{"type":"record","name":"EHolder","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"property1","type":["null",{"type":"record","name":"EE","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"ee","type":"string"}]},{"type":"record","name":"E","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"e","type":["null",{"type":"long","logicalType":"timestamp-micros"}],"default":null},{"name":"ee","type":"string"}]},{"type":"record","name":"E2","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"e2","type":["null",{"type":"long","logicalType":"timestamp-micros"}],"default":null},{"name":"ee","type":"string"}]}],"default":null,"logicalType":"meta.external.format.avro.generation.tests.EE"},{"name":"property2","type":["null","meta.external.format.avro.generation.tests.EE","meta.external.format.avro.generation.tests.E","meta.external.format.avro.generation.tests.E2"],"default":null,"logicalType":"meta.external.format.avro.generation.tests.EE"}]}'
+    assertEquals('{"type":"record","name":"EHolder","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"property1","type":["null",{"type":"record","name":"EE","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"ee","type":"string"}]},{"type":"record","name":"E","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"e","type":["null",{"type":"long","logicalType":"timestamp-micros"}],"default":null},{"name":"ee","type":"string"}]},{"type":"record","name":"E2","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"e2","type":["null",{"type":"long","logicalType":"timestamp-micros"}],"default":null},{"name":"ee","type":"string"}]},{"type":"record","name":"E3","namespace":"meta.external.format.avro.generation.tests","fields":[{"name":"e3","type":["null",{"type":"long","logicalType":"timestamp-micros"}],"default":null},{"name":"e2","type":["null",{"type":"long","logicalType":"timestamp-micros"}],"default":null},{"name":"ee","type":"string"}]}],"default":null,"logicalType":"meta.external.format.avro.generation.tests.EE"},{"name":"property2","type":["null","meta.external.format.avro.generation.tests.EE","meta.external.format.avro.generation.tests.E","meta.external.format.avro.generation.tests.E2","meta.external.format.avro.generation.tests.E3"],"default":null,"logicalType":"meta.external.format.avro.generation.tests.EE"}]}'
                 ,$schema);
 }
 
