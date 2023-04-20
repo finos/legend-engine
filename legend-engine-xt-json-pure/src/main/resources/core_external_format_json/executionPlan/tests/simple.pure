@@ -1,0 +1,92 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::dataQuality::*;
+import meta::pure::graphFetch::execution::*;
+import meta::external::shared::format::functions::*;
+import meta::external::format::json::executionPlan::test::simple::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testSimpleJsonQuery(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let query   = {data:String[1]| Person->internalize($binding, $data)->externalize($binding, #{Person{firstName, lastName}}#)};
+
+  let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe"}'));
+
+  assertEquals('{"builder":{"_type":"json"},"values":{"firstName":"John","lastName":"Doe"}}', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testSimpleJsonQueryWithPartialTree(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let query   = {data:String[1]| Person->internalize($binding, $data)->graphFetch(#{Person{firstName, lastName}}#)->externalize($binding, #{Person{firstName, lastName}}#)};
+
+  let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe"}'));
+
+  assertEquals('{"builder":{"_type":"json"},"values":{"firstName":"John","lastName":"Doe"}}', $result);
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testSimpleJsonQueryWithIncompleteData(): Boolean[1]
+{
+  let binding = getTestBinding();
+  let query   = {data:String[1]| Person->internalize($binding, $data)->graphFetchChecked(#{Person{firstName, lastName, firm {legalName}, addresses{street}}}#)->externalize($binding, checked(#{Person{firstName, lastName, firm {legalName}, addresses{street}}}#, $binding))};
+
+  let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe"}'));
+
+  assertEquals('{"builder":{"_type":"json"},"values":{"defects":[{"id":null,"externalId":null,"message":"Invalid multiplicity for firm: expected [1] found [0]","enforcementLevel":"Critical","ruleType":"ClassStructure","ruleDefinerPath":"meta::external::format::json::executionPlan::test::simple::Person","path":[]}],"source":{"number":1,"record":"{\\\"firstName\\\":\\\"John\\\",\\\"lastName\\\":\\\"Doe\\\"}"},"value":null}}', $result);
+}
+
+// =========================================================================================================
+// Models
+// =========================================================================================================
+
+###Pure
+import meta::legend::*;
+import meta::external::shared::format::binding::*;
+import meta::external::format::json::executionPlan::test::simple::*;
+
+Class meta::external::format::json::executionPlan::test::simple::Person
+{
+  firstName : String[1];
+  lastName  : String[1];
+  firm      : Firm[1];
+  addresses : Address[*];
+}
+
+Class meta::external::format::json::executionPlan::test::simple::Firm
+{
+  legalName : String[1];
+}
+
+Class meta::external::format::json::executionPlan::test::simple::Address
+{
+  street : String[1];
+}
+
+function meta::external::format::json::executionPlan::test::simple::getTestBinding():Binding[1]
+{
+  let schema = 
+    '###ExternalFormat\n' +
+    'Binding meta::external::format::json::executionPlan::test::simple::TestBinding\n' +
+    '{\n' +
+    '  contentType: \'application/json\';\n' +
+    '  modelIncludes: [\n' +
+    '    meta::external::format::json::executionPlan::test::simple::Person,\n' +
+    '    meta::external::format::json::executionPlan::test::simple::Firm,\n' +
+    '    meta::external::format::json::executionPlan::test::simple::Address\n' +
+    '  ];\n' +
+    '}\n';
+  
+  compileLegendGrammar($schema)->filter(ele | $ele->instanceOf(Binding))->cast(@Binding)->toOne();
+}
