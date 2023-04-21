@@ -12,6 +12,7 @@
 
     <artifactId>legend-engine-xt-openapi-pure</artifactId>
     <name>Legend Engine - XT - OpenAPI PAR/JAVA</name>
+    <packaging>jar</packaging>
 
     <build>
         <plugins>
@@ -169,25 +170,6 @@
                     </dependency>
                 </dependencies>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <configuration>
-                    <failOnWarning>false</failOnWarning>
-                    <ignoreNonCompile>true</ignoreNonCompile>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>dependency-analyze</id>
-                        <configuration>
-                            <ignoredUnusedDeclaredDependencies>
-                                <dependency>org.finos.legend.engine:legend-engine-pure-code-compiled-core</dependency>
-                                <dependency>org.finos.legend.pure:legend-pure-m3-core</dependency>
-                            </ignoredUnusedDeclaredDependencies>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 
@@ -226,12 +208,34 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-platform-functions-java</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-runtime-compiler</artifactId>
+            <artifactId>legend-engine-pure-platform-functions-json-java</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-dsl-mapping-java</artifactId>
+        </dependency>
+
+
         <!-- PURE -->
+
+        <!--COLLECTIONS API-->
+
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
+
+        <!--COLLECTIONS API-->
+
 
     </dependencies>
 

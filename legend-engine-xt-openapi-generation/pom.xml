@@ -65,11 +65,6 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-openapi-pure</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-shared-core</artifactId>
-        </dependency>
         <!--ENGINE-->
 
         <!--COLLECTIONS API-->
