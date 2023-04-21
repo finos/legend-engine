@@ -78,7 +78,7 @@ public class TestAuthenticationGrammarParser_AuthenticationTypes extends TestGra
                 "    value: PropertiesFileSecret\n" +
                 "    {\n" +
                 "      propertyName: 'property1';\n" +
-                "    }\n" +
+                "    };\n" +
                 "  }#;\n" +
                 "}\n");
     }
@@ -95,11 +95,11 @@ public class TestAuthenticationGrammarParser_AuthenticationTypes extends TestGra
                 "    privateKey: PropertiesFileSecret\n" +
                 "    {\n" +
                 "      propertyName: 'property1';\n" +
-                "    }\n" +
+                "    };\n" +
                 "    passphrase: PropertiesFileSecret\n" +
                 "    {\n" +
                 "      propertyName: 'property1';\n" +
-                "    }\n" +
+                "    };\n" +
                 "  }#;\n" +
                 "}\n");
     }
@@ -123,11 +123,11 @@ public class TestAuthenticationGrammarParser_AuthenticationTypes extends TestGra
                 "           accessKeyId: PropertiesFileSecret\n" +
                 "           {\n" +
                 "              propertyName: 'property1';\n" +
-                "           }\n" +
+                "           };\n" +
                 "           secretAccessKey: PropertiesFileSecret\n" +
                 "           {\n" +
                 "              propertyName: 'property1';\n" +
-                "           }\n" +
+                "           };\n" +
                 "      }" +
                 "    }\n" +
                 "    workload: GCPWorkload\n" +

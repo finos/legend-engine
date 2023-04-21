@@ -14,11 +14,17 @@
 
 package org.finos.legend.engine.external.format.flatdata;
 
-import org.finos.legend.engine.external.format.flatdata.compile.FlatDataSchemaCompiler;
-import org.finos.legend.engine.external.format.flatdata.shared.grammar.FlatDataGrammarHelper;
-import org.finos.legend.engine.external.format.flatdata.transform.FlatDataSchemaTransformer;
+import org.finos.legend.engine.external.format.flatdata.grammar.fromPure.FlatDataSchemaParseException;
+import org.finos.legend.engine.external.format.flatdata.grammar.fromPure.FlatDataSchemaParser;
+import org.finos.legend.engine.external.format.flatdata.grammar.toPure.FlatDataSchemaComposer;
+import org.finos.legend.engine.external.format.flatdata.metamodel.FlatData;
+import org.finos.legend.engine.external.format.flatdata.metamodel.MetamodelToProtocolTranslator;
+import org.finos.legend.engine.external.format.flatdata.metamodel.ProtocolToMetamodelTranslator;
 import org.finos.legend.engine.external.format.flatdata.transformation.fromModel.ModelToFlatDataConfiguration;
 import org.finos.legend.engine.external.format.flatdata.transformation.toModel.FlatDataToModelConfiguration;
+import org.finos.legend.engine.external.format.flatdata.validation.FlatDataValidation;
+import org.finos.legend.engine.external.format.flatdata.validation.FlatDataValidationResult;
+import org.finos.legend.engine.external.shared.format.model.compile.ExternalFormatSchemaException;
 import org.finos.legend.engine.external.shared.format.model.compile.ExternalSchemaCompileContext;
 import org.finos.legend.engine.external.shared.format.model.transformation.fromModel.ExternalFormatSchemaGenerationExtension;
 import org.finos.legend.engine.external.shared.format.model.transformation.toModel.ExternalFormatModelGenerationExtension;
@@ -30,6 +36,8 @@ import org.finos.legend.pure.generated.Root_meta_external_shared_format_External
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_transformation_fromPure_ModelToSchemaConfiguration;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_transformation_toPure_SchemaToModelConfiguration;
 import org.finos.legend.pure.generated.core_external_format_flatdata_externalFormatContract;
+
+import java.util.stream.Collectors;
 
 public class FlatDataExternalFormatExtension implements ExternalFormatSchemaGenerationExtension<Root_meta_external_format_flatdata_metamodel_FlatData, ModelToFlatDataConfiguration>, ExternalFormatModelGenerationExtension<Root_meta_external_format_flatdata_metamodel_FlatData, FlatDataToModelConfiguration>
 {
@@ -45,13 +53,27 @@ public class FlatDataExternalFormatExtension implements ExternalFormatSchemaGene
     @Override
     public Root_meta_external_format_flatdata_metamodel_FlatData compileSchema(ExternalSchemaCompileContext context)
     {
-        return new FlatDataSchemaCompiler(context).compile();
+        try
+        {
+            FlatData flatData = new FlatDataSchemaParser(context.getContent()).parse();
+            FlatDataValidationResult validationResult = FlatDataValidation.validate(flatData);
+            if (!validationResult.isValid())
+            {
+                String message = validationResult.getDefects().stream().map(Object::toString).collect(Collectors.joining(", "));
+                throw new ExternalFormatSchemaException(message);
+            }
+            return new ProtocolToMetamodelTranslator().translate(flatData, context.getPureModel());
+        }
+        catch (FlatDataSchemaParseException e)
+        {
+            throw new ExternalFormatSchemaException(e.getMessage(), e.getStartLine(), e.getStartColumn(), e.getEndLine(), e.getEndColumn());
+        }
     }
 
     @Override
     public String metamodelToText(Root_meta_external_format_flatdata_metamodel_FlatData schemaDetail, PureModel pureModel)
     {
-        return FlatDataGrammarHelper.toGrammar(new FlatDataSchemaTransformer(schemaDetail).transform());
+        return FlatDataSchemaComposer.toGrammar(new MetamodelToProtocolTranslator().translate(schemaDetail));
     }
 
     @Override

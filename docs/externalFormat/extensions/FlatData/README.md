@@ -9,7 +9,7 @@ Examples are:
 
 ## Schema Syntax
 
-See [FlatData Grammar](https://legend.finos.org/docs/studio/create-flat-data-schema#flat-data-grammar)
+See [FlatData Grammar](https://legend.finos.org/docs/tutorials/studio-flat-data-schema#flat-data-grammar)
 for an explanation of the syntax for Flat Data.
 
 ## Drivers
@@ -27,7 +27,7 @@ driver (but it's meaningless to implement neither). That is a driver can support
 or write only.
 
 A `FlatDataProcessingContext` carries state for the processing while a driver is in use.
-State consists of `FlatDataVariable`s. Drivers of different types can use that state to
+State consists of `FlatDataVariables`. Drivers of different types can use that state to
 share information (such as a line number) across sections of a FlatData file/stream.
 The context also provides access to object factories (`ParsedFlatDataToObject` and
 `ObjectToParsedFlatData`). The factories themselves are implemented by Java code generated
@@ -72,3 +72,6 @@ The `ParsedFlatData` is used to translate to and from the Pure model instances (
 execution plan - that is in Java). The translation is performed by the factories as mentioned in the
 `FlatDataProcessingContext` above.
 
+## Flat Data integration with Legend ExternalFormatContract
+
+You can find details around how FlatData leverages Legend External Format ecosystem [here](./integration-with-external-format-contract.md) 

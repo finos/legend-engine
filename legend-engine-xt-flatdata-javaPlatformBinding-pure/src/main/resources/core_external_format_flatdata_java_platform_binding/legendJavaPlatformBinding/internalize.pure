@@ -109,13 +109,9 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::pla
 
 function <<access.private>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::internalize::createInternalizeSpecificsClass(node:ExternalFormatInternalizeExecutionNode[1], bindingDetail:FlatDataBindingDetail[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
 {
-    let rootClass     = $node.resultType.type->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
-    let schemaSet     = $node.binding.schemaSet->toOne();
-    createInternalizeSpecificsClass($rootClass, $schemaSet, $bindingDetail, $path, $context);
-}
+   let rootClass               = $node.resultType.type->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
+   let schemaSet               = $node.binding.schemaSet->toOne();
 
-function <<access.private>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::internalize::createInternalizeSpecificsClass(rootClass:meta::pure::metamodel::type::Class<Any>[1], schemaSet:SchemaSet[1], bindingDetail:FlatDataBindingDetail[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
-{
    let conventions             = $context.conventions;
    let rootInterface           = $conventions->className($rootClass);
    let contextType             = javaParameterizedType($conventions->className(_FlatDataContext), $rootInterface);
@@ -210,7 +206,7 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::pla
 
                      let vName      = $v->j_invoke('getName', [], javaString());
                      let vNameClean = $vName->j_invoke('replaceAll', [j_string('[^\\p{L}\\p{N}]'), j_string('')]);
-                     let textClean   = $text->j_invoke('replaceAll', [j_string('[^\\p{L}\\p{N}]'), j_string('')]);
+                     let textClean  = $text->j_invoke('replaceAll', [j_string('[^\\p{L}\\p{N}]'), j_string('')]);
                      let compare1   = j_lambda($v, $vName     ->j_invoke('equals',           $text));
                      let compare2   = j_lambda($v, $vName     ->j_invoke('equalsIgnoreCase', $text));
                      let compare3   = j_lambda($v, $vNameClean->j_invoke('equals',           $textClean));
@@ -366,7 +362,6 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::pla
                   {section, code| 
                      let factoryRef = j_this($cls)->j_invoke($section->sectionFactoryMethodName(), $schemaObject);
                      $code->j_invoke('withSectionToObjectFactory', [j_string($section.name), $factoryRef], $contextType);
-                     
                   }, 
                   $newContext
                );
@@ -375,25 +370,23 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::pla
                   j_if($maxSize->j_eq(j_int(0)),
                      j_throw(j_new(javaIllegalStateException(), j_string('maximumSchemaObjectSize must be set before obtaining context')))
                   ),
-                  $schemaObject->j_declare(j_new($schemaObjectClass, $maxSize)),
-                  $schemaVar->j_declare($cls->createSchema($flatData, $conventions)),
+                  $schemaObject->j_declare(j_new($schemaObjectClass, $maxSize))
+               ]->concatenate(
+                  $cls->createSchema($flatData, $schemaVar, $conventions)
+               )->concatenate(
                   j_return($contextWithFactories)
-               ];
+               );
             },
             {|
                let contextWithFactories = $sectionsToProcess->fold(
                   {section, code| 
                      let factoryRef = j_this($cls)->j_methodReference($section->sectionFactoryMethodName(), javaFunctionType($conventions->className(_FlatDataRecordType), $conventions->className(_ParsedFlatDataToObject)));
                      $code->j_invoke('withSectionToObjectFactory', [j_string($section.name), $factoryRef], $contextType);
-                     
                   }, 
                   $newContext
                );
                
-               [
-                  $schemaVar->j_declare($cls->createSchema($flatData, $conventions)),
-                  j_return($contextWithFactories)
-               ];
+               $cls->createSchema($flatData, $schemaVar, $conventions)->concatenate(j_return($contextWithFactories));
             }
          );
          

@@ -131,6 +131,10 @@ function <<access.private>> meta::pure::mapping::updatePropertyMappingIDWithSuff
      );
 }
 
+function meta::pure::mapping::allEnumerationMappings(m: Mapping[1]): EnumerationMapping<Any>[*]
+{
+  $m.enumerationMappings->concatenate($m.includes->map(i | $i.included->allEnumerationMappings()))
+}
 
 
 

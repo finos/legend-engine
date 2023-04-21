@@ -19,6 +19,7 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.eclipse.collections.impl.list.mutable.FastList;
+import org.eclipse.collections.impl.map.mutable.UnifiedMap;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseLexer;
 import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseParser;
@@ -28,12 +29,17 @@ import org.finos.legend.engine.protocol.sql.metamodel.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.RandomAccess;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
 {
+    private static final Pattern LITERAL_VALUE_PATTERN = Pattern.compile("(([\\+-]?[0-9]+)\\s([year|years|month|months|week|weeks|day|days|hour|hours|minute|minutes|second|seconds]+))+");
+
     @Override
     public Node visitSingleStatement(SqlBaseParser.SingleStatementContext context)
     {
@@ -96,10 +102,39 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
         return unsupported();
     }
 
+    //TODO re-consider where to do parsing
     @Override
     public Node visitIntervalLiteral(SqlBaseParser.IntervalLiteralContext context)
     {
-        return unsupported();
+        IntervalLiteral intervalLiteral = new IntervalLiteral();
+        StringLiteral stringLiteral = (StringLiteral) visitStringLiteral(context.stringLiteral());
+        String value = stringLiteral.value.toLowerCase();
+
+        Map<String, Long> matches = parseIntervalValue(value);
+
+        intervalLiteral.years = matches.get("year");
+        intervalLiteral.months = matches.get("month");
+        intervalLiteral.weeks = matches.get("week");
+        intervalLiteral.days = matches.get("day");
+        intervalLiteral.hours = matches.get("hour");
+        intervalLiteral.minutes = matches.get("minute");
+        intervalLiteral.seconds = matches.get("second");
+
+        return intervalLiteral;
+    }
+
+    private Map<String, Long> parseIntervalValue(String value)
+    {
+        Map<String, Long> matches = UnifiedMap.newMap();
+
+        Matcher matcher = LITERAL_VALUE_PATTERN.matcher(value);
+        while (matcher.find())
+        {
+            Long l = Long.parseLong(matcher.group(2));
+            String period = matcher.group(3).replaceAll("s$", "");
+            matches.put(period, l);
+        }
+        return matches;
     }
 
     @Override
@@ -731,7 +766,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
         }
 
         query.orderBy = orderBy;
-        query.limit = limit.orElse(null);;
+        query.limit = limit.orElse(null);
 
         return query;
     }
@@ -1290,7 +1325,13 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitExtract(SqlBaseParser.ExtractContext context)
     {
-        return unsupported();
+        StringLiteral field = (StringLiteral) visit(context.stringLiteralOrIdentifier());
+
+        Extract extract = new Extract();
+        extract.expression = (Expression) visit(context.expr());
+        extract.field = ExtractField.valueOf(field.value.toUpperCase());
+
+        return extract;
     }
 
     @Override

@@ -129,11 +129,11 @@ public class TestAuthenticationGrammarParser_SecretTypes extends TestGrammarPars
                 "           accessKeyId: PropertiesFileSecret\n" +
                 "           {\n" +
                 "              propertyName: 'property1';\n" +
-                "           }\n" +
+                "           };\n" +
                 "           secretAccessKey: PropertiesFileSecret\n" +
                 "           {\n" +
                 "              propertyName: 'property1';\n" +
-                "           }\n" +
+                "           };\n" +
                 "      }" +
                 "    };\n" +
                 "  }#;\n" +
@@ -163,11 +163,11 @@ public class TestAuthenticationGrammarParser_SecretTypes extends TestGrammarPars
                 "                   accessKeyId: PropertiesFileSecret\n" +
                 "                   {\n" +
                 "                       propertyName: 'property1';\n" +
-                "                   }\n" +
+                "                   };\n" +
                 "                   secretAccessKey: PropertiesFileSecret\n" +
                 "                   {\n" +
                 "                       propertyName: 'property1';\n" +
-                "                   }\n" +
+                "                   };\n" +
                 "           }" +
                 "      }" +
                 "    };\n" +

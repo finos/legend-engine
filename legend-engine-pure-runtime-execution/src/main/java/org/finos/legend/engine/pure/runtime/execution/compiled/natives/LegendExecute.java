@@ -20,6 +20,7 @@ import org.eclipse.collections.api.list.ListIterable;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.functions.collection.ListAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.functions.collection.Pair;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.functions.collection.PairAccessor;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.DateTime;
@@ -27,7 +28,9 @@ import org.finos.legend.pure.m4.coreinstance.primitive.date.StrictDate;
 import org.finos.legend.pure.runtime.java.compiled.generation.ProcessorContext;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.AbstractNative;
 
+import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
 
@@ -92,6 +95,10 @@ public class LegendExecute extends AbstractNative
         )
         {
             return pureValue;
+        }
+        else if (pureValue instanceof InstanceValue && "ByteStream".equals(((InstanceValue) pureValue)._genericType()._rawType()._name()))
+        {
+            return new ByteArrayInputStream(((InstanceValue) pureValue)._values().getOnly().toString().getBytes(StandardCharsets.UTF_8));
         }
         else if (pureValue instanceof ListAccessor<?>)
         {

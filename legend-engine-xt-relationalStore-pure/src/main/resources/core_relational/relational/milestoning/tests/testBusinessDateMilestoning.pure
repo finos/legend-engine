@@ -389,6 +389,31 @@ function <<test.Test>> meta::relational::tests::milestoning::businessdate::testB
    assertSameSQL('select "orderdescriptiontable_0".description as "orderDesc", "producttable_0".name as "prodName" from OrderTable as "root" left outer join OrderDescriptionTable as "orderdescriptiontable_0" on ("root".id = "orderdescriptiontable_0".id) left outer join ProductTable as "producttable_0" on ("root".prodFk = "producttable_0".id and "producttable_0".from_z <= \'2016-01-01\' and "producttable_0".thru_z > \'2016-01-01\')', $result);
 }
 
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testBusinessDatePropagationInColFunction_asQueryParam():Boolean[1]
+{
+  let f= {productBusDate:Date[1] | Order.all()->project([col([o|$o.description.description],'orderDesc'),col([o|$o.product($productBusDate).name],'prodName')])}->cast(@FunctionDefinition<Any>);     // queryParam is not resolved inside col lambda ( as its just a placeholder here)
+  let plan = executionPlan($f, milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());      //cant test via execute as params are not supplied 
+  assertEquals(   
+  'Sequence\n' +
+  '(\n' +
+  '  type = TDS[(orderDesc, String, VARCHAR(200), \"\"), (prodName, String, VARCHAR(200), \"\")]\n' +
+  '  (\n' +
+  '    FunctionParametersValidationNode\n' +
+  '    (\n' +
+  '      functionParameters = [productBusDate:Date[1]]\n' +
+  '    )\n' +
+  '    Relational\n' +
+  '    (\n' +
+  '      type = TDS[(orderDesc, String, VARCHAR(200), \"\"), (prodName, String, VARCHAR(200), \"\")]\n' +
+  '      resultColumns = [(\"orderDesc\", VARCHAR(200)), (\"prodName\", VARCHAR(200))]\n' +
+  '      sql = select \"orderdescriptiontable_0\".description as \"orderDesc\", \"producttable_0\".name as \"prodName\" from OrderTable as \"root\" left outer join OrderDescriptionTable as \"orderdescriptiontable_0\" on (\"root\".id = \"orderdescriptiontable_0\".id) left outer join ProductTable as \"producttable_0\" on (\"root\".prodFk = \"producttable_0\".id and \"producttable_0\".from_z <= \'${productBusDate}\' and \"producttable_0\".thru_z > \'${productBusDate}\')\n' +
+  '      connection = TestDatabaseConnection(type = \"H2\")\n' +
+  '    )\n' +
+  '  )\n' +
+  ')\n'
+  ,$plan->planToString(meta::relational::extension::relationalExtensions()));
+}
+
 function <<test.Test>> meta::relational::tests::milestoning::businessdate::testBusinessDatePropagationInColFunctionWithDoc():Boolean[1]
 {
    let productBusDate = %2016-01-01;

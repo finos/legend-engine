@@ -317,6 +317,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildBase
            elements = buildDomain($found, $associations, $extensions)
                         ->concatenate($allMappings->map(m|$m->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::transformMapping($extensions)))
                         ->concatenate($stores->map(store|$store->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::transformStore($extensions)))
+                        ->concatenate($extensions->map(e|$e.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).scan_buildBasePureModel_getExtraElementsFromStores->map(z|$z->eval($stores,$extensions))))
         )
    );
 }

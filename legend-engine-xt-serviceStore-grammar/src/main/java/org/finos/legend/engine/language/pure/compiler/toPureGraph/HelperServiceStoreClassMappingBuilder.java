@@ -409,7 +409,7 @@ public class HelperServiceStoreClassMappingBuilder
 
         if (!org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.subsumes(parameterMultiplicty, multiplicity))
         {
-            throw new EngineException("Parameter multiplicity is not compatible with transform multiplicity - Multiplicity error: " + org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.print(parameterMultiplicty) + " doesn't subsumes " + org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.print(multiplicity), sourceInformation, EngineErrorType.COMPILATION);
+            throw new EngineException("Parameter multiplicity is not compatible with transform multiplicity - Multiplicity error: " + org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.print(parameterMultiplicty) + " doesn't subsume " + org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.print(multiplicity), sourceInformation, EngineErrorType.COMPILATION);
         }
 
         if (typeReference instanceof Root_meta_external_store_service_metamodel_StringTypeReference)

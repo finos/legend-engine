@@ -24,6 +24,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRuntimeB
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.executionOption.ExecutionOption;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
 import org.finos.legend.pure.generated.*;
 
 import java.util.Objects;
@@ -49,6 +50,11 @@ public class SQLSourceTranslator
         if (source.getExecutionOptions() != null)
         {
             compiled._executionOptions(ListIterate.collect(source.getExecutionOptions(), e -> processExecutionOption(e, pureModel.getContext())));
+        }
+
+        if (source.getExecutionContext() != null)
+        {
+            compiled._executionContext(process(source.getExecutionContext(), pureModel.getContext()));
         }
 
         compiled._key(keys);
@@ -79,5 +85,14 @@ public class SQLSourceTranslator
                 .filter(Objects::nonNull)
                 .findFirst()
                 .orElseThrow(() -> new UnsupportedOperationException("Unsupported execution option type '" + executionOption.getClass() + "'"));
+    }
+
+    private Root_meta_pure_runtime_ExecutionContext process(ExecutionContext executionContext, CompileContext context)
+    {
+        return context.getCompilerExtensions().getExtraExecutionContextProcessors().stream()
+                .map(processor -> processor.value(executionContext, context))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElseThrow(() -> new UnsupportedOperationException("Unsupported execution option type '" + executionContext.getClass() + "'"));
     }
 }

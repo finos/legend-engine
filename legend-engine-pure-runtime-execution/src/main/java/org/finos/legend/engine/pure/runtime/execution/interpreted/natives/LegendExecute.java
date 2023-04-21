@@ -17,6 +17,7 @@ package org.finos.legend.engine.pure.runtime.execution.interpreted.natives;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.map.MutableMap;
 import org.finos.legend.pure.m3.compiler.Context;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m3.navigation.Instance;
 import org.finos.legend.pure.m3.navigation.M3Paths;
@@ -33,6 +34,8 @@ import org.finos.legend.pure.runtime.java.interpreted.natives.InstantiationConte
 import org.finos.legend.pure.runtime.java.interpreted.natives.NativeFunction;
 import org.finos.legend.pure.runtime.java.interpreted.profiler.Profiler;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Stack;
 
@@ -64,8 +67,8 @@ public class LegendExecute extends NativeFunction
     {
         return Instance.getValueForMetaPropertyToManyResolved(vars, M3Properties.values, processorSupport)
                 .toMap(
-                    x -> Instance.getValueForMetaPropertyToOneResolved(x, "first", processorSupport).getName(),
-                    x -> pureToPlanValue(Instance.getValueForMetaPropertyToOneResolved(x, "second", processorSupport), processorSupport)
+                        x -> Instance.getValueForMetaPropertyToOneResolved(x, "first", processorSupport).getName(),
+                        x -> pureToPlanValue(Instance.getValueForMetaPropertyToOneResolved(x, "second", processorSupport), processorSupport)
                 );
     }
 
@@ -94,6 +97,10 @@ public class LegendExecute extends NativeFunction
         if (Instance.instanceOf(coreInstance, M3Paths.String, processorSupport))
         {
             return PrimitiveUtilities.getStringValue(coreInstance);
+        }
+        if (Instance.instanceOf(coreInstance, M3Paths.InstanceValue, processorSupport) && "ByteStream".equals(((InstanceValue) coreInstance)._genericType()._rawType()._name()))
+        {
+            return new ByteArrayInputStream(((InstanceValue) coreInstance)._values().getOnly().toString().getBytes(StandardCharsets.UTF_8));
         }
         if (Instance.instanceOf(coreInstance, M3Paths.List, processorSupport))
         {

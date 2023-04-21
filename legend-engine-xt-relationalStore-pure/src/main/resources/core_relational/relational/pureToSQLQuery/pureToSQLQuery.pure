@@ -4941,10 +4941,13 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                         ];
 
                         let func = $dispatch->filter(d|$d.first == $f.func.functionName);
+                        
                         if($func->isNotEmpty(),
                                  |$func->toOne().second->cast(@meta::pure::metamodel::function::Function<{->RelationalOperationElement[*]}>)->eval(),
                                  |
-                                    if(findSupportedFunction($f, $state.supportedFunctions, $state.contextBasedSupportedFunctions)->isNotEmpty(),
+                                    let supportedFunction = findSupportedFunction($f, $state.supportedFunctions, $state.contextBasedSupportedFunctions);
+                                  
+                                    if($supportedFunction->isNotEmpty(),
                                        | if($f.func == extractEnumValue_Enumeration_1__String_1__T_1_,
                                             | ^Literal(value=extractEnumValue($f, $currentPropertyMapping, $context)),
                                             | if($f.func == meta::pure::functions::string::plus_String_MANY__String_1_,
@@ -4954,13 +4957,15 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                                                          let arg2 = $f.parametersValues->at(1)->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $context);
                                                          let dynaParams = $arg1->concatenate($arg2->match([ll:Literal[*] | ^LiteralList(values = $ll), r:RelationalOperationElement[*] | $r]));
                                                          newDynaFunction($f.func.functionName->toOne(), $dynaParams);,
-                                                       | newDynaFunction($f.func.functionName->toOne(), $f.parametersValues->map(p|$p->processTdsLambda($a,$returnColumnName, $vars, $state, $currentPropertyMapping, $context)))
+                                                       | if ($supportedFunction == processNoOp_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_,
+                                                          | $f.parametersValues->at(0)->processTdsLambda($a,$returnColumnName, $vars, $state, $currentPropertyMapping, $context),
+                                                          | newDynaFunction($f.func.functionName->toOne(), $f.parametersValues->map(p|$p->processTdsLambda($a,$returnColumnName, $vars, $state, $currentPropertyMapping, $context))))
                                                    )
                                               )
                                             ),
                                        | fail('function ' + $f.func.name->makeString() + ' is not yet supported'); ^DynaFunction(name='fail');
                                        );
-                         );
+                         );                        
                      ,i:InstanceValue[1]| let transformedValues = $i.values->map(v | $v->match([
                                                           s:String[1] | ^Literal(value=$s),
                                                           n:Number[1] | ^Literal(value=$n),

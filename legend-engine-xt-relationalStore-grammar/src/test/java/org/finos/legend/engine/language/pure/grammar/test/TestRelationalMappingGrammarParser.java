@@ -321,6 +321,30 @@ public class TestRelationalMappingGrammarParser extends TestGrammarParser.TestGr
     }
 
     @Test
+    public void testJsonColumn()
+    {
+        test("###Relational\n" +
+                "Database simple::DB\n" +
+                "(\n" +
+                "  Table personTable\n" +
+                "  (\n" +
+                "    FIRSTNAME VARCHAR(10),\n" +
+                "    FIRM JSON(10)\n" +
+                "  )\n" +
+                ")\n", "PARSER error at [7:10-17]: Column data type JSON does not expect any parameters in declaration");
+
+        test("###Relational\n" +
+                "Database simple::DB\n" +
+                "(\n" +
+                "  Table personTable\n" +
+                "  (\n" +
+                "    FIRSTNAME VARCHAR(10),\n" +
+                "    FIRM JSON\n" +
+                "  )\n" +
+                ")\n");
+    }
+
+    @Test
     public void testRelationalPropertyMappingWithBindingTransformer()
     {
         test("###Mapping\n" +

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::graphFetch::*;
 import meta::pure::mapping::*;
 import meta::pure::router::builder::*;
 import meta::pure::router::metamodel::*;
@@ -104,7 +105,7 @@ function <<access.private>> meta::pure::router::store::routing::routeFunctionExp
                         print(if($debug.debug,|$debug.space+$fe->asString()+'\n',|''));
                         let targetType = $p.classifierGenericType.typeArguments->at(1).rawType->toOne();
                         if($targetType->instanceOf(DataType),
-                           |let sourceClass = $fe.parametersValues->at(0).genericType.rawType->toOne();
+                          | let sourceClass = $fe.parametersValues->at(0).genericType.rawType->toOne();
 
                             let subTypes = $sourceClass->cast(@Class<Any>)->getMappedLeafClasses($mapping, $v);
                             let classes = if ($subTypes->isEmpty(), | $sourceClass, | $subTypes);
@@ -143,7 +144,8 @@ function <<access.private>> meta::pure::router::store::routing::routeFunctionExp
                                   ^$last(
                                     value= $routed
                                   );,
-                                | let foundSets = $p->findMappingsFromProperty($mapping, $last.value->match([v:StoreMappingRoutedValueSpecification[1]|$v.sets, a:Any[1]|[]->cast(@SetImplementation)]), $v, $extensions);//is this for embedded?
+                                | let srcSets   = $last.value->match([v:StoreMappingRoutedValueSpecification[1]|$v.sets, a:Any[1]|[]->cast(@SetImplementation)]);
+                                  let foundSets = $p->findMappingsFromProperty($mapping, $srcSets, $v, $extensions);//is this for embedded?
                                   if ($foundSets->isEmpty(),
                                     |^$last(value=^$fe(parametersValues = $newPV)),
                                     | // Can't assert because of embedded
@@ -174,11 +176,13 @@ function <<access.private>> meta::pure::router::store::routing::routeFunctionExp
                                                         value = ^$fe(parametersValues = $newPV),
                                                         routingStrategy = $updatedRoutingStrategy
                                                     );
+                                      let shouldStopPropertyRouting       = $srcSets->isPropertyAutoMapped($p, $extensions);
                                       ^$last(
                                           counter = if (!$existingSetCanBeUsed,|$last.counter+1,|$last.counter),
                                           routingStrategy = $updatedRoutingStrategy, 
                                           propertyMap = ^$oldPropertyMap(v += pair($propId, $added->cast(@Any))),  
-                                          value= $added
+                                          value= $added,
+                                          shouldBeRouted = $last.shouldBeRouted && !$shouldStopPropertyRouting
                                       );
                                   );
                             );
@@ -264,6 +268,33 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
                                                         ]);
                 ^$processedFunction(value = $wrappedValueSpec);
         }
+    ),
+    pair(fe:FunctionExpression[1] | $fe.func->in([meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_, meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__Integer_1__T_MANY_]),
+      {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
+
+              let processedFunction      = routeFunctionExpressionFunctionDefinition($f, $fe, $state, $executionContext, $vars, $inScopeVars, $extensions, $debug);
+              let valueSpec = $processedFunction.value->toOne();
+              if($valueSpec->meta::pure::functions::meta::instanceOf(StoreMappingRoutedValueSpecification),
+              |
+                let funcExpression = $valueSpec->cast(@StoreMappingRoutedValueSpecification)->evaluateAndDeactivate().value;
+                let params = $funcExpression->cast(@SimpleFunctionExpression).parametersValues;
+                let rootGraphFetchTree = $params->at(1)->cast(@InstanceValue).values->cast(@RootGraphFetchTree<Any>);
+                let routingStrategy    = $processedFunction.routingStrategy->cast(@StoreMappingRoutingStrategy);
+                let mapping            = $routingStrategy.mapping;
+                let permSetHavingRootClassImpl  = $routingStrategy.sets->filter(x | $x.sets->exists(setImpl | $setImpl.class == $rootGraphFetchTree.class))->toOne('Multiple permutations sets for root class is not supported');
+                let permSetsNotHavingRootClassImpl =  $routingStrategy.sets->filter(x | $x != $permSetHavingRootClassImpl);
+                let subTypeSetImplementations = $rootGraphFetchTree.subTypeTrees->map(x | let setImpl = $mapping->rootClassMappingByClass($x.subTypeClass)->resolveOperation($mapping);
+                                                                                          assert($setImpl->isNotEmpty(),'Mapping for subtype ' + $x.subTypeClass.name->toOne() + ' not found.');
+                                                                                          $setImpl;
+                                                                                     );
+                let resolvedRootClassSetImplementations = $permSetHavingRootClassImpl.sets->map(s | if($s->instanceOf(OperationSetImplementation) && $s->cast(@OperationSetImplementation).operation.name == 'inheritance_OperationSetImplementation_1__SetImplementation_MANY_',
+                                                                                                 | $s->resolveOperation($mapping);,
+                                                                                                 | $s
+                                                                                                 )
+                                                                                          );
+                ^$processedFunction(routingStrategy = ^$routingStrategy(sets = ^$permSetHavingRootClassImpl(sets = $resolvedRootClassSetImplementations->concatenate($subTypeSetImplementations)->removeDuplicates())->concatenate($permSetsNotHavingRootClassImpl)));,
+              | $processedFunction);                                                  
+      }
     )
   ]
 }
@@ -376,6 +407,13 @@ function meta::pure::router::store::routing::processProperty(p:AbstractProperty<
         print(if($debug.debug,|$debug.space+'~>P '+$p.name->toOne()+') ('+$res.routingStrategy->cast(@StoreMappingRoutingStrategy).sets->size()->toString()+') '+$routed->evaluateAndDeactivate()->asString()+'\n',|''));
         $res;
    );
+}
+
+function meta::pure::router::store::routing::isPropertyAutoMapped(srcSets:SetImplementation[*], p:AbstractProperty<Any>[1], extensions:meta::pure::extension::Extension[*]): Boolean[1]
+{
+  $srcSets->size() == 1 && $srcSets->toOne()->instanceOf(InstanceSetImplementation)                   // We only support pass through mapping when source set is InstanceSetImpls and not OperationSetImpls
+  && $extensions->meta::pure::extension::_storeContractForSetImplementation($srcSets->toOne()).isPropertyAutoMapped->isNotEmpty()
+  && $extensions->meta::pure::extension::_storeContractForSetImplementation($srcSets->toOne()).isPropertyAutoMapped->toOne()->eval($p, $srcSets->toOne()->cast(@InstanceSetImplementation));
 }
 
 function meta::pure::router::routing::getClassMappings(c:Class<Any>[1], r:RoutingState[1]):SetImplementation[*]

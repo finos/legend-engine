@@ -21,6 +21,9 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeA
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
 
 import java.util.Optional;
+
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.MaxVersionStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningComparator;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
 
 public class NonTemporalDeltaScenarios extends BaseTest
@@ -32,6 +35,7 @@ public class NonTemporalDeltaScenarios extends BaseTest
     1) Auditing: No Auditing, With Auditing
     2) DataSplit: Enabled, Disabled
     3) MergeStrategy: No MergeStrategy, With Delete Indicator
+    4) DerivedDataset with different InterBatchDedupStrategy
     */
 
     public TestScenario NO_AUDTING__NO_DATASPLIT()
@@ -86,6 +90,68 @@ public class NonTemporalDeltaScenarios extends BaseTest
         return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchemaHavingDigestAndDataSplit, ingestMode);
    }
 
+    public TestScenario NO_VERSIONING__WITH_STAGING_FILTER()
+    {
+        NontemporalDelta ingestMode = NontemporalDelta.builder()
+                .digestField(digestField)
+                .auditing(NoAuditing.builder().build())
+                .build();
+        return new TestScenario(mainTableWithBaseSchemaAndDigest, stagingTableWithFilters, ingestMode);
+    }
 
+    public TestScenario MAX_VERSIONING_WITH_GREATER_THAN__DEDUP__WITH_STAGING_FILTER()
+    {
+        NontemporalDelta ingestMode = NontemporalDelta.builder()
+            .digestField(digestField)
+            .auditing(NoAuditing.builder().build())
+            .versioningStrategy(MaxVersionStrategy.builder()
+                .versioningField(version.name())
+                .versioningComparator(VersioningComparator.GREATER_THAN)
+                .performDeduplication(true)
+                .build())
+            .build();
+        return new TestScenario(mainTableWithVersion, stagingTableWithVersionAndSnapshotId, ingestMode);
+    }
 
+    public TestScenario MAX_VERSIONING_WITH_GREATER_THAN__NO_DEDUP__WITH_STAGING_FILTER()
+    {
+        NontemporalDelta ingestMode = NontemporalDelta.builder()
+            .digestField(digestField)
+            .auditing(NoAuditing.builder().build())
+            .versioningStrategy(MaxVersionStrategy.builder()
+                .versioningField(version.name())
+                .versioningComparator(VersioningComparator.GREATER_THAN)
+                .performDeduplication(false)
+                .build())
+            .build();
+        return new TestScenario(mainTableWithVersion, stagingTableWithVersionAndSnapshotId, ingestMode);
+    }
+
+    public TestScenario MAX_VERSIONING_WITH_GREATER_THAN__NO_DEDUP__WITHOUT_STAGING_FILTER()
+    {
+        NontemporalDelta ingestMode = NontemporalDelta.builder()
+            .digestField(digestField)
+            .auditing(NoAuditing.builder().build())
+            .versioningStrategy(MaxVersionStrategy.builder()
+                .versioningField(version.name())
+                .versioningComparator(VersioningComparator.GREATER_THAN)
+                .performDeduplication(false)
+                .build())
+            .build();
+        return new TestScenario(mainTableWithVersion, stagingTableWithVersion, ingestMode);
+    }
+
+    public TestScenario MAX_VERSIONING_WITH_GREATER_THAN_EQUAL__DEDUP__WITHOUT_STAGING_FILTER()
+    {
+        NontemporalDelta ingestMode = NontemporalDelta.builder()
+            .digestField(digestField)
+            .auditing(NoAuditing.builder().build())
+            .versioningStrategy(MaxVersionStrategy.builder()
+                .versioningField(version.name())
+                .versioningComparator(VersioningComparator.GREATER_THAN_EQUAL_TO)
+                .performDeduplication(true)
+                .build())
+            .build();
+        return new TestScenario(mainTableWithVersion, stagingTableWithVersion, ingestMode);
+    }
 }

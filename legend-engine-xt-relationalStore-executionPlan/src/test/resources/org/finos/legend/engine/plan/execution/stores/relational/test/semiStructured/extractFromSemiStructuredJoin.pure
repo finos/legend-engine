@@ -72,6 +72,28 @@ Database join::store::SnowflakeDB
   Join FirmPerson(extractFromSemiStructured(PERSON_SCHEMA.PERSON_TABLE.FIRM, 'ID', 'INTEGER') = extractFromSemiStructured(FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'ID', 'INTEGER'))
 )
 
+Database join::store::MemSQLDB
+(
+  Schema PERSON_SCHEMA
+  (
+    Table PERSON_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100),
+      LASTNAME VARCHAR(100),
+      FIRM JSON
+    )
+  )
+  Schema FIRM_SCHEMA
+  (
+    Table FIRM_TABLE
+    (
+      FIRM_DETAILS JSON PRIMARY KEY
+    )
+  )
+  Join FirmPerson(extractFromSemiStructured(PERSON_SCHEMA.PERSON_TABLE.FIRM, 'ID', 'INTEGER') = extractFromSemiStructured(FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'ID', 'INTEGER'))
+)
+
 ###ExternalFormat
 Binding join::store::FirmBinding
 {
@@ -94,6 +116,21 @@ Mapping join::mapping::SnowflakeMapping
     firstName: [join::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.FIRSTNAME,
     lastName: [join::store::SnowflakeDB]PERSON_SCHEMA.PERSON_TABLE.LASTNAME,
     firm: Binding join::store::FirmBinding : [join::store::SnowflakeDB]@FirmPerson | [join::store::SnowflakeDB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS
+  }
+)
+
+Mapping join::mapping::MemSQLMapping
+(
+  *join::model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [join::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.ID
+    )
+    ~mainTable [join::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE
+    firstName: [join::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.FIRSTNAME,
+    lastName: [join::store::MemSQLDB]PERSON_SCHEMA.PERSON_TABLE.LASTNAME,
+    firm: Binding join::store::FirmBinding : [join::store::MemSQLDB]@FirmPerson | [join::store::MemSQLDB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS
   }
 )
 
@@ -135,6 +172,28 @@ Runtime join::runtime::SnowflakeRuntime
         ]
     ];
 }
+Runtime join::runtime::MemSQLRuntime
+{
+    mappings :
+    [
+        join::mapping::MemSQLMapping
+    ];
+    connections :
+    [
+        join::store::MemSQLDB :
+        [
+            connection_1 : #{
+                RelationalDatabaseConnection {
+                    store: join::store::MemSQLDB;
+                    type: MemSQL;
+                    specification: LocalH2{};
+                    auth: DefaultH2;
+                }
+            }#
+        ]
+    ];
+}
+
 
 Runtime join::runtime::H2Runtime
 {

@@ -17,8 +17,6 @@ package org.finos.legend.engine.query.sql.api.sources;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.query.sql.api.sources.TableSource;
-import org.finos.legend.engine.query.sql.api.sources.TableSourceArgument;
 import org.finos.legend.engine.protocol.sql.metamodel.*;
 
 import java.util.Collection;
@@ -99,9 +97,15 @@ public class TableSourceExtractor implements NodeVisitor<List<TableSource>>
     }
 
     @Override
+    public List<TableSource> visit(Extract val)
+    {
+        return val.expression.accept(this);
+    }
+
+    @Override
     public List<TableSource> visit(FrameBound val)
     {
-        return null;
+        return val.value.accept(this);
     }
 
     @Override
@@ -134,6 +138,12 @@ public class TableSourceExtractor implements NodeVisitor<List<TableSource>>
 
     @Override
     public List<TableSource> visit(IntegerLiteral val)
+    {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public List<TableSource> visit(IntervalLiteral val)
     {
         return Collections.emptyList();
     }

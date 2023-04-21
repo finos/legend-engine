@@ -557,6 +557,18 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     }
 
     @Test
+    public void testSimpleOrWithArithmeticExpression()
+    {
+        test("Class test::C\n" +
+                "[\n" +
+                "  $this.id->isEmpty() || $this.id >= 0\n" +
+                "]\n" +
+                "{\n" +
+                "  id: Integer[0..1];\n" +
+                "}\n");
+    }
+
+    @Test
     public void testMathParenthesis3()
     {
         test("function f(s: Integer[1], s2: Interger[2]): String[1]\n" +
@@ -950,4 +962,74 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
         String code = "function my::test(): Any[*]\n{\n   " + tree.replace("\n", "").replace("  ", "") + "\n}\n";
         test(code);
     }
+
+    @Test
+    public void testGraphFetchTreeWithSubtypeTreeAtRootLevel()
+    {
+        String tree  =  "#{\n" +
+                        "    test::Firm{\n" +
+                        "      legalName,\n" +
+                        "      ->subType(@test::FirmSubType){\n" +
+                        "        SubTypeName\n"  +
+                        "       }\n" +
+                        "    }\n" +
+                        "  }#\n";
+
+        String code = "function my::test(): Any[*]\n{\n   " + tree.replace("\n", "").replace(" ", "") + "\n}\n";
+        test(code);
+    }
+
+    @Test
+    public void testGraphFetchTreeWithMultipleSubtypeTreesAtRootLevel()
+    {
+        String tree =   "#{\n" +
+                        "    test::Firm{\n" +
+                        "      legalName,\n" +
+                        "      ->subType(@test::FirmSubType1){\n" +
+                        "        SubTypeName1\n"  +
+                        "       },\n" +
+                        "      ->subType(@test::FirmSubType2){\n" +
+                        "        SubTypeName2\n"  +
+                        "       }\n" +
+                        "    }\n" +
+                        "  }#\n";
+
+        String code = "function my::test(): Any[*]\n{\n   " + tree.replace("\n", "").replace(" ", "") + "\n}\n";
+        test(code);
+    }
+
+    @Test
+    public void testGraphFetchTreeWithOnlySubtypeTreesAtRootLevel()
+    {
+        String tree  =  "#{\n" +
+                        "    test::Firm{\n" +
+                        "      ->subType(@test::FirmSubType){\n" +
+                        "        SubTypeName\n"  +
+                        "       }\n" +
+                        "    }\n" +
+                        "  }#\n";
+
+        String code = "function my::test(): Any[*]\n{\n   " + tree.replace("\n", "").replace(" ", "") + "\n}\n";
+        test(code);
+    }
+
+    @Test
+    public void testGraphFetchTreeWithMultipleSubtypeTreesAtRootLevelWithPropertyAlias()
+    {
+        String tree =   "#{\n" +
+                "    test::Firm{\n" +
+                "      legalName,\n" +
+                "      ->subType(@test::FirmSubType1){\n" +
+                "        'alias1' : SubTypeName\n"  +
+                "       },\n" +
+                "      ->subType(@test::FirmSubType2){\n" +
+                "        'alias2' : SubTypeName\n"  +
+                "       }\n" +
+                "    }\n" +
+                "  }#\n";
+
+        String code = "function my::test(): Any[*]\n{\n   " + tree.replace("\n", "").replace(" ", "") + "\n}\n";
+        test(code);
+    }
+
 }

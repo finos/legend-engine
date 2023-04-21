@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.external.language.morphir.tests;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.finos.legend.engine.external.language.morphir.extension.MorphirGenerationConfigFromFileGenerationSpecificationBuilder;
 import org.finos.legend.engine.external.language.morphir.model.MorphirGenerationConfig;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -28,40 +27,30 @@ import org.finos.legend.pure.generated.core_external_language_morphir_transforma
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.Scanner;
+import java.util.Objects;
 
 public class TestMorphirFileGeneration
 {
     @Test
-    public void testGenerateMorphirRentalExample()
+    public void testGenerateMorphirRentalExample() throws IOException
     {
-        try
-        {
-            PureModelContextData pureModelContextData = getProtocol("simpleFileGeneration.json");
-            PureModel pureModel = new PureModel(pureModelContextData, null, DeploymentMode.TEST);
-            FileGenerationSpecification fileGeneration = pureModelContextData.getElementsOfType(FileGenerationSpecification.class).get(0);
-            MorphirGenerationConfig morphirConfig = MorphirGenerationConfigFromFileGenerationSpecificationBuilder.build(fileGeneration);
-            Root_meta_external_language_morphir_generation_MorphirConfig metaModelConfig = morphirConfig.process(pureModel);
-            List<? extends Root_meta_pure_generation_metamodel_GenerationOutput> outputs = core_external_language_morphir_transformation_integration.Root_meta_external_language_morphir_generation_generateMorphirIRFromPureWithScope_MorphirConfig_1__GenerationOutput_MANY_(metaModelConfig, pureModel.getExecutionSupport()).toList();
-            Assert.assertEquals(outputs.size(), 1);
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
+        PureModelContextData pureModelContextData = getProtocol("org/finos/legend/engine/external/language/morphir/tests/simpleFileGeneration.json");
+        PureModel pureModel = new PureModel(pureModelContextData, null, DeploymentMode.PROD);
+        FileGenerationSpecification fileGeneration = pureModelContextData.getElementsOfType(FileGenerationSpecification.class).get(0);
+        MorphirGenerationConfig morphirConfig = MorphirGenerationConfigFromFileGenerationSpecificationBuilder.build(fileGeneration);
+        Root_meta_external_language_morphir_generation_MorphirConfig metaModelConfig = morphirConfig.process(pureModel);
+        List<? extends Root_meta_pure_generation_metamodel_GenerationOutput> outputs = core_external_language_morphir_transformation_integration.Root_meta_external_language_morphir_generation_generateMorphirIRFromPureWithScope_MorphirConfig_1__GenerationOutput_MANY_(metaModelConfig, pureModel.getExecutionSupport()).toList();
+        Assert.assertEquals(outputs.size(), 1);
     }
 
-    private PureModelContextData getProtocol(String fileName) throws JsonProcessingException
+    private PureModelContextData getProtocol(String fileName) throws IOException
     {
-        return ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(this.getResourceAsString(fileName), PureModelContextData.class);
-    }
-
-    private String getResourceAsString(String fileName)
-    {
-        InputStream inputStream = TestMorphirFileGeneration.class.getResourceAsStream(fileName);
-        Scanner scanner = new Scanner(inputStream, "UTF-8").useDelimiter("\\A");
-        return scanner.hasNext() ? scanner.next() : "";
+        try (InputStream stream = Objects.requireNonNull(Thread.currentThread().getContextClassLoader().getResourceAsStream(fileName)))
+        {
+            return ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(stream, PureModelContextData.class);
+        }
     }
 }
