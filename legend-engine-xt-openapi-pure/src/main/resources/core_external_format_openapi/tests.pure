@@ -14,7 +14,7 @@ Class meta::external::format::openapi::test::Person
 }
 
 
-function {doc.doc = 'Legend openapi test simple service'} meta::external::format::openapi::test::simpleServiceWithGraphFetch():Service[1]
+function <<meta::external::format::openapi::profiles::ServiceSpecGeneration.OpenAPI>> {doc.doc = 'Legend openapi test simple service'} meta::external::format::openapi::test::simpleServiceWithGraphFetch():Service[1]
 {
    let tree = #{Person{firstName,lastName}}#;
    let func = {|Person.all()->graphFetchChecked($tree)->serialize($tree)};
@@ -47,7 +47,7 @@ function {doc.doc = 'Legend openapi test simple service'} meta::external::format
       );
 }
 
-function {doc.doc = 'Legend openapi test simple service'} meta::external::format::openapi::test::simpleService():Service[1]
+function <<meta::external::format::openapi::profiles::ServiceSpecGeneration.OpenAPI>> {doc.doc = 'Legend openapi test simple service'} meta::external::format::openapi::test::simpleService():Service[1]
 {
    ^Service
       (

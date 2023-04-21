@@ -9,8 +9,9 @@ import meta::pure::metamodel::path::*;
 import meta::pure::service::*;
 import meta::external::format::openapi::profiles::*;
 import meta::pure::generation::metamodel::*;
-import  meta::external::query::sql::transformation::queryToPure::tests::*;
+import meta::external::query::sql::transformation::queryToPure::tests::*;
 import meta::pure::graphFetch::*;
+import meta::external::format::openapi::tostring::*;
 
 Profile meta::external::format::openapi::profiles::ServiceSpecGeneration {
   stereotypes: [OpenAPI];
@@ -69,10 +70,10 @@ function <<ServiceSpecGeneration.OpenAPI>> meta::external::format::openapi::gene
   ->asString()->makeString()->replace('\\/','/');
 }
 
-function <<access.private>> meta::external::format::openapi::generation::funcInfoToOpenApi(funcInfos:FunctionInfo[*], server:Server[1]):JSONResult<OpenApi|1>[1]
+function <<access.private>> meta::external::format::openapi::generation::funcInfoToOpenApi(funcInfos:FunctionInfo[*], server:Server[1]):OpenApi[1]
 {
   let allClasses = $funcInfos->returnTypesFromFunctions();
-  let result = ^OpenApi(
+  ^OpenApi(
     openapi='3.0.0',
     info=^Info(title='Legend API', version='1.0.0'),
     servers=[^Server(url=$server.url)],
@@ -120,8 +121,6 @@ function <<access.private>> meta::external::format::openapi::generation::funcInf
                           )
                     )
     )));
-  
-  meta::external::format::openapi::tostring::openApiJSONResult($result);
 }
 
 function <<access.private>> meta::external::format::openapi::generation::getEvaluatedExecutionFunction(funcInfo:FunctionInfo[1]):FunctionDefinition<Any>[1]
