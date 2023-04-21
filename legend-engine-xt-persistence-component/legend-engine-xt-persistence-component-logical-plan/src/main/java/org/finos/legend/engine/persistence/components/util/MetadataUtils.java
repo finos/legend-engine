@@ -67,8 +67,10 @@ public class MetadataUtils
     public BatchIdValue getBatchId(StringValue mainTableName)
     {
         FieldValue tableNameFieldValue = FieldValue.builder().datasetRef(metaDataset.datasetReference()).fieldName(dataset.tableNameField()).build();
-        Condition whereCondition = Equals.of(tableNameFieldValue, mainTableName);
-
+        FunctionImpl tableNameInUpperCase = FunctionImpl.builder().functionName(FunctionName.UPPER).addValue(tableNameFieldValue).build();
+        StringValue mainTableNameInUpperCase = StringValue.builder().value(mainTableName.value().map(field -> field.toUpperCase()))
+                .alias(mainTableName.alias()).build();
+        Condition whereCondition = Equals.of(tableNameInUpperCase, mainTableNameInUpperCase);
         FieldValue tableBatchIdFieldValue = FieldValue.builder().datasetRef(metaDataset.datasetReference()).fieldName(dataset.tableBatchIdField()).build();
         FunctionImpl maxBatchId = FunctionImpl.builder().functionName(FunctionName.MAX).addValue(tableBatchIdFieldValue).build();
         FunctionImpl coalesce = FunctionImpl.builder().functionName(FunctionName.COALESCE).addValue(maxBatchId, NumericalValue.of(0L)).build();

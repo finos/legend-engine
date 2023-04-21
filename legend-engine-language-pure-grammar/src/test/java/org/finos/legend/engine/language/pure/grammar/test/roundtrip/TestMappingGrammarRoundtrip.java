@@ -683,4 +683,20 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  }\n" +
                 ")\n");
     }
+
+    @Test
+    public void testComplexPropertyMappedToComplexSourceWithoutClassMapping()
+    {
+        test("###Mapping\n" +
+                "Mapping test::Mapping\n" +
+                "(\n" +
+                "  *test::dest::Person: Pure\n" +
+                "  {\n" +
+                "    ~src test::src::_S_Person\n" +
+                "    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
+                "    lastName: $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),\n" +
+                "    firm: $src.firm\n" +
+                "  }\n" +
+                ")\n");
+    }
 }

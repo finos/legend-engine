@@ -67,7 +67,7 @@ public class PostgresServer
 
         bossGroup = new NioEventLoopGroup();
         workerGroup = new NioEventLoopGroup();
-        SocketAddress socketAddress = new InetSocketAddress("127.0.0.1", port);
+        SocketAddress socketAddress = new InetSocketAddress(port);
         try
         {
             ServerBootstrap bootstrap = new ServerBootstrap()

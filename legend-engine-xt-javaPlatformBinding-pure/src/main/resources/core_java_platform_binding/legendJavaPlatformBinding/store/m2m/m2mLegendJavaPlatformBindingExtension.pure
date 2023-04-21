@@ -67,7 +67,7 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
                let inMemoryGraphImplUpdateFunction = {impl: meta::external::language::java::metamodel::Class[1] |
                   $impl->enrichForInMemoryGraphExecution($i, $context, $extensions, $debug)
                };
-               let baseProject  = $i->generateBaseProjectForLocalGraphFetchNode($path, $context, $inMemoryGraphImplUpdateFunction, $debug);
+               let baseProject  = $i->generateBaseProjectForLocalGraphFetchNode($path, $context, $inMemoryGraphImplUpdateFunction, $extensions, $debug);
                let storeProject = $i->generateInMemoryStoreGraphFetchProject($path, $context, $extensions, $debug);
 
                generatedCode(

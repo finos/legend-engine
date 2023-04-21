@@ -19,16 +19,11 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-
-//import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_MasterRecordDefinition;
 import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_identity_IdentityResolution;
 import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_identity_ResolutionQuery;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_LambdaFunction_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
-
-import java.util.List;
-
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -45,7 +40,7 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
             "###Mapping\n" +
             "Mapping test::Mapping\n(\n)\n\n\n" +
             "###Connection\n" +
-            "JsonModelConnection test::connection\n" +
+            "JsonModelConnection test::connection::modelConnection\n" +
             "{\n" +
             "  class: test::connection::class;\n" +
             "  url: 'test/connection/url';\n" +
@@ -65,7 +60,7 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
             "      [\n" +
             "        ModelStore:\n" +
             "        [\n" +
-            "          id1: test::connection\n" +
+            "          id1: test::connection::modelConnection\n" +
             "        ]\n" +
             "      ];\n" +
             "    }#;\n" +
@@ -124,7 +119,7 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
             "  recordSources:\n" +
             "  [\n" +
             "    widget-file-single-partition-14: {\n" +
-            "      description: \'Single partition source.\';\n" +
+            "      description: 'Single partition source.';\n" +
             "      status: Development;\n" +
             "      parseService: org::dataeng::ParseWidget;\n" +
             "      transformService: org::dataeng::TransformWidget;\n" +
@@ -132,16 +127,16 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
             "      stagedLoad: false;\n" +
             "      createPermitted: true;\n" +
             "      createBlockedException: false;\n" +
-            "      tags: [\'Refinitive DSP\'];\n" +
+            "      tags: ['Refinitive DSP'];\n" +
             "      partitions:\n" +
             "      [\n" +
             "        partition-1-of-5: {\n" +
-            "          tags: [\'Equity\', \'Global\', \'Full-Universe\'];\n" +
+            "          tags: ['Equity', 'Global', 'Full-Universe'];\n" +
             "        }\n" +
             "      ]\n" +
             "    },\n" +
             "    widget-file-multiple-partition: {\n" +
-            "      description: \'Multiple partition source.\';\n" +
+            "      description: 'Multiple partition source.';\n" +
             "      status: Production;\n" +
             "      parseService: org::dataeng::ParseWidget;\n" +
             "      transformService: org::dataeng::TransformWidget;\n" +
@@ -149,17 +144,17 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
             "      stagedLoad: true;\n" +
             "      createPermitted: false;\n" +
             "      createBlockedException: true;\n" +
-            "      tags: [\'Refinitive DSP Delta Files\'];\n" +
+            "      tags: ['Refinitive DSP Delta Files'];\n" +
             "      partitions:\n" +
             "      [\n" +
             "        ASIA_Equity: {\n" +
-            "          tags: [\'Equity\', \'ASIA\'];\n" +
+            "          tags: ['Equity', 'ASIA'];\n" +
             "        },\n" +
             "        EMEA_Equity: {\n" +
-            "          tags: [\'Equity\', \'EMEA\'];\n" +
+            "          tags: ['Equity', 'EMEA'];\n" +
             "        },\n" +
             "        US_Equity: {\n" +
-            "          tags: [\'Equity\', \'US\'];\n" +
+            "          tags: ['Equity', 'US'];\n" +
             "        }\n" +
             "      ]\n" +
             "    }\n" +
@@ -205,7 +200,7 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
             "  recordSources:\n" +
             "  [\n" +
             "    widget-file-single-partition: {\n" +
-            "      description: \'Single partition source.\';\n" +
+            "      description: 'Single partition source.';\n" +
             "      status: Development;\n" +
             "      transformService: org::dataeng::TransformWidget;\n" +
             "      partitions:\n" +
@@ -242,7 +237,7 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
             "  recordSources:\n" +
             "  [\n" +
             "    widget-file-single-partition: {\n" +
-            "      description: \'Single partition source.\';\n" +
+            "      description: 'Single partition source.';\n" +
             "      status: Development;\n" +
             "      parseService: org::dataeng::ParseWidget;\n" +
             "      transformService: org::dataeng::TransformWidget;\n" +
@@ -250,11 +245,11 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
             "      stagedLoad: false;\n" +
             "      createPermitted: true;\n" +
             "      createBlockedException: false;\n" +
-            "      tags: [\'Refinitive DSP\'];\n" +
+            "      tags: ['Refinitive DSP'];\n" +
             "      partitions:\n" +
             "      [\n" +
             "        partition-1a: {\n" +
-            "          tags: [\'Equity\'];\n" +
+            "          tags: ['Equity'];\n" +
             "        }\n" +
             "      ]\n" +
             "    }\n" +
@@ -278,7 +273,7 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
 
         //IdentityResolution
         Root_meta_pure_mastery_metamodel_identity_IdentityResolution idRes = masterRecordDefinition._identityResolution();
-        assert (idRes instanceof Root_meta_pure_mastery_metamodel_identity_IdentityResolution);
+        assertNotNull(idRes);
         assertEquals("Widget", idRes._modelClass()._name());
 
         //Resolution Queries
@@ -363,12 +358,9 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
         assertEquals("Widget", masterRecordDefinition._modelClass()._name());
     }
 
-    private void assertPureLambdas(List list)
+    private void assertPureLambdas(Iterable<?> list)
     {
-        ListIterate.forEach(list, (resQuery) ->
-        {
-            assert (resQuery instanceof Root_meta_pure_metamodel_function_LambdaFunction_Impl);
-        });
+        list.forEach(resQuery -> assertTrue(resQuery instanceof Root_meta_pure_metamodel_function_LambdaFunction_Impl));
     }
 
     @Override

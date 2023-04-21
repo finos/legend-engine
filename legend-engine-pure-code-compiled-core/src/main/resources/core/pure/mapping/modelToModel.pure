@@ -117,12 +117,6 @@ Class meta::pure::mapping::modelToModel::JsonFeWithPropertyPaths
 
 
 
-
-function meta::pure::mapping::modelToModel::inMemory::isNoMappingPassThru(setImpl:SetImplementation[1], property:AbstractProperty<Any>[1]):Boolean[1]
-{
-   $setImpl->noMappingPassThruSourceProperty($property)->isNotEmpty();
-}
-
 function meta::pure::mapping::modelToModel::inMemory::isNoMappingDefaultToEmpty(setImpl:SetImplementation[1], property:AbstractProperty<Any>[1]):Boolean[1]
 {
    !$property.multiplicity->hasLowerBound() && $property.owner->instanceOf(Class);
@@ -138,15 +132,15 @@ function meta::pure::mapping::modelToModel::inMemory::noMappingPassThruSourcePro
 {
    $setImpl->match([
       {pisi:PureInstanceSetImplementation[1] |
-   let propertyType = $property.genericType.rawType->toOne();
-         let srcProperty  = $pisi.srcClass->filter(c| $c->instanceOf(Class))->cast(@Class<Any>)->map(c | $c->propertyByName($property.name->toOne()));
+          let propertyType = $property.genericType.rawType->toOne();
+          let srcProperty  = $pisi.srcClass->filter(c| $c->instanceOf(Class))->cast(@Class<Any>)->map(c | $c->propertyByName($property.name->toOne()));
 
-   let valid = $propertyType->instanceOf(DataType) && $srcProperty->match([
-      s:Property<Nil,Any|*>[1] | $s.genericType.rawType->toOne()->_subTypeOf($propertyType) && $property.multiplicity->multiplicitySubsumes($s.multiplicity),
-      a:Any[*]                 | false
-   ]);
+          let valid = $propertyType->instanceOf(DataType) && $srcProperty->match([
+              s:Property<Nil,Any|*>[1] | $s.genericType.rawType->toOne()->_subTypeOf($propertyType) && $property.multiplicity->multiplicitySubsumes($s.multiplicity),
+              a:Any[*]                 | false
+          ]);
 
-   if($valid, |$srcProperty->toOne(), |[]);
+          if($valid, |$srcProperty->toOne(), |[]);
       },
       si: SetImplementation[1] | [];
    ]);
@@ -301,7 +295,7 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planRootG
 
    let sourceTree         = calculateSourceTree($rootTree, $mapping, $extensions);
    let sourceTreeExtended = if($enableConstraints, | $sourceTree->ensureConstraintsRequirements(), | $sourceTree);
-
+  
    let chainConnectionNodeGeneration = {mcc: ModelChainConnection[1] |
       $fe->planModelChainConnectionGraphFetchExecution($mcc, $sourceTreeExtended, $mapping, $runtime, $exeCtx, $ext, $sq.inScopeVars, [], $enableConstraints, $checked, $extensions, $debug)
    };
@@ -509,7 +503,7 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::updateClu
 function meta::pure::mapping::modelToModel::graphFetch::executionPlan::generateInMemoryChildGraphNodes(tree: RoutedGraphFetchTree[1], parentPath: String[1], orderedPaths: String[*], debug: DebugContext[1]): InMemoryGraphFetchExecutionNode[*]
 {
    $tree.subTrees->cast(@RoutedPropertyGraphFetchTree)->map({st |
-      if (!$st.property->isPrimitiveValueProperty() && (!$st.property->instanceOf(QualifiedProperty) || $st.property->hasGeneratedMilestoningPropertyStereotype()),
+      if (!$st.property->isPrimitiveValueProperty() && (!$st.property->instanceOf(QualifiedProperty) || $st.property->hasGeneratedMilestoningPropertyStereotype()) && generatePropertyNodeForComplexProperty($st, $tree.sets),
          {|
             let property    = $st.property;
             let currentPath = $parentPath + '.' + $st->nodePathName();
@@ -531,6 +525,13 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::generateI
          }
       )
    })
+}
+
+function meta::pure::mapping::modelToModel::graphFetch::executionPlan::generatePropertyNodeForComplexProperty(pgft:RoutedPropertyGraphFetchTree[1], sets: SetImplementation[*]): Boolean[1]
+{
+  !($sets->size() == 1 && $sets->toOne()->instanceOf(InstanceSetImplementation) 
+    && $pgft.sets->isEmpty()
+    && $pgft.property->meta::pure::mapping::modelToModel::contract::isPropertyAutoMapped($sets->cast(@InstanceSetImplementation)->toOne()));
 }
 
 function <<access.private>> meta::pure::mapping::modelToModel::graphFetch::executionPlan::planInMemoryStoreMergeGraphFetchExecution(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], sets: InstanceSetImplementation[*], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], extensions: meta::pure::extension::Extension[*], debug: DebugContext[1]): ExecutionNode[1]

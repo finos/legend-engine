@@ -22,13 +22,17 @@ public class TestSemiStructuredInheritanceMapping extends AbstractTestSemiStruct
     private static final String snowflakeMapping = "inheritance::mapping::SnowflakeMapping";
     private static final String snowflakeRuntime = "inheritance::runtime::SnowflakeRuntime";
 
+    private static final String memSQLMapping = "inheritance::mapping::MemSQLMapping";
+    private static final String memSQLRuntime = "inheritance::runtime::MemSQLRuntime";
+
     private static final String h2Mapping = "inheritance::mapping::H2Mapping";
     private static final String h2Runtime = "inheritance::runtime::H2Runtime";
 
     @Test
     public void testSemiStructuredPropertyAccessAtBaseClass()
     {
-        String snowflakePlan = this.buildExecutionPlanString("inheritance::semiStructuredPropertyAccessAtBaseClass__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
+        String queryFunction = "inheritance::semiStructuredPropertyAccessAtBaseClass__TabularDataSet_1_";
+        String snowflakePlan = this.buildExecutionPlanString(queryFunction, snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected =
                 "    Relational\n" +
                 "    (\n" +
@@ -40,7 +44,18 @@ public class TestSemiStructuredInheritanceMapping extends AbstractTestSemiStruct
         String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address Name, String, \"\", \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
 
-        String h2Result = this.executeFunction("inheritance::semiStructuredPropertyAccessAtBaseClass__TabularDataSet_1_", h2Mapping, h2Runtime);
+        String memSQLPlan = this.buildExecutionPlanString(queryFunction, memSQLMapping, memSQLRuntime);
+        String memSQLExpected =
+                "Relational\n" +
+                "(\n" +
+                "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address Name, String, \"\", \"\")]\n" +
+                "  resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Address Name\", \"\")]\n" +
+                "  sql = select `root`.FIRSTNAME as `First Name`, `root`.FIRM_DETAILS::address::$name as `Firm Address Name` from PERSON_SCHEMA.PERSON_TABLE as `root`\n" +
+                "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
+                ")\n";
+        Assert.assertEquals(memSQLExpected, memSQLPlan);
+
+        String h2Result = this.executeFunction(queryFunction, h2Mapping, h2Runtime);
         Assert.assertEquals("Peter,A1\n" +
                 "John,A1\n" +
                 "John,A1\n" +
@@ -53,7 +68,8 @@ public class TestSemiStructuredInheritanceMapping extends AbstractTestSemiStruct
     @Test
     public void testSemiStructuredPropertyAccessAtSubClass()
     {
-        String snowflakePlan = this.buildExecutionPlanString("inheritance::semiStructuredPropertyAccessAtSubClass__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
+        String queryFunction = "inheritance::semiStructuredPropertyAccessAtSubClass__TabularDataSet_1_";
+        String snowflakePlan = this.buildExecutionPlanString(queryFunction, snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected =
                 "    Relational\n" +
                 "    (\n" +
@@ -65,7 +81,18 @@ public class TestSemiStructuredInheritanceMapping extends AbstractTestSemiStruct
         String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, \"\", \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
 
-        String h2Result = this.executeFunction("inheritance::semiStructuredPropertyAccessAtSubClass__TabularDataSet_1_", h2Mapping, h2Runtime);
+        String memSQLPlan = this.buildExecutionPlanString(queryFunction, memSQLMapping, memSQLRuntime);
+        String memSQLExpected =
+                "Relational\n" +
+                "(\n" +
+                "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, \"\", \"\")]\n" +
+                "  resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Address 0 Line No\", \"\")]\n" +
+                "  sql = select `root`.FIRSTNAME as `First Name`, `root`.FIRM_DETAILS::address::`lines`::`0`::%lineno as `Firm Address 0 Line No` from PERSON_SCHEMA.PERSON_TABLE as `root`\n" +
+                "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
+                ")\n";
+        Assert.assertEquals(memSQLExpected, memSQLPlan);
+
+        String h2Result = this.executeFunction(queryFunction, h2Mapping, h2Runtime);
         Assert.assertEquals("Peter,1\n" +
                 "John,1\n" +
                 "John,1\n" +
@@ -78,7 +105,8 @@ public class TestSemiStructuredInheritanceMapping extends AbstractTestSemiStruct
     @Test
     public void testSemiStructuredPropertyAccessAtSubClassNested()
     {
-        String snowflakePlan = this.buildExecutionPlanString("inheritance::semiStructuredPropertyAccessAtSubClassNested__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
+        String queryFunction = "inheritance::semiStructuredPropertyAccessAtSubClassNested__TabularDataSet_1_";
+        String snowflakePlan = this.buildExecutionPlanString(queryFunction, snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected =
                 "    Relational\n" +
                 "    (\n" +
@@ -90,7 +118,18 @@ public class TestSemiStructuredInheritanceMapping extends AbstractTestSemiStruct
         String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, \"\", \"\"), (Firm Address Street, String, \"\", \"\"), (Firm Address City, String, \"\", \"\"), (Firm Address State, String, \"\", \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
 
-        String h2Result = this.executeFunction("inheritance::semiStructuredPropertyAccessAtSubClassNested__TabularDataSet_1_", h2Mapping, h2Runtime);
+        String memSQLPlan = this.buildExecutionPlanString(queryFunction, memSQLMapping, memSQLRuntime);
+        String memSQLExpected =
+                "Relational\n" +
+                "(\n" +
+                "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, \"\", \"\"), (Firm Address Street, String, \"\", \"\"), (Firm Address City, String, \"\", \"\"), (Firm Address State, String, \"\", \"\")]\n" +
+                "  resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Address 0 Line No\", \"\"), (\"Firm Address Street\", \"\"), (\"Firm Address City\", \"\"), (\"Firm Address State\", \"\")]\n" +
+                "  sql = select `root`.FIRSTNAME as `First Name`, `root`.FIRM_DETAILS::address::`lines`::`0`::%lineno as `Firm Address 0 Line No`, `root`.FIRM_DETAILS::address::`lines`::`0`::$street as `Firm Address Street`, `root`.FIRM_DETAILS::address::`lines`::`1`::$city as `Firm Address City`, `root`.FIRM_DETAILS::address::`lines`::`2`::$state as `Firm Address State` from PERSON_SCHEMA.PERSON_TABLE as `root`\n" +
+                "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
+                ")\n";
+        Assert.assertEquals(memSQLExpected, memSQLPlan);
+
+        String h2Result = this.executeFunction(queryFunction, h2Mapping, h2Runtime);
         Assert.assertEquals("Peter,1,s1,c1,s1\n" +
                 "John,1,s1,c1,s1\n" +
                 "John,1,s1,c1,s1\n" +
@@ -103,7 +142,8 @@ public class TestSemiStructuredInheritanceMapping extends AbstractTestSemiStruct
     @Test
     public void testSemiStructuredPropertyAccessAtSubClassNestedUsingProjectWithFunctions()
     {
-        String snowflakePlan = this.buildExecutionPlanString("inheritance::semiStructuredPropertyAccessAtSubClassNestedUsingProjectWithFunctions__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
+        String queryFunction = "inheritance::semiStructuredPropertyAccessAtSubClassNestedUsingProjectWithFunctions__TabularDataSet_1_";
+        String snowflakePlan = this.buildExecutionPlanString(queryFunction, snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected =
                 "    Relational\n" +
                 "    (\n" +
@@ -115,7 +155,18 @@ public class TestSemiStructuredInheritanceMapping extends AbstractTestSemiStruct
         String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, \"\", \"\"), (Firm Address Street, String, \"\", \"\"), (Firm Address City, String, \"\", \"\"), (Firm Address State, String, \"\", \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
 
-        String h2Result = this.executeFunction("inheritance::semiStructuredPropertyAccessAtSubClassNestedUsingProjectWithFunctions__TabularDataSet_1_", h2Mapping, h2Runtime);
+        String memSQLPlan = this.buildExecutionPlanString(queryFunction, memSQLMapping, memSQLRuntime);
+        String memSQLExpected =
+                "Relational\n" +
+                "(\n" +
+                "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, \"\", \"\"), (Firm Address Street, String, \"\", \"\"), (Firm Address City, String, \"\", \"\"), (Firm Address State, String, \"\", \"\")]\n" +
+                "  resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Address 0 Line No\", \"\"), (\"Firm Address Street\", \"\"), (\"Firm Address City\", \"\"), (\"Firm Address State\", \"\")]\n" +
+                "  sql = select `root`.FIRSTNAME as `First Name`, `root`.FIRM_DETAILS::address::`lines`::`0`::%lineno as `Firm Address 0 Line No`, `root`.FIRM_DETAILS::address::`lines`::`0`::$street as `Firm Address Street`, `root`.FIRM_DETAILS::address::`lines`::`1`::$city as `Firm Address City`, `root`.FIRM_DETAILS::address::`lines`::`2`::$state as `Firm Address State` from PERSON_SCHEMA.PERSON_TABLE as `root`\n" +
+                "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
+                ")\n";
+        Assert.assertEquals(memSQLExpected, memSQLPlan);
+
+        String h2Result = this.executeFunction(queryFunction, h2Mapping, h2Runtime);
         Assert.assertEquals("Peter,1,s1,c1,s1\n" +
                 "John,1,s1,c1,s1\n" +
                 "John,1,s1,c1,s1\n" +
@@ -124,7 +175,7 @@ public class TestSemiStructuredInheritanceMapping extends AbstractTestSemiStruct
                 "Oliver,1,s3,,\n" +
                 "David,1,s3,,\n", h2Result.replace("\r\n", "\n"));
 
-        Assert.assertEquals("[PERSON_TABLE.FIRM_DETAILS <TableAliasColumn>, PERSON_TABLE.FIRSTNAME <TableAliasColumn>]", this.scanColumns("inheritance::semiStructuredPropertyAccessAtSubClassNestedUsingProjectWithFunctions__TabularDataSet_1_", h2Mapping));
+        Assert.assertEquals("[PERSON_TABLE.FIRM_DETAILS <TableAliasColumn>, PERSON_TABLE.FIRSTNAME <TableAliasColumn>]", this.scanColumns(queryFunction, h2Mapping));
     }
 
     public String modelResourcePath()

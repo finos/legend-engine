@@ -74,19 +74,10 @@ public class ArtifactGenerationExtensionApi
     public Response generate(ArtifactGenerationExtensionInput artifactGenerationExtensionInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        String clientVersion = artifactGenerationExtensionInput.clientVersion == null ? PureClientVersions.production : artifactGenerationExtensionInput.clientVersion;
-        PureModelContextData mainModel = this.modelManager.loadData(artifactGenerationExtensionInput.model, clientVersion, profiles);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Generate Model From External Format Schema").startActive(true))
         {
             LOGGER.info(new LogInfo(profiles, ArtifactGenerationLoggingEventType.GENERATE_ARTIFACT_EXTENSIONS_START).toString());
-            List<PackageableElement> elementList = Lists.mutable.empty();
-            if (artifactGenerationExtensionInput.includeElementPaths != null)
-            {
-                elementList = mainModel.getElements().stream().filter(element -> artifactGenerationExtensionInput.includeElementPaths.contains(element.getPath())).collect(Collectors.toList());
-            }
-            PureModel pureModel = this.modelManager.loadModel(mainModel, artifactGenerationExtensionInput.clientVersion, profiles, null);
-            ArtifactGenerationFactory factory = ArtifactGenerationFactory.newFactory(pureModel, mainModel, elementList, artifactGenerationExtensionInput.excludedExtensionKeys);
-            ArtifactGenerationExtensionOutput artifactGenerationExtensionOutput = ArtifactGenerationExtensionOutput.fromFactoryResults(factory.generate(), pureModel);
+            ArtifactGenerationExtensionOutput artifactGenerationExtensionOutput = new ArtifactGenerationExtensionRunner(modelManager).run(artifactGenerationExtensionInput, profiles);
             LOGGER.info(new LogInfo(profiles, ArtifactGenerationLoggingEventType.GENERATE_ARTIFACT_EXTENSIONS_STOP).toString());
             return ManageConstantResult.manageResult(profiles, artifactGenerationExtensionOutput, objectMapper);
 
@@ -97,6 +88,5 @@ public class ArtifactGenerationExtensionApi
 
         }
     }
-
 
 }

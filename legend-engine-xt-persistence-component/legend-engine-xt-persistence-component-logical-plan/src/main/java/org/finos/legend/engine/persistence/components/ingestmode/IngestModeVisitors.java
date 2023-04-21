@@ -226,6 +226,51 @@ public class IngestModeVisitors
         }
     };
 
+    public static final IngestModeVisitor<Boolean> NEED_TO_CHECK_STAGING_EMPTY = new IngestModeVisitor<Boolean>()
+    {
+        @Override
+        public Boolean visitAppendOnly(AppendOnlyAbstract appendOnly)
+        {
+            return false;
+        }
+
+        @Override
+        public Boolean visitNontemporalSnapshot(NontemporalSnapshotAbstract nontemporalSnapshot)
+        {
+            return false;
+        }
+
+        @Override
+        public Boolean visitNontemporalDelta(NontemporalDeltaAbstract nontemporalDelta)
+        {
+            return false;
+        }
+
+        @Override
+        public Boolean visitUnitemporalSnapshot(UnitemporalSnapshotAbstract unitemporalSnapshot)
+        {
+            return true;
+        }
+
+        @Override
+        public Boolean visitUnitemporalDelta(UnitemporalDeltaAbstract unitemporalDelta)
+        {
+            return false;
+        }
+
+        @Override
+        public Boolean visitBitemporalSnapshot(BitemporalSnapshotAbstract bitemporalSnapshot)
+        {
+            return true;
+        }
+
+        @Override
+        public Boolean visitBitemporalDelta(BitemporalDeltaAbstract bitemporalDelta)
+        {
+            return false;
+        }
+    };
+
     private static final DeduplicationStrategyVisitor<Boolean> DEDUPLICATION_STRATEGY_DIGEST_REQUIRED = new DeduplicationStrategyVisitor<Boolean>()
     {
         @Override

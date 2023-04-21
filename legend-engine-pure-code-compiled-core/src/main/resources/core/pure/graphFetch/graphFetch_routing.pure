@@ -213,19 +213,22 @@ function meta::pure::graphFetch::routing::byPassClusteringInfoDeep(r: GraphFetch
 function meta::pure::graphFetch::routing::routeRootGraphFetchTree(root: RootGraphFetchTree<Any>[1], set: SetImplementation[1], mapping: Mapping[1], exeCtx: ExecutionContext[1], extensions:meta::pure::extension::Extension[*]):RoutedRootGraphFetchTree<Any>[1]
 {
    let rootGetAllExpression = createGetAllApplicationForRootGraphFetchTree($root, $set);
-   
+
    let dummyLambda = {|'ok'};
    let routedFunction = ^$dummyLambda(expressionSequence = $rootGetAllExpression)->routeFunction($mapping, ^Runtime(), ^ExecutionContext(), $extensions, noDebug())->evaluateAndDeactivate()->toOne();
    let ext = $routedFunction.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@StoreMappingClusteredValueSpecification).val->cast(@StoreMappingRoutedValueSpecification);
 
    let extended = if($exeCtx.enableConstraints->isEmpty() || $exeCtx.enableConstraints->toOne(),
-                     | $root->ensureConstraintsRequirementsForMappedProperties($mapping),
+                     | $root->ensureConstraintsRequirementsForMappedProperties($mapping, $extensions),
                      | $root
                   );
 
    let routedTree = ^RoutedRootGraphFetchTree<Any>
                      (
-                        subTrees = $extended.subTrees->map(x | $x->cast(@PropertyGraphFetchTree)->routePropertyGraphFetchTree($rootGetAllExpression, $mapping, $extensions)),
+                        subTrees = if( $set.class == $root.class,
+                                      |$extended.subTrees->map(x | $x->cast(@PropertyGraphFetchTree)->routePropertyGraphFetchTree($rootGetAllExpression, $mapping, $extensions)),
+                                      |$extended.subTrees->map(x | $x->cast(@PropertyGraphFetchTree)->routePropertyGraphFetchTree($rootGetAllExpression, $mapping, $extensions))->concatenate($root.subTypeTrees->filter(t | $t.subTypeClass == $set.class).subTrees->map(x | $x->cast(@PropertyGraphFetchTree)->routePropertyGraphFetchTree($rootGetAllExpression, $mapping, $extensions)))
+                                     ),
                         class = $extended.class,
                         sets = $ext.sets,
                         requiredQualifiedProperties = $extended->match([ergft:ExtendedRootGraphFetchTree<Any>[1]| $ergft.requiredQualifiedProperties, 
@@ -306,19 +309,19 @@ function <<access.private>> meta::pure::graphFetch::routing::allPropertyMappings
    $g->match([p:RoutedPropertyGraphFetchTree[1] | $p.propertyMapping, t:GraphFetchTree[1]|[]])->concatenate($g.subTrees->map(st | $st->allPropertyMappingsInRoutedFetchTree()))
 }
 
-function  <<access.private>> meta::pure::graphFetch::routing::ensureConstraintsRequirementsForMappedProperties(treeRoot:RootGraphFetchTree<Any>[1], mapping: Mapping[1]): RootGraphFetchTree<Any>[1]
+function  <<access.private>> meta::pure::graphFetch::routing::ensureConstraintsRequirementsForMappedProperties(treeRoot:RootGraphFetchTree<Any>[1], mapping: Mapping[1], extensions:Extension[*]): RootGraphFetchTree<Any>[1]
 {
-   $treeRoot->ensureConstraintsRequirementsForMappedProperties($treeRoot.class, $mapping, [])->cast(@RootGraphFetchTree<Any>);
+   $treeRoot->ensureConstraintsRequirementsForMappedProperties($treeRoot.class, $mapping, [], $extensions)->cast(@RootGraphFetchTree<Any>);
 }
 
-function <<access.private>> meta::pure::graphFetch::routing::ensureConstraintsRequirementsForMappedProperties(tree:GraphFetchTree[1], class:Class<Any>[1], mapping: Mapping[1], cache: Class<Any>[*]): GraphFetchTree[1]
+function <<access.private>> meta::pure::graphFetch::routing::ensureConstraintsRequirementsForMappedProperties(tree:GraphFetchTree[1], class:Class<Any>[1], mapping: Mapping[1], cache: Class<Any>[*], extensions:Extension[*]): GraphFetchTree[1]
 {
    let updatedCache = $cache->add($class);
    let constraintsForClass = {c:Class<Any>[1] |
       let allConstraints = $c->getAllTypeGeneralisations()->filter(x| $x->instanceOf(ElementWithConstraints))->cast(@ElementWithConstraints).constraints;
       $allConstraints
          ->map(c | list($c.functionDefinition->concatenate($c.messageFunction)))
-         ->filter(l | $l.values->requiredPropertiesAreMapped($class, $mapping))
+         ->filter(l | $l.values->requiredPropertiesAreMapped($class, $mapping, $extensions))
          .values;
    };
    let forThisTree = ensureFunctionRequirements($tree, $class, $constraintsForClass, [], false);
@@ -326,22 +329,22 @@ function <<access.private>> meta::pure::graphFetch::routing::ensureConstraintsRe
    let newSubTrees = $forThisTree.subTrees->cast(@PropertyGraphFetchTree)->map({st| 
       let returns = $st.property->functionReturnType().rawType->toOne();
       if($returns->instanceOf(Class) && !($updatedCache->contains($returns) && $st->instanceOf(SystemGeneratedPropertyGraphFetchTree)),
-         | $st->ensureConstraintsRequirementsForMappedProperties($returns->cast(@Class<Any>), $mapping, $updatedCache),
+         | $st->ensureConstraintsRequirementsForMappedProperties($returns->cast(@Class<Any>), $mapping, $updatedCache, $extensions),
          | if($returns->instanceOf(Class) && $updatedCache->contains($returns),
-          | $st->checkForConstraintsExclusion($returns->cast(@Class<Any>), $mapping),
+          | $st->checkForConstraintsExclusion($returns->cast(@Class<Any>), $mapping, $extensions),
           | $st)
       );
    });
    ^$forThisTree(subTrees=$newSubTrees);
 }
 
-function <<access.private>> meta::pure::graphFetch::routing::checkForConstraintsExclusion(tree:PropertyGraphFetchTree[1], class:Class<Any>[1], mapping: Mapping[1]): GraphFetchTree[1]
+function <<access.private>> meta::pure::graphFetch::routing::checkForConstraintsExclusion(tree:PropertyGraphFetchTree[1], class:Class<Any>[1], mapping: Mapping[1], extensions:Extension[*]): GraphFetchTree[1]
 {
   let allConstraints = $class->getAllTypeGeneralisations()->filter(x| $x->instanceOf(ElementWithConstraints))->cast(@ElementWithConstraints).constraints;
 
   let constraintsToExclude = $allConstraints
     ->map(c | pair($c.name->toOne(),$c.functionDefinition))
-    ->filter(l | $l.second->requiredPropertiesAreMapped($class, $mapping))
+    ->filter(l | $l.second->requiredPropertiesAreMapped($class, $mapping, $extensions))
     ->filter(l | $l.second->excludeIfAbsentInGraph($tree, $class))
     ->map(c | $c.first);
 
@@ -358,14 +361,14 @@ function <<access.private>> meta::pure::graphFetch::routing::excludeIfAbsentInGr
   !canEvaluateForTree($inlinedGraphTree, $gfTree->propertyGraphFetchTreeToRootGraphFetchTree());
 }
 
-function <<access.private>> meta::pure::graphFetch::routing::requiredPropertiesAreMapped(functions:FunctionDefinition<Any>[*], class:Class<Any>[1], mapping: Mapping[1]):Boolean[1]
+function <<access.private>> meta::pure::graphFetch::routing::requiredPropertiesAreMapped(functions:FunctionDefinition<Any>[*], class:Class<Any>[1], mapping: Mapping[1], extensions:Extension[*]):Boolean[1]
 {
    let paths       = pathsForConstraintFunctions($class, $functions);
    let inlinedTree = $paths->meta::pure::lineage::scanProperties::propertyTree::buildPropertyTree()->inlineQualifiedPropertyNodes();
-   $inlinedTree->requiredPropertiesAreMapped($class, $mapping);
+   $inlinedTree->requiredPropertiesAreMapped($class, $mapping, $extensions);
 }
 
-function <<access.private>> meta::pure::graphFetch::routing::requiredPropertiesAreMapped(pTree:PropertyPathTree[1], class:Class<Any>[1], mapping: Mapping[1]): Boolean[1]
+function <<access.private>> meta::pure::graphFetch::routing::requiredPropertiesAreMapped(pTree:PropertyPathTree[1], class:Class<Any>[1], mapping: Mapping[1], extensions:Extension[*]): Boolean[1]
 {
    $pTree.value->match([
       {node:PropertyPathNode[1] | 
@@ -374,18 +377,18 @@ function <<access.private>> meta::pure::graphFetch::routing::requiredPropertiesA
                                 ->filter(s|$s->instanceOf(InstanceSetImplementation))->cast(@InstanceSetImplementation)
                                 ->filter(isi| $isi.class == $class || $class->getAllTypeGeneralisations()->contains($isi.class) || $isi.class->getAllTypeGeneralisations()->contains($class));
          let explicitlyMapped = $classMappings.propertyMappings->filter(pm| $pm.property == $node.property)->isNotEmpty();
-         let implicitlyMapped = $classMappings->exists(cm| $cm->meta::pure::mapping::modelToModel::inMemory::isNoMappingPassThru($node.property));
+         let implicitlyMapped = $classMappings->exists(cm| $cm->meta::pure::router::store::routing::isPropertyAutoMapped($node.property, $extensions));
          ($explicitlyMapped || $implicitlyMapped)
             && if($pTree.children->isEmpty(),
                   | true,
                   {|
                      let rtnClass = $node.property->functionReturnType().rawType->toOne()->cast(@Class<Any>);
-                     $pTree.children->forAll(c| $c->requiredPropertiesAreMapped($rtnClass, $mapping));
+                     $pTree.children->forAll(c| $c->requiredPropertiesAreMapped($rtnClass, $mapping, $extensions));
                   }
                );
       },
-      cls :Class<Any>[1]       | $pTree.children->forAll(c| $c->requiredPropertiesAreMapped($cls, $mapping)),
-      any :Any[1]              | $pTree.children->forAll(c| $c->requiredPropertiesAreMapped($class, $mapping))
+      cls :Class<Any>[1]       | $pTree.children->forAll(c| $c->requiredPropertiesAreMapped($cls, $mapping, $extensions)),
+      any :Any[1]              | $pTree.children->forAll(c| $c->requiredPropertiesAreMapped($class, $mapping, $extensions))
    ]);
 }
 
@@ -393,7 +396,7 @@ function <<access.private>> meta::pure::graphFetch::routing::requiredPropertiesA
 function meta::pure::graphFetch::routing::routePropertyGraphFetchTree(prop: PropertyGraphFetchTree[1], functionExpression: ValueSpecification[1], mapping: Mapping[1], extensions:meta::pure::extension::Extension[*]):RoutedPropertyGraphFetchTree[0..1]
 {
    let propertyApplicationExporession = createFunctionApplicationForPropertyGraphFetchTree($prop, $functionExpression);
-   
+
    let dummyLambda = {|'ok'};
    let cls = $functionExpression.genericType.rawType->toOne()->cast(@Class<Any>);
    // TODO Only allow no mapping routing for expanded (sub)trees
@@ -448,11 +451,11 @@ function meta::pure::graphFetch::routing::asString(r: GraphFetchTree[1], spaceSt
 
       rr: RoutedRootGraphFetchTree<Any>[1] |
          $space + $rr.sets.id->joinStrings('[', ', ', ' / ' + $rr.class->elementToPath() + ']') +
-         if($rr.subTrees->isEmpty(), | '', | $rr.subTrees->map(x | $x->asString($space + '    ', $multiLine))->joinStrings(' {'+$newLine, ', '+$newLine, $newLine + $space + '}')),
+         if($rr.subTrees->isEmpty() && $rr.subTypeTrees->isEmpty(), | '', | $rr.subTrees->map(x | $x->asString($space + '    ', $multiLine))->concatenate($rr.subTypeTrees->map(x | $x->asString($space + '    ', $multiLine)))->joinStrings(' {'+$newLine, ', '+$newLine, $newLine + $space + '}')),
 
       rr: RootGraphFetchTree<Any>[1] |
-         $space + '#{'+$rr.class->elementToPath() +
-         if($rr.subTrees->isEmpty(), | '}#', | $rr.subTrees->map(x | $x->asString($space + '    ', $multiLine))->joinStrings(' {'+$newLine, ', '+$newLine, $newLine + $space + '}}#')),
+         $space + '#{'+ $rr.class->elementToPath() +
+         if($rr.subTrees->isEmpty() && $rr.subTypeTrees->isEmpty(), | '}#', | $rr.subTrees->map(x | $x->asString($space + '    ', $multiLine))->concatenate($rr.subTypeTrees->map(x | $x->asString($space + '    ', $multiLine)))->joinStrings(' {'+$newLine, ', '+$newLine, $newLine + $space + '}}#')),
 
       rp: RoutedPropertyGraphFetchTree[1] |
          $space + if($rp.propertyMapping->isEmpty(), | '', | $rp.propertyMapping->map(p | '(' + $p.sourceSetImplementationId + '->' + $p.targetSetImplementationId + ')')->joinStrings('@', ', ', '@ ')) + $rp.sets.id->joinStrings('[', ', ', ' / ' + $rp.property.name->toOne() + ']') +
@@ -460,7 +463,11 @@ function meta::pure::graphFetch::routing::asString(r: GraphFetchTree[1], spaceSt
 
       rp: PropertyGraphFetchTree[1] |
          $space +  $rp.property.name->toOne() + if($rp.property->instanceOf(QualifiedProperty), |'('+$rp.parameters->evaluateAndDeactivate()->map(p|$p->asString())->joinStrings(', ')+')', |'') +
-         if($rp.subTrees->isEmpty(), | '', | $rp.subTrees->map(x | $x->asString($space + '    ', $multiLine))->joinStrings(' {'+$newLine, ', '+$newLine, $newLine + $space + '}'));
- ]); 
+         if($rp.subTrees->isEmpty(), | '', | $rp.subTrees->map(x | $x->asString($space + '    ', $multiLine))->joinStrings(' {'+$newLine, ', '+$newLine, $newLine + $space + '}')),
+
+      st: SubTypeGraphFetchTree[1]  | 
+         $space +  '->subType(@' + $st.subTypeClass->elementToPath() + ')' +
+         if($st.subTrees->isEmpty(), | '', | $st.subTrees->map(x | $x->asString($space + '    ', $multiLine))->joinStrings(' {'+$newLine, ', '+$newLine, $newLine + $space + '}'));
+ ]);
 }
 

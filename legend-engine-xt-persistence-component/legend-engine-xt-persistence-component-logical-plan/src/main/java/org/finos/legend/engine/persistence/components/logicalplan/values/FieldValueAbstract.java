@@ -33,5 +33,7 @@ public interface FieldValueAbstract extends Value
 {
     String fieldName();
 
+    Optional<String> datasetRefAlias();
+
     Optional<DatasetReference> datasetRef();
 }

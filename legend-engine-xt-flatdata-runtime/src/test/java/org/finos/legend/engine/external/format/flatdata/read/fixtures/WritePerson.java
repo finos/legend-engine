@@ -14,39 +14,107 @@
 
 package org.finos.legend.engine.external.format.flatdata.read.fixtures;
 
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.external.format.flatdata.FlatDataContext;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.ObjectToParsedFlatData;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.ParsedFlatData;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatData;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataBoolean;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataDate;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataDecimal;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordField;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordType;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataSection;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataString;
+import org.finos.legend.engine.external.format.flatdata.driver.spi.ObjectToParsedFlatData;
+import org.finos.legend.engine.external.format.flatdata.driver.spi.ParsedFlatData;
+import org.finos.legend.engine.external.format.flatdata.metamodel.FlatData;
+import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataBoolean;
+import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataDate;
+import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataDecimal;
+import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataProperty;
+import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataRecordField;
+import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataRecordType;
+import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataSection;
+import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataString;
 import org.finos.legend.engine.external.format.flatdata.write.IFlatDataSerializeExecutionNodeSpecifics;
 import org.finos.legend.engine.external.format.test.fixture.app.meta.external.shared.format.executionPlan.tests.model.firm.Person;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Arrays;
 
 public class WritePerson implements IFlatDataSerializeExecutionNodeSpecifics<Person>
 {
     public FlatDataSection flatDataSection_Person()
     {
-        FlatDataRecordType recordType = new FlatDataRecordType().withField("firstName", new FlatDataString(false)).withField("lastName", new FlatDataString(false)).withField("dateOfBirth", new FlatDataDate(true)).withField("isAlive", new FlatDataBoolean(false)).withField("heightInMeters", new FlatDataDecimal(false));
-        return new FlatDataSection("Person", "DelimitedWithHeadings").withProperty("scope.untilEof", true).withProperty("delimiter", ",").withRecordType(recordType);
+        FlatDataSection section = new FlatDataSection();
+        section.name = "Person";
+        section.driverId = "DelimitedWithHeadings";
+        FlatDataProperty flatDataProperty_0 = new FlatDataProperty();
+        flatDataProperty_0.name = "scope.untilEof";
+        flatDataProperty_0.values = Arrays.asList(true);
+        FlatDataProperty flatDataProperty_1 = new FlatDataProperty();
+        flatDataProperty_1.name = "delimiter";
+        flatDataProperty_1.values = Arrays.asList(",");
+        section.sectionProperties = Arrays
+                .<FlatDataProperty>asList(flatDataProperty_0,
+                        flatDataProperty_1);
+        FlatDataRecordType recordType = new FlatDataRecordType();
+        recordType.fields = Lists.mutable.empty();
+        FlatDataRecordField flatDataRecordField_0 = new FlatDataRecordField();
+        flatDataRecordField_0.label = "firstName";
+        FlatDataString flatDataRecordField_0Type = new FlatDataString();
+        flatDataRecordField_0Type.optional = false;
+        flatDataRecordField_0.type = flatDataRecordField_0Type;
+        recordType.fields.add(flatDataRecordField_0);
+        FlatDataRecordField flatDataRecordField_1 = new FlatDataRecordField();
+        flatDataRecordField_1.label = "lastName";
+        FlatDataString flatDataRecordField_1Type = new FlatDataString();
+        flatDataRecordField_1Type.optional = false;
+        flatDataRecordField_1.type = flatDataRecordField_1Type;
+        recordType.fields.add(flatDataRecordField_1);
+        FlatDataRecordField flatDataRecordField_2 = new FlatDataRecordField();
+        flatDataRecordField_2.label = "dateOfBirth";
+        FlatDataDate flatDataRecordField_2Type = new FlatDataDate();
+        flatDataRecordField_2Type.optional = true;
+        flatDataRecordField_2Type.format = Arrays.<String>asList();
+        flatDataRecordField_2.type = flatDataRecordField_2Type;
+        recordType.fields.add(flatDataRecordField_2);
+        FlatDataRecordField flatDataRecordField_3 = new FlatDataRecordField();
+        flatDataRecordField_3.label = "isAlive";
+        FlatDataBoolean flatDataRecordField_3Type = new FlatDataBoolean();
+        flatDataRecordField_3Type.optional = false;
+        flatDataRecordField_3.type = flatDataRecordField_3Type;
+        recordType.fields.add(flatDataRecordField_3);
+        FlatDataRecordField flatDataRecordField_4 = new FlatDataRecordField();
+        flatDataRecordField_4.label = "heightInMeters";
+        FlatDataDecimal flatDataRecordField_4Type = new FlatDataDecimal();
+        flatDataRecordField_4Type.optional = false;
+        flatDataRecordField_4.type = flatDataRecordField_4Type;
+        recordType.fields.add(flatDataRecordField_4);
+        section.recordType = recordType;
+        return section;
     }
 
     public ObjectToParsedFlatData<Person> flatDataSection_Factory_Person(FlatDataRecordType recordType)
     {
-        FlatDataRecordField firstNameField = recordType.getFields().stream().filter((FlatDataRecordField f) -> f.getLabel().equals("firstName")).findFirst().get();
-        FlatDataRecordField lastNameField = recordType.getFields().stream().filter((FlatDataRecordField f) -> f.getLabel().equals("lastName")).findFirst().get();
-        FlatDataRecordField dateOfBirthField = recordType.getFields().stream().filter((FlatDataRecordField f) -> f.getLabel().equals("dateOfBirth")).findFirst().get();
-        FlatDataRecordField isAliveField = recordType.getFields().stream().filter((FlatDataRecordField f) -> f.getLabel().equals("isAlive")).findFirst().get();
-        FlatDataRecordField heightInMetersField = recordType.getFields().stream().filter((FlatDataRecordField f) -> f.getLabel().equals("heightInMeters")).findFirst().get();
+        FlatDataRecordField field0 = recordType.fields
+                .stream()
+                .filter((FlatDataRecordField f) -> f.label.equals("firstName"))
+                .findFirst()
+                .get();
+        FlatDataRecordField field1 = recordType.fields
+                .stream()
+                .filter((FlatDataRecordField f) -> f.label.equals("lastName"))
+                .findFirst()
+                .get();
+        FlatDataRecordField field2 = recordType.fields
+                .stream()
+                .filter((FlatDataRecordField f) -> f.label.equals("dateOfBirth"))
+                .findFirst()
+                .get();
+        FlatDataRecordField field3 = recordType.fields
+                .stream()
+                .filter((FlatDataRecordField f) -> f.label.equals("isAlive"))
+                .findFirst()
+                .get();
+        FlatDataRecordField field4 = recordType.fields
+                .stream()
+                .filter((FlatDataRecordField f) -> f.label.equals("heightInMeters"))
+                .findFirst()
+                .get();
         return new ObjectToParsedFlatData<Person>()
         {
             public ParsedFlatData make(Person value)
@@ -55,11 +123,11 @@ public class WritePerson implements IFlatDataSerializeExecutionNodeSpecifics<Per
                 {
                     public boolean hasStringValue(FlatDataRecordField field)
                     {
-                        if (field.equals(firstNameField))
+                        if (field.equals(field0))
                         {
                             return true;
                         }
-                        else if (field.equals(lastNameField))
+                        else if (field.equals(field1))
                         {
                             return true;
                         }
@@ -71,7 +139,7 @@ public class WritePerson implements IFlatDataSerializeExecutionNodeSpecifics<Per
 
                     public boolean hasBooleanValue(FlatDataRecordField field)
                     {
-                        if (field.equals(isAliveField))
+                        if (field.equals(field3))
                         {
                             return true;
                         }
@@ -88,7 +156,7 @@ public class WritePerson implements IFlatDataSerializeExecutionNodeSpecifics<Per
 
                     public boolean hasDoubleValue(FlatDataRecordField field)
                     {
-                        if (field.equals(heightInMetersField))
+                        if (field.equals(field4))
                         {
                             return true;
                         }
@@ -105,7 +173,7 @@ public class WritePerson implements IFlatDataSerializeExecutionNodeSpecifics<Per
 
                     public boolean hasLocalDateValue(FlatDataRecordField field)
                     {
-                        if (field.equals(dateOfBirthField))
+                        if (field.equals(field2))
                         {
                             return value.getDateOfBirth() != null;
                         }
@@ -122,69 +190,69 @@ public class WritePerson implements IFlatDataSerializeExecutionNodeSpecifics<Per
 
                     public String getString(FlatDataRecordField field)
                     {
-                        if (field.equals(firstNameField))
+                        if (field.equals(field0))
                         {
                             return value.getFirstName();
                         }
-                        else if (field.equals(lastNameField))
+                        else if (field.equals(field1))
                         {
                             return value.getLastName();
                         }
                         else
                         {
-                            throw new IllegalArgumentException("Cannot get String value for field '" + field.getLabel() + "'");
+                            throw new IllegalArgumentException("Cannot get String value for field '" + field.label + "'");
                         }
                     }
 
                     public boolean getBoolean(FlatDataRecordField field)
                     {
-                        if (field.equals(isAliveField))
+                        if (field.equals(field3))
                         {
                             return value.getIsAlive();
                         }
                         else
                         {
-                            throw new IllegalArgumentException("Cannot get boolean value for field '" + field.getLabel() + "'");
+                            throw new IllegalArgumentException("Cannot get boolean value for field '" + field.label + "'");
                         }
                     }
 
                     public long getLong(FlatDataRecordField field)
                     {
-                        throw new IllegalArgumentException("Cannot get long value for field '" + field.getLabel() + "'");
+                        throw new IllegalArgumentException("Cannot get long value for field '" + field.label + "'");
                     }
 
                     public double getDouble(FlatDataRecordField field)
                     {
-                        if (field.equals(heightInMetersField))
+                        if (field.equals(field4))
                         {
                             return value.getHeightInMeters();
                         }
                         else
                         {
-                            throw new IllegalArgumentException("Cannot get double value for field '" + field.getLabel() + "'");
+                            throw new IllegalArgumentException("Cannot get double value for field '" + field.label + "'");
                         }
                     }
 
                     public BigDecimal getBigDecimal(FlatDataRecordField field)
                     {
-                        throw new IllegalArgumentException("Cannot get BigDecimal value for field '" + field.getLabel() + "'");
+                        throw new IllegalArgumentException("Cannot get BigDecimal value for field '" + field.label + "'");
                     }
 
                     public LocalDate getLocalDate(FlatDataRecordField field)
                     {
-                        if (field.equals(dateOfBirthField))
+                        if (field.equals(field2))
                         {
                             return value.getDateOfBirth().toLocalDate();
                         }
                         else
                         {
-                            throw new IllegalArgumentException("Cannot get LocalDate value for field '" + field.getLabel() + "'");
+                            throw new IllegalArgumentException("Cannot get LocalDate value for field '" + field.label + "'");
                         }
                     }
 
                     public Instant getInstant(FlatDataRecordField field)
                     {
-                        throw new IllegalArgumentException("Cannot get Instant value for field '" + field.getLabel() + "'");
+                        throw new IllegalArgumentException("Cannot get Instant value for field '" + field.label + "'");
                     }
                 };
             }
@@ -193,179 +261,10 @@ public class WritePerson implements IFlatDataSerializeExecutionNodeSpecifics<Per
 
     public FlatDataContext<Person> createContext()
     {
-        FlatData schema = new FlatData().withSection(this.flatDataSection_Person());
-        return new FlatDataContext<Person>(schema, "test::gen::TestSchema").withSectionFromObjectFactory("Person", this::flatDataSection_Factory_Person);
+        FlatData schema = new FlatData();
+        schema.sections = Arrays.<FlatDataSection>asList(this.flatDataSection_Person());
+        return new FlatDataContext<Person>(schema, "test::gen::TestSchemaSet")
+                .withSectionFromObjectFactory("Person",
+                        this::flatDataSection_Factory_Person);
     }
-//
-//    public FlatDataContext<Person> createContext()
-//    {
-//        FlatDataRecordType recordType = new FlatDataRecordType()
-//                .withField("firstName", new FlatDataString(false))
-//                .withField("lastName", new FlatDataString(false))
-//                .withField("dateOfBirth", new FlatDataDate(true))
-//                .withField("isAlive", new FlatDataBoolean(false))
-//                .withField("heightInMeters", new FlatDataDecimal(false));
-//
-//        FlatDataSection personSection = new FlatDataSection("default", "DelimitedWithHeadings")
-//                .withProperty("delimiter", ",")
-//                .withRecordType(recordType);
-//
-//        FlatData schema = new FlatData().withSection(personSection);
-//
-//        return new FlatDataContext<Person>(schema, Person.FACTORY.getPureClassName())
-//                .withSectionFromObjectFactory("default", PersonFactory::new);
-//    }
-//
-//    private static class PersonFactory implements ObjectToParsedFlatData<Person>
-//    {
-//        private final FlatDataRecordField firstNameField;
-//        private final FlatDataRecordField lastNameField;
-//        private final FlatDataRecordField dateOfBirthField;
-//        private final FlatDataRecordField isAliveField;
-//        private final FlatDataRecordField heightInMetersField;
-//
-//        PersonFactory(FlatDataRecordType recordType)
-//        {
-//            firstNameField = findField(recordType, "firstName");
-//            lastNameField = findField(recordType, "lastName");
-//            dateOfBirthField = findField(recordType, "dateOfBirth");
-//            isAliveField = findField(recordType, "isAlive");
-//            heightInMetersField = findField(recordType, "heightInMeters");
-//        }
-//
-//        public ParsedFlatData make(Person person)
-//        {
-//            return new ParsedFlatData()
-//            {
-//                @Override
-//                public boolean hasStringValue(FlatDataRecordField field)
-//                {
-//                    if (field == firstNameField)
-//                    {
-//                        return person.getFirstName() != null;
-//                    }
-//                    else if (field == lastNameField)
-//                    {
-//                        return person.getLastName() != null;
-//                    }
-//                    return false;
-//                }
-//
-//                @Override
-//                public boolean hasBooleanValue(FlatDataRecordField field)
-//                {
-//                    if (field == isAliveField)
-//                    {
-//                        return true;
-//                    }
-//                    return false;
-//                }
-//
-//                @Override
-//                public boolean hasLongValue(FlatDataRecordField field)
-//                {
-//                    return false;
-//                }
-//
-//                @Override
-//                public boolean hasDoubleValue(FlatDataRecordField field)
-//                {
-//                    if (field == heightInMetersField)
-//                    {
-//                        return true;
-//                    }
-//                    return false;
-//                }
-//
-//                @Override
-//                public boolean hasBigDecimalValue(FlatDataRecordField field)
-//                {
-//                    return false;
-//                }
-//
-//                @Override
-//                public boolean hasLocalDateValue(FlatDataRecordField field)
-//                {
-//                    if (field == dateOfBirthField)
-//                    {
-//                        return person.getDateOfBirth() != null;
-//                    }
-//                    return false;
-//                }
-//
-//                @Override
-//                public boolean hasInstantValue(FlatDataRecordField field)
-//                {
-//                    return false;
-//                }
-//
-//                @Override
-//                public String getString(FlatDataRecordField field)
-//                {
-//                    if (field == firstNameField)
-//                    {
-//                        return person.getFirstName();
-//                    }
-//                    else if (field == lastNameField)
-//                    {
-//                        return person.getLastName();
-//                    }
-//                    throw new IllegalArgumentException("Cannot get String value for field '" + field.getLabel() + "'");
-//                }
-//
-//                @Override
-//                public boolean getBoolean(FlatDataRecordField field)
-//                {
-//                    if (field == isAliveField)
-//                    {
-//                        return person.getIsAlive();
-//                    }
-//                    throw new IllegalArgumentException("Cannot get boolean value for field '" + field.getLabel() + "'");
-//                }
-//
-//                @Override
-//                public long getLong(FlatDataRecordField field)
-//                {
-//                    throw new IllegalArgumentException("Cannot get long value for field '" + field.getLabel() + "'");
-//                }
-//
-//                @Override
-//                public double getDouble(FlatDataRecordField field)
-//                {
-//                    if (field == heightInMetersField)
-//                    {
-//                        return person.getHeightInMeters();
-//                    }
-//                    throw new IllegalArgumentException("Cannot get double value for field '" + field.getLabel() + "'");
-//                }
-//
-//                @Override
-//                public BigDecimal getBigDecimal(FlatDataRecordField field)
-//                {
-//                    throw new IllegalArgumentException("Cannot get BigDecimal value for field '" + field.getLabel() + "'");
-//                }
-//
-//                @Override
-//                public LocalDate getLocalDate(FlatDataRecordField field)
-//                {
-//                    if (field == dateOfBirthField)
-//                    {
-//                        return LocalDate.of(person.getDateOfBirth().getYear(), person.getDateOfBirth().getMonth(), person.getDateOfBirth().getDay());
-//                    }
-//                    throw new IllegalArgumentException("Cannot get LocalDate value for field '" + field.getLabel() + "'");
-//                }
-//
-//                @Override
-//                public Instant getInstant(FlatDataRecordField field)
-//                {
-//                    throw new IllegalArgumentException("Cannot get Instant value for field '" + field.getLabel() + "'");
-//                }
-//            };
-//        }
-//
-//        private static FlatDataRecordField findField(FlatDataRecordType recordType, String name)
-//        {
-//            return recordType.getFields().stream().filter(f -> f.getLabel().equals(name)).findFirst().get();
-//        }
-//    }
 }
