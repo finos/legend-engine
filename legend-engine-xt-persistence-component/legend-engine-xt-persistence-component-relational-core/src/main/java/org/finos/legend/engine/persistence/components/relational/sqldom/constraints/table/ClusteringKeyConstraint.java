@@ -18,14 +18,14 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.SqlDomEx
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Value;
 
-public class ClusterKey implements SqlGen
+public class ClusteringKeyConstraint implements SqlGen
 {
-    private Value clusterKeyValue;
+    private Value key;
 
     @Override
     public void genSql(StringBuilder builder) throws SqlDomException
     {
-        clusterKeyValue.genSql(builder);
+        key.genSql(builder);
     }
 
     @Override
@@ -33,7 +33,7 @@ public class ClusterKey implements SqlGen
     {
         if (node instanceof Value)
         {
-            clusterKeyValue = (Value) node;
+            key = (Value) node;
         }
     }
 }

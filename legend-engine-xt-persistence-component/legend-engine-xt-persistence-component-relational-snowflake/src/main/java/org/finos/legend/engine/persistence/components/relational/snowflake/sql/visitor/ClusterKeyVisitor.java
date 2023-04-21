@@ -17,6 +17,7 @@ package org.finos.legend.engine.persistence.components.relational.snowflake.sql.
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNode;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.ClusterKey;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
+import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.table.ClusteringKeyConstraint;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
 
@@ -28,11 +29,11 @@ public class ClusterKeyVisitor implements LogicalPlanVisitor<ClusterKey>
     @Override
     public LogicalPlanVisitor.VisitorResult visit(PhysicalPlanNode prev, ClusterKey current, VisitorContext context)
     {
-        org.finos.legend.engine.persistence.components.relational.sqldom.constraints.table.ClusterKey clusterKey = new org.finos.legend.engine.persistence.components.relational.sqldom.constraints.table.ClusterKey();
+        ClusteringKeyConstraint clusterKey = new ClusteringKeyConstraint();
         prev.push(clusterKey);
 
         List<LogicalPlanNode> logicalPlanNodes = new ArrayList<>();
-        logicalPlanNodes.add(current.clusterKeyValue());
+        logicalPlanNodes.add(current.key());
 
         return new LogicalPlanVisitor.VisitorResult(clusterKey, logicalPlanNodes);
     }

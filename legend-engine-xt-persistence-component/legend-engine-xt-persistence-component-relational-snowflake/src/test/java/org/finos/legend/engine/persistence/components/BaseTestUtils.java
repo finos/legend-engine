@@ -53,16 +53,16 @@ public class BaseTestUtils
     public static Field colArray = Field.builder().name("col_array").type(FieldType.of(DataType.ARRAY, Optional.empty(), Optional.empty())).build();
     public static Field colMap = Field.builder().name("col_map").type(FieldType.of(DataType.MAP, Optional.empty(), Optional.empty())).build();
 
-    public static ClusterKey clusterKey1 = ClusterKey.builder().clusterKeyValue(FieldValue.builder().fieldName("col_timestamp").build()).build();
+    public static ClusterKey clusterKey1 = ClusterKey.builder().key(FieldValue.builder().fieldName("col_timestamp").build()).build();
     public static ClusterKey clusterKey2 = ClusterKey.builder()
-        .clusterKeyValue(FunctionImpl.builder()
+        .key(FunctionImpl.builder()
             .functionName(FunctionName.SUBSTRING)
             .addValue(FieldValue.builder().fieldName("col_int").build(), ObjectValue.of(1), ObjectValue.of(4))
             .build())
         .build();
 
     public static ClusterKey clusterKey3 = ClusterKey.builder()
-        .clusterKeyValue(ModuloBinaryValueOperator.of(FieldValue.builder().fieldName("col_integer").build(), ObjectValue.of(7)))
+        .key(ModuloBinaryValueOperator.of(FieldValue.builder().fieldName("col_integer").build(), ObjectValue.of(7)))
         .build();
 
     public static SchemaDefinition schemaWithAllColumns = SchemaDefinition.builder()

@@ -17,7 +17,7 @@ package org.finos.legend.engine.persistence.components.relational.sqldom.schemao
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlDomException;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause;
-import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.table.ClusterKey;
+import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.table.ClusteringKeyConstraint;
 import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.table.TableConstraint;
 import org.finos.legend.engine.persistence.components.relational.sqldom.modifiers.TableModifier;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.Column;
@@ -40,7 +40,7 @@ public class CreateTable implements DDLStatement
     private final List<Column> columns; // schema
     private final List<TableConstraint> tableConstraints; // table level
     private final List<TableType> types; // dataset
-    private final List<ClusterKey> clusterKeys;
+    private final List<ClusteringKeyConstraint> clusterKeys;
 
     public CreateTable()
     {
@@ -132,9 +132,9 @@ public class CreateTable implements DDLStatement
         {
             tableConstraints.add((TableConstraint) node);
         }
-        else if (node instanceof ClusterKey)
+        else if (node instanceof ClusteringKeyConstraint)
         {
-            clusterKeys.add((ClusterKey) node);
+            clusterKeys.add((ClusteringKeyConstraint) node);
         }
     }
 

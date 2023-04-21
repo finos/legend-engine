@@ -31,5 +31,5 @@ import org.immutables.value.Value.Style;
 public interface ClusterKeyAbstract extends LogicalPlanNode
 {
     @Parameter(order = 0)
-    Value clusterKeyValue();
+    Value key();
 }
