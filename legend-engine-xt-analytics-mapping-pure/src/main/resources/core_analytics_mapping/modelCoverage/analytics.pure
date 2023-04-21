@@ -36,7 +36,6 @@ Enum meta::analytics::mapping::modelCoverage::MappedPropertyType
     Entity,
     Number,
     Decimal,
-    Binary,
     Unknown
 }
 

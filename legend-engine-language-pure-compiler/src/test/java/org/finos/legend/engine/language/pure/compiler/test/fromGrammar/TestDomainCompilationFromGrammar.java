@@ -534,7 +534,6 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "  name: String[45..*];\n" +
                 "  name1: Boolean[45..*];\n" +
-                "  name13: Binary[45..*];\n" +
                 "  ok: Integer[1..2];\n" +
                 "  ok1: Number[1..2];\n" +
                 "  ok2: Decimal[1..2];\n" +
