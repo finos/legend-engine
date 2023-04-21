@@ -12,19 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-###Diagram
+package org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.mysql;
 
-Diagram meta::external::format::openapi::ServiceOpenApiDiagram(width=0.0, height=0.0)
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DriverWrapper;
+
+public class MySQLDriver extends DriverWrapper
 {
-    TypeView cview_1(
-        type=meta::external::format::openapi::metamodel::OpenApi,
-        position=(377.00000, 349.00000),
-        width=246.78906,
-        height=114.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
+    @Override
+    protected String getClassName()
+    {
+        return "org.mariadb.jdbc.Driver";
+    }
 }
