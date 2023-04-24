@@ -36,14 +36,33 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testSingle
    assertEquals($expected->asString(true), $sourceTree->asString(true));
 }
 
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testSinglePropertyWithFilter():Boolean[1]
+{
+   let tree = #{
+      A {
+         a
+      }
+   }#;
+   let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::extension::defaultExtensions())->ensureFunctionRequirementsFromLambda(_A, {|_A.all()->filter(f|$f.b=='Hi')},[],true  )->sortTree();
+   let expected = #{
+      _A {
+         a,
+         b
+      }
+   }#;
+   assertEquals($expected->asString(true), $sourceTree->asString(true));
+}
+
 Class meta::pure::graphFetch::tests::sourceTreeCalc::singleProperty::A
 {
    a: String[1];
+   b: String[1];
 }
 
 Class meta::pure::graphFetch::tests::sourceTreeCalc::singleProperty::_A
 {
    a: String[1];
+   b: String[1];
 }
 
 ###Mapping 
@@ -54,7 +73,8 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::singleProperty::testMappi
    A: Pure
       {
          ~src _A
-         a: $src.a
+         a: $src.a,
+         b: $src.b
       }
 )
 
@@ -877,6 +897,7 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withMilestonedProperty::t
    }
 )
 
+
 // --- With Constraint Property
 
 ###Pure
@@ -892,7 +913,6 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testWithCo
          a1
       }
    }#;
-   
    let sourceTree = calculateSourceTree($tree, testMapping, meta::pure::extension::defaultExtensions())->ensureConstraintsRequirements()->sortTree();
    let expected = #{
       _A {
