@@ -18,6 +18,7 @@ package org.finos.legend.engine.query.sql.api.sources;
 import org.finos.legend.engine.protocol.pure.v1.model.executionOption.ExecutionOption;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
 
 import java.util.Collections;
 import java.util.List;
@@ -29,15 +30,23 @@ public class SQLSource
     private final String mapping;
     private final Runtime runtime;
     private final List<ExecutionOption> executionOptions;
+    private final ExecutionContext executionContext;
     private final List<SQLSourceArgument> key;
 
+    @Deprecated
     public SQLSource(String type, Lambda func, String mapping, Runtime runtime, List<ExecutionOption> executionOptions, List<SQLSourceArgument> key)
+    {
+        this(type, func, mapping, runtime, executionOptions, null, key);
+    }
+
+    public SQLSource(String type, Lambda func, String mapping, Runtime runtime, List<ExecutionOption> executionOptions, ExecutionContext executionContext, List<SQLSourceArgument> key)
     {
         this.type = type;
         this.func = func;
         this.mapping = mapping;
         this.runtime = runtime;
         this.executionOptions = executionOptions;
+        this.executionContext = executionContext;
         this.key = key == null ? Collections.emptyList() : key;
     }
 
@@ -64,6 +73,11 @@ public class SQLSource
     public List<ExecutionOption> getExecutionOptions()
     {
         return executionOptions;
+    }
+
+    public ExecutionContext getExecutionContext()
+    {
+        return executionContext;
     }
 
     public List<SQLSourceArgument> getKey()

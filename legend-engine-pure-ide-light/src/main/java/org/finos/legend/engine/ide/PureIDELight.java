@@ -17,7 +17,6 @@ package org.finos.legend.engine.ide;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.pure.runtime.compiler.interpreted.natives.LegendCompileMixedProcessorSupport;
-import org.finos.legend.pure.ide.light.PureIDECodeRepository;
 import org.finos.legend.pure.ide.light.PureIDEServer;
 import org.finos.legend.pure.ide.light.SourceLocationConfiguration;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
@@ -26,7 +25,6 @@ import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.fs.Muta
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
 
 import java.nio.file.Paths;
-import java.util.Optional;
 
 public class PureIDELight extends PureIDEServer
 {
@@ -46,6 +44,7 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xt-relationalStore-bigquery-pure", "relational_bigquery"))
                 .with(this.buildCore("legend-engine-xt-relationalStore-spanner-pure", "relational_spanner"))
                 .with(this.buildCore("legend-engine-xt-relationalStore-athena-pure", "relational_athena"))
+                .with(this.buildCore("legend-engine-xt-relationalStore-store-entitlement-pure", "relational_store_entitlement"))
                 .with(this.buildCore("legend-engine-xt-serviceStore-pure", "servicestore"))
                 .with(this.buildCore("legend-engine-xt-text-pure-metamodel", "text-metamodel"))
                 .with(this.buildCore("legend-engine-xt-data-space-pure-metamodel", "data-space-metamodel"))

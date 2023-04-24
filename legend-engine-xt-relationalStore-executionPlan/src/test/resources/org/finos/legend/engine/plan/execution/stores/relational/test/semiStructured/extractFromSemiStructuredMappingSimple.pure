@@ -56,6 +56,18 @@ Database simple::store::SnowflakeDB
   )
 )
 
+Database simple::store::MemSQLDB
+(
+  Schema FIRM_SCHEMA
+  (
+    Table FIRM_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRM_DETAILS JSON
+    )
+  )
+)
+
 ###Mapping
 Mapping simple::mapping::SnowflakeMapping
 (
@@ -73,7 +85,33 @@ Mapping simple::mapping::SnowflakeMapping
     estDate: extractFromSemiStructured([simple::store::SnowflakeDB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'dates.estDate', 'DATE'),
     lastUpdate: extractFromSemiStructured([simple::store::SnowflakeDB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, '["dates"]["last Update"]', 'TIMESTAMP'),
     entityType: EnumerationMapping simple_model_EntityType: extractFromSemiStructured([simple::store::SnowflakeDB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'entity.entityType', 'VARCHAR'),
-    secondLineOfAddress: extractFromSemiStructured([simple::store::H2DB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'address.lines[1]["details"]', 'VARCHAR')
+    secondLineOfAddress: extractFromSemiStructured([simple::store::SnowflakeDB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'address.lines[1]["details"]', 'VARCHAR')
+  }
+
+  simple::model::EntityType: EnumerationMapping
+  {
+    Organization: ['O'],
+    Company: ['P']
+  }
+)
+
+Mapping simple::mapping::MemSQLMapping
+(
+  *simple::model::Firm: Relational
+  {
+    ~primaryKey
+    (
+      [simple::store::MemSQLDB]FIRM_SCHEMA.FIRM_TABLE.ID
+    )
+    ~mainTable [simple::store::MemSQLDB]FIRM_SCHEMA.FIRM_TABLE
+    ID: [simple::store::MemSQLDB]FIRM_SCHEMA.FIRM_TABLE.ID,
+    legalName: extractFromSemiStructured([simple::store::MemSQLDB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'legalName', 'VARCHAR'),
+    employeeCount: extractFromSemiStructured([simple::store::MemSQLDB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'employeeCount', 'INTEGER'),
+    mnc: extractFromSemiStructured([simple::store::MemSQLDB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'mnc', 'BOOLEAN'),
+    estDate: extractFromSemiStructured([simple::store::MemSQLDB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'dates.estDate', 'DATE'),
+    lastUpdate: extractFromSemiStructured([simple::store::MemSQLDB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, '["dates"]["last Update"]', 'TIMESTAMP'),
+    entityType: EnumerationMapping simple_model_EntityType: extractFromSemiStructured([simple::store::MemSQLDB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'entity.entityType', 'VARCHAR'),
+    secondLineOfAddress: extractFromSemiStructured([simple::store::MemSQLDB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'address.lines[1]["details"]', 'VARCHAR')
   }
 
   simple::model::EntityType: EnumerationMapping
@@ -124,6 +162,28 @@ Runtime simple::runtime::SnowflakeRuntime
                 RelationalDatabaseConnection {
                     store: simple::store::SnowflakeDB;
                     type: Snowflake;
+                    specification: LocalH2{};
+                    auth: DefaultH2;
+                }
+            }#
+        ]
+    ];
+}
+
+Runtime simple::runtime::MemSQLRuntime
+{
+    mappings :
+    [
+        simple::mapping::MemSQLMapping
+    ];
+    connections :
+    [
+        simple::store::MemSQLDB :
+        [
+            connection_1 : #{
+                RelationalDatabaseConnection {
+                    store: simple::store::MemSQLDB;
+                    type: MemSQL;
                     specification: LocalH2{};
                     auth: DefaultH2;
                 }

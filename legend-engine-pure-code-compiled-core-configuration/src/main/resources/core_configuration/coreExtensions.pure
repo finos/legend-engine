@@ -82,6 +82,7 @@ function <<LocalPlatformBinding.TestPlanBinder>> meta::pure::extension::configur
    ^LocalPlatformBinder
    (
       overrides = [
+         meta::external::format::flatdata::executionPlan::platformBinding::legendJava::bindFlatdataTestPlanToPlatform__LocalPlatformBinder_1_,
          meta::relational::executionPlan::platformBinding::legendJava::bindRelationalTestPlanToPlatform__LocalPlatformBinder_1_
       ],
       

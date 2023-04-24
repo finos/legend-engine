@@ -1,7 +1,7 @@
 # ExternalFormat
 
-ExternalFormat lets users define formal schema (eg : XSD, Json-Schema) of their data using PURE DSL. <br>
-Users can model these schema in Legend ecosystem within `ExternalFormat` section of PURE DSL using PackageableElement - `SchemaSet`.
+ExternalFormat lets users define formal schema (eg : XSD, Json-Schema) of their data using PURE DSL and bind this formal schema to their model. <br>
+Users can model these schema in Legend ecosystem within `ExternalFormat` section of PURE DSL using PackageableElement - `SchemaSet`. They can bind this `SchemaSet` to models via PackageableElement - [`Binding`](./bindings/README.md)
 
 ## Where does External Format fit in Legend/Pure modeling?
 
@@ -35,7 +35,7 @@ Few of those differences are listed below -
 
 ## Use cases
 
-External Format should be used when users have data which aligns with some schema and they want to deserialize and write transformations on top of it. <br>
+External Format should be used when users have data which aligns with some schema and they want to deserialize and write transformations on top of it. It is also helpful when users want to serialize their data in certain format.<br>
 It can be used in following scenario's for example -
 
 - Deserializing data in format A and serializing it back to format B
@@ -54,20 +54,16 @@ External Formats are modeled in Legend Ecosystem within `###ExternalFormat` sect
 
 ### Schema Set
 
-SchemaSet is a type of packageable element in legend ecosystem. It aligns with a particular format (ex: XSD, JSON Schema) and is modeled to hold a set of Schema's of that format. <br>
+SchemaSet is a packageable element in legend ecosystem. It aligns with a particular format (ex: XSD, JSON Schema) and is modeled to hold a set of Schema's of that format. <br>
 The schemas in a set must be of the same type and should be related, for example where schemas refer to each other for inclusion. Unrelated schemas should be in different SchemaSets.
 
 ### Schema
 
 Schema hosts the formal schema definition of a single entity, users can also optionally define id & location for this schema.
 
-- `Id` which if given must be unique within the schema set. It is used to reference a specific schema within the set (for example in a Binding).
-- `Location` associates a location with the schema which is used when resolving schema references. For example when resolving include/import/redefine elements for XSDs.
-- `Content` the text of the schema
-
-### Schema Detail
-
-Schema Detail is an abstract model which is sub typed by each and every External Format in legend ecosystem. Each format is free to define its own structure for its schema content.
+- `id:String[0..1]` - which if given must be unique within the schema set. It is used to reference a specific schema within the set (for example in a Binding).
+- `location:String[0..1]` associates a location with the schema which is used when resolving schema references. For example when resolving include/import/redefine elements for XSDs.
+- `detail:Any[1]` the text of the schema. Type of this field is kept any but should align with particular format metamodel and compile time checks should be inforced by individual format's when parsing this content.  
 
 ### Diagram
 

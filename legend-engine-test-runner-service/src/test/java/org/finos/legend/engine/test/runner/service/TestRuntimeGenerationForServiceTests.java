@@ -169,7 +169,7 @@ public class TestRuntimeGenerationForServiceTests
                         "\n" +
                         "\n" +
                         "###Runtime\n" +
-                        "Runtime demo::modelChainConnection\n" +
+                        "Runtime demo::modelChainConnection::runtime\n" +
                         "{\n" +
                         "  mappings:\n" +
                         "  [\n" +
@@ -191,9 +191,9 @@ public class TestRuntimeGenerationForServiceTests
         PureModel pureModel = new PureModel(contextData, null, DeploymentMode.TEST);
         Service service = contextData.getElementsOfType(Service.class).get(0);
         EngineRuntime testRuntime = (EngineRuntime) ServiceTestGenerationHelper.buildSingleExecutionTestRuntime((PureSingleExecution) service.execution, (SingleExecutionTest) service.test, contextData, pureModel);
-        Assert.assertEquals(testRuntime.connections.size(), 2);
+        Assert.assertEquals(2, testRuntime.connections.size());
         Assert.assertNotNull(testRuntime.getStoreConnections("ModelStore"));
-        Assert.assertEquals(testRuntime.getStoreConnections("ModelStore").storeConnections.size(), 1);
+        Assert.assertEquals(1, testRuntime.getStoreConnections("ModelStore").storeConnections.size());
         Assert.assertFalse((testRuntime.getStoreConnections("ModelStore").storeConnections.get(0).connection instanceof RelationalDatabaseConnection));
     }
 
@@ -292,6 +292,6 @@ public class TestRuntimeGenerationForServiceTests
         PureModel pureModel = new PureModel(contextData, null, DeploymentMode.TEST);
         Service service = contextData.getElementsOfType(Service.class).get(0);
         EngineRuntime testRuntime = (EngineRuntime) ServiceTestGenerationHelper.buildSingleExecutionTestRuntime((PureSingleExecution) service.execution, (SingleExecutionTest) service.test, contextData, pureModel);
-        Assert.assertEquals(testRuntime.connections.size(), 1);
+        Assert.assertEquals(1, testRuntime.connections.size());
     }
 }

@@ -48,11 +48,13 @@ public class TestableRunner
     public RunTestsResult doTests(RunTestsInput input, MutableList<CommonProfile> profiles)
     {
         Pair<PureModelContextData, PureModel> modelAndData = modelManager.loadModelAndData(input.model, input.model instanceof PureModelContextPointer ? ((PureModelContextPointer) input.model).serializer.version : null, profiles, null);
-        PureModel pureModel = modelAndData.getTwo();
-        PureModelContextData data = modelAndData.getOne();
+        return doTests(input.testables, modelAndData.getTwo(), modelAndData.getOne());
+    }
 
+    public RunTestsResult doTests(List<RunTestsTestableInput> runTestsTestableInputs, PureModel pureModel, PureModelContextData data)
+    {
         RunTestsResult runTestsResult = new RunTestsResult();
-        for (RunTestsTestableInput testableInput : input.testables)
+        for (RunTestsTestableInput testableInput : runTestsTestableInputs)
         {
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = pureModel.getPackageableElement(testableInput.testable);
             if (!(packageableElement instanceof Testable))

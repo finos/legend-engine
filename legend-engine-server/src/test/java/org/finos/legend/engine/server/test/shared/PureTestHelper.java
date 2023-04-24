@@ -24,7 +24,6 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.list.primitive.LongList;
 import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -38,13 +37,13 @@ import org.finos.legend.pure.m3.navigation.Instance;
 import org.finos.legend.pure.m3.navigation.M3Properties;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
-import org.finos.legend.pure.m3.serialization.filesystem.PureCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
-import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.CodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.CodeStorageNode;
+import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.RepositoryCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.VersionControlledClassLoaderCodeStorage;
-import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.vcs.Revision;
+import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.composite.CompositeCodeStorage;
+import org.finos.legend.pure.m3.serialization.runtime.Message;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.compiler.JavaCompilerState;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
@@ -216,24 +215,18 @@ public class PureTestHelper
                 new JavaCompilerState(null, PureTestHelper.class.getClassLoader()),
                 new CompiledProcessorSupport(PureTestHelper.class.getClassLoader(), PureModel.METADATA_LAZY, Sets.mutable.empty()),
                 null,
-                new CodeStorage()
+                new RepositoryCodeStorage()
                 {
                     @Override
-                    public String getRepoName(String s)
+                    public void initialize(Message message)
                     {
-                        return null;
+
                     }
 
                     @Override
-                    public RichIterable<String> getAllRepoNames()
+                    public CodeRepository getRepositoryForPath(String s)
                     {
                         return null;
-                    }
-
-                    @Override
-                    public boolean isRepoName(String s)
-                    {
-                        return false;
                     }
 
                     @Override
@@ -313,30 +306,6 @@ public class PureTestHelper
                     {
                         return false;
                     }
-
-                    @Override
-                    public boolean isVersioned(String s)
-                    {
-                        return false;
-                    }
-
-                    @Override
-                    public long getCurrentRevision(String s)
-                    {
-                        return 0;
-                    }
-
-                    @Override
-                    public LongList getAllRevisions(String s)
-                    {
-                        return null;
-                    }
-
-                    @Override
-                    public RichIterable<Revision> getAllRevisionLogs(RichIterable<String> richIterable)
-                    {
-                        return null;
-                    }
                 },
                 null,
                 null,
@@ -370,7 +339,7 @@ public class PureTestHelper
                 new JavaCompilerState(null, PureTestHelper.class.getClassLoader()),
                 new CompiledProcessorSupport(PureTestHelper.class.getClassLoader(), PureModel.METADATA_LAZY, Sets.mutable.empty()),
                 null,
-                new PureCodeStorage(null, new VersionControlledClassLoaderCodeStorage(PureTestHelper.class.getClassLoader(), CodeRepositoryProviderHelper.findCodeRepositories(true), null)),
+                new CompositeCodeStorage(new VersionControlledClassLoaderCodeStorage(PureTestHelper.class.getClassLoader(), CodeRepositoryProviderHelper.findCodeRepositories(true), null)),
                 null,
                 null,
                 console,

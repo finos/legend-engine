@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.6.2-SNAPSHOT</version>
+        <version>4.8.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -30,22 +30,39 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.antlr</groupId>
-                <artifactId>antlr4-maven-plugin</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
                 <executions>
                     <execution>
+                        <id>generate metamodel</id>
+                        <phase>generate-sources</phase>
                         <goals>
-                            <goal>antlr4</goal>
+                            <goal>java</goal>
                         </goals>
                         <configuration>
-                            <visitor>true</visitor>
-                            <listener>true</listener>
-                            <treatWarningsAsErrors>true</treatWarningsAsErrors>
-                            <libDirectory>target/antlr</libDirectory>
-                            <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
+                            <includePluginDependencies>true</includePluginDependencies>
+                            <mainClass>org.finos.legend.engine.protocol.generation.GenerateMetaClasses</mainClass>
+                            <arguments>
+                                <argument>meta::external::format::flatdata::metamodel</argument>
+                                <argument>org.finos.legend.engine.external.format.flatdata.metamodel</argument>
+                                <argument>${project.build.directory}/generated-sources/</argument>
+                            </arguments>
+                            <classpathScope>test</classpathScope>
                         </configuration>
                     </execution>
                 </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-protocol-generation</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-flatdata-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>
@@ -69,19 +86,12 @@
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
 
-        <!-- ANTLR -->
+        <!-- JACKSON -->
         <dependency>
-            <groupId>org.antlr</groupId>
-            <artifactId>antlr4-runtime</artifactId>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
         </dependency>
-        <!-- ANTLR -->
-
-        <!-- For String Manipulation -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-text</artifactId>
-        </dependency>
-        <!-- For String Manipulation -->
+        <!-- JACKSON -->
 
         <!-- TEST -->
         <dependency>

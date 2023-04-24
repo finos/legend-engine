@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.generation.analytics.model;
 
+import org.finos.legend.engine.entitlement.model.specification.DatasetSpecification;
 import org.finos.legend.engine.protocol.analytics.model.MappingModelCoverageAnalysisResult;
 
 import java.util.List;
@@ -27,4 +28,5 @@ public class DataSpaceExecutionContextAnalysisResult
     public List<String> compatibleRuntimes;
     public String defaultRuntime;
     public MappingModelCoverageAnalysisResult mappingModelCoverageAnalysisResult;
+    public List<DatasetSpecification> datasets;
 }

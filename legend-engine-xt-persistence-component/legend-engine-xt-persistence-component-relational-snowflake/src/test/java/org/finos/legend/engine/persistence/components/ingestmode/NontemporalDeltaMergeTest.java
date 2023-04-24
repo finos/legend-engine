@@ -84,7 +84,6 @@ public class NontemporalDeltaMergeTest extends NontemporalDeltaTest
                 "VALUES (stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",'2000-01-01 00:00:00')";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestPlusUpdateTimestampCreateQuery, preActionsSqlList.get(0));
-        System.out.println(milestoningSqlList.get(0));
         Assertions.assertEquals(mergeSql, milestoningSqlList.get(0));
 
         // Stats
@@ -162,7 +161,6 @@ public class NontemporalDeltaMergeTest extends NontemporalDeltaTest
                 "VALUES (stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\")";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
-        System.out.println(milestoningSqlList.get(0));
         Assertions.assertEquals(mergeSql, milestoningSqlList.get(0));
 
         // Stats
@@ -207,6 +205,128 @@ public class NontemporalDeltaMergeTest extends NontemporalDeltaTest
                 "VALUES (stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"digest\")";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
+        Assertions.assertEquals(mergeSql, milestoningSqlList.get(0));
+    }
+
+    @Override
+    public void verifyNontemporalDeltaWithNoVersionAndStagingFilter(GeneratorResult operations)
+    {
+        List<String> preActionsSqlList = operations.preActionsSql();
+        List<String> milestoningSqlList = operations.ingestSql();
+
+        String mergeSql = "MERGE INTO \"mydb\".\"main\" as sink " +
+                "USING " +
+                "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\" FROM \"mydb\".\"staging\" as stage WHERE (stage.\"biz_date\" > '2020-01-01') AND (stage.\"biz_date\" < '2020-01-03')) as stage " +
+                "ON (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\") " +
+                "WHEN MATCHED AND sink.\"digest\" <> stage.\"digest\" " +
+                "THEN UPDATE SET " +
+                "sink.\"id\" = stage.\"id\"," +
+                "sink.\"name\" = stage.\"name\"," +
+                "sink.\"amount\" = stage.\"amount\"," +
+                "sink.\"biz_date\" = stage.\"biz_date\"," +
+                "sink.\"digest\" = stage.\"digest\" " +
+                "WHEN NOT MATCHED THEN " +
+                "INSERT (\"id\", \"name\", \"amount\", \"biz_date\", \"digest\") " +
+                "VALUES (stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\")";
+
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
+        Assertions.assertEquals(mergeSql, milestoningSqlList.get(0));
+
+        String incomingRecordCount = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging\" as stage WHERE (stage.\"biz_date\" > '2020-01-01') AND (stage.\"biz_date\" < '2020-01-03')";
+        // Stats
+        Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
+        Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
+        Assertions.assertEquals(rowsDeleted, operations.postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
+    }
+
+    @Override
+    public void verifyNontemporalDeltaWithMaxVersioningAndStagingFiltersWithDedup(GeneratorResult operations)
+    {
+        List<String> preActionsSqlList = operations.preActionsSql();
+        List<String> milestoningSqlList = operations.ingestSql();
+
+        String mergeSql = "MERGE INTO \"mydb\".\"main\" as sink " +
+            "USING " +
+            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",stage.\"version\" FROM " +
+            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",stage.\"version\",ROW_NUMBER() OVER (PARTITION BY stage.\"id\",stage.\"name\" ORDER BY stage.\"version\" DESC) as \"legend_persistence_row_num\" FROM \"mydb\".\"staging\" as stage WHERE \"snapshot_id\" > 18972) as stage WHERE stage.\"legend_persistence_row_num\" = 1) as stage " +
+            "ON (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\") " +
+            "WHEN MATCHED AND stage.\"version\" > sink.\"version\" " +
+            "THEN UPDATE SET sink.\"id\" = stage.\"id\",sink.\"name\" = stage.\"name\",sink.\"amount\" = stage.\"amount\",sink.\"biz_date\" = stage.\"biz_date\",sink.\"digest\" = stage.\"digest\",sink.\"version\" = stage.\"version\" " +
+            "WHEN NOT MATCHED THEN INSERT (\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"version\") VALUES (stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",stage.\"version\")";
+
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestPlusVersionCreateQuery, preActionsSqlList.get(0));
+        Assertions.assertEquals(mergeSql, milestoningSqlList.get(0));
+
+        String incomingRecordCount = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging\" as stage WHERE \"snapshot_id\" > 18972";
+        // Stats
+        Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
+        Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
+        Assertions.assertEquals(rowsDeleted, operations.postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
+    }
+
+    @Override
+    public void verifyNontemporalDeltaWithMaxVersioningNoDedupAndStagingFilters(GeneratorResult operations)
+    {
+        List<String> preActionsSqlList = operations.preActionsSql();
+        List<String> milestoningSqlList = operations.ingestSql();
+
+        String mergeSql = "MERGE INTO \"mydb\".\"main\" as sink " +
+            "USING " +
+            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",stage.\"version\" FROM \"mydb\".\"staging\" as stage WHERE \"snapshot_id\" > 18972) as stage " +
+            "ON (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\") " +
+            "WHEN MATCHED AND stage.\"version\" > sink.\"version\" " +
+            "THEN UPDATE SET sink.\"id\" = stage.\"id\",sink.\"name\" = stage.\"name\",sink.\"amount\" = stage.\"amount\",sink.\"biz_date\" = stage.\"biz_date\",sink.\"digest\" = stage.\"digest\",sink.\"version\" = stage.\"version\" " +
+            "WHEN NOT MATCHED THEN INSERT (\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"version\") VALUES (stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",stage.\"version\")";
+
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestPlusVersionCreateQuery, preActionsSqlList.get(0));
+        Assertions.assertEquals(mergeSql, milestoningSqlList.get(0));
+
+        String incomingRecordCount = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging\" as stage WHERE \"snapshot_id\" > 18972";
+        // Stats
+        Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
+        Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
+        Assertions.assertEquals(rowsDeleted, operations.postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
+    }
+
+    @Override
+    public void verifyNontemporalDeltaWithMaxVersioningNoDedupWithoutStagingFilters(GeneratorResult operations)
+    {
+        List<String> preActionsSqlList = operations.preActionsSql();
+        List<String> milestoningSqlList = operations.ingestSql();
+
+        String mergeSql = "MERGE INTO \"mydb\".\"main\" as sink " +
+            "USING " +
+            "\"mydb\".\"staging\" as stage " +
+            "ON (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\") " +
+            "WHEN MATCHED AND stage.\"version\" > sink.\"version\" " +
+            "THEN UPDATE SET sink.\"id\" = stage.\"id\",sink.\"name\" = stage.\"name\",sink.\"amount\" = stage.\"amount\",sink.\"biz_date\" = stage.\"biz_date\",sink.\"digest\" = stage.\"digest\",sink.\"version\" = stage.\"version\" " +
+            "WHEN NOT MATCHED THEN INSERT (\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"version\") VALUES (stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",stage.\"version\")";
+
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestPlusVersionCreateQuery, preActionsSqlList.get(0));
+        Assertions.assertEquals(mergeSql, milestoningSqlList.get(0));
+
+        // Stats
+        Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
+        Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
+        Assertions.assertEquals(rowsDeleted, operations.postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
+    }
+
+    @Override
+    public void verifyNontemporalDeltaWithWithMaxVersioningDedupEnabledAndUpperCaseWithoutStagingFilters(GeneratorResult operations)
+    {
+        List<String> preActionsSqlList = operations.preActionsSql();
+        List<String> milestoningSqlList = operations.ingestSql();
+
+        String mergeSql = "MERGE INTO \"MYDB\".\"MAIN\" as sink " +
+            "USING " +
+            "(SELECT stage.\"ID\",stage.\"NAME\",stage.\"AMOUNT\",stage.\"BIZ_DATE\",stage.\"DIGEST\",stage.\"VERSION\" FROM " +
+            "(SELECT stage.\"ID\",stage.\"NAME\",stage.\"AMOUNT\",stage.\"BIZ_DATE\",stage.\"DIGEST\",stage.\"VERSION\",ROW_NUMBER() OVER (PARTITION BY stage.\"ID\",stage.\"NAME\" ORDER BY stage.\"VERSION\" DESC) as \"LEGEND_PERSISTENCE_ROW_NUM\" FROM \"MYDB\".\"STAGING\" as stage) as stage WHERE stage.\"LEGEND_PERSISTENCE_ROW_NUM\" = 1) as stage " +
+            "ON (sink.\"ID\" = stage.\"ID\") AND (sink.\"NAME\" = stage.\"NAME\") " +
+            "WHEN MATCHED AND stage.\"VERSION\" >= sink.\"VERSION\" " +
+            "THEN UPDATE SET sink.\"ID\" = stage.\"ID\",sink.\"NAME\" = stage.\"NAME\",sink.\"AMOUNT\" = stage.\"AMOUNT\",sink.\"BIZ_DATE\" = stage.\"BIZ_DATE\",sink.\"DIGEST\" = stage.\"DIGEST\",sink.\"VERSION\" = stage.\"VERSION\" " +
+            "WHEN NOT MATCHED THEN INSERT (\"ID\", \"NAME\", \"AMOUNT\", \"BIZ_DATE\", \"DIGEST\", \"VERSION\") VALUES (stage.\"ID\",stage.\"NAME\",stage.\"AMOUNT\",stage.\"BIZ_DATE\",stage.\"DIGEST\",stage.\"VERSION\")";
+
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestPlusVersionCreateQueryUpperCase, preActionsSqlList.get(0));
         Assertions.assertEquals(mergeSql, milestoningSqlList.get(0));
     }
 }

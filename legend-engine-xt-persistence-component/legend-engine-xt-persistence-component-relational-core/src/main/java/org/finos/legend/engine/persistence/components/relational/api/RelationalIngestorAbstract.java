@@ -140,7 +140,6 @@ public abstract class RelationalIngestorAbstract
     @Derived
     protected TransformOptions transformOptions()
     {
-
         TransformOptions.Builder builder = TransformOptions.builder()
             .executionTimestampClock(executionTimestampClock())
             .batchIdPattern(BATCH_ID_PATTERN);
@@ -188,7 +187,7 @@ public abstract class RelationalIngestorAbstract
         }
 
         // Check if staging dataset is empty
-        if (executor.datasetExists(updatedDatasets.stagingDataset()))
+        if (ingestMode().accept(IngestModeVisitors.NEED_TO_CHECK_STAGING_EMPTY) && executor.datasetExists(updatedDatasets.stagingDataset()))
         {
             resourcesBuilder.stagingDataSetEmpty(datasetEmpty(updatedDatasets.stagingDataset(), transformer, executor));
         }

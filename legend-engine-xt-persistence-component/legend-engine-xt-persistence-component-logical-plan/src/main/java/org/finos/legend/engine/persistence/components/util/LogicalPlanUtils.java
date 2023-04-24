@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.util;
 
 import java.util.UUID;
+
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
@@ -26,6 +27,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.conditions.Not
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Or;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.values.All;
@@ -66,7 +68,6 @@ public class LogicalPlanUtils
     public static final String DEFAULT_META_TABLE = "batch_metadata";
     public static final String DATA_SPLIT_LOWER_BOUND_PLACEHOLDER = "{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}";
     public static final String DATA_SPLIT_UPPER_BOUND_PLACEHOLDER = "{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}";
-
     private static final String UNDERSCORE = "_";
 
     private LogicalPlanUtils()
@@ -238,6 +239,17 @@ public class LogicalPlanUtils
         });
     }
 
+    public static Optional<Condition> getDatasetFilterCondition(Dataset dataSet)
+    {
+        Optional<Condition> filter = Optional.empty();
+        if (dataSet instanceof DerivedDataset)
+        {
+            DerivedDataset derivedDataset = (DerivedDataset) dataSet;
+            filter = Optional.of(derivedDataset.filter());
+        }
+        return filter;
+    }
+
     public static Condition getBatchIdEqualsInfiniteCondition(Dataset mainDataSet, String batchIdOutField)
     {
         return Equals.of(
@@ -318,4 +330,5 @@ public class LogicalPlanUtils
     public static Set<DataType> SUPPORTED_DATA_TYPES_FOR_OPTIMIZATION_COLUMNS =
             new HashSet<>(Arrays.asList(INT, INTEGER, INT64, BIGINT, FLOAT, DOUBLE, DECIMAL, DATE));
 
+    public static Set<DataType> SUPPORTED_DATA_TYPES_FOR_VERSIONING_COLUMNS = DataType.getComparableDataTypes();
 }

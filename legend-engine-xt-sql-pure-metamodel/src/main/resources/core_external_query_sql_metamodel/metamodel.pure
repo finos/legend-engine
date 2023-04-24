@@ -152,6 +152,18 @@ Class meta::external::query::sql::metamodel::NullLiteral extends meta::external:
 {
 }
 
+Class meta::external::query::sql::metamodel::IntervalLiteral extends meta::external::query::sql::metamodel::Literal
+{
+  ago: Boolean[0..1];
+  years: Integer[0..1];
+  months: Integer[0..1];
+  weeks: Integer[0..1];
+  days: Integer[0..1];
+  hours: Integer[0..1];
+  minutes: Integer[0..1];
+  seconds: Integer[0..1];
+}
+
 Class meta::external::query::sql::metamodel::NamedArgumentExpression extends meta::external::query::sql::metamodel::Expression
 {
   name: String[1];

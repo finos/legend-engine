@@ -21,6 +21,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.factory.Sets;
 import org.finos.legend.engine.external.format.flatdata.FlatDataRuntimeExtension;
+import org.finos.legend.engine.external.format.flatdata.driver.spi.FlatDataDriverDescription;
 import org.finos.legend.engine.external.format.json.JsonSchemaRuntimeExtension;
 import org.finos.legend.engine.external.format.xml.XsdRuntimeExtension;
 import org.finos.legend.engine.external.shared.runtime.ExternalFormatExecutionExtension;
@@ -65,6 +66,26 @@ public class TestExtensions
                 .with(FlatDataRuntimeExtension.class)
                 .with(JsonSchemaRuntimeExtension.class)
                 .with(XsdRuntimeExtension.class);
+    }
+
+    @Test
+    public void testFlatDataDriverDescription()
+    {
+        assertHasExtensions(getExpectedFlatDataDriverDescriptionExtensions(), FlatDataDriverDescription.class);
+    }
+
+    protected Iterable<? extends Class<? extends FlatDataDriverDescription>> getExpectedFlatDataDriverDescriptionExtensions()
+    {
+        // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
+        return Lists.mutable.<Class<? extends FlatDataDriverDescription>>empty()
+                .with(org.finos.legend.engine.external.format.flatdata.driver.core.DelimitedWithHeadingsDriverDescription.class)
+                .with(org.finos.legend.engine.external.format.flatdata.driver.core.DelimitedWithoutHeadingsDriverDescription.class)
+                .with(org.finos.legend.engine.external.format.flatdata.driver.core.FixedWidthDriverDescription.class)
+                .with(org.finos.legend.engine.external.format.flatdata.driver.core.ImmaterialLinesDriverDescription.class)
+                .with(org.finos.legend.engine.external.format.flatdata.driver.bloomberg.BloombergActionsDriverDescription.class)
+                .with(org.finos.legend.engine.external.format.flatdata.driver.bloomberg.BloombergDataDriverDescription.class)
+                .with(org.finos.legend.engine.external.format.flatdata.driver.bloomberg.BloombergExtendActionDriverDescription.class)
+                .with(org.finos.legend.engine.external.format.flatdata.driver.bloomberg.BloombergMetadataDriverDescription.class);
     }
 
     @Test

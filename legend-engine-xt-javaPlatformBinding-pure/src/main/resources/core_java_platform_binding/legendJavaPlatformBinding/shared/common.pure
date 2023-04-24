@@ -117,7 +117,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::generat
    let classes     = $typeInfos->allClassInfos()      ->filter(ti| !$conventions->isProvidedType($ti.type))->map(cti | $cti->generateInterfaceForClass($conventions, $debug->indent()));
    let enums       = $typeInfos->allEnumerationInfos()->filter(ti| !$conventions->isProvidedType($ti.type))->map(eti | $conventions->codeClass($eti.type, ClassPurpose.ENUMERATION, $debug->indent()));
 
-   let unitInfos = $typeInfos->allUnitInfos();
+   let unitInfos   = $typeInfos->allUnitInfos();
    assert($unitInfos->forAll(ti| !$conventions->isProvidedType($ti.type)), 'Units cannot be provided until the Unit interface is a provded type');
    
    let units = if($unitInfos->isEmpty(),
@@ -236,12 +236,15 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::generat
       ->implements($typeInfo.supertypes->map(c|$conventions->className($c)))
       ->imports($conventions->standardDataTypeImports())
       ->imports($typeInfo.supertypes->map(st|$conventions->className($st))->filter(c| $c.package != $pkg));
+   
+   let withTypeNameAndPath = $proto->addMethod(javaMethod(['default'], javaString(), typeNameMethod(), [], [j_return(j_string($typeInfo.class.name->toOne()))]))
+                                   ->addMethod(javaMethod(['default'], javaString(), typePathMethod(), [], [j_return(j_string($typeInfo.class->elementToPath()))]));
 
    let withPropertyGetters = $typeInfo.properties->fold(
       {p, c|
          $c->addMethod($p->generateInterfacePropertyGetter($conventions))
       },
-      $proto
+      $withTypeNameAndPath
    );
 
    let withQualifiedPropertyGetters = $typeInfo.qualifiedProperties->fold(
@@ -345,6 +348,16 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::updateI
    );
 
    newProject()->addClasses($implClass->addMethods([$classSizeMethod, $instanceSizeMethod]));
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::shared::typeNameMethod():String[1]
+{
+   'typeName$'
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::shared::typePathMethod():String[1]
+{
+   'typePath$'
 }
 
 function meta::pure::executionPlan::platformBinding::legendJava::shared::classSizeIdentifier():String[1]

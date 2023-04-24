@@ -1,0 +1,197 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "class",
+      "constraints": [
+        {
+          "functionDefinition": {
+            "_type": "lambda",
+            "body": [
+              {
+                "_type": "func",
+                "function": "lessThan",
+                "parameters": [
+                  {
+                    "_type": "func",
+                    "function": "and",
+                    "parameters": [
+                      {
+                        "_type": "func",
+                        "function": "greaterThan",
+                        "parameters": [
+                          {
+                            "_type": "property",
+                            "parameters": [
+                              {
+                                "_type": "var",
+                                "name": "this",
+                                "sourceInformation": {
+                                  "endColumn": 8,
+                                  "endLine": 3,
+                                  "sourceId": "",
+                                  "startColumn": 4,
+                                  "startLine": 3
+                                }
+                              }
+                            ],
+                            "property": "id",
+                            "sourceInformation": {
+                              "endColumn": 11,
+                              "endLine": 3,
+                              "sourceId": "",
+                              "startColumn": 10,
+                              "startLine": 3
+                            }
+                          },
+                          {
+                            "_type": "integer",
+                            "sourceInformation": {
+                              "endColumn": 15,
+                              "endLine": 3,
+                              "sourceId": "",
+                              "startColumn": 15,
+                              "startLine": 3
+                            },
+                            "value": 0
+                          }
+                        ],
+                        "sourceInformation": {
+                          "endColumn": 15,
+                          "endLine": 3,
+                          "sourceId": "",
+                          "startColumn": 13,
+                          "startLine": 3
+                        }
+                      },
+                      {
+                        "_type": "property",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "this",
+                            "sourceInformation": {
+                              "endColumn": 24,
+                              "endLine": 3,
+                              "sourceId": "",
+                              "startColumn": 20,
+                              "startLine": 3
+                            }
+                          }
+                        ],
+                        "property": "id",
+                        "sourceInformation": {
+                          "endColumn": 27,
+                          "endLine": 3,
+                          "sourceId": "",
+                          "startColumn": 26,
+                          "startLine": 3
+                        }
+                      }
+                    ],
+                    "sourceInformation": {
+                      "endColumn": 18,
+                      "endLine": 3,
+                      "sourceId": "",
+                      "startColumn": 17,
+                      "startLine": 3
+                    }
+                  },
+                  {
+                    "_type": "integer",
+                    "sourceInformation": {
+                      "endColumn": 32,
+                      "endLine": 3,
+                      "sourceId": "",
+                      "startColumn": 31,
+                      "startLine": 3
+                    },
+                    "value": 30
+                  }
+                ],
+                "sourceInformation": {
+                  "endColumn": 32,
+                  "endLine": 3,
+                  "sourceId": "",
+                  "startColumn": 29,
+                  "startLine": 3
+                }
+              }
+            ],
+            "parameters": []
+          },
+          "name": "0",
+          "sourceInformation": {
+            "endColumn": 32,
+            "endLine": 3,
+            "sourceId": "",
+            "startColumn": 4,
+            "startLine": 3
+          }
+        }
+      ],
+      "name": "C",
+      "originalMilestonedProperties": [],
+      "package": "test",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "id",
+          "propertyTypeSourceInformation": {
+            "endColumn": 14,
+            "endLine": 6,
+            "sourceId": "",
+            "startColumn": 8,
+            "startLine": 6
+          },
+          "sourceInformation": {
+            "endColumn": 18,
+            "endLine": 6,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 6
+          },
+          "stereotypes": [],
+          "taggedValues": [],
+          "type": "Integer"
+        }
+      ],
+      "qualifiedProperties": [],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 7,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 1
+      },
+      "stereotypes": [],
+      "superTypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [
+            "test::C"
+          ],
+          "imports": [],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 2,
+            "endLine": 9,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 1
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -58,7 +58,7 @@
           }
         }
       ],
-      "name": "func2",
+      "name": "func2__Date_1_",
       "package": "model::domain::test",
       "parameters": [],
       "postConstraints": [],
