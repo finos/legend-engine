@@ -438,9 +438,9 @@ function meta::json::schema::tests::testSuite():Boolean[1]
 	recursiveTest();
 	definitionsTest();
 	toJSONSchemaTest();
-  arrayMinMaxItemKeyValue();
-  allPrimitivePropertiesOfClass();
-  dateAndDateTimeJSONFormatTest();
+        arrayMinMaxItemKeyValue();
+        allPrimitivePropertiesOfClass();
+        dateAndDateTimeJSONFormatTest();
 	println('++++Finishing JSON Schema Tests++++');
 	assert(true);
 }
