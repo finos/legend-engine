@@ -319,6 +319,7 @@
         <databricks.version>2.6.27</databricks.version>
         <redshiftJDBC.version>2.0.0.3</redshiftJDBC.version>
         <postgres.version>9.4.1208.jre7</postgres.version>
+        <mariadb.version>3.0.6</mariadb.version>
 
         <!-- Dependency versions -->
         <junit.version>4.13.1</junit.version>
@@ -2670,6 +2671,12 @@
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
                 <version>${postgres.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.mariadb.jdbc</groupId>
+                <artifactId>mariadb-java-client</artifactId>
+                <version>${mariadb.version}</version>
                 <scope>runtime</scope>
             </dependency>
             <!-- Database -->
