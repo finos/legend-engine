@@ -54,6 +54,7 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xt-flatdata-pure", "external-format-flatdata"))
                 .with(this.buildCore("legend-engine-xt-json-pure", "external-format-json"))
                 .with(this.buildCore("legend-engine-xt-xml-pure", "external-format-xml"))
+                .with(this.buildCore("legend-engine-xt-openapi-pure", "external-format-openapi"))
                 .with(this.buildCore("legend-engine-xt-graphQL-pure", "external-query-graphql"))
                 .with(this.buildCore("legend-engine-xt-graphQL-pure-metamodel", "external-query-graphql-metamodel"))
                 .with(this.buildCore("legend-engine-xt-protobuf-pure", "external-format-protobuf"))
