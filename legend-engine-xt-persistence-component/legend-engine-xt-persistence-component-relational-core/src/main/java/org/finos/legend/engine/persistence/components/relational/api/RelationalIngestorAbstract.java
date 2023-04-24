@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.relational.api;
 
 import org.finos.legend.engine.persistence.components.common.Datasets;
+import org.finos.legend.engine.persistence.components.common.OptimizationFilter;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.DigestInfo;
@@ -51,6 +52,7 @@ import org.immutables.value.Value.Immutable;
 import org.immutables.value.Value.Style;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -63,6 +65,8 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.MAX_OF_FIELD;
+import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.MIN_OF_FIELD;
 import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.TABLE_IS_NON_EMPTY;
 import static org.finos.legend.engine.persistence.components.transformer.Transformer.TransformOptionsAbstract.DATE_TIME_FORMATTER;
 
@@ -387,9 +391,28 @@ public abstract class RelationalIngestorAbstract
     {
         Map<String, String> placeHolderKeyValues = new HashMap<>();
         Optional<Long> nextBatchId = getNextBatchId(datasets, executor, transformer, ingestMode);
+        Optional<Map<OptimizationFilter, List<Object>>> optimizationFilters = getOptimizationFilterBounds(datasets, executor, transformer, ingestMode);
         if (nextBatchId.isPresent())
         {
             placeHolderKeyValues.put(BATCH_ID_PATTERN, nextBatchId.get().toString());
+        }
+        if (optimizationFilters.isPresent())
+        {
+            for (OptimizationFilter filter : optimizationFilters.get().keySet())
+            {
+                Object lowerBound = optimizationFilters.get().get(filter).get(0);
+                Object upperBound = optimizationFilters.get().get(filter).get(1);
+                if (lowerBound instanceof Date)
+                {
+                    placeHolderKeyValues.put(filter.lowerBoundPattern(), lowerBound.toString());
+                    placeHolderKeyValues.put(filter.upperBoundPattern(), upperBound.toString());
+                }
+                else
+                {
+                    placeHolderKeyValues.put(SINGLE_QUOTE + filter.lowerBoundPattern() + SINGLE_QUOTE, lowerBound.toString());
+                    placeHolderKeyValues.put(SINGLE_QUOTE + filter.upperBoundPattern() + SINGLE_QUOTE, upperBound.toString());
+                }
+            }
         }
         if (planner.dataSplitExecutionSupported() && dataSplitRange.isPresent())
         {
@@ -425,6 +448,35 @@ public abstract class RelationalIngestorAbstract
                     return Optional.of((Long) nextBatchId.get());
                 }
             }
+        }
+        return Optional.empty();
+    }
+
+    private Optional<Map<OptimizationFilter, List<Object>>> getOptimizationFilterBounds(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor,
+                                          Transformer<SqlGen, SqlPlan> transformer, IngestMode ingestMode)
+    {
+        List<OptimizationFilter> filters = ingestMode.accept(IngestModeVisitors.RETRIEVE_OPTIMIZATION_FILTERS);
+        if (!filters.isEmpty())
+        {
+            Map<OptimizationFilter, List<Object>> map = new HashMap<>();
+            for (OptimizationFilter filter : filters)
+            {
+                LogicalPlan logicalPlanForMinAndMaxForField = LogicalPlanFactory.getLogicalPlanForMinAndMaxForField(datasets.stagingDataset(), filter.fieldName());
+                List<TabularData> tabularData = executor.executePhysicalPlanAndGetResults(transformer.generatePhysicalPlan(logicalPlanForMinAndMaxForField));
+                Map<String, Object> resultMap = tabularData.stream()
+                    .findFirst()
+                    .map(TabularData::getData)
+                    .flatMap(t -> t.stream().findFirst())
+                    .orElseThrow(IllegalStateException::new);
+                // Put into map only when not null
+                Object lower = resultMap.get(MIN_OF_FIELD);
+                Object upper = resultMap.get(MAX_OF_FIELD);
+                if (lower != null && upper != null)
+                {
+                    map.put(filter, Arrays.asList(lower, upper));
+                }
+            }
+            return Optional.of(map);
         }
         return Optional.empty();
     }
