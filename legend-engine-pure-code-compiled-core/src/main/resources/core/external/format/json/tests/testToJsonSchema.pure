@@ -438,9 +438,9 @@ function meta::json::schema::tests::testSuite():Boolean[1]
 	recursiveTest();
 	definitionsTest();
 	toJSONSchemaTest();
-    arrayMinMaxItemKeyValue();
-    allPrimitivePropertiesOfClass();
-    dateAndDateTimeJSONFormatTest();
+        arrayMinMaxItemKeyValue();
+        allPrimitivePropertiesOfClass();
+        dateAndDateTimeJSONFormatTest();
 	println('++++Finishing JSON Schema Tests++++');
 	assert(true);
 }
@@ -1007,118 +1007,338 @@ function <<access.private>> meta::json::schema::tests::assertJSONEquals( expecte
    assertJSONEquals(  $expectedJson, $actualJson );
 }
 
+function <<test.Test>> {serverVersion.start='v1_20_0'} meta::json::schema::generation::tests::toJSONSchemaTestForPrimitiveType():Boolean[1]
+{
+  let jsonSchema = toJSONSchema(^JSONSchemaConfig(class='meta::json::schema::tests::PrimitiveTypeDomain'));
+  
+  assertNotEmpty($jsonSchema);
+  assertSize($jsonSchema,1);
+
+  let expectedjson = '{\n' +
+        '  \"$schema\": \"http:\\/\\/json-schema.org\\/draft-07\\/schema#\",\n' +
+        '  \"title\": \"meta::json::schema::tests::PrimitiveTypeDomain\",\n' +
+        '  \"type\": \"object\",\n' +
+        '  \"properties\": {\n' +
+        '    \"stringField\": {\n' +
+        '      \"type\": \"string\",\n' +
+        '      \"description\": \"String Field\"\n' +
+        '    },\n' +
+        '    \"floatField\": {\n' +
+        '      \"type\": \"number\",\n' +
+        '      \"description\": \"Float Field\"\n' +
+        '    },\n' +
+        '    \"integerField\": {\n' +
+        '      \"type\": \"integer\",\n' +
+        '      \"description\": \"Integer Field\"\n' +
+        '    },\n' +
+        '    \"dateField\": {\n' +
+        '      \"type\": \"string\",\n' +
+        '      \"description\": \"Date Field\",\n' +
+        '      \"format\": \"date-time\"\n' +
+        '    },\n' +
+        '    \"dateTimeField\": {\n' +
+        '      \"type\": \"string\",\n' +
+        '      \"description\": \"DateTime Field\",\n' +
+        '      \"format\": \"date-time\"\n' +
+        '    },\n' +
+        '    \"strictDateField\": {\n' +
+        '      \"type\": \"string\",\n' +
+        '      \"description\": \"StrictDate Field\",\n' +
+        '      \"format\": \"date\"\n' +
+        '    },\n' +
+        '    \"booleanField\": {\n' +
+        '      \"type\": \"boolean\",\n' +
+        '      \"description\": \"Boolean Field\"\n' +
+        '    },\n' +
+        '    \"stringNoDescriptionField\": {\n' +
+        '      \"type\": \"string\"\n' +
+        '    },\n' +
+        '    \"srtingMultipleField\": {\n' +
+        '      \"type\": \"array\",\n' +
+        '      \"description\": \"String Field- multiple\",\n' +
+        '      \"items\": {\n' +
+        '        \"type\": \"string\"\n' +
+        '      }\n' +
+        '    },\n' +
+        '    \"floatMultipleField\": {\n' +
+        '      \"type\": \"array\",\n' +
+        '      \"description\": \"Float Field - multiple\",\n' +
+        '      \"items\": {\n' +
+        '        \"type\": \"number\"\n' +
+        '      }\n' +
+        '    },\n' +
+        '    \"integerMultipleField\": {\n' +
+        '      \"type\": \"array\",\n' +
+        '      \"description\": \"Integer Field - multiple\",\n' +
+        '      \"items\": {\n' +
+        '        \"type\": \"integer\"\n' +
+        '      }\n' +
+        '    },\n' +
+        '    \"dateMultipleField\": {\n' +
+        '      \"type\": \"array\",\n' +
+        '      \"description\": \"Date Field-multiple\",\n' +
+        '      \"items\": {\n' +
+        '        \"type\": \"string\",\n' +
+        '        \"format\": \"date-time\"\n' +
+        '      }\n' +
+        '    },\n' +
+        '    \"dateTimeMultipleField\": {\n' +
+        '      \"type\": \"array\",\n' +
+        '      \"description\": \"DateTime Field-multiple\",\n' +
+        '      \"items\": {\n' +
+        '        \"type\": \"string\",\n' +
+        '        \"format\": \"date-time\"\n' +
+        '      }\n' +
+        '    },\n' +
+        '    \"strictDateMultipleField\": {\n' +
+        '      \"type\": \"array\",\n' +
+        '      \"description\": \"StrictDate Field-multiple\",\n' +
+        '      \"items\": {\n' +
+        '        \"type\": \"string\",\n' +
+        '        \"format\": \"date\"\n' +
+        '      }\n' +
+        '    },\n' +
+        '    \"stringRangeField\": {\n' +
+        '      \"type\": \"array\",\n' +
+        '      \"description\": \"Field String - Range 1..3\",\n' +
+        '      \"items\": {\n' +
+        '        \"type\": \"string\"\n' +
+        '      },\n' +
+        '      \"minItems\": 1,\n' +
+        '      \"maxItems\": 3\n' +
+        '    },\n' +
+        '    \"stringRangeZeroField\": {\n' +
+        '      \"type\": \"array\",\n' +
+        '      \"description\": \"Field String - Range 0..3\",\n' +
+        '      \"items\": {\n' +
+        '        \"type\": \"string\"\n' +
+        '      },\n' +
+        '      \"maxItems\": 3\n' +
+        '    },\n' +
+        '    \"integerRangeField\": {\n' +
+        '      \"type\": \"array\",\n' +
+        '      \"description\": \"Field Integer - Range 1..3\",\n' +
+        '      \"items\": {\n' +
+        '        \"type\": \"integer\"\n' +
+        '      },\n' +
+        '      \"minItems\": 1,\n' +
+        '      \"maxItems\": 3\n' +
+        '    },\n' +
+        '    \"integerRangeZeroField\": {\n' +
+        '      \"type\": \"array\",\n' +
+        '      \"description\": \"Field Integer - Range 0..3\",\n' +
+        '      \"items\": {\n' +
+        '        \"type\": \"integer\"\n' +
+        '      },\n' +
+        '      \"maxItems\": 3\n' +
+        '    },\n' +
+        '    \"floatRangeField\": {\n' +
+        '      \"type\": \"array\",\n' +
+        '      \"description\": \"Field Float - range 1..3\",\n' +
+        '      \"items\": {\n' +
+        '        \"type\": \"number\"\n' +
+        '      },\n' +
+        '      \"minItems\": 1,\n' +
+        '      \"maxItems\": 3\n' +
+        '    },\n' +
+        '    \"floatRangeZeroField\": {\n' +
+        '      \"type\": \"array\",\n' +
+        '      \"description\": \"Field Float - range 0..3\",\n' +
+        '      \"items\": {\n' +
+        '        \"type\": \"number\"\n' +
+        '      },\n' +
+        '      \"maxItems\": 3\n' +
+        '    },\n' +
+        '    \"dateRangeField\": {\n' +
+        '      \"type\": \"array\",\n' +
+        '      \"description\": \"Date Field-multiple 1..3\",\n' +
+        '      \"items\": {\n' +
+        '        \"type\": \"string\",\n' +
+        '        \"format\": \"date-time\"\n' +
+        '      },\n' +
+        '      \"minItems\": 1,\n' +
+        '      \"maxItems\": 3\n' +
+        '    },\n' +
+        '    \"dateRangeZeroField\": {\n' +
+        '      \"type\": \"array\",\n' +
+        '      \"description\": \"Date Field-multiple 0..3\",\n' +
+        '      \"items\": {\n' +
+        '        \"type\": \"string\",\n' +
+        '        \"format\": \"date-time\"\n' +
+        '      },\n' +
+        '      \"maxItems\": 3\n' +
+        '    },\n' +
+        '    \"dateTimeRangeField\": {\n' +
+        '      \"type\": \"array\",\n' +
+        '      \"description\": \"DateTime Field-multiple 1..3\",\n' +
+        '      \"items\": {\n' +
+        '        \"type\": \"string\",\n' +
+        '        \"format\": \"date-time\"\n' +
+        '      },\n' +
+        '      \"minItems\": 1,\n' +
+        '      \"maxItems\": 3\n' +
+        '    },\n' +
+        '    \"dateTimeRangeZeroField\": {\n' +
+        '      \"type\": \"array\",\n' +
+        '      \"description\": \"DateTime Field-multiple 0..3\",\n' +
+        '      \"items\": {\n' +
+        '        \"type\": \"string\",\n' +
+        '        \"format\": \"date-time\"\n' +
+        '      },\n' +
+        '      \"maxItems\": 3\n' +
+        '    },\n' +
+        '    \"strictDateRangeField\": {\n' +
+        '      \"type\": \"array\",\n' +
+        '      \"description\": \"StrictDate Field-multiple 1..3\",\n' +
+        '      \"items\": {\n' +
+        '        \"type\": \"string\",\n' +
+        '        \"format\": \"date\"\n' +
+        '      },\n' +
+        '      \"minItems\": 1,\n' +
+        '      \"maxItems\": 3\n' +
+        '    },\n' +
+        '    \"strictDateRangeZeroField\": {\n' +
+        '      \"type\": \"array\",\n' +
+        '      \"description\": \"StrictDate Field-multiple 0..3\",\n' +
+        '      \"items\": {\n' +
+        '        \"type\": \"string\",\n' +
+        '        \"format\": \"date\"\n' +
+        '      },\n' +
+        '      \"maxItems\": 3\n' +
+        '    }\n' +
+        '  },\n' +
+        '  \"required\": [\n' +
+        '    \"stringField\",\n' +
+        '    \"floatField\",\n' +
+        '    \"integerField\",\n' +
+        '    \"dateField\",\n' +
+        '    \"dateTimeField\",\n' +
+        '    \"strictDateField\",\n' +
+        '    \"booleanField\",\n' +
+        '    \"stringNoDescriptionField\",\n' +
+        '    \"stringRangeField\",\n' +
+        '    \"integerRangeField\",\n' +
+        '    \"floatRangeField\",\n' +
+        '    \"dateRangeField\",\n' +
+        '    \"dateTimeRangeField\",\n' +
+        '    \"strictDateRangeField\"\n' +
+        '  ]\n' +
+        '}';
+
+  assert(jsonEquivalent($expectedjson->meta::json::parseJSON(), $jsonSchema->at(0).content->meta::json::parseJSON()));
+}
 
 function <<test.Test>> {serverVersion.start='v1_20_0'} meta::json::schema::generation::tests::toJSONSchemaTest():Boolean[1]
 {
-    let jsonSchema = toJSONSchema(^JSONSchemaConfig(class='meta::json::schema::tests::Cat'));
-    assertFalse( $jsonSchema->isEmpty() );
-    assertSize($jsonSchema,1);
-   let expectedjson = '{\n' +
-        '  "allOf": [\n' +
-        '    {\n' +
-        '      "$ref": "#\\/definitions\\/meta::json::schema::tests::Animal"\n' +
-        '    }\n' +
-        '  ],\n' +
-        '  "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
-        '  "description": "The Cat Class",\n' +
-        '  "title": "meta::json::schema::tests::Cat",\n' +
-        '  "type": "object",\n' +
-        '  "definitions":   {\n' +
-        '    "meta::json::schema::tests::AnimalType":     {\n' +
-        '      "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
-        '      "description": "The AnimalType Enum",\n' +
-        '      "title": "meta::json::schema::tests::AnimalType",\n' +
-        '      "type": "string",\n' +
-        '      "enum": [\n' +
-        '"CAT",\n' +
-        '"DOG",\n' +
-        '"BIRD",\n' +
-        '"FISH",\n' +
-        '"HUMAN"\n' +
-        '      ]\n' +
-        '    },\n' +
-        '    "meta::json::schema::tests::Animal":     {\n' +
-        '      "allOf": [\n' +
-        '        {\n' +
-        '          "$ref": "#\\/definitions\\/meta::json::schema::tests::Being"\n' +
-        '        }\n' +
-        '      ],\n' +
-        '      "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
-        '      "description": "The Animal Class",\n' +
-        '      "title": "meta::json::schema::tests::Animal",\n' +
-        '      "type": "object",\n' +
-        '      "properties":       {\n' +
-        '        "aliases":         {\n' +
-        '          "type": "array",\n' +
-        '          "items":           {\n' +
-        '            "type": "string"\n' +
-        '          }\n' +
-        '        },\n' +
-        '        "extra":         {\n' +
-        '          "minItems": 4,\n' +
-        '          "maxItems": 4,\n' +
-        '          "type": "array",\n' +
-        '          "items":           {\n' +
-        '            "$ref": "#\\/definitions\\/meta::json::schema::tests::OtherInfo"\n' +
-        '          }\n' +
-        '        },\n' +
-        '        "name":         {\n' +
-        '          "type": "string"\n' +
-        '        },\n' +
-        '        "type":         {\n' +
-        '          "$ref": "#\\/definitions\\/meta::json::schema::tests::AnimalType"\n' +
-        '        },\n' +
-        '        "age":         {\n' +
-        '          "type": "integer"\n' +
-        '        }\n' +
-        '      },\n' +
-        '      "required": [\n' +
-        '"name",\n' +
-        '"age",\n' +
-        '"type",\n' +
-        '"extra"\n' +
-        '     ]\n' +
-        '    },\n' +
-        '    "meta::json::schema::tests::OtherInfo":     {\n' +
-        '      "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
-        '      "description": "The OtherInfo Class",\n' +
-        '      "title": "meta::json::schema::tests::OtherInfo",\n' +
-        '      "type": "object",\n' +
-        '      "properties":       {\n' +
-        '        "info":         {\n' +
-        '          "type": "string"\n' +
-        '        }\n' +
-        '      },\n' +
-        '      "required": [\n' +
-        '"info"\n' +
-        '      ]\n' +
-        '    },\n' +
-        '    "meta::json::schema::tests::Being":     {\n' +
-        '      "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
-        '      "description": "The Being Class",\n' +
-        '      "title": "meta::json::schema::tests::Being",\n' +
-        '      "type": "object",\n' +
-        '      "properties":       {\n' +
-        '        "omg":         {\n' +
-        '          "type": "string"\n' +
-        '        }\n' +
-        '      },\n' +
-        '      "required": [\n' +
-        '"omg"\n' +
-        '      ]\n' +
-        '    }\n' +
-        '  },\n' +
-        '  "properties":   {\n' +
-        '    "vegetarian":     {\n' +
-        '      "description": "Is the animal a vegetarian?",\n' +
-        '      "type": "boolean"\n' +
-        '    }\n' +
-        '  },\n' +
-        '  "required": [\n' +
-        '"vegetarian"\n' +
-        '  ]\n' +
-        '}';
-   assert(jsonEquivalent($expectedjson->meta::json::parseJSON(),$jsonSchema->at(0).content->meta::json::parseJSON()));
+  let jsonSchema = toJSONSchema(^JSONSchemaConfig(class='meta::json::schema::tests::Cat'));
+  assertFalse( $jsonSchema->isEmpty() );
+  assertSize($jsonSchema,1);
+  let expectedjson = '{\n' +
+      '  "allOf": [\n' +
+      '    {\n' +
+      '      "$ref": "#\\/definitions\\/meta::json::schema::tests::Animal"\n' +
+      '    }\n' +
+      '  ],\n' +
+      '  "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
+      '  "description": "The Cat Class",\n' +
+      '  "title": "meta::json::schema::tests::Cat",\n' +
+      '  "type": "object",\n' +
+      '  "definitions":   {\n' +
+      '    "meta::json::schema::tests::AnimalType":     {\n' +
+      '      "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
+      '      "description": "The AnimalType Enum",\n' +
+      '      "title": "meta::json::schema::tests::AnimalType",\n' +
+      '      "type": "string",\n' +
+      '      "enum": [\n' +
+      '"CAT",\n' +
+      '"DOG",\n' +
+      '"BIRD",\n' +
+      '"FISH",\n' +
+      '"HUMAN"\n' +
+      '      ]\n' +
+      '    },\n' +
+      '    "meta::json::schema::tests::Animal":     {\n' +
+      '      "allOf": [\n' +
+      '        {\n' +
+      '          "$ref": "#\\/definitions\\/meta::json::schema::tests::Being"\n' +
+      '        }\n' +
+      '      ],\n' +
+      '      "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
+      '      "description": "The Animal Class",\n' +
+      '      "title": "meta::json::schema::tests::Animal",\n' +
+      '      "type": "object",\n' +
+      '      "properties":       {\n' +
+      '        "aliases":         {\n' +
+      '          "type": "array",\n' +
+      '          "items":           {\n' +
+      '            "type": "string"\n' +
+      '          }\n' +
+      '        },\n' +
+      '        "extra":         {\n' +
+      '          "minItems": 4,\n' +
+      '          "maxItems": 4,\n' +
+      '          "type": "array",\n' +
+      '          "items":           {\n' +
+      '            "$ref": "#\\/definitions\\/meta::json::schema::tests::OtherInfo"\n' +
+      '          }\n' +
+      '        },\n' +
+      '        "name":         {\n' +
+      '          "type": "string"\n' +
+      '        },\n' +
+      '        "type":         {\n' +
+      '          "$ref": "#\\/definitions\\/meta::json::schema::tests::AnimalType"\n' +
+      '        },\n' +
+      '        "age":         {\n' +
+      '          "type": "integer"\n' +
+      '        }\n' +
+      '      },\n' +
+      '      "required": [\n' +
+      '"name",\n' +
+      '"age",\n' +
+      '"type",\n' +
+      '"extra"\n' +
+      '     ]\n' +
+      '    },\n' +
+      '    "meta::json::schema::tests::OtherInfo":     {\n' +
+      '      "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
+      '      "description": "The OtherInfo Class",\n' +
+      '      "title": "meta::json::schema::tests::OtherInfo",\n' +
+      '      "type": "object",\n' +
+      '      "properties":       {\n' +
+      '        "info":         {\n' +
+      '          "type": "string"\n' +
+      '        }\n' +
+      '      },\n' +
+      '      "required": [\n' +
+      '"info"\n' +
+      '      ]\n' +
+      '    },\n' +
+      '    "meta::json::schema::tests::Being":     {\n' +
+      '      "$schema": "http:\\/\\/json-schema.org\\/draft-07\\/schema#",\n' +
+      '      "description": "The Being Class",\n' +
+      '      "title": "meta::json::schema::tests::Being",\n' +
+      '      "type": "object",\n' +
+      '      "properties":       {\n' +
+      '        "omg":         {\n' +
+      '          "type": "string"\n' +
+      '        }\n' +
+      '      },\n' +
+      '      "required": [\n' +
+      '"omg"\n' +
+      '      ]\n' +
+      '    }\n' +
+      '  },\n' +
+      '  "properties":   {\n' +
+      '    "vegetarian":     {\n' +
+      '      "description": "Is the animal a vegetarian?",\n' +
+      '      "type": "boolean"\n' +
+      '    }\n' +
+      '  },\n' +
+      '  "required": [\n' +
+      '"vegetarian"\n' +
+      '  ]\n' +
+      '}';
+  assert(jsonEquivalent($expectedjson->meta::json::parseJSON(),$jsonSchema->at(0).content->meta::json::parseJSON()));
 }
 
 function <<test.Test>> {serverVersion.start='v1_20_0'} meta::json::schema::generation::tests::toJSONSchemaTestAnyOf():Boolean[1]
