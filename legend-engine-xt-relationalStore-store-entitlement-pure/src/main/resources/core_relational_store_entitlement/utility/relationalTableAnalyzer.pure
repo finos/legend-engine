@@ -43,12 +43,12 @@ function meta::analytics::store::entitlements::getTablesFromQuery(query:Function
 
 function meta::analytics::store::entitlements::getTablesFromDatabase(database: Database[1]): Table[*]
 {
-   meta::analytics::store::entitlements::getAllDatabases($database)->map(db|$db.schemas->map(s|$s.tables));
+   meta::analytics::store::entitlements::getAllDatabases($database, [])->map(db|$db.schemas->map(s|$s.tables));
 }
 
-function meta::analytics::store::entitlements::getAllDatabases(database : Database[1]): Database[*]
+function meta::analytics::store::entitlements::getAllDatabases(database : Database[1], visited: Database[*]): Database[*]
 {
-   $database->concatenate($database.includes->map(db|$db->cast(@Database)->meta::analytics::store::entitlements::getAllDatabases()));
+   if($database->in($visited), | [], | $database->concatenate($database.includes->map(db|$db->cast(@Database)->meta::analytics::store::entitlements::getAllDatabases($visited->concatenate($database)))));
 }
 
 function meta::analytics::store::entitlements::getRelationalDatabaseConnection(runtime: Runtime[1]): RelationalDatabaseConnection[*]
