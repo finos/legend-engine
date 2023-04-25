@@ -230,6 +230,62 @@ class UnitemporalDeltaTest extends BaseTest
     }
 
     @Test
+    void testMilestoningWithOptimizationFiltersNullable() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
+        DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+        UnitemporalDelta ingestMode = UnitemporalDelta.builder()
+            .digestField(digestName)
+            .transactionMilestoning(BatchIdAndDateTime.builder()
+                .batchIdInName(batchIdInName)
+                .batchIdOutName(batchIdOutName)
+                .dateTimeInName(batchTimeInName)
+                .dateTimeOutName(batchTimeOutName)
+                .build())
+            .addOptimizationFilters(OptimizationFilter.of(expiryDateName, expiryDateName + "_lower", expiryDateName + "_upper").withIncludesNullValues(true))
+            .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        // ------------ Perform Pass1 ------------------------
+        String dataPass1 = basePathForInput + "with_optimization_filter/includes_null_values/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "with_optimization_filter/includes_null_values/expected_pass1.csv";
+        // 1. Load staging table
+        loadBasicStagingData(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
+        // 3. Assert that the staging table is NOT truncated
+        List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
+        Assertions.assertEquals(stagingTableList.size(), 3);
+
+        // ------------ Perform Pass2 ------------------------
+        String dataPass2 = basePathForInput + "with_optimization_filter/includes_null_values/staging_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "with_optimization_filter/includes_null_values/expected_pass2.csv";
+        // 1. Load staging table
+        loadBasicStagingData(dataPass2);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(2, 0, 0, 1, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
+
+        // ------------ Perform Pass3 empty batch (No Impact) -------------------------
+        String dataPass3 = basePathForInput + "with_optimization_filter/includes_null_values/staging_data_pass3.csv";
+        String expectedDataPass3 = basePathForExpected + "with_optimization_filter/includes_null_values/expected_pass3.csv";
+        // 1. Load staging table
+        loadBasicStagingData(dataPass3);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
+    }
+
+    @Test
     void testMilestoningWithMaxVersioningGreaterThan() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getUnitemporalMainTableWithVersion();
