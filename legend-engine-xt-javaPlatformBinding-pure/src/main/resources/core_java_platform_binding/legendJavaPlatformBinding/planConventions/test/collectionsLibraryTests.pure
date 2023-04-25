@@ -124,6 +124,19 @@ meta::pure::executionPlan::platformBinding::legendJava::library::collection::tes
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::platformBinding::legendJava::library::collection::tests::testReverse() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('reverse collection', {|[1, 3, 2]->reverse()}, 'org.finos.legend.engine.plan.dependencies.util.Library.reverse(java.util.Arrays.asList(1L, 3L, 2L))', javaList(javaLong()))
+         ->assert('%s.size() == 3')
+         ->assert('(%s).get(0).equals(2L)')
+         ->assert('(%s).get(1).equals(3L)')
+         ->assert('(%s).get(2).equals(1L)')
+      ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
 meta::pure::executionPlan::platformBinding::legendJava::library::collection::tests::testCollectionQueries() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))

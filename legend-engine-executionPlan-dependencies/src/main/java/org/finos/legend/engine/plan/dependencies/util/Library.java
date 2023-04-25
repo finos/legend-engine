@@ -785,6 +785,13 @@ public class Library
         return sorted;
     }
 
+    public static <T> List<T> reverse(List<T> col)
+    {
+        ArrayList<T> reversed = new ArrayList<T>(col);
+        Collections.reverse(reversed);
+        return reversed;
+    }
+
     public static <T, U> U fold(List<T> col, BiFunction<? super T, U, U> accumulator, U identity)
     {
         java.util.function.BinaryOperator<U> dummyCombiner = (U combine1, U combine2) -> combine1;
