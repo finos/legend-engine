@@ -41,6 +41,7 @@ import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.graphQL.metamodel.Definition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.DefinitionVisitor;
 import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
+import org.finos.legend.engine.protocol.graphQL.metamodel.executable.Argument;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.ExecutableDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.Field;
 import org.finos.legend.engine.protocol.graphQL.metamodel.executable.FragmentDefinition;
@@ -58,6 +59,8 @@ import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.TypeSystemD
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.UnionTypeDefinition;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.FunctionParametersValidationNode;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.query.graphQL.api.GraphQL;
 import org.finos.legend.engine.query.graphQL.api.cache.GraphQLCacheKey;
 import org.finos.legend.engine.query.graphQL.api.cache.GraphQLDevCacheKey;
@@ -299,7 +302,10 @@ public class GraphQLExecute extends GraphQL
                             try
                             {
                                 Map<String, Result> parameterMap = new HashMap<>();
-                                extractFieldByName(graphQLQuery, p.propertyName).arguments.stream().forEach(a -> parameterMap.put(a.name, new ConstantResult(argumentValueToObject(a.value))));
+                                List<Argument> argumentList = extractFieldByName(graphQLQuery, p.propertyName).arguments;
+                                List<Variable> functionParameters = p.serializedPlan.rootExecutionNode.executionNodes.stream().filter(node -> node instanceof FunctionParametersValidationNode).map(executionNode -> ((FunctionParametersValidationNode)executionNode).functionParameters).flatMap(Collection::stream).collect(Collectors.toList());
+                                validateQueryParameters(argumentList, functionParameters);
+                                argumentList.stream().forEach(a -> parameterMap.put(a.name, new ConstantResult(argumentValueToObject(a.value))));
 
                                 generator.writeFieldName(p.propertyName);
                                 result = (JsonStreamingResult) planExecutor.execute(p.serializedPlan, parameterMap, null, profiles);
@@ -321,6 +327,17 @@ public class GraphQLExecute extends GraphQL
                         generator.writeEndObject();
                     }
                 }).build();
+    }
+
+    private void validateQueryParameters(List<Argument> argumentList, List<Variable> functionParameters)
+    {
+        List<String> providedQueryParameters = argumentList.stream().map(arg -> arg.name).collect(Collectors.toList());
+        List<String> functionParameterNames = functionParameters.stream().map(param -> param.name).collect(Collectors.toList());
+        List<String> invalidParameters = providedQueryParameters.stream().filter(param -> !functionParameterNames.contains(param)).collect(Collectors.toList());
+        if (!invalidParameters.isEmpty())
+        {
+            throw  new IllegalArgumentException("Invalid parameter(s) provided: " + invalidParameters.toString());
+        }
     }
 
     private List<SerializedNamedPlans> buildPlanWithParameter(String queryClassPath, String mappingPath, String runtimePath, Document document, OperationDefinition query, PureModel pureModel, GraphQLCacheKey graphQLCacheKey)

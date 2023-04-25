@@ -377,6 +377,8 @@ public class TestGraphQLAPI
     @Test
     public void testGraphQLExecuteDevAPI_RelationalWithInvalidParameter() throws Exception
     {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("Invalid parameter(s) provided: [name]");
         ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
         PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
         MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
