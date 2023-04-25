@@ -33,6 +33,7 @@ import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.store.E
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.mapping.PropertyBase;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
 
 public final class HelperElasticsearchBuilder
@@ -47,7 +48,9 @@ public final class HelperElasticsearchBuilder
         org.finos.legend.pure.m4.coreinstance.SourceInformation sourceInformation = SourceInformationHelper.toM3SourceInformation(srcStore.sourceInformation);
 
         MutableList<Root_meta_external_store_elasticsearch_v7_metamodel_store_Elasticsearch7StoreIndex> indices = srcStore.indices.stream().map(x -> buildIndex(x, sourceInformation, context)).collect(Collectors.toCollection(Lists.mutable::empty));
-        Root_meta_external_store_elasticsearch_v7_metamodel_store_Elasticsearch7Store store = new Root_meta_external_store_elasticsearch_v7_metamodel_store_Elasticsearch7Store_Impl(srcStore.name, sourceInformation, context.pureModel.getClass("meta::external::store::elasticsearch::v7::metamodel::store::Elasticsearch7Store"))
+        Class<?> classifier = context.pureModel.getClass("meta::external::store::elasticsearch::v7::metamodel::store::Elasticsearch7Store");
+        Root_meta_external_store_elasticsearch_v7_metamodel_store_Elasticsearch7Store store = new Root_meta_external_store_elasticsearch_v7_metamodel_store_Elasticsearch7Store_Impl(srcStore.name, sourceInformation, classifier)
+                ._classifierGenericType(context.pureModel.getGenericType(classifier))
                 ._indices(indices);
 
         return store._validate(true, sourceInformation, context.getExecutionSupport());
@@ -72,7 +75,7 @@ public final class HelperElasticsearchBuilder
         }
         else
         {
-            property = visitor.newProperty();
+            property = visitor.getBuiltProperty();
         }
 
         return new Root_meta_external_store_elasticsearch_v7_metamodel_store_Elasticsearch7StoreIndexProperty_Impl(srcProperty.propertyName, sourceInformation, context.pureModel.getClass("meta::external::store::elasticsearch::v7::metamodel::store::Elasticsearch7StoreIndexProperty"))

@@ -326,13 +326,13 @@ function
                                                 ));
 
    let newRows = $set->map(value|
-                         $functions->tail()->fold(
+                         $functions->fold(
                                {
                                   path, list | let res = $path->eval($value);
                                                let updated = if ($res->size() == 0,|^TDSNull(),|$res);
                                                ^List<TDSRow>(values = $updated->map(navValue|$list.values->map(row|^$row(values+=$navValue))));
                                },
-                               ^List<TDSRow>(values = $functions->at(0)->eval($value)->map(navValue|^TDSRow(values=$navValue, parent=$res)))
+                               ^List<TDSRow>(values = ^TDSRow(values=[], parent=$res))
                          ).values;
                       );
    $res->mutateAdd('rows',$newRows);

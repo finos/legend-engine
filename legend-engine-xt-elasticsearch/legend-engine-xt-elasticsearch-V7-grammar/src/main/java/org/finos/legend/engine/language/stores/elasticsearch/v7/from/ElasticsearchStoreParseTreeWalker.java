@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
@@ -45,9 +46,7 @@ import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.runtime
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.store.Elasticsearch7Store;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.store.Elasticsearch7StoreIndex;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.store.Elasticsearch7StoreIndexProperty;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.mapping.DocValuesPropertyBase;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.mapping.KeywordProperty;
-import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.mapping.Property;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.mapping.*;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
@@ -145,7 +144,7 @@ public class ElasticsearchStoreParseTreeWalker
         return property;
     }
 
-    private void processScalarPropertyContent(ElasticsearchParserGrammar.ScalarPropertyContentContext scalarPropertyContentContext, DocValuesPropertyBase docValuesPropertyBase)
+    private void processScalarPropertyContent(ElasticsearchParserGrammar.ScalarPropertyContentContext scalarPropertyContentContext, CorePropertyBase docValuesPropertyBase)
     {
         if (scalarPropertyContentContext == null)
         {
@@ -171,11 +170,61 @@ public class ElasticsearchStoreParseTreeWalker
     private class PropertyDefinitionParseTreeWalker extends ElasticsearchParserGrammarBaseVisitor<Property>
     {
         @Override
-        public Property visitKeywordPropertyDefinition(ElasticsearchParserGrammar.KeywordPropertyDefinitionContext ctx)
+        public Property visitScalarPropertyDefinition(ElasticsearchParserGrammar.ScalarPropertyDefinitionContext ctx)
         {
+            ElasticsearchParserGrammar.ScalarPropertyTypesContext scalarPropertyTypesContext = ctx.scalarPropertyTypes();
+            TerminalNode type = scalarPropertyTypesContext.getChild(TerminalNode.class, 0);
+
             Property property = new Property();
-            property.keyword = new KeywordProperty();
-            ElasticsearchStoreParseTreeWalker.this.processScalarPropertyContent(ctx.scalarPropertyContent(), property.keyword);
+
+            switch (type.getSymbol().getType())
+            {
+                case ElasticsearchParserGrammar.KEYWORD:
+                    property.keyword = new KeywordProperty();
+                    ElasticsearchStoreParseTreeWalker.this.processScalarPropertyContent(ctx.scalarPropertyContent(), property.keyword);
+                    break;
+                case ElasticsearchParserGrammar.TEXT:
+                    property.text = new TextProperty();
+                    ElasticsearchStoreParseTreeWalker.this.processScalarPropertyContent(ctx.scalarPropertyContent(), property.text);
+                    break;
+                case ElasticsearchParserGrammar.DATE:
+                    property.date = new DateProperty();
+                    ElasticsearchStoreParseTreeWalker.this.processScalarPropertyContent(ctx.scalarPropertyContent(), property.date);
+                    break;
+                case ElasticsearchParserGrammar.SHORT:
+                    property._short = new ShortNumberProperty();
+                    ElasticsearchStoreParseTreeWalker.this.processScalarPropertyContent(ctx.scalarPropertyContent(), property._short);
+                    break;
+                case ElasticsearchParserGrammar.BYTE:
+                    property._byte = new ByteNumberProperty();
+                    ElasticsearchStoreParseTreeWalker.this.processScalarPropertyContent(ctx.scalarPropertyContent(), property._byte);
+                    break;
+                case ElasticsearchParserGrammar.INTEGER:
+                    property.integer = new IntegerNumberProperty();
+                    ElasticsearchStoreParseTreeWalker.this.processScalarPropertyContent(ctx.scalarPropertyContent(), property.integer);
+                    break;
+                case ElasticsearchParserGrammar.LONG:
+                    property._long = new LongNumberProperty();
+                    ElasticsearchStoreParseTreeWalker.this.processScalarPropertyContent(ctx.scalarPropertyContent(), property._long);
+                    break;
+                case ElasticsearchParserGrammar.FLOAT:
+                    property._float = new FloatNumberProperty();
+                    ElasticsearchStoreParseTreeWalker.this.processScalarPropertyContent(ctx.scalarPropertyContent(), property._float);
+                    break;
+                case ElasticsearchParserGrammar.HALF_FLOAT:
+                    property.half_float = new HalfFloatNumberProperty();
+                    ElasticsearchStoreParseTreeWalker.this.processScalarPropertyContent(ctx.scalarPropertyContent(), property.half_float);
+                    break;
+                case ElasticsearchParserGrammar.DOUBLE:
+                    property._double = new DoubleNumberProperty();
+                    ElasticsearchStoreParseTreeWalker.this.processScalarPropertyContent(ctx.scalarPropertyContent(), property._double);
+                    break;
+                case ElasticsearchParserGrammar.BOOLEAN:
+                    property._boolean = new BooleanProperty();
+                    ElasticsearchStoreParseTreeWalker.this.processScalarPropertyContent(ctx.scalarPropertyContent(), property._boolean);
+                    break;
+            }
+
             return property;
         }
     }
@@ -204,12 +253,12 @@ public class ElasticsearchStoreParseTreeWalker
 
         storeConnection.sourceSpec = this.visit(clusterDetailsContext);
 
-        ElasticsearchConnectionParserGrammar.AuthenticaitonContext authenticaitonContext = PureGrammarParserUtility.validateAndExtractRequiredField(
-                v7ConnDefContext.authenticaiton(),
+        ElasticsearchConnectionParserGrammar.AuthenticationContext authenticationContext = PureGrammarParserUtility.validateAndExtractRequiredField(
+                v7ConnDefContext.authentication(),
                 ElasticsearchConnectionLexerGrammar.VOCABULARY.getLiteralName(ElasticsearchConnectionLexerGrammar.AUTHENTICATION),
                 sourceInformation
         );
-        storeConnection.authSpec = IAuthenticationGrammarParserExtension.parseAuthentication(authenticaitonContext.islandDefinition(), this.parserInfo.walkerSourceInformation, this.extension);
+        storeConnection.authSpec = IAuthenticationGrammarParserExtension.parseAuthentication(authenticationContext.islandDefinition(), this.parserInfo.walkerSourceInformation, this.extension);
 
         return storeConnection;
     }
