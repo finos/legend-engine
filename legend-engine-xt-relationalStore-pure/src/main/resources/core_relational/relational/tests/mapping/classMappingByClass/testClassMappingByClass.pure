@@ -77,20 +77,20 @@ import meta::relational::tests::mapping::classMappingByClass::*;
 
 function <<test.Test, test.ToFix>> meta::relational::tests::mapping::classMappingByClass::testRootMappingForDifferentIncludeOrder():Boolean[1]
 {
-   let id1 = TestMapping1.rootClassMappingByClass(Account).id;
-   let id2 = TestMapping2.rootClassMappingByClass(Account).id;
+   let id1 = TestMapping1->rootClassMappingByClass(Account).id;
+   let id2 = TestMapping2->rootClassMappingByClass(Account).id;
    assertEquals($id1, $id2, 'Either the logic to determine root mapping should be independent of ordering of includes or the logic should be communicated to the user');
 }
 
 function <<test.Test, test.ToFix>> meta::relational::tests::mapping::classMappingByClass::testCountClassMappingsForRedundantInclude():Boolean[1]
 {
-   let count = TestMapping3.classMappingByClass(Account)->size();
+   let count = TestMapping3->_classMappingByClass(Account)->size();
    assertEquals(1, $count, 'There is only 1 class mapping defined for Account class in the mapping heirarchy of TestMapping3 - count should be 1');
 }
 
 function <<test.Test, test.ToFix>> meta::relational::tests::mapping::classMappingByClass::testRootClassMappingForRedundantInclude():Boolean[1]
 {
-   let root1 = TestMapping3.classMappings()->filter(cm|$cm.class == Account && $cm.root == true)->cast(@InstanceSetImplementation);
-   let root2 = TestMapping3.rootClassMappingByClass(Account)->cast(@InstanceSetImplementation);
-   assertEquals($root1.allPropertyMappings().property.name, $root2->toOne().allPropertyMappings().property.name, 'root2 has only "name" as property mappings - should have both "name" and "trades"');
+   let root1 = TestMapping3->classMappings()->filter(cm|$cm.class == Account && $cm.root == true)->cast(@InstanceSetImplementation);
+   let root2 = TestMapping3->rootClassMappingByClass(Account)->cast(@InstanceSetImplementation);
+   assertEquals($root1->map(x|$x->allPropertyMappings()).property.name, $root2->toOne()->allPropertyMappings().property.name, 'root2 has only "name" as property mappings - should have both "name" and "trades"');
 }

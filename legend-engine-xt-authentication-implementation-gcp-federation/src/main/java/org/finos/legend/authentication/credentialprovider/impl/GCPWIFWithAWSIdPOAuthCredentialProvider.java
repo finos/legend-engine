@@ -14,13 +14,26 @@
 
 package org.finos.legend.authentication.credentialprovider.impl;
 
+import org.finos.legend.authentication.intermediationrule.IntermediationRule;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.GCPWIFWithAWSIdPAuthenticationSpecification;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.OAuthCredential;
 import org.finos.legend.authentication.credentialprovider.CredentialProvider;
 
+import java.util.List;
+
 public class GCPWIFWithAWSIdPOAuthCredentialProvider extends CredentialProvider<GCPWIFWithAWSIdPAuthenticationSpecification, OAuthCredential>
 {
+    public GCPWIFWithAWSIdPOAuthCredentialProvider()
+    {
+
+    }
+
+    public GCPWIFWithAWSIdPOAuthCredentialProvider(List<IntermediationRule> intermediationRules)
+    {
+        super(intermediationRules);
+    }
+
     @Override
     public OAuthCredential makeCredential(GCPWIFWithAWSIdPAuthenticationSpecification authenticationSpecification, Identity identity) throws Exception
     {

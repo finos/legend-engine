@@ -170,7 +170,7 @@ function meta::pure::executionPlan::platformBinding::typeInfo::allUnitInfos(info
 function meta::pure::executionPlan::platformBinding::typeInfo::forType(info:TypeInfoSet[1], type:Type[1]): TypeInfo[1]
 {
    let forType = $info.typeInfos->filter(ti| $ti.type == $type);
-   assert($forType->size() == 1, 'Type ' + if($forType->isEmpty(), |'missing', |'duplicated') + ': ' + $type->elementToPath());
+   assert($forType->size() == 1, |'Type ' + if($forType->isEmpty(), |'missing', |'duplicated') + ': ' + $type->elementToPath());
    $forType->toOne();
 }
 
@@ -252,18 +252,27 @@ function meta::pure::executionPlan::platformBinding::typeInfo::valueProperties(i
 
 function meta::pure::executionPlan::platformBinding::typeInfo::classDependenciesViaPropertiesWithSubTypes(info:TypeInfoSet[1], class:Class<Any>[1]): Class<Any>[*]
 {
+   classDependenciesViaPropertiesWithSubTypes($info, $class, false);
+}
+
+function meta::pure::executionPlan::platformBinding::typeInfo::classDependenciesViaPropertiesWithSubTypes(info:TypeInfoSet[1], class:Class<Any>[1], getClassSubTypes:Boolean[1]): Class<Any>[*]
+{
    let cd = $info
       ->classPropertiesRecursiveWithsubTypes($class, [])
       ->map(p| $p.genericType.rawType)
-      ->removeDuplicates(elementsEquals())
-      ->cast(@Class<Any>);
+      ->cast(@Class<Any>)
+      ->removeDuplicatesBy(classEqualityKey());
 
-   let subTypes = $cd->map(c | $c->getSpecializations())->filter(s |  $info.typeInfos->exists(ti | $ti.type == $s->cast(@Type)));
+   let cdSubTypes = $cd->map(c | $c->getSpecializations())->filter(s | $info.typeInfos->exists(ti | $ti.type == $s));
 
-      $cd->concatenate($subTypes)->filter(c| !elementsEquals()->eval($c, $class))
+   if($getClassSubTypes,
+        |  let classSubtypes = $class->getSpecializations()->filter(s | $info.typeInfos->exists(ti | $ti.type == $s));
+           $cd->concatenate($cdSubTypes)->concatenate($classSubtypes);,
+        |  $cd->concatenate($cdSubTypes)
+    )->filter($class->isNotClassFn())
       ->remove(Any)
-      ->removeDuplicates(elementsEquals())
-      ->cast(@Class<Any>);
+      ->cast(@Class<Any>)
+      ->removeDuplicatesBy(classEqualityKey());
 }
 
 function meta::pure::executionPlan::platformBinding::typeInfo::enumDependenciesViaProperties(info:TypeInfoSet[1], class:Class<Any>[1]): Enumeration<Any>[*]
@@ -275,8 +284,8 @@ function meta::pure::executionPlan::platformBinding::typeInfo::enumDependenciesV
       ->concatenate($dependencyProperties)
       ->filter(p| $p.genericType.rawType->toOne()->instanceOf(Enumeration))
       ->map(p| $p.genericType.rawType)
-      ->removeDuplicates(elementsEquals())
-      ->cast(@Enumeration<Any>);
+      ->cast(@Enumeration<Any>)
+      ->removeDuplicatesBy(enumerationEqualityKey());
 }
 
 function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::classPropertiesRecursiveWithsubTypes(info:TypeInfoSet[1], class:Class<Any>[1], visitedClasses:Class<Any>[*]):AbstractProperty<Any>[*]
@@ -287,7 +296,7 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo
          let forThisClass        = $info->allProperties($class)->filter(p| $p.genericType.rawType->toOne()->instanceOf(Class));
          let forThisWithSubtypes = $forThisClass->concatenate($class->getSpecializations()->filter(s |  $info.typeInfos->exists(ti | $ti.type == $s->cast(@Type)))->map(g | $info->allProperties($g)->filter(p| $p.genericType.rawType->toOne()->instanceOf(Class))));
          
-         let forChildren         = $forThisWithSubtypes.genericType.rawType->removeDuplicates(elementsEquals())->cast(@Class<Any>)->map(c| $info->classPropertiesRecursiveWithsubTypes($c, $visitedClasses->concatenate($class)));
+         let forChildren         = $forThisWithSubtypes.genericType.rawType->cast(@Class<Any>)->removeDuplicatesBy(classEqualityKey())->map(c| $info->classPropertiesRecursiveWithsubTypes($c, $visitedClasses->concatenate($class)));
          $forThisWithSubtypes->concatenate($forChildren);
       }
    );
@@ -305,6 +314,7 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo
                                             ])
                                          }
                                       ),
+      st: SubTypeGraphFetchTree[1]  |  $st.subTypeClass,
       r: RootGraphFetchTree<Any>[1] | $r.class,
       p: PropertyGraphFetchTree[1]  | $p.property.genericType.rawType->concatenate($p.subType) 
    ]);
@@ -324,7 +334,7 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo
    ]);
    let withRequiredQualifiers = $requiredQP->fold({qp,tis |$tis->addQualifiedPropertyForTypeIfMissing($qp)}, $withMilestoning);
    
-   $tree.subTrees->map(x | $x->meta::pure::graphFetch::routing::byPassClusteringInfo())->cast(@PropertyGraphFetchTree)->fold(
+   let withPropertySubtrees= $tree.subTrees->map(x | $x->meta::pure::graphFetch::routing::byPassClusteringInfo())->cast(@PropertyGraphFetchTree)->fold(
       {pgft, tis|
          if($pgft.property->instanceOf(QualifiedProperty), 
             | $tis->addQualifiedPropertyForTypeIfMissing($pgft.property->cast(@QualifiedProperty<Any>)), 
@@ -333,6 +343,16 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo
       }, 
       $withRequiredQualifiers
    );
+
+   let withSubTypeTrees=if($tree->instanceOf(RootGraphFetchTree),
+      |  $tree.subTypeTrees->map(x | $x->meta::pure::graphFetch::routing::byPassClusteringInfo())->cast(@SubTypeGraphFetchTree)->fold(
+                {strgft, tis|
+                     $tis->typeInfoFromTree($strgft);
+                }, 
+                $withPropertySubtrees
+            );,
+      | $withPropertySubtrees);
+   $withSubTypeTrees;  
 }
 
 function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::constraintInfoFromTree(typeInfos:TypeInfoSet[1], tree:GraphFetchTree[1]): TypeInfoSet[1]
@@ -385,11 +405,13 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo
 function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::classesInTree(tree:GraphFetchTree[1]): Class<Any>[*]
 {
    let class = $tree->match([
+      st: SubTypeGraphFetchTree[1] | $st.subTypeClass,
       r: RootGraphFetchTree<Any>[1] | $r.class,
       p: PropertyGraphFetchTree[1]  | $p.property.genericType.rawType->concatenate($p.subType)->filter(t| $t->instanceOf(Class))->cast(@Class<Any>)
    ]);
 
    $class->concatenate($tree.subTrees->map(st| $st->classesInTree()))->removeDuplicates();
+   $class->concatenate($tree.subTrees->map(st| $st->classesInTree()))->concatenate($tree.subTypeTrees->map(st| $st->classesInTree()))->removeDuplicates();
 }
 
 function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::typeInfoFromInstanceSetImplementations(info:TypeInfoSet[1], setImplementations:InstanceSetImplementation[*]): TypeInfoSet[1]
@@ -451,6 +473,10 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo
       },
       {none:Property<Nil,Any|*>[0] | 
          $class->getGeneralizations()->fold({c, tis| $tis->addPropertyForClassIfDefined($c, $propertyName, $isNewInstanceAllowed)}, $info);
+      },
+      {multiple:Property<Nil,Any|*>[*] |
+         fail('Multiple properties found with name - ' + $propertyName);
+         $info;
       }
    ]);
 }
@@ -534,8 +560,9 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo
 
 function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addOrReplace(info:TypeInfoSet[1], newTypeInfo:TypeInfo[1]): TypeInfoSet[1]
 {
+   let filterFn = $newTypeInfo.type->isNotTypeFn();
    ^$info(
-      typeInfos=$info.typeInfos->filter(ti| !elementsEquals()->eval($ti.type, $newTypeInfo.type))->concatenate($newTypeInfo)
+      typeInfos=$info.typeInfos->filter(ti|$filterFn->eval($ti.type))->concatenate($newTypeInfo)
    );
 }
 
@@ -594,17 +621,28 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo
 
 function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addBasicClassTypeInfo(info:TypeInfoSet[1], class:Class<Any>[1], seenClasses:Class<Any>[*], isNewInstanceAllowed:Boolean[1]): TypeInfoSet[1]
 {
-   let supertypes          = $class->getGeneralizations();
-   let newSeenClasses      = $seenClasses->concatenate($class);
-   let withSupertypes      = $supertypes->fold({c, set | $set->addBasicTypeInfoIfMissing($newSeenClasses, $c)}, $info);
+  if ($seenClasses->contains($class),
+      | $info,
+      |
+        let supertypes          = $class->getGeneralizations();
+        let newSeenClasses      = $seenClasses->concatenate($class);
+        let withSupertypes      = $supertypes->fold({c, set | $set->addBasicTypeInfoIfMissing($newSeenClasses, $c)}, $info);
 
-   let classInfo = ^ClassTypeInfo(
-      type                 = $class,
-      supertypes           = $supertypes,
-      isNewInstanceAllowed = $isNewInstanceAllowed
-   );
+        let classInfo = ^ClassTypeInfo(
+            type                 = $class,
+            supertypes           = $supertypes,
+            isNewInstanceAllowed = $isNewInstanceAllowed
+        );
 
-   $withSupertypes->addOrReplace($classInfo);
+        let withSuperTypes      = $withSupertypes->addOrReplace($classInfo);
+
+        $class->getSpecializations()->fold(
+          {special, agg |
+            pair(list($agg.first.values->concatenate($special)), $agg.second->addBasicTypeInfoIfMissing($agg.first.values, $special))
+          },
+          pair(list($newSeenClasses->concatenate($supertypes)), $withSuperTypes)
+        ).second;
+  )
 }
 
 function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addUnitTypeInfo(info:TypeInfoSet[1], unit:Unit[1]): TypeInfoSet[1]
@@ -626,9 +664,9 @@ function  <<access.private>> meta::pure::executionPlan::platformBinding::typeInf
    let generalizations = $class.generalizations->map(g | $g.general->cast(@GenericType).rawType->toOne())->cast(@Class<Any>);
    $generalizations
       ->concatenate($generalizations->map(g| $g->getGeneralizations()))
-      ->filter(c|!elementsEquals()->eval($c, meta::pure::metamodel::type::Any))
-      ->removeDuplicates(elementsEquals())
-      ->cast(@Class<Any>);
+      ->filter(meta::pure::metamodel::type::Any->isNotClassFn())
+      ->cast(@Class<Any>)
+      ->removeDuplicatesBy(classEqualityKey());
 }
 
 function  <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::getSpecializations(class:Type[1]):Class<Any>[*]
@@ -637,15 +675,32 @@ function  <<access.private>> meta::pure::executionPlan::platformBinding::typeInf
   
    $specializations
       ->concatenate($specializations->map(g| $g->getSpecializations()))
-      ->filter(c|!elementsEquals()->eval($c, meta::pure::metamodel::type::Any))
-      ->removeDuplicates(elementsEquals())
-      ->cast(@Class<Any>);
+      ->filter(meta::pure::metamodel::type::Any->isNotClassFn())
+      ->cast(@Class<Any>)
+      ->removeDuplicatesBy(classEqualityKey());
 }
 
 
 // Comparator needed due to Alloy bug in metadata vs other deserialization
 // TODO Verify if this is still needed
-function  <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::elementsEquals():Function<{PackageableElement[1],PackageableElement[1]->Boolean[1]}>[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::classEqualityKey():Function<{Class<Any>[1]->String[1]}>[1]
 {
-   {pe1:PackageableElement[1], pe2:PackageableElement[1] | $pe1->elementToPath() == $pe2->elementToPath()};
+  {c:Class<Any>[1] | $c->elementToPath()}
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::enumerationEqualityKey():Function<{Enumeration<Any>[1]->String[1]}>[1]
+{
+  {e:Enumeration<Any>[1] | $e->elementToPath()}
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::isNotTypeFn(type:Type[1]):Function<{Type[1]->Boolean[1]}>[1]
+{
+   let path = $type->cast(@PackageableElement)->elementToPath();
+   {t:Type[1] | ($type != $t) && ($path != $t->cast(@PackageableElement)->elementToPath())};
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::isNotClassFn(class:Class<Any>[1]):Function<{Class<Any>[1]->Boolean[1]}>[1]
+{
+   let path = $class->elementToPath();
+   {c:Class<Any>[1] | ($class != $c) && ($path != $c->elementToPath())};
 }

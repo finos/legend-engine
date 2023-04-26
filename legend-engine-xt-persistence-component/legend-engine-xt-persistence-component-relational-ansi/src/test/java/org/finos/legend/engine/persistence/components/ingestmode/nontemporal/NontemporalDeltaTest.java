@@ -54,8 +54,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
             "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\") " +
             "(SELECT * FROM \"mydb\".\"staging\" as stage " +
             "WHERE NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink " +
-            "WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND " +
-            "(sink.\"digest\" = stage.\"digest\"))))";
+            "WHERE (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\"))))";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
@@ -87,8 +86,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
             "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",'2000-01-01 00:00:00' " +
             "FROM \"mydb\".\"staging\" as stage " +
             "WHERE NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink " +
-            "WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND " +
-            "(sink.\"digest\" = stage.\"digest\"))))";
+            "WHERE (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\"))))";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestPlusUpdateTimestampCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
@@ -116,7 +114,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
         String insertSql = "INSERT INTO \"mydb\".\"main\" (\"id\", \"name\", \"amount\", \"biz_date\", \"digest\") " +
                 "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\" FROM \"mydb\".\"staging\" as stage " +
                 "WHERE ((stage.\"data_split\" >= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) " +
-                "AND (NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" = stage.\"digest\")))))";
+                "AND (NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink WHERE (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")))))";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestCreateQuery, operations.get(0).preActionsSql().get(0));
         Assertions.assertEquals(enrichSqlWithDataSplits(updateSql, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(0));
@@ -147,8 +145,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
         String insertSql = "INSERT INTO \"mydb\".\"main\" (\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"batch_update_time\") " +
                 "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",'2000-01-01 00:00:00' FROM \"mydb\".\"staging\" as stage " +
                 "WHERE ((stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) " +
-                "AND (NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) " +
-                "AND (sink.\"digest\" = stage.\"digest\")))))";
+                "AND (NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink WHERE (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")))))";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestPlusUpdateTimestampCreateQuery, operations.get(0).preActionsSql().get(0));
         Assertions.assertEquals(enrichSqlWithDataSplits(updateSql, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(0));
@@ -180,10 +177,9 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
 
         String insertSql = "INSERT INTO \"mydb\".\"main\" " +
                 "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\") " +
-                "(SELECT * FROM \"mydb\".\"staging\" as stage " +
+                "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\" FROM \"mydb\".\"staging\" as stage " +
                 "WHERE NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink " +
-                "WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND " +
-                "(sink.\"digest\" = stage.\"digest\"))))";
+                "WHERE (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\"))))";
 
         String deleteSql = "DELETE FROM \"mydb\".\"main\" as sink " +
                 "WHERE EXISTS (SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\" " +
@@ -221,9 +217,8 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
 
         String insertSql = "INSERT INTO \"MYDB\".\"MAIN\" (\"ID\", \"NAME\", \"AMOUNT\", \"BIZ_DATE\", \"DIGEST\") " +
                 "(SELECT * FROM \"MYDB\".\"STAGING\" as stage WHERE NOT (EXISTS (SELECT * FROM \"MYDB\".\"MAIN\" as sink " +
-                "WHERE ((sink.\"ID\" = stage.\"ID\") " +
-                "AND (sink.\"NAME\" = stage.\"NAME\")) " +
-                "AND (sink.\"DIGEST\" = stage.\"DIGEST\"))))";
+                "WHERE (sink.\"ID\" = stage.\"ID\") " +
+                "AND (sink.\"NAME\" = stage.\"NAME\"))))";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestCreateQueryWithUpperCase, preActionsSqlList.get(0));
         Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
@@ -247,8 +242,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
         String insertSql = "INSERT INTO \"mydb\".\"main\" (\"id\", \"name\", \"amount\", \"digest\") " +
                 "(SELECT * FROM \"mydb\".\"staging\" as stage " +
                 "WHERE NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink " +
-                "WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND " +
-                "(sink.\"digest\" = stage.\"digest\"))))";
+                "WHERE (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\"))))";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
@@ -262,6 +256,153 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
         List<String> expectedSQL = new ArrayList<>();
         expectedSQL.add(AnsiTestArtifacts.expectedStagingCleanupQuery);
         assertIfListsAreSameIgnoringOrder(expectedSQL, postActionsSql);
+    }
+
+    @Override
+    public void verifyNontemporalDeltaWithNoVersionAndStagingFilter(GeneratorResult operations)
+    {
+        List<String> preActionsSqlList = operations.preActionsSql();
+        List<String> milestoningSqlList = operations.ingestSql();
+
+        String updateSql = "UPDATE \"mydb\".\"main\" as sink SET " +
+            "sink.\"id\" = (SELECT stage.\"id\" FROM \"mydb\".\"staging\" as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\")) AND ((stage.\"biz_date\" > '2020-01-01') AND (stage.\"biz_date\" < '2020-01-03')))," +
+            "sink.\"name\" = (SELECT stage.\"name\" FROM \"mydb\".\"staging\" as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\")) AND ((stage.\"biz_date\" > '2020-01-01') AND (stage.\"biz_date\" < '2020-01-03')))," +
+            "sink.\"amount\" = (SELECT stage.\"amount\" FROM \"mydb\".\"staging\" as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\")) AND ((stage.\"biz_date\" > '2020-01-01') AND (stage.\"biz_date\" < '2020-01-03')))," +
+            "sink.\"biz_date\" = (SELECT stage.\"biz_date\" FROM \"mydb\".\"staging\" as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\")) AND ((stage.\"biz_date\" > '2020-01-01') AND (stage.\"biz_date\" < '2020-01-03')))," +
+            "sink.\"digest\" = (SELECT stage.\"digest\" FROM \"mydb\".\"staging\" as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\")) AND ((stage.\"biz_date\" > '2020-01-01') AND (stage.\"biz_date\" < '2020-01-03'))) " +
+            "WHERE EXISTS (SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\" FROM \"mydb\".\"staging\" as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\")) AND ((stage.\"biz_date\" > '2020-01-01') AND (stage.\"biz_date\" < '2020-01-03')))";
+
+        String insertSql = "INSERT INTO \"mydb\".\"main\" (\"id\", \"name\", \"amount\", \"biz_date\", \"digest\") " +
+            "(SELECT * FROM (SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\" FROM \"mydb\".\"staging\" as stage WHERE (stage.\"biz_date\" > '2020-01-01') AND (stage.\"biz_date\" < '2020-01-03')) as stage " +
+            "WHERE NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink WHERE (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\"))))";
+
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
+        Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
+        Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
+
+        String incomingRecordCount = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging\" as stage WHERE (stage.\"biz_date\" > '2020-01-01') AND (stage.\"biz_date\" < '2020-01-03')";
+        // Stats
+        Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
+        Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
+        Assertions.assertEquals(rowsDeleted, operations.postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
+    }
+
+    @Override
+    public void verifyNontemporalDeltaWithMaxVersioningAndStagingFiltersWithDedup(GeneratorResult operations)
+    {
+        List<String> preActionsSqlList = operations.preActionsSql();
+        List<String> milestoningSqlList = operations.ingestSql();
+
+        String updateSql = "UPDATE \"mydb\".\"main\" as sink SET " +
+            "sink.\"id\" = (SELECT stage.\"id\" FROM (SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",stage.\"version\",ROW_NUMBER() OVER (PARTITION BY stage.\"id\",stage.\"name\" ORDER BY stage.\"version\" DESC) as \"legend_persistence_row_num\" FROM \"mydb\".\"staging\" as stage WHERE \"snapshot_id\" > 18972) as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (stage.\"version\" > sink.\"version\")) AND (stage.\"legend_persistence_row_num\" = 1))," +
+            "sink.\"name\" = (SELECT stage.\"name\" FROM (SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",stage.\"version\",ROW_NUMBER() OVER (PARTITION BY stage.\"id\",stage.\"name\" ORDER BY stage.\"version\" DESC) as \"legend_persistence_row_num\" FROM \"mydb\".\"staging\" as stage WHERE \"snapshot_id\" > 18972) as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (stage.\"version\" > sink.\"version\")) AND (stage.\"legend_persistence_row_num\" = 1))," +
+            "sink.\"amount\" = (SELECT stage.\"amount\" FROM (SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",stage.\"version\",ROW_NUMBER() OVER (PARTITION BY stage.\"id\",stage.\"name\" ORDER BY stage.\"version\" DESC) as \"legend_persistence_row_num\" FROM \"mydb\".\"staging\" as stage WHERE \"snapshot_id\" > 18972) as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (stage.\"version\" > sink.\"version\")) AND (stage.\"legend_persistence_row_num\" = 1))," +
+            "sink.\"biz_date\" = (SELECT stage.\"biz_date\" FROM (SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",stage.\"version\",ROW_NUMBER() OVER (PARTITION BY stage.\"id\",stage.\"name\" ORDER BY stage.\"version\" DESC) as \"legend_persistence_row_num\" FROM \"mydb\".\"staging\" as stage WHERE \"snapshot_id\" > 18972) as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (stage.\"version\" > sink.\"version\")) AND (stage.\"legend_persistence_row_num\" = 1))," +
+            "sink.\"digest\" = (SELECT stage.\"digest\" FROM (SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",stage.\"version\",ROW_NUMBER() OVER (PARTITION BY stage.\"id\",stage.\"name\" ORDER BY stage.\"version\" DESC) as \"legend_persistence_row_num\" FROM \"mydb\".\"staging\" as stage WHERE \"snapshot_id\" > 18972) as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (stage.\"version\" > sink.\"version\")) AND (stage.\"legend_persistence_row_num\" = 1))," +
+            "sink.\"version\" = (SELECT stage.\"version\" FROM (SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",stage.\"version\",ROW_NUMBER() OVER (PARTITION BY stage.\"id\",stage.\"name\" ORDER BY stage.\"version\" DESC) as \"legend_persistence_row_num\" FROM \"mydb\".\"staging\" as stage WHERE \"snapshot_id\" > 18972) as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (stage.\"version\" > sink.\"version\")) AND (stage.\"legend_persistence_row_num\" = 1)) " +
+            "WHERE EXISTS (SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",stage.\"version\" FROM (SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",stage.\"version\",ROW_NUMBER() OVER (PARTITION BY stage.\"id\",stage.\"name\" ORDER BY stage.\"version\" DESC) as \"legend_persistence_row_num\" FROM \"mydb\".\"staging\" as stage WHERE \"snapshot_id\" > 18972) as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (stage.\"version\" > sink.\"version\")) AND (stage.\"legend_persistence_row_num\" = 1))";
+
+        String insertSql = "INSERT INTO \"mydb\".\"main\" (\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"version\") " +
+            "(SELECT * FROM (SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",stage.\"version\" FROM " +
+            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",stage.\"version\",ROW_NUMBER() OVER (PARTITION BY stage.\"id\",stage.\"name\" ORDER BY stage.\"version\" DESC) as \"legend_persistence_row_num\" FROM \"mydb\".\"staging\" as stage " +
+            "WHERE \"snapshot_id\" > 18972) as stage " +
+            "WHERE stage.\"legend_persistence_row_num\" = 1) as stage " +
+            "WHERE NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink WHERE (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\"))))";
+
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestPlusVersionCreateQuery, preActionsSqlList.get(0));
+        Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
+        Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
+
+        String incomingRecordCount = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging\" as stage WHERE \"snapshot_id\" > 18972";
+        // Stats
+        Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
+        Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
+        Assertions.assertEquals(rowsDeleted, operations.postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
+    }
+
+    @Override
+    public void verifyNontemporalDeltaWithMaxVersioningNoDedupAndStagingFilters(GeneratorResult operations)
+    {
+        List<String> preActionsSqlList = operations.preActionsSql();
+        List<String> milestoningSqlList = operations.ingestSql();
+
+        String updateSql = "UPDATE \"mydb\".\"main\" as sink SET " +
+            "sink.\"id\" = (SELECT stage.\"id\" FROM \"mydb\".\"staging\" as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (stage.\"version\" > sink.\"version\")) AND (\"snapshot_id\" > 18972))," +
+            "sink.\"name\" = (SELECT stage.\"name\" FROM \"mydb\".\"staging\" as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (stage.\"version\" > sink.\"version\")) AND (\"snapshot_id\" > 18972))," +
+            "sink.\"amount\" = (SELECT stage.\"amount\" FROM \"mydb\".\"staging\" as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (stage.\"version\" > sink.\"version\")) AND (\"snapshot_id\" > 18972))," +
+            "sink.\"biz_date\" = (SELECT stage.\"biz_date\" FROM \"mydb\".\"staging\" as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (stage.\"version\" > sink.\"version\")) AND (\"snapshot_id\" > 18972))," +
+            "sink.\"digest\" = (SELECT stage.\"digest\" FROM \"mydb\".\"staging\" as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (stage.\"version\" > sink.\"version\")) AND (\"snapshot_id\" > 18972))," +
+            "sink.\"version\" = (SELECT stage.\"version\" FROM \"mydb\".\"staging\" as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (stage.\"version\" > sink.\"version\")) AND (\"snapshot_id\" > 18972)) " +
+            "WHERE EXISTS (SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",stage.\"version\" FROM \"mydb\".\"staging\" as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (stage.\"version\" > sink.\"version\")) AND (\"snapshot_id\" > 18972))";
+
+        String insertSql = "INSERT INTO \"mydb\".\"main\" (\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"version\") " +
+            "(SELECT * FROM (SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",stage.\"version\" FROM \"mydb\".\"staging\" as stage WHERE \"snapshot_id\" > 18972) as stage " +
+            "WHERE NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink WHERE (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\"))))";
+
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestPlusVersionCreateQuery, preActionsSqlList.get(0));
+        Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
+        Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
+
+        String incomingRecordCount = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging\" as stage WHERE \"snapshot_id\" > 18972";
+        // Stats
+        Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
+        Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
+        Assertions.assertEquals(rowsDeleted, operations.postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
+    }
+
+    @Override
+    public void verifyNontemporalDeltaWithMaxVersioningNoDedupWithoutStagingFilters(GeneratorResult operations)
+    {
+        List<String> preActionsSqlList = operations.preActionsSql();
+        List<String> milestoningSqlList = operations.ingestSql();
+
+        String updateSql = "UPDATE \"mydb\".\"main\" as sink SET " +
+            "sink.\"id\" = (SELECT stage.\"id\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (stage.\"version\" > sink.\"version\"))," +
+            "sink.\"name\" = (SELECT stage.\"name\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (stage.\"version\" > sink.\"version\"))," +
+            "sink.\"amount\" = (SELECT stage.\"amount\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (stage.\"version\" > sink.\"version\"))," +
+            "sink.\"biz_date\" = (SELECT stage.\"biz_date\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (stage.\"version\" > sink.\"version\"))," +
+            "sink.\"digest\" = (SELECT stage.\"digest\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (stage.\"version\" > sink.\"version\"))," +
+            "sink.\"version\" = (SELECT stage.\"version\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (stage.\"version\" > sink.\"version\")) " +
+            "WHERE EXISTS (SELECT * FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (stage.\"version\" > sink.\"version\"))";
+
+        String insertSql = "INSERT INTO \"mydb\".\"main\" (\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"version\") " +
+            "(SELECT * FROM \"mydb\".\"staging\" as stage " +
+            "WHERE NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink WHERE (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\"))))";
+
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestPlusVersionCreateQuery, preActionsSqlList.get(0));
+        Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
+        Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
+
+        // Stats
+        Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
+        Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
+        Assertions.assertEquals(rowsDeleted, operations.postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
+    }
+
+    @Override
+    public void verifyNontemporalDeltaWithWithMaxVersioningDedupEnabledAndUpperCaseWithoutStagingFilters(GeneratorResult operations)
+    {
+        List<String> preActionsSqlList = operations.preActionsSql();
+        List<String> milestoningSqlList = operations.ingestSql();
+
+        String updateSql = "UPDATE \"MYDB\".\"MAIN\" as sink SET " +
+            "sink.\"ID\" = (SELECT stage.\"ID\" FROM (SELECT stage.\"ID\",stage.\"NAME\",stage.\"AMOUNT\",stage.\"BIZ_DATE\",stage.\"DIGEST\",stage.\"VERSION\",ROW_NUMBER() OVER (PARTITION BY stage.\"ID\",stage.\"NAME\" ORDER BY stage.\"VERSION\" DESC) as \"LEGEND_PERSISTENCE_ROW_NUM\" FROM \"MYDB\".\"STAGING\" as stage) as stage WHERE (((sink.\"ID\" = stage.\"ID\") AND (sink.\"NAME\" = stage.\"NAME\")) AND (stage.\"VERSION\" >= sink.\"VERSION\")) AND (stage.\"LEGEND_PERSISTENCE_ROW_NUM\" = 1))," +
+            "sink.\"NAME\" = (SELECT stage.\"NAME\" FROM (SELECT stage.\"ID\",stage.\"NAME\",stage.\"AMOUNT\",stage.\"BIZ_DATE\",stage.\"DIGEST\",stage.\"VERSION\",ROW_NUMBER() OVER (PARTITION BY stage.\"ID\",stage.\"NAME\" ORDER BY stage.\"VERSION\" DESC) as \"LEGEND_PERSISTENCE_ROW_NUM\" FROM \"MYDB\".\"STAGING\" as stage) as stage WHERE (((sink.\"ID\" = stage.\"ID\") AND (sink.\"NAME\" = stage.\"NAME\")) AND (stage.\"VERSION\" >= sink.\"VERSION\")) AND (stage.\"LEGEND_PERSISTENCE_ROW_NUM\" = 1))," +
+            "sink.\"AMOUNT\" = (SELECT stage.\"AMOUNT\" FROM (SELECT stage.\"ID\",stage.\"NAME\",stage.\"AMOUNT\",stage.\"BIZ_DATE\",stage.\"DIGEST\",stage.\"VERSION\",ROW_NUMBER() OVER (PARTITION BY stage.\"ID\",stage.\"NAME\" ORDER BY stage.\"VERSION\" DESC) as \"LEGEND_PERSISTENCE_ROW_NUM\" FROM \"MYDB\".\"STAGING\" as stage) as stage WHERE (((sink.\"ID\" = stage.\"ID\") AND (sink.\"NAME\" = stage.\"NAME\")) AND (stage.\"VERSION\" >= sink.\"VERSION\")) AND (stage.\"LEGEND_PERSISTENCE_ROW_NUM\" = 1))," +
+            "sink.\"BIZ_DATE\" = (SELECT stage.\"BIZ_DATE\" FROM (SELECT stage.\"ID\",stage.\"NAME\",stage.\"AMOUNT\",stage.\"BIZ_DATE\",stage.\"DIGEST\",stage.\"VERSION\",ROW_NUMBER() OVER (PARTITION BY stage.\"ID\",stage.\"NAME\" ORDER BY stage.\"VERSION\" DESC) as \"LEGEND_PERSISTENCE_ROW_NUM\" FROM \"MYDB\".\"STAGING\" as stage) as stage WHERE (((sink.\"ID\" = stage.\"ID\") AND (sink.\"NAME\" = stage.\"NAME\")) AND (stage.\"VERSION\" >= sink.\"VERSION\")) AND (stage.\"LEGEND_PERSISTENCE_ROW_NUM\" = 1))," +
+            "sink.\"DIGEST\" = (SELECT stage.\"DIGEST\" FROM (SELECT stage.\"ID\",stage.\"NAME\",stage.\"AMOUNT\",stage.\"BIZ_DATE\",stage.\"DIGEST\",stage.\"VERSION\",ROW_NUMBER() OVER (PARTITION BY stage.\"ID\",stage.\"NAME\" ORDER BY stage.\"VERSION\" DESC) as \"LEGEND_PERSISTENCE_ROW_NUM\" FROM \"MYDB\".\"STAGING\" as stage) as stage WHERE (((sink.\"ID\" = stage.\"ID\") AND (sink.\"NAME\" = stage.\"NAME\")) AND (stage.\"VERSION\" >= sink.\"VERSION\")) AND (stage.\"LEGEND_PERSISTENCE_ROW_NUM\" = 1))," +
+            "sink.\"VERSION\" = (SELECT stage.\"VERSION\" FROM (SELECT stage.\"ID\",stage.\"NAME\",stage.\"AMOUNT\",stage.\"BIZ_DATE\",stage.\"DIGEST\",stage.\"VERSION\",ROW_NUMBER() OVER (PARTITION BY stage.\"ID\",stage.\"NAME\" ORDER BY stage.\"VERSION\" DESC) as \"LEGEND_PERSISTENCE_ROW_NUM\" FROM \"MYDB\".\"STAGING\" as stage) as stage WHERE (((sink.\"ID\" = stage.\"ID\") AND (sink.\"NAME\" = stage.\"NAME\")) AND (stage.\"VERSION\" >= sink.\"VERSION\")) AND (stage.\"LEGEND_PERSISTENCE_ROW_NUM\" = 1)) " +
+            "WHERE EXISTS (SELECT stage.\"ID\",stage.\"NAME\",stage.\"AMOUNT\",stage.\"BIZ_DATE\",stage.\"DIGEST\",stage.\"VERSION\" FROM (SELECT stage.\"ID\",stage.\"NAME\",stage.\"AMOUNT\",stage.\"BIZ_DATE\",stage.\"DIGEST\",stage.\"VERSION\",ROW_NUMBER() OVER (PARTITION BY stage.\"ID\",stage.\"NAME\" ORDER BY stage.\"VERSION\" DESC) as \"LEGEND_PERSISTENCE_ROW_NUM\" FROM \"MYDB\".\"STAGING\" as stage) as stage WHERE (((sink.\"ID\" = stage.\"ID\") AND (sink.\"NAME\" = stage.\"NAME\")) AND (stage.\"VERSION\" >= sink.\"VERSION\")) AND (stage.\"LEGEND_PERSISTENCE_ROW_NUM\" = 1))";
+
+        String insertSql = "INSERT INTO \"MYDB\".\"MAIN\" (\"ID\", \"NAME\", \"AMOUNT\", \"BIZ_DATE\", \"DIGEST\", \"VERSION\") " +
+            "(SELECT * FROM (SELECT stage.\"ID\",stage.\"NAME\",stage.\"AMOUNT\",stage.\"BIZ_DATE\",stage.\"DIGEST\",stage.\"VERSION\" FROM " +
+            "(SELECT stage.\"ID\",stage.\"NAME\",stage.\"AMOUNT\",stage.\"BIZ_DATE\",stage.\"DIGEST\",stage.\"VERSION\",ROW_NUMBER() OVER (PARTITION BY stage.\"ID\",stage.\"NAME\" ORDER BY stage.\"VERSION\" DESC) as \"LEGEND_PERSISTENCE_ROW_NUM\" FROM \"MYDB\".\"STAGING\" as stage) as stage " +
+            "WHERE stage.\"LEGEND_PERSISTENCE_ROW_NUM\" = 1) as stage " +
+            "WHERE NOT (EXISTS (SELECT * FROM \"MYDB\".\"MAIN\" as sink WHERE (sink.\"ID\" = stage.\"ID\") AND (sink.\"NAME\" = stage.\"NAME\"))))";
+
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestPlusVersionCreateQueryUpperCase, preActionsSqlList.get(0));
+        Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
+        Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
     }
 
     public RelationalSink getRelationalSink()

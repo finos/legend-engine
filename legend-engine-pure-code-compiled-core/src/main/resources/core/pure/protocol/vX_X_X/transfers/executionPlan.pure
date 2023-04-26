@@ -18,6 +18,7 @@ import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::runtime::*;
 import meta::protocols::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::*;
+import meta::pure::mapping::*;
 
 function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformPlan(sourcePlan:meta::pure::executionPlan::ExecutionPlan[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::executionPlan::ExecutionPlan[1]
 {
@@ -57,6 +58,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
          platform:meta::pure::executionPlan::PlatformUnionExecutionNode[1]|
             ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::PlatformUnionExecutionNode(
               _type='platformUnion',
+              isChildrenExecutionParallelizable = $platform.isChildrenExecutionParallelizable,
               resultType=$platform.resultType->transformResultType($mapping, $extensions)
             ),
          platform:meta::pure::executionPlan::PlatformMergeExecutionNode[1]|
@@ -221,7 +223,8 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
                graphFetchTree = $f.graphFetchTree->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], newMap([]->cast(@Pair<String,List<Any>>)), $extensions),
                batchSize = $f.batchSize,
                checked = $f.checked,
-               children = $f.children->map(x | $x->transformNode($mapping, $extensions))->cast(@meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::store::inMemory::InMemoryGraphFetchExecutionNode)
+               children = $f.children->map(x | $x->transformNode($mapping, $extensions))->cast(@meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::store::inMemory::InMemoryGraphFetchExecutionNode),
+               filter = $f.filter->isNotEmpty()
             ),
          f:meta::pure::mapping::modelToModel::graphFetch::executionPlan::InMemoryPropertyGraphFetchExecutionNode[1]|
             ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::store::inMemory::InMemoryPropertyGraphFetchExecutionNode(
@@ -284,7 +287,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
 
 function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformSetImplementation(setImplementation:meta::pure::mapping::SetImplementation[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::executionPlan::SetImplementationInfo[1]
 {
-   let propertyMappings = $setImplementation->cast(@meta::pure::mapping::InstanceSetImplementation).allPropertyMappings()
+   let propertyMappings = $setImplementation->cast(@meta::pure::mapping::InstanceSetImplementation)->allPropertyMappings()
                                     ->filter(pm|($pm.localMappingProperty->isEmpty() || $pm.localMappingProperty==false) &&
                                                 $pm.property->genericType().typeArguments->at(1).rawType->toOne()->instanceOf(meta::pure::metamodel::type::DataType)
                                     );
@@ -328,19 +331,23 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
                                                              (
                                                                 _type='void'
                                                              ),
-         lazyVoid:meta::pure::executionPlan::LazyVoidResultType[1]|^meta::protocols::pure::vX_X_X::metamodel::executionPlan::LazyVoidResultType
-                                                              (
-                                                                _type='lazyVoid'
-                                                              ),
-         up:meta::pure::executionPlan::UpdateNodeResultType[1]|^meta::protocols::pure::vX_X_X::metamodel::executionPlan::UpdateNodeResultType
-                                                              (
-                                                                _type='updateNode'
-                                                              );,
          rt:meta::pure::executionPlan::DataTypeResultType[1]|^meta::protocols::pure::vX_X_X::metamodel::executionPlan::DataTypeResultType
                                                               (
                                                                  _type='dataType',
                                                                  dataType=$rt.type->elementToPath()
                                                               ),
+         tds:meta::pure::executionPlan::TDSResultType[1]|^meta::protocols::pure::vX_X_X::metamodel::executionPlan::TDSResultType
+                                                          (
+                                                              _type='tds',
+                                                              tdsColumns=$tds.tdsColumns->map(c|^meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSColumn
+                                                                                                (
+                                                                                                  name = $c.name,
+                                                                                                  doc = $c.documentation,
+                                                                                                  type = $c.type->toOne()->elementToPath(),
+                                                                                                  enumMapping = if($c.enumMappingId->isEmpty(),|[],|meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformEnumMapping($mapping->enumerationMappingByName($c.enumMappingId->toOne())->toOne()))
+                                                                                                )
+                                                                                          )
+                                                          ),                                                              
          rt:meta::pure::executionPlan::ResultType[1]|^meta::protocols::pure::vX_X_X::metamodel::executionPlan::DataTypeResultType
                                                       (
                                                          _type='dataType',

@@ -69,7 +69,7 @@ function meta::analytics::mapping::modelCoverage::getAllPropertyInfo(classMappin
 
    newMap(
       $classMappings->filter(c | $c->instanceOf(InstanceSetImplementation))->cast(@InstanceSetImplementation)
-      .allPropertyMappings().property
+      ->map(x|$x->allPropertyMappings()).property
       ->removeDuplicates()
       ->map(p | $p->getRealProperty())
       ->concatenate($allQualifiedProperties)
@@ -154,8 +154,7 @@ function meta::analytics::mapping::modelCoverage::mapToSupportedType(type: Type[
       pair(Enum, MappedPropertyType.Enumeration),
       pair(Float, MappedPropertyType.Float),
       pair(Integer, MappedPropertyType.Integer),
-      pair(Decimal, MappedPropertyType.Decimal),
-      pair(Binary, MappedPropertyType.Binary)
+      pair(Decimal, MappedPropertyType.Decimal)
    ]->findValues($type)->first();
 }
 
@@ -176,7 +175,7 @@ function meta::analytics::mapping::modelCoverage::reRoot(classMappings:SetImplem
       ->map(kv |
          $kv.second.values->map(v |
             let root = if ($kv.second.values->size() > 1,
-                           | $m.rootClassMappingByClass($kv.first),
+                           | $m->rootClassMappingByClass($kv.first),
                            | $v);
 
             ^$v(root = $root.id == $v.id);
@@ -197,9 +196,9 @@ function meta::analytics::mapping::modelCoverage::getPropertyMappings(i:Instance
          let targetPropertyMappings = $classMappings
             ->filter(cm | $cm.id == $o.otherwisePropertyMapping.targetSetImplementationId)
             ->cast(@InstanceSetImplementation)->toOne()
-            .allPropertyMappings()->filter(pm | !$pm.property->in($o.allPropertyMappings().property));
+            ->allPropertyMappings()->filter(pm | !$pm.property->in($o->allPropertyMappings().property));
             
-         $o.allPropertyMappings()->concatenate($targetPropertyMappings);,
-      i:InstanceSetImplementation[1] | $i.allPropertyMappings()
+         $o->allPropertyMappings()->concatenate($targetPropertyMappings);,
+      i:InstanceSetImplementation[1] | $i->allPropertyMappings()
    ]);
 }

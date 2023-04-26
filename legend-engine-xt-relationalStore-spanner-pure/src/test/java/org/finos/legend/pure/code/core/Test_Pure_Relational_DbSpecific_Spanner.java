@@ -15,8 +15,9 @@
 package org.finos.legend.pure.code.core;
 
 import junit.framework.TestSuite;
-import org.finos.legend.pure.code.core.compiled.test.IgnoreUnsupportedApiPureTestSuiteRunner;
-import org.finos.legend.pure.code.core.compiled.test.PureTestBuilderHelper;
+import org.finos.legend.pure.m3.execution.test.PureTestBuilder;
+import org.finos.legend.pure.runtime.java.compiled.testHelper.IgnoreUnsupportedApiPureTestSuiteRunner;
+import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.junit.runner.RunWith;
@@ -27,7 +28,7 @@ public class Test_Pure_Relational_DbSpecific_Spanner
     public static TestSuite suite()
     {
         String testPackage = "meta::relational::tests::sqlQueryToString::spanner";
-        CompiledExecutionSupport executionSupport = PureTestBuilderHelper.getClassLoaderExecutionSupport();
-        return PureTestBuilderHelper.buildSuite(TestCollection.collectTests(testPackage, executionSupport.getProcessorSupport(), fn -> PureTestBuilderHelper.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilderHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport);
+        CompiledExecutionSupport executionSupport = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
+        return PureTestBuilderCompiled.buildSuite(TestCollection.collectTests(testPackage, executionSupport.getProcessorSupport(), fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport);
     }
 }

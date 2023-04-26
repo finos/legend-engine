@@ -14,70 +14,81 @@
 
 package org.finos.legend.engine.language.pure.dsl.authentication.grammar.from;
 
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.Lexer;
-import org.antlr.v4.runtime.Parser;
-import org.antlr.v4.runtime.TokenStream;
-import org.eclipse.collections.api.block.function.Function;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.language.pure.grammar.from.ParserErrorListener;
-import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
-import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.CredentialVaultSecret;
-import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.ServiceLoader;
+import java.util.stream.Stream;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.TerminalNode;
+import org.eclipse.collections.api.block.function.Function;
+import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
+import org.finos.legend.engine.language.pure.grammar.from.PureIslandGrammarSourceCode;
+import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
+import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.CredentialVaultSecret;
+import org.finos.legend.engine.shared.core.operational.Assert;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 public interface IAuthenticationGrammarParserExtension extends PureGrammarParserExtension
 {
-    static List<IAuthenticationGrammarParserExtension> getExtensions()
+    static Stream<IAuthenticationGrammarParserExtension> getExtensions(PureGrammarParserExtensions context)
     {
-        return Lists.mutable.withAll(ServiceLoader.load(IAuthenticationGrammarParserExtension.class));
+        return context.getExtensions()
+                .stream()
+                .filter(IAuthenticationGrammarParserExtension.class::isInstance)
+                .map(IAuthenticationGrammarParserExtension.class::cast);
     }
 
-    static AuthenticationSpecification process(SpecificationSourceCode code, List<Function<SpecificationSourceCode, AuthenticationSpecification>> processors)
-    {
-        return process(code, processors, "Authentication");
-    }
-
-    default List<Function<SpecificationSourceCode, AuthenticationSpecification>> getExtraAuthenticationParsers()
+    default List<Function<PureIslandGrammarSourceCode, AuthenticationSpecification>> getExtraAuthenticationParsers()
     {
         return Collections.emptyList();
     }
 
-    default List<Function<SpecificationSourceCode, CredentialVaultSecret>> getExtraCredentialVaultSecretParsers()
+    default List<Function<PureIslandGrammarSourceCode, CredentialVaultSecret>> getExtraCredentialVaultSecretParsers()
     {
         return Collections.emptyList();
     }
 
-    static <T extends SpecificationSourceCode, U> U process(T code, List<Function<T, U>> processors, String type)
+
+    static AuthenticationSpecification parseAuthentication(ParserRuleContext ctx, ParseTreeWalkerSourceInformation walkerSourceInformation, PureGrammarParserExtensions context)
     {
-        return ListIterate
-                .collect(processors, processor -> processor.apply(code))
-                .select(Objects::nonNull)
-                .getFirstOptional()
-                .orElseThrow(() -> new EngineException("Unsupported " + type + " type '" + code.getType() + "'", code.getSourceInformation(), EngineErrorType.PARSER));
+       return parseIsland(ctx, walkerSourceInformation, IAuthenticationGrammarParserExtension.getExtensions(context).map(IAuthenticationGrammarParserExtension::getExtraAuthenticationParsers).flatMap(List::stream), "Authentication");
     }
 
-    static <P extends Parser, V> V parse(SpecificationSourceCode code, Function<CharStream, Lexer> lexerFunc, Function<TokenStream, P> parserFunc, Function<P, V> transformer)
+    static AuthenticationSpecification parseCredentialVaultSecret(ParserRuleContext ctx, ParseTreeWalkerSourceInformation walkerSourceInformation, PureGrammarParserExtensions context)
     {
-        CharStream input = CharStreams.fromString(code.getCode());
-        ParserErrorListener errorListener = new ParserErrorListener(code.getWalkerSourceInformation());
-        Lexer lexer = lexerFunc.apply(input);
-        P parser = parserFunc.apply(new CommonTokenStream(lexer));
-        lexer.removeErrorListeners();
-        lexer.addErrorListener(errorListener);
-        parser.removeErrorListeners();
-        parser.addErrorListener(errorListener);
-        return transformer.apply(parser);
+        return parseIsland(ctx, walkerSourceInformation, IAuthenticationGrammarParserExtension.getExtensions(context).map(IAuthenticationGrammarParserExtension::getExtraAuthenticationParsers).flatMap(List::stream), "CredentialVaultSecret");
     }
 
+    static <U> U parseIsland(ParserRuleContext ctx, ParseTreeWalkerSourceInformation walkerSourceInformation, Stream<Function<PureIslandGrammarSourceCode, U>> processors, String parser)
+    {
+        Assert.assertTrue(ctx.getChildCount() == 2, () -> "Wrong number of token on authentication island", walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+        TerminalNode islandOpenToken = (TerminalNode) ctx.getChild(0);
+        String islandOpen = islandOpenToken.getText();
+        String type = islandOpen.substring(1, islandOpen.length() - 1).trim();
 
+        Assert.assertTrue(!type.isEmpty(), () -> "Missing authentication type.  Expect '# TYPE_HERE { ... }#'", walkerSourceInformation.getSourceInformation(islandOpenToken.getSymbol()), EngineErrorType.PARSER);
+
+        ParserRuleContext islandContentContext = (ParserRuleContext) ctx.getChild(1);
+        islandContentContext.removeLastChild();
+        String islandCode = islandContentContext.getText();
+
+        // prepare island grammar walker source information
+        int startLine = islandOpenToken.getSymbol().getLine();
+        int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
+        // only add current walker source information column offset if this is the first line
+        int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + islandOpenToken.getSymbol().getCharPositionInLine() + islandOpenToken.getSymbol().getText().length();
+        ParseTreeWalkerSourceInformation subWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(walkerSourceInformation.getReturnSourceInfo()).build();
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        PureIslandGrammarSourceCode code = new PureIslandGrammarSourceCode(islandCode, type, sourceInformation, subWalkerSourceInformation);
+
+        return processors.map(processor -> processor.apply(code))
+                .filter(Objects::nonNull)
+                .findAny()
+                .orElseThrow(() -> new EngineException("Unsupported " + parser + " type '" + code.type + "'", code.sourceInformation, EngineErrorType.PARSER));
+    }
 }

@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.modelManager.sdlc.alloy;
 
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
@@ -25,6 +26,7 @@ import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class AlloySDLCLoader
@@ -36,9 +38,9 @@ public class AlloySDLCLoader
         this.metaDataServerConfiguration = metaDataServerConfiguration;
     }
 
-    public PureModelContextData loadAlloyProject(MutableList<CommonProfile> pm, AlloySDLC alloySDLC, String clientVersion)
+    public PureModelContextData loadAlloyProject(MutableList<CommonProfile> pm, AlloySDLC alloySDLC, String clientVersion, Function<MutableList<CommonProfile>, CloseableHttpClient> httpClientProvider)
     {
-        return SDLCLoader.loadMetadataFromHTTPURL(pm, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_START, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_STOP, getMetaDataApiUrl(pm, alloySDLC, clientVersion));
+        return SDLCLoader.loadMetadataFromHTTPURL(pm, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_START, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_STOP, getMetaDataApiUrl(pm, alloySDLC, clientVersion), httpClientProvider);
     }
 
     public String getMetaDataApiUrl(MutableList<CommonProfile> pm, AlloySDLC alloySDLC, String clientVersion)

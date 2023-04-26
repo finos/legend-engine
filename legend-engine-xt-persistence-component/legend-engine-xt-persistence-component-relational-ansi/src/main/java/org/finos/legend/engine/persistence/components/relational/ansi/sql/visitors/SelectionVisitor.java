@@ -49,6 +49,11 @@ public class SelectionVisitor implements LogicalPlanVisitor<Selection>
             selectStatement.setSelectItemsSize((long) current.fields().size());
         }
 
+        if (current.limit().isPresent())
+        {
+            selectStatement.setLimit(current.limit().get());
+        }
+
         current.condition().ifPresent(logicalPlanNodeList::add);
         current.groupByFields().ifPresent(logicalPlanNodeList::addAll);
         current.quantifier().ifPresent(logicalPlanNodeList::add);

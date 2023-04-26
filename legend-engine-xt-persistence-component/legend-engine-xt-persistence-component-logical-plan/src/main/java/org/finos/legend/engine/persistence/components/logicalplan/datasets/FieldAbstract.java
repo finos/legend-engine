@@ -38,6 +38,10 @@ public interface FieldAbstract extends LogicalPlanNode
     @Default
     default boolean nullable()
     {
+        if (primaryKey())
+        {
+            return false;
+        }
         return true;
     }
 

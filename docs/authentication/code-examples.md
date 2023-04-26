@@ -3,7 +3,6 @@
 ## Configuration
 
 ```
-
 // 1 - Configure and assemble platform vaults
 
         Properties properties = new Properties();
@@ -26,7 +25,25 @@
                 .with(platformCredentialVaultProvider)
                 .with(awsSecretsManagerVault)
                 .build();
+                
+// 4 - Configure and assemble various credential providers
 
+        CredentialProviderProvider credentialProviderProvider = CredentialProviderProvider.builder()
+                .with(new UserPasswordCredentialProvider(
+                       Lists.immutable.<IntermediationRule>of(
+                            new UserPasswordFromVaultRule(credentialVaultProvider
+                        ).castToList());
+                 ))
+                .with(new ApiKeyCredentialProvider(
+                       Lists.immutable.<IntermediationRule>of(
+                            new ApiKeyFromVaultRule(credentialVaultProvider
+                        ).castToList());
+                 ))                 
+                .build();                
+```
+For advanced use cases, rules can be separately injected via a rule provider.
+
+```
 // 4 - Configure and assemble various rules 
 
         IntermediationRuleProvider intermediationRuleProvider = IntermediationRuleProvider.builder()

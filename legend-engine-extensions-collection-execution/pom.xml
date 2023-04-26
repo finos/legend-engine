@@ -19,12 +19,12 @@
     <parent>
         <artifactId>legend-engine</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>3.34.3-SNAPSHOT</version>
+        <version>4.9.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>legend-engine-extensions-collection-execution</artifactId>
-    <name>Legend Engine Extensions Collection - Execution</name>
+    <name>Legend Engine - Extensions Collection - Execution</name>
 
     <build>
         <plugins>
@@ -91,6 +91,11 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-elasticsearch-V7-executionPlan</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-language-pure-dsl-service-execution</artifactId>
         </dependency>
         <dependency>
@@ -100,6 +105,14 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-flatdata-runtime</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-flatdata-shared</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-flatdata-driver-bloomberg</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

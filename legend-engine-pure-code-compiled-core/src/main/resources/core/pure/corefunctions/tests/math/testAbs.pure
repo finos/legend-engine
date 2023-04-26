@@ -14,26 +14,6 @@
 
 import meta::pure::profiles::*;
 
-function <<test.Test>> meta::pure::functions::math::tests::abs::testIntAbs():Boolean[1]
-{
-    assertEq(2, abs(-2));
-}
-
-function <<test.Test>> meta::pure::functions::math::tests::abs::testBigIntAbs():Boolean[1]
-{
-    assertEq(123456789123456789, abs(-123456789123456789));
-}
-
-function <<test.Test>> meta::pure::functions::math::tests::abs::testFloatAbs():Boolean[1]
-{
-    assertEq(2.222, abs(-2.222));
-}
-
-function <<test.Test>> meta::pure::functions::math::tests::abs::testBigFloatAbs():Boolean[1]
-{
-    assertEq(123456789123456789.99, abs(-123456789123456789.99));
-}
-
 function <<test.Test>> meta::pure::functions::math::tests::abs::testReflectiveExecution():Boolean[1]
 {
 
@@ -47,8 +27,3 @@ function <<test.Test>> meta::pure::functions::math::tests::abs::testReflectiveEx
    assertEq(12345678912345, meta::pure::functions::math::abs_Number_1__Number_1_->evaluate(^List<Integer>(values=[-12345678912345]))->toOne()->cast(@Integer));
 }
 
-function <<test.Test>> meta::pure::functions::math::tests::abs::testDecimalAbs():Boolean[1]
-{
-   assertEq(3.0d, abs(-3.0d));
-   assertEq(3.0d, abs(3.0d));
-}

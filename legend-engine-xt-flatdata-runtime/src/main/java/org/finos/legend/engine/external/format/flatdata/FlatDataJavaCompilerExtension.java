@@ -14,30 +14,31 @@
 
 package org.finos.legend.engine.external.format.flatdata;
 
+import org.finos.legend.engine.external.format.flatdata.driver.spi.ObjectToParsedFlatData;
+import org.finos.legend.engine.external.format.flatdata.driver.spi.ParsedFlatData;
+import org.finos.legend.engine.external.format.flatdata.driver.spi.ParsedFlatDataToObject;
+import org.finos.legend.engine.external.format.flatdata.driver.spi.RawFlatData;
+import org.finos.legend.engine.external.format.flatdata.driver.spi.RawFlatDataValue;
+import org.finos.legend.engine.external.format.flatdata.metamodel.FlatData;
+import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataBoolean;
+import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataDataType;
+import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataDate;
+import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataDateTime;
+import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataDecimal;
+import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataInteger;
+import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataNumber;
+import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataProperty;
+import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataRecordField;
+import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataRecordType;
+import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataSection;
+import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataString;
+import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataTemporal;
 import org.finos.legend.engine.external.format.flatdata.read.IFlatDataDeserializeExecutionNodeSpecifics;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.ObjectToParsedFlatData;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.ParsedFlatData;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.ParsedFlatDataToObject;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.RawFlatData;
-import org.finos.legend.engine.external.format.flatdata.shared.driver.spi.RawFlatDataValue;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatData;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataBoolean;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataDataType;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataDate;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataDateTime;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataDecimal;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataInteger;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataNumber;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordField;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataRecordType;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataSection;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataString;
-import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataTemporal;
 import org.finos.legend.engine.external.format.flatdata.write.IFlatDataSerializeExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.compilation.GeneratePureConfig;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionPlanJavaCompilerExtension;
-import org.finos.legend.engine.shared.javaCompiler.ClassListFilter;
 import org.finos.legend.engine.shared.javaCompiler.ClassPathFilter;
+import org.finos.legend.engine.shared.javaCompiler.ClassPathFilters;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -59,6 +60,7 @@ public class FlatDataJavaCompilerExtension implements ExecutionPlanJavaCompilerE
         DEPENDENCIES.put(PURE_PACKAGE + "_ObjectToParsedFlatData", ObjectToParsedFlatData.class);
         DEPENDENCIES.put(PURE_PACKAGE + "_FlatData", FlatData.class);
         DEPENDENCIES.put(PURE_PACKAGE + "_FlatDataSection", FlatDataSection.class);
+        DEPENDENCIES.put(PURE_PACKAGE + "_FlatDataProperty", FlatDataProperty.class);
         DEPENDENCIES.put(PURE_PACKAGE + "_FlatDataRecordType", FlatDataRecordType.class);
         DEPENDENCIES.put(PURE_PACKAGE + "_FlatDataRecordField", FlatDataRecordField.class);
         DEPENDENCIES.put(PURE_PACKAGE + "_FlatDataDataType", FlatDataDataType.class);
@@ -75,7 +77,7 @@ public class FlatDataJavaCompilerExtension implements ExecutionPlanJavaCompilerE
     @Override
     public ClassPathFilter getExtraClassPathFilter()
     {
-        return new ClassListFilter(DEPENDENCIES.values());
+        return ClassPathFilters.fromClasses(DEPENDENCIES.values());
     }
 
     /**

@@ -14,8 +14,11 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.serialization;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import org.eclipse.collections.api.block.function.Function;
@@ -28,6 +31,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.activity.Aggrega
 import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.ResultInterpreterExtension;
+import org.finos.legend.engine.plan.execution.stores.relational.result.ResultInterpreterExtensionLoader;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 
 import java.io.IOException;
@@ -57,7 +61,7 @@ public class RelationalResultToJsonDefaultSerializer extends Serializer
         this.relationalResult = relationalResult;
         this.objectMapper.registerSubtypes(new NamedType(AggregationAwareActivity.class, "aggregationAware"));
         this.objectMapper.registerSubtypes(new NamedType(RelationalExecutionActivity.class, "relational"));
-        Iterate.addAllTo(ServiceLoader.load(ResultInterpreterExtension.class), Lists.mutable.empty()).flatCollect(ResultInterpreterExtension::additionalMappers).forEach(e -> this.objectMapper.registerSubtypes(new NamedType(e.getOne(), e.getTwo())));
+        Iterate.addAllTo(ResultInterpreterExtensionLoader.extensions(), Lists.mutable.empty()).flatCollect(ResultInterpreterExtension::additionalMappers).forEach(e -> this.objectMapper.registerSubtypes(new NamedType(e.getOne(), e.getTwo())));
     }
 
     @Override
@@ -144,5 +148,20 @@ public class RelationalResultToJsonDefaultSerializer extends Serializer
         }
         objectMapper.writeValue(outputStream, collection.get(collection.size() - 1));
         outputStream.flush();
+    }
+
+    public static String removeComment(String jsonStr) throws JsonProcessingException
+    {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode node = mapper.readValue(jsonStr, JsonNode.class);
+        JsonNode nodes = node.get("activities");
+        if (nodes.isArray())
+        {
+            for (JsonNode jsonNode : nodes)
+            {
+                ((ObjectNode) jsonNode).remove("comment");
+            }
+        }
+        return node.toString();
     }
 }

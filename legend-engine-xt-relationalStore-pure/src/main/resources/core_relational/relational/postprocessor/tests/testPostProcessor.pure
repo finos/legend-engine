@@ -33,8 +33,8 @@ function <<test.BeforePackage>> meta::relational::tests::postProcessor::setUp():
 
 function <<test.Test>> meta::relational::tests::postProcessor::testReplaceTablePostProcessor():Boolean[1]
 {
-   let oldTable = db.schema('default')->toOne().table('personTable')->toOne();
-   let newTable = db.schema('default')->toOne().table('differentPersonTable')->toOne();
+   let oldTable = db->schema('default')->toOne()->table('personTable')->toOne();
+   let newTable = db->schema('default')->toOne()->table('differentPersonTable')->toOne();
    let result = execute(|Person.all(), simpleRelationalMapping, runtimeWithTableReplace(pair($oldTable, $newTable)), meta::relational::extension::relationalExtensions());
    
    assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from differentPersonTable as "root"', $result);
@@ -43,8 +43,8 @@ function <<test.Test>> meta::relational::tests::postProcessor::testReplaceTableP
 function <<test.Test>> meta::relational::tests::postProcessor::testReplaceTableMultiplePostProcessor():Boolean[1]
 {
 
-   let oldTable = db.schema('default')->toOne().table('personTable')->toOne();
-   let newTable = db.schema('default')->toOne().table('differentPersonTable')->toOne();
+   let oldTable = db->schema('default')->toOne()->table('personTable')->toOne();
+   let newTable = db->schema('default')->toOne()->table('differentPersonTable')->toOne();
 
    let runtime = ^meta::pure::runtime::Runtime
    (
@@ -62,8 +62,8 @@ function <<test.Test>> meta::relational::tests::postProcessor::testReplaceTableM
 
 function <<test.Test>> meta::relational::tests::postProcessor::testReplaceTablesPostProcessor():Boolean[1]
 {
-   let pair1 = pair(db.schema('default')->toOne().table('personTable')->toOne(),db.schema('default')->toOne().table('differentPersonTable')->toOne());
-   let pair2 = pair(db.schema('default')->toOne().table('firmTable')->toOne(),db.schema('default')->toOne().table('otherFirmTable')->toOne());
+   let pair1 = pair(db->schema('default')->toOne()->table('personTable')->toOne(),db->schema('default')->toOne()->table('differentPersonTable')->toOne());
+   let pair2 = pair(db->schema('default')->toOne()->table('firmTable')->toOne(),db->schema('default')->toOne()->table('otherFirmTable')->toOne());
    let result = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees.firstName],['firm', 'employee']), simpleRelationalMapping, runtimeWithTableReplace([$pair1, $pair2]), meta::relational::extension::relationalExtensions());
    
    assertSameSQL('select "root".LEGALNAME as "firm", "persontable_0".FIRSTNAME as "employee" from otherFirmTable as "root" left outer join differentPersonTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)', $result);
@@ -71,8 +71,8 @@ function <<test.Test>> meta::relational::tests::postProcessor::testReplaceTables
 
 function <<test.Test>> meta::relational::tests::postProcessor::testToSqlStringReplaceTablesPostProcessor():Boolean[1]
 {
-   let pair1 = pair(db.schema('default')->toOne().table('personTable')->toOne(),db.schema('default')->toOne().table('differentPersonTable')->toOne());
-   let pair2 = pair(db.schema('default')->toOne().table('firmTable')->toOne(),db.schema('default')->toOne().table('otherFirmTable')->toOne());
+   let pair1 = pair(db->schema('default')->toOne()->table('personTable')->toOne(),db->schema('default')->toOne()->table('differentPersonTable')->toOne());
+   let pair2 = pair(db->schema('default')->toOne()->table('firmTable')->toOne(),db->schema('default')->toOne()->table('otherFirmTable')->toOne());
    let sql = meta::relational::functions::sqlstring::toSQLStringPretty(|Firm.all()->project([f|$f.legalName, f|$f.employees.firstName],['firm', 'employee']), simpleRelationalMapping, runtimeWithTableReplace([$pair1, $pair2]), meta::relational::extension::relationalExtensions());
 
    assertSameSQL('select "root".LEGALNAME as "firm", "persontable_0".FIRSTNAME as "employee" from otherFirmTable as "root" left outer join differentPersonTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)', $sql->replace('\n', '')->replace('\t', ''));
@@ -80,8 +80,8 @@ function <<test.Test>> meta::relational::tests::postProcessor::testToSqlStringRe
 
 function <<test.Test>> meta::relational::tests::postProcessor::testReplaceTablePostProcessorWithExists():Boolean[1]
 {
-   let oldTable = db.schema('default')->toOne().table('personTable')->toOne();
-   let newTable = db.schema('default')->toOne().table('differentPersonTable')->toOne();
+   let oldTable = db->schema('default')->toOne()->table('personTable')->toOne();
+   let newTable = db->schema('default')->toOne()->table('differentPersonTable')->toOne();
    let result = execute(|Firm.all()->filter(f | $f.employees->exists(p | $p.firstName == 'John')), simpleRelationalMapping, runtimeWithTableReplace(pair($oldTable, $newTable)), meta::relational::extension::relationalExtensions());
 
    assertSameSQL( 'select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join (select distinct "persontable_1".FIRMID from differentPersonTable as "persontable_1" where "persontable_1".FIRSTNAME = \'John\') as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where "persontable_0".FIRMID is not null', $result);
@@ -89,8 +89,8 @@ function <<test.Test>> meta::relational::tests::postProcessor::testReplaceTableP
 
 function <<test.Test>> meta::relational::tests::postProcessor::testReplaceTablePostProcessorWithView():Boolean[1]
 {
-   let oldTable = db.schema('default')->toOne().table('personTable')->toOne();
-   let newTable = db.schema('default')->toOne().table('differentPersonTable')->toOne();
+   let oldTable = db->schema('default')->toOne()->table('personTable')->toOne();
+   let newTable = db->schema('default')->toOne()->table('differentPersonTable')->toOne();
    let result = execute(|Order.all()->filter(o|$o.pnlContact->exists( p| $p.firm.legalName == 'Johnson')), meta::relational::tests::query::view::relationalMappingWithViewAndInnerJoin, runtimeWithTableReplace(pair($oldTable, $newTable)), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime" from orderTable as "root" left outer join (select distinct "salespersontable_1".ACCOUNT_ID from (select "salespersontable_1".ACCOUNT_ID as ACCOUNT_ID, "personfirmview_0".firm_name as firm_name from salesPersonTable as "salespersontable_1" inner join (select "root".ID as PERSON_ID, "root".LASTNAME as lastName, "firmtable_0".LEGALNAME as firm_name from differentPersonTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID)) as "personfirmview_0" on ("salespersontable_1".PERSON_ID = "personfirmview_0".PERSON_ID)) as "salespersontable_1" where "salespersontable_1".firm_name = \'Johnson\') as "salespersontable_0" on ("root".accountID = "salespersontable_0".ACCOUNT_ID) where "salespersontable_0".ACCOUNT_ID is not null', $result);
 }

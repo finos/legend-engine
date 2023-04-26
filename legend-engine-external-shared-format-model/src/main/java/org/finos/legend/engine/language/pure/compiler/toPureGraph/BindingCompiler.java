@@ -66,7 +66,6 @@ public class BindingCompiler
 
         String path = context.pureModel.buildPackageString(srcSchemaOp._package, srcSchemaOp.name);
         this.bindingIndex.put(path, binding);
-        context.pureModel.storesIndex.put(path, binding); // TODO: TO BE REMOVED
         return binding;
     }
 

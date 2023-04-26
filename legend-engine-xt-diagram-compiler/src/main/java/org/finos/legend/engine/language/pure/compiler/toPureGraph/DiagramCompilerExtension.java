@@ -47,4 +47,10 @@ public class DiagramCompilerExtension implements CompilerExtension
                     metamodel._generalizationViews(ListIterate.collect(diagram.generalizationViews, view -> HelperDiagramBuilder.buildGeneralizationView(view, metamodel, context)));
                 }));
     }
+
+    @Override
+    public CompilerExtension build()
+    {
+        return new DiagramCompilerExtension();
+    }
 }

@@ -227,10 +227,10 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 meta::pure::executionPlan::platformBinding::legendJava::library::string::tests::testStringPureTests() : Boolean[1]
 {
    javaPureTests(engineConventions([]), [
-      meta::pure::functions::lang::tests::greaterThan::testGreaterThan_String__Boolean_1_,
-      meta::pure::functions::lang::tests::greaterThanEqual::testGreaterThanEqual_String__Boolean_1_,
-      meta::pure::functions::lang::tests::lessThan::testLessThan_String__Boolean_1_,
-      meta::pure::functions::lang::tests::lessThanEqual::testLessThanEqual_String__Boolean_1_
+      meta::pure::functions::boolean::tests::greaterThan::testGreaterThan_String__Boolean_1_,
+      meta::pure::functions::boolean::tests::greaterThanEqual::testGreaterThanEqual_String__Boolean_1_,
+      meta::pure::functions::boolean::tests::lessThan::testLessThan_String__Boolean_1_,
+      meta::pure::functions::boolean::tests::lessThanEqual::testLessThanEqual_String__Boolean_1_
    ])
       ->generate(meta::pure::functions::tests::model::GeographicEntityType)
       ->addTestsWithin(meta::pure::functions::string::tests::format)

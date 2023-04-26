@@ -14,16 +14,20 @@
 
 package org.finos.legend.engine.plan.execution.stores.service;
 
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.list.mutable.FastList;
+import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
 import org.finos.legend.engine.plan.execution.extension.ExecutionExtension;
+import org.finos.legend.engine.plan.execution.stores.service.auth.HttpConnectionBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecurityScheme;
-import org.pac4j.core.profile.CommonProfile;
+import org.finos.legend.engine.shared.core.function.Function5;
+import org.finos.legend.engine.shared.core.identity.Credential;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.ServiceLoader;
 
 public interface IServiceStoreExecutionExtension extends ExecutionExtension
@@ -33,8 +37,23 @@ public interface IServiceStoreExecutionExtension extends ExecutionExtension
         return Lists.mutable.withAll(ServiceLoader.load(IServiceStoreExecutionExtension.class));
     }
 
-    default List<Function3<SecurityScheme, HttpClientBuilder, MutableList<CommonProfile>, Boolean>> getExtraSecuritySchemeProcessors()
+    default List<Function5<SecurityScheme, Credential, HttpConnectionBuilder, Identity, CredentialProviderProvider, Boolean>> getExtraSecuritySchemeProcessors(List<Function<Credential,String>> credentialProcessors)
     {
-        return FastList.newList();
+        return Collections.emptyList();
     }
+
+    default List<Function<Credential,String>> getExtraCredentialConsumers()
+    {
+        return Collections.emptyList();
+    }
+
+    default String getCredentialString(Credential credential,List<Function<Credential,String>> credentialConsumers)
+    {
+        return ListIterate
+                .collect(credentialConsumers, processor -> processor.valueOf(credential))
+                .select(Objects::nonNull)
+                .getFirstOptional()
+                .orElseThrow(() -> new RuntimeException("Can't use the obtained credential"));
+    }
+
 }

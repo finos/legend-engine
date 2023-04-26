@@ -26,27 +26,15 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
-import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemory;
-import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relational;
-import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStore;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_KeyedExecutionParameter;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PostValidation;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PostValidationAssertion;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureMultiExecution;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureMultiExecution_Impl;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureSingleExecution;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureSingleExecution_Impl;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
-import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime;
 import org.pac4j.core.profile.CommonProfile;
 
 import javax.security.auth.Subject;
@@ -63,7 +51,7 @@ abstract class ServicePostValidationRunner
 {
     private final MutableList<CommonProfile> profiles;
 
-    protected static final PlanExecutor planExecutor = PlanExecutor.newPlanExecutor(Relational.build(), ServiceStore.build(), InMemory.build());
+    protected final PlanExecutor planExecutor;
     protected final PureModel pureModel;
     protected final Root_meta_legend_service_metamodel_Service pureService;
     protected final List<Variable> rawParams;
@@ -73,9 +61,9 @@ abstract class ServicePostValidationRunner
     protected final SerializationFormat format;
     protected LambdaFunction<?> queryFunc;
     protected Mapping mapping;
-    protected Runtime runtime;
+    protected Root_meta_pure_runtime_Runtime runtime;
 
-    public ServicePostValidationRunner(PureModel pureModel, Root_meta_legend_service_metamodel_Service pureService, List<Variable> rawParams, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, MutableList<PlanTransformer> transformers, String pureVersion, MutableList<CommonProfile> profiles, SerializationFormat format)
+    public ServicePostValidationRunner(PureModel pureModel, Root_meta_legend_service_metamodel_Service pureService, List<Variable> rawParams, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, MutableList<PlanTransformer> transformers, String pureVersion, MutableList<CommonProfile> profiles, SerializationFormat format,PlanExecutor planExecutor)
     {
         this.pureModel = pureModel;
         this.pureService = pureService;
@@ -85,6 +73,7 @@ abstract class ServicePostValidationRunner
         this.pureVersion = pureVersion;
         this.profiles = profiles;
         this.format = format;
+        this.planExecutor = planExecutor;
         MetricsHandler.createMetrics(this.getClass());
     }
 

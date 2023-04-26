@@ -233,7 +233,7 @@ function meta::protocols::pure::v1_28_0::transformation::fromPureGraph::buildDom
 
 function  meta::protocols::pure::v1_28_0::transformation::fromPureGraph::findAllTypesFromMapping(m:Mapping[1], extensions:meta::pure::extension::Extension[*]):AllTypes[1]
 {
-   $m.classMappings()->map(c| $c->match($extensions.serializerExtension('v1_28_0')->cast(@meta::protocols::pure::v1_28_0::extension::SerializerExtension_v1_28_0).scan_buildBasePureModel_findAllTypesFromMapping->concatenate(
+   $m->classMappings()->map(c| $c->match($extensions.serializerExtension('v1_28_0')->cast(@meta::protocols::pure::v1_28_0::extension::SerializerExtension_v1_28_0).scan_buildBasePureModel_findAllTypesFromMapping->concatenate(
                                         [p:PureInstanceSetImplementation[1]| $p->findTypesFromPureInstanceSetImplementation(),
                                          s:SetImplementation[1] |$s.class
                                          ])->toOneMany()

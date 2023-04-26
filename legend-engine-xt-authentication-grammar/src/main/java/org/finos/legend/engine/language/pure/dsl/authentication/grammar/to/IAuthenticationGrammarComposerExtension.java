@@ -14,30 +14,44 @@
 
 package org.finos.legend.engine.language.pure.dsl.authentication.grammar.to;
 
-import org.eclipse.collections.api.block.function.Function2;
-import org.eclipse.collections.api.factory.Lists;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
+import org.eclipse.collections.api.block.function.Function3;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.CredentialVaultSecret;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.ServiceLoader;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 public interface IAuthenticationGrammarComposerExtension extends PureGrammarComposerExtension
 {
-    static List<IAuthenticationGrammarComposerExtension> getExtensions()
+    static Stream<IAuthenticationGrammarComposerExtension> getExtensions(PureGrammarComposerContext context)
     {
-        return Lists.mutable.withAll(ServiceLoader.load(IAuthenticationGrammarComposerExtension.class));
+        return context.extensions.stream()
+                .filter(IAuthenticationGrammarComposerExtension.class::isInstance)
+                .map(IAuthenticationGrammarComposerExtension.class::cast);
     }
 
-    default List<Function2<AuthenticationSpecification, Integer, String>> getExtraAuthenticationSpecificationComposers()
+    default List<Function3<AuthenticationSpecification, Integer, PureGrammarComposerContext, String>> getExtraAuthenticationSpecificationComposers()
     {
         return Collections.emptyList();
     }
 
-    default List<Function2<CredentialVaultSecret, Integer, String>> getExtraCredentialVaultSecretComposers()
+    default List<Function3<CredentialVaultSecret, Integer, PureGrammarComposerContext, String>> getExtraCredentialVaultSecretComposers()
     {
         return Collections.emptyList();
+    }
+
+    static String renderAuthentication(AuthenticationSpecification authenticationSpecification, int indentLevel, PureGrammarComposerContext context)
+    {
+        return IAuthenticationGrammarComposerExtension.getExtensions(context)
+                .map(IAuthenticationGrammarComposerExtension::getExtraAuthenticationSpecificationComposers)
+                .flatMap(List::stream)
+                .map(x -> x.value(authenticationSpecification, indentLevel, context))
+                .filter(Objects::nonNull)
+                .findAny()
+                .orElseThrow(() -> new EngineException("No renderer found for " + authenticationSpecification.getClass()));
     }
 }

@@ -49,8 +49,8 @@ function <<access.private>> meta::relational::postProcessor::filterPushDown::pus
       j:JoinTreeNode[1] | let join = $j.join;
                           let res = $join.operation->tryAddingFiltersToJoinOperation($filteringPairs, $j.alias, $extensions);
                           ^$j( join=^$join(operation=$res.first->cast(@Operation)),
-                               childrenData=$j.children->map(c | $c->pushFiltersDownToJoins(list($filteringPairs.values->concatenate($res.second.values)), $extensions)));,
-      r:RelationalTreeNode[1] | ^$r(childrenData=$r.children->map(c | $c->pushFiltersDownToJoins($filteringPairs, $extensions)));
+                               childrenData=$j->children()->map(c | $c->pushFiltersDownToJoins(list($filteringPairs.values->concatenate($res.second.values)), $extensions)));,
+      r:RelationalTreeNode[1] | ^$r(childrenData=$r->children()->map(c | $c->pushFiltersDownToJoins($filteringPairs, $extensions)));
   ]);
 }
 

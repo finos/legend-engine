@@ -1,0 +1,13 @@
+{
+  "_type" : "databaseCommand",
+  "aggregate": "firm",
+  "pipeline": [
+    {
+      "$match": {
+        "sector": {  "$eq": "Finance Companies", "$ne": "abc" }
+      }
+    }
+  ],
+  "cursor": {}
+}
+

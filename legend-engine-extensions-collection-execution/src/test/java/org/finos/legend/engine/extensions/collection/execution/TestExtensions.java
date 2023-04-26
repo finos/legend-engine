@@ -14,14 +14,18 @@
 
 package org.finos.legend.engine.extensions.collection.execution;
 
+import java.util.Collections;
+import java.util.ServiceLoader;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.factory.Sets;
-import org.finos.legend.engine.external.format.flatdata.FlatDataExecutionExtension;
-import org.finos.legend.engine.external.format.json.JsonExecutionExtension;
-import org.finos.legend.engine.external.format.xml.XmlExecutionExtension;
+import org.finos.legend.engine.external.format.flatdata.FlatDataRuntimeExtension;
+import org.finos.legend.engine.external.format.flatdata.driver.spi.FlatDataDriverDescription;
+import org.finos.legend.engine.external.format.json.JsonSchemaRuntimeExtension;
+import org.finos.legend.engine.external.format.xml.XsdRuntimeExtension;
 import org.finos.legend.engine.external.shared.runtime.ExternalFormatExecutionExtension;
+import org.finos.legend.engine.external.shared.runtime.ExternalFormatRuntimeExtension;
 import org.finos.legend.engine.language.pure.dsl.service.execution.AbstractServicePlanExecutor;
 import org.finos.legend.engine.plan.execution.extension.ExecutionExtension;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorBuilder;
@@ -33,32 +37,70 @@ import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStore
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Collections;
-import java.util.ServiceLoader;
-
 public class TestExtensions
 {
     @Test
     public void testExecutionExtensions()
     {
-        MutableList<Class<? extends ExecutionExtension>> expectedExtensions = Lists.mutable.<Class<? extends ExecutionExtension>>empty()
+        assertHasExtensions(expectedExecutionExtensions(), ExecutionExtension.class);
+    }
+
+    protected MutableList<Class<? extends ExecutionExtension>> expectedExecutionExtensions()
+    {
+        return Lists.mutable.<Class<? extends ExecutionExtension>>empty()
                 .with(RelationalExecutionExtension.class)
                 .with(ExternalFormatExecutionExtension.class)
-                .with(FlatDataExecutionExtension.class)
-                .with(JsonExecutionExtension.class)
-                .with(XmlExecutionExtension.class)
-                .with(ServiceStoreExecutionExtension.class);
-        assertHasExtensions(expectedExtensions, ExecutionExtension.class);
+                .with(ServiceStoreExecutionExtension.class)
+                .with(org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.Elasticsearch7ExecutionExtension.class);
+    }
+
+    @Test
+    public void testExternalFormatRuntimeExtensions()
+    {
+        assertHasExtensions(expectedExternalFormatRuntimeExtensions(), ExternalFormatRuntimeExtension.class);
+    }
+
+    protected MutableList<Class<? extends ExternalFormatRuntimeExtension>> expectedExternalFormatRuntimeExtensions()
+    {
+        return Lists.mutable.<Class<? extends ExternalFormatRuntimeExtension>>empty()
+                .with(FlatDataRuntimeExtension.class)
+                .with(JsonSchemaRuntimeExtension.class)
+                .with(XsdRuntimeExtension.class);
+    }
+
+    @Test
+    public void testFlatDataDriverDescription()
+    {
+        assertHasExtensions(getExpectedFlatDataDriverDescriptionExtensions(), FlatDataDriverDescription.class);
+    }
+
+    protected Iterable<? extends Class<? extends FlatDataDriverDescription>> getExpectedFlatDataDriverDescriptionExtensions()
+    {
+        // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
+        return Lists.mutable.<Class<? extends FlatDataDriverDescription>>empty()
+                .with(org.finos.legend.engine.external.format.flatdata.driver.core.DelimitedWithHeadingsDriverDescription.class)
+                .with(org.finos.legend.engine.external.format.flatdata.driver.core.DelimitedWithoutHeadingsDriverDescription.class)
+                .with(org.finos.legend.engine.external.format.flatdata.driver.core.FixedWidthDriverDescription.class)
+                .with(org.finos.legend.engine.external.format.flatdata.driver.core.ImmaterialLinesDriverDescription.class)
+                .with(org.finos.legend.engine.external.format.flatdata.driver.bloomberg.BloombergActionsDriverDescription.class)
+                .with(org.finos.legend.engine.external.format.flatdata.driver.bloomberg.BloombergDataDriverDescription.class)
+                .with(org.finos.legend.engine.external.format.flatdata.driver.bloomberg.BloombergExtendActionDriverDescription.class)
+                .with(org.finos.legend.engine.external.format.flatdata.driver.bloomberg.BloombergMetadataDriverDescription.class);
     }
 
     @Test
     public void testStoreExecutorBuilderExtensions()
     {
-        MutableList<Class<? extends StoreExecutorBuilder>> expectedExtensions = Lists.mutable.<Class<? extends StoreExecutorBuilder>>empty()
+        assertHasExtensions(expectedStoreExecutorBuilderExtensions(), StoreExecutorBuilder.class);
+    }
+
+    protected MutableList<Class<? extends StoreExecutorBuilder>> expectedStoreExecutorBuilderExtensions()
+    {
+        return Lists.mutable.<Class<? extends StoreExecutorBuilder>>empty()
                 .with(InMemoryStoreExecutorBuilder.class)
                 .with(RelationalStoreExecutorBuilder.class)
-                .with(ServiceStoreExecutorBuilder.class);
-        assertHasExtensions(expectedExtensions, StoreExecutorBuilder.class);
+                .with(ServiceStoreExecutorBuilder.class)
+                .with(org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.plugin.ElasticsearchV7StoreExecutorBuilder.class);
     }
 
     @Test

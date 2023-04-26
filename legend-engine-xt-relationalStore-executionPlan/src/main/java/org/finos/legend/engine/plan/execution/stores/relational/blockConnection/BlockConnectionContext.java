@@ -55,7 +55,6 @@ public class BlockConnectionContext
         }
 
         requiredBlockConnection.blockConnectionState.hasOpenResultSet();
-        requiredBlockConnection.databaseConnection = databaseConnection;
         return requiredBlockConnection;
     }
 

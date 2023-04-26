@@ -15,8 +15,13 @@
 package org.finos.legend.engine.persistence.components.planner;
 
 import org.finos.legend.engine.persistence.components.common.Datasets;
+import org.finos.legend.engine.persistence.components.common.OptimizationFilter;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.MaxVersionStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.NoVersioningStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningStrategyVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTimeAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionDateTimeAbstract;
@@ -50,10 +55,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_INSERTED;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_UPDATED;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_TERMINATED;
+import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.SUPPORTED_DATA_TYPES_FOR_OPTIMIZATION_COLUMNS;
+import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.SUPPORTED_DATA_TYPES_FOR_VERSIONING_COLUMNS;
 
 abstract class UnitemporalPlanner extends Planner
 {
@@ -120,6 +128,53 @@ abstract class UnitemporalPlanner extends Planner
         if (!values.contains(valueToCheck))
         {
             throw new IllegalArgumentException(errorMessage);
+        }
+    }
+
+    protected void validateOptimizationFilters(List<OptimizationFilter> optimizationFilters, Dataset dataset)
+    {
+        for (OptimizationFilter filter: optimizationFilters)
+        {
+            Field filterField = dataset.schema().fields().stream()
+                    .filter(field -> field.name().equalsIgnoreCase(filter.fieldName()))
+                    .findFirst().orElseThrow(() -> new IllegalStateException(String.format("Optimization filter [%s] not found in Staging Schema", filter.fieldName())));
+            if (!SUPPORTED_DATA_TYPES_FOR_OPTIMIZATION_COLUMNS.contains(filterField.type().dataType()))
+            {
+                throw new IllegalStateException(String.format("Optimization filter's data type [%s] is not supported", filterField.type().dataType()));
+            }
+            if (!filterField.primaryKey())
+            {
+                throw new IllegalStateException(String.format("Optimization filter [%s] has to be a primary key", filter.fieldName()));
+            }
+        }
+    }
+
+    protected void validateVersioningField(VersioningStrategy versioningStrategy, Dataset dataset)
+    {
+        Optional<String> versioningField = versioningStrategy.accept(new VersioningStrategyVisitor<Optional<String>>()
+        {
+            @Override
+            public Optional<String> visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy)
+            {
+                return Optional.empty();
+            }
+
+            @Override
+            public Optional<String> visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
+            {
+                return Optional.of(maxVersionStrategy.versioningField());
+            }
+        });
+
+        if (versioningField.isPresent())
+        {
+            Field filterField = dataset.schema().fields().stream()
+                .filter(field -> field.name().equals(versioningField.get()))
+                .findFirst().orElseThrow(() -> new IllegalStateException(String.format("Versioning field [%s] not found in Staging Schema", versioningField.get())));
+            if (!SUPPORTED_DATA_TYPES_FOR_VERSIONING_COLUMNS.contains(filterField.type().dataType()))
+            {
+                throw new IllegalStateException(String.format("Versioning field's data type [%s] is not supported", filterField.type().dataType()));
+            }
         }
     }
 

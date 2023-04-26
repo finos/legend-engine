@@ -12,10 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-Profile meta::pure::profiles::temporaryLazyExclusion
-{
-   stereotypes: [exclude];
-}
+
 
 function meta::alloy::isMetaAlloyTestDependency(pe:Type[1]):Boolean[1]
 {
@@ -31,7 +28,7 @@ function meta::alloy::isMetaAlloyTestDependency(pe:PackageableElement[1]):Boolea
 {
    let path = $pe->elementToPath();
    //TOFIX: use packages instead of STRINGS
-   $path->startsWith('meta::relational::tests') ||  $path->startsWith('meta::pure::mapping::modelToModel::test::alloy') || $path->startsWith('meta::pure::mapping::modelToModel::test::createInstances') || $path->startsWith('meta::pure::tests::model::simple');
+   $path->startsWith('meta::relational::tests') ||  $path->startsWith('meta::pure::mapping::modelToModel::test::alloy') || $path->startsWith('meta::pure::mapping::modelToModel::test::createInstances') || $path->startsWith('meta::pure::tests::model::simple')  || $path->startsWith('meta::pure::graphFetch::tests::sourceTreeCalc::withSubType');
 }
 
 function meta::alloy::isMetaAlloyTestDependencyForGeneration(pe:Function<Any>[1]):Boolean[1]

@@ -20,11 +20,12 @@ import org.finos.legend.engine.external.shared.format.generations.GenerationConf
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.pure.generated.Root_meta_external_format_protobuf_deprecated_generation_configuration_ProtobufConfig;
 import org.finos.legend.pure.generated.core_external_format_protobuf_deprecated;
-import org.finos.legend.pure.generated.core_pure_corefunctions_metaExtension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap;
 
 import java.util.List;
+
+import static org.finos.legend.pure.generated.platform_pure_basics_meta_pathToElement.Root_meta_pure_functions_meta_pathToElement_String_1__PackageableElement_1_;
 
 @Deprecated
 public class ProtobufGenerationConfig extends GenerationConfiguration
@@ -34,7 +35,7 @@ public class ProtobufGenerationConfig extends GenerationConfiguration
     public Root_meta_external_format_protobuf_deprecated_generation_configuration_ProtobufConfig transformToPure(PureModel pureModel)
     {
         Root_meta_external_format_protobuf_deprecated_generation_configuration_ProtobufConfig generationConfiguration = core_external_format_protobuf_deprecated.Root_meta_external_format_protobuf_deprecated_generation_configuration_defaultConfig__ProtobufConfig_1_(pureModel.getExecutionSupport());
-        List<PackageableElement> scopeElements = ListIterate.collect(this.generationScope(), e -> core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_pathToElement_String_1__PackageableElement_1_(e, pureModel.getExecutionSupport()));
+        List<PackageableElement> scopeElements = ListIterate.collect(this.generationScope(), e -> Root_meta_pure_functions_meta_pathToElement_String_1__PackageableElement_1_(e, pureModel.getExecutionSupport()));
         if (options != null)
         {
             generationConfiguration

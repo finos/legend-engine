@@ -15,7 +15,6 @@
 package org.finos.legend.engine.testable.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTestId;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,5 +24,5 @@ public class RunTestsTestableInput
     @JsonProperty(required = true)
     public String testable;
 
-    public List<AtomicTestId> unitTestIds = new ArrayList<>();
+    public List<UniqueTestId> unitTestIds = new ArrayList<>();
 }

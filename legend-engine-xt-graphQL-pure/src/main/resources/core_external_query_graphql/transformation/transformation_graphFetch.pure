@@ -42,7 +42,6 @@ function meta::external::query::graphQL::transformation::queryToPure::graphQLExe
 }
 
 
-
 Class <<access.private>> meta::external::query::graphQL::transformation::queryToPure::IntermediateNode
 {
 }
@@ -58,25 +57,25 @@ Class <<access.private>> meta::external::query::graphQL::transformation::queryTo
   name : String[1];
 }
 
+
 function <<access.private>> meta::external::query::graphQL::transformation::queryToPure::transformSelectionToPure(selection:Selection[*], root:Class<Any>[1]) : meta::external::query::graphQL::transformation::queryToPure::IntermediateNode[*]
 {
   $selection->map(s|$s->match(
     [
-      field : Field[1] |let property = $root->meta::pure::functions::meta::hierarchicalProperties()->concatenate($root->meta::pure::functions::meta::hierarchicalQualifiedProperties())->filter(p|$p.name == $field.name);
+      field : Field[1] |let property = $root->meta::pure::functions::meta::allProperties()->filter(p|$p.name == $field.name);
                         assert(!$property->isEmpty(), |'Property "'+$field.name+'" can\'t be found in the type '+$root->elementToPath());
+
+
+                         let params =  if($property->toOne()->instanceOf(QualifiedProperty) ,
+                                                    | $property->cast(@QualifiedProperty<Any>).classifierGenericType.typeArguments.rawType->toOne()->cast(@FunctionType).parameters->tail(),
+                                                    |  []
+                                           );
                         ^meta::external::query::graphQL::transformation::queryToPure::IntermediatePropertyNode
                         (
-                          propertyFetch = ^PropertyGraphFetchTree
+                            propertyFetch = ^PropertyGraphFetchTree
                                           (
                                             property = $property->toOne(),
-                                            parameters = $field.arguments->map(a|$a.value->match(
-                                                                                            [
-                                                                                              s:StringValue[1]| ^InstanceValue(multiplicity=PureOne, genericType=^GenericType(rawType=String), values=$s.value),
-                                                                                              b:BooleanValue[1]| ^InstanceValue(multiplicity=PureOne, genericType=^GenericType(rawType=Boolean), values=$b.value)
-                                                                                            ]
-                                                                                          )
-                                                                           )
-                                          ),
+                                            parameters = $params),
                           children = if ($field.selectionSet->isEmpty(),|[],|$field.selectionSet->transformSelectionToPure($property->toOne()->functionReturnType().rawType->cast(@Class<Any>)->toOne()))
                         );,
       fragmentId : FragmentSpread[1] | ^meta::external::query::graphQL::transformation::queryToPure::IntermediateFragmentNode(name = $fragmentId.name);
@@ -112,18 +111,50 @@ function meta::external::query::graphQL::transformation::queryToPure::getPlansFr
                                                                       ):Pair<String, meta::pure::executionPlan::ExecutionPlan>[*]
 {
   let graphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($query, $cl);
-  let res = $graphFetch->meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree();
+  let res = $graphFetch->meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree(true);
   $res->map(r|
               pair(
-                $r.first,
+                $r.propertyName,
                 meta::pure::executionPlan::executionPlan(
-                  $r.second,
+                  $r.functionDef,
                   $mapping,
                   $runtime,
                   $extensions
                 )
               )
         );
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPlansWithParameters(
+                                                                          cl:Class<Any>[1],
+                                                                          query:meta::external::query::graphQL::metamodel::sdl::Document[1],
+                                                                          mapping:meta::pure::mapping::Mapping[1],
+                                                                          runtime:meta::pure::runtime::Runtime[1],
+                                                                          extensions:meta::pure::extension::Extension[*]
+                                                                      ):meta::external::query::graphQL::transformation::queryToPure::NamedExecutionPlan[*]
+{
+  let pureWithParam =  meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($query, $cl);
+
+
+    let res = $pureWithParam->meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree(true);
+
+  $res->map(r|
+              ^meta::external::query::graphQL::transformation::queryToPure::NamedExecutionPlan(
+               name = $r.propertyName,
+               plan =  meta::pure::executionPlan::executionPlan(
+                  $r.functionDef,
+                  $mapping,
+                  $runtime,
+                  $extensions
+                )
+              )
+        );
+
+}
+Class meta::external::query::graphQL::transformation::queryToPure::NamedExecutionPlan
+{
+  name : String[1];
+  plan : meta::pure::executionPlan::ExecutionPlan[1];
 }
 
 Class meta::external::query::graphQL::transformation::queryToPure::GraphFetchResult

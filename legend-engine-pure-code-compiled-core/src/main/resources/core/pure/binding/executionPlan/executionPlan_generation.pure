@@ -100,6 +100,7 @@ function <<access.private>> meta::external::shared::format::executionPlan::exter
    
    let tree            = if($parameters->size() == 3,  // TODO: This condition should not be needed once tree is mandated
                             | $parameters->at(2)->byPassValueSpecificationWrapper()->match([
+                                v:VariableExpression[1]       | $inScopeVars->get($v.name).values->cast(@RootGraphFetchTree<Any>)->toOne(),
                                 i:InstanceValue[1]            | $i.values->cast(@RootGraphFetchTree<Any>)->first(),
                                 s:SimpleFunctionExpression[1] | assert($s.func == checked_RootGraphFetchTree_1__Binding_1__RootGraphFetchTree_1_, | 'Please provide a tree or use a checked function as a parameter for externalize');
                                                                 let valueTree  = $s.parametersValues->at(0)->match([
@@ -110,17 +111,17 @@ function <<access.private>> meta::external::shared::format::executionPlan::exter
                                                                                                                 v:VariableExpression[1] | $inScopeVars->get($v.name).values,
                                                                                                                 i:InstanceValue[1]      | $i.values
                                                                                                              ])->cast(@Binding)->toOne();
-                                                                let sourceTree = $extensions.availableExternalFormats->getExternalFormatContractForContentType($binding.contentType).sourceRecordTree;
+                                                                let sourceTree = $extensions.availableExternalFormats->getExternalFormatContractForContentType($binding.contentType).sourceRecordSerializeTree;
                                                                 assert($sourceTree->isNotEmpty(), | 'Source Tree not defined for contentType - ' + $binding.contentType);
                                                                 checked($valueTree, #{Defect {id, externalId, message, enforcementLevel, ruleType, ruleDefinerPath, path { propertyName, index }}}#, $sourceTree->toOne());
                                ]), 
                             | []); 
 
-   let bindingArg      = $fe.parametersValues->at(1);
-   assert($bindingArg->instanceOf(InstanceValue) || ($bindingArg->instanceOf(VariableExpression) && $inScopeVars->get($bindingArg->cast(@VariableExpression).name).values->toOne()->instanceOf(Binding)), 'Only literal binding is supported');
+   let bindingArg      = $fe.parametersValues->at(1)->byPassValueSpecificationWrapper();
    let binding         = $bindingArg->match([
-                                             i:InstanceValue[1]      | $i.values->at(0),
-                                             v:VariableExpression[1] | $inScopeVars->get($v.name).values->toOne()
+                                             s:SimpleFunctionExpression[1] | $s->reactivate($inScopeVars)->toOne(),
+                                             i:InstanceValue[1]            | $i.values->at(0),
+                                             v:VariableExpression[1]       | $inScopeVars->get($v.name).values->toOne()
                                             ])->cast(@Binding);
                             
    let inputType       = $parameters->at(0)->byPassValueSpecificationWrapper()->cast(@SimpleFunctionExpression).genericType.rawType;

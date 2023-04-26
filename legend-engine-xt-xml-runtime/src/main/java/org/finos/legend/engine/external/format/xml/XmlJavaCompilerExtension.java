@@ -41,8 +41,8 @@ import org.finos.legend.engine.external.format.xml.shared.datatypes.SimpleTypeHa
 import org.finos.legend.engine.external.shared.ExternalFormatJavaCompilerExtension;
 import org.finos.legend.engine.plan.compilation.GeneratePureConfig;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionPlanJavaCompilerExtension;
-import org.finos.legend.engine.shared.javaCompiler.ClassListFilter;
 import org.finos.legend.engine.shared.javaCompiler.ClassPathFilter;
+import org.finos.legend.engine.shared.javaCompiler.ClassPathFilters;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -85,7 +85,7 @@ public class XmlJavaCompilerExtension implements ExecutionPlanJavaCompilerExtens
     @Override
     public ClassPathFilter getExtraClassPathFilter()
     {
-        return new ClassListFilter(DEPENDENCIES.values());
+        return ClassPathFilters.fromClasses(DEPENDENCIES.values());
     }
 
     /**

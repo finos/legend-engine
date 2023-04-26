@@ -92,8 +92,8 @@ function meta::relational::tests::mapping::enumeration::enumTestRuntime():Runtim
 
 function <<test.Test>> meta::relational::tests::mapping::enumeration::testEnumTheSame():Boolean[1]
 {
-   let map1 = employeeTestMapping.enumerationMappings->first()->toOne().toDomainValue('FTC');
-   let map2 = employeeTestMapping2.enumerationMappings->first()->toOne().toDomainValue('FTC');
+   let map1 = employeeTestMapping.enumerationMappings->first()->toOne()->toDomainValue('FTC');
+   let map2 = employeeTestMapping2.enumerationMappings->first()->toOne()->toDomainValue('FTC');
 
    assertEquals($map1, $map2);
    assertEquals(EmployeeType.CONTRACT, $map1);
@@ -151,30 +151,30 @@ function <<test.Test>> meta::relational::tests::query::enumeration::testQueryWit
 
 function <<test.Test>> meta::relational::tests::mapping::enumeration::testEnumMappings():Boolean[1]
 {
-    let map1 = tradeMapping.enumerationMappingByName('TradeSource1')->toOne();
-    let map2 = tradeMapping.enumerationMappingByName('TradeSource2')->toOne();
+    let map1 = tradeMapping->enumerationMappingByName('TradeSource1')->toOne();
+    let map2 = tradeMapping->enumerationMappingByName('TradeSource2')->toOne();
 
-    assertEquals(TradeType.BUY, $map1.toDomainValue('BUY'));
-    assertEquals(TradeType.BUY, $map1.toDomainValue('B'));
-    assertEquals(TradeType.SELL, $map1.toDomainValue('SELL'));
-    assertEquals(TradeType.SELL, $map1.toDomainValue('S'));
+    assertEquals(TradeType.BUY, $map1->toDomainValue('BUY'));
+    assertEquals(TradeType.BUY, $map1->toDomainValue('B'));
+    assertEquals(TradeType.SELL, $map1->toDomainValue('SELL'));
+    assertEquals(TradeType.SELL, $map1->toDomainValue('S'));
 
-    assertEquals(TradeType.BUY, $map2.toDomainValue('CREDIT'));
-    assertEquals(TradeType.SELL, $map2.toDomainValue('DEBIT'));
+    assertEquals(TradeType.BUY, $map2->toDomainValue('CREDIT'));
+    assertEquals(TradeType.SELL, $map2->toDomainValue('DEBIT'));
 }
 
 function <<test.Test>> meta::relational::tests::mapping::enumeration::testEnumMappingsWithInclude():Boolean[1]
 {
-    let map1 = tradeMapping3.enumerationMappingByName('TradeSource11')->toOne();
-    let map2 = tradeMapping3.enumerationMappingByName('TradeSource22')->toOne();
+    let map1 = tradeMapping3->enumerationMappingByName('TradeSource11')->toOne();
+    let map2 = tradeMapping3->enumerationMappingByName('TradeSource22')->toOne();
 
-    assertEquals(TradeType.BUY, $map1.toDomainValue('BUY'));
-    assertEquals(TradeType.BUY, $map1.toDomainValue('B'));
-    assertEquals(TradeType.SELL, $map1.toDomainValue('SELL'));
-    assertEquals(TradeType.SELL, $map1.toDomainValue('S'));
+    assertEquals(TradeType.BUY, $map1->toDomainValue('BUY'));
+    assertEquals(TradeType.BUY, $map1->toDomainValue('B'));
+    assertEquals(TradeType.SELL, $map1->toDomainValue('SELL'));
+    assertEquals(TradeType.SELL, $map1->toDomainValue('S'));
 
-    assertEquals(TradeType.BUY, $map2.toDomainValue('CREDIT'));
-    assertEquals(TradeType.SELL, $map2.toDomainValue('DEBIT'));
+    assertEquals(TradeType.BUY, $map2->toDomainValue('CREDIT'));
+    assertEquals(TradeType.SELL, $map2->toDomainValue('DEBIT'));
 }
 
 function <<test.Test>> meta::relational::tests::projection::enumeration::testProjectionWithEnum():Boolean[1]

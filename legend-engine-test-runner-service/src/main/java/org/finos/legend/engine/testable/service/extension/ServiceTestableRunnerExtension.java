@@ -18,12 +18,12 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.ServiceProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTestId;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.testable.extension.TestRunner;
 import org.finos.legend.engine.testable.extension.TestableRunnerExtension;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.test.TestAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Testable;
 
 import java.util.List;
@@ -57,15 +57,9 @@ public class ServiceTestableRunnerExtension implements TestableRunnerExtension
 
         ServiceTestRunner testRunner = new ServiceTestRunner((Root_meta_legend_service_metamodel_Service) testable, pureVersion);
 
-        return ((Root_meta_legend_service_metamodel_Service) testable)._tests().flatCollect(testSuite ->
+        return testable._tests().flatCollect(testSuite ->
         {
-            List<AtomicTestId> atomicTestIds = ((Root_meta_pure_test_TestSuite) testSuite)._tests().collect(test ->
-            {
-                AtomicTestId id = new AtomicTestId();
-                id.testSuiteId = testSuite._id();
-                id.atomicTestId = test._id();
-                return id;
-            }).toList();
+            List<String> atomicTestIds = ((Root_meta_pure_test_TestSuite) testSuite)._tests().collect(TestAccessor::_id).toList();
             return testRunner.executeTestSuite((Root_meta_pure_test_TestSuite) testSuite, atomicTestIds, pureModel, pureModelContextData);
         }).toList();
     }

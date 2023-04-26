@@ -49,7 +49,11 @@ public enum Clause
     CASE("CASE"),
     WHEN("WHEN"),
     ELSE("ELSE"),
-    END("END");
+    END("END"),
+    LIMIT("LIMIT"),
+    OVER("OVER"),
+    PARTITION_BY("PARTITION BY"),
+    ORDER_BY("ORDER BY");
 
     private final String clause;
 

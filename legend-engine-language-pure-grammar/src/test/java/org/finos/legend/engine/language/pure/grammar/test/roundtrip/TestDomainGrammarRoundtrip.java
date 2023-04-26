@@ -170,6 +170,28 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     }
 
     @Test
+    public void testDerivedPropertyWithMultipleStatements()
+    {
+        test("Class Firm\n" +
+                "{\n" +
+                "  prop1: Float[1];\n" +
+                "  prop3: String[1];\n" +
+                "  prop2() {\n" +
+                "    let x = 0;\n" +
+                "    $x;\n" +
+                "  }: Integer[1];\n" +
+                "}\n");
+
+        test("Class Query\n" +
+                "{\n" +
+                "  allFirms(limit: Integer[1]) {\n" +
+                "    let offset = $limit + 10;\n" +
+                "    Firm.all()->slice($limit, $offset);\n" +
+                "  }: Firm[*];\n" +
+                "}\n");
+    }
+
+    @Test
     public void testUnNamedConstraintsAndEmptyProfile()
     {
         test("Class A\n" +
@@ -531,6 +553,18 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
         test("function f(s: Integer[1], s2: Interger[2]): String[1]\n" +
                 "{\n" +
                 "   let a = 4 + (((1 - 2) / (2 + 3)) * (1 - 4 - 5))\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testSimpleOrWithArithmeticExpression()
+    {
+        test("Class test::C\n" +
+                "[\n" +
+                "  $this.id->isEmpty() || $this.id >= 0\n" +
+                "]\n" +
+                "{\n" +
+                "  id: Integer[0..1];\n" +
                 "}\n");
     }
 
@@ -928,4 +962,74 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
         String code = "function my::test(): Any[*]\n{\n   " + tree.replace("\n", "").replace("  ", "") + "\n}\n";
         test(code);
     }
+
+    @Test
+    public void testGraphFetchTreeWithSubtypeTreeAtRootLevel()
+    {
+        String tree  =  "#{\n" +
+                        "    test::Firm{\n" +
+                        "      legalName,\n" +
+                        "      ->subType(@test::FirmSubType){\n" +
+                        "        SubTypeName\n"  +
+                        "       }\n" +
+                        "    }\n" +
+                        "  }#\n";
+
+        String code = "function my::test(): Any[*]\n{\n   " + tree.replace("\n", "").replace(" ", "") + "\n}\n";
+        test(code);
+    }
+
+    @Test
+    public void testGraphFetchTreeWithMultipleSubtypeTreesAtRootLevel()
+    {
+        String tree =   "#{\n" +
+                        "    test::Firm{\n" +
+                        "      legalName,\n" +
+                        "      ->subType(@test::FirmSubType1){\n" +
+                        "        SubTypeName1\n"  +
+                        "       },\n" +
+                        "      ->subType(@test::FirmSubType2){\n" +
+                        "        SubTypeName2\n"  +
+                        "       }\n" +
+                        "    }\n" +
+                        "  }#\n";
+
+        String code = "function my::test(): Any[*]\n{\n   " + tree.replace("\n", "").replace(" ", "") + "\n}\n";
+        test(code);
+    }
+
+    @Test
+    public void testGraphFetchTreeWithOnlySubtypeTreesAtRootLevel()
+    {
+        String tree  =  "#{\n" +
+                        "    test::Firm{\n" +
+                        "      ->subType(@test::FirmSubType){\n" +
+                        "        SubTypeName\n"  +
+                        "       }\n" +
+                        "    }\n" +
+                        "  }#\n";
+
+        String code = "function my::test(): Any[*]\n{\n   " + tree.replace("\n", "").replace(" ", "") + "\n}\n";
+        test(code);
+    }
+
+    @Test
+    public void testGraphFetchTreeWithMultipleSubtypeTreesAtRootLevelWithPropertyAlias()
+    {
+        String tree =   "#{\n" +
+                "    test::Firm{\n" +
+                "      legalName,\n" +
+                "      ->subType(@test::FirmSubType1){\n" +
+                "        'alias1' : SubTypeName\n"  +
+                "       },\n" +
+                "      ->subType(@test::FirmSubType2){\n" +
+                "        'alias2' : SubTypeName\n"  +
+                "       }\n" +
+                "    }\n" +
+                "  }#\n";
+
+        String code = "function my::test(): Any[*]\n{\n   " + tree.replace("\n", "").replace(" ", "") + "\n}\n";
+        test(code);
+    }
+
 }

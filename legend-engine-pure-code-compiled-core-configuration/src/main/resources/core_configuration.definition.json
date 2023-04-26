@@ -1,5 +1,21 @@
 {
-    "name" : "core_configuration",
-    "pattern" : "(meta::pure::extension::configuration)(::.*)?",
-    "dependencies" : ["platform", "core", "core_external_language_java", "core_java_platform_binding", "core_external_format_flatdata", "core_external_format_flatdata_java_platform_binding", "core_external_format_json", "core_external_format_json_java_platform_binding", "core_external_format_xml", "core_external_format_xml_java_platform_binding", "core_relational", "core_relational_java_platform_binding", "core_servicestore", "core_servicestore_java_platform_binding"]
+  "name": "core_configuration",
+  "pattern": "(meta::pure::extension::configuration)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_functions",
+    "core",
+    "core_external_language_java",
+    "core_java_platform_binding",
+    "core_external_format_flatdata",
+    "core_external_format_flatdata_java_platform_binding",
+    "core_external_format_json",
+    "core_external_format_json_java_platform_binding",
+    "core_external_format_xml",
+    "core_external_format_xml_java_platform_binding",
+    "core_relational",
+    "core_relational_java_platform_binding",
+    "core_servicestore",
+    "core_servicestore_java_platform_binding"
+  ]
 }

@@ -14,13 +14,13 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
-import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
@@ -30,22 +30,16 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CSt
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.SubTypeGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.AnalyticsExecutionContext;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.BaseExecutionContext;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.PropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
-import org.finos.legend.pure.generated.Root_meta_pure_graphFetch_PropertyGraphFetchTree_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_graphFetch_RootGraphFetchTree_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_LambdaFunction_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_router_analytics_AnalyticsExecutionContext_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext_Impl;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.graphFetch.GraphFetchTree;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
@@ -60,6 +54,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpressionAccessor;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -252,7 +247,7 @@ public class HelperValueSpecificationBuilder
         }
     }
 
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.ExecutionContext processExecutionContext(ExecutionContext executionContext, CompileContext context)
+    public static Root_meta_pure_runtime_ExecutionContext processExecutionContext(ExecutionContext executionContext, CompileContext context)
     {
         if (executionContext instanceof BaseExecutionContext)
         {
@@ -323,10 +318,56 @@ public class HelperValueSpecificationBuilder
 
     private static GraphFetchTree buildRootGraphFetchTree(RootGraphFetchTree rootGraphFetchTree, CompileContext context, Class<?> parentClass, MutableList<String> openVariables, ProcessingContext processingContext)
     {
+        HashSet<String> subTypeClasses = new HashSet<String>();
+        HashSet<String> propertiesAtRootLevelSubTypes = new HashSet<String>();
+        for (SubTypeGraphFetchTree subTypeGraphFetchTree : rootGraphFetchTree.subTypeTrees)
+        {
+            if (!subTypeClasses.add(subTypeGraphFetchTree.subTypeClass))
+            {
+                throw new EngineException("There are multiple subTypeTrees having subType " + subTypeGraphFetchTree.subTypeClass + ", Only one is allowed", subTypeGraphFetchTree.sourceInformation, EngineErrorType.COMPILATION);
+            }
+            for (org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.GraphFetchTree propertyGraphFetchTree: subTypeGraphFetchTree.subTrees)
+            {
+                PropertyGraphFetchTree t = (PropertyGraphFetchTree)propertyGraphFetchTree;
+                if (t.alias != null)
+                {
+                    if (!propertiesAtRootLevelSubTypes.add(t.alias))
+                    {
+                        throw new EngineException("There are multiple properties in subTypeTrees of " + rootGraphFetchTree._class + " having '" + t.alias + "' as common name or alias, Property names should be unique", propertyGraphFetchTree.sourceInformation, EngineErrorType.COMPILATION);
+                    }
+                }
+                else if (!propertiesAtRootLevelSubTypes.add(t.property))
+                {
+                    throw new EngineException("There are multiple properties in subTypeTrees of " + rootGraphFetchTree._class + " having '" + t.property + "' as common name or alias, Property names should be unique", propertyGraphFetchTree.sourceInformation, EngineErrorType.COMPILATION);
+                }
+
+            }
+        }
         Class<?> _class = context.resolveClass(rootGraphFetchTree._class, rootGraphFetchTree.sourceInformation);
         ListIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.graphFetch.GraphFetchTree> children = ListIterate.collect(rootGraphFetchTree.subTrees, subTree -> buildGraphFetchTree(subTree, context, _class, openVariables, processingContext));
-        return new Root_meta_pure_graphFetch_RootGraphFetchTree_Impl<>("")
+        ListIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.graphFetch.SubTypeGraphFetchTree> subTypeTrees = ListIterate.collect(rootGraphFetchTree.subTypeTrees, subTypeTree -> buildSubTypeGraphFetchTree((SubTypeGraphFetchTree) subTypeTree, context, _class, openVariables, processingContext));
+        Class<?> classifier = context.pureModel.getClass("meta::pure::graphFetch::RootGraphFetchTree");
+        GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
+                ._rawType(classifier)
+                ._typeArguments(Lists.fixedSize.of(context.pureModel.getGenericType(_class)));
+        return new Root_meta_pure_graphFetch_RootGraphFetchTree_Impl<>("", null, classifier)
                 ._class(_class)
+                ._classifierGenericType(genericType)
+                ._subTrees(children)
+                ._subTypeTrees(subTypeTrees);
+    }
+
+    private static org.finos.legend.pure.m3.coreinstance.meta.pure.graphFetch.SubTypeGraphFetchTree buildSubTypeGraphFetchTree(SubTypeGraphFetchTree subTypeGraphFetchTree, CompileContext context, Class<?> parentClass, MutableList<String> openVariables, ProcessingContext processingContext)
+    {
+        Class<?> subTypeClass = context.resolveClass(subTypeGraphFetchTree.subTypeClass, subTypeGraphFetchTree.sourceInformation);
+
+        if (!org.finos.legend.pure.m3.navigation.type.Type.subTypeOf(subTypeClass, parentClass, context.pureModel.getExecutionSupport().getProcessorSupport()))
+        {
+            throw new EngineException("The type " + subTypeClass.getName() + " is not a subtype of " + parentClass.getName(), subTypeGraphFetchTree.sourceInformation, EngineErrorType.COMPILATION);
+        }
+        ListIterable<GraphFetchTree> children = ListIterate.collect(subTypeGraphFetchTree.subTrees, subTree -> buildGraphFetchTree(subTree, context, subTypeClass, openVariables, processingContext));
+        return new Root_meta_pure_graphFetch_SubTypeGraphFetchTree_Impl("", null, context.pureModel.getClass("meta::pure::graphFetch::SubTypeGraphFetchTree"))
+                ._subTypeClass(subTypeClass)
                 ._subTrees(children);
     }
 }

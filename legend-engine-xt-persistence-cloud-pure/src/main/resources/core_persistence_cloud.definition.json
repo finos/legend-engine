@@ -1,5 +1,13 @@
 {
-  "name" : "core_persistence_cloud",
-  "pattern" : "(meta::external::persistence)(::.*)?",
-  "dependencies" : ["platform", "core", "core_persistence"]
+  "name": "core_persistence_cloud",
+  "pattern": "(meta::external::persistence)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_functions",
+    "platform_dsl_mapping",
+    "platform_dsl_graph",
+    "platform_store_relational",
+    "core",
+    "core_persistence"
+  ]
 }

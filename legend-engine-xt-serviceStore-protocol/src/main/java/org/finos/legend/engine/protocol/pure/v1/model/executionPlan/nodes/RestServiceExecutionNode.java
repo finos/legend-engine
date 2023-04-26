@@ -27,7 +27,9 @@ public class RestServiceExecutionNode extends ExecutionNode
     public String mimeType;
     public List<ServiceParameter> params;
     public RequestBodyDescription requestBodyDescription;
+    @Deprecated
     public List<SecurityScheme> securitySchemes;
+    public List<AuthenticationSchemeRequirement> authenticationSchemes;
 
     @Override
     public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)

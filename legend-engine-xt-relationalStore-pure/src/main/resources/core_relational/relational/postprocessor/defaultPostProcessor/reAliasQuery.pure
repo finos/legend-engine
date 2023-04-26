@@ -123,7 +123,7 @@ function <<access.private>> meta::relational::postProcessor::reAlias::transformA
                                     let transformedCols = $s.columns->map(c | $c->transformAliasName($m));
                                     let transformedExtraFilteringOp = $s.extraFilteringOperation->map(ef | $ef->transformAliasName($m));
                                     let transformedSf   = $s.savedFilteringOperation->map(sf| let parentAliasTransformed = if($sf.first->instanceOf(JoinTreeNode),
-                                                                                                                              |let parentAlias = $sf.first->cast(@JoinTreeNode).join.otherTableFromAlias($sf.first->cast(@JoinTreeNode).alias);
+                                                                                                                              |let parentAlias = $sf.first->cast(@JoinTreeNode).join->otherTableFromAlias($sf.first->cast(@JoinTreeNode).alias);
                                                                                                                                $parentAlias->toOne()->transformAliasName($m)->cast(@TableAlias);,
                                                                                                                               |[]);
                                                                                               let firstTransformed  = $sf.first->transformAliasName($m, $parentAliasTransformed);

@@ -1,0 +1,43 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+Class meta::external::store::elasticsearch::v7::metamodel::store::Elasticsearch7Store extends meta::pure::store::Store
+[  
+  indexUniqueName: $this.indices->map(i | $i.indexName)->distinct()->size() ==  $this.indices->size()
+]
+{
+  indices: meta::external::store::elasticsearch::v7::metamodel::store::Elasticsearch7StoreIndex[*];
+
+  index(name: String[1])
+  {
+    $this.indices->filter(i | $i.indexName == $name)->head();
+  }: meta::external::store::elasticsearch::v7::metamodel::store::Elasticsearch7StoreIndex[0..1];
+}
+
+Class meta::external::store::elasticsearch::v7::metamodel::store::Elasticsearch7StoreIndex
+[
+  hasProperties: $this.properties->size() > 0,
+  noDuplicatedProperties: $this.properties.propertyName->removeDuplicates()->size() == $this.properties->size()
+]
+{
+  indexName: String[1];
+  properties: meta::external::store::elasticsearch::v7::metamodel::store::Elasticsearch7StoreIndexProperty[*];
+}
+
+Class meta::external::store::elasticsearch::v7::metamodel::store::Elasticsearch7StoreIndexProperty
+{
+  propertyName: String[1];
+  property: meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property[1];
+}

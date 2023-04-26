@@ -305,10 +305,10 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 meta::pure::executionPlan::platformBinding::legendJava::library::math::tests::testMathsPureTests() : Boolean[1]
 {
    javaPureTests(engineConventions([]), [
-      meta::pure::functions::lang::tests::greaterThan::testGreaterThan_Number__Boolean_1_,
-      meta::pure::functions::lang::tests::greaterThanEqual::testGreaterThanEqual_Number__Boolean_1_,
-      meta::pure::functions::lang::tests::lessThan::testLessThan_Number__Boolean_1_,
-      meta::pure::functions::lang::tests::lessThanEqual::testLessThanEqual_Number__Boolean_1_
+      meta::pure::functions::boolean::tests::greaterThan::testGreaterThan_Number__Boolean_1_,
+      meta::pure::functions::boolean::tests::greaterThanEqual::testGreaterThanEqual_Number__Boolean_1_,
+      meta::pure::functions::boolean::tests::lessThan::testLessThan_Number__Boolean_1_,
+      meta::pure::functions::boolean::tests::lessThanEqual::testLessThanEqual_Number__Boolean_1_
    ])
       ->addTestsWithin(meta::pure::functions::math::tests::abs)
       ->addTestsWithin(meta::pure::functions::math::tests::times)

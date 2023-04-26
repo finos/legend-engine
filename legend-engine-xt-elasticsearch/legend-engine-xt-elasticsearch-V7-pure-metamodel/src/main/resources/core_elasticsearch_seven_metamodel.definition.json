@@ -1,0 +1,12 @@
+{
+  "name" : "core_elasticsearch_seven_metamodel",
+  "pattern" : "(meta::external::store::elasticsearch::v7)(::.*)?",
+  "dependencies" : [
+    "platform",
+    "platform_functions",
+    "platform_dsl_mapping",
+    "core",
+    "core_authentication",
+    "core_external_language_java"
+  ]
+}

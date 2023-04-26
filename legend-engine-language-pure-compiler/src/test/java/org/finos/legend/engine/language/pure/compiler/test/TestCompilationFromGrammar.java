@@ -15,7 +15,6 @@
 package org.finos.legend.engine.language.pure.compiler.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
@@ -74,12 +73,12 @@ public class TestCompilationFromGrammar
 
                 if (expectedWarnings == null)
                 {
-                    Assert.assertTrue("expected no warnings but found " + pureModel.getWarnings().stream().map(w -> w.buildPrettyWarningMessage()).collect(Collectors.toList()), pureModel.getWarnings().isEmpty());
+                    Assert.assertTrue("expected no warnings but found " + pureModel.getWarnings().stream().map(Warning::buildPrettyWarningMessage).collect(Collectors.toList()), pureModel.getWarnings().isEmpty());
                 }
 
                 if (expectedWarnings != null)
                 {
-                    List<String> warnings = pureModel.getWarnings().stream().map(w -> w.buildPrettyWarningMessage()).collect(Collectors.toList());
+                    List<String> warnings = pureModel.getWarnings().stream().map(Warning::buildPrettyWarningMessage).collect(Collectors.toList());
                     Collections.sort(warnings);
                     Collections.sort(expectedWarnings);
                     Assert.assertEquals(expectedWarnings, warnings);
@@ -133,6 +132,16 @@ public class TestCompilationFromGrammar
                 "  let path = #/test::Person/firstName#;\n" +
                 "  test::Person.all()->project($path)->filter(r|$r.getInteger('age') > 30 && $r.isNotNull('age'))->isNotEmpty();\n" +
                 "}", null);
+    }
+
+    @Test
+    public void testCompileWithDefaultValue()
+    {
+        TestCompilationFromGrammarTestSuite.test("Class test::Person\n" +
+                "{\n" +
+                "  firstName:String[1];\n" +
+                "  age: Integer[1] = 5;\n" +
+                "}\n", null);
     }
 
     @Test
@@ -261,5 +270,687 @@ public class TestCompilationFromGrammar
                 ")", "COMPILATION error at [39:4-41:4]: Duplicated class mappings found with ID 'id' in mapping 'simple::merged'; parent mapping for duplicated: 'simple::gen1::map', 'simple::gen2::map'");
     }
 
+
+    @Test
+    public void testCompilationAnnualized()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "   id       : Integer[1];\n" +
+                        "   hireDate : Date[1];\n" +
+                        "   hireType : String[1];\n" +
+                        "   fteFactor: Float[1];\n" +
+                        "   firmName : String[0..1];\n" +
+                        "}\n" +
+
+                        "function example::testYtd(): Any[*]\n" +
+                        "{ test::Employee.all()->groupBy(" +
+                        "[p|$p.hireDate]," +
+                        "[ agg(p | annualized($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
+                        "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
+
+    @Test
+    public void testCompilationCme()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "   id       : Integer[1];\n" +
+                        "   hireDate : Date[1];\n" +
+                        "   hireType : String[1];\n" +
+                        "   fteFactor: Float[1];\n" +
+                        "   firmName : String[0..1];\n" +
+                        "}\n" +
+
+                        "function example::testYtd(): Any[*]\n" +
+                        "{ test::Employee.all()->groupBy(" +
+                        "[p|$p.hireDate]," +
+                        "[ agg(p | cme($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
+                        "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
+    
+    @Test
+    public void testCompilationCw()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "   id       : Integer[1];\n" +
+                        "   hireDate : Date[1];\n" +
+                        "   hireType : String[1];\n" +
+                        "   fteFactor: Float[1];\n" +
+                        "   firmName : String[0..1];\n" +
+                        "}\n" +
+
+                        "function example::testYtd(): Any[*]\n" +
+                        "{ test::Employee.all()->groupBy(" +
+                        "[p|$p.hireDate]," +
+                        "[ agg(p | cw($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
+                        "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
+
+    @Test
+    public void testCompilationCw_Fm()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "   id       : Integer[1];\n" +
+                        "   hireDate : Date[1];\n" +
+                        "   hireType : String[1];\n" +
+                        "   fteFactor: Float[1];\n" +
+                        "   firmName : String[0..1];\n" +
+                        "}\n" +
+
+                        "function example::testYtd(): Any[*]\n" +
+                        "{ test::Employee.all()->groupBy(" +
+                        "[p|$p.hireDate]," +
+                        "[ agg(p | cw_fm($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
+                        "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
+
+    @Test
+    public void testCompilationCyminus2()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "   id       : Integer[1];\n" +
+                        "   hireDate : Date[1];\n" +
+                        "   hireType : String[1];\n" +
+                        "   fteFactor: Float[1];\n" +
+                        "   firmName : String[0..1];\n" +
+                        "}\n" +
+
+                        "function example::testYtd(): Any[*]\n" +
+                        "{ test::Employee.all()->groupBy(" +
+                        "[p|$p.hireDate]," +
+                        "[ agg(p | CYMinus2($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
+                        "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
+
+    @Test
+    public void testCompilationCyminus3()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "   id       : Integer[1];\n" +
+                        "   hireDate : Date[1];\n" +
+                        "   hireType : String[1];\n" +
+                        "   fteFactor: Float[1];\n" +
+                        "   firmName : String[0..1];\n" +
+                        "}\n" +
+
+                        "function example::testYtd(): Any[*]\n" +
+                        "{ test::Employee.all()->groupBy(" +
+                        "[p|$p.hireDate]," +
+                        "[ agg(p | CYMinus3($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
+                        "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
+
+    @Test
+    public void testCompilationMtd()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "   id       : Integer[1];\n" +
+                        "   hireDate : Date[1];\n" +
+                        "   hireType : String[1];\n" +
+                        "   fteFactor: Float[1];\n" +
+                        "   firmName : String[0..1];\n" +
+                        "}\n" +
+
+                        "function example::testYtd(): Any[*]\n" +
+                        "{ test::Employee.all()->groupBy(" +
+                        "[p|$p.hireDate]," +
+                        "[ agg(p | mtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
+                        "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
+
+    @Test
+    public void testCompilationP12Wa()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "   id       : Integer[1];\n" +
+                        "   hireDate : Date[1];\n" +
+                        "   hireType : String[1];\n" +
+                        "   fteFactor: Float[1];\n" +
+                        "   firmName : String[0..1];\n" +
+                        "}\n" +
+
+                        "function example::testYtd(): Any[*]\n" +
+                        "{ test::Employee.all()->groupBy(" +
+                        "[p|$p.hireDate]," +
+                        "[ agg(p | p12wa($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
+                        "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
+
+    @Test
+    public void testCompilationP12Wtd()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "   id       : Integer[1];\n" +
+                        "   hireDate : Date[1];\n" +
+                        "   hireType : String[1];\n" +
+                        "   fteFactor: Float[1];\n" +
+                        "   firmName : String[0..1];\n" +
+                        "}\n" +
+
+                        "function example::testYtd(): Any[*]\n" +
+                        "{ test::Employee.all()->groupBy(" +
+                        "[p|$p.hireDate]," +
+                        "[ agg(p | p12wtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
+                        "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
+
+    @Test
+    public void testCompilationP4Wa()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "   id       : Integer[1];\n" +
+                        "   hireDate : Date[1];\n" +
+                        "   hireType : String[1];\n" +
+                        "   fteFactor: Float[1];\n" +
+                        "   firmName : String[0..1];\n" +
+                        "}\n" +
+
+                        "function example::testYtd(): Any[*]\n" +
+                        "{ test::Employee.all()->groupBy(" +
+                        "[p|$p.hireDate]," +
+                        "[ agg(p | p4wa($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
+                        "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
+
+    @Test
+    public void testCompilationP4Wtd()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "   id       : Integer[1];\n" +
+                        "   hireDate : Date[1];\n" +
+                        "   hireType : String[1];\n" +
+                        "   fteFactor: Float[1];\n" +
+                        "   firmName : String[0..1];\n" +
+                        "}\n" +
+
+                        "function example::testYtd(): Any[*]\n" +
+                        "{ test::Employee.all()->groupBy(" +
+                        "[p|$p.hireDate]," +
+                        "[ agg(p | p4wtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
+                        "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
+
+    @Test
+    public void testCompilationP52Wtd()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "   id       : Integer[1];\n" +
+                        "   hireDate : Date[1];\n" +
+                        "   hireType : String[1];\n" +
+                        "   fteFactor: Float[1];\n" +
+                        "   firmName : String[0..1];\n" +
+                        "}\n" +
+
+                        "function example::testYtd(): Any[*]\n" +
+                        "{ test::Employee.all()->groupBy(" +
+                        "[p|$p.hireDate]," +
+                        "[ agg(p | p52wtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
+                        "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
+
+    @Test
+    public void testCompilationP52Wa()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "   id       : Integer[1];\n" +
+                        "   hireDate : Date[1];\n" +
+                        "   hireType : String[1];\n" +
+                        "   fteFactor: Float[1];\n" +
+                        "   firmName : String[0..1];\n" +
+                        "}\n" +
+
+                        "function example::testYtd(): Any[*]\n" +
+                        "{ test::Employee.all()->groupBy(" +
+                        "[p|$p.hireDate]," +
+                        "[ agg(p | p52wa($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
+                        "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
+
+    @Test
+    public void testCompilationPma()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "   id       : Integer[1];\n" +
+                        "   hireDate : Date[1];\n" +
+                        "   hireType : String[1];\n" +
+                        "   fteFactor: Float[1];\n" +
+                        "   firmName : String[0..1];\n" +
+                        "}\n" +
+
+                        "function example::testYtd(): Any[*]\n" +
+                        "{ test::Employee.all()->groupBy(" +
+                        "[p|$p.hireDate]," +
+                        "[ agg(p | pma($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
+                        "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
+
+    @Test
+    public void testCompilationPmtd()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "   id       : Integer[1];\n" +
+                        "   hireDate : Date[1];\n" +
+                        "   hireType : String[1];\n" +
+                        "   fteFactor: Float[1];\n" +
+                        "   firmName : String[0..1];\n" +
+                        "}\n" +
+
+                        "function example::testYtd(): Any[*]\n" +
+                        "{ test::Employee.all()->groupBy(" +
+                        "[p|$p.hireDate]," +
+                        "[ agg(p | pmtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
+                        "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
+
+    @Test
+    public void testCompilationPqtd()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "   id       : Integer[1];\n" +
+                        "   hireDate : Date[1];\n" +
+                        "   hireType : String[1];\n" +
+                        "   fteFactor: Float[1];\n" +
+                        "   firmName : String[0..1];\n" +
+                        "}\n" +
+
+                        "function example::testYtd(): Any[*]\n" +
+                        "{ test::Employee.all()->groupBy(" +
+                        "[p|$p.hireDate]," +
+                        "[ agg(p | pqtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
+                        "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
+
+    @Test
+    public void testCompilationPriorday()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "   id       : Integer[1];\n" +
+                        "   hireDate : Date[1];\n" +
+                        "   hireType : String[1];\n" +
+                        "   fteFactor: Float[1];\n" +
+                        "   firmName : String[0..1];\n" +
+                        "}\n" +
+
+                        "function example::testYtd(): Any[*]\n" +
+                        "{ test::Employee.all()->groupBy(" +
+                        "[p|$p.hireDate]," +
+                        "[ agg(p | priorDay($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
+                        "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
+
+    @Test
+    public void testCompilationPrioryear()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "   id       : Integer[1];\n" +
+                        "   hireDate : Date[1];\n" +
+                        "   hireType : String[1];\n" +
+                        "   fteFactor: Float[1];\n" +
+                        "   firmName : String[0..1];\n" +
+                        "}\n" +
+
+                        "function example::testYtd(): Any[*]\n" +
+                        "{ test::Employee.all()->groupBy(" +
+                        "[p|$p.hireDate]," +
+                        "[ agg(p | priorYear($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
+                        "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
+
+    @Test
+    public void testCompilationPw()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "   id       : Integer[1];\n" +
+                        "   hireDate : Date[1];\n" +
+                        "   hireType : String[1];\n" +
+                        "   fteFactor: Float[1];\n" +
+                        "   firmName : String[0..1];\n" +
+                        "}\n" +
+
+                        "function example::testYtd(): Any[*]\n" +
+                        "{ test::Employee.all()->groupBy(" +
+                        "[p|$p.hireDate]," +
+                        "[ agg(p | pw($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
+                        "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
+
+    @Test
+    public void testCompilationPw_Fm()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "   id       : Integer[1];\n" +
+                        "   hireDate : Date[1];\n" +
+                        "   hireType : String[1];\n" +
+                        "   fteFactor: Float[1];\n" +
+                        "   firmName : String[0..1];\n" +
+                        "}\n" +
+
+                        "function example::testYtd(): Any[*]\n" +
+                        "{ test::Employee.all()->groupBy(" +
+                        "[p|$p.hireDate]," +
+                        "[ agg(p | pw_fm($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
+                        "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
+
+    @Test
+    public void testCompilationPwa()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "   id       : Integer[1];\n" +
+                        "   hireDate : Date[1];\n" +
+                        "   hireType : String[1];\n" +
+                        "   fteFactor: Float[1];\n" +
+                        "   firmName : String[0..1];\n" +
+                        "}\n" +
+
+                        "function example::testYtd(): Any[*]\n" +
+                        "{ test::Employee.all()->groupBy(" +
+                        "[p|$p.hireDate]," +
+                        "[ agg(p | pwa($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
+                        "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
+
+    @Test
+    public void testCompilationPwtd()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "   id       : Integer[1];\n" +
+                        "   hireDate : Date[1];\n" +
+                        "   hireType : String[1];\n" +
+                        "   fteFactor: Float[1];\n" +
+                        "   firmName : String[0..1];\n" +
+                        "}\n" +
+
+                        "function example::testYtd(): Any[*]\n" +
+                        "{ test::Employee.all()->groupBy(" +
+                        "[p|$p.hireDate]," +
+                        "[ agg(p | pwtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
+                        "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
+
+    @Test
+    public void testCompilationPymtd()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "   id       : Integer[1];\n" +
+                        "   hireDate : Date[1];\n" +
+                        "   hireType : String[1];\n" +
+                        "   fteFactor: Float[1];\n" +
+                        "   firmName : String[0..1];\n" +
+                        "}\n" +
+
+                        "function example::testYtd(): Any[*]\n" +
+                        "{ test::Employee.all()->groupBy(" +
+                        "[p|$p.hireDate]," +
+                        "[ agg(p | pymtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
+                        "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
+
+    @Test
+    public void testCompilationPyqtd()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "   id       : Integer[1];\n" +
+                        "   hireDate : Date[1];\n" +
+                        "   hireType : String[1];\n" +
+                        "   fteFactor: Float[1];\n" +
+                        "   firmName : String[0..1];\n" +
+                        "}\n" +
+
+                        "function example::testYtd(): Any[*]\n" +
+                        "{ test::Employee.all()->groupBy(" +
+                        "[p|$p.hireDate]," +
+                        "[ agg(p | pyqtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
+                        "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
+
+    @Test
+    public void testCompilationPytd()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "   id       : Integer[1];\n" +
+                        "   hireDate : Date[1];\n" +
+                        "   hireType : String[1];\n" +
+                        "   fteFactor: Float[1];\n" +
+                        "   firmName : String[0..1];\n" +
+                        "}\n" +
+
+                        "function example::testYtd(): Any[*]\n" +
+                        "{ test::Employee.all()->groupBy(" +
+                        "[p|$p.hireDate]," +
+                        "[ agg(p | pytd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
+                        "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
+
+    @Test
+    public void testCompilationPywa()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "   id       : Integer[1];\n" +
+                        "   hireDate : Date[1];\n" +
+                        "   hireType : String[1];\n" +
+                        "   fteFactor: Float[1];\n" +
+                        "   firmName : String[0..1];\n" +
+                        "}\n" +
+
+                        "function example::testYtd(): Any[*]\n" +
+                        "{ test::Employee.all()->groupBy(" +
+                        "[p|$p.hireDate]," +
+                        "[ agg(p | pywa($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
+                        "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
+
+    @Test
+    public void testCompilationPywtd()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "   id       : Integer[1];\n" +
+                        "   hireDate : Date[1];\n" +
+                        "   hireType : String[1];\n" +
+                        "   fteFactor: Float[1];\n" +
+                        "   firmName : String[0..1];\n" +
+                        "}\n" +
+
+                        "function example::testYtd(): Any[*]\n" +
+                        "{ test::Employee.all()->groupBy(" +
+                        "[p|$p.hireDate]," +
+                        "[ agg(p | pywtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
+                        "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
+
+    @Test
+    public void testCompilationQtd()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "   id       : Integer[1];\n" +
+                        "   hireDate : Date[1];\n" +
+                        "   hireType : String[1];\n" +
+                        "   fteFactor: Float[1];\n" +
+                        "   firmName : String[0..1];\n" +
+                        "}\n" +
+
+                        "function example::testYtd(): Any[*]\n" +
+                        "{ test::Employee.all()->groupBy(" +
+                        "[p|$p.hireDate]," +
+                        "[ agg(p | qtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
+                        "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
+
+    @Test
+    public void testCompilationReportendday()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "   id       : Integer[1];\n" +
+                        "   hireDate : Date[1];\n" +
+                        "   hireType : String[1];\n" +
+                        "   fteFactor: Float[1];\n" +
+                        "   firmName : String[0..1];\n" +
+                        "}\n" +
+
+                        "function example::testYtd(): Any[*]\n" +
+                        "{ test::Employee.all()->groupBy(" +
+                        "[p|$p.hireDate]," +
+                        "[ agg(p | reportEndDay($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
+                        "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
+
+    @Test
+    public void testCompilationWtd()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "   id       : Integer[1];\n" +
+                        "   hireDate : Date[1];\n" +
+                        "   hireType : String[1];\n" +
+                        "   fteFactor: Float[1];\n" +
+                        "   firmName : String[0..1];\n" +
+                        "}\n" +
+
+                        "function example::testYtd(): Any[*]\n" +
+                        "{ test::Employee.all()->groupBy(" +
+                        "[p|$p.hireDate]," +
+                        "[ agg(p | wtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
+                        "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
+
+    @Test
+    public void testCompilationYtd()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "   id       : Integer[1];\n" +
+                        "   hireDate : Date[1];\n" +
+                        "   hireType : String[1];\n" +
+                        "   fteFactor: Float[1];\n" +
+                        "   firmName : String[0..1];\n" +
+                        "}\n" +
+
+                        "function example::testYtd(): Any[*]\n" +
+                        "{ test::Employee.all()->groupBy(" +
+                        "[p|$p.hireDate]," +
+                        "[ agg(p | ytd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
+                        "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
 
 }

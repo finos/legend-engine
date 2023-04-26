@@ -63,7 +63,7 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
       | $conventions->codeType($pureDate)->codeToString()+'.parsePureDate('+$parser+'.getLocalName())',
       | 
    if($type->instanceOf(meta::pure::metamodel::type::Enumeration),
-      | $conventions->codeType($conventions->pureTypeToJavaType($type, PureOne))->codeToString()+'.valueOf('+$parser+'.getLocalName())',
+      | $conventions->codeType($conventions->pureTypeToJavaType($type, PureOne))->codeToString()+'.getEnumFromPureName('+$parser+'.getLocalName())',
       |
    if($type->instanceOf(Unit) || $type->instanceOf(Measure),
       | $conventions->codeType($conventions->pureTypeToJavaType($type, PureOne))->codeToString()+'.valueOf('+$parser+'.getLocalName())',
@@ -538,7 +538,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
     [
       $text->j_declare($jThis->j_invoke('acceptStringAsElement', [], javaString())),
       $value->j_declare(j_conditional($text->j_invoke('startsWith', j_string($qualifier), javaBoolean()), $text->j_invoke('substring', j_int($qualifier->length()), javaString()), $text)),
-      j_return($javaClass->j_invoke('valueOf', $value, $javaClass))
+      j_return($javaClass->j_invoke('getEnumFromPureName', $value, $javaClass))
     ]
    ));
 

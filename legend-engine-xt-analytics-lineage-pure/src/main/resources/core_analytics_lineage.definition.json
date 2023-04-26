@@ -1,5 +1,13 @@
 {
-  "name" : "core_analytics_lineage",
-  "pattern" : "(meta::analytics::lineage|meta::pure::lineage)(::.*)?",
-  "dependencies" : ["platform", "core", "core_relational"]
+  "name": "core_analytics_lineage",
+  "pattern": "(meta::analytics::lineage|meta::pure::lineage)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_functions",
+    "platform_dsl_mapping",
+    "platform_store_relational",
+    "platform_functions_json",
+    "core",
+    "core_relational"
+  ]
 }

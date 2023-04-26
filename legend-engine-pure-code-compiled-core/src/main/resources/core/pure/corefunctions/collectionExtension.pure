@@ -89,11 +89,6 @@ function meta::pure::functions::collection::removeAll<T>(set:T[*], other:T[*], c
    $set->filter(e|!$other->contains($e, $comparator));
 }
 
-function meta::pure::functions::collection::contains<Z>(collection:Z[*], value:Z[1], comparator:Function<{Z[1],Z[1]->Boolean[1]}>[1]):Boolean[1]
-{
-    $collection->exists(x | $comparator->eval($value, $x))
-}
-
 
 function meta::pure::functions::collection::merge<S,K>(m1:Map<K,List<S>>[1], m2:Map<K,List<S>>[1]):Map<K,List<S>>[1]
 {
@@ -109,11 +104,6 @@ function meta::pure::functions::collection::merge<S,K>(m1:Map<K,List<S>>[1], m2:
            );
      )
    ->newMap();
-}
-
-function meta::pure::functions::collection::isNotEmpty(p:Any[*]):Boolean[1]
-{
-    !isEmpty($p)
 }
 
 function meta::pure::functions::collection::intersection<T>(a:T[*], b:T[*]):T[*]
@@ -217,30 +207,14 @@ function meta::pure::functions::collection::count(s:Any[*]):Integer[1]
    $s->size();
 }
 
-function meta::pure::functions::collection::sort<T|m>(col:T[m], comp:Function<{T[1],T[1]->Integer[1]}>[0..1]):T[m]
-{
-    sort($col, [], $comp)
-}
-
 function meta::pure::functions::collection::sortBy<T,U|m>(col:T[m], key:Function<{T[1]->U[1]}>[0..1]):T[m]
 {
     sort($col, $key, [])
 }
 
-function meta::pure::functions::collection::sort<T|m>(col:T[m]):T[m]
-{
-    sort($col, [], [])
-}
 
-function meta::pure::functions::collection::removeDuplicates<T>(col:T[*], eql:Function<{T[1],T[1]->Boolean[1]}>[1]):T[*]
-{
-    $col->removeDuplicates([], $eql)
-}
 
-function meta::pure::functions::collection::removeDuplicatesBy<T>(col:T[*], key:Function<{T[1]->Any[1]}>[1]):T[*]
-{
-    $col->removeDuplicates($key, [])
-}
+
 
 function meta::pure::functions::collection::max<T>(col:T[1..*], comp:Function<{T[1],T[1]->Integer[1]}>[1]):T[1]
 {
@@ -291,15 +265,7 @@ function meta::pure::functions::collection::getPropertyValues(obj:Any[1], proper
    $property->toOne()->eval($obj);
 }
 
-function meta::pure::functions::collection::range(stop:Integer[1]):Integer[*]
-{
-    range(0, $stop);
-}
 
-function meta::pure::functions::collection::range(start:Integer[1], stop:Integer[1]):Integer[*]
-{
-    range($start, $stop, 1)
-}
 
 function meta::pure::functions::collection::get<U>(l:List<U>[1], index:Integer[1]):U[1]
 {

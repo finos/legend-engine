@@ -336,7 +336,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
             $variable+' = acceptMany(node.path('+escapedString($p.name->toOne())+'), this::'+$e->readMethodName($conventions)+','+$defectRecorder+');\n';
          },
          {u: Unit[1] |
-            $variable+' = acceptMany(node.path('+escapedString($p.name->toOne())+'), this::accept'+$propertyType.name->toOne()->sanitizeIdentifier()+','+$defectRecorder+');\n';
+            $variable+' = acceptMany(node.path('+escapedString($p.name->toOne())+'), this::accept'+$conventions->identifier($propertyType.name->toOne())+','+$defectRecorder+');\n';
          },
          {a: Any[1] |
             $variable+' = acceptMany(node.path('+escapedString($p.name->toOne())+'), this::accept'+$propertyType.name->toOne()+','+$defectRecorder+');\n';
@@ -460,15 +460,15 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
    javaMethod(['public'], $javaClass, $enum->readMethodName($conventions), $nodeParameter,
       $conventions->codeType(javaString())->codeToString()+' text  = acceptString(node);\n' +
       $conventions->codeType(javaString())->codeToString()+' value = text.startsWith('+escapedString($qualifier)+') ? text.substring('+$qualifier->length()->toString()+') : text;\n' +
-      'return '+$conventions->codeType($javaClass)->codeToString()+'.valueOf(value);'
+      'return '+$conventions->codeType($javaClass)->codeToString()+'.getEnumFromPureName(value);'
    );
 }
 
 function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::createUnitAcceptMethod(type:meta::pure::metamodel::type::Type[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Method[1]
 {
     let javaType                = $conventions->pureTypeToJavaType($type, PureOne);
-    let simpleJavaName          = $type.name->toOne()->sanitizeIdentifier();
-    let fullJavaName            = $javaType->meta::external::language::java::serialization::typeToString()->sanitizeIdentifier();
+    let simpleJavaName          = $conventions->identifier($type.name->toOne());
+    let fullJavaName            = $conventions->identifier($javaType->meta::external::language::java::serialization::typeToString());
     let acceptibleTokens        = $conventions->jacksonTokenTypesFor($type);
     let getCurrentTokenErrorMsg = '"Unexpected " + parser.getCurrentToken() + " for PURE '+ $type.name->toOne()+'"';
     let getNextTokenErrorMsg    = '"Unexpected " + parser.nextToken() + " for PURE '+ $type.name->toOne()+'"';

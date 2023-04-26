@@ -124,7 +124,7 @@ public class ModelManager
         }
     }
 
-    private ModelLoader modelLoaderForContext(PureModelContext context)
+    public ModelLoader modelLoaderForContext(PureModelContext context)
     {
         MutableList<ModelLoader> loaders = modelLoaders.select(loader -> loader.supports(context));
         Assert.assertTrue(loaders.size() == 1, () -> "Didn't find a model loader for " + context.getClass().getSimpleName());

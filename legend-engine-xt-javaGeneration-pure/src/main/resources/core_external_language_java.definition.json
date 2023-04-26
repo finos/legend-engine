@@ -1,5 +1,13 @@
 {
     "name" : "core_external_language_java",
     "pattern" : "(meta::external::language::java|meta::protocols::generation::java)(::.*)?",
-    "dependencies" : ["platform", "core"]
+    "dependencies" :
+    [
+        "platform",
+        "platform_functions",
+        "platform_dsl_mapping",
+        "platform_functions_json",
+        "platform_dsl_graph",
+        "core"
+    ]
 }

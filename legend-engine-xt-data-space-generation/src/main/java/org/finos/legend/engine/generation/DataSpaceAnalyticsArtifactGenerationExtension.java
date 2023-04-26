@@ -19,14 +19,14 @@ import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperM
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Collections;
 import java.util.List;
-import org.finos.legend.engine.analytics.DataSpaceAnalyticsHelper;
-import org.finos.legend.engine.analytics.model.DataSpaceAnalysisResult;
+
+import org.finos.legend.engine.generation.analytics.DataSpaceAnalyticsHelper;
+import org.finos.legend.engine.generation.analytics.model.DataSpaceAnalysisResult;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.Artifact;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.ArtifactGenerationExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
-import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpace;
@@ -36,7 +36,7 @@ public class DataSpaceAnalyticsArtifactGenerationExtension implements ArtifactGe
 {
     public final String ROOT_PATH = "dataSpace-analytics";
 
-    public static ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+    public static ObjectMapper objectMapper = DataSpaceAnalyticsHelper.getNewObjectMapper();
 
     @Override
     public String getKey()

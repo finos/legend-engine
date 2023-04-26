@@ -45,6 +45,7 @@ public class SelectStatement extends SelectExpression implements DMLStatement
     private final List<TableLike> tables;
     private Condition condition;
     private final List<Value> groupByFields;
+    private Integer limit;
 
     public SelectStatement()
     {
@@ -71,6 +72,7 @@ public class SelectStatement extends SelectExpression implements DMLStatement
     [ GROUP BY clause ]
     [ HAVING clause ]
     [ ORDER BY clause ]
+    [ limit clause ]
     [ result offset clause ]
     [ fetch first clause ]
      */
@@ -126,6 +128,15 @@ public class SelectStatement extends SelectExpression implements DMLStatement
                     builder.append(COMMA + WHITE_SPACE);
                 }
             }
+        }
+
+        // Add limit clause
+        if (limit != null)
+        {
+            builder.append(WHITE_SPACE);
+            builder.append(Clause.LIMIT.get());
+            builder.append(WHITE_SPACE);
+            builder.append(limit);
         }
 
         if (getAlias() != null)
@@ -199,5 +210,10 @@ public class SelectStatement extends SelectExpression implements DMLStatement
     public void setSelectItemsSize(Long selectItemsSize)
     {
         this.selectItemsSize = selectItemsSize;
+    }
+
+    public void setLimit(int limit)
+    {
+        this.limit = limit;
     }
 }

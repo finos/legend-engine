@@ -51,6 +51,7 @@ import org.slf4j.Logger;
 
 import javax.security.auth.Subject;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static io.opentracing.propagation.Format.Builtin.HTTP_HEADERS;
@@ -64,19 +65,24 @@ public class SDLCLoader implements ModelLoader
     private final Supplier<Subject> subjectProvider;
     private final PureServerLoader pureLoader;
     private final AlloySDLCLoader alloyLoader;
+    private  Function<MutableList<CommonProfile>, CloseableHttpClient> httpClientProvider;
 
     public SDLCLoader(MetaDataServerConfiguration metaDataServerConfiguration, Supplier<Subject> subjectProvider)
     {
-        this.subjectProvider = subjectProvider;
-        this.pureLoader = new PureServerLoader(metaDataServerConfiguration);
-        this.alloyLoader = new AlloySDLCLoader(metaDataServerConfiguration);
+        this(metaDataServerConfiguration, subjectProvider, new PureServerLoader(metaDataServerConfiguration),null);
     }
 
     public SDLCLoader(MetaDataServerConfiguration metaDataServerConfiguration, Supplier<Subject> subjectProvider, PureServerLoader pureLoader)
     {
+         this(metaDataServerConfiguration,subjectProvider,pureLoader,null);
+    }
+
+    public SDLCLoader(MetaDataServerConfiguration metaDataServerConfiguration, Supplier<Subject> subjectProvider, PureServerLoader pureLoader, Function<MutableList<CommonProfile>, CloseableHttpClient> httpClientProvider)
+    {
         this.subjectProvider = subjectProvider;
         this.pureLoader = pureLoader;
         this.alloyLoader = new AlloySDLCLoader(metaDataServerConfiguration);
+        this.httpClientProvider = httpClientProvider;
     }
 
     private Subject getSubject()
@@ -158,7 +164,7 @@ public class SDLCLoader implements ModelLoader
                     return ListIterate.injectInto(
                             new PureModelContextData.Builder(),
                             context.sdlcInfo.packageableElementPointers,
-                            (builder, pointers) -> builder.withPureModelContextData(this.pureLoader.loadPurePackageableElementPointer(pm, pointers, clientVersion, subject == null ? "" : "?auth=kerberos"))
+                            (builder, pointers) -> builder.withPureModelContextData(this.pureLoader.loadPurePackageableElementPointer(pm, pointers, clientVersion, subject == null ? "" : "?auth=kerberos", ((PureSDLC) context.sdlcInfo).overrideUrl))
                     ).distinct().sorted().build();
                 }
             };
@@ -171,7 +177,7 @@ public class SDLCLoader implements ModelLoader
                 try (Scope scope = GlobalTracer.get().buildSpan("Request Alloy Metadata").startActive(true))
                 {
                     AlloySDLC sdlc = (AlloySDLC) context.sdlcInfo;
-                    PureModelContextData loadedProject = this.alloyLoader.loadAlloyProject(pm, sdlc, clientVersion);
+                    PureModelContextData loadedProject = this.alloyLoader.loadAlloyProject(pm, sdlc, clientVersion, this.httpClientProvider);
                     loadedProject.origin.sdlcInfo.packageableElementPointers = sdlc.packageableElementPointers;
                     List<String> missingPaths = this.alloyLoader.checkAllPathsExist(loadedProject, sdlc);
                     if (missingPaths.isEmpty())
@@ -206,8 +212,23 @@ public class SDLCLoader implements ModelLoader
 
     public static PureModelContextData loadMetadataFromHTTPURL(MutableList<CommonProfile> pm, LoggingEventType startEvent, LoggingEventType stopEvent, String url)
     {
+        return loadMetadataFromHTTPURL(pm, startEvent, stopEvent, url, null);
+    }
+
+    public static PureModelContextData loadMetadataFromHTTPURL(MutableList<CommonProfile> pm, LoggingEventType startEvent, LoggingEventType stopEvent, String url, Function<MutableList<CommonProfile>, CloseableHttpClient> httpClientProvider)
+    {
         Scope scope = GlobalTracer.get().scopeManager().active();
-        CloseableHttpClient httpclient = (CloseableHttpClient) HttpClientBuilder.getHttpClient(new BasicCookieStore());
+        CloseableHttpClient httpclient;
+
+        if (httpClientProvider != null)
+        {
+            httpclient = httpClientProvider.apply(pm);
+        }
+        else
+        {
+            httpclient = (CloseableHttpClient) HttpClientBuilder.getHttpClient(new BasicCookieStore());
+        }
+
         long start = System.currentTimeMillis();
 
         LogInfo info = new LogInfo(pm, startEvent, "Requesting metadata");

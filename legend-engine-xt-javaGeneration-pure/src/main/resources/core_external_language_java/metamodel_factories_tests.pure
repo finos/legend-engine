@@ -426,7 +426,7 @@ function <<test.Test>> meta::external::language::java::factory::tests::mapToAtom
 {
    let x      = j_parameter(javaString(), 'x');
    let stream = j_variable(javaList(javaString()), 'var')->j_streamOf()->js_map(j_lambda($x, $x));
-   assertCode('var.stream().map((String x) -> x).filter((String x) -> x != null)', javaStream(javaString()), $stream);
+   assertCode('var.stream().map((String x) -> x).filter((String $x) -> $x != null)', javaStream(javaString()), $stream);
 }
 
 function <<test.Test>> meta::external::language::java::factory::tests::mapToLists():Boolean[1]
@@ -465,9 +465,9 @@ function <<test.Test>> meta::external::language::java::factory::tests::streamOfR
    let complex = j_variable(javaList(javaString()), 'var')->j_streamOf()->js_map($id)->js_resolve(javaList(javaString()))->j_streamOf()->js_map($id)->js_resolve(javaList(javaString()));
    assertCode('var.stream()\n' +
               '   .map((String x) -> x)\n' +
-              '   .filter((String x) -> x != null)\n' +
+              '   .filter((String $x) -> $x != null)\n' +
               '   .map((String x) -> x)\n' + 
-              '   .filter((String x) -> x != null)\n' +
+              '   .filter((String $x) -> $x != null)\n' +
               '   .collect(java.util.stream.Collectors.toList())', javaList(javaString()), $complex);
 }
 
@@ -480,9 +480,9 @@ function <<test.Test>> meta::external::language::java::factory::tests::streamOfR
               '                  .map(java.util.stream.Stream::of)\n' + 
               '                  .orElseGet(java.util.stream.Stream::empty)\n' + 
               '                  .map((String x) -> x)\n' +
-              '                  .filter((String x) -> x != null)\n' + 
+              '                  .filter((String $x) -> $x != null)\n' + 
               '                  .map((String x) -> x)\n' + 
-              '                  .filter((String x) -> x != null)\n' + 
+              '                  .filter((String $x) -> $x != null)\n' + 
               '                  .findFirst()\n' +
               '                  .orElse(null)', javaString(), $complex);
 }
@@ -500,6 +500,14 @@ function <<test.Test>> meta::external::language::java::factory::tests::castToExi
 function <<test.Test>> meta::external::language::java::factory::tests::castToDifferentType():Boolean[1]
 {
    assertCode('(CharSequence) "Hello"', javaCharSequence(), j_string('Hello')->j_cast(javaCharSequence()));
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::BigDecimalOperations():Boolean[1]
+{
+  assertCode('3.14', javaBigDecimal(), j_bigDecimal(3.14d));
+  assertCode('3.1415926535897', javaBigDecimal(), j_bigDecimal('3.1415926535897'));
+  assertCode('new java.math.BigDecimal(1.5)', javaBigDecimal(), j_new(javaBigDecimal(),j_double(1.5)));
+  assertCode('new java.math.BigDecimal("1.5")', javaBigDecimal(), j_new(javaBigDecimal(),j_string('1.5')));
 }
 
 function <<test.Test>> meta::external::language::java::factory::tests::castUnboxedToBoxed():Boolean[1]

@@ -577,7 +577,7 @@ public class DomainParseTreeWalker
             }
             if (!arth.isEmpty())
             {
-                result = this.arithmeticPart(arth, result, exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+                result = this.arithmeticPart(arth, boolResult, exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
             }
             else if (!bool.isEmpty())
             {
@@ -1274,7 +1274,7 @@ public class DomainParseTreeWalker
         ValueSpecification instance = null;
         if (ctx.qualifiedName() != null)
         {
-            FastList<String> primitiveTypes = FastList.newListWith("Integer", "Boolean", "Date", "Binary", "DateTime", "Float", "StrictTime", "StrictDate", "Decimal", "LatestDate", "String", "Number");
+            FastList<String> primitiveTypes = FastList.newListWith("Integer", "Boolean", "Date", "DateTime", "Float", "StrictTime", "StrictDate", "Decimal", "LatestDate", "String", "Number");
             String fullPath = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
             // Resolve the element full path, if we know it has a (all) function call after it, we will enforce that it is a class, otherwise, it is either an enumeration or a class.
             if (ctx.allOrFunction() != null)

@@ -16,32 +16,32 @@ import meta::pure::graphFetch::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::dataQuality::*;
 
-function meta::pure::graphFetch::execution::graphFetch<T>(collection: T[*], graphFetchTree: RootGraphFetchTree<T>[1]):T[*]
+function <<functionType.NotImplementedFunction>> meta::pure::graphFetch::execution::graphFetch<T>(collection: T[*], graphFetchTree: RootGraphFetchTree<T>[1]):T[*]
 {
    fail('Not implemented!');
    $collection;
 }
 
-function meta::pure::graphFetch::execution::graphFetch<T>(collection: T[*], graphFetchTree: RootGraphFetchTree<T>[1], batchSize: Integer[1]):T[*]
+function <<functionType.NotImplementedFunction>> meta::pure::graphFetch::execution::graphFetch<T>(collection: T[*], graphFetchTree: RootGraphFetchTree<T>[1], batchSize: Integer[1]):T[*]
 {
    assert($batchSize > 1, | 'Batch size should be positive');
    fail('Not implemented!');
    $collection;
 }
 
-function meta::pure::graphFetch::execution::graphFetchChecked<T>(collection: T[*], graphFetchTree: RootGraphFetchTree<T>[1]):Checked<T>[*]
+function <<functionType.NotImplementedFunction>> meta::pure::graphFetch::execution::graphFetchChecked<T>(collection: T[*], graphFetchTree: RootGraphFetchTree<T>[1]):Checked<T>[*]
 {
    fail('Not implemented!');
    $collection->map(e|^Checked<T>(value=$e));
 }
 
-function meta::pure::graphFetch::execution::graphFetchCheckedUnexpanded<T>(collection: T[*], graphFetchTree: RootGraphFetchTree<T>[1]):Checked<T>[*]
+function <<functionType.NotImplementedFunction>> meta::pure::graphFetch::execution::graphFetchCheckedUnexpanded<T>(collection: T[*], graphFetchTree: RootGraphFetchTree<T>[1]):Checked<T>[*]
 {
    fail('Not implemented!');
    $collection->map(e|^Checked<T>(value=$e));
 }
 
-function meta::pure::graphFetch::execution::graphFetchUnexpanded<T>(collection: T[*], graphFetchTree: RootGraphFetchTree<T>[1]):T[*]
+function <<functionType.NotImplementedFunction>> meta::pure::graphFetch::execution::graphFetchUnexpanded<T>(collection: T[*], graphFetchTree: RootGraphFetchTree<T>[1]):T[*]
 {
    fail('Not implemented!');
    $collection;

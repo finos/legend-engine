@@ -1,0 +1,108 @@
+###Pure
+import meta::external::format::openapi::metamodel::*;
+import meta::legend::service::metamodel::*;
+import meta::external::format::openapi::test::*;
+import meta::pure::mapping::*;
+import meta::external::format::openapi::generation::*;
+import meta::pure::graphFetch::execution::*;
+
+Class meta::external::format::openapi::test::Person
+{
+  firstName : String[1];
+  lastName  : String[1];
+  age: Integer[1];
+}
+
+
+function <<meta::external::format::openapi::profiles::ServiceSpecGeneration.OpenAPI>> {doc.doc = 'Legend openapi test simple service'} meta::external::format::openapi::test::simpleServiceWithGraphFetch():Service[1]
+{
+   let tree = #{Person{firstName,lastName}}#;
+   let func = {|Person.all()->graphFetchChecked($tree)->serialize($tree)};
+   ^Service
+      (
+         pattern = '/service/testOpenApi',
+         owners = ['dummy'],
+         documentation = 'dummy description',
+         autoActivateUpdates = true,
+         execution = ^PureSingleExecution
+                     (
+                        func = $func,
+                        mapping = personMapping,
+                        runtime = []
+                     ),
+         test = ^SingleExecutionTest
+                 (
+                  data = 'default\n'+
+                         'personTable\n'+
+                         'id,firstName,lastName,age\n'+
+                         '1,A,Z,23\n'+
+                         '\n\n\n',
+                  asserts = [
+                              ^meta::legend::service::metamodel::TestContainer(
+                                 parametersValues = [],
+                                 assert = {res:Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->map(r|$r.getString('firstName'))->sort() == ['A', 'B', 'C', 'D', 'E']}
+                              )
+                            ]
+                 )
+      );
+}
+
+function <<meta::external::format::openapi::profiles::ServiceSpecGeneration.OpenAPI>> {doc.doc = 'Legend openapi test simple service'} meta::external::format::openapi::test::simpleService():Service[1]
+{
+   ^Service
+      (
+         pattern = '/service/testOpenApi',
+         owners = ['dummy'],
+         documentation = 'dummy description',
+         autoActivateUpdates = true,
+         execution = ^PureSingleExecution
+                     (
+                        func = {|Person.all()->project(col(p|$p.firstName, 'firstName'))},
+                        mapping = personMapping,
+                        runtime = []
+                     ),
+         test = ^SingleExecutionTest
+                 (
+                  data = 'default\n'+
+                         'personTable\n'+
+                         'id,firstName,lastName,age\n'+
+                         '1,A,Z,23\n'+
+                         '\n\n\n',
+                  asserts = [
+                              ^meta::legend::service::metamodel::TestContainer(
+                                 parametersValues = [],
+                                 assert = {res:Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->map(r|$r.getString('firstName'))->sort() == ['A', 'B', 'C', 'D', 'E']}
+                              )
+                            ]
+                 )
+      );
+}
+
+
+function <<test.Test>> meta::external::format::openapi::test::testServiceShouldReturnCorrectOpenapiString():Boolean[1] {
+  let openapi = simpleService()->serviceToOpenApi(^Server(url='test'));
+  let expected = readFile('/core_external_format_openapi/testOpenApiSpec.txt')->toOne();
+  assertJsonStringsEqual($expected, $openapi);
+}
+
+function <<test.Test>> meta::external::format::openapi::test::testGraphFetchServiceShouldReturnCorrectOpenapiString():Boolean[1] {
+  let openapi = simpleServiceWithGraphFetch()->serviceToOpenApi(^Server(url='test'));
+  let expected = readFile('/core_external_format_openapi/testGraphFetchOpenApiSpec.txt')->toOne();
+  assertJsonStringsEqual($expected, $openapi);
+}
+
+
+
+###Mapping
+
+import meta::external::format::openapi::test::*;
+Mapping meta::external::format::openapi::test::personMapping
+(
+  Person : Pure
+           {
+             ~src Person
+             firstName : $src.firstName;
+             lastName: $src.lastName;
+           }
+)
+

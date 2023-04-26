@@ -20,7 +20,6 @@ import meta::pure::test::result::*;
 
 Class <<typemodifiers.abstract>> meta::pure::test::TestSuite extends Test
 {
-    tests       : AtomicTest[1..*];
 }
 
 Class <<typemodifiers.abstract>> meta::pure::test::AtomicTest extends Test
@@ -28,23 +27,15 @@ Class <<typemodifiers.abstract>> meta::pure::test::AtomicTest extends Test
     assertions  : TestAssertion[1..*];
 }
 
-Class <<typemodifiers.abstract>> meta::pure::test::TestBatch
+Association meta::pure::test::TestSuiteAtomicTest
 {
-    id         : String[1];
-    batchId    : Integer[1];
-    assertions : TestAssertion[*];
-}
-
-Class meta::pure::test::result::AtomicTestId
-{
-    testSuiteId  : String[0..1];
-    atomicTestId : String[1];
+    suite       : TestSuite[0..1];   
+    tests       : AtomicTest[1..*];
 }
 
 Class <<typemodifiers.abstract>> meta::pure::test::result::TestResult
 {
-    testable    : Testable[1];
-    id          : AtomicTestId[1];
+    test        : AtomicTest[1];
 }
 
 Class meta::pure::test::result::TestError extends TestResult
@@ -52,13 +43,22 @@ Class meta::pure::test::result::TestError extends TestResult
     message     : String[1];
 }
 
-Class meta::pure::test::result::TestFailed extends TestResult
+Class meta::pure::test::result::TestExecuted extends TestResult
 {
-    assertStatuses : AssertionStatus[*];
+    assertStatuses  : AssertionStatus[*];
+
+    executionStatus()
+    {
+       if($this.assertStatuses->forAll(as | $as->instanceOf(AssertPass)),
+          | TestExecutionStatus.PASS,
+          | TestExecutionStatus.FAIL)
+    }: TestExecutionStatus[1];
 }
 
-Class meta::pure::test::result::TestPassed extends TestResult
+Enum meta::pure::test::result::TestExecutionStatus
 {
+    PASS,
+    FAIL
 }
 
 Class <<typemodifiers.abstract>> meta::pure::test::assertion::AssertionStatus

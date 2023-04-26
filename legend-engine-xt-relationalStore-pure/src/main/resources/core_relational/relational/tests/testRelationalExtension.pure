@@ -19,6 +19,8 @@ import meta::relational::extension::*;
 import meta::relational::runtime::*;
 import meta::relational::tests::csv::*;
 import meta::relational::metamodel::execute::*;
+import meta::relational::metamodel::*;
+import meta::pure::mapping::*;
 
 
 function <<test.Test>> meta::relational::metamodel::execute::tests::testExecuteInDbToTDS() : Boolean[1]
@@ -45,7 +47,7 @@ function <<test.Test>> meta::relational::tests::typeInference::testTranslateDbTy
 
 function <<test.Test>> meta::relational::tests::typeInference::testTableAliasColumnInference():Boolean[1]
 {
-   let dType = meta::relational::tests::db.schemas.view('interactionViewMaxTime')->toOne()
+   let dType = meta::relational::tests::db.schemas->map(x|$x->view('interactionViewMaxTime'))->toOne()
                   .columnMappings->filter(x | $x.columnName == 'sourceId').relationalOperationElement->toOne()
                   ->meta::relational::functions::typeInference::inferRelationalType()->toOne();
    assertEquals('INT', $dType->meta::relational::metamodel::datatype::dataTypeToSqlText());
@@ -53,7 +55,7 @@ function <<test.Test>> meta::relational::tests::typeInference::testTableAliasCol
 
 function <<test.Test>> meta::relational::tests::typeInference::testRelOpWithJoinInference():Boolean[1]
 {
-   let dType = meta::relational::tests::db.schemas.view('orderPnlView')->toOne()
+   let dType = meta::relational::tests::db.schemas->map(x|$x->view('orderPnlView'))->toOne()
                   .columnMappings->filter(x | $x.columnName == 'supportContact').relationalOperationElement->toOne()
                   ->meta::relational::functions::typeInference::inferRelationalType()->toOne();
    assertEquals('VARCHAR(200)', $dType->meta::relational::metamodel::datatype::dataTypeToSqlText());
@@ -61,7 +63,7 @@ function <<test.Test>> meta::relational::tests::typeInference::testRelOpWithJoin
 
 function <<test.Test>> meta::relational::tests::typeInference::testMaxIntAggregationInference():Boolean[1]
 {
-   let dType = meta::relational::tests::db.schemas.view('interactionViewMaxTime')->toOne()
+   let dType = meta::relational::tests::db.schemas->map(x|$x->view('interactionViewMaxTime'))->toOne()
                   .columnMappings->filter(x | $x.columnName == 'maxTime').relationalOperationElement->toOne()
                   ->meta::relational::functions::typeInference::inferRelationalType()->toOne();
    assertEquals('INT', $dType->meta::relational::metamodel::datatype::dataTypeToSqlText());
@@ -69,7 +71,7 @@ function <<test.Test>> meta::relational::tests::typeInference::testMaxIntAggrega
 
 function <<test.Test>> meta::relational::tests::typeInference::testMaxDateAggregationInference():Boolean[1]
 {
-   let dType = meta::relational::tests::db.schemas.view('tradeEventViewMaxTradeEventDate')->toOne()
+   let dType = meta::relational::tests::db.schemas->map(x|$x->view('tradeEventViewMaxTradeEventDate'))->toOne()
                   .columnMappings->filter(x | $x.columnName == 'maxTradeEventDate').relationalOperationElement->toOne()
                   ->meta::relational::functions::typeInference::inferRelationalType()->toOne();
    assertEquals('DATE', $dType->meta::relational::metamodel::datatype::dataTypeToSqlText());
@@ -77,7 +79,7 @@ function <<test.Test>> meta::relational::tests::typeInference::testMaxDateAggreg
 
 function <<test.Test>> meta::relational::tests::typeInference::testSumAggregationWithJoinInference():Boolean[1]
 {
-   let dType = meta::relational::tests::db.schemas.view('accountOrderPnlView')->toOne()
+   let dType = meta::relational::tests::db.schemas->map(x|$x->view('accountOrderPnlView'))->toOne()
                   .columnMappings->filter(x | $x.columnName == 'orderPnl').relationalOperationElement->toOne()
                   ->meta::relational::functions::typeInference::inferRelationalType()->toOne();
    assertEquals('DOUBLE', $dType->meta::relational::metamodel::datatype::dataTypeToSqlText());
@@ -85,7 +87,7 @@ function <<test.Test>> meta::relational::tests::typeInference::testSumAggregatio
 
 function <<test.Test>> meta::relational::tests::typeInference::testDynaAndOrInference():Boolean[1]
 {
-   let dType = meta::relational::tests::simpleRelationalMappingWithBooleanExpression.rootClassMappingByClass(meta::relational::tests::model::simple::Person)->toOne()->cast(@meta::relational::mapping::RootRelationalInstanceSetImplementation).propertyMappingsByPropertyName('activeEmployment')
+   let dType = meta::relational::tests::simpleRelationalMappingWithBooleanExpression->rootClassMappingByClass(meta::relational::tests::model::simple::Person)->toOne()->cast(@meta::relational::mapping::RootRelationalInstanceSetImplementation)->propertyMappingsByPropertyName('activeEmployment')
                   ->cast(@meta::relational::mapping::RelationalPropertyMapping).relationalOperationElement->toOne()
                   ->meta::relational::functions::typeInference::inferRelationalType()->toOne();
    assertEquals('BIT', $dType->meta::relational::metamodel::datatype::dataTypeToSqlText());
@@ -93,7 +95,7 @@ function <<test.Test>> meta::relational::tests::typeInference::testDynaAndOrInfe
 
 function <<test.Test>> meta::relational::tests::typeInference::testDynaCaseInference():Boolean[1]
 {
-   let dType = meta::relational::tests::simpleRelationalMappingWithBooleanExpression.rootClassMappingByClass(meta::relational::tests::model::simple::Address)->toOne()->cast(@meta::relational::mapping::RootRelationalInstanceSetImplementation).propertyMappingsByPropertyName('comments')
+   let dType = meta::relational::tests::simpleRelationalMappingWithBooleanExpression->rootClassMappingByClass(meta::relational::tests::model::simple::Address)->toOne()->cast(@meta::relational::mapping::RootRelationalInstanceSetImplementation)->propertyMappingsByPropertyName('comments')
                   ->cast(@meta::relational::mapping::RelationalPropertyMapping).relationalOperationElement->toOne()
                   ->meta::relational::functions::typeInference::inferRelationalType()->toOne();
    assertEquals('VARCHAR(12)', $dType->meta::relational::metamodel::datatype::dataTypeToSqlText());
@@ -101,7 +103,7 @@ function <<test.Test>> meta::relational::tests::typeInference::testDynaCaseInfer
 
 function <<test.Test>> meta::relational::tests::typeInference::testDynaComplexInference1():Boolean[1]
 {
-   let dType = meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMappingWithJoin.rootClassMappingByClass(meta::relational::tests::mapping::propertyfunc::model::domain::Person)->toOne()->cast(@meta::relational::mapping::RootRelationalInstanceSetImplementation).propertyMappingsByPropertyName('firstName')
+   let dType = meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMappingWithJoin->rootClassMappingByClass(meta::relational::tests::mapping::propertyfunc::model::domain::Person)->toOne()->cast(@meta::relational::mapping::RootRelationalInstanceSetImplementation)->propertyMappingsByPropertyName('firstName')
                   ->cast(@meta::relational::mapping::RelationalPropertyMapping).relationalOperationElement->toOne()
                   ->meta::relational::functions::typeInference::inferRelationalType()->toOne();
    assertEquals('VARCHAR(200)', $dType->meta::relational::metamodel::datatype::dataTypeToSqlText());
@@ -110,7 +112,7 @@ function <<test.Test>> meta::relational::tests::typeInference::testDynaComplexIn
 
 function <<test.Test>> meta::relational::tests::typeInference::testDynaComplexInference2():Boolean[1]
 {
-   let dType = meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMappingWithJoin.rootClassMappingByClass(meta::relational::tests::mapping::propertyfunc::model::domain::Person)->toOne()->cast(@meta::relational::mapping::RootRelationalInstanceSetImplementation).propertyMappingsByPropertyName('lastName')
+   let dType = meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMappingWithJoin->rootClassMappingByClass(meta::relational::tests::mapping::propertyfunc::model::domain::Person)->toOne()->cast(@meta::relational::mapping::RootRelationalInstanceSetImplementation)->propertyMappingsByPropertyName('lastName')
                   ->cast(@meta::relational::mapping::RelationalPropertyMapping).relationalOperationElement->toOne()
                   ->meta::relational::functions::typeInference::inferRelationalType()->toOne();
    assertEquals('VARCHAR(400)', $dType->meta::relational::metamodel::datatype::dataTypeToSqlText());
@@ -119,7 +121,7 @@ function <<test.Test>> meta::relational::tests::typeInference::testDynaComplexIn
 
 function <<test.Test>> meta::relational::tests::typeInference::testViewOnViewInference():Boolean[1]
 {
-   let dType = meta::relational::tests::db.schemas.view('orderNegativePnlViewOnView')->toOne()
+   let dType = meta::relational::tests::db.schemas->map(x|$x->view('orderNegativePnlViewOnView'))->toOne()
                   .columnMappings->filter(x | $x.columnName == 'pnl').relationalOperationElement->toOne()
                   ->meta::relational::functions::typeInference::inferRelationalType()->toOne();
    assertEquals('FLOAT', $dType->meta::relational::metamodel::datatype::dataTypeToSqlText());
@@ -134,7 +136,7 @@ function <<test.Test>> meta::relational::tests::typeInference::testSQLNullTypeIn
 
 function <<test.Test>> meta::relational::tests::typeInference::testSQLNullWithinCaseTypeInference1():Boolean[1]
 {
-   let dType = meta::relational::transform::toPure::tests::SimpleDb1Mapping.rootClassMappingByClass(meta::relational::transform::toPure::tests::PersonTable)->cast(@meta::relational::mapping::RootRelationalInstanceSetImplementation).propertyMappingsByPropertyName('isValid')
+   let dType = meta::relational::transform::toPure::tests::SimpleDb1Mapping->rootClassMappingByClass(meta::relational::transform::toPure::tests::PersonTable)->cast(@meta::relational::mapping::RootRelationalInstanceSetImplementation)->map(x|$x->propertyMappingsByPropertyName('isValid'))
                  ->cast(@meta::relational::mapping::RelationalPropertyMapping).relationalOperationElement->toOne()
                  ->meta::relational::functions::typeInference::inferRelationalType()->toOne();
    assertEquals('BIT', $dType->meta::relational::metamodel::datatype::dataTypeToSqlText());
@@ -163,7 +165,7 @@ function <<test.Test>> meta::relational::tests::typeInference::testJoinStringsTy
    let dType = ^meta::relational::metamodel::DynaFunction(
       name = 'joinStrings', 
       parameters = [
-         meta::relational::tests::simpleRelationalMapping.rootClassMappingByClass(meta::relational::tests::model::simple::Person)->cast(@meta::relational::mapping::RootRelationalInstanceSetImplementation).propertyMappingsByPropertyName('firstName')->cast(@meta::relational::mapping::RelationalPropertyMapping).relationalOperationElement->toOne(),
+         meta::relational::tests::simpleRelationalMapping->rootClassMappingByClass(meta::relational::tests::model::simple::Person)->cast(@meta::relational::mapping::RootRelationalInstanceSetImplementation)->map(x|$x->propertyMappingsByPropertyName('firstName'))->cast(@meta::relational::mapping::RelationalPropertyMapping).relationalOperationElement->toOne(),
          ^meta::relational::metamodel::Literal(value = ',')
       ]
    )->meta::relational::functions::typeInference::inferRelationalType()->toOne();

@@ -25,5 +25,15 @@ public enum DurationUnit
     SECONDS,
     MILLISECONDS,
     MICROSECONDS,
-    NANOSECONDS
+    NANOSECONDS;
+
+    public String getName()
+    {
+        return this.name();
+    }
+
+    public static DurationUnit getEnumFromPureName(String pureName)
+    {
+        return DurationUnit.valueOf(pureName);
+    }
 }

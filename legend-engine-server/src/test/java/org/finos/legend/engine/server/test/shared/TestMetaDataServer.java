@@ -17,7 +17,6 @@ package org.finos.legend.engine.server.test.shared;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Maps;
-import org.eclipse.collections.api.list.primitive.LongList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.jetty.server.Handler;
@@ -26,20 +25,20 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.HandlerCollection;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.server.test.shared.execute.PureFunctions;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
-import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
-import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.CodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.CodeStorageNode;
-import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.vcs.Revision;
+import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.RepositoryCodeStorage;
+import org.finos.legend.pure.m3.serialization.runtime.Message;
 import org.finos.legend.pure.runtime.java.compiled.compiler.JavaCompilerState;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledProcessorSupport;
 import org.finos.legend.pure.runtime.java.compiled.execution.ConsoleCompiled;
+import org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtensionLoader;
 import org.finos.legend.pure.runtime.java.compiled.metadata.ClassCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.FunctionCache;
-import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -67,26 +66,20 @@ public class TestMetaDataServer
         this.server = new Server(port);
         CompiledExecutionSupport executionSupport = new CompiledExecutionSupport(
                 new JavaCompilerState(null, TestMetaDataServer.class.getClassLoader()),
-                new CompiledProcessorSupport(TestMetaDataServer.class.getClassLoader(), MetadataLazy.fromClassLoader(TestMetaDataServer.class.getClassLoader(), CodeRepositoryProviderHelper.findCodeRepositories().collect(CodeRepository::getName)), Sets.mutable.empty()),
+                new CompiledProcessorSupport(TestMetaDataServer.class.getClassLoader(), PureModel.METADATA_LAZY, Sets.mutable.empty()),
                 null,
-                new CodeStorage()
+                new RepositoryCodeStorage()
                 {
                     @Override
-                    public String getRepoName(String s)
+                    public void initialize(Message message)
                     {
-                        return null;
+
                     }
 
                     @Override
-                    public RichIterable<String> getAllRepoNames()
+                    public CodeRepository getRepositoryForPath(String s)
                     {
                         return null;
-                    }
-
-                    @Override
-                    public boolean isRepoName(String s)
-                    {
-                        return false;
                     }
 
                     @Override
@@ -166,30 +159,6 @@ public class TestMetaDataServer
                     {
                         return false;
                     }
-
-                    @Override
-                    public boolean isVersioned(String s)
-                    {
-                        return false;
-                    }
-
-                    @Override
-                    public long getCurrentRevision(String s)
-                    {
-                        return 1234;
-                    }
-
-                    @Override
-                    public LongList getAllRevisions(String s)
-                    {
-                        return null;
-                    }
-
-                    @Override
-                    public RichIterable<Revision> getAllRevisionLogs(RichIterable<String> richIterable)
-                    {
-                        return null;
-                    }
                 },
                 null,
                 null,
@@ -197,7 +166,8 @@ public class TestMetaDataServer
                 new FunctionCache(),
                 new ClassCache(),
                 null,
-                Sets.mutable.empty()
+                Sets.mutable.empty(),
+                CompiledExtensionLoader.extensions()
         );
 
         AbstractHandler mappingHandle = registerService(

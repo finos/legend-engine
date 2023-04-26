@@ -47,7 +47,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sybas
   let allStates = allGenerationStates();
 
   [
-    dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='datediff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->processDateDiffDurationUnitForSybase(),$p->at(0),$p->at(1)]})),
+    dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='datediff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->replace('\'', '')->processDateDiffDurationUnitForSybase(),$p->at(0),$p->at(1)]})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='cast(%s as date)')),
     dynaFnToSql('isAlphaNumeric',         $allStates,            ^ToSql(format=likePatternWithoutEscape('%%%s%%'), transform={p:String[1]|$p->transformAlphaNumericParamsDefault()})),
     dynaFnToSql('trim',                   $allStates,            ^ToSql(format='rtrim(ltrim(%s))'))

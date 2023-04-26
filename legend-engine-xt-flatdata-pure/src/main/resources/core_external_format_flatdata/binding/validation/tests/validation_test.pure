@@ -47,64 +47,29 @@ Association meta::external::format::flatdata::binding::validation::test::FileRow
   row : Row[*];
 }
 
-function <<meta::pure::profiles::test.Test>> meta::external::format::flatdata::binding::validation::test::testFlatDataSchemaBindingWithImmaterialFooter():Boolean[1]
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::binding::validation::test::testFlatDataSchemaBindingWithImmaterialFooter():Boolean[1]
 {
-  let schemaSet = ^SchemaSet(
-    name = 'TestSchema',
-    package = meta::external::format::flatdata::binding::validation::test,
-    format = 'FlatData',
-    schemas = ^Schema(
-                id = 'default.flatdata',
-                detail = ^FlatData(
-                          sections = [
-                            ^FlatDataSection(
-                              name = 'Header',
-                              driverId = 'DelimitedWithoutHeadings',
-                              sectionProperties = [
-                                ^FlatDataProperty(name = 'delimiter', value = ' '),
-                                ^FlatDataProperty(name = 'scope.forNumberOfLines', value = 1)
-                              ],
-                              recordType = ^FlatDataRecordType(
-                                              fields = [
-                                                ^FlatDataRecordField(label = 'date', address = '3', type = ^FlatDataDate(format = 'yyyyMMdd', optional=false))
-                                              ]
-                              )
-                            ),
-                            ^FlatDataSection(
-                              name = 'Row', 
-                              driverId = 'DelimitedWithoutHeadings',
-                              sectionProperties = [
-                                ^FlatDataProperty(name = 'delimiter', value = '~'),
-                                ^FlatDataProperty(name = 'scope.default', value = true),
-                                ^FlatDataProperty(name = 'recordSeparator', value = '\r\n')
-                              ],
-                              recordType = ^FlatDataRecordType(
-                                fields = [
-                                  ^FlatDataRecordField(label = 'id', address = '1', type = ^FlatDataInteger(optional = false)),
-                                  ^FlatDataRecordField(label = 'value', address = '2', type = ^FlatDataString(optional = false))
-                                ]
-                              )
-                            ),
-                            ^FlatDataSection(
-                              name = 'footer', 
-                              driverId = 'ImmaterialLines',
-                              sectionProperties = [
-                                ^FlatDataProperty(name = 'scope.forNumberOfLines', value = 1)
-                              ]
-                            )
+  let schema = 
+    '###ExternalFormat\n' +
+    'Binding meta::external::format::flatdata::binding::validation::test::TestBinding\n' +
+    '{\n' +
+    '  schemaSet: meta::external::format::flatdata::binding::validation::test::TestSchema;\n' +
+    '  contentType: \'application/x.flatdata\';\n' +
+    '  modelIncludes: [\n' +
+    '    meta::external::format::flatdata::binding::validation::test::Header, meta::external::format::flatdata::binding::validation::test::Row, meta::external::format::flatdata::binding::validation::test::FileHeader, meta::external::format::flatdata::binding::validation::test::FileRow, meta::external::format::flatdata::binding::validation::test::WholeFile\n' +
+    '  ];\n' +
+    '}\n\n' +
+    'SchemaSet meta::external::format::flatdata::binding::validation::test::TestSchema\n' +
+    '{\n' +
+    '  format: FlatData;\n' +
+    '  schemas: [\n' +
+    '    {\n' +
+    '      content: \'section Header: DelimitedWithoutHeadings {  delimiter: \\\' \\\';  scope.forNumberOfLines: 1;   Record  { date {3}: DATE(format = \\\'yyyyMMdd\\\');}} section Row: DelimitedWithoutHeadings {  delimiter: \\\'~\\\'; scope.default;   Record  { id {1}: INTEGER; value {1}: STRING;}} section footer: ImmaterialLines {  scope.forNumberOfLines: 1; } \';\n' +
+    '    }\n' +
+    '  ];\n' +
+    '}\n';
 
-                          ]
-                        )
-              )
-  );
-
-  let binding = ^Binding(
-      name        = 'TestBinding',
-      package     = meta::external::format::flatdata::executionPlan::test,
-      schemaSet   = $schemaSet,
-      contentType = 'application/x.flatdata',
-      modelUnit   = newModelUnit()->include([Header, Row, FileHeader, FileRow, WholeFile])
-   );
+  let binding = meta::external::format::flatdata::binding::validation::test::compileGrammar($schema)->filter(ele | $ele->instanceOf(Binding))->cast(@Binding)->toOne();
 
   let b = meta::external::format::flatdata::binding::validation::bindDetails($binding)->cast(@FlatDataBindingDetail);
 
@@ -118,3 +83,10 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::flatdata::b
   assertNotEmpty($rowSectionToProperty);
   assert($rowSectionToProperty->toOne().section.name == 'Row');
 } 
+
+function meta::external::format::flatdata::binding::validation::test::compileGrammar(grammar:String[1]): PackageableElement[*]
+{
+  let fStr = 'meta::legend::compile_String_1__PackageableElement_MANY_';
+  let func = $fStr->pathToElement()->cast(@Function<{String[1]->PackageableElement[*]}>);
+  $func->eval($grammar);
+}

@@ -18,7 +18,6 @@ import meta::legend::service::metamodel::*;
 
 import meta::pure::persistence::metamodel::*;
 import meta::pure::persistence::metamodel::context::*;
-import meta::pure::persistence::metamodel::mapping::*;
 import meta::pure::persistence::metamodel::notifier::*;
 import meta::pure::persistence::metamodel::persister::*;
 import meta::pure::persistence::metamodel::persister::audit::*;
@@ -58,12 +57,8 @@ meta::pure::persistence::metamodel::Persistence extends PackageableElement, meta
    {doc.doc = 'The service that sources and optionally transforms data to persist.'}
    service: Service[1];
 
-   //TODO: ledav -- switch to 1..* once migrating composer is implemented
-   {doc.doc = 'The mapping of the service output (or part of the service output) to a persistence target.'}
-   serviceOutputTargets: ServiceOutputTarget[*];
-
    {doc.doc = 'The persister that writes data to a datastore.'}
-   persister: meta::pure::persistence::metamodel::persister::Persister[0..1];
+   persister: meta::pure::persistence::metamodel::persister::Persister[1];
 
    {doc.doc = 'The notifier that sends updates on significant persistence events.'}
    notifier: Notifier[1];
@@ -587,21 +582,24 @@ meta::pure::persistence::metamodel::persister::validitymilestoning::derivation::
 
 Class meta::pure::persistence::metamodel::PersistenceTest extends meta::pure::test::AtomicTest
 {
-  testBatches: PersistenceTestBatch[*];
-  isTestDataFromServiceOutput: Boolean[0..1];
+  testBatches                 : PersistenceTestBatch[*];
+  isTestDataFromServiceOutput : Boolean[0..1];
 }
 
-Class meta::pure::persistence::metamodel::PersistenceTestBatch extends meta::pure::test::TestBatch
+Class meta::pure::persistence::metamodel::PersistenceTestBatch
 {
-  testData: meta::pure::persistence::metamodel::TestData[1];
+  id         : String[1];
+  batchId    : Integer[1];
+  assertions : meta::pure::test::assertion::TestAssertion[*];
+  testData   : meta::pure::persistence::metamodel::TestData[1];
 }
 
 Class meta::pure::persistence::metamodel::TestData
 {
-  connection: meta::pure::persistence::metamodel::ConnectionTestData[1];
+  connection : meta::pure::persistence::metamodel::ConnectionTestData[1];
 }
 
 Class meta::pure::persistence::metamodel::ConnectionTestData
 {
-  data: meta::pure::data::EmbeddedData[1];
+  data      : meta::pure::data::EmbeddedData[1];
 }

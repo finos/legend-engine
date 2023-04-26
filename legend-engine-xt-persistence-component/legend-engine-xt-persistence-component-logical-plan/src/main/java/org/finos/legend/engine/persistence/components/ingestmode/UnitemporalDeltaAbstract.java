@@ -14,11 +14,15 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode;
 
+import org.finos.legend.engine.persistence.components.common.OptimizationFilter;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.NoVersioningStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.NoDeletesMergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionMilestoned;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionMilestoning;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.immutables.value.Value.Default;
@@ -39,8 +43,16 @@ public interface UnitemporalDeltaAbstract extends IngestMode, TransactionMilesto
 
     Optional<String> dataSplitField();
 
+    List<OptimizationFilter> optimizationFilters();
+
     @Override
     TransactionMilestoning transactionMilestoning();
+
+    @Default
+    default VersioningStrategy versioningStrategy()
+    {
+        return NoVersioningStrategy.builder().build();
+    }
 
     @Default
     default MergeStrategy mergeStrategy()

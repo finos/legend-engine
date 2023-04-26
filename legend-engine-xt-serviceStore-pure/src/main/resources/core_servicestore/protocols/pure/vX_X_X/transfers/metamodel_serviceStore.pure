@@ -14,16 +14,19 @@
 
 ###Pure
 import meta::pure::extension::*;
+import meta::pure::functions::collection::*;
 import meta::external::store::service::metamodel::*;
+
 
 function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformServiceStore(s:ServiceStore[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::store::service::ServiceStore[1]
 {
    ^meta::protocols::pure::vX_X_X::metamodel::store::service::ServiceStore(
-      _type       = 'serviceStore',
-      description = $s.description,
-      name        = $s.name->toOne(),
-      package     = if($s.package->isEmpty(), |[], |$s.package->toOne()->elementToPath()),
-      elements    = $s.elements->map(e | $e->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformServiceStoreElement($extensions))
+      _type             = 'serviceStore',
+      description       = $s.description,
+      name              = $s.name->toOne(),
+      package           = if($s.package->isEmpty(), |[], |$s.package->toOne()->elementToPath()),
+      securitySchemes   = $s.securitySchemes->keyValues()->map(e | pair($e.first, $e.second->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformSecurityScheme($extensions)))->newMap(),
+      elements          = $s.elements->map(e | $e->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformServiceStoreElement($extensions))
    )
 }
 
@@ -44,7 +47,11 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::se
                                  method     = $s.method->toString(),
                                  parameters = $s.parameters->map(p | $p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformServiceStoreParameter()),
                                  response   = $s.response->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformTypeReference()->cast(@meta::protocols::pure::vX_X_X::metamodel::store::service::ComplexTypeReference),
-                                 security   = $s.security->map(p | $p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformSecurityScheme($extensions))
+                                 security   = $s.security->map(p | ^meta::protocols::pure::vX_X_X::metamodel::store::service::SingleSecuritySchemeRequirement(
+                                                                                                                                   _type = 'single',
+                                                                                                                                   id = $p->cast(@meta::external::store::service::metamodel::SingleSecuritySchemeRequirement).id,
+                                                                                                                                   securityScheme = $p->cast(@meta::external::store::service::metamodel::SingleSecuritySchemeRequirement).securityScheme->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformSecurityScheme($extensions)))
+
                              )
    ])
 }
@@ -78,7 +85,23 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::se
 function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformSecurityScheme(a:SecurityScheme[1], extensions:Extension[*]):meta::protocols::pure::vX_X_X::metamodel::store::service::SecurityScheme[1]
 {
    $a->match($extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).moduleSerializerExtension('serviceStore')->cast(@meta::protocols::pure::vX_X_X::extension::store::service::ServiceStoreModuleSerializerExtension).transfers_securityScheme_transformSecurityScheme->concatenate([
-      a:SecurityScheme[1]      | fail('Unsupported Authentication Strategy'); ^meta::protocols::pure::vX_X_X::metamodel::store::service::SecurityScheme(_type = 'unknown');
+      h:meta::external::store::service::metamodel::HttpSecurityScheme[1] |
+        ^meta::protocols::pure::vX_X_X::metamodel::store::service::HttpSecurityScheme(
+            _type = 'http',
+            scheme = $h.scheme->toString(),
+            bearerFormat = $h.bearerFormat
+        ),
+      a:meta::external::store::service::metamodel::ApiKeySecurityScheme[1] |
+        ^meta::protocols::pure::vX_X_X::metamodel::store::service::ApiKeySecurityScheme(
+            _type = 'apiKey',
+            location = $a.location->toString(),
+            keyName = $a.keyName
+        ),
+      other: meta::external::store::service::metamodel::SecurityScheme[1] |
+         fail('Unsupported Security Scheme');
+         ^meta::protocols::pure::vX_X_X::metamodel::store::service::SecurityScheme(
+            _type = 'unknown'
+         );
    ])->toOneMany())
 }
 

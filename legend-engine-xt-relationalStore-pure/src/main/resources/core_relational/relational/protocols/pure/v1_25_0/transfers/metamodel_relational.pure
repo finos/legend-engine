@@ -134,7 +134,7 @@ function meta::protocols::pure::v1_25_0::transformation::fromPureGraph::store::r
       _type = 'relational',
       stores = $db->elementToPath(),
       association = $r.association->elementToPath(),
-      propertyMappings = $r.allPropertyMappings()->meta::pure::milestoning::excludeRangeMilestoningPropertyMapping()->map(pm|$pm->transformRelationalPropertyMapping($db, $mapping, $extensions))
+      propertyMappings = $r->allPropertyMappings()->meta::pure::milestoning::excludeRangeMilestoningPropertyMapping()->map(pm|$pm->transformRelationalPropertyMapping($db, $mapping, $extensions))
    );
 
 }
@@ -150,7 +150,7 @@ function <<access.private>> meta::protocols::pure::v1_25_0::transformation::from
       class = $r.class->elementToPath(),
       root = false,
       primaryKey = $r.primaryKey->map(c|$c->meta::protocols::pure::v1_25_0::transformation::fromPureGraph::store::relational::transformRelationalOperationElement($db->toOne())),
-      propertyMappings = $r.allPropertyMappings()->meta::pure::milestoning::excludeRangeMilestoningPropertyMapping()->map(pm|$pm->transformRelationalPropertyMapping($db->toOne(), $mapping, $extensions))
+      propertyMappings = $r->allPropertyMappings()->meta::pure::milestoning::excludeRangeMilestoningPropertyMapping()->map(pm|$pm->transformRelationalPropertyMapping($db->toOne(), $mapping, $extensions))
    );
 }
 

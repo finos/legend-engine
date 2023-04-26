@@ -43,14 +43,25 @@ public class TestAuthenticationGrammarParser_AuthenticationTypes extends TestGra
                 "import test::*;\n" +
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
-                "  authentication: UserPassword\n" +
-                "  {\n" +
+                "  authentication: # UserPassword {\n" +
                 "    username: 'alice';\n" +
                 "    password: PropertiesFileSecret\n" +
                 "    {\n" +
                 "      propertyName: 'property1';\n" +
-                "    }\n" +
-                "  }\n" +
+                "    };\n" +
+                "  }#;\n" +
+                "}\n");
+    }
+
+    @Test
+    public void kerberosAuthentication()
+    {
+        PureModelContextData test = test("###AuthenticationDemo\n" +
+                "import test::*;\n" +
+                "AuthenticationDemo demo::demo1\n" +
+                "{\n" +
+                "  authentication: # Kerberos {\n" +
+                "  }#;\n" +
                 "}\n");
     }
 
@@ -61,15 +72,14 @@ public class TestAuthenticationGrammarParser_AuthenticationTypes extends TestGra
                 "import test::*;\n" +
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
-                "  authentication: ApiKey\n" +
-                "  {\n" +
+                "  authentication: # ApiKey {\n" +
                 "    location: 'header';\n" +
                 "    keyName: 'key1';\n" +
                 "    value: PropertiesFileSecret\n" +
                 "    {\n" +
                 "      propertyName: 'property1';\n" +
-                "    }\n" +
-                "  }\n" +
+                "    };\n" +
+                "  }#;\n" +
                 "}\n");
     }
 
@@ -80,18 +90,17 @@ public class TestAuthenticationGrammarParser_AuthenticationTypes extends TestGra
                 "import test::*;\n" +
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
-                "  authentication: EncryptedPrivateKey\n" +
-                "  {\n" +
+                "  authentication: # EncryptedPrivateKey {\n" +
                 "    userName: 'alice';\n" +
                 "    privateKey: PropertiesFileSecret\n" +
                 "    {\n" +
                 "      propertyName: 'property1';\n" +
-                "    }\n" +
+                "    };\n" +
                 "    passphrase: PropertiesFileSecret\n" +
                 "    {\n" +
                 "      propertyName: 'property1';\n" +
-                "    }\n" +
-                "  }\n" +
+                "    };\n" +
+                "  }#;\n" +
                 "}\n");
     }
 
@@ -102,8 +111,7 @@ public class TestAuthenticationGrammarParser_AuthenticationTypes extends TestGra
                 "import test::*;\n" +
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
-                "  authentication: GCPWIFWithAWSIdP\n" +
-                "  {\n" +
+                "  authentication: # GCPWIFWithAWSIdP {\n" +
                 "    serviceAccountEmail: 'a@b.com';\n" +
                 "    idP: AWSIdP\n" +
                 "    {\n" +
@@ -115,11 +123,11 @@ public class TestAuthenticationGrammarParser_AuthenticationTypes extends TestGra
                 "           accessKeyId: PropertiesFileSecret\n" +
                 "           {\n" +
                 "              propertyName: 'property1';\n" +
-                "           }\n" +
+                "           };\n" +
                 "           secretAccessKey: PropertiesFileSecret\n" +
                 "           {\n" +
                 "              propertyName: 'property1';\n" +
-                "           }\n" +
+                "           };\n" +
                 "      }" +
                 "    }\n" +
                 "    workload: GCPWorkload\n" +
@@ -128,7 +136,7 @@ public class TestAuthenticationGrammarParser_AuthenticationTypes extends TestGra
                 "      providerId: 'provider1';\n" +
                 "      poolId: 'pool1';\n" +
                 "    }\n" +
-                "  }\n" +
+                "  }#;\n" +
                 "}\n");
     }
 }

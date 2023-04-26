@@ -14,9 +14,17 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test;
 
-import org.finos.legend.engine.protocol.pure.v1.model.test.TestBatch;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 
-public class PersistenceTestBatch extends TestBatch
+import java.util.List;
+
+public class PersistenceTestBatch
 {
+    public String id;
+    public int batchId;
+    public List<TestAssertion> assertions;
     public TestData testData;
+
+    public SourceInformation sourceInformation;
 }

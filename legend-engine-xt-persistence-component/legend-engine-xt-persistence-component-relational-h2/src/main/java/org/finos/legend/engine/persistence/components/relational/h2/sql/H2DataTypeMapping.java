@@ -58,17 +58,21 @@ public class H2DataTypeMapping implements DataTypeMapping
                 break;
             case CHAR:
                 dataType = new Char();
+                type.length().ifPresent(dataType::setLength);
                 break;
             case VARCHAR:
             case STRING:
                 dataType = new VarChar();
+                type.length().ifPresent(dataType::setLength);
                 break;
             case TIMESTAMP:
             case DATETIME:
                 dataType = new Timestamp();
+                type.scale().ifPresent(dataType::setScale);
                 break;
             case TIMESTAMPTZ:
                 dataType = new TimestampWithTimezone();
+                type.scale().ifPresent(dataType::setScale);
                 break;
             case DATE:
                 dataType = new Date();
@@ -79,21 +83,28 @@ public class H2DataTypeMapping implements DataTypeMapping
                 break;
             case DECIMAL:
                 dataType = new Decimal(type.length().orElse(-1), type.scale().orElse(-1));
+                type.length().ifPresent(dataType::setLength);
+                type.scale().ifPresent(dataType::setScale);
                 break;
             case DOUBLE:
                 dataType = new Double();
                 break;
             case BINARY:
                 dataType = new Binary();
+                type.length().ifPresent(dataType::setLength);
                 break;
             case TIME:
                 dataType = new Time();
+                type.scale().ifPresent(dataType::setScale);
                 break;
             case NUMERIC:
                 dataType = new Numeric();
+                type.length().ifPresent(dataType::setLength);
+                type.scale().ifPresent(dataType::setScale);
                 break;
             case LONGTEXT:
                 dataType = new LongText();
+                type.length().ifPresent(dataType::setLength);
                 break;
             case BOOLEAN:
             case BOOL:
@@ -112,9 +123,6 @@ public class H2DataTypeMapping implements DataTypeMapping
             default:
                 throw new IllegalArgumentException("Unexpected value: " + type.dataType());
         }
-
-        type.length().ifPresent(dataType::setLength);
-        type.scale().ifPresent(dataType::setScale);
 
         return dataType;
     }

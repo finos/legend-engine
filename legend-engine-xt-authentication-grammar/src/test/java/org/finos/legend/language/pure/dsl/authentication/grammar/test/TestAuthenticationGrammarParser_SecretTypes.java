@@ -44,14 +44,13 @@ public class TestAuthenticationGrammarParser_SecretTypes extends TestGrammarPars
                 "import test::*;\n" +
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
-                "  authentication: UserPassword\n" +
-                "  {\n" +
+                "  authentication: # UserPassword {\n" +
                 "    username: 'alice';\n" +
                 "    password: PropertiesFileSecret\n" +
                 "    {\n" +
                 "      propertyName: 'property1';\n" +
-                "    }\n" +
-                "  }\n" +
+                "    };\n" +
+                "  }#;\n" +
                 "}\n");
     }
 
@@ -62,14 +61,13 @@ public class TestAuthenticationGrammarParser_SecretTypes extends TestGrammarPars
                 "import test::*;\n" +
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
-                "  authentication: UserPassword\n" +
-                "  {\n" +
+                "  authentication: # UserPassword {\n" +
                 "    username: 'alice';\n" +
                 "    password: EnvironmentSecret\n" +
                 "    {\n" +
                 "      envVariableName: 'env1';\n" +
-                "    }\n" +
-                "  }\n" +
+                "    };\n" +
+                "  }#;\n" +
                 "}\n");
     }
 
@@ -80,14 +78,13 @@ public class TestAuthenticationGrammarParser_SecretTypes extends TestGrammarPars
                 "import test::*;\n" +
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
-                "  authentication: UserPassword\n" +
-                "  {\n" +
+                "  authentication: # UserPassword {\n" +
                 "    username: 'alice';\n" +
                 "    password: SystemPropertiesSecret\n" +
                 "    {\n" +
                 "      systemPropertyName: 'some.property';\n" +
-                "    }\n" +
-                "  }\n" +
+                "    };\n" +
+                "  }#;\n" +
                 "}\n");
     }
 
@@ -98,8 +95,7 @@ public class TestAuthenticationGrammarParser_SecretTypes extends TestGrammarPars
                 "import test::*;\n" +
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
-                "  authentication: UserPassword\n" +
-                "  {\n" +
+                "  authentication: # UserPassword {\n" +
                 "    username: 'alice';\n" +
                 "    password: AWSSecretsManagerSecret\n" +
                 "    {\n" +
@@ -109,8 +105,8 @@ public class TestAuthenticationGrammarParser_SecretTypes extends TestGrammarPars
                 "      awsCredentials: Default\n" +
                 "      {\n" +
                 "      }" +
-                "    }\n" +
-                "  }\n" +
+                "    };\n" +
+                "  }#;\n" +
                 "}\n");
     }
 
@@ -121,8 +117,7 @@ public class TestAuthenticationGrammarParser_SecretTypes extends TestGrammarPars
                 "import test::*;\n" +
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
-                "  authentication: UserPassword\n" +
-                "  {\n" +
+                "  authentication: # UserPassword {\n" +
                 "    username: 'alice';\n" +
                 "    password: AWSSecretsManagerSecret\n" +
                 "    {\n" +
@@ -134,14 +129,14 @@ public class TestAuthenticationGrammarParser_SecretTypes extends TestGrammarPars
                 "           accessKeyId: PropertiesFileSecret\n" +
                 "           {\n" +
                 "              propertyName: 'property1';\n" +
-                "           }\n" +
+                "           };\n" +
                 "           secretAccessKey: PropertiesFileSecret\n" +
                 "           {\n" +
                 "              propertyName: 'property1';\n" +
-                "           }\n" +
+                "           };\n" +
                 "      }" +
-                "    }\n" +
-                "  }\n" +
+                "    };\n" +
+                "  }#;\n" +
                 "}\n");
     }
 
@@ -152,8 +147,7 @@ public class TestAuthenticationGrammarParser_SecretTypes extends TestGrammarPars
                 "import test::*;\n" +
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
-                "  authentication: UserPassword\n" +
-                "  {\n" +
+                "  authentication: # UserPassword {\n" +
                 "    username: 'alice';\n" +
                 "    password: AWSSecretsManagerSecret\n" +
                 "    {\n" +
@@ -169,15 +163,15 @@ public class TestAuthenticationGrammarParser_SecretTypes extends TestGrammarPars
                 "                   accessKeyId: PropertiesFileSecret\n" +
                 "                   {\n" +
                 "                       propertyName: 'property1';\n" +
-                "                   }\n" +
+                "                   };\n" +
                 "                   secretAccessKey: PropertiesFileSecret\n" +
                 "                   {\n" +
                 "                       propertyName: 'property1';\n" +
-                "                   }\n" +
+                "                   };\n" +
                 "           }" +
                 "      }" +
-                "    }\n" +
-                "  }\n" +
+                "    };\n" +
+                "  }#;\n" +
                 "}\n");
     }
 }

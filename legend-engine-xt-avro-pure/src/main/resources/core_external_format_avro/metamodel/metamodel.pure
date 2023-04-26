@@ -88,6 +88,7 @@ Class meta::external::format::avro::metamodel::AvroNamedSchema extends AvroSchem
 Class meta::external::format::avro::metamodel::AvroRecordSchema extends AvroNamedSchema
 {
     <<equality.Key>> fields: AvroSchemaField[*];
+    placeHolder: Boolean[0..1];
 }
 
 Class meta::external::format::avro::metamodel::AvroEnumSchema extends AvroNamedSchema

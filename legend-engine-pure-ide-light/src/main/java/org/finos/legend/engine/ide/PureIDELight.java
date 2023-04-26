@@ -17,7 +17,6 @@ package org.finos.legend.engine.ide;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.pure.runtime.compiler.interpreted.natives.LegendCompileMixedProcessorSupport;
-import org.finos.legend.pure.ide.light.PureIDECodeRepository;
 import org.finos.legend.pure.ide.light.PureIDEServer;
 import org.finos.legend.pure.ide.light.SourceLocationConfiguration;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
@@ -26,7 +25,6 @@ import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.fs.Muta
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
 
 import java.nio.file.Paths;
-import java.util.Optional;
 
 public class PureIDELight extends PureIDEServer
 {
@@ -38,7 +36,6 @@ public class PureIDELight extends PureIDEServer
     @Override
     protected MutableList<RepositoryCodeStorage> buildRepositories(SourceLocationConfiguration sourceLocationConfiguration)
     {
-        String ideFilesLocation = Optional.ofNullable(sourceLocationConfiguration).map(s -> s.ideFilesLocation).orElse("legend-engine-pure-ide-light-pure/src/main/resources/pure_ide");
         return Lists.mutable.<RepositoryCodeStorage>empty()
                 .with(this.buildCore("legend-engine-xt-persistence-pure", "persistence"))
                 .with(this.buildCore("legend-engine-xt-mastery-pure", "mastery"))
@@ -47,13 +44,17 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xt-relationalStore-bigquery-pure", "relational_bigquery"))
                 .with(this.buildCore("legend-engine-xt-relationalStore-spanner-pure", "relational_spanner"))
                 .with(this.buildCore("legend-engine-xt-relationalStore-athena-pure", "relational_athena"))
+                .with(this.buildCore("legend-engine-xt-relationalStore-store-entitlement-pure", "relational_store_entitlement"))
                 .with(this.buildCore("legend-engine-xt-serviceStore-pure", "servicestore"))
-                .with(this.buildCore("legend-engine-xt-text-pure", "text"))
+                .with(this.buildCore("legend-engine-xt-text-pure-metamodel", "text-metamodel"))
+                .with(this.buildCore("legend-engine-xt-data-space-pure-metamodel", "data-space-metamodel"))
                 .with(this.buildCore("legend-engine-xt-data-space-pure", "data-space"))
+                .with(this.buildCore("legend-engine-xt-diagram-pure-metamodel", "diagram-metamodel"))
                 .with(this.buildCore("legend-engine-xt-diagram-pure", "diagram"))
                 .with(this.buildCore("legend-engine-xt-flatdata-pure", "external-format-flatdata"))
                 .with(this.buildCore("legend-engine-xt-json-pure", "external-format-json"))
                 .with(this.buildCore("legend-engine-xt-xml-pure", "external-format-xml"))
+                .with(this.buildCore("legend-engine-xt-openapi-pure", "external-format-openapi"))
                 .with(this.buildCore("legend-engine-xt-graphQL-pure", "external-query-graphql"))
                 .with(this.buildCore("legend-engine-xt-graphQL-pure-metamodel", "external-query-graphql-metamodel"))
                 .with(this.buildCore("legend-engine-xt-protobuf-pure", "external-format-protobuf"))
@@ -67,7 +68,9 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xt-changetoken-pure", "pure-changetoken"))
                 .with(this.buildCore("legend-engine-xt-analytics-mapping-pure", "analytics-mapping"))
                 .with(this.buildCore("legend-engine-xt-analytics-lineage-pure", "analytics-lineage"))
+                .with(this.buildCore("legend-engine-xt-analytics-search-pure", "analytics-search"))
                 .with(this.buildCore("legend-engine-xt-javaGeneration-pure", "external-language-java"))
+                .with(this.buildCore("legend-engine-xt-javaGeneration-featureBased-pure", "external-language-java-feature-based-generation"))
                 .with(this.buildCore("legend-engine-xt-javaPlatformBinding-pure", "java-platform-binding"))
                 .with(this.buildCore("legend-engine-xt-flatdata-javaPlatformBinding-pure", "external-format-flatdata-java-platform-binding"))
                 .with(this.buildCore("legend-engine-xt-json-javaPlatformBinding-pure", "external-format-json-java-platform-binding"))
@@ -78,7 +81,11 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xt-sql-pure-metamodel", "external-query-sql-metamodel"))
                 .with(this.buildCore("legend-engine-xt-sql-pure", "external-query-sql"))
                 .with(this.buildCore("legend-engine-xt-authentication-pure", "authentication"))
-                .with(new MutableFSCodeStorage(new PureIDECodeRepository(), Paths.get(ideFilesLocation)));
+                .with(this.buildCore("legend-engine-xt-elasticsearch/legend-engine-xt-elasticsearch-pure-specification-metamodel", "elasticsearch_specification_metamodel"))
+                .with(this.buildCore("legend-engine-xt-elasticsearch/legend-engine-xt-elasticsearch-V7-pure-metamodel", "elasticsearch_seven_metamodel"))
+                .with(this.buildCore("legend-engine-xt-nonrelationalStore-mongodb-pure","nonrelational-mongodb"))
+                .with(this.buildCore("legend-engine-xt-nonrelationalStore-mongodb-javaPlatformBinding-pure","nonrelational-mongodb-java-platform-binding"))
+                ;
     }
 
     @Override

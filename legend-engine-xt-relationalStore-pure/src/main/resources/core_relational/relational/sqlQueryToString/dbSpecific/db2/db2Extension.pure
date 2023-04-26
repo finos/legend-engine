@@ -6,7 +6,6 @@ import meta::relational::metamodel::relation::*;
 import meta::relational::runtime::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
-import meta::relational::metamodel::*;
 
 function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::db2::dbExtensionLoaderForDB2():DbExtensionLoader[1]
 {
@@ -32,9 +31,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::db2::
       selectSQLQueryProcessor = processSelectSQLQueryForDB2_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
-      dynaFuncDispatch = $dynaFuncDispatch,
-      ddlCommandsTranslatorForTempTable = getDDLCommandsTranslatorForTempTable__RelationalDDLCommandsTranslator_1_,
-      getDefaultTempTableIsolationStrategy = getDefaultTempTableIsolationStrategy__TempTableIsolationStrategy_1_
+      dynaFuncDispatch = $dynaFuncDispatch
    );
 }
 
@@ -151,33 +148,4 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::db2::
 function <<access.private>> meta::relational::functions::sqlQueryToString::db2::processTakeForDB2(s:SelectSQLQuery[1], format:Format[1]):String[1]
 {
    ' ' + $format.separator +'fetch first ' + $s.toRow->toOne()->getValueForTake()->toString() +' rows only';
-}
-
-function meta::relational::functions::sqlQueryToString::db2::getDefaultTempTableIsolationStrategy(): meta::pure::alloy::connections::alloy::isolation::TempTableIsolationStrategy[1]
-{
-  ^meta::pure::alloy::connections::alloy::isolation::DefaultIsolationStrategy();
-}
-
-function meta::relational::functions::sqlQueryToString::db2::translateCreateTableStatementForTempTable(c:CreateTableSQL[1], dbConfig: DbConfig[1]): String[*]
-{
-  'DECLARE GLOBAL TEMPORARY TABLE ' + $c.table->toOne().name + '(' + $c.table.columns->cast(@Column).name->toOne() + ' ' + $c.table.columns->cast(@Column).type->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText() + ') NOT LOGGED ON COMMIT PRESERVE ROWS;';
-}
-
-function meta::relational::functions::sqlQueryToString::db2::translateLoadStatementForTempTable(l:LoadTableSQL[1], dbConfig: DbConfig[1]): String[*]
-{
-  'LOAD FROM '+$l.csvFileLocationVarPlaceHolder->toOne()+' OF DEL INSERT INTO table ('+$l.table.columns->cast(@Column).name->toOne()+');'
-}
-
-function meta::relational::functions::sqlQueryToString::db2::translateDropTableStatementForTempTable(d:DropTableSQL[1]): String[*]
-{
-  'Drop table ' + $d.table->toOne().name+';';
-}
-
-function meta::relational::functions::sqlQueryToString::db2::getDDLCommandsTranslatorForTempTable(): RelationalDDLCommandsTranslator[1]
-{
-  ^RelationalDDLCommandsTranslator(
-                createTable =  translateCreateTableStatementForTempTable_CreateTableSQL_1__DbConfig_1__String_MANY_,
-                dropTable = translateDropTableStatementForTempTable_DropTableSQL_1__String_MANY_,
-                loadTable =  translateLoadStatementForTempTable_LoadTableSQL_1__DbConfig_1__String_MANY_
-              );
 }

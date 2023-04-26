@@ -92,7 +92,7 @@ function meta::external::shared::format::executionPlan::platformBinding::legendJ
 
    let class                               = $node.resultType->cast(@ClassResultType).type->cast(@meta::pure::metamodel::type::Class<Any>);
    let simpleType                          = ^SimpleJavaType(pureType=$class, javaType=$conventions->className($class));
-   let sourceRecordTree                    = $externalFormatContract.sourceRecordTree->toOne();
+   let sourceRecordTree                    = $externalFormatContract.sourceRecordSerializeTree->toOne();
    let returnType                          = if($node.checked, | ^CheckedJavaType(checkedOf=$simpleType, source=^SimpleJavaType(pureType=$sourceRecordTree.class, javaType=$conventions->className($sourceRecordTree.class))), | $simpleType);
    let bindingDetail                       = if($externalFormatContract.externalFormatBindingValidator->isNotEmpty(), 
                                                 | $externalFormatContract.externalFormatBindingValidator->toOne()->eval($node.binding),
@@ -106,11 +106,8 @@ function meta::external::shared::format::executionPlan::platformBinding::legendJ
    let contextWithNodeInfo                 = $context->addNodeInfo($nodeInfo);
 
    let resolvedModel                       = $node.binding.modelUnit->resolve();
-   let updatedTypeInfo                     = $context.typeInfos
-                                                ->map(ti| $resolvedModel.classes     ->fold({cl, ti| $ti->addForClassWithAllProperties($cl)}, $ti))
-                                                ->map(ti| $resolvedModel.enumerations->fold({en, ti| $ti->addForType($en)},                   $ti))
-                                                ->map(ti| $ti->addForClassWithAllProperties($sourceRecordTree.class))
-                                                ->map(ti| if($node.tree->isEmpty(),| $ti->addConstraints($class),| $ti->addForGraphFetchTree($node.tree->toOne())->addConstraintsForGraphFetchTree($node.tree->toOne())));
+   let updatedTypeInfo                     = $context.typeInfos->addForClassWithAllProperties($sourceRecordTree.class)
+                                                               ->map(ti| if($node.tree->isEmpty(),| $ti->addForClass($class)->addConstraints($class),| $ti->addForGraphFetchTree($node.tree->toOne())->addConstraintsForGraphFetchTree($node.tree->toOne())));
 
    let newTypeInfos                        = if($externalFormatJavaBindingDescriptor.internalizeDescriptor.internalizePreparator->isNotEmpty(),
                                                 | $externalFormatJavaBindingDescriptor.internalizeDescriptor.internalizePreparator->toOne()->eval($node, $path, $contextWithNodeInfo->setTypeInfos($updatedTypeInfo), $debug),
@@ -137,12 +134,23 @@ function meta::external::shared::format::executionPlan::platformBinding::legendJ
                                               );
    let contextWithNodeInfo                 = $context->addNodeInfo($nodeInfo);
 
-   let updatedTypeInfo                     = $context.typeInfos->addForClasses($node.binding->cast(@Binding).modelUnit->meta::pure::model::unit::resolve().classes);
+   let updatedTypeInfo                     = if($node.tree->isEmpty(),
+                                                | $context.typeInfos->addForClasses($node.binding->cast(@Binding).modelUnit->meta::pure::model::unit::resolve().classes),
+                                                | let tree = resolveCheckedWrapping($node.tree->toOne());
+                                                  $context.typeInfos->addForGraphFetchTree($tree)->addConstraintsForGraphFetchTree($tree););
+                                                
    let newTypeInfos                        = if($externalFormatJavaBindingDescriptor.externalizeDescriptor.externalizePreparator->isNotEmpty(),
                                                 | $externalFormatJavaBindingDescriptor.externalizeDescriptor.externalizePreparator->toOne()->eval($node, $path, $contextWithNodeInfo->setTypeInfos($updatedTypeInfo), $debug),
                                                 | $updatedTypeInfo);
 
    $contextWithNodeInfo->setTypeInfos($newTypeInfos);
+}
+
+function <<access.private>> meta::external::shared::format::executionPlan::platformBinding::legendJava::resolveCheckedWrapping(tree:RootGraphFetchTree<Any>[1]):GraphFetchTree[1]
+{
+  if($tree.class->elementToPath() == meta::pure::dataQuality::Checked->elementToPath(),
+    |$tree.propertyTrees()->filter(st|$st.property.name == 'value')->toOne()->meta::pure::graphFetch::propertyGraphFetchTreeToRootGraphFetchTree()->resolveCheckedWrapping(),
+    |$tree)
 }
 
 Class <<access.private>> meta::external::shared::format::executionPlan::platformBinding::legendJava::PropertyDetails

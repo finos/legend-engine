@@ -16,10 +16,10 @@ import meta::relational::metamodel::*;
 
 function meta::relational::functions::database::tableReference(database:Database[1],schemaName:String[1],tableName:String[1]):meta::relational::metamodel::relation::Table[1]
 {
-   $database.schema($schemaName)->toOne().table($tableName)->toOne();
+   $database->schema($schemaName)->toOne()->map(x|$x->table($tableName))->toOne();
 }
 
 function meta::relational::functions::database::viewReference(database:Database[1],schemaName:String[1],viewName:String[1]):meta::relational::metamodel::relation::View[1]
 {
-   $database.schema($schemaName)->toOne().view($viewName)->toOne();
+   $database->schema($schemaName)->toOne()->view($viewName)->toOne();
 }

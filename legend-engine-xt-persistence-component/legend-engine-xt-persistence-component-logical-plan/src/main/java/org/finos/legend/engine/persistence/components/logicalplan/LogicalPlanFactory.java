@@ -15,8 +15,6 @@
 package org.finos.legend.engine.persistence.components.logicalplan;
 
 import org.finos.legend.engine.persistence.components.common.Datasets;
-import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
-import org.finos.legend.engine.persistence.components.logicalplan.conditions.Exists;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.CsvExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
@@ -28,6 +26,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.Functio
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
 import org.finos.legend.engine.persistence.components.logicalplan.values.NumericalValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.All;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.TabularValues;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
@@ -41,14 +40,14 @@ public class LogicalPlanFactory
 {
     public static final String IS_TABLE_NON_EMPTY = "isTableNonEmpty";
     public static final String TABLE_IS_NON_EMPTY = "1";
+    public static final String TABLE_ALIAS = "X";
 
     public static LogicalPlan getLogicalPlanForIsDatasetEmpty(Dataset dataset)
     {
-        Condition exists = Exists.of(Selection.builder().source(dataset).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).build());
-        Function count = FunctionImpl.builder().functionName(FunctionName.COUNT).addValue(NumericalValue.of(1L)).alias(IS_TABLE_NON_EMPTY).build();
-
+        Function countAllRows = FunctionImpl.builder().functionName(FunctionName.COUNT).addValue(All.INSTANCE).alias(IS_TABLE_NON_EMPTY).build();
+        Selection selectWithLimit = Selection.builder().source(dataset).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).limit(1).alias(TABLE_ALIAS).build();
         return LogicalPlan.builder()
-            .addOps(Selection.builder().condition(exists).addFields(count).build())
+            .addOps(Selection.builder().addFields(countAllRows).source(selectWithLimit).build())
             .build();
     }
 

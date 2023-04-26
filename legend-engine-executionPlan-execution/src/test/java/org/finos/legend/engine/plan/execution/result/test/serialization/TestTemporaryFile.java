@@ -19,15 +19,13 @@ import org.finos.legend.engine.plan.execution.result.serialization.TemporaryFile
 import org.junit.Assert;
 import org.junit.Test;
 
-import static org.finos.legend.engine.plan.execution.result.serialization.RequestIdGenerator.generateId;
-
 public class TestTemporaryFile
 {
     @Test
     public void testGetTemporaryPathForFile()
     {
-        TemporaryFile tempFileWithoutEndingSlash = new TemporaryFile("/tmp", generateId());
-        TemporaryFile tempFileWithEndingSlash = new TemporaryFile("/tmp/", generateId());
+        TemporaryFile tempFileWithoutEndingSlash = new TemporaryFile("/tmp");
+        TemporaryFile tempFileWithEndingSlash = new TemporaryFile("/tmp/");
         if (SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_UNIX)
         {
             Assert.assertEquals(2, (int) tempFileWithoutEndingSlash.getTemporaryPathForFile().chars().filter(ch -> ch == '/').count());

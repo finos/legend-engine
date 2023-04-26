@@ -1,5 +1,14 @@
 {
-    "name" : "core_relational",
-    "pattern" : "(meta::relational|meta::pure::mapping|meta::protocols::pure|meta::relational::tests::csv|meta::alloy::service::execution|meta::pure::tds|meta::pure::executionPlan|meta::pure::legend::connections|meta::pure::alloy::connections|meta::pure::milestoning|meta::pure::router|meta::alloy::objectReference|meta::pure::lineage|meta::pure::graphFetch)(::.*)?",
-    "dependencies" : ["platform", "core"]
+  "name": "core_relational",
+  "pattern": "(meta::relational|meta::pure::mapping|meta::protocols::pure|meta::relational::tests::csv|meta::alloy::service::execution|meta::pure::tds|meta::pure::executionPlan|meta::pure::legend::connections|meta::pure::alloy::connections|meta::pure::milestoning|meta::pure::router|meta::alloy::objectReference|meta::pure::lineage|meta::pure::graphFetch)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_functions",
+    "platform_dsl_mapping",
+    "platform_dsl_graph",
+    "platform_dsl_path",
+    "platform_functions_json",
+    "platform_store_relational",
+    "core"
+  ]
 }

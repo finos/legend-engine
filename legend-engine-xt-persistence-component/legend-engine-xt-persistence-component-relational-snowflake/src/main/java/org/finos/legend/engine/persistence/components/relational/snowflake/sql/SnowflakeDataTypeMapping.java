@@ -15,6 +15,9 @@
 package org.finos.legend.engine.persistence.components.relational.snowflake.sql;
 
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schema.Array;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schema.Object;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schema.Variant;
 import org.finos.legend.engine.persistence.components.relational.sql.DataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.BigInt;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Binary;
@@ -64,6 +67,8 @@ public class SnowflakeDataTypeMapping implements DataTypeMapping
             case NUMBER:
             case DECIMAL:
                 dataType = new Number(38, 0);
+                type.length().ifPresent(dataType::setLength);
+                type.scale().ifPresent(dataType::setScale);
                 break;
             case REAL:
             case FLOAT:
@@ -74,15 +79,18 @@ public class SnowflakeDataTypeMapping implements DataTypeMapping
             case CHAR:
             case CHARACTER:
                 dataType = new Char();
+                type.length().ifPresent(dataType::setLength);
                 break;
             case VARCHAR:
             case STRING:
             case TEXT:
                 dataType = new VarChar();
+                type.length().ifPresent(dataType::setLength);
                 break;
             case BINARY:
             case VARBINARY:
                 dataType = new Binary();
+                type.length().ifPresent(dataType::setLength);
                 break;
             // Other types
             case BOOLEAN:
@@ -93,28 +101,40 @@ public class SnowflakeDataTypeMapping implements DataTypeMapping
                 break;
             case TIME:
                 dataType = new Time();
+                type.scale().ifPresent(dataType::setScale);
                 break;
             case DATETIME:
                 dataType = new DateTime();
+                type.scale().ifPresent(dataType::setScale);
                 break;
             case TIMESTAMP:
                 dataType = new Timestamp();
+                type.scale().ifPresent(dataType::setScale);
                 break;
             case TIMESTAMP_NTZ:
                 dataType = new TimestampWithNoTimeZone();
+                type.scale().ifPresent(dataType::setScale);
                 break;
             case TIMESTAMP_TZ:
                 dataType = new TimestampWithTimezone();
+                type.scale().ifPresent(dataType::setScale);
                 break;
             case TIMESTAMP_LTZ:
                 dataType = new TimestampWithLocalTimezone();
+                type.scale().ifPresent(dataType::setScale);
+                break;
+            case VARIANT:
+                dataType = new Variant();
+                break;
+            case ARRAY:
+                dataType = new Array();
+                break;
+            case MAP:
+                dataType = new Object();
                 break;
             default:
                 throw new IllegalArgumentException("Unexpected value: " + type.dataType());
         }
-
-        type.length().ifPresent(dataType::setLength);
-        type.scale().ifPresent(dataType::setScale);
 
         return dataType;
     }

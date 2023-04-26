@@ -141,8 +141,11 @@ function <<access.private>> meta::external::format::avro::generation::classToAvr
    if($specifics->isNotEmpty(), 
       | let c = $class->classToRecord($state,$config);
         let res = $specifics->fold({s, r|let l=$r.first; let ts = $s->classToAvroSchma($r.second, $config);
-                                   pair(^$l(values+=$ts.first), $ts.second);}, pair(^List<AvroSchema>(), $c.second)); 
-      pair(^AvroUnionSchema(types=$c.first->concatenate($res.first.values))
+                                         let newSchemas = getNestedSchemas($ts.first);
+                                         pair(^$l(types+=$newSchemas), $ts.second);},
+                                         pair(^AvroUnionSchema(types=[]), $c.second));
+      
+      pair(^AvroUnionSchema(types=getNestedSchemas($c.first)->concatenate($res.first.types)->distinct())
                          , $res.second);, 
       |  $class->classToRecord($state,$config);
          
@@ -155,7 +158,7 @@ function <<access.private>> meta::external::format::avro::generation::classToRec
     let name = $class->classToName($config);
 
    if($state.seenNames->keys()->contains($name), 
-     |pair(^AvroRecordSchema(name=$name), $state),
+     |pair(^AvroRecordSchema(name=$name, placeHolder = true), $state),
      |       
          
          let st = ^$state(seenNames=$state.seenNames->put($name, ^AvroRecordSchema(name=$name)));
@@ -284,4 +287,9 @@ function <<access.private>> meta::external::format::avro::generation::stereoType
 {
    
    $stereoType->filter(tv|$tv.profile->isAvroPropertyProfile($config))->map(tv|newJSONKeyValue($tv.value, ^JSONBoolean(value=true)));
+}
+
+function <<access.private>> meta::external::format::avro::generation::getNestedSchemas(schema: AvroSchema[1]): AvroSchema[*]
+{
+  if($schema->instanceOf(AvroUnionSchema), | $schema->cast(@AvroUnionSchema).types, | $schema);
 }
