@@ -521,6 +521,11 @@ public class Library
         }
     }
 
+    public static long mod(long left, long right)
+    {
+        return left % right;
+    }
+
     public static Number rem(Number left, Number right)
     {
         if (right.doubleValue() == 0)
