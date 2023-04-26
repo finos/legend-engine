@@ -40,4 +40,14 @@ public class XmlDataRecord
     {
         return record;
     }
+
+    public String typePath$()
+    {
+        return "meta::pure::mapping::modelToModel::XmlDataRecord";
+    }
+
+    public String typeName$()
+    {
+        return "XmlDataRecord";
+    }
 }

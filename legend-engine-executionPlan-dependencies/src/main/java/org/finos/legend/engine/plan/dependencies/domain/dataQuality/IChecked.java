@@ -23,4 +23,14 @@ public interface IChecked<T>
     Object getSource();
 
     T getValue();
+
+    default String typePath$()
+    {
+        return "meta::pure::dataQuality::Checked";
+    }
+
+    default String typeName$()
+    {
+        return "Checked";
+    }
 }
