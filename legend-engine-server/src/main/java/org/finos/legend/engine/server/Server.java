@@ -116,6 +116,7 @@ import org.finos.legend.engine.shared.core.vault.Vault;
 import org.finos.legend.engine.shared.core.vault.VaultConfiguration;
 import org.finos.legend.engine.shared.core.vault.VaultFactory;
 import org.finos.legend.engine.test.runner.mapping.api.LegacyMappingRunnerApi;
+import org.finos.legend.engine.testData.generation.api.TestDataGeneration;
 import org.finos.legend.engine.testable.api.Testable;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.server.pac4j.LegendPac4jBundle;
@@ -341,6 +342,9 @@ public class Server<T extends ServerConfiguration> extends Application<T>
 
         // Testable
         environment.jersey().register(new Testable(modelManager));
+
+        //TestData Generation
+        environment.jersey().register(new TestDataGeneration(modelManager));
 
         enableCors(environment);
     }
