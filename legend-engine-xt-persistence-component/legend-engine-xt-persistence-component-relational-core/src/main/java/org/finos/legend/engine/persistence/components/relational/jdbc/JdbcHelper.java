@@ -428,6 +428,7 @@ public class JdbcHelper
                         throw new RuntimeException(e2);
                     }
                 }
+                throw new RuntimeException(e);
             }
             finally
             {
@@ -440,6 +441,7 @@ public class JdbcHelper
                     catch (SQLException e)
                     {
                         LOGGER.error("Error closing transaction manager.", e);
+                        throw new RuntimeException(e);
                     }
                 }
             }
