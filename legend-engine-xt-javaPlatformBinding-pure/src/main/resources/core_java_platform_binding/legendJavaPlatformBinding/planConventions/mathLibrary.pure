@@ -99,7 +99,8 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::math::
 
          fc1(cos_Number_1__Float_1_,                                   {ctx,num        | javaMath()->j_invoke('cos', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),
          fc1(sin_Number_1__Float_1_,                                   {ctx,num        | javaMath()->j_invoke('sin', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),
-         fc2(pow_Number_1__Number_1__Number_1_,                        {ctx,num1,num2  | javaStrictMath()->j_invoke('pow', [$num1->j_box()->j_invoke('doubleValue', []), $num2->j_box()->j_invoke('doubleValue', [])], javaDouble())})         
+         fc2(pow_Number_1__Number_1__Number_1_,                        {ctx,num1,num2  | javaStrictMath()->j_invoke('pow', [$num1->j_box()->j_invoke('doubleValue', []), $num2->j_box()->j_invoke('doubleValue', [])], javaDouble())}),
+         fc1(sqrt_Number_1__Float_1_,                                  {ctx,num        | javaMath()->j_invoke('sqrt', $num->j_box()->j_invoke('doubleValue', []), javaDouble())})
       ]);
 
    $conventions->registerLibrary($lib);
