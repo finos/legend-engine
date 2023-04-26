@@ -50,6 +50,7 @@ public class Library
     private static final List<Class> PRIMITIVE_CLASS_COMPARISON_ORDER = Arrays.asList(Long.class, Double.class, PureDate.class, Boolean.class, String.class);
     private static final Comparator<Object> DEFAULT_COMPARATOR = Library::compareInt;
     private static final TimeZone GMT_TIME_ZONE = TimeZone.getTimeZone("GMT");
+    private static final int SCALE = 34;
 
     public static PureDate adjustDate(PureDate date, long number, DurationUnit unit)
     {
@@ -489,7 +490,7 @@ public class Library
         }
     }
 
-    public static double divide(Number left, Number right)
+    public static double divide(Number left, Number right, long scale)
     {
         if (right.doubleValue() == 0)
         {
@@ -497,28 +498,33 @@ public class Library
         }
         if (left instanceof BigDecimal && right instanceof BigDecimal)
         {
-            return ((BigDecimal) left).divide((BigDecimal) right, RoundingMode.HALF_UP).doubleValue();
+            return ((BigDecimal) left).divide((BigDecimal) right, (int) scale, RoundingMode.HALF_UP).doubleValue();
         }
         else if (left instanceof BigDecimal && right instanceof Long)
         {
-            return ((BigDecimal) left).divide(BigDecimal.valueOf(right.longValue()), RoundingMode.HALF_UP).doubleValue();
+            return ((BigDecimal) left).divide(BigDecimal.valueOf(right.longValue()), (int) scale, RoundingMode.HALF_UP).doubleValue();
         }
         else if (left instanceof BigDecimal && right instanceof Double)
         {
-            return ((BigDecimal) left).divide(BigDecimal.valueOf(right.doubleValue()), RoundingMode.HALF_UP).doubleValue();
+            return ((BigDecimal) left).divide(BigDecimal.valueOf(right.doubleValue()), (int) scale, RoundingMode.HALF_UP).doubleValue();
         }
         else if (left instanceof Long && right instanceof BigDecimal)
         {
-            return BigDecimal.valueOf(left.longValue()).divide((BigDecimal) right, RoundingMode.HALF_UP).doubleValue();
+            return BigDecimal.valueOf(left.longValue()).divide((BigDecimal) right, (int) scale, RoundingMode.HALF_UP).doubleValue();
         }
         else if (left instanceof Double && right instanceof BigDecimal)
         {
-            return BigDecimal.valueOf(left.doubleValue()).divide((BigDecimal) right, RoundingMode.HALF_UP).doubleValue();
+            return BigDecimal.valueOf(left.doubleValue()).divide((BigDecimal) right, (int) scale, RoundingMode.HALF_UP).doubleValue();
         }
         else
         {
             return (left instanceof Long ? left.longValue() : left.doubleValue()) / (right instanceof Long ? right.longValue() : right.doubleValue());
         }
+    }
+
+    public static double divide(Number left, Number right)
+    {
+        return Library.divide(left, right, Library.SCALE);
     }
 
     public static Number rem(Number left, Number right)

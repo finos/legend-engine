@@ -62,6 +62,9 @@ meta::pure::executionPlan::platformBinding::legendJava::library::math::tests::te
          ->assert('(%s).equals(new java.math.BigDecimal("13.1"))')
       ->addTest('Decimal n\'ary plus', {|[6.9D, 2.6D, 5.8D]->plus()}, 'java.util.Arrays.asList(new java.math.BigDecimal("6.9"), new java.math.BigDecimal("2.6"), new java.math.BigDecimal("5.8")).stream().reduce(java.math.BigDecimal.ZERO, org.finos.legend.engine.plan.dependencies.util.Library::decimalPlus)', javaBigDecimal())
          ->assert('(%s).equals(new java.math.BigDecimal("15.3"))')
+      ->addTest('Number Divide', {|1.0D / 3.0D}, 'org.finos.legend.engine.plan.dependencies.util.Library.divide(new java.math.BigDecimal("1.0"), new java.math.BigDecimal("3.0"))', javaDouble())
+         ->assert('%s > 0.333333')
+         ->assert('%s < 0.34')
       ->addTest('Decimal Divide', {|10.10D->divide(2.1D, 1)}, 'new java.math.BigDecimal("10.10").divide(new java.math.BigDecimal("2.1"), new Long(1L).intValue(), java.math.RoundingMode.HALF_UP)', javaBigDecimal())
          ->assert('(%s).equals(new java.math.BigDecimal("4.8"))')
       //Integer
