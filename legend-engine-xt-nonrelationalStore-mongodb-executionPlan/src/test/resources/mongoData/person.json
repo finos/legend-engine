@@ -7,6 +7,9 @@
       "age": 25,
       "phoneNumber": "+1 202 704 9709",
       "email": "gbowhay0@1688.com",
+      "car": {
+        "brand": "Tesla"
+      },
       "otherPhoneNumbers": [
         "+1 347 336 3704"
       ],
@@ -44,6 +47,9 @@
       "age": 45,
       "phoneNumber": "+1 301 842 7614",
       "email": "jraye1@ted.com",
+      "car": {
+        "brand": "Toyota"
+      },
       "otherPhoneNumbers": [
         "+44 774 643 2334",
         "+1 515 165 0534"
@@ -80,6 +86,9 @@
       "age": 23,
       "phoneNumber": "+1 501 883 4607",
       "email": "cbatie2@amazon.co.jp",
+      "car": {
+        "brand": "Nissan"
+      },
       "otherPhoneNumbers": [
         "+1 571 689 6039",
         "+1 303 278 3547",
@@ -120,6 +129,9 @@
       "age": 68,
       "phoneNumber": "+1 916 456 9969",
       "email": "fstiant3@europa.eu",
+      "car": {
+        "brand": "Alfa Romeo"
+      },
       "otherPhoneNumbers": [
         "+1 405 332 4537",
         "+1 814 987 3881"
@@ -156,6 +168,9 @@
       "age": 38,
       "phoneNumber": "+1 602 898 8006",
       "email": "cgehrts4@github.com",
+      "car": {
+        "brand": "Honda"
+      },
       "otherPhoneNumbers": [
         "+44 425 338 0548",
         "+1 904 162 3004"

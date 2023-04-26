@@ -158,6 +158,29 @@ public class MongoDBCompilerHelper
         return pureValidator;
     }
 
+    public static List<PropertyMapping> generatePropertyMappingFromAssociation(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass, Set<Class<?>> processedClasses, String sourceSetId, CompileContext context, Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail bindingDetail, PropertyMappingsImplementation owner, List<EmbeddedSetImplementation> embeddedSetImplementations, SourceInformation sourceInformation)
+    {
+        if (processedClasses.contains(pureClass))
+        {
+            throw new EngineException("The class has already been processed", EngineErrorType.COMPILATION);
+        }
+        processedClasses.add(pureClass);
+
+        RichIterable<Property> properties = pureClass._properties();
+
+        RichIterable<Property> primitiveProperties = properties.select(prop -> core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_isPrimitiveValueProperty_AbstractProperty_1__Boolean_1_(prop, context.getExecutionSupport()));
+        RichIterable<Property> nonPrimitiveProperties = properties.select(prop -> !core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_isPrimitiveValueProperty_AbstractProperty_1__Boolean_1_(prop, context.getExecutionSupport()));
+
+        List<PropertyMapping> primitivePropertyMappings = primitiveProperties.collect(prop -> buildPrimitivePropertyMapping(prop, sourceSetId, context)).toList();
+        List<PropertyMapping> nonPrimitivePropertyMappings = nonPrimitiveProperties.collect(prop -> buildNonPrimitivePropertyMapping(prop, sourceSetId, bindingDetail, owner._parent(), embeddedSetImplementations, owner, sourceInformation, new HashSet<>(processedClasses), context)).toList();
+
+        List<PropertyMapping> allPropertyMapping = org.eclipse.collections.impl.factory.Lists.mutable.empty();
+        allPropertyMapping.addAll(primitivePropertyMappings);
+        allPropertyMapping.addAll(nonPrimitivePropertyMappings);
+
+        return allPropertyMapping;
+    }
+
     public static List<PropertyMapping> generatePropertyMappings(Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail bindingDetail, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass, String sourceSetId, List<EmbeddedSetImplementation> embeddedSetImplementations, PropertyMappingsImplementation owner, SourceInformation sourceInformation, Set<Class<?>> processedClasses, CompileContext context)
     {
         if (processedClasses.contains(pureClass))

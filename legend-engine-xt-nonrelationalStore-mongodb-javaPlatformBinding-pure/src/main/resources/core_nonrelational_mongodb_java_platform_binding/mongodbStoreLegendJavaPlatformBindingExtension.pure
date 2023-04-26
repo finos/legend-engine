@@ -95,7 +95,11 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
                                                                                           genericType = $epm.property.genericType,
                                                                                           importGroup = system.children->at(0)->cast(@Package).children->at(0)->cast(@ImportGroup),
                                                                                           multiplicity = $epm.property.multiplicity,
-                                                                                          parametersValues = ^VariableExpression(genericType=^GenericType(rawType = $epm.property.owner->cast(@meta::pure::metamodel::type::Class<Any>)), multiplicity = PureOne, name = 'src'),
+                                                                                          parametersValues = ^VariableExpression(genericType=^GenericType(rawType = $epm.property.owner->match([
+                                                                                            c : meta::pure::metamodel::type::Class<Any>[1] | $c,
+                                                                                            a : Association[1] | let classes = $a.properties.genericType.rawType->removeDuplicates()->cast(@meta::pure::metamodel::type::Class<Any>);
+                                                                                                                 if ($classes->size() == 1, | $classes->toOne(), | $classes->filter(c | $c != $epm.property.genericType.rawType->toOne())->toOne());
+                                                                                          ])), multiplicity = PureOne, name = 'src'),
                                                                                           propertyName = ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = $epm.property.name));
                                                       ^$dummyLambda(classifierGenericType = $gen, expressionSequence = $exp);}
             ],

@@ -37,7 +37,7 @@ Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava
 {
   firstName:         String[0..1];
   lastName:          String[1];
-  age:               Integer[1];
+  age:               Integer[0..1];
   phoneNumber:       String[1];
   otherPhoneNumbers: String[0..*];
   email:             String[1];
@@ -67,6 +67,16 @@ Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava
   countryCode: String[1];
 }
 
+Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Car
+{
+  brand:   String[0..1];
+}
+
+Association meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Person_Car
+{
+  person:  meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Person[1];
+  car:     meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Car[0..1];
+}
 
 function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::getSimpleSchema(): SchemaSet[1]
 {
