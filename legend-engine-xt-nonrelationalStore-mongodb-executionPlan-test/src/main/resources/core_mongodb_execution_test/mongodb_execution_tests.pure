@@ -59,7 +59,6 @@ function  meta::external::store::mongodb::executionTest::collectTest(
     testConfig: TestConfig[1]
   ): PureTestCollection[1]
 {
- println('meta::external::store::mongodb::executionTest::collectTest');
   meta::pure::test::collectParameterizedTests(
     meta::external::store::mongodb::executionTest::testCase,
     $tag,
@@ -67,14 +66,6 @@ function  meta::external::store::mongodb::executionTest::collectTest(
     [],
     []
   );
-}
-
-function <<paramTest.BeforePackage>> meta::external::store::mongodb::executionTest::testCase::startMongoDB(config:TestConfig[1]):Boolean[1]
-{
-    println(' meta::external::store::mongodb::executionTest::testCase::startMongoDB');
-    println('::startMongoDB');
-    println($config);
-    true;
 }
 
 
@@ -132,12 +123,10 @@ function  meta::external::store::mongodb::executionTest::personTreeFull(): meta:
 }
 
 
-
 // TODO: Add ability to start/stop MongoDB dockerized instance
 
 
 // TESTS 
-
 
 
 // Filters
@@ -146,18 +135,14 @@ function  meta::external::store::mongodb::executionTest::personTreeFull(): meta:
 // Filters - Equal
 
 
-function 
-<<paramTest.Test>>
-  {doc.doc = 'Test simple single level Filter'} 
+function <<paramTest.Test>>
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::equal::testSelectEqualString(config:meta::external::store::mongodb::executionTest::TestConfig[1]):Boolean[1]
 {
   let filterLambda = {x: Person[1] | $x.firstName == 'Gelya'};
   testFilterExecution($config, $filterLambda, '/core_mongodb_execution_test/expected_execution_results/equal/testSelectEqualString.json');
 }
 
-function 
-<<paramTest.Test>>
-{doc.doc = 'Test simple single level Filter'} 
+function <<paramTest.Test>>
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::equal::testSelectEqualNumber(config:meta::external::store::mongodb::executionTest::TestConfig[1]):Boolean[1]
 {
   let filterLambda = { x: Person[1] |  $x.age == 45};
@@ -165,9 +150,7 @@ function
 }
 
 
-function 
-<<paramTest.Test>>
-{doc.doc = 'Test simple nested level Filter'} 
+function <<paramTest.Test>>
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::equal::testSelectEqualNested(config:TestConfig[1]):Boolean[1]
 {
   let filterLambda = { x: Person[1] | $x.firm.legalName == 'Yodoo'};
@@ -187,24 +170,21 @@ function
 
 // Filters - NotEqual
 
-function
-<<paramTest.Test>>
+function <<paramTest.Test>>
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::notEqual::testSelectNotEqualString(config:TestConfig[1]):Boolean[1]
 {
   let filterLambda = { x: Person[1] | $x.firstName != 'Coralie'};
   testFilterExecution($config, $filterLambda, '/core_mongodb_execution_test/expected_execution_results/not_equal/testSelectNotEqualString.json', personTreeSmall());
 }
 
-function
-<<paramTest.Test>>
+function <<paramTest.Test>>
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::notEqual::testSelectNotEqualNumber(config:TestConfig[1]):Boolean[1]
 {
   let filterLambda = { x: Person[1] | $x.age != 23};
   testFilterExecution($config, $filterLambda, '/core_mongodb_execution_test/expected_execution_results/not_equal/testSelectNotEqualNumber.json', personTreeSmall());
 }
 
-function
-<<paramTest.Test>>
+function <<paramTest.Test>>
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::notEqual::testSelectNotEqualAndString(config:TestConfig[1]):Boolean[1]
 {
   let filterLambda = { x: Person[1] | !($x.firstName == 'Coralie' && $x.lastName == 'Batie')};
@@ -214,17 +194,14 @@ function
 
 // Filters - LessThanEqual
 
-function
- <<paramTest.Test>>
-{doc.doc = 'Failing'} 
+function <<paramTest.Test>>
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::lessThanEqual::testLessThanEqualString(config:TestConfig[1]):Boolean[1]
 {
-   let filterLambda = { x: Person[1] | $x.firstName <= 'Jefferey' };
+  let filterLambda = { x: Person[1] | $x.firstName <= 'Jefferey' };
   testFilterExecution($config, $filterLambda, '/core_mongodb_execution_test/expected_execution_results/less_than_equal/testLessThanEqualString.json', personTreeSmall());
 }
 
-function
- <<paramTest.Test>>
+function <<paramTest.Test>>
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::lessThanEqual::testLessThanEqualNumber(config:TestConfig[1]):Boolean[1]
 {
   let filterLambda = { x: Person[1] | $x.age <= 25 };
@@ -233,16 +210,14 @@ function
 
 // Filters - LessThan
 
-function
- <<paramTest.Test>>
+function <<paramTest.Test>>
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::lessThan::testLessThanNumber(config:TestConfig[1]):Boolean[1]
 {
   let filterLambda = { x: Person[1] | $x.age < 25 };
   testFilterExecution($config, $filterLambda, '/core_mongodb_execution_test/expected_execution_results/less_than/testLessThanNumber.json', personTreeSmall());
 }
 
-function
- <<paramTest.Test>>
+function <<paramTest.Test>>
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::lessThan::testLessThanString(config:TestConfig[1]):Boolean[1]
 {
   let filterLambda = { x: Person[1] | $x.firstName < 'Jefferey' };
@@ -261,8 +236,7 @@ function
 
 // Filters - GreaterThan
 
-function
- <<paramTest.Ignore>>
+function <<paramTest.Test>>
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::greaterThan::testGreaterThanString(config:TestConfig[1]):Boolean[1]
 {
   let filterLambda = { x: Person[1] | $x.firstName > 'Coralie' };
@@ -270,8 +244,7 @@ function
 }
 
 
-function
-<<paramTest.Test>>
+function <<paramTest.Test>>
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::greaterThan::testGreaterThanNumber(config:TestConfig[1]):Boolean[1]
 {
   let filterLambda = { x: Person[1] | $x.age > 45 };
@@ -291,16 +264,14 @@ function
 
 // Filters - GreaterThanEqual
 
-function
- <<paramTest.Test>>
+function <<paramTest.Test>>
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::greaterThanEqual::testGreaterThanEqualString(config:TestConfig[1]):Boolean[1]
 {
   let filterLambda = { x: Person[1] | $x.firstName >= 'Coralie'};
   testFilterExecution($config, $filterLambda, '/core_mongodb_execution_test/expected_execution_results/greater_than_equal/testGreaterThanEqualString.json', personTreeSmall());
 }
 
-function
- <<paramTest.Test>>
+function <<paramTest.Test>>
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::greaterThanEqual::testGreaterThanEqualNumber(config:TestConfig[1]):Boolean[1]
 {
   let filterLambda = { x: Person[1] | $x.age >= 45 };
@@ -310,16 +281,14 @@ function
 // GraphFetch
 
 
-function
- <<paramTest.Test>>
+function <<paramTest.Test>>
  meta::external::store::mongodb::executionTest::testCase::graphfetch::testFullGraphFetchTree(config:TestConfig[1]):Boolean[1]
 {
     let filterLambda = { x: Person[1] | $x.firstName == 'Coralie' };
     testFilterExecution($config, $filterLambda, '/core_mongodb_execution_test/expected_execution_results/graph_fetch/testFullGraphFetchTree.json', personTreeFull());
 }
 
-function
- <<paramTest.Test>>
+function <<paramTest.Test>>
  meta::external::store::mongodb::executionTest::testCase::graphfetch::testFirstLevelGraphFetchTree(config:TestConfig[1]):Boolean[1]
 {
     let filterLambda = { x: Person[1] | $x.firstName == 'Coralie' };
@@ -338,8 +307,7 @@ function
     testFilterExecution($config, $filterLambda, '/core_mongodb_execution_test/expected_execution_results/graph_fetch/testFirstLevelGraphFetchTree.json', $personTree);
 }
 
-function
- <<paramTest.Test>>
+function <<paramTest.Test>>
  meta::external::store::mongodb::executionTest::testCase::graphfetch::testNestedLevelSinglePropertyGraphFetchTree(config:TestConfig[1]):Boolean[1]
 {
     let filterLambda = { x: Person[1] | $x.firstName == 'Coralie' };
@@ -364,8 +332,7 @@ function
 
 // Filters - Combinations ( chained/ nested/ bracket precedence)
 
-function 
-<<paramTest.Test>>
+function <<paramTest.Test>>
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::combinations::testMultipleSelectEqualFilters(config:TestConfig[1]):Boolean[1]
 {
   let filterLambda = { x: Person[1] |  ($x.firstName == 'Coralie' && $x.lastName == 'Batie')  };
@@ -381,9 +348,7 @@ function
   testFilterExecution($config, $filterLambda, '/core_mongodb_execution_test/expected_execution_results/combinations/testMultipleSelectEqualFilters.json', personTreeSmall());
 }
 
-function
-<<paramTest.Test>>
-{doc.doc = 'Test multiple nested level Filters'} 
+function <<paramTest.Test>>
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::combinations::testMultipleNestedSelectEqualFilters(config:TestConfig[1]):Boolean[1]
 {
   let filterLambda = { x: Person[1] | $x.firm.legalName == 'Devpoint' && $x.address.country.countryCode == 'US'};
@@ -391,8 +356,7 @@ function
 }
 
 
-function
- <<paramTest.Test>>
+function <<paramTest.Test>>
 {doc.doc = 'Test multiple nested level Filters'} 
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::combinations::testSelectNotEqualNotAnd(config:TestConfig[1]):Boolean[1]
 {
@@ -400,8 +364,7 @@ function
   testFilterExecution($config, $filterLambda, '/core_mongodb_execution_test/expected_execution_results/combinations/testSelectNotEqualNotAnd.json', personTreeSmall());
 }
 
-function
- <<paramTest.Test>>
+function <<paramTest.Test>>
 {doc.doc = 'Test multiple nested level Filters with an And'}
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::combinations::testMultipleNestedFiltersWithAnd(config:TestConfig[1]):Boolean[1]
 {
@@ -449,25 +412,27 @@ function meta::external::store::mongodb::executionTest::testCase::utils::testFil
 }
 
 
-
 function <<paramTest.AfterPackage>> meta::external::store::mongodb::executionTest::testCase::cleanupTestSuite(config:TestConfig[1]):Boolean[1]
 {
-    println('cleanupTestSuite');
-    println($config.tag);
+  println('cleanupTestSuite:');
+  println($config.tag);
   $config.tag->meta::external::store::mongodb::executionTest::utils::stopMongoDBTestServer();
   true;
 }
 
 function <<access.private>> meta::external::store::mongodb::executionTest::v7::collectTest(tag: String[1]): PureTestCollection[1]
 {
-    println('meta::external::store::mongodb::executionTest::v7::collectTest(');
+  println('Collecting tests for MongoDB image tag:');
+  println($tag);
 
+  // in case we failed to stop with above AfterPackage cleanup
   meta::external::store::mongodb::executionTest::utils::stopMongoDBTestServer($tag);
+
   let url = meta::external::store::mongodb::executionTest::utils::startMongoDBTestServer($tag);
 
   let testDataToInsert = meta::pure::functions::io::readFile('/core_mongodb_execution_test/test_setup/person.json')->toOne();
 
-  let requestOutput = meta::external::store::mongodb::executionTest::utils::requestMongoDBTestServer($tag, $testDataToInsert);
+  meta::external::store::mongodb::executionTest::utils::requestMongoDBTestServer($tag, $testDataToInsert);
 
   let config = meta::external::store::mongodb::executionTest::getCompiledTestConfig($tag,
     $url.port, '/core_mongodb_execution_test/test_setup/testSetupDSL.txt');
@@ -480,6 +445,5 @@ function <<access.private>> meta::external::store::mongodb::executionTest::v7::c
 
 function <<test.TestCollection>> meta::external::store::mongodb::executionTest::v7::test_4_4_1(): PureTestCollection[1]
 {
-    println('meta::external::store::mongodb::executionTest::v7::test_4_4_1()');
   '4.4.1'->meta::external::store::mongodb::executionTest::v7::collectTest();  
 }
