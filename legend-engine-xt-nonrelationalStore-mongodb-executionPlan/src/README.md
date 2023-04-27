@@ -3,14 +3,6 @@
 ### Dependencies
 - Docker desktop should run locally.
 
-### Platform Binder issue
-
-Currently there is an issue with the platform binding, so there is a manual setting that needs to be changed in order to run the tests or a query from the PURE IDE.
-- Search for the `mongodb_test_utils.pure` file.
-- On line 27, remove the `<<LocalPlatformBinding.TestPlanBinder>>` next to the `function`.
-- Now you can run the query/tests from the PURE IDE. 
-- Adding the `<<LocalPlatformBinding.TestPlanBinder>>` back, will allow you to run the tests from Intellij.
-
 ### Execution
 - Run PureIDELight.java
   - Before running the ide, click the Run configurations between the Build Project button(hammer symbol) and the Run button on the upper right corner of Intellij:

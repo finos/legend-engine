@@ -11,9 +11,7 @@
     "core_external_compiler",
     "core_external_execution",
     "core_external_format_json",
-    "core_external_format_json_java_platform_binding",
-    "core_java_platform_binding",
     "core_nonrelational_mongodb_java_platform_binding",
-    "core_nonrelational_mongodb"
+    "core_external_format_json_java_platform_binding"
   ]
 }
