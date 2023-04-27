@@ -27,8 +27,8 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::boolea
       ->addFunctionCoders([
          fc2(is_Any_1__Any_1__Boolean_1_,                                 {ctx,left,right | $left->j_eq($right)}),
          
-         fc2(equal_Any_MANY__Any_MANY__Boolean_1_,                        equalTo_FuncCoderContext_1__Code_1__Code_1__Code_1_),
-         fc (eq_Any_1__Any_1__Boolean_1_,                                 fcAlias(          equal_Any_MANY__Any_MANY__Boolean_1_)),
+         fc2(equal_Any_MANY__Any_MANY__Boolean_1_,                        {ctx,left,right | $library->j_invoke('equal', [$left, $right], javaBoolean())}),
+         fc2(eq_Any_1__Any_1__Boolean_1_,                                 eqEncoder_FuncCoderContext_1__Code_1__Code_1__Code_1_),
          
          fc2(greaterThan_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_,        {ctx,left,right | $library->j_invoke('greaterThan', [$left->j_cast(javaBooleanBoxed()), $right->j_cast(javaBooleanBoxed())], javaBoolean())}),
          fc (greaterThan_Boolean_$0_1$__Boolean_1__Boolean_1_,            fcAlias(          greaterThan_Boolean_$0_1$__Boolean_$0_1$__Boolean_1_)),
@@ -50,7 +50,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::boolea
    $conventions->registerLibrary($lib);
 }
 
-function meta::pure::executionPlan::platformBinding::legendJava::library::boolean::equalTo(ctx:FuncCoderContext[1], left:Code[1], right:Code[1]): Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::boolean::eqEncoder(ctx:FuncCoderContext[1], left:Code[1], right:Code[1]): Code[1]
 {
    let eq = if ($left.type->isPrimitive() && $right.type->isPrimitive(),
       | $left->j_eq($right),
