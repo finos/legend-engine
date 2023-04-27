@@ -142,6 +142,10 @@ abstract class UnitemporalPlanner extends Planner
             {
                 throw new IllegalStateException(String.format("Optimization filter's data type [%s] is not supported", filterField.type().dataType()));
             }
+            if (!filterField.primaryKey())
+            {
+                throw new IllegalStateException(String.format("Optimization filter [%s] has to be a primary key", filter.fieldName()));
+            }
         }
     }
 
