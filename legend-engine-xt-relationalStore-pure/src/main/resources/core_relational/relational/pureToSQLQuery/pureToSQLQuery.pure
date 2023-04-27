@@ -2824,7 +2824,12 @@ function meta::relational::functions::pureToSqlQuery::addSelfJoin(s:SelectSQLQue
    let rootJtnAliasTablePks = $rootJtnAliasTable.second.values;
    let database = $rootJtnAliasTable.first;
 
-   let genJtnAliasName='gen_'+$rootJtnAlias->buildUniqueName(true, $extensions);
+   let genAliasSuffix = $rootJtn->match([
+      root: RootJoinTreeNode[1] | $root,
+      join: JoinTreeNode[1]     | ^RootJoinTreeNode(alias = ^TableAlias(name = 'fakeRoot', relationalElement = ^NamedRelation(name = 'fakeRoot')), childrenData = $join)
+   ])->buildUniqueName(false, $extensions);
+
+   let genJtnAliasName='gen_'+$genAliasSuffix;
    let genJtnAlias=^$rootJtnAlias(name=$genJtnAliasName);
 
    let oldAndNewReprocessedJoinJtns = $j->children()->cast(@JoinTreeNode)->map(c|
