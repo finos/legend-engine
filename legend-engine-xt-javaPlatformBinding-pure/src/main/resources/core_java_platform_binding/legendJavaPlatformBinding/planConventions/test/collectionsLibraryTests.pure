@@ -141,19 +141,19 @@ meta::pure::executionPlan::platformBinding::legendJava::library::collection::tes
          ->assert('%s == 4L')
       ->addTest('count list', {|[]->count()}, 'java.util.Collections.emptyList().stream().count()', javaLong())
          ->assert('%s == 0L')
-      ->addTest('exists singletons', {|[1]->exists(x:Integer[1] | $x == 1)}, 'java.util.stream.Stream.<Long>of(1L).anyMatch((Long x) -> x == 1L)', javaBoolean())
+      ->addTest('exists singletons', {|[1]->exists(x:Integer[1] | $x == 1)}, 'java.util.stream.Stream.<Long>of(1L).anyMatch((Long x) -> org.finos.legend.engine.plan.dependencies.util.Library.equal(x, 1L))', javaBoolean())
          ->assert('%s == true')
-      ->addTest('exists list', {|[1,2,3,1]->exists(x:Integer[1] | $x == 1)}, 'java.util.Arrays.asList(1L, 2L, 3L, 1L).stream().anyMatch((Long x) -> x == 1L)', javaBoolean())
+      ->addTest('exists list', {|[1,2,3,1]->exists(x:Integer[1] | $x == 1)}, 'java.util.Arrays.asList(1L, 2L, 3L, 1L).stream().anyMatch((Long x) -> org.finos.legend.engine.plan.dependencies.util.Library.equal(x, 1L))', javaBoolean())
          ->assert('%s == true')
-      ->addTest('exists empty', {|[]->exists(x:Integer[1] | $x == 1)}, 'java.util.Collections.emptyList().stream().map(Long.class::cast).anyMatch((Long x) -> x == 1L)', javaBoolean()) // this is almost like doing a preeval....
+      ->addTest('exists empty', {|[]->exists(x:Integer[1] | $x == 1)}, 'java.util.Collections.emptyList().stream().map(Long.class::cast).anyMatch((Long x) -> org.finos.legend.engine.plan.dependencies.util.Library.equal(x, 1L))', javaBoolean()) // this is almost like doing a preeval....
          ->assert('%s == false')
-      ->addTest('forAll singletons', {|[1]->forAll(x:Integer[1] | $x == 1)}, 'java.util.stream.Stream.<Long>of(1L).allMatch((Long x) -> x == 1L)', javaBoolean())
+      ->addTest('forAll singletons', {|[1]->forAll(x:Integer[1] | $x == 1)}, 'java.util.stream.Stream.<Long>of(1L).allMatch((Long x) -> org.finos.legend.engine.plan.dependencies.util.Library.equal(x, 1L))', javaBoolean())
          ->assert('%s == true')
-      ->addTest('forAll list', {|[1,2,3,1]->forAll(x:Integer[1] | $x == 1)}, 'java.util.Arrays.asList(1L, 2L, 3L, 1L).stream().allMatch((Long x) -> x == 1L)', javaBoolean())
+      ->addTest('forAll list', {|[1,2,3,1]->forAll(x:Integer[1] | $x == 1)}, 'java.util.Arrays.asList(1L, 2L, 3L, 1L).stream().allMatch((Long x) -> org.finos.legend.engine.plan.dependencies.util.Library.equal(x, 1L))', javaBoolean())
          ->assert('%s == false')
-      ->addTest('forAll list', {|[3,3,3,3]->forAll(x:Integer[1] | $x == 3)}, 'java.util.Arrays.asList(3L, 3L, 3L, 3L).stream().allMatch((Long x) -> x == 3L)', javaBoolean())
+      ->addTest('forAll list', {|[3,3,3,3]->forAll(x:Integer[1] | $x == 3)}, 'java.util.Arrays.asList(3L, 3L, 3L, 3L).stream().allMatch((Long x) -> org.finos.legend.engine.plan.dependencies.util.Library.equal(x, 3L))', javaBoolean())
          ->assert('%s == true')
-      ->addTest('forAll empty', {|[]->forAll(x:Integer[1] | $x == 1)}, 'java.util.Collections.emptyList().stream().map(Long.class::cast).allMatch((Long x) -> x == 1L)', javaBoolean())
+      ->addTest('forAll empty', {|[]->forAll(x:Integer[1] | $x == 1)}, 'java.util.Collections.emptyList().stream().map(Long.class::cast).allMatch((Long x) -> org.finos.legend.engine.plan.dependencies.util.Library.equal(x, 1L))', javaBoolean())
          ->assert('%s == true')
       ->runTests();
 }

@@ -17,6 +17,7 @@ package org.finos.legend.engine.plan.dependencies.util;
 import org.finos.legend.engine.plan.dependencies.domain.date.DayOfWeek;
 import org.finos.legend.engine.plan.dependencies.domain.date.DurationUnit;
 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
+import org.finos.legend.engine.plan.dependencies.domain.equals.IEquals;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -1415,5 +1416,97 @@ public class Library
             throw new IllegalStateException(message.get());
         }
         return true;
+    }
+
+    public static boolean equal(Object left, Object right)
+    {
+        if (left == right)
+        {
+            return true;
+        }
+        if (left == null)
+        {
+            return (right instanceof Iterable) && !((Iterable<?>) right).iterator().hasNext();
+        }
+        if (right == null)
+        {
+            return (left instanceof Iterable) && !((Iterable<?>) left).iterator().hasNext();
+        }
+        if (left instanceof Iterable)
+        {
+            Iterator<?> leftIterator = ((Iterable<?>)left).iterator();
+            if (right instanceof Iterable)
+            {
+                return iteratorsEqual(leftIterator, ((Iterable<?>)right).iterator());
+            }
+            if (!leftIterator.hasNext())
+            {
+                return false;
+            }
+            Object leftFirst = leftIterator.next();
+            return !leftIterator.hasNext() && equal(leftFirst, right);
+        }
+        if (right instanceof Iterable)
+        {
+            Iterator<?> rightIterator = ((Iterable<?>)right).iterator();
+            if (left instanceof Iterable)
+            {
+                return iteratorsEqual(((Iterable<?>)left).iterator(), rightIterator);
+            }
+            if (!rightIterator.hasNext())
+            {
+                return false;
+            }
+            Object rightFirst = rightIterator.next();
+            return !rightIterator.hasNext() && equal(left, rightFirst);
+        }
+
+        if (left instanceof Number)
+        {
+            return (right instanceof Number) && eq((Number) left, (Number) right);
+        }
+
+        if (left instanceof IEquals)
+        {
+            return ((IEquals) left).pureDefaultEquals(right);
+        }
+
+        if (right instanceof IEquals)
+        {
+            return ((IEquals) right).pureDefaultEquals(left);
+        }
+
+        return left.equals(right);
+    }
+
+    private static boolean iteratorsEqual(Iterator<?> leftIterator, Iterator<?> rightIterator)
+    {
+        while (leftIterator.hasNext() && rightIterator.hasNext())
+        {
+            if (!equal(leftIterator.next(), rightIterator.next()))
+            {
+                return false;
+            }
+        }
+        return !leftIterator.hasNext() && !rightIterator.hasNext();
+    }
+
+    private static boolean eq(Number left, Number right)
+    {
+        // TODO make this more sophisticated
+        if (left instanceof BigDecimal && right instanceof Double ||
+                left instanceof Double && right instanceof BigDecimal)
+        {
+            return false;
+        }
+
+        if ((left instanceof Byte) || (right instanceof Byte))
+        {
+            return (left.getClass() == right.getClass()) && (left.byteValue() == right.byteValue());
+        }
+
+        left = left.equals(-0.0d) ? 0.0d : left;
+        right = right.equals(-0.0d) ? 0.0d : right;
+        return left.equals(right) || left.toString().equals(right.toString());
     }
 }
