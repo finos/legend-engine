@@ -993,6 +993,36 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   assertLambdaJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testParameterizedAllSupplied():Boolean[1]
+{
+  let sqlString = 'SELECT * FROM service(\'/service/service4/{id}\', id => \'abc\', ints => [1,2,3], date => \'2023-01-01\') LIMIT 1';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {|{id:String[1], ints:Integer[*], date:StrictDate[0..1] |FlatInput.all()->filter(f | $f.idIn == $id && $f.integerIn->in($ints) && ($f.strictDateIn > $date))->project(
+        [
+          x | $x.idIn, x | $x.integerIn, x | $x.enumVal
+        ],
+        [
+          'ID', 'Integer', 'Enum'
+        ]
+      )}->eval('abc', [1,2, 3], %2023-01-01)->limit(1)};
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testParameterizedNotSupplied():Boolean[1]
+{
+  let sqlString = 'SELECT * FROM service(\'/service/service4/{id}\', id => \'abc\') LIMIT 1';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {|{id:String[1], ints:Integer[*], date:StrictDate[0..1] |FlatInput.all()->filter(f | $f.idIn == $id && $f.integerIn->in($ints) && ($f.strictDateIn > $date))->project(
+        [
+          x | $x.idIn, x | $x.integerIn, x | $x.enumVal
+        ],
+        [
+          'ID', 'Integer', 'Enum'
+        ]
+      )}->eval('abc', [], [])->limit(1)};
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSchemaService1():Boolean[1]
 {
   let sqlString = 'SELECT * FROM service."/service/service1"';
@@ -1047,15 +1077,23 @@ function meta::external::query::sql::transformation::queryToPure::tests::process
   processQuery($sql, false);
 }
 
+
+
 function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1], scopeWithFrom:Boolean[1]): SqlTransformContext[1]
+{
+  processQuery($sql, [
+    serviceToSource(Service1()),
+    serviceToSource(Service2()),
+    serviceToSource(Service3()),
+    serviceToSource(Service4())
+  ], $scopeWithFrom);
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1], sources:SQLSource[*], scopeWithFrom:Boolean[1]): SqlTransformContext[1]
 {
   let query = meta::legend::compileVS('#SQL{' + $sql + '}#')->cast(@Query);
   let context = ^SqlTransformContext(
-    sources = [
-      serviceToSource(Service1()),
-      serviceToSource(Service2()),
-      serviceToSource(Service3())
-    ],
+    sources = $sources,
     extensions = sqlExtensions(),
     scopeWithFrom = $scopeWithFrom,
     aliases = ^Map<String, String>(),
