@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.stores.relational.test.full.functions.in;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.commons.io.IOUtils;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.AlloyTestServer;
@@ -23,6 +24,9 @@ import org.finos.legend.engine.plan.execution.stores.relational.serialization.Re
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Map;
@@ -129,6 +133,11 @@ public class TestPlanExecutionForIn extends AlloyTestServer
         statement.execute("Drop table if exists Street;");
         statement.execute("Create Table Street(name VARCHAR(100) NOT NULL, address_name VARCHAR(100), PRIMARY KEY(name));");
         statement.execute("insert into Street (name, address_name) values ('Hoboken','Hoboken');");
+
+        statement.execute("Drop schema if exists user_view cascade;");
+        statement.execute("create schema user_view;");
+        statement.execute("Create Table user_view.UV_User_Roles_Public(CptyrRole VARCHAR(128) NOT NULL,RoleOrder INT NULL,UserID VARCHAR(32) NOT NULL, PRIMARY KEY(CptyrRole,UserID));");
+        statement.execute("Create Table user_view.UV_INQUIRY__PL_CADM(rpt_inq_oid BIGINT NOT NULL, rpt_inq_sourceinquiryid VARCHAR(200) NULL, PRIMARY KEY(rpt_inq_oid));");
     }
 
     @Test
@@ -300,6 +309,21 @@ public class TestPlanExecutionForIn extends AlloyTestServer
         Assert.assertEquals(expectedResWithMultipleValues, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, paramWithMultipleValues)));
     }
 
+    @Test
+    public void testTempTableFlowWithPostProcessor()
+    {
+        try
+        {
+            InputStream executionPlanJson = TestPlanExecutionForIn.class.getClassLoader().getResourceAsStream("org/finos/legend/engine/plan/execution/stores/relational/test/full/functions/in/tempTableExecutionPlanWithPostProcessor.json");
+            String executionPlanJsonString = IOUtils.toString(executionPlanJson, StandardCharsets.UTF_8);
+            SingleExecutionPlan plan = objectMapper.readValue(executionPlanJsonString, SingleExecutionPlan.class);
+            Assert.assertTrue(executePlan(plan).matches("\\{\\\"builder\\\": \\{\\\"_type\\\":\\\"tdsBuilder\\\",\\\"columns\\\":\\[\\{\\\"name\\\":\\\"Source Inquiry ID\\\",\\\"type\\\":\\\"String\\\",\\\"relationalType\\\":\\\"VARCHAR\\(64\\)\\\"}]}, \\\"activities\\\": \\[\\{\\\"_type\\\":\\\"relational\\\",\\\"sql\\\":\\\"SET LOCK_TIMEOUT 100000000;\\\"},\\{\\\"_type\\\":\\\"relational\\\",\\\"sql\\\":\\\"SET LOCK_TIMEOUT 100000000;\\\"},\\{\\\"_type\\\":\\\"relational\\\",\\\"sql\\\":\\\"SET LOCK_TIMEOUT 100000000;\\\"},\\{\\\"_type\\\":\\\"relational\\\",\\\"comment\\\":\\\"-- \\\\\\\"executionTraceID\\\\\\\" : \\\\\\\"[0-9a-f]{8}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{12}\\\\\\\"\\\",\\\"sql\\\":\\\"select case when \\\\\\\"root\\\\\\\".CptyrRole like 'ebusiness\\\\\\\\_%' then 'ebusiness_' else \\\\\\\"root\\\\\\\".CptyrRole end as \\\\\\\"userRole\\\\\\\" from user_view.UV_User_Roles_Public as \\\\\\\"root\\\\\\\" where \\(\\\\\\\"root\\\\\\\".UserID = '_UNKNOWN_' and \\\\\\\"root\\\\\\\".CptyrRole in \\('cadm', 'sales_fg', 'rfq_mgmt', 'ebusiness_credit', 'ebusiness_rates', 'ebusiness_fx', 'ebusiness_commod', 'desk_sales_trading', 'sales_person'\\)\\)\\\"},\\{\\\"_type\\\":\\\"relational\\\",\\\"comment\\\":\\\"-- \\\\\\\"executionTraceID\\\\\\\" : \\\\\\\"[0-9a-f]{8}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{12}\\\\\\\"\\\",\\\"sql\\\":\\\"select \\\\\\\"root\\\\\\\".rpt_inq_sourceinquiryid as \\\\\\\"Source Inquiry ID\\\\\\\" from user_view.UV_Inquiry__PL_Cadm as \\\\\\\"root\\\\\\\" where \\\\\\\"root\\\\\\\".rpt_inq_sourceinquiryid in \\(null\\)\\\"}], \\\"result\\\" : \\{\\\"columns\\\" : \\[\\\"Source Inquiry ID\\\"], \\\"rows\\\" : \\[\\]\\}\\}"));
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
 
     public SingleExecutionPlan buildPlanForFetchFunction(String fetchFunction, boolean withTimeZone)
     {
