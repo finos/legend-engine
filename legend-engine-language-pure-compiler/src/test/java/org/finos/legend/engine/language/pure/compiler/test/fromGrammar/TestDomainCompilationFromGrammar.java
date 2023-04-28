@@ -2726,6 +2726,28 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "  }#\n" +
                 "}\n", "COMPILATION error at [27:17-24]: There are multiple properties in subTypeTrees of test::Address having 'name' as common name or alias, Property names should be unique"
         );
+
+        test("Class test::Address\n" +
+                "{\n" +
+                "  zipCode : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::City extends test::Address\n" +
+                "{\n" +
+                "  cityName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "function my::test():Any[*]\n" +
+                "{\n" +
+                "  #{\n" +
+                "    test::Address {\n" +
+                "      ->subType(@test::City) {\n" +
+                "         fakeProperty\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }#\n" +
+                "}\n", "COMPILATION error at [16:10-21]: Can't find property 'fakeProperty' in [City, Address, Any]"
+        );
     }
 
 }

@@ -49,4 +49,14 @@ public interface ParsedFlatData
     LocalDate getLocalDate(FlatDataRecordField field);
 
     Instant getInstant(FlatDataRecordField field);
+
+    default String typePath$()
+    {
+        return "meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_ParsedFlatData";
+    }
+
+    default String typeName$()
+    {
+        return "_ParsedFlatData";
+    }
 }

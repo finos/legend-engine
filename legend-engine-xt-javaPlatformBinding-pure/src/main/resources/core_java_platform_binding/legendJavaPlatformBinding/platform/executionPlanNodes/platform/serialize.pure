@@ -312,9 +312,7 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
    let propertyLines = $tree.subTrees->cast(@SerializePropertyGraphFetchTree)->map(spgft | $spgft->serializeProperty(getterCall($spgft, $value, $fContext, $conventions, $debug), $jClass, $path, $conventions, $debug));
    let subTypePropertyLines =  $tree.subTypeTrees->map(sst | let subTypeClass = $sst.subTypeClass;
                                                                    $sst.subTrees->cast(@SerializePropertyGraphFetchTree)->map(spgft | j_if($value->j_instanceof($conventions->className($subTypeClass)),
-                                                                                                                                           $spgft->serializeProperty(getterCall($spgft, $value->j_cast($conventions->className($subTypeClass)), $fContext, $conventions, $debug), $jClass, $path, $conventions, $debug),
-                                                                                                                                           $spgft->serializeProperty(j_null()->j_cast($conventions->pureTypeToJavaType($spgft.property)), $jClass, $path, $conventions, $debug)
-                                                                                                                                          )
+                                                                                                                                           $spgft->serializeProperty(getterCall($spgft, $value->j_cast($conventions->className($subTypeClass)), $fContext, $conventions, $debug), $jClass, $path, $conventions, $debug))
                                                                                                                              );
                                                       );
 
@@ -322,11 +320,10 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
       javaMethod('public', javaVoid(), $name, [$value]),
       {|
          let iReferencedObject = $conventions->className(IReferencedObject);
-
          let start = if($tree->toOne()->instanceOf(SerializeTop),
                         | j_if($value->j_instanceof($iReferencedObject),
-                             $fWriter->j_invoke('startObject', [j_string($class->elementToPath()), $value->j_cast($iReferencedObject)->j_invoke($iReferencedObject.methods->toOne().name, [], javaString())]),
-                             $fWriter->j_invoke('startObject', j_string($class->elementToPath()))
+                             $fWriter->j_invoke('startObject', [$value->j_invoke('typePath$', [], javaString()), $value->j_cast($iReferencedObject)->j_invoke($iReferencedObject.methods->toOne().name, [], javaString())]),
+                             $fWriter->j_invoke('startObject', $value->j_invoke('typePath$', [], javaString()))
                           ),
                         | $fWriter->j_invoke('startObject', j_string($class->elementToPath()))
                      );
