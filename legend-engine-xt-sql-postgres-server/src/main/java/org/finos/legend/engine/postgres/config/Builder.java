@@ -20,7 +20,6 @@ import org.apache.http.impl.cookie.BasicClientCookie;
 import org.finos.legend.engine.postgres.SessionsFactory;
 import org.finos.legend.engine.postgres.auth.AnonymousIdentityProvider;
 import org.finos.legend.engine.postgres.auth.AuthenticationMethod;
-import org.finos.legend.engine.postgres.auth.AuthenticationMethodType;
 import org.finos.legend.engine.postgres.auth.GSSAuthenticationMethod;
 import org.finos.legend.engine.postgres.auth.IdentityProvider;
 import org.finos.legend.engine.postgres.auth.IdentityType;
