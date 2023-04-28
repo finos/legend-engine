@@ -215,7 +215,6 @@ Class meta::protocols::pure::v1_31_0::metamodel::executionPlan::graphFetch::stor
 {
    batchSize : Integer[0..1];
    checked : Boolean[1];
-   filter  : Boolean[0..1];
 }
 
 Class meta::protocols::pure::v1_31_0::metamodel::executionPlan::graphFetch::store::inMemory::InMemoryCrossStoreGraphFetchExecutionNode extends meta::protocols::pure::v1_31_0::metamodel::executionPlan::graphFetch::store::inMemory::InMemoryRootGraphFetchExecutionNode
