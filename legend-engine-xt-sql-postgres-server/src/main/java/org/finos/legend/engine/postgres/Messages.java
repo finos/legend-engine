@@ -516,7 +516,7 @@ public class Messages
         int nullStopByteLength = 1;
         ByteBuf buffer = channel.alloc().buffer(length + nullStopByteLength);
         buffer.writeByte('R');
-        buffer.writeByte(length);
+        buffer.writeInt(length);
         buffer.writeInt(gssSuccessFlag);
         writeByteArray(buffer, outputToken);
         ChannelFuture channelFuture = channel.writeAndFlush(buffer);
