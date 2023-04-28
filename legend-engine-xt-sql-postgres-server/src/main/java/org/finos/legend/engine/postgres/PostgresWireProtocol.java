@@ -514,7 +514,7 @@ public class PostgresWireProtocol
                 Messages.sendAuthenticationCleartextPassword(channel);
                 return;
             }
-            if(authMethod.name() == AuthenticationMethodType.GSS)
+            if (authMethod.name() == AuthenticationMethodType.GSS)
             {
                 if (gssConfig == null)
                 {

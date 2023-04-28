@@ -129,7 +129,7 @@ public class PostgresServer
         ServerConfig serverConfig = objectMapper.readValue(configStream, ServerConfig.class);
         SessionsFactory sessionFactory = Builder.buildSessionFactory(serverConfig);
         AuthenticationMethod authenticationMethod = Builder.buildAuthenticationMethod(serverConfig);
-        if(serverConfig.getGss() != null)
+        if (serverConfig.getGss() != null)
         {
             System.setProperty("java.security.krb5.conf", serverConfig.getGss().getKerberosConfigFile());
         }
