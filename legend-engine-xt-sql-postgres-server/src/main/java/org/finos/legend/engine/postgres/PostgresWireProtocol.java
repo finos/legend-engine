@@ -33,6 +33,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.security.PrivilegedExceptionAction;
 import java.sql.ParameterMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -54,6 +55,10 @@ import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
 import org.finos.legend.engine.postgres.types.PGType;
 import org.finos.legend.engine.postgres.types.PGTypes;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.ietf.jgss.GSSCredential;
+import org.ietf.jgss.GSSManager;
+import org.ietf.jgss.GSSName;
+import org.ietf.jgss.Oid;
 import org.slf4j.Logger;
 import static org.finos.legend.engine.postgres.FormatCodes.getFormatCode;
 
@@ -1049,7 +1054,6 @@ public class PostgresWireProtocol
 
     }
 
-
     private void handleCancelRequestBody(ByteBuf buffer, Channel channel)
     {
    /*     var keyData = KeyData.of(buffer);
@@ -1060,5 +1064,28 @@ public class PostgresWireProtocol
         // This closes the new connection, not the one running the query.
         handler.closeSession();
         channel.close();
+    }
+
+    private static class AcceptorCreator implements PrivilegedExceptionAction<GSSCredential>
+    {
+        private final GSSManager manager;
+        private final String accountPrincipal;
+
+        public AcceptorCreator(GSSManager manager, String accountPrincipal)
+        {
+            this.manager = manager;
+            this.accountPrincipal = accountPrincipal;
+        }
+
+        @Override
+        public GSSCredential run() throws Exception
+        {
+            final GSSName gssName = manager.createName(this.accountPrincipal, GSSName.NT_USER_NAME);
+            return manager
+                    .createCredential(gssName, GSSCredential.DEFAULT_LIFETIME, new Oid[]{
+                            new Oid("1.2.840.113554.1.2.2"),    // Kerberos v5
+                            new Oid("1.3.6.1.5.5.2")            // SPNEGO
+                    }, GSSCredential.ACCEPT_ONLY);
+        }
     }
 }
