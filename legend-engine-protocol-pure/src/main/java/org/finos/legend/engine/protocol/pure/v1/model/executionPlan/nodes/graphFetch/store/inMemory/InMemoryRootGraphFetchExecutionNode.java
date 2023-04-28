@@ -20,7 +20,6 @@ public class InMemoryRootGraphFetchExecutionNode extends InMemoryGraphFetchExecu
 {
     public Integer batchSize;
     public boolean checked;
-    public Boolean filter;
 
     @Override
     public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)
