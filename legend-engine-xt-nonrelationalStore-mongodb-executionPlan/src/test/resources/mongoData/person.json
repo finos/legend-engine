@@ -8,7 +8,11 @@
       "phoneNumber": "+1 202 704 9709",
       "email": "gbowhay0@1688.com",
       "car": {
-        "brand": "Tesla"
+        "model": "Model X",
+        "manufacturer": {
+          "name": "Tesla",
+          "country": "USA"
+        }
       },
       "otherPhoneNumbers": [
         "+1 347 336 3704"
@@ -48,7 +52,11 @@
       "phoneNumber": "+1 301 842 7614",
       "email": "jraye1@ted.com",
       "car": {
-        "brand": "Toyota"
+        "model": "Auris",
+        "manufacturer": {
+          "name": "Toyota",
+          "country": "Japan"
+        }
       },
       "otherPhoneNumbers": [
         "+44 774 643 2334",
@@ -87,7 +95,11 @@
       "phoneNumber": "+1 501 883 4607",
       "email": "cbatie2@amazon.co.jp",
       "car": {
-        "brand": "Nissan"
+        "model": "Almera",
+        "manufacturer": {
+          "name": "Nissan",
+          "country": "Japan"
+        }
       },
       "otherPhoneNumbers": [
         "+1 571 689 6039",
@@ -130,7 +142,11 @@
       "phoneNumber": "+1 916 456 9969",
       "email": "fstiant3@europa.eu",
       "car": {
-        "brand": "Alfa Romeo"
+        "model": "Guilia",
+        "manufacturer": {
+          "name": "Alfa Romeo",
+          "country": "Italy"
+        }
       },
       "otherPhoneNumbers": [
         "+1 405 332 4537",
@@ -169,7 +185,11 @@
       "phoneNumber": "+1 602 898 8006",
       "email": "cgehrts4@github.com",
       "car": {
-        "brand": "Honda"
+        "model": "Civic",
+        "manufacturer": {
+          "name": "Honda",
+          "country": "Japan"
+        }
       },
       "otherPhoneNumbers": [
         "+44 425 338 0548",

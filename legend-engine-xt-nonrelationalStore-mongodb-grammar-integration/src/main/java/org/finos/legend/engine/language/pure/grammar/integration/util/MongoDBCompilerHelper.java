@@ -18,6 +18,7 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.SourceInformationHelper;
 import org.finos.legend.engine.language.pure.dsl.authentication.compiler.toPureGraph.HelperAuthenticationBuilder;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.ArrayType;
@@ -103,15 +104,19 @@ import org.finos.legend.pure.generated.core_pure_corefunctions_metaExtension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMappingsImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.PropertyInstance;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Generalization;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class MongoDBCompilerHelper
 {
@@ -158,48 +163,48 @@ public class MongoDBCompilerHelper
         return pureValidator;
     }
 
-    public static List<PropertyMapping> generatePropertyMappingFromAssociation(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass, Set<Class<?>> processedClasses, String sourceSetId, CompileContext context, Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail bindingDetail, PropertyMappingsImplementation owner, List<EmbeddedSetImplementation> embeddedSetImplementations, SourceInformation sourceInformation)
+    public static List<PropertyMapping> generatePropertyMappings(Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail bindingDetail, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass, String sourceSetId, List<EmbeddedSetImplementation> embeddedSetImplementations, PropertyMappingsImplementation owner, SourceInformation sourceInformation, Set<Class<?>> processedClasses, CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping parent, Set<String> processedAssociations, boolean fromAssociation)
     {
+        String classFullPath = HelperModelBuilder.getElementFullPath(pureClass, context.pureModel.getExecutionSupport());
+
         if (processedClasses.contains(pureClass))
         {
-            throw new EngineException("The class has already been processed", EngineErrorType.COMPILATION);
+            throw new EngineException("Non serializable model mapped with MongoDB Mapping", sourceInformation, EngineErrorType.COMPILATION);
         }
         processedClasses.add(pureClass);
 
-        RichIterable<Property> properties = pureClass._properties();
+        RichIterable<Property> properties = fromAssociation ? bindingDetail.mappedPropertiesForClass(pureClass, context.getExecutionSupport()) : pureClass._properties();
 
         RichIterable<Property> primitiveProperties = properties.select(prop -> core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_isPrimitiveValueProperty_AbstractProperty_1__Boolean_1_(prop, context.getExecutionSupport()));
         RichIterable<Property> nonPrimitiveProperties = properties.select(prop -> !core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_isPrimitiveValueProperty_AbstractProperty_1__Boolean_1_(prop, context.getExecutionSupport()));
 
         List<PropertyMapping> primitivePropertyMappings = primitiveProperties.collect(prop -> buildPrimitivePropertyMapping(prop, sourceSetId, context)).toList();
-        List<PropertyMapping> nonPrimitivePropertyMappings = nonPrimitiveProperties.collect(prop -> buildNonPrimitivePropertyMapping(prop, sourceSetId, bindingDetail, owner._parent(), embeddedSetImplementations, owner, sourceInformation, new HashSet<>(processedClasses), context)).toList();
+        List<PropertyMapping> nonPrimitivePropertyMappings = nonPrimitiveProperties.collect(prop -> buildNonPrimitivePropertyMapping(prop, sourceSetId, bindingDetail, embeddedSetImplementations, owner, sourceInformation, new HashSet<>(processedClasses), parent, processedAssociations, context)).toList();
+        List<PropertyMapping> associationPropertyMappings = new ArrayList<>();
 
         List<PropertyMapping> allPropertyMapping = org.eclipse.collections.impl.factory.Lists.mutable.empty();
-        allPropertyMapping.addAll(primitivePropertyMappings);
-        allPropertyMapping.addAll(nonPrimitivePropertyMappings);
 
-        return allPropertyMapping;
-    }
-
-    public static List<PropertyMapping> generatePropertyMappings(Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail bindingDetail, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass, String sourceSetId, List<EmbeddedSetImplementation> embeddedSetImplementations, PropertyMappingsImplementation owner, SourceInformation sourceInformation, Set<Class<?>> processedClasses, CompileContext context)
-    {
-        if (processedClasses.contains(pureClass))
+        if (context.pureModel.getClass(classFullPath)._propertiesFromAssociations().size() > 0)
         {
-            throw new EngineException("Non serializable model mapped with Service Store Mapping", sourceInformation, EngineErrorType.COMPILATION);
+            List<AssociationPropertyToClassName> classesInTheAssociations = context.pureModel.getClass(classFullPath)._propertiesFromAssociations().toList().stream().map(c ->
+                new AssociationPropertyToClassName(c.getName(), HelperModelBuilder.getElementFullPath((PackageableElement) c._genericType()._rawType(), context.pureModel.getExecutionSupport()), (PropertyInstance) c)
+            ).collect(Collectors.toList());
+
+            for (AssociationPropertyToClassName associationClass : classesInTheAssociations)
+            {
+                if (!(processedAssociations.contains(classFullPath + "_" + associationClass.getClassFullPath()) && processedAssociations.contains(associationClass.getClassFullPath() + "_" + classFullPath)))
+                {
+                    processedAssociations.add(classFullPath + "_" + associationClass.getClassFullPath());
+                    processedAssociations.add(associationClass.getClassFullPath() + "_" + classFullPath);
+                    PropertyMapping associationPropertyMapping = buildAssociationPropertyMapping(associationClass.getPropertyInstance(), sourceSetId, bindingDetail, embeddedSetImplementations, owner, sourceInformation, processedClasses, parent, processedAssociations, associationClass.getClassFullPath(), context);
+                    associationPropertyMappings.add(associationPropertyMapping);
+                }
+            }
         }
-        processedClasses.add(pureClass);
 
-        RichIterable<Property> properties = bindingDetail.mappedPropertiesForClass(pureClass, context.getExecutionSupport());
-
-        RichIterable<Property> primitiveProperties = properties.select(prop -> core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_isPrimitiveValueProperty_AbstractProperty_1__Boolean_1_(prop, context.getExecutionSupport()));
-        RichIterable<Property> nonPrimitiveProperties = properties.select(prop -> !core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_isPrimitiveValueProperty_AbstractProperty_1__Boolean_1_(prop, context.getExecutionSupport()));
-
-        List<PropertyMapping> primitivePropertyMappings = primitiveProperties.collect(prop -> buildPrimitivePropertyMapping(prop, sourceSetId, context)).toList();
-        List<PropertyMapping> nonPrimitivePropertyMappings = nonPrimitiveProperties.collect(prop -> buildNonPrimitivePropertyMapping(prop, sourceSetId, bindingDetail, owner._parent(), embeddedSetImplementations, owner, sourceInformation, new HashSet<>(processedClasses), context)).toList();
-
-        List<PropertyMapping> allPropertyMapping = org.eclipse.collections.impl.factory.Lists.mutable.empty();
         allPropertyMapping.addAll(primitivePropertyMappings);
         allPropertyMapping.addAll(nonPrimitivePropertyMappings);
+        allPropertyMapping.addAll(associationPropertyMappings);
 
         return allPropertyMapping;
     }
@@ -216,7 +221,7 @@ public class MongoDBCompilerHelper
         return propertyMapping;
     }
 
-    public static PropertyMapping buildNonPrimitivePropertyMapping(Property property, String sourceSetId, Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail bindingDetail, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping parent, List<EmbeddedSetImplementation> embeddedSetImplementations, PropertyMappingsImplementation owner, SourceInformation sourceInformation, Set<Class<?>> processedClasses, CompileContext context)
+    public static PropertyMapping buildNonPrimitivePropertyMapping(Property property, String sourceSetId, Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail bindingDetail, List<EmbeddedSetImplementation> embeddedSetImplementations, PropertyMappingsImplementation owner, SourceInformation sourceInformation, Set<Class<?>> processedClasses, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping parent, Set<String> processedAssociations, CompileContext context)
     {
         Root_meta_external_store_mongodb_metamodel_pure_EmbeddedMongoDBSetImplementation propertyMapping = new Root_meta_external_store_mongodb_metamodel_pure_EmbeddedMongoDBSetImplementation_Impl("", null, context.pureModel.getClass("meta::external::store::mongodb::metamodel::pure::EmbeddedMongoDBSetImplementation"));
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class) property._genericType()._rawType();
@@ -231,11 +236,65 @@ public class MongoDBCompilerHelper
         propertyMapping._sourceSetImplementationId(sourceSetId);
         propertyMapping._targetSetImplementationId(id);
 
-        propertyMapping._propertyMappings(FastList.newList(generatePropertyMappings(bindingDetail, pureClass, id, embeddedSetImplementations, propertyMapping, sourceInformation, new HashSet<>(processedClasses), context)).toImmutable());
+        propertyMapping._propertyMappings(FastList.newList(generatePropertyMappings(bindingDetail, pureClass, id, embeddedSetImplementations, propertyMapping, sourceInformation, new HashSet<>(processedClasses), context, parent, processedAssociations, false)).toImmutable());
 
         embeddedSetImplementations.add(propertyMapping);
         return propertyMapping;
     }
+
+    public static PropertyMapping buildAssociationPropertyMapping(Property property, String sourceSetId, Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail bindingDetail, List<EmbeddedSetImplementation> embeddedSetImplementations, PropertyMappingsImplementation owner, SourceInformation sourceInformation, Set<Class<?>> processedClasses, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping parent, Set<String> processedAssociations, String associationClassName, CompileContext context)
+    {
+        Root_meta_external_store_mongodb_metamodel_pure_EmbeddedMongoDBSetImplementation propertyMapping = new Root_meta_external_store_mongodb_metamodel_pure_EmbeddedMongoDBSetImplementation_Impl("", null, context.pureModel.getClass("meta::external::store::mongodb::metamodel::pure::EmbeddedMongoDBSetImplementation"));
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class) property._genericType()._rawType();
+        String id = pureClass._name() + "_" + associationClassName;
+
+        propertyMapping._class(pureClass);
+        propertyMapping._id(id);
+        propertyMapping._owner(owner);
+        propertyMapping._parent(parent);
+        propertyMapping._property(property);
+        propertyMapping._root(false);
+        propertyMapping._sourceSetImplementationId(sourceSetId);
+        propertyMapping._targetSetImplementationId(id);
+
+        propertyMapping._propertyMappings(FastList.newList(generatePropertyMappings(bindingDetail, pureClass, id, embeddedSetImplementations, propertyMapping, sourceInformation, new HashSet<>(processedClasses), context, parent, processedAssociations, true)).toImmutable());
+
+        embeddedSetImplementations.add(propertyMapping);
+        return propertyMapping;
+    }
+
+
+//    public static List<Root_meta_external_store_mongodb_metamodel_pure_EmbeddedMongoDBSetImplementation> buildPropertyMappingsFromAssociations(Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail bindingDetail, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping parent, String classFullPath, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass, List<EmbeddedSetImplementation> embeddedSetImplementations, PropertyMappingsImplementation owner, SourceInformation sourceInformation, Set<String> processedAssociations, CompileContext context)
+//    {
+//        List<AssociationPropertyToClassName> classesInTheAssociations = context.pureModel.getClass(classFullPath)._propertiesFromAssociations().toList().stream().map(c ->
+//                new AssociationPropertyToClassName(c.getName(), HelperModelBuilder.getElementFullPath((PackageableElement) c._genericType()._rawType(), context.pureModel.getExecutionSupport()), (PropertyInstance) c)
+//        ).collect(Collectors.toList());
+//
+//        List<Root_meta_external_store_mongodb_metamodel_pure_EmbeddedMongoDBSetImplementation> associationPropertyMappings = new ArrayList<>();
+//
+//        for (AssociationPropertyToClassName currentClass : classesInTheAssociations)
+//        {
+//            Root_meta_external_store_mongodb_metamodel_pure_EmbeddedMongoDBSetImplementation embeddedMongoDBSetImplementation = new Root_meta_external_store_mongodb_metamodel_pure_EmbeddedMongoDBSetImplementation_Impl("", null, context.pureModel.getClass("meta::external::store::mongodb::metamodel::pure::EmbeddedMongoDBSetImplementation"));
+//            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class associationClass = context.resolveClass(currentClass.getClassFullPath());
+//
+//            String embeddedPropertyId = pureClass._name() + "_" + currentClass.getPropertyName();
+//            embeddedMongoDBSetImplementation._class(associationClass);
+//            embeddedMongoDBSetImplementation._id(embeddedPropertyId);
+//            embeddedMongoDBSetImplementation._root(false);
+//            embeddedMongoDBSetImplementation._property(currentClass.getPropertyInstance());
+//            embeddedMongoDBSetImplementation._owner(owner);
+//            embeddedMongoDBSetImplementation._sourceSetImplementationId(owner._id());
+//            embeddedMongoDBSetImplementation._targetSetImplementationId(embeddedPropertyId);
+//            embeddedMongoDBSetImplementation._parent(parent);
+//
+//            List<PropertyMapping> propertyMappings = MongoDBCompilerHelper.generatePropertyMappings(bindingDetail, associationClass, embeddedMongoDBSetImplementation._id(), embeddedSetImplementations, embeddedMongoDBSetImplementation, sourceInformation, new HashSet<>(), context, parent, processedAssociations, true);
+//            embeddedMongoDBSetImplementation._propertyMappings(FastList.newList(propertyMappings).toImmutable());
+//            associationPropertyMappings.add(embeddedMongoDBSetImplementation);
+//        }
+//
+//        return associationPropertyMappings;
+//
+//    }
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.MappingClass generateMappingClass(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass, String id, RootMongoDBClassMapping mongoDBClassMapping, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping parent, CompileContext context)
     {

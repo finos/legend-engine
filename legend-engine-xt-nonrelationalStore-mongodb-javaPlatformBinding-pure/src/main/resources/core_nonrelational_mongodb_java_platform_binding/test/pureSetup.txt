@@ -103,7 +103,8 @@ Binding meta::external::store::mongodb::showcase::store::PersonCollectionBinding
         meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Firm,
         meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Address,
         meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Country,
-        meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Car
+        meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Car,
+        meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Manufacturer
     ];
 }
 
@@ -122,7 +123,7 @@ MongoDBConnection test::mongodb::testConnection
 {
     database: userDatabase;
     store: test::mongodb::mydatabase;
-    serverURLs: [localhost:57529];
+    serverURLs: [localhost:49491];
     authentication: # UserPassword {
         username: 'sa';
         password: SystemPropertiesSecret

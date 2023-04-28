@@ -30,7 +30,6 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBui
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.grammar.integration.extensions.IMongoDBStoreCompilerExtension;
-import org.finos.legend.engine.language.pure.grammar.integration.util.AssociationPropertyToClassName;
 import org.finos.legend.engine.language.pure.grammar.integration.util.MongoDBCompilerHelper;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDatabase;
@@ -42,8 +41,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.*;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.PropertyInstance;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 
@@ -51,7 +48,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class MongoDBCompilerExtension implements IMongoDBStoreCompilerExtension
 {
@@ -123,9 +119,6 @@ public class MongoDBCompilerExtension implements IMongoDBStoreCompilerExtension
                         mongoDBSetImplementation._mainCollection(((Root_meta_external_store_mongodb_metamodel_pure_MongoDatabase_Impl) mongoDatabase)._collections());
 
                         String topDomainClassFullPath = HelperModelBuilder.getElementFullPath(pureClass, context.pureModel.getExecutionSupport());
-                        List<AssociationPropertyToClassName> classesInTheAssociationsOfTheTopDomainClass = context.pureModel.getClass(topDomainClassFullPath)._propertiesFromAssociations().toList().stream().map(c ->
-                                new AssociationPropertyToClassName(c.getName(), HelperModelBuilder.getElementFullPath((PackageableElement) c._genericType()._rawType(), context.pureModel.getExecutionSupport()), (PropertyInstance) c)
-                        ).collect(Collectors.toList());
 
                         MutableList<EmbeddedSetImplementation> embeddedSetImplementations = org.eclipse.collections.impl.factory.Lists.mutable.empty();
 
@@ -133,35 +126,15 @@ public class MongoDBCompilerExtension implements IMongoDBStoreCompilerExtension
                         mongoDBSetImplementation._binding(binding);
 
                         Set<Class<?>> processedClasses = new HashSet<>();
-                        Set<Class<?>> processedClassesAssociations = new HashSet<>();
+                        Set<String> processedAssociations = new HashSet<>();
 
                         ExternalFormatExtension schemaExtension = HelperExternalFormat.getExternalFormatExtension(binding);
                         Root_meta_external_shared_format_binding_validation_BindingDetail bindingDetail = schemaExtension.bindDetails(binding, context);
 
                         if (bindingDetail instanceof Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail)
                         {
-                            List<PropertyMapping> propertyMappings = MongoDBCompilerHelper.generatePropertyMappings((Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail) bindingDetail, mongoDBSetImplementation._class(), mongoDBSetImplementation._id(), embeddedSetImplementations, mongoDBSetImplementation, classMapping.sourceInformation, processedClasses, context);
-                            mongoDBSetImplementation._propertyMappings(FastList.newList(propertyMappings).toImmutable());
-                            for (AssociationPropertyToClassName currentClass : classesInTheAssociationsOfTheTopDomainClass)
-                            {
-                                Root_meta_external_store_mongodb_metamodel_pure_EmbeddedMongoDBSetImplementation embeddedMongoDBSetImplementation = new Root_meta_external_store_mongodb_metamodel_pure_EmbeddedMongoDBSetImplementation_Impl("", null, context.pureModel.getClass("meta::external::store::mongodb::metamodel::pure::EmbeddedMongoDBSetImplementation"));
-                                org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class associationClass = context.resolveClass(currentClass.getClassFullPath());
-
-                                String embeddedPropertyId = pureClass._name() + "_" + currentClass.getPropertyName();
-                                embeddedMongoDBSetImplementation._class(associationClass);
-                                embeddedMongoDBSetImplementation._id(embeddedPropertyId);
-                                embeddedMongoDBSetImplementation._root(false);
-                                embeddedMongoDBSetImplementation._property(currentClass.getPropertyInstance());
-                                embeddedMongoDBSetImplementation._owner(mongoDBSetImplementation);
-                                embeddedMongoDBSetImplementation._sourceSetImplementationId(mongoDBSetImplementation._id());
-                                embeddedMongoDBSetImplementation._targetSetImplementationId(embeddedPropertyId);
-                                embeddedMongoDBSetImplementation._parent(parentMapping);
-
-                                List<PropertyMapping> associationPropertyMappings = MongoDBCompilerHelper.generatePropertyMappingFromAssociation(associationClass, processedClassesAssociations, embeddedMongoDBSetImplementation._id(), context, (Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail) bindingDetail, embeddedMongoDBSetImplementation, embeddedSetImplementations, classMapping.sourceInformation);
-                                embeddedMongoDBSetImplementation._propertyMappings(FastList.newList(associationPropertyMappings).toImmutable());
-                                mongoDBSetImplementation._propertyMappingsAdd(embeddedMongoDBSetImplementation);
-                                embeddedSetImplementations.add(embeddedMongoDBSetImplementation);
-                            }
+                            List<PropertyMapping> propertyMappings = MongoDBCompilerHelper.generatePropertyMappings((Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail) bindingDetail, mongoDBSetImplementation._class(), mongoDBSetImplementation._id(), embeddedSetImplementations, mongoDBSetImplementation, classMapping.sourceInformation, processedClasses, context, parentMapping, processedAssociations, false);
+                            mongoDBSetImplementation._propertyMappings(Lists.mutable.ofAll(propertyMappings).toImmutable());
                         }
                         else
                         {

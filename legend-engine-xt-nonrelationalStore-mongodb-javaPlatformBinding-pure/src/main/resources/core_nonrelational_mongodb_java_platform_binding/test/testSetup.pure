@@ -69,13 +69,26 @@ Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava
 
 Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Car
 {
-  brand:   String[0..1];
+  model:        String[0..1];
+  //manufacturer: Manufacturer[0..1];
+}
+
+Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Manufacturer
+{
+  name:    String[0..1];
+  country: String[0..1];
 }
 
 Association meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Person_Car
 {
   person:  meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Person[1];
   car:     meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Car[0..1];
+}
+
+Association meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Car_Manufacturer
+{
+  manufacturer:  meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Manufacturer[1];
+  car:           meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Car[1];
 }
 
 function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::getSimpleSchema(): SchemaSet[1]
