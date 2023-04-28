@@ -62,6 +62,8 @@ function <<test.Test>>  meta::relational::tests::ddl::testSetupDataSqlGeneration
    'Create Table locationTable(ID INT NOT NULL,PERSONID INT NULL,PLACE VARCHAR(200) NULL,date DATE NULL, PRIMARY KEY(ID));',
    'Drop table if exists placeOfInterestTable;',
    'Create Table placeOfInterestTable(ID INT NOT NULL,locationID INT NOT NULL,NAME VARCHAR(200) NULL, PRIMARY KEY(ID,locationID));',
+   'Drop table if exists validPersonTable;',
+   'Create Table validPersonTable(ID INT NOT NULL,FIRSTNAME VARCHAR(200) NULL,LASTNAME VARCHAR(200) NULL,AGE INT NULL,ADDRESSID INT NULL,FIRMID INT NULL,MANAGERID INT NULL, PRIMARY KEY(ID));',
    'insert into personTable (ID,FIRSTNAME,LASTNAME,AGE,ADDRESSID,FIRMID,MANAGERID) values (1,\'Peter\',\'Smith\',23,1,1,2);'
    ];
   assertSameElements($sqls,$expectedSqls);
@@ -105,6 +107,8 @@ function <<test.Test>>  meta::relational::tests::ddl::testSetupDataSqlGeneration
    'Create Table locationTable(ID INT NOT NULL,PERSONID INT NULL,PLACE VARCHAR(200) NULL,date DATE NULL, PRIMARY KEY(ID));',
    'Drop table if exists placeOfInterestTable;',
    'Create Table placeOfInterestTable(ID INT NOT NULL,locationID INT NOT NULL,NAME VARCHAR(200) NULL, PRIMARY KEY(ID,locationID));',
+   'Drop table if exists validPersonTable;',
+   'Create Table validPersonTable(ID INT NOT NULL,FIRSTNAME VARCHAR(200) NULL,LASTNAME VARCHAR(200) NULL,AGE INT NULL,ADDRESSID INT NULL,FIRMID INT NULL,MANAGERID INT NULL, PRIMARY KEY(ID));',
    'insert into personTable (ID,FIRSTNAME,LASTNAME,AGE,ADDRESSID,FIRMID,MANAGERID) values (1,\'Peter\',\'Smith\',23,1,1,2);'
    ];
   assertSameElements($sqls,$expectedSqls);
