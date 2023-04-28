@@ -44,8 +44,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import javax.net.ssl.SSLSession;
+import javax.security.auth.Subject;
+
 import org.finos.legend.engine.postgres.auth.AuthenticationMethod;
 import org.finos.legend.engine.postgres.auth.AuthenticationProvider;
+import org.finos.legend.engine.postgres.auth.KerberosIdentityProvider;
 import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
 import org.finos.legend.engine.postgres.types.PGType;
@@ -172,6 +175,7 @@ public class PostgresWireProtocol
             PostgresWireProtocol.class);
 
     private static final String PASSWORD_AUTH_NAME = "PASSWORD";
+    private static final String GSS_AUTH_NAME = "GSS";
 
     public static int SERVER_VERSION_NUM = 100500;
     public static String PG_SERVER_VERSION = "10.5";
@@ -225,6 +229,17 @@ public class PostgresWireProtocol
         }
         buffer.readBytes(bytes);
         return StandardCharsets.UTF_8.decode(ByteBuffer.wrap(bytes)).array();
+    }
+
+    private static byte[] readByteArray(ByteBuf buffer, int payloadLength)
+    {
+        if (payloadLength == 0)
+        {
+            return null;
+        }
+        byte[] bytes = new byte[payloadLength];
+        buffer.readBytes(bytes);
+        return bytes;
     }
 
     private Properties readStartupMessage(ByteBuf buffer)
@@ -356,7 +371,7 @@ public class PostgresWireProtocol
                     return;
                 case 'p':
                     LOGGER.trace("Dispatching password");
-                    handlePassword(buffer, channel);
+                    handlePassword(buffer, channel, decoder.payloadLength());
                     return;
                 case 'B':
                     LOGGER.trace("Dispatching bind");
@@ -483,9 +498,14 @@ public class PostgresWireProtocol
         else
         {
             authContext = new AuthenticationContext(authMethod, connProperties, userName, LOGGER);
-            if (PASSWORD_AUTH_NAME.equals(authMethod.name()))
+            if (PASSWORD_AUTH_NAME.equals(authMethod.name().name()))
             {
                 Messages.sendAuthenticationCleartextPassword(channel);
+                return;
+            }
+            if(GSS_AUTH_NAME.equals(authMethod.name().name()))
+            {
+                Messages.sendAuthenticationKerberos(channel);
                 return;
             }
             finishAuthentication(channel);
@@ -498,28 +518,54 @@ public class PostgresWireProtocol
         try
         {
             Identity authenticatedUser = authContext.authenticate();
-            String database = properties.getProperty("database");
-            session = sessions.createSession(database, authenticatedUser);
-            Messages.sendAuthenticationOK(channel)
-                    .addListener(f -> sendParams(channel))
-                    //.addListener(f -> Messages.sendKeyData(channel, session.id(), session.secret()))
-                    .addListener(f ->
-                    {
-                        Messages.sendReadyForQuery(channel);
-                    /*if (properties.containsKey("CrateDBTransport")) {
-                        switchToTransportProtocol(channel);
-                    }*/
-                    });
+            handleAuthSuccess(channel, authenticatedUser);
         }
         catch (Exception e)
         {
             Messages.sendAuthenticationError(channel, e.getMessage());
+            LOGGER.error("Auth Error", e);
         }
         finally
         {
             authContext.close();
             authContext = null;
         }
+    }
+
+    private void finishAuthentication(Channel channel, Subject delegSubject)
+    {
+        assert authContext != null : "finishAuthentication() requires an authContext instance";
+        try
+        {
+            Identity authenticatedUser = KerberosIdentityProvider.getIdentityForSubject(delegSubject);
+            handleAuthSuccess(channel, authenticatedUser);
+        }
+        catch (Exception e)
+        {
+            Messages.sendAuthenticationError(channel, e.getMessage());
+            LOGGER.error("Auth Error", e);
+        }
+        finally
+        {
+            authContext.close();
+            authContext = null;
+        }
+    }
+
+    private void handleAuthSuccess(Channel channel, Identity authenticatedUser) throws Exception
+    {
+        String database = properties.getProperty("database");
+        session = sessions.createSession(database, authenticatedUser);
+        Messages.sendAuthenticationOK(channel)
+                .addListener(f -> sendParams(channel))
+                //.addListener(f -> Messages.sendKeyData(channel, session.id(), session.secret()))
+                .addListener(f ->
+                {
+                    Messages.sendReadyForQuery(channel);
+                /*if (properties.containsKey("CrateDBTransport")) {
+                    switchToTransportProtocol(channel);
+                }*/
+                });
     }
 
 /*    private void switchToTransportProtocol(Channel channel) {
@@ -601,12 +647,18 @@ public class PostgresWireProtocol
 
     private void handlePassword(ByteBuf buffer, final Channel channel)
     {
-        char[] passwd = readCharArray(buffer);
-        if (passwd != null)
+        switch (authContext.getAuthenticationMethodType())
         {
-            authContext.setSecurePassword(passwd);
+            case GSS:
+            case PASSWORD:
+            default:
+                char[] passwd = readCharArray(buffer);
+                if (passwd != null)
+                {
+                    authContext.setSecurePassword(passwd);
+                }
+                finishAuthentication(channel);
         }
-        finishAuthentication(channel);
     }
 
     /**
