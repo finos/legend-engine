@@ -43,7 +43,7 @@ public class XmlDataRecord
 
     public String typePath$()
     {
-        return "meta::pure::mapping::modelToModel::XmlDataRecord";
+        return "meta::external::format::xml::executionPlan::model::XmlDataRecord";
     }
 
     public String typeName$()
