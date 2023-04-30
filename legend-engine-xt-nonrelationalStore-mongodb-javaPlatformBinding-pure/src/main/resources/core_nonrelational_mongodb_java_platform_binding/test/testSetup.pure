@@ -32,7 +32,7 @@ Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava
 {
 }
 
-
+/*
 Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Person
 {
   firstName:         String[0..1];
@@ -70,13 +70,11 @@ Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava
 Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Car
 {
   model:        String[0..1];
-  //manufacturer: Manufacturer[0..1];
 }
 
 Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Manufacturer
 {
   name:    String[0..1];
-  country: String[0..1];
 }
 
 Association meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Person_Car
@@ -89,6 +87,99 @@ Association meta::external::store::mongodb::executionPlan::platformBinding::lege
 {
   manufacturer:  meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Manufacturer[1];
   car:           meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Car[1];
+}
+
+Association meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Country_Manufacturer
+{
+  manufacturer:  meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Manufacturer[0..1];
+  country:       meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Country[0..1];
+}
+*/
+
+Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Person
+{
+  firstName:         String[0..1];
+  lastName:          String[1];
+  age:               Integer[0..1];
+  phoneNumber:       String[1];
+  otherPhoneNumbers: String[0..*];
+  email:             String[1];
+  //address:           Address[0..1];
+  //firm:              Firm[1];
+}
+
+Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Firm
+{
+  legalName :      String[0..1];
+  dateFounded:     String[1];
+  industrySectors: String[0..*];
+  //address:         Address[1];
+}
+
+Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Address
+{
+  street:     String[1];
+  city:       String[0..1];
+  postalCode: String[1];
+  //country:    Country[0..1];
+}
+
+Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Country
+{
+  continent:   String[0..1];
+  countryCode: String[1];
+}
+
+Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Car
+{
+  model:        String[0..1];
+}
+
+Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Manufacturer
+{
+  name:    String[0..1];
+}
+
+Association meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Person_Car
+{
+  person:  meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Person[1];
+  car:     meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Car[0..1];
+}
+
+Association meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Car_Manufacturer
+{
+  manufacturer:  meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Manufacturer[1];
+  car:           meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Car[1];
+}
+
+Association meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Country_Manufacturer
+{
+  manufacturer:  meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Manufacturer[0..1];
+  country:       meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Country[0..1];
+}
+
+Association meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Person_Address
+{
+  person:  meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Person[0..1];
+  address:       meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Address[0..1];
+}
+
+Association meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Person_Firm
+{
+  person:  meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Person[0..1];
+  firm:       meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Firm[0..1];
+}
+
+Association meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Address_Firm
+{
+  address:  meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Address[0..1];
+  firm:       meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Firm[0..1];
+}
+
+Association meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Address_Country
+{
+  address:  meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Address[0..1];
+  country:       meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::Country[0..1];
 }
 
 function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::test::getSimpleSchema(): SchemaSet[1]

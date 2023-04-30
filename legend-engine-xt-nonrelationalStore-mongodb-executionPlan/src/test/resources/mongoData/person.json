@@ -11,7 +11,10 @@
         "model": "Model X",
         "manufacturer": {
           "name": "Tesla",
-          "country": "USA"
+          "country": {
+            "countryCode": "US",
+            "continent": "America"
+          }
         }
       },
       "otherPhoneNumbers": [
@@ -55,7 +58,10 @@
         "model": "Auris",
         "manufacturer": {
           "name": "Toyota",
-          "country": "Japan"
+          "country": {
+            "countryCode": "JP",
+            "continent": "Asia"
+          }
         }
       },
       "otherPhoneNumbers": [
@@ -98,7 +104,10 @@
         "model": "Almera",
         "manufacturer": {
           "name": "Nissan",
-          "country": "Japan"
+          "country": {
+            "countryCode": "JP",
+            "continent": "Asia"
+          }
         }
       },
       "otherPhoneNumbers": [
@@ -145,7 +154,10 @@
         "model": "Guilia",
         "manufacturer": {
           "name": "Alfa Romeo",
-          "country": "Italy"
+          "country": {
+            "countryCode": "IT",
+            "continent": "Europe"
+          }
         }
       },
       "otherPhoneNumbers": [
@@ -188,7 +200,10 @@
         "model": "Civic",
         "manufacturer": {
           "name": "Honda",
-          "country": "Japan"
+          "country": {
+            "countryCode": "JP",
+            "continent": "Asia"
+          }
         }
       },
       "otherPhoneNumbers": [

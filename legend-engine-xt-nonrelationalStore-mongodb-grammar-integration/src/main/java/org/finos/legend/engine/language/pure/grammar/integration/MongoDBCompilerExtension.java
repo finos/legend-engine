@@ -105,35 +105,18 @@ public class MongoDBCompilerExtension implements IMongoDBStoreCompilerExtension
                     if (cm instanceof RootMongoDBClassMapping)
                     {
                         RootMongoDBClassMapping classMapping = (RootMongoDBClassMapping) cm;
-                        String id = HelperMappingBuilder.getClassMappingId(classMapping, context);
-                        Root_meta_external_store_mongodb_metamodel_pure_MongoDBSetImplementation mongoDBSetImplementation = new Root_meta_external_store_mongodb_metamodel_pure_MongoDBSetImplementation_Impl(id, null, context.pureModel.getClass("meta::external::store::mongodb::metamodel::pure::MongoDBSetImplementation"));
-                        final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass = context.resolveClass(classMapping._class, classMapping.classSourceInformation);
-                        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.MappingClass mappingClass = MongoDBCompilerHelper.generateMappingClass(pureClass, id, classMapping, parentMapping, context);
-                        mongoDBSetImplementation._id(id);
-                        mongoDBSetImplementation._root(classMapping.root);
-                        mongoDBSetImplementation._class(pureClass);
-                        mongoDBSetImplementation._parent(parentMapping);
-                        mongoDBSetImplementation._mappingClass(mappingClass);
-                        Store mongoDatabase = context.pureModel.getStore(((RootMongoDBClassMapping) cm).storePath, cm.sourceInformation);
-                        mongoDBSetImplementation._storesAdd(mongoDatabase);
-                        mongoDBSetImplementation._mainCollection(((Root_meta_external_store_mongodb_metamodel_pure_MongoDatabase_Impl) mongoDatabase)._collections());
-
-                        String topDomainClassFullPath = HelperModelBuilder.getElementFullPath(pureClass, context.pureModel.getExecutionSupport());
-
-                        MutableList<EmbeddedSetImplementation> embeddedSetImplementations = org.eclipse.collections.impl.factory.Lists.mutable.empty();
+                        Set<Class<?>> processedClasses = new HashSet<>();
 
                         Root_meta_external_shared_format_binding_Binding binding = ((Root_meta_external_shared_format_binding_Binding)context.pureModel.getStore(((RootMongoDBClassMapping) cm).bindingPath, cm.sourceInformation));
-                        mongoDBSetImplementation._binding(binding);
-
-                        Set<Class<?>> processedClasses = new HashSet<>();
-                        Set<String> processedAssociations = new HashSet<>();
+                        MutableList<EmbeddedSetImplementation> embeddedSetImplementations = org.eclipse.collections.impl.factory.Lists.mutable.empty();
+                        Root_meta_external_store_mongodb_metamodel_pure_MongoDBSetImplementation mongoDBSetImplementation = MongoDBCompilerHelper.createMongoDBSetImplementation(classMapping, context, parentMapping, cm, binding);
 
                         ExternalFormatExtension schemaExtension = HelperExternalFormat.getExternalFormatExtension(binding);
                         Root_meta_external_shared_format_binding_validation_BindingDetail bindingDetail = schemaExtension.bindDetails(binding, context);
 
                         if (bindingDetail instanceof Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail)
                         {
-                            List<PropertyMapping> propertyMappings = MongoDBCompilerHelper.generatePropertyMappings((Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail) bindingDetail, mongoDBSetImplementation._class(), mongoDBSetImplementation._id(), embeddedSetImplementations, mongoDBSetImplementation, classMapping.sourceInformation, processedClasses, context, parentMapping, processedAssociations, false);
+                            List<PropertyMapping> propertyMappings = MongoDBCompilerHelper.generatePropertyMappings((Root_meta_external_shared_format_binding_validation_SuccessfulBindingDetail) bindingDetail, mongoDBSetImplementation._class(), mongoDBSetImplementation._id(), embeddedSetImplementations, mongoDBSetImplementation, classMapping.sourceInformation, processedClasses, context, parentMapping, false);
                             mongoDBSetImplementation._propertyMappings(Lists.mutable.ofAll(propertyMappings).toImmutable());
                         }
                         else
