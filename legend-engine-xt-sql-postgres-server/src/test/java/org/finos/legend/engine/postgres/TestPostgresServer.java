@@ -19,13 +19,14 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 import org.finos.legend.engine.postgres.auth.AuthenticationProvider;
+import org.finos.legend.engine.postgres.config.ServerConfig;
 
 public class TestPostgresServer extends PostgresServer
 {
 
-    public TestPostgresServer(int port, SessionsFactory sessionsFactory, AuthenticationProvider authenticationProvider)
+    public TestPostgresServer(ServerConfig serverConfig, SessionsFactory sessionsFactory, AuthenticationProvider authenticationProvider)
     {
-        super(port, sessionsFactory, authenticationProvider);
+        super(serverConfig, sessionsFactory, authenticationProvider);
     }
 
     public void startUp()

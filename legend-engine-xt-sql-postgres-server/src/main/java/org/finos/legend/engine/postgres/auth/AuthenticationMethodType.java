@@ -17,5 +17,6 @@ package org.finos.legend.engine.postgres.auth;
 public enum AuthenticationMethodType
 {
     NO_PASSWORD,
-    PASSWORD
+    PASSWORD,
+    GSS
 }

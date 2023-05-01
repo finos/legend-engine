@@ -23,13 +23,13 @@ package org.finos.legend.engine.postgres;
 
 import java.io.Closeable;
 import org.finos.legend.engine.postgres.auth.AuthenticationMethod;
+import org.finos.legend.engine.postgres.auth.AuthenticationMethodType;
 import org.finos.legend.engine.postgres.auth.SecureString;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.slf4j.Logger;
 
 class AuthenticationContext implements Closeable
 {
-
     private SecureString password;
     private final String userName;
     private final Logger logger;
@@ -68,6 +68,11 @@ class AuthenticationContext implements Closeable
                     authMethod.name());
         }
         return user;
+    }
+
+    AuthenticationMethodType getAuthenticationMethodType()
+    {
+        return authMethod.name();
     }
 
     void setSecurePassword(char[] secureString)
