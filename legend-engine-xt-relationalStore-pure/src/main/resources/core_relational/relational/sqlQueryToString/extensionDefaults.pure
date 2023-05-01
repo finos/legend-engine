@@ -390,25 +390,25 @@ function meta::relational::functions::sqlQueryToString::default::processIdentifi
 function meta::relational::functions::sqlQueryToString::default::getDDLCommandsTranslatorDefault(): RelationalDDLCommandsTranslator[1]
 {
   ^RelationalDDLCommandsTranslator(
-                createSchema = translateCreateSchemaStatementDefault_CreateSchemaSQL_1__String_1_,
-                dropSchema =  translateDropSchemaStatementDefault_DropSchemaSQL_1__String_1_,
+                createSchema = translateCreateSchemaStatementDefault_CreateSchemaSQL_1__DbConfig_1__String_1_,
+                dropSchema =  translateDropSchemaStatementDefault_DropSchemaSQL_1__DbConfig_1__String_1_,
                 createTable =  translateCreateTableStatementDefault_CreateTableSQL_1__DbConfig_1__String_1_,
-                dropTable = translateDropTableStatementDefault_DropTableSQL_1__String_1_,
+                dropTable = translateDropTableStatementDefault_DropTableSQL_1__DbConfig_1__String_1_,
                 loadTable =  loadValuesToDbTableDefault_LoadTableSQL_1__DbConfig_1__String_MANY_
               );
 }
 
-function meta::relational::functions::sqlQueryToString::default::translateCreateSchemaStatementDefault(createSchemaSQL:CreateSchemaSQL[1]) : String[1]
+function meta::relational::functions::sqlQueryToString::default::translateCreateSchemaStatementDefault(createSchemaSQL:CreateSchemaSQL[1], dbConfig:DbConfig[1]) : String[1]
 {
    'Create Schema ' + $createSchemaSQL.schema.name + ';';
 }
 
-function meta::relational::functions::sqlQueryToString::default::translateDropSchemaStatementDefault(dropSchemaSQL:DropSchemaSQL[1]) : String[1]
+function meta::relational::functions::sqlQueryToString::default::translateDropSchemaStatementDefault(dropSchemaSQL:DropSchemaSQL[1], dbConfig:DbConfig[1]) : String[1]
 {
    'Drop schema if exists ' + $dropSchemaSQL.schema.name + ' cascade;';
 }
 
-function meta::relational::functions::sqlQueryToString::default::translateDropTableStatementDefault(dropTableSQL:DropTableSQL[1]) : String[1]
+function meta::relational::functions::sqlQueryToString::default::translateDropTableStatementDefault(dropTableSQL:DropTableSQL[1], dbConfig:DbConfig[1]) : String[1]
 {
   let t= $dropTableSQL.table;
   'Drop table if exists '+if($t.schema.name == 'default',|'',|$t.schema.name+'.')+$t.name+';';

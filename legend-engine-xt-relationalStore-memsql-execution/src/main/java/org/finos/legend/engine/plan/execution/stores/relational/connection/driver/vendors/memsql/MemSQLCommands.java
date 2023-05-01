@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.mysql;
+package org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.memsql;
 
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.Column;
@@ -23,7 +23,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MySQLCommands extends RelationalDatabaseCommands
+public class MemSQLCommands extends RelationalDatabaseCommands
 {
     @Override
     public String dropTempTable(String tableName)

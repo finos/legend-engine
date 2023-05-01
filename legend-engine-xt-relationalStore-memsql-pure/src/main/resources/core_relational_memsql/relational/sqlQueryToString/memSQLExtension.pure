@@ -1,4 +1,4 @@
-import meta::relational::functions::sqlQueryToString::memSql::*;
+import meta::relational::functions::sqlQueryToString::memsql::*;
 import meta::relational::functions::sqlQueryToString::default::*;
 import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::metamodel::operation::*;
@@ -9,12 +9,12 @@ import meta::relational::runtime::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
 
-function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::memSql::dbExtensionLoaderForMemSQL():DbExtensionLoader[1]
+function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::memsql::dbExtensionLoaderForMemSQL():DbExtensionLoader[1]
 {
   ^DbExtensionLoader(dbType = DatabaseType.MemSQL, loader = createDbExtensionForMemSQL__DbExtension_1_);
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::memSql::createDbExtensionForMemSQL():DbExtension[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::createDbExtensionForMemSQL():DbExtension[1]
 {
    let reservedWords = memSQLReservedWords();
    let literalProcessors = getDefaultLiteralProcessors();
@@ -33,18 +33,21 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memSq
       joinStringsProcessor = processJoinStringsOperationWithConcatCall_JoinStrings_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForMemSQL_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
+      tableNameToIdentifier = tableNameToIdentifierForMemSQL_String_1__DbConfig_1__String_1_,
+      schemaNameToIdentifier = schemaNameToIdentifierForMemSQL_String_1__DbConfig_1__String_1_,
       identifierProcessor = processIdentifierWithBackTicks_String_1__DbConfig_1__String_1_,
-      dynaFuncDispatch = $dynaFuncDispatch
+      dynaFuncDispatch = $dynaFuncDispatch,
+      ddlCommandsTranslator = getDDLCommandsTranslator()
    );
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::memSql::memSQLReservedWords():String[*]
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::memSQLReservedWords():String[*]
 {
     [
        'absolute','action','allocate','are','assertion',
        'bit', 'bit_length', 'both',
        'cascaded',' case',' cast',' catalog',' char',' char_length',' character',' character_length',' coalesce',' collate',' collation',' column',' connection',' constraints',' corresponding',' cross',' current_date',' current_time',' current_timestamp',' current_user',
-       'date',' day',' dec',' decimal',' deferrable',' deferred',' describe',' descriptor',' diagnostics',' disconnect',' domain',
+       'date',' day',' dec',' decimal','default',' deferrable',' deferred',' describe',' descriptor',' diagnostics',' disconnect',' domain',
        'end-exec',' exception',' extract',
        'false',' first',' float',' found',' full',
        'get',' global',' go',
@@ -67,7 +70,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memSq
        ];
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::memSql::getDynaFunctionToSqlForMemSQL(): DynaFunctionToSql[*]
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::getDynaFunctionToSqlForMemSQL(): DynaFunctionToSql[*]
 {
   let allStates = allGenerationStates();
 
@@ -120,7 +123,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memSq
   ];
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::memSql::processExtractFromSemiStructuredParamsForMemSQL(params:String[3]):String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processExtractFromSemiStructuredParamsForMemSQL(params:String[3]):String[1]
 {
   let baseRelationalOp = $params->at(0);
   let pathNavigation = $params->at(1)->replace('[', '.')->replace(']', '')->replace('"','')->split('.')->map(s | '\'' + $s + '\'')->joinStrings(', ');
@@ -139,7 +142,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memSq
   'json_extract_json(' + $fullPath + ')'))))));
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::memSql::convertToDateMemSQL(params:String[*]):String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::convertToDateMemSQL(params:String[*]):String[1]
 {
    assert( 2 - $params->size()  >= 0,'Incorrect number of parameters for convertDate: convertDate(column,[dateformat])');
    assert($params->size()==1 || dateFormatsMemSQL()->contains($params->at(1)->replace('\'', '')) , | $params->at(1) +' not supported ');
@@ -147,7 +150,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memSq
    'cast( to_date('+$params->at(0)+','+$dateFormat +') as date)';
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::memSql::transformToTimestampMemSQL(params:String[2]):String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::transformToTimestampMemSQL(params:String[2]):String[1]
 {
   //Standardizing the format as per Postgres specification, will include mappings for the formats in future. 
    assert($params->at(1)->replace('\'', '') == 'YYYY-MM-DD HH24:MI:SS', | $params->at(1) +' not supported ');
@@ -155,7 +158,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memSq
    'to_timestamp('+$params->at(0)+','+$timestampFormat+')';   
 }
 
-function  <<access.private>> meta::relational::functions::sqlQueryToString::memSql::generateDateDiffExpressionForMemSQL(params:String[*]):String[1]
+function  <<access.private>> meta::relational::functions::sqlQueryToString::memsql::generateDateDiffExpressionForMemSQL(params:String[*]):String[1]
 {
   let enumList = [DurationUnit.YEARS,DurationUnit.MONTHS,DurationUnit.WEEKS,DurationUnit.DAYS,DurationUnit.HOURS,DurationUnit.MINUTES,DurationUnit.SECONDS,DurationUnit.MILLISECONDS]->map(e|$e->toString());
 
@@ -180,19 +183,19 @@ function  <<access.private>> meta::relational::functions::sqlQueryToString::memS
   format($dbSpecificUnits->at($indexOfDiff)->eval(), [$params->at(0), $params->at(1)]);
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::memSql::formatMostRecentMemSQL(p:String[1..2], defaultDay:String[1]):String[*]
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::formatMostRecentMemSQL(p:String[1..2], defaultDay:String[1]):String[*]
 {
    let day = $p->last()->toOne()->mapToDBDayOfWeekNumber()->toString();
    let current = if ($p->size() == 2, | $p->first()->toOne(), | $defaultDay);
    [$current, $day, $current, $day, $current, $day, $current];
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::memSql::dateFormatsMemSQL():String[*]
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::dateFormatsMemSQL():String[*]
 {
    ['YYYY-MM-DD', 'MMMYYYY', 'YYYYMMDD'];
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::memSql::processSemiStructuredElementForMemSQL(s:RelationalOperationElement[1], sgc:SqlGenerationContext[1]): String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processSemiStructuredElementForMemSQL(s:RelationalOperationElement[1], sgc:SqlGenerationContext[1]): String[1]
 {
    $s->match([
       o:SemiStructuredObjectNavigation[1] | $o->processSemiStructuredObjectNavigationForMemSQL($sgc),
@@ -201,7 +204,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memSq
    ])
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::memSql::processSemiStructuredObjectNavigationForMemSQL(s:SemiStructuredObjectNavigation[1], sgc:SqlGenerationContext[1]): String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processSemiStructuredObjectNavigationForMemSQL(s:SemiStructuredObjectNavigation[1], sgc:SqlGenerationContext[1]): String[1]
 {
    // https://docs.singlestore.com/managed-service/en/create-a-database/using-json.html
 
@@ -220,7 +223,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memSq
   $fullOperand));
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::memSql::castOperatorForMemSQLSemiStructuredData(type:Type[0..1]): String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::castOperatorForMemSQLSemiStructuredData(type:Type[0..1]): String[1]
 {
    if($type == String, | '::$', |
    // Dates treated as strings and explicitly casted after
@@ -231,12 +234,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memSq
    '::')))));
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::memSql::processSelectSQLQueryForMemSQL(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processSelectSQLQueryForMemSQL(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
 {
    $s->processSelectSQLQueryForMemSQL($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::memSql::processSelectSQLQueryForMemSQL(sq:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processSelectSQLQueryForMemSQL(sq:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
 {
   let s = if($sq.fromRow->isNotEmpty() && $sq.toRow->isEmpty(), |$sq->rewriteSliceAsWindowFunction(), |$sq);
   let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
@@ -251,4 +254,74 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memSq
   if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
   if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
   + processLimit($s, $format, processTakeDefault_SelectSQLQuery_1__Format_1__String_1_, processSliceOrDropDefault_SelectSQLQuery_1__Format_1__Any_1__String_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::schemaNameToIdentifierForMemSQL(schemaName: String[1], dbConfig: DbConfig[1]): String[1]
+{
+  // Leave default un-processed, will be ignored in 'meta::relational::functions::sqlQueryToString::tableToString'
+  if($schemaName == 'default', |$schemaName, |$dbConfig.identifierProcessor($schemaName));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::tableNameToIdentifierForMemSQL(tableName: String[1], dbConfig: DbConfig[1]): String[1]
+{
+   $dbConfig.identifierProcessor($tableName);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::getDDLCommandsTranslator(): RelationalDDLCommandsTranslator[1]
+{
+  ^RelationalDDLCommandsTranslator(
+                createSchema = translateCreateSchemaStatementMemSQL_CreateSchemaSQL_1__DbConfig_1__String_MANY_,
+                dropSchema =  translateDropSchemaStatementMemSQL_DropSchemaSQL_1__DbConfig_1__String_MANY_,
+                createTable =  translateCreateTableStatementMemSQL_CreateTableSQL_1__DbConfig_1__String_1_,
+                dropTable = translateDropTableStatementMemSQL_DropTableSQL_1__DbConfig_1__String_1_,
+                loadTable =  loadValuesToDbTableMemSQL_LoadTableSQL_1__DbConfig_1__String_MANY_
+              );
+}
+
+function meta::relational::functions::sqlQueryToString::memsql::translateCreateSchemaStatementMemSQL(createSchemaSQL:CreateSchemaSQL[1], dbConfig:DbConfig[1]) : String[*]
+{
+  if($createSchemaSQL.schema.name == 'default', |[], |'Create Schema ' + $createSchemaSQL.schema.name->schemaNameToIdentifierForMemSQL($dbConfig) + ';');
+}
+
+function meta::relational::functions::sqlQueryToString::memsql::translateDropSchemaStatementMemSQL(dropSchemaSQL:DropSchemaSQL[1], dbConfig:DbConfig[1]) : String[*]
+{
+  if($dropSchemaSQL.schema.name == 'default', |[], |'Drop schema if exists ' + $dropSchemaSQL.schema.name->schemaNameToIdentifierForMemSQL($dbConfig) + ';');
+}
+
+function meta::relational::functions::sqlQueryToString::memsql::translateDropTableStatementMemSQL(dropTableSQL:DropTableSQL[1], dbConfig:DbConfig[1]) : String[1]
+{
+  let t = $dropTableSQL.table;
+  'Drop table if exists '+ if($t.schema.name == 'default', |'', |$t.schema.name->schemaNameToIdentifierForMemSQL($dbConfig) + '.') + $t.name->tableNameToIdentifierForMemSQL($dbConfig) + ';';
+}
+
+function meta::relational::functions::sqlQueryToString::memsql::translateCreateTableStatementMemSQL(createTableSQL:CreateTableSQL[1], dbConfig:DbConfig[1]) : String[1]
+{
+  let t= $createTableSQL.table;
+  let applyConstraints = $createTableSQL.applyConstraints;
+  'Create Table '+ if($t.schema.name == 'default', |'', |$t.schema.name->schemaNameToIdentifierForMemSQL($dbConfig) + '.') + $t.name->tableNameToIdentifierForMemSQL($dbConfig)+
+      + '('
+      + $t.columns->cast(@meta::relational::metamodel::Column)
+         ->map(c | $c.name->processColumnName($dbConfig) + ' ' +  getColumnTypeSqlTextMemSQL($c.type) + if($c.nullable->isEmpty() || $applyConstraints == false, | '', | if($c.nullable == true , | ' NULL', | ' NOT NULL' )))
+        ->joinStrings(',')
+      + if ($t.primaryKey->isEmpty() || $applyConstraints == false, | '', | ', PRIMARY KEY(' + $t.primaryKey->map(c | $c.name->processColumnName($dbConfig))->joinStrings(',') + ')')
+      +');';
+}
+
+function meta::relational::functions::sqlQueryToString::memsql::getColumnTypeSqlTextMemSQL(columnType:meta::relational::metamodel::datatype::DataType[1]):String[1]
+{
+   $columnType->match([
+      s : meta::relational::metamodel::datatype::Json[1] | 'JSON',
+      a : Any[*] | meta::relational::metamodel::datatype::dataTypeToSqlText($columnType)
+   ])
+}
+
+function meta::relational::functions::sqlQueryToString::memsql::loadValuesToDbTableMemSQL(loadTableSQL:LoadTableSQL[1] , dbConfig: DbConfig[1]) : String[*]
+{
+    $loadTableSQL.parsedData.values->map(row |  let sql = 'insert into ' + if($loadTableSQL.table.schema.name == 'default', |'', |$loadTableSQL.table.schema.name->schemaNameToIdentifierForMemSQL($dbConfig) + '.') + $loadTableSQL.table.name->tableNameToIdentifierForMemSQL($dbConfig) + ' ('
+            + $loadTableSQL.columnsToLoad.name->map(colName | $colName->processColumnName($dbConfig))->joinStrings(',')
+            +') '
+            + 'values ('
+            + $row.values->meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($loadTableSQL.columnsToLoad.type)
+            + ');';
+   );
 }

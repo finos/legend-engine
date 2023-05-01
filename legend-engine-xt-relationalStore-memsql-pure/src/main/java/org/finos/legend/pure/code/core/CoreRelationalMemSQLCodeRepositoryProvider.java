@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2021 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,15 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.mysql;
+package org.finos.legend.pure.code.core;
 
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DriverWrapper;
+import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
+import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProvider;
+import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
 
-public class MySQLDriver extends DriverWrapper
+public class CoreRelationalMemSQLCodeRepositoryProvider implements CodeRepositoryProvider
 {
     @Override
-    protected String getClassName()
+    public CodeRepository repository()
     {
-        return "org.mariadb.jdbc.Driver";
+        return GenericCodeRepository.build("core_relational_memsql.definition.json");
     }
 }
+
