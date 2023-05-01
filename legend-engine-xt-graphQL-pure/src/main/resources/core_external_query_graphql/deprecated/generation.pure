@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::query::graphQL::binding::*;
 import meta::external::query::graphQL::generation::*;
 import meta::pure::generation::metamodel::*;
 import meta::pure::generation::*;
@@ -39,13 +40,13 @@ Class <<doc.deprecated>> meta::external::query::graphQL::generation::GraphQLOutp
 function <<access.private, doc.deprecated>> meta::external::query::graphQL::generation::generateGraphQLScalars(scopeElements: PackageableElement[*]): GraphQLOutput[0..1] {
   let scalarElements = $scopeElements->meta::external::query::graphQL::binding::fromPure::sdl::findTypes()->map(t|$t->match([
                             c:Class<Any>[1] | $c->meta::pure::functions::meta::allProperties()->map(p|$p->functionReturnType().rawType)->filter(
-                                                t| $t->in(meta::external::query::graphQL::binding::fromPure::sdl::customScalarTypes().first)
+                                                t| $t->in(meta::external::query::graphQL::binding::purePrimitivesToCustomGraphQLScalarTypes().first)
                                               ),
                             e:Enumeration<Any>[1] | []
                         ]))->fold({t,v | $v->concatenate($t)},[])->removeDuplicates();
   if($scalarElements->isEmpty(),
     | [],
-    | let scalarStringMap =  meta::external::query::graphQL::binding::fromPure::sdl::customScalarTypes()->newMap();
+    | let scalarStringMap =  meta::external::query::graphQL::binding::purePrimitivesToCustomGraphQLScalarTypes()->newMap();
       ^GraphQLOutput(
         content=$scalarElements->map(x|'scalar '+ $scalarStringMap->meta::pure::functions::collection::get($x->toOne())->toOne())->sort()->joinStrings('\n'),
         fileName='scalars.graphql',
@@ -66,6 +67,8 @@ function <<doc.deprecated>> meta::external::query::graphQL::generation::generate
 function <<doc.deprecated>> meta::external::query::graphQL::generation::generateGraphQLFromPure(config: GraphQLConfig[1], pe: PackageableElement[1]): GraphQLOutput[*]
 {
    let content = meta::external::query::graphQL::binding::fromPure::sdl::transformPureToGraphQLSDL([$pe])
+                  // filter out scalars as this is handled all together above
+                  ->filter(x | ! ($x->instanceOf(meta::external::query::graphQL::metamodel::sdl::typeSystem::ScalarTypeDefinition)))
                   ->map(x|$x->meta::external::query::graphQL::serialization::graphQLtoString())
                   ->joinStrings('\n');
    ^GraphQLOutput

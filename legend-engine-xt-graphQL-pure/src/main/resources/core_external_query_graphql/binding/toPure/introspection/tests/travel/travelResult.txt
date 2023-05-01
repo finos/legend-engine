@@ -3,8 +3,8 @@ Class API extends AlertObjectsUnion
   code : String[1];
   apiData : APIData[0..1];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class APIConnection
 {
@@ -35,8 +35,8 @@ Class Access extends AlertObjectsUnion,Connection
   code : String[1];
   accessData : AccessData[0..1];
   error : Error[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class AccessConfigurationInput
 {
@@ -96,8 +96,8 @@ Class Activation
 {
   code : String[1];
   activationData : ActivationData[0..1];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
   adviseMessage : AdviseMessage[*];
 }
 Class ActivationConnectInput
@@ -119,8 +119,8 @@ Class ActivationData
   requester : RequesterInfo[0..1];
   status : ActivationStatus[1];
   contentInfoDownloaded : Boolean[1];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class ActivationEdge
 {
@@ -302,8 +302,8 @@ Class Airport
   code : String[1];
   airportData : AirportData[0..1];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class AirportData
 {
@@ -316,8 +316,8 @@ Class Alert
   code : String[1];
   alertData : AlertData[0..1];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Enum AlertAmountBy
 {
@@ -492,8 +492,8 @@ Class AlertEvent
   code : String[1];
   eventData : AlertEventData[0..1];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class AlertEventConnection
 {
@@ -876,7 +876,7 @@ Enum ApplicationAreaType
 Class AuditData
 {
   transactions : Transactions[1];
-  timeStamp : String[1];
+  timeStamp : DateTime[1];
   processTime : Float[1];
 }
 Class AuditRule
@@ -884,8 +884,8 @@ Class AuditRule
   code : String[1];
   auditRuleData : AuditRuleData[0..1];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class AuditRuleConnection
 {
@@ -951,8 +951,8 @@ Class Board
   boardData : BoardData[0..1];
   error : Error[*];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class BoardConnection
 {
@@ -1000,9 +1000,9 @@ Class BookingAggregation
   client : Client[0..1];
   supplier : Supplier[0..1];
   currency : String[0..1];
-  bookingAt : String[0..1];
-  checkInAt : String[0..1];
-  cancelAt : String[0..1];
+  bookingAt : Date[0..1];
+  checkInAt : Date[0..1];
+  cancelAt : Date[0..1];
   originMarket : String[0..1];
   destinationCountry : String[0..1];
   paxType : PaxTypeType[0..1];
@@ -1042,12 +1042,12 @@ Class BookingDetail
 }
 Class BookingHotel
 {
-  creationDate : String[0..1];
-  checkIn : String[0..1];
-  checkOut : String[0..1];
-  bookingDate : String[0..1];
-  start : String[0..1];
-  end : String[0..1];
+  creationDate : Date[0..1];
+  checkIn : Date[0..1];
+  checkOut : Date[0..1];
+  bookingDate : Date[0..1];
+  start : Date[0..1];
+  end : Date[0..1];
   hotelCode : String[0..1];
   hotelName : String[0..1];
   boardCode : String[0..1];
@@ -1056,13 +1056,13 @@ Class BookingHotel
 }
 Class BookingHotelDetails
 {
-  creationDate : String[0..1];
-  checkIn : String[0..1];
-  checkOut : String[0..1];
-  bookingDate : String[0..1];
-  start : String[0..1];
-  end : String[0..1];
-  cancelDate : String[0..1];
+  creationDate : Date[0..1];
+  checkIn : Date[0..1];
+  checkOut : Date[0..1];
+  bookingDate : Date[0..1];
+  start : Date[0..1];
+  end : Date[0..1];
+  cancelDate : Date[0..1];
   hotelCode : String[0..1];
   hotelName : String[0..1];
   boardCode : String[0..1];
@@ -1136,7 +1136,7 @@ Enum BusinessRulesType
 }
 Class CancelPenalty
 {
-  deadline : String[0..1];
+  deadline : DateTime[0..1];
   hoursBefore : Integer[1];
   penaltyType : CancelPenaltyType[1];
   currency : String[1];
@@ -1159,8 +1159,8 @@ Class Category
   categoryData : CategoryData[0..1];
   error : Error[*];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class CategoryConnection
 {
@@ -1196,8 +1196,8 @@ Class Client extends AlertObjectsUnion,Connection
   clientData : ClientData[0..1];
   error : Error[*];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class ClientConnection
 {
@@ -1364,8 +1364,8 @@ Class Context
 {
   code : String[1];
   error : Error[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Enum Contract
 {
@@ -1413,8 +1413,8 @@ Class CriteriaBookingReferencesInput
 }
 Class CriteriaSearch
 {
-  checkIn : String[1];
-  checkOut : String[1];
+  checkIn : Date[1];
+  checkOut : Date[1];
   hotels : String[1];
   occupancies : RoomCriteria[1];
   language : String[0..1];
@@ -1509,8 +1509,8 @@ Class Destination
   destinationData : DestinationData[0..1];
   error : AdviseMessage[*];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class DestinationConnection
 {
@@ -1562,8 +1562,8 @@ Class Domain
   code : String[1];
   domainData : DomainData[0..1];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class DomainData
 {
@@ -1584,8 +1584,8 @@ Class Entity
   code : String[1];
   entity : EntityData[0..1];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class EntityConnection
 {
@@ -1661,8 +1661,8 @@ Class FlightOffer
 {
   code : String[1];
   flightOfferData : FlightOfferData[0..1];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
   adviseMessage : AdviseMessage[*];
 }
 Class FlightOfferConnection
@@ -1688,8 +1688,8 @@ Class FlightOfferItem
 {
   code : String[1];
   offerItemData : FlightOfferItemData[0..1];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
   adviseMessage : AdviseMessage[*];
 }
 Class FlightOfferItemData
@@ -1710,8 +1710,8 @@ Class FlightOrder
 {
   code : String[1];
   flightOrderData : FlightOrderData[0..1];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
   adviseMessage : AdviseMessage[*];
 }
 Class FlightOrderCreateInput
@@ -1731,8 +1731,8 @@ Class FlightOrderItem
 {
   code : String[1];
   flightOrderItemData : FlightOrderItemData[0..1];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
   adviseMessage : AdviseMessage[*];
 }
 Class FlightOrderItemData
@@ -1778,8 +1778,8 @@ Class FlightService
   code : String[1];
   flightServiceData : FlightServiceData[0..1];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class FlightServiceData
 {
@@ -1835,8 +1835,8 @@ Class Geoname
   code : String[1];
   geonameData : GeonameData[0..1];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class GeonameData
 {
@@ -1852,7 +1852,7 @@ Class GiataData
   id : String[1];
   source : String[1];
   href : String[1];
-  updatedAt : String[1];
+  updatedAt : DateTime[1];
 }
 Class GrantMacroPermissionInput
 {
@@ -1865,8 +1865,8 @@ Class Group extends AlertObjectsUnion
   code : String[1];
   groupData : GroupData[0..1];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class GroupAccess
 {
@@ -1961,8 +1961,8 @@ Class Hotel
   hotelData : HotelData[0..1];
   error : AdviseMessage[*];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class HotelBookInput
 {
@@ -2137,8 +2137,8 @@ Class HotelRuntimeConfiguration
 {
   code : String[1];
   hotelRuntimeConfigurationData : HotelRuntimeConfigurationData[0..1];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
   adviseMessage : AdviseMessage[*];
 }
 Class HotelRuntimeConfigurationData
@@ -2181,8 +2181,8 @@ Class HotelXAmenity
   code : String[1];
   amenityData : HotelXAmenityData[0..1];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class HotelXAmenityConnection
 {
@@ -2377,8 +2377,8 @@ Class HotelXUpdateStatus
   code : String[1];
   hotelXUpdateStatusData : HotelXUpdateStatusData[0..1];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class HotelXUpdateStatusData
 {
@@ -2414,7 +2414,7 @@ Class Individual
   code : String[1];
   name : String[0..1];
   surname : String[1];
-  birthDate : String[0..1];
+  birthDate : DateTime[0..1];
   title : TitleNameType[0..1];
 }
 Class IndividualInput
@@ -2431,8 +2431,8 @@ Class InsightsXBookingAggregation
   code : String[1];
   InsightsXBookingAggregationData : BookingAggregation[0..1];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class InsightsXBookingAggregationConnection
 {
@@ -2450,8 +2450,8 @@ Class InsightsXBookingDetail
   code : String[1];
   InsightsXBookingDetailData : BookingDetail[0..1];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class InsightsXBookingDetailConnection
 {
@@ -2523,8 +2523,8 @@ Class Logging
   code : String[1];
   LoggingData : LoggingData[0..1];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class LoggingConnection
 {
@@ -2534,7 +2534,7 @@ Class LoggingConnection
 Class LoggingData
 {
   product : String[1];
-  timestamp : String[1];
+  timestamp : DateTime[1];
   level : String[1];
   message : String[1];
   tgx : TGX[1];
@@ -2553,8 +2553,8 @@ Class LoggingLegacy
   code : String[1];
   LoggingLegacyData : LoggingLegacyData[0..1];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class LoggingLegacyConnection
 {
@@ -2564,7 +2564,7 @@ Class LoggingLegacyConnection
 Class LoggingLegacyData
 {
   code : String[1];
-  timestamp : String[1];
+  timestamp : DateTime[1];
   sessionID : String[1];
   access : Access[1];
   client : Client[1];
@@ -2600,8 +2600,8 @@ Class MacroPermission
   code : String[1];
   macroPermissionData : MacroPermissionData[0..1];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class MacroPermissionData
 {
@@ -2627,8 +2627,8 @@ Class ManagedGroup
   code : String[1];
   managedGroupData : ManagedGroupData[0..1];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class ManagedGroupConnection
 {
@@ -2710,7 +2710,7 @@ Class Media
   code : String[0..1];
   order : String[0..1];
   type : ApplicationAreaType[1];
-  updatedAt : String[1];
+  updatedAt : DateTime[1];
   url : String[1];
   texts : Text[*];
 }
@@ -2719,8 +2719,8 @@ Class Member
   code : String[1];
   memberData : MemberData[0..1];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class MemberConnection
 {
@@ -2758,8 +2758,8 @@ Class Metadata
   code : String[1];
   metadataData : MetadataData[0..1];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class MetadataBeds
 {
@@ -2938,8 +2938,8 @@ Class Operation extends AlertObjectsUnion
   code : String[1];
   operationData : OperationData[0..1];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class OperationConnection
 {
@@ -2986,8 +2986,8 @@ Class Organization
   code : String[1];
   organizationData : OrganizationData[0..1];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class OrganizationConnection
 {
@@ -3096,8 +3096,8 @@ Class Partner
   code : String[1];
   partnerData : PartnerData[0..1];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class PartnerConnection
 {
@@ -3171,15 +3171,15 @@ Class PaymentCard
 {
   code : String[1];
   paymentCardData : PaymentCardData[1];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
   adviseMessage : AdviseMessage[*];
 }
 Class PaymentCardData
 {
-  active : String[1];
+  active : Date[1];
   CVC : String[1];
-  expire : String[1];
+  expire : Date[1];
   holder : Holder[1];
   id : String[1];
   number : String[1];
@@ -3254,8 +3254,8 @@ Class PaymentXStoredCard
 {
   code : String[1];
   storedCardData : PaymentXStoredCardData[0..1];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
   adviseMessage : AdviseMessage[*];
 }
 Class PaymentXStoredCardConnection
@@ -3268,8 +3268,8 @@ Class PaymentXStoredCardData
   instance : Group[1];
   pointOfSale : PointOfSale[1];
   bookingReference : String[1];
-  checkOut : String[0..1];
-  checkIn : String[0..1];
+  checkOut : Date[0..1];
+  checkIn : Date[0..1];
   cardType : String[0..1];
   holder : Holder[0..1];
   number : String[0..1];
@@ -3339,8 +3339,8 @@ Class PointOfSale
 {
   code : String[1];
   pointOfSaleData : PointOfSaleData[0..1];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
   adviseMessage : AdviseMessage[*];
 }
 Class PointOfSaleConnection
@@ -3373,10 +3373,10 @@ Class Price
 }
 Class PriceBreakdown
 {
-  effectiveDate : String[1];
-  expireDate : String[1];
-  start : String[1];
-  end : String[1];
+  effectiveDate : Date[1];
+  expireDate : Date[1];
+  start : Date[1];
+  end : Date[1];
   price : Price[1];
 }
 Class PriceChange
@@ -3405,8 +3405,8 @@ Class Product
   code : String[1];
   productData : ProductData[1];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class ProductConnection
 {
@@ -3432,8 +3432,8 @@ Class Profile
   code : String[1];
   profileData : ProfileData[0..1];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class ProfileConnection
 {
@@ -3471,10 +3471,10 @@ Class Promotion
   code : String[1];
   name : String[0..1];
   supplierCode : String[1];
-  effectiveDate : String[0..1];
-  expireDate : String[0..1];
-  start : String[0..1];
-  end : String[0..1];
+  effectiveDate : Date[0..1];
+  expireDate : Date[0..1];
+  start : Date[0..1];
+  end : Date[0..1];
 }
 Class Property
 {
@@ -3491,8 +3491,8 @@ Class Provider
   code : String[1];
   providerData : ProviderData[0..1];
   error : Error[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class ProviderConnection
 {
@@ -3534,10 +3534,10 @@ Class RatePlan
   code : String[1];
   supplierCode : String[1];
   name : String[0..1];
-  effectiveDate : String[0..1];
-  expireDate : String[0..1];
-  start : String[0..1];
-  end : String[0..1];
+  effectiveDate : Date[0..1];
+  expireDate : Date[0..1];
+  start : Date[0..1];
+  end : Date[0..1];
 }
 Class RateRulesFilterInput
 {
@@ -3571,8 +3571,8 @@ Class Recommendation
   code : String[1];
   recommendationData : RecommendationData[0..1];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class RecommendationData
 {
@@ -3649,8 +3649,8 @@ Class Resource
   code : String[1];
   resourceData : ResourceData[0..1];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class ResourceConnection
 {
@@ -3680,37 +3680,37 @@ Class RetrieveHotelXMappingReport
 }
 Class ReviewedAgeRanges
 {
-  reviewDate : String[1];
+  reviewDate : Date[1];
   ages : AgeRange[1];
 }
 Class ReviewedBool
 {
-  reviewDate : String[1];
+  reviewDate : Date[1];
   value : Boolean[1];
 }
 Class ReviewedInt
 {
-  reviewDate : String[1];
+  reviewDate : Date[1];
   value : Integer[1];
 }
 Class ReviewedPaymentType
 {
-  reviewDate : String[1];
+  reviewDate : Date[1];
   value : PaymentType[1];
 }
 Class ReviewedRateRule
 {
-  reviewDate : String[1];
+  reviewDate : Date[1];
   value : RateRulesType[1];
 }
 Class ReviewedText
 {
-  reviewDate : String[1];
+  reviewDate : Date[1];
   value : String[1];
 }
 Class ReviwedPaxTypeRangeInRoomCandidates
 {
-  reviewDate : String[1];
+  reviewDate : Date[1];
   candidates : MetadataCandidate[1];
 }
 Class Role
@@ -3718,8 +3718,8 @@ Class Role
   code : String[1];
   roleData : RoleData[0..1];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class RoleConnection
 {
@@ -3825,8 +3825,8 @@ Class RoomStatic
   roomData : RoomData[0..1];
   error : Error[*];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class Rule
 {
@@ -3894,8 +3894,8 @@ Class SpeedAccess
 {
   code : String[1];
   speedAccessData : SpeedAccessData[0..1];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
   adviseMessage : AdviseMessage[*];
 }
 Class SpeedAccessCollection
@@ -3927,8 +3927,8 @@ Class SpeedConnection
 {
   code : String[1];
   speedConnectionData : SpeedConnectionData[0..1];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
   adviseMessage : AdviseMessage[*];
 }
 Class SpeedConnectionCollection
@@ -3975,8 +3975,8 @@ Class SpeedTtl
 }
 Class Stat
 {
-  start : String[1];
-  end : String[1];
+  start : DateTime[1];
+  end : DateTime[1];
   duration : Float[0..1];
 }
 Class StatAccess
@@ -4010,12 +4010,12 @@ Class Stats
   code : String[1];
   statsData : StatsData[0..1];
   adviseMessage : AdviseMessage[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class StatsAsset
 {
-  startTime : String[1];
+  startTime : DateTime[1];
   execTime : Integer[1];
   url : String[1];
   unencryptedURL : String[1];
@@ -4030,8 +4030,8 @@ Class StatsData
 {
   access : Access[1];
   client : Client[1];
-  from : String[1];
-  to : String[1];
+  from : DateTime[1];
+  to : DateTime[1];
   ratios : Ratios[1];
   operations : OperationDetailed[*];
   hits : String[1];
@@ -4107,10 +4107,10 @@ Class Supplement
   durationType : DurationType[0..1];
   quantity : Integer[0..1];
   unit : UnitTimeType[0..1];
-  effectiveDate : String[0..1];
-  expireDate : String[0..1];
-  start : String[0..1];
-  end : String[0..1];
+  effectiveDate : Date[0..1];
+  expireDate : Date[0..1];
+  start : Date[0..1];
+  end : Date[0..1];
   resort : Resort[0..1];
   price : Price[0..1];
 }
@@ -4130,8 +4130,8 @@ Class Supplier extends AlertObjectsUnion,Connection
   code : String[1];
   supplierData : SupplierData[0..1];
   error : Error[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class SupplierConnection
 {
@@ -4193,8 +4193,8 @@ Class System
   code : String[1];
   systemData : SystemData[0..1];
   error : Error[*];
-  createdAt : String[1];
-  updatedAt : String[1];
+  createdAt : DateTime[1];
+  updatedAt : DateTime[1];
 }
 Class SystemConnection
 {
@@ -4330,7 +4330,7 @@ Class Transactions
 {
   request : String[1];
   response : String[1];
-  timeStamp : String[1];
+  timeStamp : DateTime[1];
 }
 Class TransportArrival
 {
@@ -4339,7 +4339,7 @@ Class TransportArrival
 Class TransportDeparture
 {
   location : String[0..1];
-  AircraftScheduled : String[0..1];
+  AircraftScheduled : DateTime[0..1];
 }
 Enum UnitTimeType
 {

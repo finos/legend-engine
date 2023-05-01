@@ -108,6 +108,27 @@ function <<test.Test>> meta::external::query::graphQL::serialization::tests::tes
             )
           ]
         ),
+        ^InputObjectTypeDefinition(
+          name = 'MyInputType',
+           directives = [
+            ^Directive(
+              name='deprecated',
+              arguments = [
+                ^Argument(name='reason', value=^StringValue(value='wow'))
+              ]
+            )
+          ],       
+          fields = [
+            ^InputValueDefinition(
+              name = 'v',
+              type = ^NamedTypeReference(name='Int', nullable=false)
+            ),
+            ^InputValueDefinition(
+              name = 'x',
+              type = ^NamedTypeReference(name='String', nullable=false)
+            )
+          ]
+        ),
         ^UnionTypeDefinition(
           name = 'UnionTest',
           directives = [
@@ -175,6 +196,11 @@ function <<test.Test>> meta::external::query::graphQL::serialization::tests::tes
                 'type MyType @deprecated(reason: \"wow\") {\n' +
                 '  prop(v: Int!, x: String!): MyType!\n' +
                 '  other: String!\n' +
+                '}\n' +
+                '\n' +
+                'input MyInputType @deprecated(reason: \"wow\") {\n' +
+                '  v: Int!\n' +
+                '  x: String!\n' +
                 '}\n' +
                 '\n' +
                 'union UnionTest @deprecated(reason: \"wow\") = a | b\n' +
