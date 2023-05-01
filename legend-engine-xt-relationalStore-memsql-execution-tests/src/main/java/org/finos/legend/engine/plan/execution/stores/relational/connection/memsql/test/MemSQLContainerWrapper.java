@@ -14,16 +14,19 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.memsql.test;
 
-public class MemSQLTestContainerWrapper
+import java.sql.Connection;
+import java.sql.DriverManager;
+
+public class MemSQLContainerWrapper
 {
     private final MemSQLContainer memSQLContainer;
 
-    public static MemSQLTestContainerWrapper build(String licenseKeyEnvVariable)
+    public static MemSQLContainerWrapper build(String licenseKeyEnvVariable)
     {
-        return new MemSQLTestContainerWrapper(licenseKeyEnvVariable);
+        return new MemSQLContainerWrapper(licenseKeyEnvVariable);
     }
 
-    private MemSQLTestContainerWrapper(String licenseKeyEnvVariable)
+    private MemSQLContainerWrapper(String licenseKeyEnvVariable)
     {
         this.memSQLContainer = MemSQLContainer.newMemSQLContainer(licenseKeyEnvVariable);
     }
@@ -36,6 +39,21 @@ public class MemSQLTestContainerWrapper
     public void stop()
     {
         this.memSQLContainer.stop();
+    }
+
+    public Connection getConnection() throws Exception
+    {
+        Class.forName(this.memSQLContainer.getDriverClassName());
+
+        return DriverManager.getConnection(
+                this.memSQLContainer.getJdbcUrl(),
+                this.memSQLContainer.getUsername(),
+                this.memSQLContainer.getPassword());
+    }
+
+    public String getHost()
+    {
+        return this.memSQLContainer.getHost();
     }
 
     public int getPort()
@@ -51,15 +69,5 @@ public class MemSQLTestContainerWrapper
     public String getPassword()
     {
         return this.memSQLContainer.getPassword();
-    }
-
-    public String getDriverClassName()
-    {
-        return this.memSQLContainer.getDriverClassName();
-    }
-
-    public String getJdbcUrl()
-    {
-        return this.memSQLContainer.getJdbcUrl();
     }
 }

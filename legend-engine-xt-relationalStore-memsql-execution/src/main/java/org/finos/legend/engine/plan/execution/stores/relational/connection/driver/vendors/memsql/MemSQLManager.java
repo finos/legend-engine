@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.mysql;
+package org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.memsql;
 
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
@@ -24,7 +24,7 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.util.Properties;
 
-public class MySQLManager extends DatabaseManager
+public class MemSQLManager extends DatabaseManager
 {
     @Override
     public MutableList<String> getIds()
@@ -35,7 +35,7 @@ public class MySQLManager extends DatabaseManager
     @Override
     public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties, AuthenticationStrategy authenticationStrategy)
     {
-        return "jdbc:mysql://" + host + ":" + port + "/" + databaseName;
+        return "jdbc:mysql://" + host + ":" + port + "/" + databaseName + "?permitMysqlScheme";
     }
 
     @Override
@@ -52,12 +52,12 @@ public class MySQLManager extends DatabaseManager
     @Override
     public String getDriver()
     {
-        return "org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.mysql.MySQLDriver";
+        return "org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.memsql.MemSQLDriver";
     }
 
     @Override
     public RelationalDatabaseCommands relationalDatabaseSupport()
     {
-        return new MySQLCommands();
+        return new MemSQLCommands();
     }
 }
