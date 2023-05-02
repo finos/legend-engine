@@ -28,6 +28,28 @@
       "street": "338 Evergreen Place",
       "postalCode": "20784"
     },
+    "car": [
+      {
+        "model": "Auris",
+        "manufacturer":         {
+          "country":           {
+            "continent": "Asia",
+            "countryCode": "JP"
+          },
+          "name": "Toyota"
+        }
+      },
+      {
+        "model": "Polo",
+        "manufacturer":         {
+          "country":           {
+            "continent": "Europe",
+            "countryCode": "DE"
+          },
+          "name": "Volkswagen"
+        }
+      }
+    ],
     "otherPhoneNumbers": [
 "+44 774 643 2334",
 "+1 515 165 0534"

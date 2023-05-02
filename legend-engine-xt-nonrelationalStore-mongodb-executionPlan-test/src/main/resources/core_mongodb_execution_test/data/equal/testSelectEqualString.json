@@ -30,6 +30,28 @@
       "street": "0459 Kings Crossing",
       "postalCode": "20508"
     },
+    "car": [
+      {
+        "model": "Model X",
+        "manufacturer":         {
+          "country":           {
+            "continent": "America",
+            "countryCode": "US"
+          },
+          "name": "Tesla"
+        }
+      },
+      {
+        "model": "Leon",
+        "manufacturer":         {
+          "country":           {
+            "continent": "Europe",
+            "countryCode": "Spain"
+          },
+          "name": "Seat"
+        }
+      }
+    ],
     "otherPhoneNumbers": [
 "+1 347 336 3704"
     ],
