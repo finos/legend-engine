@@ -286,7 +286,7 @@ public class PlanExecutor
         }
     }
 
-    public static void setUpState(SingleExecutionPlan singleExecutionPlan, ExecutionState state, MutableList<CommonProfile> profiles, String user)
+    private void setUpState(SingleExecutionPlan singleExecutionPlan, ExecutionState state, MutableList<CommonProfile> profiles, String user)
     {
         if (singleExecutionPlan.authDependent)
         {
