@@ -42,7 +42,15 @@ function meta::external::store::elasticsearch::v7::protocol::v1_31_0::elasticsea
                               src: SourceFieldResultPath[1] | ^meta::external::store::elasticsearch::v7::protocol::v1_31_0::tds::SourceFieldResultPath(
                                 _type = 'sourceFieldResultPath',
                                 fieldPath = $src.fieldPath
-                              )
+                              ),
+                              docValue: DocValueResultPath[1] | ^meta::external::store::elasticsearch::v7::protocol::v1_31_0::tds::DocValueResultPath(
+                                _type = 'docValueResultPath',
+                                fieldPath = $docValue.fieldPath
+                              ),
+                              agg: AggregateResultPath[1] | ^meta::external::store::elasticsearch::v7::protocol::v1_31_0::tds::AggregateResultPath(
+                                _type = 'aggregateResultPath',
+                                fieldPath = $agg.fieldPath
+                              )    
                             ])
                           )
                         )
@@ -92,11 +100,21 @@ Class meta::external::store::elasticsearch::v7::protocol::v1_31_0::executionPlan
 Class <<typemodifiers.abstract>> meta::external::store::elasticsearch::v7::protocol::v1_31_0::tds::ResultPath
 {
   _type: String[1];
+  fieldPath: String[1..*];
 }
 
 Class meta::external::store::elasticsearch::v7::protocol::v1_31_0::tds::SourceFieldResultPath extends meta::external::store::elasticsearch::v7::protocol::v1_31_0::tds::ResultPath
 {
-  fieldPath: String[1..*];
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::v1_31_0::tds::DocValueResultPath extends meta::external::store::elasticsearch::v7::protocol::v1_31_0::tds::ResultPath
+{
+
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::v1_31_0::tds::AggregateResultPath extends meta::external::store::elasticsearch::v7::protocol::v1_31_0::tds::ResultPath
+{
+
 }
 
 Class meta::external::store::elasticsearch::v7::protocol::v1_31_0::runtime::Elasticsearch7StoreConnection extends meta::protocols::pure::v1_31_0::metamodel::runtime::Connection

@@ -15,7 +15,47 @@
 import meta::external::format::openapi::tostring::*;
 import meta::external::format::openapi::metamodel::*;
 import meta::json::*;
-import meta::pure::service::*;
+import meta::pure::mapping::*;
+
+Class meta::external::format::openapi::tostring::JSONResult<T|m> extends ServiceResult<T|m>
+{
+    extraSerializers: Function<{Nil[1], JSONState[1]->JSONElement[1]}>[*];
+    max: Integer[0..1];
+    convertTDSToObject: Boolean[0..1];
+    config: Config[0..1];
+}
+
+function meta::external::format::openapi::tostring::asString(o:OpenApi[1]):String[*]
+{
+  $o->openApiJSONResult()->serviceResultToString();
+}
+
+function {service.contentType='application/json'} meta::external::format::openapi::tostring::serviceResultToString(v: ServiceResult<Any|*>[1]):String[*]
+{
+  $v->match(
+      j: JSONResult<Any|*>[1]| let conf = if($j.config->isEmpty(),|defaultConfig(), |$j.config->toOne());
+                                let max = if($j.max->isEmpty(), |5, |$j.max->toOne());
+                                $j.value->match(
+                                          [
+                                              t:TabularDataSet[1]|
+                                                  if($j.convertTDSToObject == true,
+                                                  | $t->optimizedTdsToJSONKeyValueObjectStringStream(),
+                                                  | $t->optimizedTdsJSONStringStream($conf)),
+                                              r: Result<TabularDataSet|1>[1]| $r->optimizedResultJSONStringStream($max, $conf),
+                                              a: Any[*]|let res = $a->toJSONElement($j.extraSerializers, $max, $conf);
+                                                          if(!$j.classifierGenericType.multiplicityArguments->at(0)->isToOneNonStrict(),
+                                                              |if ($a->size() == 0, |^JSONArray(), |if($a->size() == 1, |^JSONArray(values=$res),|$res)),
+                                                              |if ($a->isEmpty(), |^JSONNull(), |$res)
+                                                            )->toCompactJSONString();
+                                          ]
+                                );
+    )
+}
+
+function meta::external::format::openapi::tostring::isToOneNonStrict(multiplicity:Multiplicity[1]):Boolean[1]
+{
+    $multiplicity->hasUpperBound() && eq($multiplicity->getUpperBound(),1);
+}
 
 function meta::external::format::openapi::tostring::openApiJSONResult(o:OpenApi[1]):JSONResult<OpenApi|1>[1]
 {
@@ -34,4 +74,14 @@ function meta::external::format::openapi::tostring::openApiJSONResult(o:OpenApi[
 function <<access.private>> meta::external::format::openapi::tostring::processOpenApiSchema(p:Schema[1], full:Boolean[1], s:JSONState[1]):JSONElement[1]
 {
   $p->anyToJSON($s,100000,defaultConfig());
+}
+
+function <<test.Test>> meta::external::format::openapi::tostring::serializationTest():Boolean[1]
+{
+  assertEquals('[]', ^JSONResult<Any|*>()->serviceResultToString());
+  assertEquals('[1]', ^JSONResult<Any|*>(value=1)->serviceResultToString());
+  assertEquals('[1,2,3]',^JSONResult<Any|*>(value=[1,2,3])->serviceResultToString());
+  assertEquals('null',^JSONResult<Any|0..1>()->serviceResultToString());
+  assertEquals('1',^JSONResult<Any|0..1>(value=1)->serviceResultToString());
+  assertEquals('1',^JSONResult<Any|1>(value=1)->serviceResultToString());
 }

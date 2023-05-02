@@ -1,0 +1,435 @@
+###Diagram
+Diagram meta::analytics::search::ServiceDiagram(width=0.0, height=0.0)
+{
+    TypeView cview_1(
+        type=meta::analytics::search::metamodel::BaseRootDocument,
+        position=(1596.00000, 67.48387),
+        width=145.29688,
+        height=86.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_8(
+        type=meta::analytics::search::metamodel::database::Schema,
+        position=(1921.06452, 518.12903),
+        width=102.51611,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_9(
+        type=meta::analytics::search::metamodel::database::Table,
+        position=(1914.00000, 643.00000),
+        width=117.17383,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_3(
+        type=meta::analytics::search::metamodel::ProjectCoordinates,
+        position=(1918.41936, 201.41936),
+        width=130.68945,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_2(
+        type=meta::analytics::search::metamodel::PackageableRootDocument,
+        position=(1541.90323, 194.22721),
+        width=256.54834,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_17(
+        type=meta::analytics::search::metamodel::database::DatabaseDocument,
+        position=(1892.50963, 381.95835),
+        width=151.40381,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_6(
+        type=meta::analytics::search::metamodel::class::SimpleClassElement,
+        position=(1327.50746, 572.41791),
+        width=147.14990,
+        height=86.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_21(
+        type=meta::analytics::search::metamodel::service::ServiceDocument,
+        position=(1005.94247, 394.85388),
+        width=150.20068,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_19(
+        type=meta::analytics::search::metamodel::diagram::DiagramDocument,
+        position=(1170.36038, 393.77925),
+        width=126.68750,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_16(
+        type=meta::analytics::search::metamodel::class::ClassDocument,
+        position=(1526.06187, 391.62999),
+        width=110.69141,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_4(
+        type=meta::analytics::search::metamodel::class::ClassProperty,
+        position=(1326.33065, 694.25717),
+        width=147.14990,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_22(
+        type=meta::analytics::search::metamodel::service::Execution,
+        position=(966.52565, 583.88361),
+        width=224.76758,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_24(
+        type=meta::analytics::search::metamodel::dataspace::ExecutionContext,
+        position=(1700.37179, 752.80668),
+        width=143.44922,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_23(
+        type=meta::analytics::search::metamodel::mapping::DatabaseColumn,
+        position=(1019.14103, 745.29020),
+        width=121.47070,
+        height=86.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_18(
+        type=meta::analytics::search::metamodel::dataspace::DataSpaceDocument,
+        position=(1649.89982, 387.33149),
+        width=232.08838,
+        height=86.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_20(
+        type=meta::analytics::search::metamodel::mapping::MappingDocument,
+        position=(1327.05121, 384.97754),
+        width=168.50000,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_2,
+        target=cview_1,
+        points=[(1670.17740,230.22721),(1668.64844,110.48387)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_16,
+        target=cview_6,
+        points=[(1581.40757,406.62999),(1457.28575,585.06283)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_2(
+        source=cview_16,
+        target=cview_2,
+        points=[(1581.40757,406.62999),(1670.17740,230.22721)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_3(
+        source=cview_17,
+        target=cview_2,
+        points=[(1968.21154,403.95835),(1670.17740,230.22721)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_4(
+        source=cview_18,
+        target=cview_2,
+        points=[(1765.94401,430.33149),(1670.17740,230.22721)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_5(
+        source=cview_19,
+        target=cview_2,
+        points=[(1233.70413,408.77925),(1670.17740,230.22721)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_6(
+        source=cview_20,
+        target=cview_2,
+        points=[(1411.30121,406.97754),(1670.17740,230.22721)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_7(
+        source=cview_21,
+        target=cview_2,
+        points=[(1081.04281,423.85388),(1670.17740,230.22721)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_0(
+        property=meta::analytics::search::metamodel::PackageableRootDocument.projectCoordinates,
+        source=cview_2,
+        target=cview_3,
+        points=[(1670.17740,230.22721),(1983.76408,237.41936)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_1(
+        property=meta::analytics::search::metamodel::class::SimpleClassElement.properties,
+        source=cview_6,
+        target=cview_4,
+        points=[(1401.08241,615.41791),(1399.90560,730.25717)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_2(
+        property=meta::analytics::search::metamodel::database::Schema.tables,
+        source=cview_8,
+        target=cview_9,
+        points=[(1972.32257,547.12903),(1972.58691,672.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_3(
+        property=meta::analytics::search::metamodel::database::DatabaseDocument.schemas,
+        source=cview_17,
+        target=cview_8,
+        points=[(1968.21154,403.95835),(1972.32258,547.12903)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_4(
+        property=meta::analytics::search::metamodel::diagram::DiagramDocument.classes,
+        source=cview_19,
+        target=cview_6,
+        points=[(1233.70413,408.77925),(1330.47978,576.46581)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_5(
+        property=meta::analytics::search::metamodel::mapping::MappingDocument.classes,
+        source=cview_20,
+        target=cview_6,
+        points=[(1394.88385,424.79593),(1393.88277,595.80910)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_6(
+        property=meta::analytics::search::metamodel::service::Execution.classes,
+        source=cview_22,
+        target=cview_6,
+        points=[(1078.90944,612.88361),(1401.08241,615.41791)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_7(
+        property=meta::analytics::search::metamodel::service::ServiceDocument.executions,
+        source=cview_21,
+        target=cview_22,
+        points=[(1081.04281,423.85388),(1078.90944,612.88361)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_8(
+        property=meta::analytics::search::metamodel::service::Execution.databaseColumns,
+        source=cview_22,
+        target=cview_23,
+        points=[(1078.90944,612.88361),(1079.87639,788.29020)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_9(
+        property=meta::analytics::search::metamodel::dataspace::ExecutionContext.classes,
+        source=cview_24,
+        target=cview_6,
+        points=[(1772.09640,788.80668),(1401.08241,615.41791)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_10(
+        property=meta::analytics::search::metamodel::dataspace::DataSpaceDocument.executionContexts,
+        source=cview_18,
+        target=cview_24,
+        points=[(1758.31240,471.08164),(1758.31240,752.22449),(1772.09640,788.80668)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_11(
+        property=meta::analytics::search::metamodel::dataspace::ExecutionContext.databaseColumns,
+        source=cview_24,
+        target=cview_23,
+        points=[(1772.09640,788.80668),(1079.87639,788.29020)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+}

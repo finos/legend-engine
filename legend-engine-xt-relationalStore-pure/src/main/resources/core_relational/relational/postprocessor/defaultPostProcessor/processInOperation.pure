@@ -116,7 +116,7 @@ function meta::relational::postProcessor::generatePostProcessorResult(changedFun
 
                           let translationContext = ^TranslationContext(dbType=$connection.type);
                           let selectSqlQueryForTempTable            = generateTempTableSelectSQLQuery('default', $tempTableName, $tempTableColumnName, meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($collectionValueType)->translateCoreTypeToDbSpecificType($translationContext)->toOne());
-                          let processedResultForTempTable           = $selectSqlQueryForTempTable->postProcessSQLQuery($store->toOne(), [], ^Mapping(), $runtime, $exeCtx, $extensions);
+                          let processedResultForTempTable           = $selectSqlQueryForTempTable->postProcessSQLQueryWithDefaultPostProcessors($store->toOne(), [], ^Mapping(), $runtime, $exeCtx, $extensions);
 
                           let allocationNode                        = if($collectionValuesWithoutVarPlaceHolder->isNotEmpty(),
                                                                            |^AllocationExecutionNode(

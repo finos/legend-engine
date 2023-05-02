@@ -117,9 +117,86 @@ public class HelperElasticsearchPropertyComposer extends AbstractPropertyBaseVis
     }
 
     @Override
+    public Void visit(StandardNumberProperty val)
+    {
+        // todo handle any special number properties
+        return this.visit((DocValuesPropertyBase) val);
+    }
+
+    @Override
     public Void visit(KeywordProperty val)
     {
         this.builder.append("Keyword");
         return this.visit((DocValuesPropertyBase) val);
+    }
+
+    @Override
+    public Void visit(BooleanProperty val)
+    {
+        this.builder.append("Boolean");
+        return this.visit((DocValuesPropertyBase) val);
+    }
+
+    @Override
+    public Void visit(ByteNumberProperty val)
+    {
+        this.builder.append("Byte");
+        return this.visit((StandardNumberProperty) val);
+    }
+
+    @Override
+    public Void visit(DateProperty val)
+    {
+        this.builder.append("Date");
+        return this.visit((DocValuesPropertyBase) val);
+    }
+
+    @Override
+    public Void visit(FloatNumberProperty val)
+    {
+        this.builder.append("Float");
+        return this.visit((StandardNumberProperty) val);
+    }
+
+    @Override
+    public Void visit(HalfFloatNumberProperty val)
+    {
+        this.builder.append("HalfFloat");
+        return this.visit((StandardNumberProperty) val);
+    }
+
+    @Override
+    public Void visit(IntegerNumberProperty val)
+    {
+        this.builder.append("Integer");
+        return this.visit((StandardNumberProperty) val);
+    }
+
+    @Override
+    public Void visit(LongNumberProperty val)
+    {
+        this.builder.append("Long");
+        return this.visit((StandardNumberProperty) val);
+    }
+
+    @Override
+    public Void visit(DoubleNumberProperty val)
+    {
+        this.builder.append("Double");
+        return this.visit((StandardNumberProperty) val);
+    }
+
+    @Override
+    public Void visit(ShortNumberProperty val)
+    {
+        this.builder.append("Short");
+        return this.visit((StandardNumberProperty) val);
+    }
+
+    @Override
+    public Void visit(TextProperty val)
+    {
+        this.builder.append("Text");
+        return this.visit((CorePropertyBase) val);
     }
 }

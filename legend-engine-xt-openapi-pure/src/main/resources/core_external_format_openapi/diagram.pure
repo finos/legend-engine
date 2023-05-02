@@ -14,7 +14,7 @@
 
 ###Diagram
 
-Diagram meta::external::format::openapi::ServiceOpenApiDiagram(width=0.0, height=0.0)
+Diagram meta::external::format::openapi::ServiceOpenApiSpecDiagram(width=0.0, height=0.0)
 {
     TypeView cview_1(
         type=meta::external::format::openapi::metamodel::OpenApi,

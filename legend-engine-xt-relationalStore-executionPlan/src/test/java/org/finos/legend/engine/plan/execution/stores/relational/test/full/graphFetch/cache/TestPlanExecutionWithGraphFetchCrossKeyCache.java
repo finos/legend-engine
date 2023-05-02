@@ -79,6 +79,7 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServe
             "Class test::Firm\n" +
             "{\n" +
             "  name: String[1];\n" +
+            "  estDate: StrictDate[0..1];\n" +
             "}\n" +
             "\n" +
             "Class test::Address\n" +
@@ -124,7 +125,8 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServe
             "(\n" +
             "  Table firmTable (\n" +
             "    name VARCHAR(100) PRIMARY KEY,\n" +
-            "    addressName VARCHAR(100)\n" +
+            "    addressName VARCHAR(100),\n" +
+            "    estDate DATE\n" +
             "  )\n" +
             ")\n" +
             "\n" +
@@ -147,7 +149,8 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServe
             "\n" +
             "  test::Firm : Relational {\n" +
             "    +addressName : String[0..1] : [test::DB2]firmTable.addressName, \n" +
-            "    name: [test::DB2]firmTable.name\n" +
+            "    name: [test::DB2]firmTable.name,\n" +
+            "    estDate: [test::DB2]firmTable.estDate\n" +
             "  }\n" +
             "\n" +
             "  test::Address : Relational {\n" +
@@ -265,7 +268,8 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServe
                 "      test::Person {\n" +
                 "        fullName,\n" +
                 "        firm {\n" +
-                "          name\n" +
+                "          name,\n" +
+                "          estDate\n" +
                 "        }\n" +
                 "      }\n" +
                 "    }#, 1)\n" +
@@ -273,7 +277,8 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServe
                 "      test::Person {\n" +
                 "        fullName,\n" +
                 "        firm {\n" +
-                "          name\n" +
+                "          name,\n" +
+                "          estDate\n" +
                 "        }\n" +
                 "      }\n" +
                 "    }#)\n" +
@@ -284,11 +289,11 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServe
         PlanExecutionContext context = new PlanExecutionContext(plan, firmCache);
 
         String expectedRes = "[" +
-                "{\"fullName\":\"P1\",\"firm\":{\"name\":\"F1\"}}," +
-                "{\"fullName\":\"P2\",\"firm\":{\"name\":\"F2\"}}," +
+                "{\"fullName\":\"P1\",\"firm\":{\"name\":\"F1\",\"estDate\":\"2020-01-01\"}}," +
+                "{\"fullName\":\"P2\",\"firm\":{\"name\":\"F2\",\"estDate\":null}}," +
                 "{\"fullName\":\"P3\",\"firm\":null}," +
                 "{\"fullName\":\"P4\",\"firm\":null}," +
-                "{\"fullName\":\"P5\",\"firm\":{\"name\":\"F1\"}}" +
+                "{\"fullName\":\"P5\",\"firm\":{\"name\":\"F1\",\"estDate\":\"2020-01-01\"}}" +
                 "]";
 
         Assert.assertEquals(expectedRes, executePlan(plan, context));
@@ -466,6 +471,7 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServe
                 "        fullName,\n" +
                 "        firm {\n" +
                 "          name,\n" +
+                "          estDate,\n" +
                 "          address {\n" +
                 "            name\n" +
                 "          }\n" +
@@ -477,6 +483,7 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServe
                 "        fullName,\n" +
                 "        firm {\n" +
                 "          name,\n" +
+                "          estDate,\n" +
                 "          address {\n" +
                 "            name\n" +
                 "          }\n" +
@@ -486,11 +493,11 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServe
                 "}";
 
         String expectedRes = "[" +
-                "{\"fullName\":\"P1\",\"firm\":{\"name\":\"F1\",\"address\":{\"name\":\"A4\"}}}," +
-                "{\"fullName\":\"P2\",\"firm\":{\"name\":\"F2\",\"address\":{\"name\":\"A3\"}}}," +
+                "{\"fullName\":\"P1\",\"firm\":{\"name\":\"F1\",\"estDate\":\"2020-01-01\",\"address\":{\"name\":\"A4\"}}}," +
+                "{\"fullName\":\"P2\",\"firm\":{\"name\":\"F2\",\"estDate\":null,\"address\":{\"name\":\"A3\"}}}," +
                 "{\"fullName\":\"P3\",\"firm\":null}," +
                 "{\"fullName\":\"P4\",\"firm\":null}," +
-                "{\"fullName\":\"P5\",\"firm\":{\"name\":\"F1\",\"address\":{\"name\":\"A4\"}}}" +
+                "{\"fullName\":\"P5\",\"firm\":{\"name\":\"F1\",\"estDate\":\"2020-01-01\",\"address\":{\"name\":\"A4\"}}}" +
                 "]";
 
         SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction);
@@ -705,7 +712,7 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServe
         s.execute("Drop table if exists personTable;");
         s.execute("Create Table personTable(fullName VARCHAR(100) NOT NULL,firmName VARCHAR(100) NULL,addressName VARCHAR(100) NULL, PRIMARY KEY(fullName));");
         s.execute("Drop table if exists firmTable;");
-        s.execute("Create Table firmTable(name VARCHAR(100) NOT NULL,addressName VARCHAR(100) NULL, PRIMARY KEY(name));");
+        s.execute("Create Table firmTable(name VARCHAR(100) NOT NULL,addressName VARCHAR(100) NULL, estDate DATE NULL, PRIMARY KEY(name));");
         s.execute("Drop table if exists addressTable;");
         s.execute("Create Table addressTable(name VARCHAR(100) NOT NULL, PRIMARY KEY(name));");
         s.execute("insert into personTable (fullName,firmName,addressName) values ('P1','F1','A1');");
@@ -713,10 +720,10 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServe
         s.execute("insert into personTable (fullName,firmName,addressName) values ('P3',null,null);");
         s.execute("insert into personTable (fullName,firmName,addressName) values ('P4',null,'A3');");
         s.execute("insert into personTable (fullName,firmName,addressName) values ('P5','F1','A1');");
-        s.execute("insert into firmTable (name,addressName) values ('F1','A4');");
-        s.execute("insert into firmTable (name,addressName) values ('F2','A3');");
-        s.execute("insert into firmTable (name,addressName) values ('F3','A3');");
-        s.execute("insert into firmTable (name,addressName) values ('F4',null);");
+        s.execute("insert into firmTable (name,addressName, estDate) values ('F1','A4','2020-01-01');");
+        s.execute("insert into firmTable (name,addressName, estDate) values ('F2','A3',null);");
+        s.execute("insert into firmTable (name,addressName, estDate) values ('F3','A3','2021-01-01');");
+        s.execute("insert into firmTable (name,addressName, estDate) values ('F4',null,null);");
         s.execute("insert into addressTable (name) values ('A1');");
         s.execute("insert into addressTable (name) values ('A2');");
         s.execute("insert into addressTable (name) values ('A3');");

@@ -13,7 +13,7 @@ identifier:                             VALID_STRING | STRING | CLUSTER_DETAILS 
 v7ConnectionDefinition:                 (
                                             connectionStore
                                             | clusterDetails
-                                            | authenticaiton
+                                            | authentication
                                         )*
                                         EOF
 ;
@@ -24,5 +24,5 @@ connectionStore:                        STORE COLON qualifiedName SEMI_COLON
 clusterDetails:                         CLUSTER_DETAILS COLON islandDefinition SEMI_COLON
 ;
 
-authenticaiton:                         AUTHENTICATION COLON islandDefinition SEMI_COLON
+authentication:                         AUTHENTICATION COLON islandDefinition SEMI_COLON
 ;

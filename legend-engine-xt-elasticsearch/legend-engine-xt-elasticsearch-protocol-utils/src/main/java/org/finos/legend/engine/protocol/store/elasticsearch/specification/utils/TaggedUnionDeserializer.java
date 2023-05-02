@@ -17,8 +17,8 @@ package org.finos.legend.engine.protocol.store.elasticsearch.specification.utils
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.core.util.JsonParserSequence;
+import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -27,27 +27,20 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
-import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.fasterxml.jackson.databind.node.TreeTraversingParser;
 import com.fasterxml.jackson.databind.util.ClassUtil;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Field;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.multimap.list.MutableListMultimap;
 import org.eclipse.collections.impl.factory.Multimaps;
@@ -71,7 +64,7 @@ public class TaggedUnionDeserializer extends JsonDeserializer<Object> implements
 
     }
 
-    public TaggedUnionDeserializer(DeserializationConfig config, JavaType type, List<Field> objectFields, List<NonObjectFieldHandler> nonObjectFieldHandlers)
+    public TaggedUnionDeserializer(DeserializationConfig config, JavaType type, List<BeanPropertyDefinition> objectFields, List<NonObjectFieldHandler> nonObjectFieldHandlers)
     {
         this.type = type;
         this.nonObjectFieldHandlers = nonObjectFieldHandlers;
@@ -82,32 +75,33 @@ public class TaggedUnionDeserializer extends JsonDeserializer<Object> implements
     public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) throws JsonMappingException
     {
         JavaType contextualType = ctxt.getContextualType();
+        BeanDescription beanDescription = ctxt.getConfig().introspect(ctxt.getContextualType());
 
-        Field[] fields = contextualType.getRawClass().getFields();
+        List<BeanPropertyDefinition>  fields = beanDescription.findProperties();
 
-        List<Field> objectFields = Lists.mutable.empty();
+        List<BeanPropertyDefinition> objectFields = Lists.mutable.empty();
         List<NonObjectFieldHandler> nonObjectFieldHandlers = Lists.mutable.empty();
 
-        for (Field f : fields)
+        for (BeanPropertyDefinition f : fields)
         {
             // disambiguate primitives + lists (they don't occur twice in unions)
-            if (f.getType().equals(String.class))
+            if (f.getRawPrimaryType().equals(String.class))
             {
                 nonObjectFieldHandlers.add(new NonObjectFieldHandler(f, JsonNode::isTextual));
             }
-            else if (f.getType().equals(Long.class))
+            else if (f.getRawPrimaryType().equals(Long.class))
             {
                 nonObjectFieldHandlers.add(new NonObjectFieldHandler(f, JsonNode::isIntegralNumber));
             }
-            else if (f.getType().equals(Double.class))
+            else if (f.getRawPrimaryType().equals(Double.class))
             {
                 nonObjectFieldHandlers.add(new NonObjectFieldHandler(f, JsonNode::isDouble));
             }
-            else if (f.getType().equals(Boolean.class))
+            else if (f.getRawPrimaryType().equals(Boolean.class))
             {
                 nonObjectFieldHandlers.add(new NonObjectFieldHandler(f, JsonNode::isBoolean));
             }
-            else if (List.class.isAssignableFrom(f.getType()))
+            else if (List.class.isAssignableFrom(f.getRawPrimaryType()))
             {
                 nonObjectFieldHandlers.add(new NonObjectFieldHandler(f, JsonNode::isArray));
             }
@@ -146,10 +140,10 @@ public class TaggedUnionDeserializer extends JsonDeserializer<Object> implements
             {
                 if (this.subtypeFingerprints.valuesView().size() == 1)
                 {
-                    Field field = this.subtypeFingerprints.valuesView().getOnly();
-                    JavaType javaType = ctxt.getTypeFactory().constructType(field.getGenericType());
+                    BeanPropertyDefinition field = this.subtypeFingerprints.valuesView().getOnly();
+                    JavaType javaType = field.getPrimaryType();
                     Object value = ctxt.readValue(p, javaType);
-                    field.set(union, value);
+                    field.getField().getAnnotated().set(union, value);
                 }
                 else
                 {
@@ -163,12 +157,12 @@ public class TaggedUnionDeserializer extends JsonDeserializer<Object> implements
 
                 if (matches.size() == 1)
                 {
-                    Field field = matches.get(0).field;
-                    JavaType javaType = ctxt.getTypeFactory().constructType(field.getGenericType());
+                    BeanPropertyDefinition field = matches.get(0).field;
+                    JavaType javaType = field.getPrimaryType();
                     TreeTraversingParser parserForType = new TreeTraversingParser(node, p.getCodec());
                     parserForType.nextToken();
                     Object value = ctxt.readValue(parserForType, javaType);
-                    field.set(union, value);
+                    field.getField().getAnnotated().set(union, value);
                 }
                 else
                 {
@@ -186,10 +180,10 @@ public class TaggedUnionDeserializer extends JsonDeserializer<Object> implements
 
     private static class NonObjectFieldHandler
     {
-        private final Field field;
+        private final BeanPropertyDefinition field;
         private final Predicate<JsonNode> nodeCheck;
 
-        private NonObjectFieldHandler(Field field, Predicate<JsonNode> nodeCheck)
+        private NonObjectFieldHandler(BeanPropertyDefinition field, Predicate<JsonNode> nodeCheck)
         {
             this.field = field;
             this.nodeCheck = nodeCheck;
@@ -197,16 +191,16 @@ public class TaggedUnionDeserializer extends JsonDeserializer<Object> implements
     }
 
     private final Map<String, Integer> fieldBitIndex = new HashMap<>();
-    private MutableListMultimap<BitSet, Field> subtypeFingerprints;
+    private MutableListMultimap<BitSet, BeanPropertyDefinition> subtypeFingerprints;
 
-    private MutableListMultimap<BitSet, Field> buildFingerprintsForDeduction(DeserializationConfig config, Collection<Field> subtypes)
+    private MutableListMultimap<BitSet, BeanPropertyDefinition> buildFingerprintsForDeduction(DeserializationConfig config, Collection<BeanPropertyDefinition> subtypes)
     {
         int nextField = 0;
-        MutableListMultimap<BitSet, Field> fingerprints = Multimaps.mutable.list.empty();
+        MutableListMultimap<BitSet, BeanPropertyDefinition> fingerprints = Multimaps.mutable.list.empty();
 
-        for (Field subtype : subtypes)
+        for (BeanPropertyDefinition subtype : subtypes)
         {
-            JavaType subtyped = config.getTypeFactory().constructType(subtype.getType());
+            JavaType subtyped = subtype.getPrimaryType();
             List<BeanPropertyDefinition> properties = config.introspect(subtyped).findProperties();
 
             BitSet fingerprint = new BitSet(nextField + properties.size());
@@ -246,11 +240,11 @@ public class TaggedUnionDeserializer extends JsonDeserializer<Object> implements
                     p = JsonParserSequence.createFlattened(false, tb.asParser(p), p);
                     p.nextToken();
 
-                    MutableList<Field> fields = this.subtypeFingerprints.get(matching);
+                    MutableList<BeanPropertyDefinition> fields = this.subtypeFingerprints.get(matching);
                     if (fields.size() == 1)
                     {
-                        Field field = fields.get(0);
-                        field.set(union, ctxt.readValue(p, ctxt.constructType(field.getGenericType())));
+                        BeanPropertyDefinition field = fields.get(0);
+                        field.getField().getAnnotated().set(union, ctxt.readValue(p, field.getPrimaryType()));
                         return;
                     }
                 }

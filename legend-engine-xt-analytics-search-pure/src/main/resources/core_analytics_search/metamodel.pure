@@ -5,6 +5,10 @@ Enum meta::analytics::search::metamodel::DocumentType
   Diagram,
   Mapping,
   Service,
+  DatabaseStore,
+  Function,
+  Runtime,
+  Connection,
   PackageableElement
 }
 
@@ -14,9 +18,18 @@ Class meta::analytics::search::metamodel::BaseRootDocument
   typeNotBlank: $this.type->isNotEmpty()
 ]
 {
-  projectCoordinates : meta::analytics::search::metamodel::ProjectCoordinates[0..1];
   id: String[1];
   type: meta::analytics::search::metamodel::DocumentType[1];
+  name: String[1];
+  description: String[0..1];
+}
+
+Class meta::analytics::search::metamodel::PackageableRootDocument extends  meta::analytics::search::metamodel::BaseRootDocument
+{
+  stereotypes: String[*];
+  projectCoordinates : meta::analytics::search::metamodel::ProjectCoordinates[0..1];
+  taggedValues:  Map<String, String>[0..1];
+  package: String[1];
 }
 
 Class meta::analytics::search::metamodel::ProjectCoordinates
@@ -33,55 +46,58 @@ Class meta::analytics::search::metamodel::ProjectCoordinates
 
 
 // CLASS DOCUMENT
-Class meta::analytics::search::metamodel::class::RootDocument extends meta::analytics::search::metamodel::class::SimpleClassElement, meta::analytics::search::metamodel::BaseRootDocument
+Class meta::analytics::search::metamodel::class::ClassDocument extends meta::analytics::search::metamodel::class::SimpleClassElement, meta::analytics::search::metamodel::PackageableRootDocument
 {
 }
 
 Class meta::analytics::search::metamodel::class::SimpleClassElement
 {
-  package: String[1];
   name: String[1];
-  properties: String[*];
+  package: String[1];
+  properties: meta::analytics::search::metamodel::class::ClassProperty[*];
+  taggedValues:  Map<String, String>[0..1];
+  stereotypes: String[*];
+}
+
+Class meta::analytics::search::metamodel::class::ClassProperty
+{
+  name: String[1];
+  stereotypes: String[*];
+  taggedValues:  Map<String, String>[0..1];
 }
 
 // DATASPACE DOCUMENT
-Class meta::analytics::search::metamodel::dataspace::RootDocument extends meta::analytics::search::metamodel::BaseRootDocument
+Class meta::analytics::search::metamodel::dataspace::DataSpaceDocument extends meta::analytics::search::metamodel::PackageableRootDocument
 {
-  package: String[1];
-  name: String[1];
-  description: String[0..1];
   defaultExecutionContext: String[1];
   diagrams: String[*];
-  executionContexts: meta::analytics::search::metamodel::dataspace::ExecutionContextDocument[*];
+  executionContexts: meta::analytics::search::metamodel::dataspace::ExecutionContext[*];
   taxonomies: String[*];
 }
 
-Class meta::analytics::search::metamodel::dataspace::ExecutionContextDocument
+Class meta::analytics::search::metamodel::dataspace::ExecutionContext
 {
   name: String[1];
   mappingPath: String[1];
   runtimePath: String[1];
   classes: meta::analytics::search::metamodel::class::SimpleClassElement[*];
-  databaseColumns: meta::analytics::search::metamodel::mapping::DatabaseColumnDocument[*];
+  databaseColumns: meta::analytics::search::metamodel::mapping::DatabaseColumn[*];
 }
 
 // DIAGRAM DOCUMENT
-Class meta::analytics::search::metamodel::diagram::RootDocument extends meta::analytics::search::metamodel::BaseRootDocument
+Class meta::analytics::search::metamodel::diagram::DiagramDocument extends meta::analytics::search::metamodel::PackageableRootDocument
 {
-  package: String[1];
-  name: String[1];
   classes: meta::analytics::search::metamodel::class::SimpleClassElement[*];
 }
 
 // MAPPING DOCUMENT
-Class meta::analytics::search::metamodel::mapping::RootDocument extends meta::analytics::search::metamodel::BaseRootDocument
+Class meta::analytics::search::metamodel::mapping::MappingDocument extends meta::analytics::search::metamodel::PackageableRootDocument
 {
-  package: String[1];
-  name: String[1];
   classes: meta::analytics::search::metamodel::class::SimpleClassElement[*];
+  includedMappings: String[*];
 }
 
-Class meta::analytics::search::metamodel::mapping::DatabaseColumnDocument
+Class meta::analytics::search::metamodel::mapping::DatabaseColumn
 {
   database: String[1];
   schema: String[1];
@@ -90,23 +106,41 @@ Class meta::analytics::search::metamodel::mapping::DatabaseColumnDocument
 }
 
 // SERVICE DOCUMENT
-Class meta::analytics::search::metamodel::service::RootDocument extends meta::analytics::search::metamodel::BaseRootDocument
+Class meta::analytics::search::metamodel::service::ServiceDocument extends meta::analytics::search::metamodel::PackageableRootDocument
 {
-  name: String[1];
   owners: String[*];
-  documentation: String[0..1];
-  executions: meta::analytics::search::metamodel::service::ExecutionDocument[*];
+  executions: meta::analytics::search::metamodel::service::Execution[*];
 }
 
-Class meta::analytics::search::metamodel::service::ExecutionDocument
+Class meta::analytics::search::metamodel::service::Execution
 {
   mapping: String[1];
   classes: meta::analytics::search::metamodel::class::SimpleClassElement[*];
-  databaseColumns: meta::analytics::search::metamodel::mapping::DatabaseColumnDocument[*];
+  databaseColumns: meta::analytics::search::metamodel::mapping::DatabaseColumn[*];
 }
 
 Class meta::analytics::search::metamodel::service::LinkedPropertyElement
 {
   name: String[1];
   classPath: String[0..1];
+  class: Class<Any>[1];
+}
+
+// DATABASE DOCUMENT
+Class meta::analytics::search::metamodel::database::DatabaseDocument extends meta::analytics::search::metamodel::PackageableRootDocument
+{
+  schemas: meta::analytics::search::metamodel::database::Schema[*];
+  includedStores: String[*];
+}
+
+Class meta::analytics::search::metamodel::database::Schema
+{
+  name: String[1];
+  tables: meta::analytics::search::metamodel::database::Table[*];
+}
+
+Class meta::analytics::search::metamodel::database::Table
+{
+  name: String[1];
+  columns: String[*];
 }

@@ -27,7 +27,7 @@ Class meta::external::query::sql::transformation::queryToPure::SQLSourceArgument
   matches(argument:SQLSourceArgument[1]) {
     ($this.name->isNotEmpty() && $this.name == $argument.name && $this.value == $argument.value)
     ||
-    ($this.name->isEmpty() && $this.index == $argument.index && $this.value == $argument.value)
+    ($this.name->isEmpty() && $this.index == $argument.index && $this.value == $argument.value);
   }:Boolean[1];
 }
 
@@ -53,7 +53,7 @@ function meta::external::query::sql::transformation::queryToPure::getPlansFromSQ
                                                                       ): meta::pure::executionPlan::ExecutionPlan[1]
 {
   let sqlTransformContext = processQuery($sources, $query, $extensions);
-  meta::pure::executionPlan::executionPlan($sqlTransformContext.lambda(), $extensions);
+  meta::pure::executionPlan::executionPlan($sqlTransformContext.lambda()->meta::pure::router::preeval::preval($extensions), $extensions);
 }
 
 function meta::external::query::sql::transformation::queryToPure::getSchemaFromSQL(
@@ -635,7 +635,21 @@ function meta::external::query::sql::transformation::queryToPure::extractSourceA
     l:LongLiteral[1] | ^SQLSourceArgument(value = $l.value, name = $name, index = $index),
     n:NullLiteral[1] | ^SQLSourceArgument(name = $name, index = $index),
     b:BooleanLiteral[1] | ^SQLSourceArgument(value = $b.value, name = $name, index = $index),
-    a:ArrayLiteral[1] | ^SQLSourceArgument(value = $a.values, name = $name, index = $index),
+    a:ArrayLiteral[1] | ^SQLSourceArgument(value = $a->extractExpressionValue(), name = $name, index = $index),
+    e:meta::external::query::sql::metamodel::Expression[1] | []
+  ]);
+}
+
+function meta::external::query::sql::transformation::queryToPure::extractExpressionValue(expression:meta::external::query::sql::metamodel::Expression[1]):Any[*]
+{
+  $expression->match([
+    s:StringLiteral[1] | $s.value,
+    i:IntegerLiteral[1] | $i.value,
+    d:DoubleLiteral[1] | $d.value,
+    l:LongLiteral[1] | $l.value,
+    n:NullLiteral[1] | Nil,
+    b:BooleanLiteral[1] | $b.value,
+    a:ArrayLiteral[1] | $a.values->map(v | $v->extractExpressionValue()),
     e:meta::external::query::sql::metamodel::Expression[1] | fail('only literal values supported'); [];
   ]);
 }
@@ -652,10 +666,47 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let source = $context.source($type, $arguments);
 
-  //TODO handle multi expression
-  let expression = $source.func.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@FunctionExpression);
+  let parameters = $source.func->getParameters()->evaluateAndDeactivate();
 
-  ^$context(expression = $expression, source = $source);
+  let expressionSequence = if ($parameters->isNotEmpty(), | wrapWithEval($source.func, $parameters, $arguments), | $source.func.expressionSequence);
+
+  //TODO handle multi expression
+  assert($expressionSequence->size() == 1, ' multi expressions currently not supported');
+
+  ^$context(expression = $expressionSequence->cast(@FunctionExpression)->toOne(), source = $source);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::wrapWithEval(func:FunctionDefinition<Any>[1], parameters:VariableExpression[*], arguments:SQLSourceArgument[*]): FunctionExpression[1]
+{
+  assert($parameters->size() <= 7, | 'only sources with <= 7 parameters currently supported');
+
+  let parameterValues = $parameters->map(p | 
+    let argument = $arguments->filter(a | $a.name == $p.name);
+    if ($argument->isEmpty(), 
+      | iv([]), 
+      | iv(convertValue($argument.value, $p.genericType.rawType->toOne())));
+  );
+
+  let evalArguments = iv($func)->concatenate($parameterValues);
+
+  let eval = [
+    pair(1, | sfe(eval_Function_1__T_n__V_m_, $evalArguments)),
+    pair(2, | sfe(eval_Function_1__T_n__U_p__V_m_, $evalArguments)),
+    pair(3, | sfe(eval_Function_1__T_n__U_p__W_q__V_m_, $evalArguments)),
+    pair(4, | sfe(eval_Function_1__T_n__U_p__W_q__X_r__V_m_, $evalArguments)),
+    pair(5, | sfe(eval_Function_1__T_n__U_p__W_q__X_r__Y_s__V_m_, $evalArguments)),
+    pair(6, | sfe(eval_Function_1__T_n__U_p__W_q__X_r__Y_s__Z_t__V_m_, $evalArguments)),
+    pair(7, | sfe(eval_Function_1__S_n__T_o__U_p__W_q__X_r__Y_s__Z_t__V_m_, $evalArguments))
+  ]->getValue($parameters->size())->eval();
+}
+
+function meta::external::query::sql::transformation::queryToPure::convertValue(a:Any[*], type:Type[1]):Any[*]
+{
+  $a->match([
+    s:String[1] | if ($type->in([Date, StrictDate, DateTime]), | parseDate($s), | $s),
+    a:Any[1] | $a,
+    a:Any[*] | $a->map(v | convertValue($v, $type))
+  ]);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processTable(table: Table[1], context: SqlTransformContext[1]): SqlTransformContext[1]
@@ -1663,6 +1714,14 @@ function meta::external::query::sql::transformation::queryToPure::getValue<X, Y>
           | $defaultValue,
           | $r->toOne();
        );
+}
+
+function meta::external::query::sql::transformation::queryToPure::getParameters(f:Function<Any>[1]):VariableExpression[*]
+{
+   $f.classifierGenericType.typeArguments.rawType->match([
+      f:FunctionType[1] | $f.parameters,
+      a:Any[*] | []
+   ]);
 }
 
 function meta::external::query::sql::transformation::queryToPure::debug(a:Any[1]):Any[0]

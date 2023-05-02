@@ -1169,7 +1169,7 @@ public class PureModel implements IPureModel
             return this.multiplicitiesIndex.get("zero");
         }
 
-        return new Root_meta_pure_metamodel_multiplicity_Multiplicity_Impl("")
+        return new Root_meta_pure_metamodel_multiplicity_Multiplicity_Impl("", null, this.getType(M3Paths.Multiplicity))
                 ._lowerBound(new Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl("")._value((long) multiplicity.lowerBound))
                 ._upperBound(multiplicity.isInfinite() ? new Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl("") : new Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl("")._value((long) multiplicity.getUpperBoundInt()));
     }

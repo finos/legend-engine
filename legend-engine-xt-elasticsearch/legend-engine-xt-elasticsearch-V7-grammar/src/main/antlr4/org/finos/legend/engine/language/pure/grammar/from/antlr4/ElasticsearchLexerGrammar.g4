@@ -17,3 +17,13 @@ FIELDS:                             'fields';
 // -------------------------------------- Property Types --------------------------------------
 
 KEYWORD:                            'Keyword';
+TEXT:                               'Text';
+DATE:                               'Date';
+SHORT:                              'Short';
+BYTE:                               'Byte';
+INTEGER:                            'Integer';
+LONG:                               'Long';
+FLOAT:                              'Float';
+HALF_FLOAT:                         'HalfFloat';
+DOUBLE:                             'Double';
+BOOLEAN:                            'Boolean';

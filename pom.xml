@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.8.1-SNAPSHOT</version>
+    <version>4.9.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -106,6 +106,7 @@
         <module>legend-engine-xt-relationalStore-executionPlan-connection-api</module>
         <module>legend-engine-xt-relationalStore-pure</module>
         <module>legend-engine-xt-relationalStore-postgres-execution-tests</module>
+        <module>legend-engine-xt-relationalStore-memsql-execution-tests</module>
         <module>legend-engine-xt-relationalStore-api</module>
         <module>legend-engine-xt-relationalStore-grammar</module>
         <module>legend-engine-xt-relationalStore-protocol</module>
@@ -285,7 +286,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>4.5.0</legend.pure.version>
+        <legend.pure.version>4.5.1</legend.pure.version>
         <legend.shared.version>0.23.3</legend.shared.version>
 
         <!-- SONAR -->
@@ -319,6 +320,7 @@
         <databricks.version>2.6.27</databricks.version>
         <redshiftJDBC.version>2.0.0.3</redshiftJDBC.version>
         <postgres.version>9.4.1208.jre7</postgres.version>
+        <mariadb.version>3.0.6</mariadb.version>
 
         <!-- Dependency versions -->
         <junit.version>4.13.1</junit.version>
@@ -935,6 +937,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-postgres-execution-tests</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-memsql-execution-tests</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -2672,12 +2679,23 @@
                 <version>${postgres.version}</version>
                 <scope>runtime</scope>
             </dependency>
+            <dependency>
+                <groupId>org.mariadb.jdbc</groupId>
+                <artifactId>mariadb-java-client</artifactId>
+                <version>${mariadb.version}</version>
+                <scope>runtime</scope>
+            </dependency>
             <!-- Database -->
 
             <!-- Test Containers -->
             <dependency>
                 <groupId>org.testcontainers</groupId>
                 <artifactId>testcontainers</artifactId>
+                <version>${testcontainers.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>jdbc</artifactId>
                 <version>${testcontainers.version}</version>
             </dependency>
             <dependency>

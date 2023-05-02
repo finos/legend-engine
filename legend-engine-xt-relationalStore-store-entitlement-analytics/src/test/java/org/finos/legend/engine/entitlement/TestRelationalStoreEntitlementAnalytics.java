@@ -28,6 +28,9 @@ import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
+import org.finos.legend.pure.generated.core_relational_store_entitlement_utility_relationalTableAnalyzer;
+import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -119,5 +122,15 @@ public class TestRelationalStoreEntitlementAnalytics
         RelationalDatabaseEntitlementServiceExtension extension = new RelationalDatabaseEntitlementServiceExtension();
         List<DatasetEntitlementReport> reports = extension.generateDatasetEntitlementReports(datasets, null, "", null, "", null, null, null, null);
         Assert.assertEquals(reports.size(), 1);
+    }
+
+    @Test
+    public void testCircularDatabaseRetrievability()
+    {
+        String pureModelString = getResourceAsString("models/relationalModel.pure");
+        PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModelString, false);
+        PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, null);
+        Store store = pureModel.getStore("store::CovidDataStoreA");
+        Assert.assertEquals(core_relational_store_entitlement_utility_relationalTableAnalyzer.Root_meta_analytics_store_entitlements_getTablesFromDatabase_Database_1__Table_MANY_((Database) store, pureModel.getExecutionSupport()).size(), 2);
     }
 }

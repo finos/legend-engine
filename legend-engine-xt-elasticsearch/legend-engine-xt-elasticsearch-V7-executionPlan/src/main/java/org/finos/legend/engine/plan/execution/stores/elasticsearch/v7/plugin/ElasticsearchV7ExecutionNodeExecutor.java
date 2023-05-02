@@ -56,9 +56,8 @@ public class ElasticsearchV7ExecutionNodeExecutor implements ExecutionNodeVisito
             Elasticsearch7StoreConnection connection = esNode.connection;
 
             HttpClientContext httpClientContext = this.authToHttpContext(connection.authSpec);
-            HttpUriRequest request = esNode.request.accept(new ElasticsearchV7RequestToHttpRequestVisitor(connection.sourceSpec.url));
 
-            return esNode.request.accept(new ExecutionRequestVisitor(this.state.getClient(), httpClientContext, request, esNode, this.executionState));
+            return esNode.request.accept(new ExecutionRequestVisitor(this.state.getClient(), httpClientContext, connection.sourceSpec.url, esNode, this.executionState));
         }
 
         throw new IllegalStateException("should not get here");

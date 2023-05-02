@@ -25,6 +25,10 @@ import meta::pure::extension::*;
 function meta::external::store::elasticsearch::v7::protocol::vX_X_X::elasticsearchV7StoreExtension(type: String[1]): SerializerExtension[1]
 {
   ^SerializerExtension_vX_X_X(
+      transfers_store_transformConnection2 = extensions: Extension[*] | [
+          conn: Elasticsearch7StoreConnection[1] | $conn->meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::transformConnection($extensions)
+      ],
+
       transfers_executionPlan_transformNode = {mapping:Mapping[1], extensions:Extension[*] |
           [
               esNode: Elasticsearch7RequestExecutionNode[1] | ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::Elasticsearch7RequestExecutionNode(
@@ -42,7 +46,15 @@ function meta::external::store::elasticsearch::v7::protocol::vX_X_X::elasticsear
                               src: SourceFieldResultPath[1] | ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::SourceFieldResultPath(
                                 _type = 'sourceFieldResultPath',
                                 fieldPath = $src.fieldPath
-                              )
+                              ),
+                              docvalue: DocValueResultPath[1] | ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::DocValueResultPath(
+                                _type = 'docValueResultPath',
+                                fieldPath = $docvalue.fieldPath
+                              ),
+                              agg: AggregateResultPath[1] | ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::AggregateResultPath(
+                                _type = 'aggregateResultPath',
+                                fieldPath = $agg.fieldPath
+                              )                                                         
                             ])
                           )
                         )
@@ -92,11 +104,22 @@ Class meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan:
 Class <<typemodifiers.abstract>> meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::ResultPath
 {
   _type: String[1];
+  fieldPath: String[1..*];
 }
 
 Class meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::SourceFieldResultPath extends meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::ResultPath
 {
-  fieldPath: String[1..*];
+
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::DocValueResultPath extends meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::ResultPath
+{
+
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::AggregateResultPath extends meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::ResultPath
+{
+
 }
 
 Class meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::Elasticsearch7StoreConnection extends meta::protocols::pure::vX_X_X::metamodel::runtime::Connection
