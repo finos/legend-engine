@@ -16,36 +16,16 @@ package org.finos.legend.engine.plan.execution.stores.mongodb;
 
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.external.format.json.read.IJsonDeserializeExecutionNodeSpecifics;
-import org.finos.legend.engine.external.shared.runtime.read.ExecutionHelper;
-import org.finos.legend.engine.external.shared.utils.ExternalFormatRuntime;
-import org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicChecked;
-import org.finos.legend.engine.plan.dependencies.domain.dataQuality.Constrained;
-import org.finos.legend.engine.plan.dependencies.domain.dataQuality.EnforcementLevel;
-import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
-import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IDefect;
-import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
-import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionNodeJavaPlatformHelper;
-import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
-import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
-import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.StoreStreamReadingObjectsIterator;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBDocumentInternalizeExecutionNode;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPlatformImplementation;
 import org.pac4j.core.profile.CommonProfile;
 
-import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 public class MongoDBStoreExecutionExtension implements IMongoDBStoreExecutionExtension
 {
@@ -59,12 +39,14 @@ public class MongoDBStoreExecutionExtension implements IMongoDBStoreExecutionExt
             }
             else if (executionNode instanceof MongoDBDocumentInternalizeExecutionNode)
             {
-                return executeDocumentInternalizeExecutionNode((MongoDBDocumentInternalizeExecutionNode) executionNode, profiles, executionState);
+                return executionNode.accept(executionState.getStoreExecutionState(StoreType.NonRelational_MongoDB).getVisitor(profiles, executionState));
+                //return executeDocumentInternalizeExecutionNode((MongoDBDocumentInternalizeExecutionNode) executionNode, profiles, executionState);
             }
             return null;
         }));
     }
 
+    /*
     private Result executeDocumentInternalizeExecutionNode(MongoDBDocumentInternalizeExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
         InputStream stream = ExecutionHelper.inputStreamFromResult(node.executionNodes().getFirst().accept(new ExecutionNodeExecutor(profiles, new ExecutionState(executionState))));
@@ -132,4 +114,6 @@ public class MongoDBStoreExecutionExtension implements IMongoDBStoreExecutionExt
                     : BasicChecked.newChecked(checked.getValue(), checked.getSource(), allDefects);
         }
     }
+
+     */
 }
