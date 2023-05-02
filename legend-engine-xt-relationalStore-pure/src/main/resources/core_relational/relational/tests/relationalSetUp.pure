@@ -16,6 +16,7 @@
 Database meta::relational::tests::dbInc
 (
     Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)
+    Table validPersonTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)
     Table PersonTableExtension (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT, birthDate DATE)
     Table differentPersonTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)
 
@@ -516,11 +517,20 @@ Mapping meta::relational::tests::simpleRelationalMappingPersonForBQ
 
 Mapping meta::relational::tests::simpleRelationalMappingInc
 (
-   GeographicEntityType: EnumerationMapping GE
+    GeographicEntityType: EnumerationMapping GE
     {
-        CITY:  1
+      CITY:  1
     }
 
+    ValidPerson : Relational 
+    {
+      scope([dbInc])
+      (
+        firstName : validPersonTable.FIRSTNAME,
+        age       : validPersonTable.AGE
+      )
+    }
+    
     Person : Relational
             {
                 //~primaryKey([dbInc]default.personTable.ID, [dbInc]default.personTable.FIRSTNAME)
@@ -1069,7 +1079,6 @@ function <<access.private>> meta::relational::tests::testDatabaseConnection(db:D
 
 function meta::relational::tests::createPersonTableAndFillDb(connection : DatabaseConnection[1]) : Boolean[1]
 {
-
    executeInDb('Drop table if exists PersonTable;', $connection);
    executeInDb('Create Table PersonTable(id INT, firstName VARCHAR(200), lastName VARCHAR(200), age INT, addressId INT, firmId INT, managerId INT);', $connection);
    executeInDb('insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (1, \'Peter\', \'Smith\',23, 1,1,2);', $connection);
@@ -1079,6 +1088,12 @@ function meta::relational::tests::createPersonTableAndFillDb(connection : Databa
    executeInDb('insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (5, \'Fabrice\', \'Roberts\',34, 5,2,null);', $connection);
    executeInDb('insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (6, \'Oliver\', \'Hill\',32, 6,3,null);', $connection);
    executeInDb('insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (7, \'David\', \'Harris\',35, 7,4,null);', $connection);
+
+   executeInDb('Drop table if exists ValidPersonTable;', $connection);
+   executeInDb('Create Table ValidPersonTable(id INT, firstName VARCHAR(200), lastName VARCHAR(200), age INT, addressId INT, firmId INT, managerId INT);', $connection);
+   executeInDb('insert into ValidPersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (1, \'Peter\', \'Smith\',23, 1,1,2);', $connection);
+   executeInDb('insert into ValidPersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (2, \'John\', \'Johnson\',22, 2,1,4);', $connection);
+   executeInDb('insert into ValidPersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (3, \'John\', \'Hill\',12, 3,1,2);', $connection);
    true;
 }
 
