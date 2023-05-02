@@ -52,14 +52,13 @@ public class MongoDBCommands
 
     public static Root_meta_pure_functions_io_http_URL startServer(String imageTag)
     {
-        System.out.println("start server");
+        LOGGER.debug("Starting MongoDB docker image + " + imageTag);
 
         Root_meta_pure_functions_io_http_URL_Impl url = new Root_meta_pure_functions_io_http_URL_Impl("mongoDBUrl");
         GenericContainer<MongoDBContainer> container = CONTAINERS.computeIfAbsent(imageTag, MongoDBCommands::createContainer);
         url._host(container.getHost());
         url._port(container.getMappedPort(MONGO_PORT));
         url._path("/");
-
 
         return url;
     }
@@ -68,7 +67,7 @@ public class MongoDBCommands
 
     public static void stopServer(String imageTag)
     {
-        System.out.println("stop server");
+        LOGGER.debug("Stopping MongoDB docker image + " + imageTag);
         Optional.ofNullable(CONTAINERS.remove(imageTag)).ifPresent(GenericContainer::stop);
     }
 
@@ -78,37 +77,34 @@ public class MongoDBCommands
     public static String request(String imageTag, String json)
     {
 
-        System.out.println("request server");
+        LOGGER.debug("Performing MongoDB request for image: " + imageTag);
         Integer mongoPort = getPortForRunningContainerImage(imageTag);
 
         MongoClient adminClient = mongoClientForRootAdminWithStaticUserNamePassword(mongoPort);
-
 
         MongoDatabase userDatabase = adminClient.getDatabase(DB_USER_DATABASE);
 
         Document bsonCmd = Document.parse(json);
         Document document = userDatabase.runCommand(bsonCmd);
 
-        System.out.println(document.toJson());
+        String jsonResult = document.toJson();
+        LOGGER.debug("MongoDB request result:\n" + jsonResult);
 
-        return "";
+        return jsonResult;
     }
 
     private static Integer getPortForRunningContainerImage(String imageTag)
     {
         return CONTAINERS.get(imageTag).getMappedPort(MONGO_PORT);
-
     }
 
 
     private static GenericContainer<MongoDBContainer> createContainer(String imageTag)
     {
 
+        GenericContainer<MongoDBContainer> container =
+                new GenericContainer<>(DockerImageName.parse("mongo:" + imageTag));
 
-        GenericContainer<MongoDBContainer> container = new GenericContainer<>(DockerImageName.parse("mongo:" + imageTag));
-
-
-        new MongoDBContainer("mongo:" + imageTag);
         List<String> list = new ArrayList<>();
         list.add("MONGO_INITDB_ROOT_USERNAME=" + DB_ROOT_USERNAME);
         list.add("MONGO_INITDB_ROOT_PASSWORD=" + DB_ROOT_PASSWORD);
@@ -128,24 +124,13 @@ public class MongoDBCommands
 
         LOGGER.info("MongoDB Test cluster for version {} running on {}.  Took {}ms to start.", imageTag, container.getHost(), System.currentTimeMillis() - start);
         return container;
-
-//        DockerImageName image = DockerImageName.parse(System.getProperty("legend.engine.testcontainer.registry", "docker.elastic.co") + "/elasticsearch/elasticsearch:" + imageTag)
-//                .asCompatibleSubstituteFor("docker.elastic.co/elasticsearch/elasticsearch:" + imageTag);
-//        ElasticsearchContainer container = new ElasticsearchContainer(image);
-//
-//        long start = System.currentTimeMillis();
-//        container.withPassword(getPassword()).start();
-//        LOGGER.info("ES Test cluster for version {} running on {}.  Took {}ms to start.", imageTag, container.getHttpHostAddress(), System.currentTimeMillis() - start);
-//        return container;
     }
 
     private static MongoClient mongoClientForRootAdminWithStaticUserNamePassword(Integer port)
     {
         String connectionURL = "mongodb://" + DB_ROOT_USERNAME + ":" +
                 DB_ROOT_PASSWORD + "@localhost:" + port + "/admin";
-        MongoClient mongoClient = MongoClients.create(connectionURL);
-
-        return mongoClient;
+        return MongoClients.create(connectionURL);
     }
 
 }
