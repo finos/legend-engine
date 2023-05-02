@@ -47,5 +47,4 @@ public class TestFreeMarkerExecutor
                 "<#return collection?size> " +
                 "</#function>";
     }
-
 }
