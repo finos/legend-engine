@@ -16,15 +16,36 @@ package org.finos.legend.engine.plan.execution.stores.mongodb;
 
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.external.format.json.read.IJsonDeserializeExecutionNodeSpecifics;
+import org.finos.legend.engine.external.shared.runtime.read.ExecutionHelper;
+import org.finos.legend.engine.external.shared.utils.ExternalFormatRuntime;
+import org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicChecked;
+import org.finos.legend.engine.plan.dependencies.domain.dataQuality.Constrained;
+import org.finos.legend.engine.plan.dependencies.domain.dataQuality.EnforcementLevel;
+import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
+import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IDefect;
+import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
+import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionNodeJavaPlatformHelper;
+import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
+import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
+import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.StoreStreamReadingObjectsIterator;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBDocumentInternalizeExecutionNode;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPlatformImplementation;
 import org.pac4j.core.profile.CommonProfile;
 
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class MongoDBStoreExecutionExtension implements IMongoDBStoreExecutionExtension
 {
@@ -36,8 +57,79 @@ public class MongoDBStoreExecutionExtension implements IMongoDBStoreExecutionExt
             {
                 return executionNode.accept(executionState.getStoreExecutionState(StoreType.NonRelational_MongoDB).getVisitor(profiles, executionState));
             }
+            else if (executionNode instanceof MongoDBDocumentInternalizeExecutionNode)
+            {
+                return executeDocumentInternalizeExecutionNode((MongoDBDocumentInternalizeExecutionNode) executionNode, profiles, executionState);
+            }
             return null;
         }));
     }
 
+    private Result executeDocumentInternalizeExecutionNode(MongoDBDocumentInternalizeExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    {
+        InputStream stream = ExecutionHelper.inputStreamFromResult(node.executionNodes().getFirst().accept(new ExecutionNodeExecutor(profiles, new ExecutionState(executionState))));
+        StreamingObjectResult<?> streamingObjectResult = executeInternalizeExecutionNode(node, stream, profiles, executionState);
+        return applyConstraints(streamingObjectResult, node.checked, node.enableConstraints);
+    }
+
+
+    private StreamingObjectResult<?> executeInternalizeExecutionNode(MongoDBDocumentInternalizeExecutionNode node, InputStream inputStream, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    {
+        try
+        {
+            String specificsClassName = JavaHelper.getExecutionClassFullName((JavaPlatformImplementation) node.implementation);
+            //We don't need specifics class for reader - as we know the object.
+            Class<?> specificsClass = ExecutionNodeJavaPlatformHelper.getClassToExecute(node, specificsClassName, executionState, profiles);
+            IJsonDeserializeExecutionNodeSpecifics specifics = (IJsonDeserializeExecutionNodeSpecifics) specificsClass.getConstructor().newInstance();
+
+            // checked made true and enableConstraints made false as these are incorporated in ExternalFormatRuntime centrally
+            StoreStreamReadingObjectsIterator<?> storeObjectsIterator = StoreStreamReadingObjectsIterator.newObjectsIterator(specifics.streamReader(inputStream), false, true);
+
+            Stream<?> objectStream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(storeObjectsIterator, Spliterator.ORDERED), false);
+            return new StreamingObjectResult<>(objectStream);
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Result applyConstraints(StreamingObjectResult<?> streamingObjectResult, boolean checked, boolean enableConstraints)
+    {
+        Stream<IChecked<?>> checkedStream = (Stream<IChecked<?>>) streamingObjectResult.getObjectStream();
+        Stream<IChecked<?>> withConstraints = enableConstraints
+                ? checkedStream.map(this::applyConstraints)
+                : checkedStream;
+        if (checked)
+        {
+            return new StreamingObjectResult<>(withConstraints, streamingObjectResult.getResultBuilder(), streamingObjectResult);
+        }
+        else
+        {
+            Stream<?> objectStream = ExternalFormatRuntime.unwrapCheckedStream(withConstraints);
+            return new StreamingObjectResult<>(objectStream, streamingObjectResult.getResultBuilder(), streamingObjectResult);
+        }
+    }
+
+    private IChecked<?> applyConstraints(IChecked<?> checked)
+    {
+        Object value = checked.getValue();
+        List<IDefect> constraintFailures = Collections.emptyList();
+        if (value instanceof Constrained)
+        {
+            constraintFailures = ((Constrained) value).allConstraints();
+        }
+        if (constraintFailures.isEmpty())
+        {
+            return checked;
+        }
+        else
+        {
+            List<IDefect> allDefects = new ArrayList(checked.getDefects());
+            allDefects.addAll(constraintFailures);
+            return allDefects.stream().anyMatch(d -> d.getEnforcementLevel() == EnforcementLevel.Critical)
+                    ? BasicChecked.newChecked(null, checked.getSource(), allDefects)
+                    : BasicChecked.newChecked(checked.getValue(), checked.getSource(), allDefects);
+        }
+    }
 }

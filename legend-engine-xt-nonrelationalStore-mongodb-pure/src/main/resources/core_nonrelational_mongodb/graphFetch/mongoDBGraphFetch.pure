@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::metamodel::path::*;
 import meta::external::shared::format::metamodel::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
 import meta::pure::graphFetch::*;
@@ -44,7 +45,13 @@ function meta::external::store::mongodb::graphFetch::executionPlan::planRootGrap
   let connection = $runtime->toOne()->connectionByElement($store)->cast(@MongoDBConnection);
 
   let binding = $mapping.classMappings->at(0)->cast(@MongoDBSetImplementation)->at(0).binding->toOne();
-  
+
+  let internalizeConfig   = [];
+//  if($mapping.pathOffset->isNotEmpty(),
+//                    |assert($mapping.binding.contentType->in(meta::external::format::json::contract::jsonSchemaFormatContract().contentTypes), 'PathOffset is supported with json only!');
+//                      meta::external::format::json::metamodel::internalize::generateJsonSchemaInternalizeConfig($mapping.pathOffset->toOne());,
+//                    |[]);
+
   ^InMemoryRootGraphFetchExecutionNode(
     resultType = ^ClassResultType(type=$rootTree.class->toOne()),
     nodeIndex = 0,
@@ -52,12 +59,13 @@ function meta::external::store::mongodb::graphFetch::executionPlan::planRootGrap
     checked = $checked,
     children = $rootTree->generateInMemoryChildGraphNodes($rootTree->nodePathName(), $orderedPaths, $debug),
     executionNodes = [
-      ^ExternalFormatInternalizeExecutionNode(
+      //^ExternalFormatInternalizeExecutionNode(
+      ^MongoDBDocumentInternalizeExecutionNode(
         resultType = ^PartialClassResultType(
                             type = $rootTree.class->toOne(),
                             propertiesWithParameters = $rootTree.subTrees->cast(@PropertyGraphFetchTree)->map(x | $x->map(x | ^PropertyWithParameters(property = $x.property, parameters = $x.parameters)))
                           ),
-                          
+        //config = $internalizeConfig,
         checked = $checked,
         enableConstraints = false,
         tree = $rootTree,
@@ -101,4 +109,15 @@ function meta::external::store::mongodb::graphFetch::executionPlan::addProjected
       stages = $matchStage->concatenate(^ProjectStage(projections=^ObjectQueryExpression(keyValues = $keyValuesToProject)))
     )
   );
+}
+
+function meta::external::store::mongodb::metamodel::pure::generateMongoDBDocumentInternalizeConfig(path:Path<Nil,Any|*>[1]): MongoDBDocumentInternalizeConfig[1]
+{
+   let pathString = $path.path->filter(ele | $ele->instanceOf(PropertyPathElement))->cast(@PropertyPathElement).property.name->joinStrings('/', '/', '');
+   
+   ^MongoDBDocumentInternalizeConfig
+   (
+     path = $pathString
+     //pathReference = ^meta::external::format::json::metamodel::internalize::JsonPathReference(path = $pathString)
+   );
 }

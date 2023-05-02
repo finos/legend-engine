@@ -17,6 +17,7 @@ package org.finos.legend.engine.protocol.mongodb.schema.metamodel;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBDocumentInternalizeExecutionNode;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBExecutionNode;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDatabase;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.RootMongoDBClassMapping;
@@ -45,6 +46,9 @@ public class MongoDBPureProtocolExtension implements PureProtocolExtension
                 // Execution Nodes
                 ProtocolSubTypeInfo.newBuilder(ExecutionNode.class)
                         .withSubtype(MongoDBExecutionNode.class, "MongoDBExecutionNode")
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(ExecutionNode.class)
+                        .withSubtype(MongoDBDocumentInternalizeExecutionNode.class, "MongoDBDocumentInternalizeExecutionNode")
                         .build(),
                 // Class mapping
                 ProtocolSubTypeInfo.newBuilder(ClassMapping.class)

@@ -12,18 +12,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
-import meta::external::store::mongodb::executionPlan::platformBinding::legendJava::graphFetch::*;
-import meta::external::language::java::metamodel::project::*;
-import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
-import meta::external::language::java::factory::project::*;
-import meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::*;
-import meta::external::language::java::metamodel::*;
-import meta::pure::executionPlan::*;
-import meta::pure::executionPlan::platformBinding::*;
-import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::model::unit::*;
+import meta::external::shared::format::executionPlan::platformBinding::legendJava::*;
+import meta::external::shared::format::utils::*;
+import meta::external::shared::format::*;
+import meta::external::format::json::executionPlan::platformBinding::legendJava::*;
+import meta::external::language::java::factory::*;
+import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::*;
+import meta::external::language::java::transform::*;
+import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::*;
 import meta::pure::extension::*;
 import meta::pure::mapping::*;
+import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
+
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::factory::project::*;
+import meta::external::language::java::metamodel::*;
+
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::platformBinding::*;
+import meta::pure::executionPlan::platformBinding::typeInfo::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
+import meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::*;
+
+import meta::external::shared::format::binding::validation::*;
+
+import meta::external::store::mongodb::executionPlan::platformBinding::legendJava::graphFetch::*;
 import meta::external::store::mongodb::executionPlan::platformBinding::legendJava::*;
 import meta::external::store::mongodb::metamodel::pure::graphFetch::executionPlan::*;
 import meta::external::store::mongodb::metamodel::pure::*;
@@ -40,7 +56,8 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
       // Node based extensions ------------------------------------------------------
 
       supportedExecutionNodes = [
-        MongoDBExecutionNode
+        MongoDBExecutionNode,
+        MongoDBDocumentInternalizeExecutionNode
       ],
       adhocExtensions = [
 
@@ -107,13 +124,113 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
             
          )
 
-      ]
+      ],
+      // Prep Context
+      updateGenerationContextForNode = {node: ExecutionNode[1], context: GenerationContext[1], path: String[1], extensions: Extension[*], debug: DebugContext[1] |
+         $node->match([
+            {node:MongoDBDocumentInternalizeExecutionNode[1] |
+               let externalFormatContract = $extensions.availableExternalFormats->getExternalFormatContractForContentType('application/json');
+               prepareForMongoDocumentInternalizeExecutionNode($node, $path, $context, $externalFormatContract, $extensions, $debug);
+            },
+            n: ExecutionNode[1] | $context
+         ])
+      },
 
-
-
-      // ------------------------------------------------------ Node based extensions
+      // Code Generation
+      generateLegendJavaCodeForNode = {node: ExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1] |
+         $node->match([
+            s: MongoDBDocumentInternalizeExecutionNode[1] | $s->meta::external::store::mongodb::executionPlan::platformBinding::legendJava::generateForMongoDocumentInternalizeExecutionNode($path, $context, $debug),
+            n: ExecutionNode[1]                            | ^GeneratedCode()
+         ])
+      }
    )
 }
+
+
+function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::generateForMongoDocumentInternalizeExecutionNode(node:MongoDBDocumentInternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): GeneratedCode[1]
+{
+   print(if($debug.debug,|$debug.space+'('+$path+') generate MongoDocumentInternalizeExecutionNode for JsonSchema \n', |''));
+
+   let conventions        = $context.conventions;
+   let pureClass          = $node.resultType.type->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
+   let dependentClass     = $context.typeInfos->classDependenciesViaPropertiesWithSubTypes($pureClass);
+   let readableClasses    = $pureClass->concatenate($dependentClass);
+   let readableEnums      = $context.typeInfos->enumDependenciesViaProperties($pureClass);
+   
+   let bindingDetail      = $context->nodeInfosForPath($path).data->toOne()->cast(@SuccessfulBindingDetail);
+   let mainClassProject   = $pureClass->createStreamReadingDataClass($path, $context, ^ConstraintCheckingGenerationContext(enableConstraints=$node.enableConstraints, topLevelOnly=$node.tree->isEmpty(), graphFetchTree=$node.tree), $debug->indent());
+   let dataClassesProject = if($dependentClass->isEmpty(),
+                              | $mainClassProject,
+                              | $mainClassProject->concatenate($dependentClass->map(dc | $dc->createStreamReadingDataClass($path, $context, [], $debug->indent())))
+                              );
+
+   let storeReaderProject = createJsonReading($pureClass, $conventions->className($pureClass), $path, $node.config->cast(@MongoDBDocumentInternalizeConfig).path, $readableClasses, $readableEnums, $context, $debug->indent());
+
+   let sourceStreamParam       = j_parameter(javaInputStream(), 'sourceStream');
+   let streamReaderMethodCodes = $conventions->jsonReaderClass($path, $pureClass)
+                                             ->j_new($sourceStreamParam)
+                                             ->j_return();
+
+   let executeClassWithImports = $conventions->planNodeClass('public', $path, 'Execute')
+                                             ->usingKnownPackages($conventions->knownPackages())
+                                             ->imports($conventions->standardImports())
+                                             ->imports(javaInputStream())
+                                             ->imports([_IJsonDeserializeExecutionNodeSpecifics, StoreStreamReader]->map(x | $conventions->className($x)))
+                                             ->implements($conventions->className(_IJsonDeserializeExecutionNodeSpecifics));
+
+   let executeClass = $executeClassWithImports->addMethod(
+      javaMethod(['public'], $conventions->className(StoreStreamReader), 'streamReader', [$sourceStreamParam], $streamReaderMethodCodes)
+   );
+
+   let executeProject = newProject()->addClasses($executeClass);
+   let allProjects    = $executeProject
+      ->concatenate($dataClassesProject)
+      ->concatenate($storeReaderProject)
+      ->concatenate($streamReaderMethodCodes->dependencies()->resolveAndGetProjects())
+      ->toOneMany();
+
+   $allProjects->mergeProjects()->generatedCode($executeClass);
+}
+
+
+// Copy of prepareExternalFormatInternalizeExecutionNode($node, $path, $context, $externalFormatContract, $extensions, $debug);
+
+function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::prepareForMongoDocumentInternalizeExecutionNode(node:MongoDBDocumentInternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], externalFormatContract:ExternalFormatContract<Any>[1], extensions:Extension[*], debug:DebugContext[1]): GenerationContext[1]
+{
+   print(if($debug.debug,|$debug.space+'('+$path+') prepare MongoDocumentInternalizeExecutionNode for ' + $externalFormatContract.id + ' \n', |''));
+
+   let externalFormatJavaBindingDescriptor = $extensions->extractLegendJavaAdhocExtensionsOfType(ExternalFormatLegendJavaPlatformBindingDescriptor)->filter(d | $d.externalFormatContract.contentTypes->contains($node.binding.contentType));
+   assert($externalFormatJavaBindingDescriptor->isNotEmpty(), | 'Java platform binding not found for - ' + $node.binding.contentType);
+   assert($externalFormatJavaBindingDescriptor.internalizeDescriptor->size() == 1, | 'Expected 1 internalize descriptor for - ' + $node.binding.contentType + '. Found - ' + $externalFormatJavaBindingDescriptor.internalizeDescriptor->size()->toString());
+
+   let conventions                         = $context.conventions;
+
+   let class                               = $node.resultType->cast(@ClassResultType).type->cast(@meta::pure::metamodel::type::Class<Any>);
+   let simpleType                          = ^SimpleJavaType(pureType=$class, javaType=$conventions->className($class));
+   let sourceRecordTree                    = $externalFormatContract.sourceRecordSerializeTree->toOne();
+   let returnType                          = if($node.checked, | ^CheckedJavaType(checkedOf=$simpleType, source=^SimpleJavaType(pureType=$sourceRecordTree.class, javaType=$conventions->className($sourceRecordTree.class))), | $simpleType);
+   let bindingDetail                       = if($externalFormatContract.externalFormatBindingValidator->isNotEmpty(), 
+                                                | $externalFormatContract.externalFormatBindingValidator->toOne()->eval($node.binding),
+                                                | []);
+   let nodeInfo                            = ^NodeInfo(
+                                                  path            = $path, 
+                                                  returnType      = $returnType, 
+                                                  graphFetchTrees = $sourceRecordTree,
+                                                  data            = $bindingDetail
+                                              );
+   let contextWithNodeInfo                 = $context->addNodeInfo($nodeInfo);
+
+   let resolvedModel                       = $node.binding.modelUnit->resolve();
+   let updatedTypeInfo                     = $context.typeInfos->addForClassWithAllProperties($sourceRecordTree.class)
+                                                               ->map(ti| if($node.tree->isEmpty(),| $ti->addForClass($class)->addConstraints($class),| $ti->addForGraphFetchTree($node.tree->toOne())->addConstraintsForGraphFetchTree($node.tree->toOne())));
+
+   let newTypeInfos                        = if($externalFormatJavaBindingDescriptor.internalizeDescriptor.internalizePreparator->isNotEmpty(),
+                                                | $externalFormatJavaBindingDescriptor.internalizeDescriptor.internalizePreparator->toOne()->eval($node, $path, $contextWithNodeInfo->setTypeInfos($updatedTypeInfo), $debug),
+                                                | $updatedTypeInfo);
+
+   $contextWithNodeInfo->setTypeInfos($newTypeInfos);
+}
+
 
 function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::mongoDBLegendJavaPlatformBindingExtensions(): Extension[*]
 {

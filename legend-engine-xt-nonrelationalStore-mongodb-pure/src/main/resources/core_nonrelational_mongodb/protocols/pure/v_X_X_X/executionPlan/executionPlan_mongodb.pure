@@ -24,3 +24,13 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::mongodb::M
     databaseCommand : String[1];
     connection      : MongoDBConnection[1];
 }
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::mongodb::MongoDBDocumentInternalizeExecutionNode extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::ExecutionNode
+{
+   contentType       : String[1];
+   binding           : String[1];
+   enableConstraints : Boolean[1];
+   checked           : Boolean[1];
+   tree              : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RootGraphFetchTree[0..1];
+   //config            : meta::external::shared::format::MongoDBDocumentInternalizeInternalizeConfig[0..1];
+}
