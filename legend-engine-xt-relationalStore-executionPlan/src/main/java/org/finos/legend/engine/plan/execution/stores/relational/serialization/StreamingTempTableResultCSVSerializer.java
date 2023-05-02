@@ -62,11 +62,11 @@ public class StreamingTempTableResultCSVSerializer extends CsvSerializer
     @Override
     public void stream(OutputStream targetStream) throws IOException
     {
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        Writer out = new BufferedWriter(new OutputStreamWriter(byteArrayOutputStream));
-        final CSVPrinter csvPrinter = new CSVPrinter(out, this.withHeader ? CSVFormat.DEFAULT.withFirstRecordAsHeader() : CSVFormat.DEFAULT);
+        final Stream<?> inputStream = this.tempTableStreamingResult.inputStream;
 
-        try
+        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+             Writer out = new BufferedWriter(new OutputStreamWriter(byteArrayOutputStream));
+             CSVPrinter csvPrinter = new CSVPrinter(out, this.withHeader ? CSVFormat.DEFAULT.withFirstRecordAsHeader() : CSVFormat.DEFAULT);)
         {
             String connectionTimeZone = this.tempTableStreamingResult.getRelationalDatabaseTimeZone();
             timeZone = connectionTimeZone == null ? TimeZone.getTimeZone("GMT").toString() : connectionTimeZone;
@@ -75,7 +75,7 @@ public class StreamingTempTableResultCSVSerializer extends CsvSerializer
             columnLabels = columns.stream().map(col -> col.column.label).collect(Collectors.toList());
             columnTypes = columns.stream().map(col -> col.column.dataType.toUpperCase()).collect(Collectors.toList());
 
-            final Iterator<Stream> streamIterator = this.tempTableStreamingResult.inputStream.iterator();
+            final Iterator<?> streamIterator = inputStream.iterator();
 
             if (this.withHeader)
             {
@@ -126,27 +126,13 @@ public class StreamingTempTableResultCSVSerializer extends CsvSerializer
         {
             try
             {
-                if (csvPrinter != null)
-                {
-                    csvPrinter.close();
-                }
+                // We are explicitly closing inputStream here instead of resource block because ideally steam should be closed when iterator finishes
+                // but in rare case we are explicitly closing to avoid resource leak
+                inputStream.close();
+            }
+            catch (Exception ignored)
+            {
 
-                if (this.tempTableStreamingResult != null)
-                {
-                    this.tempTableStreamingResult.inputStream.close();
-                }
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
-            try
-            {
-                byteArrayOutputStream.close();
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
             }
         }
     }
