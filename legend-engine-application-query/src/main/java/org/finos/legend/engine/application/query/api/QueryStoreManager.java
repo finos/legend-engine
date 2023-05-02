@@ -139,7 +139,7 @@ public class QueryStoreManager
             });
         }
         String DEFAULT_PARAMETER_VALUES_CONST = "defaultParameterValues";
-        if(document.get(DEFAULT_PARAMETER_VALUES_CONST) != null)
+        if (document.get(DEFAULT_PARAMETER_VALUES_CONST) != null)
         {
             query.defaultParameterValues = ListIterate.collect(document.getList(DEFAULT_PARAMETER_VALUES_CONST, Document.class), _doc ->
             {
