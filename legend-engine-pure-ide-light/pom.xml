@@ -98,11 +98,6 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-nonrelationalStore-mongodb-grammar-integration</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-changetoken-pure</artifactId>
             <scope>runtime</scope>
         </dependency>

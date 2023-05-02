@@ -85,7 +85,7 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xt-elasticsearch/legend-engine-xt-elasticsearch-V7-pure-metamodel", "elasticsearch_seven_metamodel"))
                 .with(this.buildCore("legend-engine-xt-nonrelationalStore-mongodb-pure","nonrelational-mongodb"))
                 .with(this.buildCore("legend-engine-xt-nonrelationalStore-mongodb-javaPlatformBinding-pure","nonrelational-mongodb-java-platform-binding"))
-                ;
+               ;
     }
 
     @Override

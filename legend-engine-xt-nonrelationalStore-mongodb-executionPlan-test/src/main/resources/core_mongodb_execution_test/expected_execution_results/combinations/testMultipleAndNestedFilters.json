@@ -1,0 +1,53 @@
+{
+  "values":   {
+    "firstName": "Franz",
+    "lastName": "Stiant",
+    "firm":     {
+      "legalName": "Voolia",
+      "industrySectors": [
+"Health Care"
+      ],
+      "address":       {
+        "country":         {
+          "continent": "Europe",
+          "countryCode": "UK"
+        },
+        "city": "London",
+        "street": "59 Leroy Parkway",
+        "postalCode": "CB4"
+      },
+      "dateFounded": "1993-10-07T04:40:27Z"
+    },
+    "phoneNumber": "+1 916 456 9969",
+    "address":     {
+      "country":       {
+        "continent": "America",
+        "countryCode": "US"
+      },
+      "city": "Sacramento",
+      "street": "540 Arrowood Trail",
+      "postalCode": "95813"
+    },
+    "car": [
+      {
+        "model": "Guilia",
+        "manufacturer":         {
+          "country":           {
+            "continent": "Europe",
+            "countryCode": "IT"
+          },
+          "name": "Alfa Romeo"
+        }
+      }
+    ],
+    "otherPhoneNumbers": [
+"+1 405 332 4537",
+"+1 814 987 3881"
+    ],
+    "age": 68,
+    "email": "fstiant3@europa.eu"
+  },
+  "builder":   {
+    "_type": "json"
+  }
+}
