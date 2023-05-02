@@ -28,6 +28,18 @@
       "street": "540 Arrowood Trail",
       "postalCode": "95813"
     },
+    "car": [
+      {
+        "model": "Guilia",
+        "manufacturer":         {
+          "country":           {
+            "continent": "Europe",
+            "countryCode": "IT"
+          },
+          "name": "Alfa Romeo"
+        }
+      }
+    ],
     "otherPhoneNumbers": [
 "+1 405 332 4537",
 "+1 814 987 3881"

@@ -94,6 +94,16 @@ function  meta::external::store::mongodb::executionTest::personTreeFull(): meta:
         email,
         phoneNumber,
         otherPhoneNumbers,
+        car {
+          model,
+          manufacturer {
+            name,
+            country {
+              countryCode,
+              continent
+            }
+          }
+        },
         address {
           country {
             continent,
