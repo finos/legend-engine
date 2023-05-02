@@ -117,10 +117,10 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class MongoDBCompilerHelper
 {
@@ -182,23 +182,11 @@ public class MongoDBCompilerHelper
         RichIterable<Property> primitiveProperties = properties.select(prop -> core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_isPrimitiveValueProperty_AbstractProperty_1__Boolean_1_(prop, context.getExecutionSupport()));
         RichIterable<Property> nonPrimitiveProperties = properties.select(prop -> !core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_isPrimitiveValueProperty_AbstractProperty_1__Boolean_1_(prop, context.getExecutionSupport()));
 
-        List<PropertyMapping> primitivePropertyMappings = primitiveProperties.collect(prop -> buildPrimitivePropertyMapping(prop, sourceSetId, context)).toList();
-        List<PropertyMapping> nonPrimitivePropertyMappings = nonPrimitiveProperties.collect(prop -> buildNonPrimitivePropertyMapping(prop, sourceSetId, bindingDetail, embeddedSetImplementations, owner, sourceInformation, new HashSet<>(processedClasses), parent, context, false)).toList();
-        List<PropertyMapping> associationPropertyMappings = new ArrayList<>();
-
         List<PropertyMapping> allPropertyMapping = org.eclipse.collections.impl.factory.Lists.mutable.empty();
 
-        if (context.pureModel.getClass(classFullPath)._propertiesFromAssociations().size() > 0)
-        {
-            for (Property property : context.pureModel.getClass(classFullPath)._propertiesFromAssociations())
-            {
-                if (!processedClasses.contains(property._genericType()._rawType()))
-                {
-                    PropertyMapping associationPropertyMapping = buildNonPrimitivePropertyMapping(property, sourceSetId, bindingDetail, embeddedSetImplementations, owner, sourceInformation, processedClasses, parent, context, true);
-                    associationPropertyMappings.add(associationPropertyMapping);
-                }
-            }
-        }
+        List<PropertyMapping> primitivePropertyMappings = primitiveProperties.collect(prop -> buildPrimitivePropertyMapping(prop, sourceSetId, context)).toList();
+        List<PropertyMapping> nonPrimitivePropertyMappings = nonPrimitiveProperties.collect(prop -> buildNonPrimitivePropertyMapping(prop, sourceSetId, bindingDetail, embeddedSetImplementations, owner, sourceInformation, new HashSet<>(processedClasses), parent, context, false)).toList();
+        List<PropertyMapping> associationPropertyMappings = context.pureModel.getClass(classFullPath)._propertiesFromAssociations().toList().stream().filter(p -> !processedClasses.contains(p._genericType()._rawType())).map(p -> buildNonPrimitivePropertyMapping(p, sourceSetId, bindingDetail, embeddedSetImplementations, owner, sourceInformation, processedClasses, parent, context, true)).collect(Collectors.toList());
 
         allPropertyMapping.addAll(primitivePropertyMappings);
         allPropertyMapping.addAll(nonPrimitivePropertyMappings);
