@@ -1,0 +1,13 @@
+import meta::external::functionActivator::*;
+
+Class meta::external::functionActivator::FunctionActivator extends PackageableElement
+{
+  {doc.doc = 'The function that needs to be activated.'} function : PackageableFunction<Any>[1];
+}
+
+
+// This section needs to be code generated from the section above 
+Class meta::protocols::pure::vX_X_X::metamodel::functionActivator::FunctionActivator extends meta::protocols::pure::vX_X_X::metamodel::PackageableElement, meta::protocols::pure::vX_X_X::metamodel::domain::AnnotatedElement
+{
+  {doc.doc = 'The function that needs to be activated. Needs to provide the path to the function using its signature.'} function : String[1];
+}
