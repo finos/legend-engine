@@ -40,4 +40,14 @@ public class XmlDataRecord
     {
         return record;
     }
+
+    public String typePath$()
+    {
+        return "meta::external::format::xml::executionPlan::model::XmlDataRecord";
+    }
+
+    public String typeName$()
+    {
+        return "XmlDataRecord";
+    }
 }

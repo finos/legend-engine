@@ -19,6 +19,7 @@ import freemarker.template.TemplateBooleanModel;
 import freemarker.template.TemplateMethodModelEx;
 import freemarker.template.TemplateModel;
 import freemarker.template.TemplateModelException;
+import org.finos.legend.engine.plan.execution.result.StreamingResult;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -33,10 +34,13 @@ public class FreemarkerInstanceOfMethod implements TemplateMethodModelEx
         }
         return (TemplateBooleanModel) () ->
         {
-
             if (args.get(1).toString().equalsIgnoreCase("stream") && args.get(0) instanceof StringModel)
             {
                 return (((StringModel) args.get(0)).getWrappedObject() instanceof Stream);
+            }
+            if (args.get(1).toString().equalsIgnoreCase("StreamingResult") && args.get(0) instanceof StringModel)
+            {
+                return ((StringModel) args.get(0)).getWrappedObject() instanceof StreamingResult;
             }
             else
             {
