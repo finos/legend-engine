@@ -22,10 +22,12 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function0;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.collections.impl.list.mutable.FastList;
+import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
@@ -393,6 +395,51 @@ public class PureTestHelper
         }
     }
 
+    @Ignore
+    public static class JavaPureTestCase extends PureTestCase
+    {
+        CoreInstance runnerInstance;
+
+        public JavaPureTestCase()
+        {
+        }
+
+        JavaPureTestCase(CoreInstance runnerInstance, CoreInstance coreInstance, ExecutionSupport executionSupport)
+        {
+            super(coreInstance, executionSupport);
+            this.runnerInstance = runnerInstance;
+        }
+
+        @Override
+        protected void runTest() throws Throwable
+        {
+            Class<?> _class = Class.forName("org.finos.legend.pure.generated." + IdBuilder.sourceToId(runnerInstance.getSourceInformation()));
+            Object[] params = Lists.mutable.empty().with(coreInstance).with(executionSupport).toArray();
+
+            String methodName = FunctionProcessor.functionNameToJava(runnerInstance);
+            Method method = params.length == 1 ? _class.getMethod(methodName, ExecutionSupport.class)
+                    : ArrayIterate.detect(_class.getMethods(), m -> methodName.equals(m.getName()));
+
+            // NOTE: mock out the global tracer for test
+            // See https://github.com/opentracing/opentracing-java/issues/170
+            // See https://github.com/opentracing/opentracing-java/issues/364
+            GlobalTracer.registerIfAbsent(NoopTracerFactory.create());
+            String testName = PackageableElement.getUserPathForPackageableElement(this.coreInstance);
+            System.out.print("EXECUTING " + testName + " ... ");
+            long start = System.nanoTime();
+            try
+            {
+                method.invoke(null, params);
+                System.out.format("DONE (%.6fs)\n", (System.nanoTime() - start) / 1_000_000_000.0);
+            }
+            catch (InvocationTargetException e)
+            {
+                System.out.format("ERROR (%.6fs)\n", (System.nanoTime() - start) / 1_000_000_000.0);
+                throw e.getTargetException();
+            }
+        }
+    }
+
     public static TestSuite buildSuite(TestCollection testCollection, ExecutionSupport executionSupport)
     {
         MutableList<TestSuite> subSuites = new FastList<>();
@@ -427,4 +474,40 @@ public class PureTestHelper
         afterFunctions.collect(fn -> new PureTestCase(fn, executionSupport)).each(suite::addTest);
         return suite;
     }
+
+    public static TestSuite buildJavaPureTestSuite(TestCollection testCollection, ExecutionSupport executionSupport, CoreInstance runner)
+    {
+        MutableList<TestSuite> subSuites = new FastList<>();
+        for (TestCollection collection : testCollection.getSubCollections().toSortedList(Comparator.comparing(a -> a.getPackage().getName())))
+        {
+            subSuites.add(buildJavaPureTestSuite(collection, executionSupport, runner));
+        }
+        return buildJavaPureTestSuite(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.GET_USER_PATH.valueOf(testCollection.getPackage()),
+                testCollection.getBeforeFunctions(),
+                testCollection.getAfterFunctions(),
+                testCollection.getPureAndAlloyOnlyFunctions(),
+                subSuites,
+                executionSupport,
+                runner
+        );
+    }
+
+    private static TestSuite buildJavaPureTestSuite(String packageName, RichIterable<CoreInstance> beforeFunctions, RichIterable<CoreInstance> afterFunctions,
+                                                   RichIterable<CoreInstance> testFunctions, org.eclipse.collections.api.list.ListIterable<TestSuite> subSuites, ExecutionSupport executionSupport, CoreInstance runner)
+{
+    TestSuite suite = new TestSuite();
+    suite.setName(packageName);
+    beforeFunctions.collect(fn -> new JavaPureTestCase(runner, fn, executionSupport)).each(suite::addTest);
+    for (Test subSuite : subSuites.toSortedList(Comparator.comparing(TestSuite::getName)))
+    {
+        suite.addTest(subSuite);
+    }
+    for (CoreInstance testFunc : testFunctions.toSortedList(Comparator.comparing(CoreInstance::getName)))
+    {
+        Test theTest = new JavaPureTestCase(runner, testFunc, executionSupport);
+        suite.addTest(theTest);
+    }
+    afterFunctions.collect(fn -> new JavaPureTestCase(runner, fn, executionSupport)).each(suite::addTest);
+    return suite;
+}
 }
