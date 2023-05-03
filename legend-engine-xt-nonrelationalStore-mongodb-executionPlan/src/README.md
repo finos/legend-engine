@@ -2,6 +2,39 @@
 
 ### Dependencies
 - Docker desktop should run locally.
+- Add to legend-engine-pure-ide-light module's pom.xml the following dependencies: (you might need to reload the maven dependencies after updating the pom file).
+
+<div align="center" style="width:100%">
+<div style="width:90%" align="left">
+
+      <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-nonrelationalStore-mongodb-executionPlan</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-nonrelationalStore-mongodb-executionPlan-test</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-nonrelationalStore-mongodb-protocol</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-nonrelationalStore-mongodb-grammar-integration</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-nonrelationalStore-mongodb-grammar</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+</div>
+</div>
 
 ### Execution
 - Run PureIDELight.java
@@ -65,6 +98,16 @@
             country {
               countryCode,
               continent
+            }
+          },
+          car {
+            model,
+            manufacturer {
+              name,
+              country {
+                countryCode,
+                continent
+              }
             }
           },
           firm {
