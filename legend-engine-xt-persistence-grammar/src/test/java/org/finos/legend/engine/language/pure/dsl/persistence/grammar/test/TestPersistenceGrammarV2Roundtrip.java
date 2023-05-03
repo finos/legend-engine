@@ -145,7 +145,6 @@ public class TestPersistenceGrammarV2Roundtrip extends TestGrammarRoundtrip.Test
                 "}\n");
     }
 
-    /*
     @Test
     public void persistenceSnapshot()
     {
@@ -200,5 +199,4 @@ public class TestPersistenceGrammarV2Roundtrip extends TestGrammarRoundtrip.Test
                 "  ];\n" +
                 "}\n");
     }
-     */
 }
