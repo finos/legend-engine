@@ -25,6 +25,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.language.graphQL.grammar.from.GraphQLGrammarParser;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRuntimeBuilder;
@@ -59,8 +60,6 @@ import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.TypeSystemD
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.UnionTypeDefinition;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.FunctionParametersValidationNode;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.query.graphQL.api.GraphQL;
 import org.finos.legend.engine.query.graphQL.api.cache.GraphQLCacheKey;
 import org.finos.legend.engine.query.graphQL.api.cache.GraphQLDevCacheKey;
@@ -83,6 +82,8 @@ import org.finos.legend.pure.generated.core_external_query_graphql_transformatio
 import org.finos.legend.pure.generated.core_pure_executionPlan_executionPlan_print;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.functions.collection.Pair;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_FunctionType_Impl;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
@@ -302,16 +303,24 @@ public class GraphQLExecute extends GraphQL
                             try
                             {
                                 Map<String, Result> parameterMap = new HashMap<>();
-                                List<Argument> argumentList = extractFieldByName(graphQLQuery, p.propertyName).arguments;
-                                List<Variable> functionParameters = p.serializedPlan.rootExecutionNode.executionNodes.stream().filter(node -> node instanceof FunctionParametersValidationNode).map(executionNode -> ((FunctionParametersValidationNode)executionNode).functionParameters).flatMap(Collection::stream).collect(Collectors.toList());
-                                validateQueryParameters(argumentList, functionParameters);
-                                argumentList.stream().forEach(a -> parameterMap.put(a.name, new ConstantResult(argumentValueToObject(a.value))));
 
+                                PureModel pureModel = modelLoader.call();
+                                List<Argument> argumentList = extractFieldByName(graphQLQuery, p.propertyName).arguments;
+
+                                List<String> functionParameters = Lists.mutable.empty();
+                                org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class = pureModel.getClass(queryClassPath);
+                                QualifiedProperty qualifiedProperty = _class._qualifiedProperties().select(prop -> prop._name().equals(p.propertyName)).getOnly();
+                                RichIterable iter = ((Root_meta_pure_metamodel_type_FunctionType_Impl)qualifiedProperty._classifierGenericType()._typeArguments().getOnly()._rawType())._parameters().collect(param -> param._name());
+                                functionParameters.addAll(iter.toList());
+
+                                validateQueryParameters(argumentList, functionParameters);
+
+                                argumentList.stream().forEach(a -> parameterMap.put(a.name, new ConstantResult(argumentValueToObject(a.value))));
                                 generator.writeFieldName(p.propertyName);
                                 result = (JsonStreamingResult) planExecutor.execute(p.serializedPlan, parameterMap, null, profiles);
                                 result.getJsonStream().accept(generator);
                             }
-                            catch (IOException e)
+                            catch (Exception e)
                             {
                                 throw new RuntimeException(e);
                             }
@@ -329,11 +338,10 @@ public class GraphQLExecute extends GraphQL
                 }).build();
     }
 
-    private void validateQueryParameters(List<Argument> argumentList, List<Variable> functionParameters)
+    private void validateQueryParameters(List<Argument> argumentList, List<String> functionParameters)
     {
         List<String> providedQueryParameters = argumentList.stream().map(arg -> arg.name).collect(Collectors.toList());
-        List<String> functionParameterNames = functionParameters.stream().map(param -> param.name).collect(Collectors.toList());
-        List<String> invalidParameters = providedQueryParameters.stream().filter(param -> !functionParameterNames.contains(param)).collect(Collectors.toList());
+        List<String> invalidParameters = providedQueryParameters.stream().filter(param -> !functionParameters.contains(param)).collect(Collectors.toList());
         if (!invalidParameters.isEmpty())
         {
             throw  new IllegalArgumentException("Invalid parameter(s) provided: " + invalidParameters.toString());
