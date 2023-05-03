@@ -57,13 +57,15 @@ public class LegendTdsClient implements LegendExecutionClient
     @Override
     public List<LegendColumn> getSchema(String query)
     {
-        JsonNode jsonNode = this.executeSchemaApi(query);
-        if (jsonNode.get("columns") != null)
+        try
         {
-            ArrayNode columns = (ArrayNode) jsonNode.get("columns");
-            return IterableIterate.collect(columns, c -> new LegendColumn(c.get("name").asText(), c.get("type").asText()));
+            JsonNode jsonNode = this.executeQueryApi(query);
+            return getSchemaFromExecutionResponse(jsonNode);
         }
-        return Collections.emptyList();
+        catch (JsonProcessingException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

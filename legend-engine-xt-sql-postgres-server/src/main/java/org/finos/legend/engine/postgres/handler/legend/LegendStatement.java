@@ -45,17 +45,17 @@ public class LegendStatement implements PostgresStatement
             LegendKerberosCredential credential = (LegendKerberosCredential) identity.getFirstCredential();
             return Subject.doAs(credential.getSubject(), (PrivilegedAction<Boolean>) () ->
             {
-                return esecute(query);
+                return executePrivate(query);
             });
         }
         else
         {
-            return esecute(query);
+            return executePrivate(query);
 
         }
     }
 
-    private boolean esecute(String query)
+    private boolean executePrivate(String query)
     {
         Pair<List<LegendColumn>, Iterable<TDSRow>> schemaAndResult = client.getSchemaAndExecuteQuery(query);
         columns = schemaAndResult.getOne();
