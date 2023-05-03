@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.7.2-SNAPSHOT</version>
+        <version>4.10.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -149,6 +149,12 @@
             <artifactId>legend-engine-xt-relationalStore-executionPlan</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-openapi-pure</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- Access to Legend Execute in IDE Light -->
 
     </dependencies>

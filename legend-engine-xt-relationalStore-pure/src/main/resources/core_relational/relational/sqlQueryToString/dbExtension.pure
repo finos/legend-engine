@@ -180,6 +180,7 @@ Class meta::relational::functions::sqlQueryToString::DbExtension
 {
    isBooleanLiteralSupported: Boolean[1];
    collectionThresholdLimit: Integer[0..1];
+   <<doc.deprecated>> extraTempTableCreationLogicSupplierForIn: meta::pure::metamodel::function::Function<{String[1] -> String[1]}>[0..1];
    aliasLimit: Integer[0..1];
    coreTypeToDbSpecificSqlTranslator: meta::pure::metamodel::function::Function<{CoreDataType[1] -> String[0..1]}>[0..1];
    isDbReservedIdentifier: meta::pure::metamodel::function::Function<{String[1] -> Boolean[1]}>[1];

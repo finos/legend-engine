@@ -26,6 +26,7 @@ import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.finos.legend.engine.postgres.auth.AnonymousIdentityProvider;
 import org.finos.legend.engine.postgres.auth.NoPasswordAuthenticationMethod;
+import org.finos.legend.engine.postgres.config.ServerConfig;
 import org.finos.legend.engine.postgres.handler.legend.LegendSessionFactory;
 import org.finos.legend.engine.postgres.handler.legend.LegendTdsClient;
 import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
@@ -53,8 +54,10 @@ public class PostgresServerTest
         CloseableHttpClient httpClient = (CloseableHttpClient) HttpClientBuilder.getHttpClient(cookieStore);
         LegendTdsClient client = new LegendTdsClient("http", "localhost", "" + wireMockRule.port(),  new BasicCookieStore());
         LegendSessionFactory legendSessionFactory = new LegendSessionFactory(client);
+        ServerConfig serverConfig = new ServerConfig();
+        serverConfig.setPort(0);
 
-        testPostgresServer = new TestPostgresServer(0, legendSessionFactory, (user, connectionProperties) -> new NoPasswordAuthenticationMethod(new AnonymousIdentityProvider()));
+        testPostgresServer = new TestPostgresServer(serverConfig, legendSessionFactory, (user, connectionProperties) -> new NoPasswordAuthenticationMethod(new AnonymousIdentityProvider()));
         testPostgresServer.startUp();
         wireMockRule.stubFor(post(urlEqualTo("/api/sql/v1/execution/executeQueryString"))
                 .willReturn(aResponse()

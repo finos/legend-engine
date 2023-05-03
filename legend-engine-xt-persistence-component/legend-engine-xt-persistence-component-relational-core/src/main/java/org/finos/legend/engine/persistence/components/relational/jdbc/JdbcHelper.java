@@ -428,6 +428,7 @@ public class JdbcHelper
                         throw new RuntimeException(e2);
                     }
                 }
+                throw new RuntimeException(e);
             }
             finally
             {

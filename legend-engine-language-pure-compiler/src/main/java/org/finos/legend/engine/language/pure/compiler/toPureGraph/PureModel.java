@@ -87,11 +87,12 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
-import org.finos.legend.pure.m3.serialization.filesystem.PureCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
-import org.finos.legend.pure.m3.serialization.filesystem.repository.SVNCodeRepository;
+import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
+import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.ClassLoaderCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.VersionControlledClassLoaderCodeStorage;
+import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.composite.CompositeCodeStorage;
 import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.runtime.java.compiled.compiler.JavaCompilerState;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
@@ -185,10 +186,10 @@ public class PureModel implements IPureModel
                     new JavaCompilerState(null, classLoader),
                     new CompiledProcessorSupport(classLoader, metaData == null ? new MetadataWrapper(this.root, METADATA_LAZY, this) : metaData, Sets.mutable.empty()),
                     null,
-                    new PureCodeStorage(null, new VersionControlledClassLoaderCodeStorage(classLoader, Lists.mutable.of(
-                            CodeRepository.newPlatformCodeRepository(),
-                            SVNCodeRepository.newSystemCodeRepository()
-                    ), null)),
+                    new CompositeCodeStorage(
+                            new ClassLoaderCodeStorage(CodeRepositoryProviderHelper.findCodeRepositories().select(CodeRepositoryProviderHelper.platformAndCore)),
+                            //TODO eventually remove, keep system so that we can get latestVersion in Alloy.
+                            new VersionControlledClassLoaderCodeStorage(classLoader, new GenericCodeRepository("system", ""), null)),
                     null,
                     null,
                     console,
@@ -1168,7 +1169,7 @@ public class PureModel implements IPureModel
             return this.multiplicitiesIndex.get("zero");
         }
 
-        return new Root_meta_pure_metamodel_multiplicity_Multiplicity_Impl("")
+        return new Root_meta_pure_metamodel_multiplicity_Multiplicity_Impl("", null, this.getType(M3Paths.Multiplicity))
                 ._lowerBound(new Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl("")._value((long) multiplicity.lowerBound))
                 ._upperBound(multiplicity.isInfinite() ? new Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl("") : new Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl("")._value((long) multiplicity.getUpperBoundInt()));
     }

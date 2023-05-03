@@ -14,10 +14,16 @@
 
 package org.finos.legend.engine.persistence.components;
 
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.ClusterKey;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
+import org.finos.legend.engine.persistence.components.logicalplan.values.ModuloBinaryValueOperator;
+import org.finos.legend.engine.persistence.components.logicalplan.values.ObjectValue;
 
 import java.util.Optional;
 
@@ -47,6 +53,18 @@ public class BaseTestUtils
     public static Field colArray = Field.builder().name("col_array").type(FieldType.of(DataType.ARRAY, Optional.empty(), Optional.empty())).build();
     public static Field colMap = Field.builder().name("col_map").type(FieldType.of(DataType.MAP, Optional.empty(), Optional.empty())).build();
 
+    public static ClusterKey clusterKey1 = ClusterKey.builder().key(FieldValue.builder().fieldName("col_timestamp").build()).build();
+    public static ClusterKey clusterKey2 = ClusterKey.builder()
+        .key(FunctionImpl.builder()
+            .functionName(FunctionName.SUBSTRING)
+            .addValue(FieldValue.builder().fieldName("col_int").build(), ObjectValue.of(1), ObjectValue.of(4))
+            .build())
+        .build();
+
+    public static ClusterKey clusterKey3 = ClusterKey.builder()
+        .key(ModuloBinaryValueOperator.of(FieldValue.builder().fieldName("col_integer").build(), ObjectValue.of(7)))
+        .build();
+
     public static SchemaDefinition schemaWithAllColumns = SchemaDefinition.builder()
         .addFields(colInt)
         .addFields(colInteger)
@@ -68,5 +86,14 @@ public class BaseTestUtils
         .addFields(colNumeric)
         .addFields(colBoolean)
         .addFields(colVarBinary)
+        .build();
+
+    public static SchemaDefinition schemaWithClusteringKey = SchemaDefinition.builder()
+        .addFields(colInt)
+        .addFields(colInteger)
+        .addFields(colString)
+        .addFields(colTimestamp)
+        .addFields(colDouble)
+        .addClusterKeys(clusterKey1, clusterKey2, clusterKey3)
         .build();
 }

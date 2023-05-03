@@ -15,6 +15,7 @@
 package org.finos.legend.engine.protocol.store.elasticsearch.specification.utils;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Objects;
 
 public class TaggedUnionUtils
@@ -24,6 +25,10 @@ public class TaggedUnionUtils
         if (o instanceof Collection)
         {
             return !((Collection<?>) o).isEmpty();
+        }
+        else if (o instanceof Map)
+        {
+            return !((Map<?, ?>) o).isEmpty();
         }
         return Objects.nonNull(o);
     }

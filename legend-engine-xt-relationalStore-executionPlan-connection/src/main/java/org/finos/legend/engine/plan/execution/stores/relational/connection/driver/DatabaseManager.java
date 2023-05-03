@@ -23,6 +23,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.authe
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.databricks.DatabricksManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.mysql.MySQLManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.redshift.RedshiftManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.postgres.PostgresManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeManager;
@@ -53,6 +54,7 @@ public abstract class DatabaseManager
                     register(new DatabricksManager());
                     register(new PostgresManager());
                     register(new RedshiftManager());
+                    register(new MySQLManager());
 
                     MutableList<ConnectionExtension> extensions = Iterate.addAllTo(ServiceLoader.load(ConnectionExtension.class), Lists.mutable.empty());
                     extensions.flatCollect(ConnectionExtension::getAdditionalDatabaseManager).forEach(DatabaseManager::register);

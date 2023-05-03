@@ -7,10 +7,20 @@ options
     tokenVocab = ElasticsearchLexerGrammar;
 }
 
-propertyTypes:                          KEYWORD
+scalarPropertyTypes:                    KEYWORD |
+                                        TEXT |       
+                                        DATE |
+                                        SHORT |
+                                        BYTE |
+                                        INTEGER |
+                                        LONG |
+                                        FLOAT |
+                                        HALF_FLOAT |
+                                        DOUBLE |
+                                        BOOLEAN
 ;
 
-identifier:                             VALID_STRING | STRING | ES_V7_CLUSTER | IMPORT | INDICES | PROPERTIES | FIELDS | propertyTypes
+identifier:                             VALID_STRING | STRING | ES_V7_CLUSTER | IMPORT | INDICES | PROPERTIES | FIELDS | scalarPropertyTypes
 ;
 
 imports:                                (importStatement)*
@@ -67,7 +77,7 @@ propertyName:                           STRING | VALID_STRING
 namedPropertyDefinition:               propertyName COLON propertyTypeDefinition
 ;
 
-propertyTypeDefinition:                 keywordPropertyDefinition
+propertyTypeDefinition:                 scalarPropertyDefinition
 ;
 
 scalarPropertyContent:                  BRACE_OPEN
@@ -77,5 +87,5 @@ scalarPropertyContent:                  BRACE_OPEN
                                         BRACE_CLOSE
 ;
 
-keywordPropertyDefinition:              KEYWORD scalarPropertyContent?
+scalarPropertyDefinition:              scalarPropertyTypes scalarPropertyContent?
 ;

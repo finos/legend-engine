@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.finos.legend.engine.persistence.components.BaseTestUtils.schemaWithAllColumns;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.schemaWithClusteringKey;
 
 public class CreateTableTest
 {
@@ -79,6 +80,58 @@ public class CreateTableTest
             "\"COL_REAL\" DOUBLE,\"COL_FLOAT\" DOUBLE,\"COL_DECIMAL\" NUMBER(10,4),\"COL_DOUBLE\" DOUBLE," +
             "\"COL_BINARY\" BINARY,\"COL_TIME\" TIME,\"COL_NUMERIC\" NUMBER(38,0),\"COL_BOOLEAN\" BOOLEAN," +
             "\"COL_VARBINARY\" BINARY(10))";
+
+        Assertions.assertEquals(expected, list.get(0));
+    }
+
+    @Test
+    public void testCreateTableWithClusteringKey()
+    {
+        DatasetDefinition dataset = DatasetDefinition.builder()
+            .database("my_db")
+            .group("my_schema")
+            .name("my_table")
+            .alias("my_alias")
+            .schema(schemaWithClusteringKey)
+            .build();
+        Operation create = Create.of(true, dataset);
+        LogicalPlan logicalPlan = LogicalPlan.builder().addOps(create).build();
+        RelationalTransformer transformer = new RelationalTransformer(SnowflakeSink.get());
+        SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
+        List<String> list = physicalPlan.getSqlList();
+        String expected = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_schema\".\"my_table\"" +
+            "(\"col_int\" INTEGER NOT NULL PRIMARY KEY," +
+            "\"col_integer\" INTEGER NOT NULL UNIQUE," +
+            "\"col_string\" VARCHAR," +
+            "\"col_timestamp\" TIMESTAMP," +
+            "\"col_double\" DOUBLE)" +
+            " CLUSTER BY (\"col_timestamp\",SUBSTRING(\"col_int\",1,4),\"col_integer\"%7)";
+
+        Assertions.assertEquals(expected, list.get(0));
+    }
+
+    @Test
+    public void testCreateTableWithClusteringKeyWithUpperCase()
+    {
+        DatasetDefinition dataset = DatasetDefinition.builder()
+            .database("my_db")
+            .group("my_schema")
+            .name("my_table")
+            .alias("my_alias")
+            .schema(schemaWithClusteringKey)
+            .build();
+        Operation create = Create.of(true, dataset);
+        LogicalPlan logicalPlan = LogicalPlan.builder().addOps(create).build();
+        RelationalTransformer transformer = new RelationalTransformer(SnowflakeSink.get(), TransformOptions.builder().addOptimizers(new UpperCaseOptimizer()).build());
+        SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
+        List<String> list = physicalPlan.getSqlList();
+        String expected = "CREATE TABLE IF NOT EXISTS \"MY_DB\".\"MY_SCHEMA\".\"MY_TABLE\"" +
+            "(\"COL_INT\" INTEGER NOT NULL PRIMARY KEY," +
+            "\"COL_INTEGER\" INTEGER NOT NULL UNIQUE," +
+            "\"COL_STRING\" VARCHAR" +
+            ",\"COL_TIMESTAMP\" TIMESTAMP," +
+            "\"COL_DOUBLE\" DOUBLE) " +
+            "CLUSTER BY (\"COL_TIMESTAMP\",SUBSTRING(\"COL_INT\",1,4),\"COL_INTEGER\"%7)";
 
         Assertions.assertEquals(expected, list.get(0));
     }

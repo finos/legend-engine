@@ -20,6 +20,7 @@ import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.StringIterate;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
@@ -39,8 +40,10 @@ import java.util.GregorianCalendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
-public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate
+public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate, Serializable
 {
+    private static final long serialVersionUID = 8608696099577042248L;
+
     private static final char DATE_PREFIX = '%';
     private static final char DATE_SEPARATOR = '-';
     private static final char TIME_SEPARATOR = ':';

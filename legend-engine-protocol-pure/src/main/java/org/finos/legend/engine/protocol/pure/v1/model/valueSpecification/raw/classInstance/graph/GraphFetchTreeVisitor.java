@@ -19,6 +19,4 @@ public interface GraphFetchTreeVisitor<T>
     T visit(PropertyGraphFetchTree valueSpecification);
 
     T visit(RootGraphFetchTree valueSpecification);
-
-    T visit(SubTypeGraphFetchTree valueSpecification);
 }

@@ -22,11 +22,12 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function0;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.list.primitive.LongList;
 import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.collections.impl.list.mutable.FastList;
+import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
@@ -38,13 +39,13 @@ import org.finos.legend.pure.m3.navigation.Instance;
 import org.finos.legend.pure.m3.navigation.M3Properties;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
-import org.finos.legend.pure.m3.serialization.filesystem.PureCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
-import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.CodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.CodeStorageNode;
+import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.RepositoryCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.VersionControlledClassLoaderCodeStorage;
-import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.vcs.Revision;
+import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.composite.CompositeCodeStorage;
+import org.finos.legend.pure.m3.serialization.runtime.Message;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.compiler.JavaCompilerState;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
@@ -216,24 +217,18 @@ public class PureTestHelper
                 new JavaCompilerState(null, PureTestHelper.class.getClassLoader()),
                 new CompiledProcessorSupport(PureTestHelper.class.getClassLoader(), PureModel.METADATA_LAZY, Sets.mutable.empty()),
                 null,
-                new CodeStorage()
+                new RepositoryCodeStorage()
                 {
                     @Override
-                    public String getRepoName(String s)
+                    public void initialize(Message message)
                     {
-                        return null;
+
                     }
 
                     @Override
-                    public RichIterable<String> getAllRepoNames()
+                    public CodeRepository getRepositoryForPath(String s)
                     {
                         return null;
-                    }
-
-                    @Override
-                    public boolean isRepoName(String s)
-                    {
-                        return false;
                     }
 
                     @Override
@@ -313,30 +308,6 @@ public class PureTestHelper
                     {
                         return false;
                     }
-
-                    @Override
-                    public boolean isVersioned(String s)
-                    {
-                        return false;
-                    }
-
-                    @Override
-                    public long getCurrentRevision(String s)
-                    {
-                        return 0;
-                    }
-
-                    @Override
-                    public LongList getAllRevisions(String s)
-                    {
-                        return null;
-                    }
-
-                    @Override
-                    public RichIterable<Revision> getAllRevisionLogs(RichIterable<String> richIterable)
-                    {
-                        return null;
-                    }
                 },
                 null,
                 null,
@@ -370,7 +341,7 @@ public class PureTestHelper
                 new JavaCompilerState(null, PureTestHelper.class.getClassLoader()),
                 new CompiledProcessorSupport(PureTestHelper.class.getClassLoader(), PureModel.METADATA_LAZY, Sets.mutable.empty()),
                 null,
-                new PureCodeStorage(null, new VersionControlledClassLoaderCodeStorage(PureTestHelper.class.getClassLoader(), CodeRepositoryProviderHelper.findCodeRepositories(true), null)),
+                new CompositeCodeStorage(new VersionControlledClassLoaderCodeStorage(PureTestHelper.class.getClassLoader(), CodeRepositoryProviderHelper.findCodeRepositories(true), null)),
                 null,
                 null,
                 console,
@@ -424,6 +395,51 @@ public class PureTestHelper
         }
     }
 
+    @Ignore
+    public static class JavaPureTestCase extends PureTestCase
+    {
+        CoreInstance runnerInstance;
+
+        public JavaPureTestCase()
+        {
+        }
+
+        JavaPureTestCase(CoreInstance runnerInstance, CoreInstance coreInstance, ExecutionSupport executionSupport)
+        {
+            super(coreInstance, executionSupport);
+            this.runnerInstance = runnerInstance;
+        }
+
+        @Override
+        protected void runTest() throws Throwable
+        {
+            Class<?> _class = Class.forName("org.finos.legend.pure.generated." + IdBuilder.sourceToId(runnerInstance.getSourceInformation()));
+            Object[] params = Lists.mutable.empty().with(coreInstance).with(executionSupport).toArray();
+
+            String methodName = FunctionProcessor.functionNameToJava(runnerInstance);
+            Method method = params.length == 1 ? _class.getMethod(methodName, ExecutionSupport.class)
+                    : ArrayIterate.detect(_class.getMethods(), m -> methodName.equals(m.getName()));
+
+            // NOTE: mock out the global tracer for test
+            // See https://github.com/opentracing/opentracing-java/issues/170
+            // See https://github.com/opentracing/opentracing-java/issues/364
+            GlobalTracer.registerIfAbsent(NoopTracerFactory.create());
+            String testName = PackageableElement.getUserPathForPackageableElement(this.coreInstance);
+            System.out.print("EXECUTING " + testName + " ... ");
+            long start = System.nanoTime();
+            try
+            {
+                method.invoke(null, params);
+                System.out.format("DONE (%.6fs)\n", (System.nanoTime() - start) / 1_000_000_000.0);
+            }
+            catch (InvocationTargetException e)
+            {
+                System.out.format("ERROR (%.6fs)\n", (System.nanoTime() - start) / 1_000_000_000.0);
+                throw e.getTargetException();
+            }
+        }
+    }
+
     public static TestSuite buildSuite(TestCollection testCollection, ExecutionSupport executionSupport)
     {
         MutableList<TestSuite> subSuites = new FastList<>();
@@ -458,4 +474,40 @@ public class PureTestHelper
         afterFunctions.collect(fn -> new PureTestCase(fn, executionSupport)).each(suite::addTest);
         return suite;
     }
+
+    public static TestSuite buildJavaPureTestSuite(TestCollection testCollection, ExecutionSupport executionSupport, CoreInstance runner)
+    {
+        MutableList<TestSuite> subSuites = new FastList<>();
+        for (TestCollection collection : testCollection.getSubCollections().toSortedList(Comparator.comparing(a -> a.getPackage().getName())))
+        {
+            subSuites.add(buildJavaPureTestSuite(collection, executionSupport, runner));
+        }
+        return buildJavaPureTestSuite(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.GET_USER_PATH.valueOf(testCollection.getPackage()),
+                testCollection.getBeforeFunctions(),
+                testCollection.getAfterFunctions(),
+                testCollection.getPureAndAlloyOnlyFunctions(),
+                subSuites,
+                executionSupport,
+                runner
+        );
+    }
+
+    private static TestSuite buildJavaPureTestSuite(String packageName, RichIterable<CoreInstance> beforeFunctions, RichIterable<CoreInstance> afterFunctions,
+                                                   RichIterable<CoreInstance> testFunctions, org.eclipse.collections.api.list.ListIterable<TestSuite> subSuites, ExecutionSupport executionSupport, CoreInstance runner)
+{
+    TestSuite suite = new TestSuite();
+    suite.setName(packageName);
+    beforeFunctions.collect(fn -> new JavaPureTestCase(runner, fn, executionSupport)).each(suite::addTest);
+    for (Test subSuite : subSuites.toSortedList(Comparator.comparing(TestSuite::getName)))
+    {
+        suite.addTest(subSuite);
+    }
+    for (CoreInstance testFunc : testFunctions.toSortedList(Comparator.comparing(CoreInstance::getName)))
+    {
+        Test theTest = new JavaPureTestCase(runner, testFunc, executionSupport);
+        suite.addTest(theTest);
+    }
+    afterFunctions.collect(fn -> new JavaPureTestCase(runner, fn, executionSupport)).each(suite::addTest);
+    return suite;
+}
 }

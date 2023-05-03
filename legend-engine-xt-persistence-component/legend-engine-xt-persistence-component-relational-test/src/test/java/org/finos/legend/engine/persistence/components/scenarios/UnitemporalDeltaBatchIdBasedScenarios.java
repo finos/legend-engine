@@ -118,6 +118,20 @@ public class UnitemporalDeltaBatchIdBasedScenarios extends BaseTest
         return new TestScenario(mainTableWithBatchIdBasedSchema, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
 
+    public TestScenario BATCH_ID_BASED__NO_DEL_IND__NO_DATA_SPLITS__WITH_OPTIMIZATION_FILTERS__INCLUDES_NULL_VALUES()
+    {
+        OptimizationFilter filter = OptimizationFilter.of("id", "{ID_LOWER_BOUND}", "{ID_UPPER_BOUND}").withIncludesNullValues(true);
+        UnitemporalDelta ingestMode = UnitemporalDelta.builder()
+            .digestField(digestField)
+            .transactionMilestoning(BatchId.builder()
+                .batchIdInName(batchIdInField)
+                .batchIdOutName(batchIdOutField)
+                .build())
+            .addOptimizationFilters(filter)
+            .build();
+        return new TestScenario(mainTableWithBatchIdBasedSchema, stagingTableWithBaseSchemaAndDigest, ingestMode);
+    }
+
     public TestScenario BATCH_ID_BASED__NO_DEL_IND__NO_DATA_SPLITS__WITH_MISSING_OPTIMIZATION_FILTER()
     {
         OptimizationFilter filter = OptimizationFilter.of("unknown_column", "{ID_LOWER_BOUND}", "{ID_UPPER_BOUND}");

@@ -89,8 +89,9 @@ function meta::external::store::elasticsearch::specification::metamodel::generat
         let valueIsList = $p.genericType.typeArguments->at(1).rawType == List;
         let pureValueType = $valueIsList->if(|$p.genericType.typeArguments->at(1).typeArguments->at(0), |$p.genericType.typeArguments->at(1));
         let valueType = pureTypeToJavaType($c, $pureValueType, $valueIsList->if(|ZeroMany, |PureOne));
-        let defaultValueJava = j_new(javaHashMap($keyType, $valueType), j_int(0)); 
-        javaField('public', javaMap($keyType, $valueType), $p.name->toOne()->sanitizeIdentifier(), $defaultValueJava)
+        let mapType = javaMap($keyType, $valueType);
+        let defaultValueJava = if($p->functionReturnMultiplicity()->isToMany(), |j_emptyList(javaList($mapType)), |j_new(javaHashMap($keyType, $valueType), j_int(0)));
+        javaField('public', if($p->functionReturnMultiplicity()->isToMany(), |javaList($mapType), |$mapType), $p.name->toOne()->sanitizeIdentifier(), $defaultValueJava)
           ->addAnnotation(^meta::external::language::java::metamodel::annotations::json::JsonInclude(value = ^meta::external::language::java::metamodel::annotations::json::EnumValue(value='JsonInclude.Include.NON_EMPTY')));
         ,
       |

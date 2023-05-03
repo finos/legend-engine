@@ -46,8 +46,7 @@ function meta::pure::router::utils::extractLetVariableName(v:ValueSpecification[
 
 function meta::pure::router::utils::isSerializeOnGraphFetch(vs:ValueSpecification[1]):Boolean[1]
 {
-   let serializeFunctions = [meta::pure::graphFetch::execution::serialize_Checked_MANY__RootGraphFetchTree_1__String_1_, meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__String_1_];
-   $vs->instanceOf(FunctionExpression) && $vs->cast(@FunctionExpression).func->in([$serializeFunctions]) &&
+   $vs->instanceOf(FunctionExpression) && $vs->cast(@FunctionExpression)->meta::pure::graphFetch::execution::isSerialize() &&
    $vs->cast(@FunctionExpression).parametersValues->evaluateAndDeactivate()->at(0)->byPassRouterInfo()->instanceOf(FunctionExpression) &&
    $vs->cast(@FunctionExpression).parametersValues->evaluateAndDeactivate()->at(0)->byPassRouterInfo()->cast(@FunctionExpression).func->in(meta::pure::graphFetch::execution::graphFetchFunctions());
 }

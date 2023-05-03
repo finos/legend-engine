@@ -101,10 +101,14 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
     public LogicalPlan buildLogicalPlanForIngest(Resources resources, Set<Capability> capabilities)
     {
         List<Operation> operations = new ArrayList<>();
-        // Op 1: Milestone Records in main table
-        operations.add(getMilestoningLogic());
-        // Op 2: Insert records in main table
-        operations.add(getUpsertLogic());
+
+        if (!resources.stagingDataSetEmpty())
+        {
+            // Op 1: Milestone Records in main table
+            operations.add(getMilestoningLogic());
+            // Op 2: Insert records in main table
+            operations.add(getUpsertLogic());
+        }
 
         return LogicalPlan.of(operations);
     }

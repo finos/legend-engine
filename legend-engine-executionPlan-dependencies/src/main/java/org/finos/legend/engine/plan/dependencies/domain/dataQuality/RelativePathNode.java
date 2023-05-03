@@ -19,4 +19,14 @@ public interface RelativePathNode
     String getPropertyName();
 
     Long getIndex();
+
+    default String typePath$()
+    {
+        return "meta::pure::dataQuality::RelativePathNode";
+    }
+
+    default String typeName$()
+    {
+        return "RelativePathNode";
+    }
 }
