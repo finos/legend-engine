@@ -21,6 +21,7 @@ import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.application.query.model.Query;
 import org.finos.legend.engine.application.query.model.QueryEvent;
+import org.finos.legend.engine.application.query.model.QueryParameterValue;
 import org.finos.legend.engine.application.query.model.QueryProjectCoordinates;
 import org.finos.legend.engine.application.query.model.QuerySearchSpecification;
 import org.finos.legend.engine.application.query.utils.TestMongoClientProvider;
@@ -130,6 +131,7 @@ public class TestQueryStoreManager
         public String content = "content";
         public List<TaggedValue> taggedValues = Collections.emptyList();
         public List<StereotypePtr> stereotypes = Collections.emptyList();
+        public List<QueryParameterValue> parameterValues = Collections.emptyList();
 
         static TestQueryBuilder create(String id, String name, String owner)
         {
@@ -170,6 +172,12 @@ public class TestQueryStoreManager
             return this;
         }
 
+        TestQueryBuilder withParameterValues(List<QueryParameterValue> parameterValues)
+        {
+            this.parameterValues = parameterValues;
+            return this;
+        }
+
         Query build()
         {
             Query query = new Query();
@@ -185,6 +193,7 @@ public class TestQueryStoreManager
             query.description = this.description;
             query.taggedValues = this.taggedValues;
             query.stereotypes = this.stereotypes;
+            query.defaultParameterValues = this.parameterValues;
             return query;
         }
     }
@@ -214,6 +223,14 @@ public class TestQueryStoreManager
         taggedValue.profile = profile;
         taggedValue.value = stereotype;
         return taggedValue;
+    }
+
+    private static QueryParameterValue createTestParameterValue(String name, String value)
+    {
+        QueryParameterValue queryParameterValue = new QueryParameterValue();
+        queryParameterValue.content = value;
+        queryParameterValue.name = name;
+        return queryParameterValue;
     }
 
     private static final ObjectMapper objectMapper = new ObjectMapper()
@@ -449,6 +466,38 @@ public class TestQueryStoreManager
         Assert.assertEquals(2, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withStereotypes(Lists.fixedSize.of(stereotype2)).build(), currentUser).size());
         Assert.assertEquals(3, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withStereotypes(Lists.fixedSize.of(stereotype1, stereotype2)).build(), currentUser).size());
         Assert.assertEquals(3, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withStereotypes(Lists.fixedSize.of(stereotype1, stereotype2, stereotype3)).build(), currentUser).size());
+    }
+
+    @Test
+    public void testGetQueriesWithParameterValues() throws Exception
+    {
+        String currentUser = "testUser";
+        QueryParameterValue param1 = createTestParameterValue("booleanParam1", "true");
+        QueryParameterValue param2 = createTestParameterValue("stringParam2", "'myString'");
+        QueryParameterValue param3 = createTestParameterValue("myListParam3", "['d','a']");
+        Query testQuery1 = TestQueryBuilder.create("1", "query1", currentUser).build();
+        Query testQuery2 = TestQueryBuilder.create("2", "query2", currentUser).withParameterValues(Lists.fixedSize.of(param1)).build();
+        Query testQuery3 = TestQueryBuilder.create("3", "query3", currentUser).withParameterValues(Lists.fixedSize.of(param2)).build();
+        Query testQuery4 = TestQueryBuilder.create("4", "query4", currentUser).withParameterValues(Lists.fixedSize.of(param1, param2, param3)).build();
+        queryStoreManager.createQuery(testQuery1, currentUser);
+        queryStoreManager.createQuery(testQuery2, currentUser);
+        queryStoreManager.createQuery(testQuery3, currentUser);
+        queryStoreManager.createQuery(testQuery4, currentUser);
+
+        Query query1 = queryStoreManager.getQuery("1");
+        Assert.assertEquals(0, query1.defaultParameterValues.size());
+
+        Query query2 = queryStoreManager.getQuery("2");
+        Assert.assertEquals(1, query2.defaultParameterValues.size());
+        Assert.assertEquals("booleanParam1", query2.defaultParameterValues.get(0).name);
+        Assert.assertEquals("true", query2.defaultParameterValues.get(0).content);
+
+        Query query4 = queryStoreManager.getQuery("4");
+        Assert.assertEquals(3, query4.defaultParameterValues.size());
+        Assert.assertEquals("booleanParam1", query4.defaultParameterValues.get(0).name);
+        Assert.assertEquals("stringParam2", query4.defaultParameterValues.get(1).name);
+        Assert.assertEquals("myListParam3", query4.defaultParameterValues.get(2).name);
+        Assert.assertEquals("['d','a']", query4.defaultParameterValues.get(2).content);
     }
 
     @Test
