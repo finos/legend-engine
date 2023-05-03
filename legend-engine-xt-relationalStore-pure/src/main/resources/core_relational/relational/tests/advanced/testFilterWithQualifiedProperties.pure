@@ -54,14 +54,14 @@ function <<test.Test>> meta::relational::tests::query::qualifier::advanced::proj
 {
    let result1 = execute(|Firm.all()->project([p| $p->conditionRightTable('lala').lastName],['c1']) , simpleRelationalMapping,  testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result1.values->at(0).rows,5);
-   assertSameSQL('select "persontable_0".LASTNAME as "c1" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and "persontable_0".LASTNAME = \'lala\')', $result1); 
+   assertSameSQL('select "persontable_0".LASTNAME as "c1" from firmTable as "root" left outer join personTable as "persontable_0" on ("persontable_0".LASTNAME = \'lala\' and "root".ID = "persontable_0".FIRMID)', $result1); 
 }
    
 function <<test.Test>> meta::relational::tests::query::qualifier::advanced::projectAbstractPropertyWithConditionOnRightTable():Boolean[1]
 { 
    let result2 = execute(|Firm.all()->project([p| $p.employeeByLastName('lala').lastName],['c1']) , simpleRelationalMapping,  testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result2.values->at(0).rows,5);
-   assertSameSQL('select "persontable_0".LASTNAME as "c1" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and "persontable_0".LASTNAME = \'lala\')', $result2); 
+   assertSameSQL('select "persontable_0".LASTNAME as "c1" from firmTable as "root" left outer join personTable as "persontable_0" on ("persontable_0".LASTNAME = \'lala\' and "root".ID = "persontable_0".FIRMID)', $result2); 
 }
 
 
@@ -110,7 +110,7 @@ function <<test.Test>> meta::relational::tests::query::qualifier::advanced::proj
 {  
    let result3 = execute(|Firm.all()->project([p| $p->conditionLeftAndRightTables().lastName],['c1']) , simpleRelationalMapping,  testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result3.values->at(0).rows,5);
-   assertSameSQL('select "persontable_0".LASTNAME as "c1" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and "persontable_0".LASTNAME = "root".LEGALNAME)', $result3); 
+   assertSameSQL('select "persontable_0".LASTNAME as "c1" from firmTable as "root" left outer join personTable as "persontable_0" on ("persontable_0".LASTNAME = "root".LEGALNAME and "root".ID = "persontable_0".FIRMID)', $result3); 
 }
 
 function <<test.Test>> meta::relational::tests::query::qualifier::advanced::filterFunctionExpressionWithConditionRightTable():Boolean[1]
@@ -118,7 +118,7 @@ function <<test.Test>> meta::relational::tests::query::qualifier::advanced::filt
    
    let result1 = execute(|Firm.all()->filter(f| $f->conditionRightTable('Smith').firstName == 'Peter') , simpleRelationalMapping,  testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result1.values,1);
-   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and "persontable_0".LASTNAME = \'Smith\') where "persontable_0".FIRSTNAME = \'Peter\'', $result1);
+   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join personTable as "persontable_0" on ("persontable_0".LASTNAME = \'Smith\' and "root".ID = "persontable_0".FIRMID) where "persontable_0".FIRSTNAME = \'Peter\'', $result1);
 
 }
 
@@ -128,7 +128,7 @@ function <<test.Test>> meta::relational::tests::query::qualifier::advanced::filt
    
    let result2 = execute(|Firm.all()->filter(f |$f.employeeByLastName('Smith').firstName == 'Peter') , simpleRelationalMapping,  testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result2.values,1);
-   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and "persontable_0".LASTNAME = \'Smith\') where "persontable_0".FIRSTNAME = \'Peter\'', $result2);
+   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join personTable as "persontable_0" on ("persontable_0".LASTNAME = \'Smith\' and "root".ID = "persontable_0".FIRMID) where "persontable_0".FIRSTNAME = \'Peter\'', $result2);
 
 }
 
@@ -137,7 +137,7 @@ function <<test.Test>> meta::relational::tests::query::qualifier::advanced::filt
 { 
     let result1 = execute(|Firm.all()->filter(p| $p.employeeWithFirmAddressName().lastName == 'York') , simpleRelationalMapping,  testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result1.values,1);
-   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID) where concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) = "addresstable_0".NAME and "persontable_0".LASTNAME = \'York\'', $result1); 
+   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID) where "persontable_0".LASTNAME = \'York\' and concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) = "addresstable_0".NAME', $result1); 
 
 }
   
@@ -146,7 +146,7 @@ function <<test.Test>> meta::relational::tests::query::qualifier::advanced::filt
 
    let result2 = execute(|Firm.all()->filter(p| $p->conditionLeftAndRightTablesNested().firstName == 'Don') , simpleRelationalMapping,  testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result2.values,1);
-   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID) where ("persontable_0".LASTNAME = "addresstable_0".NAME OR ("persontable_0".LASTNAME is null AND "addresstable_0".NAME is null)) and "persontable_0".FIRSTNAME = \'Don\'', $result2); 
+   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID) where "persontable_0".FIRSTNAME = \'Don\' and ("persontable_0".LASTNAME = "addresstable_0".NAME OR ("persontable_0".LASTNAME is null AND "addresstable_0".NAME is null))', $result2); 
 
 }
 
@@ -155,7 +155,7 @@ function <<test.Test>> meta::relational::tests::query::qualifier::advanced::filt
 
    let result2 = execute(|Firm.all()->filter(p| $p->conditionLeftAndRightTablesNestedDynaFunction().lastName == 'York') , simpleRelationalMapping,  testRuntime(), meta::relational::extension::relationalExtensions());
   assertSize($result2.values,1);
-   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID) where concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) = "addresstable_0".NAME and "persontable_0".LASTNAME = \'York\'', $result2); 
+   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID) where "persontable_0".LASTNAME = \'York\' and concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) = "addresstable_0".NAME', $result2); 
 
 }
 
@@ -164,7 +164,7 @@ function <<test.Test>> meta::relational::tests::query::qualifier::advanced::filt
 
    let result3 = execute(|Firm.all()->filter(p| $p->conditionLeftAndRightTables().lastName == 'Firm B') , simpleRelationalMapping,  testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result3.values,1);
-   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and "persontable_0".LASTNAME = "root".LEGALNAME) where "persontable_0".LASTNAME = \'Firm B\'', $result3);
+   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join personTable as "persontable_0" on ("persontable_0".LASTNAME = "root".LEGALNAME and "root".ID = "persontable_0".FIRMID) where "persontable_0".LASTNAME = \'Firm B\'', $result3);
 
 
 }
@@ -175,7 +175,7 @@ function <<test.Test>> meta::relational::tests::query::qualifier::advanced::filt
                          ->filter(f| $f->conditionRightTable('Smith').firstName == 'Peter')
                          ->project([p| $p->conditionRightTable('Smith').firstName],['c1']) , simpleRelationalMapping,  testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result1.values->at(0).rows,1);
-   assertSameSQL('select "persontable_0".FIRSTNAME as "c1" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and "persontable_0".LASTNAME = \'Smith\') where "persontable_0".FIRSTNAME = \'Peter\'', $result1);
+   assertSameSQL('select "persontable_0".FIRSTNAME as "c1" from firmTable as "root" left outer join personTable as "persontable_0" on ("persontable_0".LASTNAME = \'Smith\' and "root".ID = "persontable_0".FIRMID) where "persontable_0".FIRSTNAME = \'Peter\'', $result1);
 }
 
  
@@ -189,7 +189,7 @@ function <<test.Test>> meta::relational::tests::query::qualifier::advanced::filt
                          ->filter(f| $f->conditionRightTable('Firm B').firstName == 'Elena' && $f.employees.firstName != '123')  , simpleRelationalMapping,  testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result1.values,2);
    assertSameElements($result1.values.legalName,['Firm B','Firm B']);
-   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and "persontable_0".LASTNAME = \'Firm B\') left outer join personTable as "persontable_1" on ("root".ID = "persontable_1".FIRMID) where ("persontable_0".FIRSTNAME = \'Elena\' and ("persontable_1".FIRSTNAME <> \'123\' OR "persontable_1".FIRSTNAME is null))', $result1);
+   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join personTable as "persontable_0" on ("persontable_0".LASTNAME = \'Firm B\' and "root".ID = "persontable_0".FIRMID) left outer join personTable as "persontable_1" on ("root".ID = "persontable_1".FIRMID) where ("persontable_0".FIRSTNAME = \'Elena\' and ("persontable_1".FIRSTNAME <> \'123\' OR "persontable_1".FIRSTNAME is null))', $result1);
 }
 
 function <<test.Test>> meta::relational::tests::query::qualifier::advanced::filterFunctionExpressionWithAndConditionOnRightTable():Boolean[1]
@@ -197,7 +197,7 @@ function <<test.Test>> meta::relational::tests::query::qualifier::advanced::filt
    let result1 = execute(|Firm.all()
                          ->filter(f| $f.employees->filter(e|$e.lastName == 'Roberts' && ($e.age > 20) )->toOne().firstName == 'Fabrice' )  , simpleRelationalMapping,  testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result1.values,1);
-   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and ("persontable_0".LASTNAME = \'Roberts\' and ("persontable_0".AGE is not null and "persontable_0".AGE > 20))) where "persontable_0".FIRSTNAME = \'Fabrice\'', $result1);
+   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join personTable as "persontable_0" on (("persontable_0".LASTNAME = \'Roberts\' and ("persontable_0".AGE is not null and "persontable_0".AGE > 20)) and "root".ID = "persontable_0".FIRMID) where "persontable_0".FIRSTNAME = \'Fabrice\'', $result1);
 }
 
 function <<test.Test>> meta::relational::tests::query::qualifier::advanced::filterFunctionExpressionWithAndConditionOnRootAndRightTable():Boolean[1]
@@ -205,7 +205,7 @@ function <<test.Test>> meta::relational::tests::query::qualifier::advanced::filt
    let result1 = execute(|Firm.all()
                          ->filter(f| $f.employees->filter(e|$e.lastName == $f.legalName && ($e.age > 20) )->toOne().firstName == 'Fabrice' )  , simpleRelationalMapping,  testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result1.values,0);
-   assertSameSQL( 'select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and ("persontable_0".LASTNAME = "root".LEGALNAME and ("persontable_0".AGE is not null and "persontable_0".AGE > 20))) where "persontable_0".FIRSTNAME = \'Fabrice\'', $result1); 
+   assertSameSQL( 'select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join personTable as "persontable_0" on (("persontable_0".LASTNAME = "root".LEGALNAME and ("persontable_0".AGE is not null and "persontable_0".AGE > 20)) and "root".ID = "persontable_0".FIRMID) where "persontable_0".FIRSTNAME = \'Fabrice\'', $result1); 
 }
 
 
@@ -216,7 +216,7 @@ function <<test.Test>> meta::relational::tests::query::qualifier::advanced::filt
   
    assertSize($result1.values,3);
    assertSameElements(['Firm C','Firm B','Firm B'],$result1.values.legalName->sort());
-   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and "persontable_0".LASTNAME = \'Firm B\') left outer join personTable as "persontable_1" on ("root".ID = "persontable_1".FIRMID) where ("persontable_0".FIRSTNAME = \'Elena\' or "persontable_1".FIRSTNAME = \'David\')', $result1);
+   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join personTable as "persontable_0" on ("persontable_0".LASTNAME = \'Firm B\' and "root".ID = "persontable_0".FIRMID) left outer join personTable as "persontable_1" on ("root".ID = "persontable_1".FIRMID) where ("persontable_0".FIRSTNAME = \'Elena\' or "persontable_1".FIRSTNAME = \'David\')', $result1);
 }
 
 function <<test.Test>> meta::relational::tests::query::qualifier::advanced::filterFunctionExpressionWithOrConditionOnRightTable():Boolean[1]
@@ -224,7 +224,7 @@ function <<test.Test>> meta::relational::tests::query::qualifier::advanced::filt
    let result1 = execute(|Firm.all()
                          ->filter(f| $f.employees->filter(e|$e.lastName == 'Lopez' || ($e.age > 20) )->toOne().lastName == 'Smith' )  , simpleRelationalMapping,  testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result1.values,2);
-   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and ("persontable_0".LASTNAME = \'Lopez\' or ("persontable_0".AGE is not null and "persontable_0".AGE > 20))) where "persontable_0".LASTNAME = \'Smith\'', $result1);
+   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join personTable as "persontable_0" on (("persontable_0".LASTNAME = \'Lopez\' or ("persontable_0".AGE is not null and "persontable_0".AGE > 20)) and "root".ID = "persontable_0".FIRMID) where "persontable_0".LASTNAME = \'Smith\'', $result1);
 }
 
 
@@ -233,7 +233,7 @@ function <<test.Test>> meta::relational::tests::query::qualifier::advanced::filt
    let result1 = execute(|Firm.all()
                          ->filter(f| $f.employeeByLastName('Smith')->exists(x| $x.age >20) )  , simpleRelationalMapping,  testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result1.values,2);
-   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join (select distinct "persontable_1".FIRMID from personTable as "persontable_1" where "persontable_1".LASTNAME = \'Smith\' and ("persontable_1".AGE is not null and "persontable_1".AGE > 20)) as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where "persontable_0".FIRMID is not null', $result1);
+   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join (select distinct "persontable_1".FIRMID from personTable as "persontable_1" where ("persontable_1".AGE is not null and "persontable_1".AGE > 20) and "persontable_1".LASTNAME = \'Smith\') as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where "persontable_0".FIRMID is not null', $result1);
 }
 
 function <<test.ToFix>> meta::relational::tests::query::qualifier::advanced::filterFunctionExpressionWithConditionOnRightTableExistsExpression():Boolean[1]
@@ -264,7 +264,7 @@ function <<test.Test>> meta::relational::tests::query::qualifier::advanced::nest
 
   assertSize($result1.values.rows,3);
   assertSameElements(['Firm X','Firm C', 'Firm B'],$result1.values.rows->map(r | $r.getString('Firm Name'))->sort());
-  assertSameSQL('select "root".LEGALNAME as "Firm Name" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and "persontable_0".LASTNAME = \'Smith\') left outer join personTable as "persontable_1" on ("root".ID = "persontable_1".FIRMID and "persontable_1".LASTNAME = \'Smith\') where (("persontable_0".AGE is not null and "persontable_1".AGE > 20) or "root".LEGALNAME = \'Firm B\')', $result1);
+  assertSameSQL('select "root".LEGALNAME as "Firm Name" from firmTable as "root" left outer join personTable as "persontable_0" on ("persontable_0".LASTNAME = \'Smith\' and "root".ID = "persontable_0".FIRMID) left outer join personTable as "persontable_1" on ("persontable_1".LASTNAME = \'Smith\' and "root".ID = "persontable_1".FIRMID) where (("persontable_0".AGE is not null and "persontable_1".AGE > 20) or "root".LEGALNAME = \'Firm B\')', $result1);
 
 }  
 
@@ -279,7 +279,7 @@ function <<test.Test>> meta::relational::tests::query::qualifier::advanced::nest
 
    assertSize($result1.values.rows,3);
    assertSameElements(['Firm X', 'Firm C', 'Firm B'],$result1.values.rows->map(r | $r.getString('Firm Name'))->sort());
-   assertSameSQL('select "root".LEGALNAME as "Firm Name" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and "persontable_0".LASTNAME = \'Smith\') left outer join personTable as "persontable_1" on ("root".ID = "persontable_1".FIRMID and "persontable_1".LASTNAME = \'Smith\') where (("persontable_0".AGE is not null and "persontable_1".AGE > 20) or "root".LEGALNAME = \'Firm B\')', $result1);
+   assertSameSQL('select "root".LEGALNAME as "Firm Name" from firmTable as "root" left outer join personTable as "persontable_0" on ("persontable_0".LASTNAME = \'Smith\' and "root".ID = "persontable_0".FIRMID) left outer join personTable as "persontable_1" on ("persontable_1".LASTNAME = \'Smith\' and "root".ID = "persontable_1".FIRMID) where (("persontable_0".AGE is not null and "persontable_1".AGE > 20) or "root".LEGALNAME = \'Firm B\')', $result1);
 }  
 
 function <<test.Test>> meta::relational::tests::query::qualifier::advanced::projectionInvolvingOneNestedAtributeOnTriangularJoinAndOtherJoin():Boolean[1]
@@ -290,5 +290,5 @@ function <<test.Test>> meta::relational::tests::query::qualifier::advanced::proj
 
   assertSize($result1.values.rows,5);
   assertSameElements(['Firm A:TDSNull:Cupertino', 'Firm X:TDSNull:New York', 'Firm C:TDSNull:Mountain View', 'No Employees:TDSNull:Mountain View', 'Firm B:TDSNull:Tokyo'],$result1.values.rows->map(r | $r.getString('c1')+':'+$r.get('c2')->toString() +':'+$r.getString('c3'))->sort());
-  assertSameSQL('select "root".LEGALNAME as "c1", "persontable_0".LASTNAME as "c2", concat("persontable_0".LASTNAME, "addresstable_0".NAME) as "c3" from firmTable as "root" left outer join (select "persontable_1".FIRMID as FIRMID, "locationtable_0".PLACE as PLACE, "persontable_1".LASTNAME as LASTNAME from personTable as "persontable_1" left outer join locationTable as "locationtable_0" on ("persontable_1".ID = "locationtable_0".PERSONID)) as "persontable_0" on ("persontable_0".PLACE = "root".LEGALNAME and "root".ID = "persontable_0".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID)', $result1); 
+  assertSameSQL('select "root".LEGALNAME as "c1", "persontable_0".LASTNAME as "c2", concat("persontable_0".LASTNAME, "addresstable_0".NAME) as "c3" from firmTable as "root" left outer join (select "persontable_1".FIRMID as FIRMID, "locationtable_0".PLACE as PLACE, "persontable_1".LASTNAME as LASTNAME from personTable as "persontable_1" left outer join locationTable as "locationtable_0" on ("persontable_1".ID = "locationtable_0".PERSONID)) as "persontable_0" on ("root".ID = "persontable_0".FIRMID and "persontable_0".PLACE = "root".LEGALNAME) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID)', $result1); 
 }  

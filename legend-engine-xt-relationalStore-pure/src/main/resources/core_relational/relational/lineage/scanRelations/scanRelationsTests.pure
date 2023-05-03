@@ -85,10 +85,10 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
    assertEquals($expected, $relationTree-> relationTreeAsString());
 
    let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions())-> toOne();
-   let expected1 =  'root\n' +
-                    '  ------> (t) Person [ID, name]\n' +
-                    '    ------> (t) Bicycle(or_equal_PersonID_s(Bicycleb_PersonID_SQLNull_Bicycleb_Description,Bicycle,)s(SQLNull_Carc_PersonID_Carc_Description,Car,)b_PersonID_0_equal_PersonID_SQLNull) [b_Description, b_PersonID]\n' +
-                    '    ------> (t) Car(or_equal_PersonID_SQLNull_equal_PersonID_s(Bicycleb_PersonID_SQLNull_Bicycleb_Description,Bicycle,)s(SQLNull_Carc_PersonID_Carc_Description,Car,)c_PersonID_1) [c_Description, c_PersonID]\n';
+   let expected1 =  'root\n' + 
+                    '  ------> (t) Person [ID, name]\n' + 
+                    '    ------> (t) Bicycle(or_equal_PersonID_SQLNull_equal_PersonID_s(Bicycleb_PersonID_SQLNull_Bicycleb_Description,Bicycle,)s(SQLNull_Carc_PersonID_Carc_Description,Car,)b_PersonID_0) [b_Description, b_PersonID]\n' + 
+                    '    ------> (t) Car(or_equal_PersonID_s(Bicycleb_PersonID_SQLNull_Bicycleb_Description,Bicycle,)s(SQLNull_Carc_PersonID_Carc_Description,Car,)c_PersonID_1_equal_PersonID_SQLNull) [c_Description, c_PersonID]\n';
    assertEquals($expected1, $relationTreeFromPureToSQL-> relationTreeAsString());
 }
 
@@ -538,24 +538,24 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
    assertEquals($expected, $relationTree-> relationTreeAsString());
 
    let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions());
-   let expected1 ='root\n' +
-                  '  ------> (v) orderNegativePnlViewOnView [ORDER_ID, pnl]\n' +
-                  '    ------> (t) orderTable(or_equal_SQLNull_orderTableID_equal_s(orderPnlViewOnViewORDER_ID_SQLNull_orderPnlViewOnViewpnl,orderPnlViewOnView,)s(SQLNull_orderNegativePnlViewOnViewORDER_ID_orderNegativePnlViewOnViewpnl,orderNegativePnlViewOnView,)ORDER_ID_1_orderTableID) [ID, settlementDateTime]\n' +
-                  '    root\n' +
-                  '      ------> (v) orderNegativePnlView [ORDER_ID, pnl]\n' +
-                  '        root\n' +
-                  '          ------> (t) orderPnlTable [ORDER_ID, pnl]\n' +
-                  '            ------> (t) orderTable(equal_orderPnlTableORDER_ID_orderTableID) [ID, accountID]\n' +
-                  '              ------> (t) accountTable(equal_orderTableaccountID_accountTableID) [ID]\n' +
-                  '              ------> (t) salesPersonTable(equal_orderTableaccountID_salesPersonTableACCOUNT_ID) [ACCOUNT_ID, NAME, PERSON_ID]\n' +
-                  '  ------> (v) orderPnlViewOnView [ORDER_ID, pnl]\n' +
-                  '    ------> (t) orderTable(or_equal_s(orderPnlViewOnViewORDER_ID_SQLNull_orderPnlViewOnViewpnl,orderPnlViewOnView,)s(SQLNull_orderNegativePnlViewOnViewORDER_ID_orderNegativePnlViewOnViewpnl,orderNegativePnlViewOnView,)ORDER_ID_0_orderTableID_equal_SQLNull_orderTableID) [ID, settlementDateTime]\n' +
-                  '    root\n' +
-                  '      ------> (v) orderPnlView [ORDER_ID, pnl]\n' +
-                  '        root\n' +
-                  '          ------> (t) orderPnlTable [ORDER_ID, pnl]\n' +
-                  '            ------> (t) orderTable(equal_orderPnlTableORDER_ID_orderTableID) [ID, accountID]\n' +
-                  '              ------> (t) accountTable(equal_orderTableaccountID_accountTableID) [ID]\n' +
+   let expected1 ='root\n' + 
+                  '  ------> (v) orderNegativePnlViewOnView [ORDER_ID, pnl]\n' + 
+                  '    ------> (t) orderTable(or_equal_s(orderPnlViewOnViewORDER_ID_SQLNull_orderPnlViewOnViewpnl,orderPnlViewOnView,)s(SQLNull_orderNegativePnlViewOnViewORDER_ID_orderNegativePnlViewOnViewpnl,orderNegativePnlViewOnView,)ORDER_ID_1_orderTableID_equal_SQLNull_orderTableID) [ID, settlementDateTime]\n' + 
+                  '    root\n' + 
+                  '      ------> (v) orderNegativePnlView [ORDER_ID, pnl]\n' + 
+                  '        root\n' + 
+                  '          ------> (t) orderPnlTable [ORDER_ID, pnl]\n' + 
+                  '            ------> (t) orderTable(equal_orderPnlTableORDER_ID_orderTableID) [ID, accountID]\n' + 
+                  '              ------> (t) accountTable(equal_orderTableaccountID_accountTableID) [ID]\n' + 
+                  '              ------> (t) salesPersonTable(equal_orderTableaccountID_salesPersonTableACCOUNT_ID) [ACCOUNT_ID, NAME, PERSON_ID]\n' + 
+                  '  ------> (v) orderPnlViewOnView [ORDER_ID, pnl]\n' + 
+                  '    ------> (t) orderTable(or_equal_SQLNull_orderTableID_equal_s(orderPnlViewOnViewORDER_ID_SQLNull_orderPnlViewOnViewpnl,orderPnlViewOnView,)s(SQLNull_orderNegativePnlViewOnViewORDER_ID_orderNegativePnlViewOnViewpnl,orderNegativePnlViewOnView,)ORDER_ID_0_orderTableID) [ID, settlementDateTime]\n' + 
+                  '    root\n' + 
+                  '      ------> (v) orderPnlView [ORDER_ID, pnl]\n' + 
+                  '        root\n' + 
+                  '          ------> (t) orderPnlTable [ORDER_ID, pnl]\n' + 
+                  '            ------> (t) orderTable(equal_orderPnlTableORDER_ID_orderTableID) [ID, accountID]\n' + 
+                  '              ------> (t) accountTable(equal_orderTableaccountID_accountTableID) [ID]\n' + 
                   '              ------> (t) salesPersonTable(equal_orderTableaccountID_salesPersonTableACCOUNT_ID) [ACCOUNT_ID, NAME, PERSON_ID]\n';
    assertEquals($expected1, $relationTreeFromPureToSQL-> relationTreeAsString());
 }

@@ -327,7 +327,7 @@ function <<test.Test>> meta::relational::tests::map::testSequenceMapWithConfusin
     assertEquals(['Securities','ok','Firm X'], $result.values.rows->at(3).values);
     assertEquals(['Banking','ok','Firm X'], $result.values.rows->at(4).values);
     assertEquals(['Federation','ok','Firm X'], $result.values.rows->at(5).values);
-    assertEquals('select "root".name as "name", \'ok\' as "p_name", "orgtable_1".name as "p_p_name" from orgTable as "root" left outer join orgTable as "orgtable_1" on ("root".parentId = "orgtable_1".id and "orgtable_1".filterVal <= 4) where "root".filterVal <= 4', $result->sqlRemoveFormatting());
+    assertEquals('select "root".name as "name", \'ok\' as "p_name", "orgtable_1".name as "p_p_name" from orgTable as "root" left outer join orgTable as "orgtable_1" on ("orgtable_1".filterVal <= 4 and "root".parentId = "orgtable_1".id) where "root".filterVal <= 4', $result->sqlRemoveFormatting());
    true;
 }
 

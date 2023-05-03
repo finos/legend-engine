@@ -54,7 +54,7 @@ function <<test.Test>> meta::relational::tests::projection::qualifier::testDeriv
    let result = execute(|Product.all()->project([#/Product/name#, #/Product/cusip#]), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 4);
    assertEquals('CUSIP1,CUSIP2,CUSIP3,Firm A,Firm C,Firm D,Firm X,TDSNull', $result.values.rows->map(r|$r.values)->sort()->makeString(','));
-   assertEquals('select "root".NAME as "name", "synonymtable_0".NAME as "cusip" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".PRODID = "root".ID and "synonymtable_0".TYPE = \'CUSIP\')', $result->sqlRemoveFormatting());
+   assertEquals('select "root".NAME as "name", "synonymtable_0".NAME as "cusip" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".TYPE = \'CUSIP\' and "synonymtable_0".PRODID = "root".ID)', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>>   meta::relational::tests::projection::qualifier::testDerivedWithFilteringTwoProperties():Boolean[1]
@@ -62,7 +62,7 @@ function <<test.Test>>   meta::relational::tests::projection::qualifier::testDer
    let result = execute(|Product.all()->project([#/Product/name#, #/Product/cusip#, #/Product/isin#]), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 4);
    assertEquals('CUSIP1,CUSIP2,CUSIP3,Firm A,Firm C,Firm D,Firm X,ISIN1,ISIN2,ISIN3,TDSNull,TDSNull', $result.values.rows->map(r|$r.values)->sort()->makeString(','));
-   assertEquals('select "root".NAME as "name", "synonymtable_0".NAME as "cusip", "synonymtable_1".NAME as "isin" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".PRODID = "root".ID and "synonymtable_0".TYPE = \'CUSIP\') left outer join productSchema.synonymTable as "synonymtable_1" on ("synonymtable_1".PRODID = "root".ID and "synonymtable_1".TYPE = \'ISIN\')', $result->sqlRemoveFormatting());
+   assertEquals('select "root".NAME as "name", "synonymtable_0".NAME as "cusip", "synonymtable_1".NAME as "isin" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".TYPE = \'CUSIP\' and "synonymtable_0".PRODID = "root".ID) left outer join productSchema.synonymTable as "synonymtable_1" on ("synonymtable_1".TYPE = \'ISIN\' and "synonymtable_1".PRODID = "root".ID)', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::qualifier::testQualifierWithFilteringAndParameters():Boolean[1]
@@ -70,7 +70,7 @@ function <<test.Test>> meta::relational::tests::projection::qualifier::testQuali
    let result = execute(|Product.all()->project([#/Product/name#, #/Product/synonymByType(ProductSynonymType.CUSIP)/name!cusip#]), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 4);
    assertEquals('CUSIP1,CUSIP2,CUSIP3,Firm A,Firm C,Firm D,Firm X,TDSNull', $result.values.rows->map(r|$r.values)->sort()->makeString(','));
-   assertEquals('select "root".NAME as "name", "synonymtable_0".NAME as "cusip" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".PRODID = "root".ID and "synonymtable_0".TYPE = \'CUSIP\')', $result->sqlRemoveFormatting());
+   assertEquals('select "root".NAME as "name", "synonymtable_0".NAME as "cusip" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".TYPE = \'CUSIP\' and "synonymtable_0".PRODID = "root".ID)', $result->sqlRemoveFormatting());
 }
 
 // Alloy exclusion reason: 10. Tricky usage of variables
@@ -89,7 +89,7 @@ function <<test.Test>> meta::relational::tests::projection::qualifier::testTwoQu
    let result = execute(|Product.all()->project([#/Product/isinSynonym/name!isin#, #/Product/cusipSynonym/name!cusip#]), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values->at(0), 1);
    assertEquals(['ISIN1', 'CUSIP1', 'ISIN2', 'CUSIP2', 'ISIN3', 'CUSIP3', ^TDSNull(), ^TDSNull()], $result.values->toOne().rows.values);
-   assertEquals('select "synonymtable_0".NAME as "isin", "synonymtable_1".NAME as "cusip" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".PRODID = "root".ID and "synonymtable_0".TYPE = \'ISIN\') left outer join productSchema.synonymTable as "synonymtable_1" on ("synonymtable_1".PRODID = "root".ID and "synonymtable_1".TYPE = \'CUSIP\')', $result->sqlRemoveFormatting());
+   assertEquals('select "synonymtable_0".NAME as "isin", "synonymtable_1".NAME as "cusip" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".TYPE = \'ISIN\' and "synonymtable_0".PRODID = "root".ID) left outer join productSchema.synonymTable as "synonymtable_1" on ("synonymtable_1".TYPE = \'CUSIP\' and "synonymtable_1".PRODID = "root".ID)', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::qualifier::testQualifierInLambdaDeep():Boolean[1]
@@ -153,19 +153,19 @@ function <<test.Test>> meta::relational::tests::projection::qualifier::testQuali
    let result = execute(|Trade.all()->project([t | $t.tradeDateEventTypeInlined], ['tradeDateEventTypeInlined']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 11);
    assertEquals(['New', ^TDSNull(), ^TDSNull(), ^TDSNull(), ^TDSNull(), 'New', ^TDSNull(), ^TDSNull(), ^TDSNull(), ^TDSNull(), ^TDSNull()], $result.values.rows.values);
-   assertEquals('select "tradeeventtable_0".eventType as "tradeDateEventTypeInlined" from tradeTable as "root" left outer join tradeEventTable as "tradeeventtable_0" on ("root".ID = "tradeeventtable_0".trade_id and "tradeeventtable_0".eventDate = "root".tradeDate)', $result->sqlRemoveFormatting());
+   assertEquals('select "tradeeventtable_0".eventType as "tradeDateEventTypeInlined" from tradeTable as "root" left outer join tradeEventTable as "tradeeventtable_0" on ("tradeeventtable_0".eventDate = "root".tradeDate and "root".ID = "tradeeventtable_0".trade_id)', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::qualifier::testQualifierFunctionConsistencyWithDataTypeProperty():Boolean[1]
 {
    let result = execute(|Trade.all()->project([t | $t.tradeDateEventType], ['tradeDateEventType']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals(['New', ^TDSNull(), ^TDSNull(), ^TDSNull(), ^TDSNull(), 'New', ^TDSNull(), ^TDSNull(), ^TDSNull(), ^TDSNull(), ^TDSNull()], $result.values.rows.values);
-   assertEquals('select "tradeeventtable_0".eventType as "tradeDateEventType" from tradeTable as "root" left outer join tradeEventTable as "tradeeventtable_0" on ("root".ID = "tradeeventtable_0".trade_id and "tradeeventtable_0".eventDate = "root".tradeDate)', $result->sqlRemoveFormatting());
+   assertEquals('select "tradeeventtable_0".eventType as "tradeDateEventType" from tradeTable as "root" left outer join tradeEventTable as "tradeeventtable_0" on ("tradeeventtable_0".eventDate = "root".tradeDate and "root".ID = "tradeeventtable_0".trade_id)', $result->sqlRemoveFormatting());
 
    let result2 = execute(|Trade.all()->project([t | $t.tradeDateEventTypeInlined], ['tradeDateEventTypeInlined']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals($result.values.rows.values, $result2.values->at(0).rows.values);
    assertEquals($result->sqlRemoveFormatting()->replace('d#8', 'd#7')->replace('"tradeDateEventType"','"tradeDateEventTypeInlined"'), $result2->sqlRemoveFormatting());
-   assertEquals('select "tradeeventtable_0".eventType as "tradeDateEventTypeInlined" from tradeTable as "root" left outer join tradeEventTable as "tradeeventtable_0" on ("root".ID = "tradeeventtable_0".trade_id and "tradeeventtable_0".eventDate = "root".tradeDate)', $result2->sqlRemoveFormatting());
+   assertEquals('select "tradeeventtable_0".eventType as "tradeDateEventTypeInlined" from tradeTable as "root" left outer join tradeEventTable as "tradeeventtable_0" on ("tradeeventtable_0".eventDate = "root".tradeDate and "root".ID = "tradeeventtable_0".trade_id)', $result2->sqlRemoveFormatting());
 
 }
 
@@ -173,11 +173,11 @@ function <<test.Test>> meta::relational::tests::projection::qualifier::testQuali
 {
    let result = execute(|Trade.all()->project([t | $t.initiator.firstName], ['initiator_firstname']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals(['Peter', ^TDSNull(), ^TDSNull(), ^TDSNull(), ^TDSNull(), 'Anthony', ^TDSNull(), ^TDSNull(), ^TDSNull(), ^TDSNull(), ^TDSNull()], $result.values.rows.values);
-   assertEquals('select "persontable_0".FIRSTNAME as "initiator_firstname" from tradeTable as "root" left outer join tradeEventTable as "tradeeventtable_0" on ("root".ID = "tradeeventtable_0".trade_id and "tradeeventtable_0".eventDate = "root".tradeDate) left outer join personTable as "persontable_0" on ("tradeeventtable_0".person_id = "persontable_0".ID)', $result->sqlRemoveFormatting());
+   assertEquals('select "persontable_0".FIRSTNAME as "initiator_firstname" from tradeTable as "root" left outer join tradeEventTable as "tradeeventtable_0" on ("tradeeventtable_0".eventDate = "root".tradeDate and "root".ID = "tradeeventtable_0".trade_id) left outer join personTable as "persontable_0" on ("tradeeventtable_0".person_id = "persontable_0".ID)', $result->sqlRemoveFormatting());
 
    let result2 = execute(|Trade.all()->project([t | $t.initiatorInlined.firstName], ['initiator_firstname']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals(['Peter', ^TDSNull(), ^TDSNull(), ^TDSNull(), ^TDSNull(), 'Anthony', ^TDSNull(), ^TDSNull(), ^TDSNull(), ^TDSNull(), ^TDSNull()], $result.values.rows.values);
-   assertEquals('select "persontable_0".FIRSTNAME as "initiator_firstname" from tradeTable as "root" left outer join tradeEventTable as "tradeeventtable_0" on ("root".ID = "tradeeventtable_0".trade_id and "tradeeventtable_0".eventDate = "root".tradeDate) left outer join personTable as "persontable_0" on ("tradeeventtable_0".person_id = "persontable_0".ID)', $result2->sqlRemoveFormatting());
+   assertEquals('select "persontable_0".FIRSTNAME as "initiator_firstname" from tradeTable as "root" left outer join tradeEventTable as "tradeeventtable_0" on ("tradeeventtable_0".eventDate = "root".tradeDate and "root".ID = "tradeeventtable_0".trade_id) left outer join personTable as "persontable_0" on ("tradeeventtable_0".person_id = "persontable_0".ID)', $result2->sqlRemoveFormatting());
 
    assertEquals($result.values.rows.values, $result2.values.rows.values);
    assertEquals($result->sqlRemoveFormatting()->replace('d#10', 'd#9'), $result2->sqlRemoveFormatting());
@@ -211,7 +211,7 @@ function <<test.Test>> meta::relational::tests::projection::qualifier::testFilte
    assertSize($result.values.rows, 4);
    assertEquals(['Firm A', 1, 'Firm C', 1, 'Firm D', 0, 'Firm X', 0], $result.values.rows.values);
    
-   assertEquals('select "root".NAME as "name", count("synonymtable_0".NAME) as "cusip" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".PRODID = "root".ID and "synonymtable_0".TYPE = \'CUSIP\' and "synonymtable_0".ID != 1) group by "name" order by "name"', $result->sqlRemoveFormatting());
+   assertEquals('select "root".NAME as "name", count("synonymtable_0".NAME) as "cusip" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".ID != 1 and "synonymtable_0".TYPE = \'CUSIP\' and "synonymtable_0".PRODID = "root".ID) group by "name" order by "name"', $result->sqlRemoveFormatting());
      
 }
 
@@ -230,7 +230,7 @@ function <<test.Test>> meta::relational::tests::projection::qualifier::testFilte
 
    assertEquals([^TDSNull(), 2, 'CUSIP2', 1, 'CUSIP3', 1], $result.values.rows.values);
    
-   assertEquals('select "synonymtable_0".NAME as "cusip", count("root".NAME) as "count" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".PRODID = "root".ID and "synonymtable_0".TYPE = \'CUSIP\' and "synonymtable_0".ID != 1) group by "cusip" order by "cusip"', $result->sqlRemoveFormatting());
+   assertEquals('select "synonymtable_0".NAME as "cusip", count("root".NAME) as "count" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".ID != 1 and "synonymtable_0".TYPE = \'CUSIP\' and "synonymtable_0".PRODID = "root".ID) group by "cusip" order by "cusip"', $result->sqlRemoveFormatting());
      
 }
 
@@ -239,7 +239,7 @@ function <<test.Test>> meta::relational::tests::projection::qualifier::testQuali
    let result = execute(|Firm.all()->project([f|$f.legalName,f|$f.employeeByLastName($f.legalName).name],['firmId','employeeWithFirmLastName']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(['Firm X~ ', 'Firm A~ ', 'Firm B~ ', 'Firm C~ '],$tds.rows->map(r|$r.values->makeString('~')));
-   assertEquals('select "root".LEGALNAME as "firmId", concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) as "employeeWithFirmLastName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and "persontable_0".LASTNAME = "root".LEGALNAME)', $result->sqlRemoveFormatting());
+   assertEquals('select "root".LEGALNAME as "firmId", concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) as "employeeWithFirmLastName" from firmTable as "root" left outer join personTable as "persontable_0" on ("persontable_0".LASTNAME = "root".LEGALNAME and "root".ID = "persontable_0".FIRMID)', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::qualifier::testQualifierWithVariableArgReferencedFirstInFilterEqualCriteria():Boolean[1]
@@ -247,7 +247,7 @@ function <<test.Test>> meta::relational::tests::projection::qualifier::testQuali
    let result = execute(|Firm.all()->project([f|$f.legalName,f|$f.employeeByLastNameWhereVarIsFirstEqualArg($f.legalName).name],['firmId','employeeWithFirmLastName']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(['Firm X~ ', 'Firm A~ ', 'Firm B~ ', 'Firm C~ '],$tds.rows->map(r|$r.values->makeString('~')));
-   assertEquals('select "root".LEGALNAME as "firmId", concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) as "employeeWithFirmLastName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and "root".LEGALNAME = "persontable_0".LASTNAME)', $result->sqlRemoveFormatting());   
+   assertEquals('select "root".LEGALNAME as "firmId", concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) as "employeeWithFirmLastName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".LEGALNAME = "persontable_0".LASTNAME and "root".ID = "persontable_0".FIRMID)', $result->sqlRemoveFormatting());   
 }
 
 function <<test.Test>> meta::relational::tests::projection::qualifier::testQualifierWithVariableArgWithComplexTypeProperty():Boolean[1]
@@ -273,7 +273,7 @@ function <<test.Test>> meta::relational::tests::projection::qualifier::testFilte
                                                                               col(t | $t.account.name,'acc')]), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    
    assertSize($result.values.rows, 1);
-   assertEquals('select "root".ID as "id", "accounttable_0".name as "acc" from tradeTable as "root" left outer join tradeEventTable as "tradeeventtable_0" on ("root".ID = "tradeeventtable_0".trade_id and "tradeeventtable_0".trade_id = \'1\' and "tradeeventtable_0".eventDate = "root".tradeDate) left outer join accountTable as "accounttable_0" on ("root".accountID = "accounttable_0".ID) where (("tradeeventtable_0".eventType is not null or "accounttable_0".name = \'Account 1\') and "root".ID = \'1\')', $result->sqlRemoveFormatting());
+   assertEquals('select "root".ID as "id", "accounttable_0".name as "acc" from tradeTable as "root" left outer join tradeEventTable as "tradeeventtable_0" on ("tradeeventtable_0".eventDate = "root".tradeDate and "root".ID = "tradeeventtable_0".trade_id and "tradeeventtable_0".trade_id = \'1\') left outer join accountTable as "accounttable_0" on ("root".accountID = "accounttable_0".ID) where (("tradeeventtable_0".eventType is not null or "accounttable_0".name = \'Account 1\') and "root".ID = \'1\')', $result->sqlRemoveFormatting());
 }
 
 ###Mapping

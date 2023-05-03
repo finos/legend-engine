@@ -68,7 +68,7 @@ function <<test.Test>> meta::relational::tests::mapping::multigrain::testToManyW
                                        ->project([s | $s.quantity], ['num'])
                                        , testMappingFirmAccount, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements([500], $result.values.rows.values);
-   assertSameSQL('select "root".QTY as "num" from POSITION as "root" left outer join FIRM_ACCT_IF_MULTIGRAIN as "firm_acct_if_multigrain_0" on ("root".ACCT_I = "firm_acct_if_multigrain_0".OID) left outer join FIRM_ACCT_IF_MULTIGRAIN as "firm_acct_if_multigrain_1" on ("firm_acct_if_multigrain_0".ACCOUNT_NUM = "firm_acct_if_multigrain_1".ACCOUNT_NUM and "firm_acct_if_multigrain_1".IF_TYPE = \'P\' and "firm_acct_if_multigrain_1".DLEVEL = \'S\') where "firm_acct_if_multigrain_1".IF_NUM = 1022', $result);
+   assertSameSQL('select "root".QTY as "num" from POSITION as "root" left outer join FIRM_ACCT_IF_MULTIGRAIN as "firm_acct_if_multigrain_0" on ("root".ACCT_I = "firm_acct_if_multigrain_0".OID) left outer join FIRM_ACCT_IF_MULTIGRAIN as "firm_acct_if_multigrain_1" on ("firm_acct_if_multigrain_1".DLEVEL = \'S\' and "firm_acct_if_multigrain_1".IF_TYPE = \'P\' and "firm_acct_if_multigrain_0".ACCOUNT_NUM = "firm_acct_if_multigrain_1".ACCOUNT_NUM) where "firm_acct_if_multigrain_1".IF_NUM = 1022', $result);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::multigrain::testToManyWithQualifierWithFilterOnJoin():Boolean[1]
@@ -79,7 +79,7 @@ function <<test.Test>> meta::relational::tests::mapping::multigrain::testToManyW
                                        ->project([s | $s.quantity], ['num'])
                                        , testMappingFirmAccount, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements([500], $result.values.rows.values);
-   assertSameSQL('select "root".QTY as "num" from POSITION as "root" left outer join FIRM_ACCT_IF_MULTIGRAIN as "firm_acct_if_multigrain_0" on ("root".ACCT_I = "firm_acct_if_multigrain_0".OID) left outer join FIRM_ACCT_IF_MULTIGRAIN as "firm_acct_if_multigrain_1" on ("firm_acct_if_multigrain_0".ACCOUNT_NUM = "firm_acct_if_multigrain_1".ACCOUNT_NUM and "firm_acct_if_multigrain_1".IF_TYPE = \'P\' and "firm_acct_if_multigrain_1".DLEVEL = \'S\') left outer join IF_OTHER_INFO as "if_other_info_0" on ("firm_acct_if_multigrain_1".IF_NUM = "if_other_info_0".IF_CODE) where "if_other_info_0".IF_NAME = \'IfName1\'', $result);
+   assertSameSQL( 'select "root".QTY as "num" from POSITION as "root" left outer join FIRM_ACCT_IF_MULTIGRAIN as "firm_acct_if_multigrain_0" on ("root".ACCT_I = "firm_acct_if_multigrain_0".OID) left outer join FIRM_ACCT_IF_MULTIGRAIN as "firm_acct_if_multigrain_1" on ("firm_acct_if_multigrain_1".DLEVEL = \'S\' and "firm_acct_if_multigrain_1".IF_TYPE = \'P\' and "firm_acct_if_multigrain_0".ACCOUNT_NUM = "firm_acct_if_multigrain_1".ACCOUNT_NUM) left outer join IF_OTHER_INFO as "if_other_info_0" on ("firm_acct_if_multigrain_1".IF_NUM = "if_other_info_0".IF_CODE) where "if_other_info_0".IF_NAME = \'IfName1\'', $result);
 }
 
 

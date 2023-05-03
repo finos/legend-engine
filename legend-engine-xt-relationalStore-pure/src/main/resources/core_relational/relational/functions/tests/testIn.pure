@@ -147,7 +147,7 @@ function <<test.Test>> meta::relational::tests::query::filter::in::testContainsO
    let result = execute(|Firm.all()->filter(f|$f.employees.firstName->contains('John')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals('Firm X', $result.values->toOne().legalName);
-   assertEquals('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" where exists(select 1 from personTable as "persontable_0" where "persontable_0".FIRSTNAME = \'John\' and "root".ID = "persontable_0".FIRMID)', $result->sqlRemoveFormatting());
+   assertEquals('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" where exists(select 1 from personTable as "persontable_0" where "root".ID = "persontable_0".FIRMID and "persontable_0".FIRSTNAME = \'John\')', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::query::filter::in::testContainsOnToOneProperty():Boolean[1]

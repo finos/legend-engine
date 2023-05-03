@@ -163,7 +163,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::red
     meta::relational::tests::simpleRelationalMapping,
     DatabaseType.Redshift,
     meta::relational::extension::relationalExtensions());
-   assertSameSQL('select concat("root".FIRSTNAME, \' \', "root".LASTNAME) as "name", "union_d#5_d_m2"."addressTableNAME" as "address" from personTable as "root" left outer join (select "addressTable_d#6".ID as ID, null as ADDRESSID, "addressTable_d#6".NAME as "addressTableNAME" from addressTable as "addressTable_d#6" UNION ALL select "firmTable_d#8".ID as ID, "firmTable_d#8".ADDRESSID as ADDRESSID, "addressTable_d#6_f_d".NAME as "addressTableNAME" from firmTable as "firmTable_d#8" left outer join addressTable as "addressTable_d#6_f_d" on ("addressTable_d#6_f_d".ID = "firmTable_d#8".ADDRESSID)) as "union_d#5_d_m2" on ("union_d#5_d_m2".ID = "root".FIRMID or "union_d#5_d_m2".ID = "root".ADDRESSID)', $result);
+   assertSameSQL('select concat("root".FIRSTNAME, \' \', "root".LASTNAME) as "name", "union_d#5_d_m2"."addressTableNAME" as "address" from personTable as "root" left outer join (select "addressTable_d#6".ID as ID, null as ADDRESSID, "addressTable_d#6".NAME as "addressTableNAME" from addressTable as "addressTable_d#6" UNION ALL select "firmTable_d#8".ID as ID, "firmTable_d#8".ADDRESSID as ADDRESSID, "addressTable_d#6_f_d".NAME as "addressTableNAME" from firmTable as "firmTable_d#8" left outer join addressTable as "addressTable_d#6_f_d" on ("addressTable_d#6_f_d".ID = "firmTable_d#8".ADDRESSID)) as "union_d#5_d_m2" on ("union_d#5_d_m2".ID = "root".ADDRESSID or "union_d#5_d_m2".ID = "root".FIRMID)', $result);
 
 }
 

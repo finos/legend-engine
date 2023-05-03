@@ -328,7 +328,7 @@ function meta::relational::functions::pureToSqlQuery::combineFilters(s:Relationa
          |if ($ns->size() == 1,
             | $ns->toOne(),
             | let dynaName = if($and,| 'and',| 'or');
-              newAndOrDynaFunctionRelaxedBrackets($dynaName, $ns->reverse());
+              newAndOrDynaFunctionRelaxedBrackets($dynaName, $ns);
          )
    );
 }

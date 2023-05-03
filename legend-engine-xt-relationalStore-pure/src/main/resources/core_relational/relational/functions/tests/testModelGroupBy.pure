@@ -913,7 +913,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testGroupByAndFilterIso
    assertSize($result.values, 1);
    assertEquals(['CUSIP1', 345.0], $result.values.rows.values);
 
-   assertSameSQL('select "synonymtable_0".NAME as "Cusip", sum("root".quantity) as "Total Quantity" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) left outer join (select "synonymtable_0".PRODID as PRODID, "synonymtable_0".NAME as NAME from productSchema.synonymTable as "synonymtable_0" where "synonymtable_0".TYPE = \'CUSIP\') as "synonymtable_0" on ("synonymtable_0".PRODID = "producttable_0".ID) left outer join productSchema.synonymTable as "synonymtable_1" on ("synonymtable_1".PRODID = "producttable_0".ID and "synonymtable_1".TYPE = \'CUSIP\') where "synonymtable_1".NAME = \'CUSIP1\' group by "Cusip"', $result);
+   assertSameSQL('select "synonymtable_0".NAME as "Cusip", sum("root".quantity) as "Total Quantity" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) left outer join (select "synonymtable_0".PRODID as PRODID, "synonymtable_0".NAME as NAME from productSchema.synonymTable as "synonymtable_0" where "synonymtable_0".TYPE = \'CUSIP\') as "synonymtable_0" on ("synonymtable_0".PRODID = "producttable_0".ID) left outer join productSchema.synonymTable as "synonymtable_1" on ("synonymtable_1".TYPE = \'CUSIP\' and "synonymtable_1".PRODID = "producttable_0".ID) where "synonymtable_1".NAME = \'CUSIP1\' group by "Cusip"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::groupBy::testGroupByWithJoinH2():Boolean[1]

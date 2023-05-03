@@ -41,7 +41,7 @@ function <<test.Test>> meta::relational::tests::advanced::forced::filter::testFi
 function <<test.Test>> meta::relational::tests::advanced::forced::filter::testFilterMappingWithProjectionOverlappForcedOnClause():Boolean[1]
 {
    let result = meta::relational::tests::advanced::forced::filter::testFilterMappingWithProjectionOverlapp(IsolationStrategy.MoveFilterInOnClause);
-   assertSameSQL('select "root".name as "name", "orgtable_1".name as "p_name", "orgtable_2".name as "p_p_name" from orgTable as "root" left outer join orgTable as "orgtable_1" on ("root".parentId = "orgtable_1".id and "orgtable_1".filterVal <= 4) left outer join orgTable as "orgtable_2" on ("orgtable_1".parentId = "orgtable_2".id and "orgtable_2".filterVal <= 4) where "root".filterVal <= 4', $result->sqlRemoveFormatting());
+   assertSameSQL('select "root".name as "name", "orgtable_1".name as "p_name", "orgtable_2".name as "p_p_name" from orgTable as "root" left outer join orgTable as "orgtable_1" on ("orgtable_1".filterVal <= 4 and "root".parentId = "orgtable_1".id) left outer join orgTable as "orgtable_2" on ("orgtable_2".filterVal <= 4 and "orgtable_1".parentId = "orgtable_2".id) where "root".filterVal <= 4', $result->sqlRemoveFormatting());
 }
 
 function meta::relational::tests::advanced::forced::filter::testFilterMappingWithProjectionOverlapp(isolation:IsolationStrategy[1]):Result<Any|*>[1]

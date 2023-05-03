@@ -56,14 +56,14 @@ function <<test.Test>> meta::relational::tests::query::qualifier::testWithParame
    assertSize($result.values, 1);
    assertEquals('Firm A', $result.values.name);
    assertSize(0, execute(|Product.all()->filter(p|$p.synonymByType(ProductSynonymType.CUSIP).name == 'ISIN2'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions())->size());
-   assertSameSQL('select "root".ID as "pk_0", "root".NAME as "name" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".PRODID = "root".ID and "synonymtable_0".TYPE = \'ISIN\') where "synonymtable_0".NAME = \'ISIN2\'', $result);
+   assertSameSQL('select "root".ID as "pk_0", "root".NAME as "name" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".TYPE = \'ISIN\' and "synonymtable_0".PRODID = "root".ID) where "synonymtable_0".NAME = \'ISIN2\'', $result);
 }
 
 function <<test.Test>> meta::relational::tests::query::qualifier::testExistsWithQualifierOnleftSide():Boolean[1]
 {
    let result = execute(|Trade.all()->filter(t|$t.eventsByDate(%2014-12-02)->exists(e|$e.eventType == 'New')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 0);
-   assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) left outer join (select distinct "tradeeventtable_2".trade_id from tradeEventTable as "tradeeventtable_2" where "tradeeventtable_2".eventDate = \'2014-12-02\' and "tradeeventtable_2".eventType = \'New\') as "tradeeventtable_1" on ("root".ID = "tradeeventtable_1".trade_id) where "tradeeventtable_1".trade_id is not null', $result);
+   assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".tradeDate as "date", "root".settlementDateTime as "settlementDateTime", "tradeeventviewmaxtradeeventdate_0".maxTradeEventDate as "latestEventDate" from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeeventviewmaxtradeeventdate_0" on ("root".ID = "tradeeventviewmaxtradeeventdate_0".trade_id) left outer join (select distinct "tradeeventtable_2".trade_id from tradeEventTable as "tradeeventtable_2" where "tradeeventtable_2".eventType = \'New\' and "tradeeventtable_2".eventDate = \'2014-12-02\') as "tradeeventtable_1" on ("root".ID = "tradeeventtable_1".trade_id) where "tradeeventtable_1".trade_id is not null', $result);
 
    let result2 = execute(|Trade.all()->filter(t|$t.eventsByDate(%2014-12-01)->exists(e|$e.eventType == 'New')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result2.values, 1);
@@ -78,7 +78,7 @@ function <<test.Test>> meta::relational::tests::query::qualifier::testAssociatio
 {
    let result = execute(|Product.all()->filter(p|$p.synonymByType(ProductSynonymType.ISIN).name == 'ISIN2'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
-   assertSameSQL( 'select "root".ID as "pk_0", "root".NAME as "name" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".PRODID = "root".ID and "synonymtable_0".TYPE = \'ISIN\') where "synonymtable_0".NAME = \'ISIN2\'', $result);
+   assertSameSQL( 'select "root".ID as "pk_0", "root".NAME as "name" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".TYPE = \'ISIN\' and "synonymtable_0".PRODID = "root".ID) where "synonymtable_0".NAME = \'ISIN2\'', $result);
 }
 
 
@@ -88,5 +88,5 @@ function <<test.Test>> meta::relational::tests::query::qualifier::testNonTrivial
                                     , simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
     
    assertEquals(1, $result.values->size());
-   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and "persontable_0".LASTNAME = \'Johnson\') where "persontable_0".FIRSTNAME = \'John\'', $result);
+   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join personTable as "persontable_0" on ("persontable_0".LASTNAME = \'Johnson\' and "root".ID = "persontable_0".FIRMID) where "persontable_0".FIRSTNAME = \'John\'', $result);
 }

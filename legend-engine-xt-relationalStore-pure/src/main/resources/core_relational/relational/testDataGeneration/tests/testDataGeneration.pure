@@ -133,11 +133,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 2);
-   assertSqlEquals('\n' +
-                'select top 20 \n' +
-                '	"root".ID, "root".name \n' +
-                'from Person as "root" \n' +
-                'where "root".ID = \'1\' or "root".name = \'Atul Anand\'', $testData.sqls->at(0));
+   assertSqlEquals('select top 20 "root".ID, "root".name from Person as "root" where "root".name = \'Atul Anand\' or "root".ID = \'1\'', $testData.sqls->at(0));
    assertSqlEquals('\n' +
                 'select top 20 \n' +
                 '	"bicycle_0".ID, "bicycle_0".b_PersonID \n' +
@@ -198,25 +194,9 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 3);
-   assertSqlEquals('\n' +
-                'select top 20 \n' +
-                '	"root".ID, "root".name \n' +
-                'from Person as "root" \n' +
-                'where "root".ID = \'1\' or "root".name = \'Atul Anand\'', $testData.sqls->at(0));
-   assertSqlEquals('\n' +
-                'select top 20 \n' +
-                '	"bicycle_0".ID, "bicycle_0".b_Description, "bicycle_0".b_PersonID \n' +
-                'from testDataGen_Temp_Person as "testdatagen_temp_person_0" \n' +
-                '	inner join Bicycle \n' +
-                '	as "bicycle_0"\n' +
-                '	 on ("testdatagen_temp_person_0".ID = "bicycle_0".b_PersonID or "testdatagen_temp_person_0".ID = null)', $testData.sqls->at(1));
-   assertSqlEquals('\n' +
-                'select top 20 \n' +
-                '	"car_0".ID, "car_0".c_Description, "car_0".c_PersonID \n' +
-                'from testDataGen_Temp_Person as "testdatagen_temp_person_0" \n' +
-                '	inner join Car \n' +
-                '	as "car_0"\n' +
-                '	 on ("testdatagen_temp_person_0".ID = null or "testdatagen_temp_person_0".ID = "car_0".c_PersonID)', $testData.sqls->at(2));
+   assertSqlEquals('select top 20 "root".ID, "root".name from Person as "root" where "root".name = \'Atul Anand\' or "root".ID = \'1\'', $testData.sqls->at(0));
+   assertSqlEquals('select top 20 "bicycle_0".ID, "bicycle_0".b_Description, "bicycle_0".b_PersonID from testDataGen_Temp_Person as "testdatagen_temp_person_0" inner join Bicycle as "bicycle_0" on ("testdatagen_temp_person_0".ID = null or "testdatagen_temp_person_0".ID = "bicycle_0".b_PersonID)', $testData.sqls->at(1));
+   assertSqlEquals('select top 20 "car_0".ID, "car_0".c_Description, "car_0".c_PersonID from testDataGen_Temp_Person as "testdatagen_temp_person_0" inner join Car as "car_0" on ("testdatagen_temp_person_0".ID = "car_0".c_PersonID or "testdatagen_temp_person_0".ID = null)', $testData.sqls->at(2));
 
 
    assertTestData( 'default\n' +
@@ -261,7 +241,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
                 'select top 20 \n' +
                 '	"root".ID, "root".name \n' +
                 'from Person as "root" \n' +
-                'where "root".ID = \'1\' or "root".name = \'Atul Anand\'', $testData.sqls->at(0));
+                 'where "root".name = \'Atul Anand\' or "root".ID = \'1\'', $testData.sqls->at(0));
    assertSqlEquals('\n' +
                 'select top 20 \n' +
                 '	"bicycle_0".ID, "bicycle_0".b_PersonID \n' +
@@ -319,11 +299,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 3);
-   assertSqlEquals('\n' +
-                'select top 20 \n' +
-                '	"root".ID, "root".prodId \n' +
-                'from tradeTable as "root" \n' +
-                'where "root".tradeDate = \'2014-12-04\' or "root".prodId = 2', $testData.sqls->at(0));
+   assertSqlEquals('select top 20 "root".ID, "root".prodId from tradeTable as "root" where "root".prodId = 2 or "root".tradeDate = \'2014-12-04\'', $testData.sqls->at(0));
    assertSqlEquals('\n' +
                 'select top 20 \n' +
                 '	"producttable_0".ID, "producttable_0".NAME \n' +
@@ -379,11 +355,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let testData = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 3);
-   assertSqlEquals('\n' +
-                'select top 20 \n' +
-                '	"root".FIRSTNAME, "root".ID, "root".LASTNAME, "root".MANAGERID \n' +
-                'from personTable as "root" \n' +
-                'where "root".ID = 5 or "root".ID = 1', $testData.sqls->at(0));
+   assertSqlEquals('select top 20 "root".FIRSTNAME, "root".ID, "root".LASTNAME, "root".MANAGERID from personTable as "root" where "root".ID = 1 or "root".ID = 5', $testData.sqls->at(0));
    assertSqlEquals('\n' +
                 'select top 20 \n' +
                 '	"persontable_0".FIRSTNAME, "persontable_0".ID, "persontable_0".LASTNAME, "persontable_0".MANAGERID \n' +
@@ -431,39 +403,15 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
                 '	"root".ID, "root".name \n' +
                 'from FirmSet1 as "root" \n' +
                 'where "root".name = \'Firm X\'', $testData.sqls->at(0));
-   assertSqlEquals('\n' +
-                'select top 20 \n' +
-                '	"personmaster_0".FirmID, "personmaster_0".ID, "personmaster_0".lastName \n' +
-                'from testDataGen_Temp_FirmSet1 as "testdatagen_temp_firmset1_0" \n' +
-                '	inner join PersonMaster \n' +
-                '	as "personmaster_0"\n' +
-                '	 on ("personmaster_0".FirmID = "testdatagen_temp_firmset1_0".ID or "personmaster_0".FirmID = null)', $testData.sqls->at(1));
-   assertSqlEquals('\n' +
-                'select top 20 \n' +
-                '	"personmaster_0".FirmID, "personmaster_0".ID, "personmaster_0".lastName \n' +
-                'from testDataGen_Temp_FirmSet1 as "testdatagen_temp_firmset1_0" \n' +
-                '	inner join PersonMaster \n' +
-                '	as "personmaster_0"\n' +
-                '	 on ("personmaster_0".FirmID = "testdatagen_temp_firmset1_0".ID or "personmaster_0".FirmID = null)', $testData.sqls->at(2));
+   assertSqlEquals( 'select top 20 "personmaster_0".FirmID, "personmaster_0".ID, "personmaster_0".lastName from testDataGen_Temp_FirmSet1 as "testdatagen_temp_firmset1_0" inner join PersonMaster as "personmaster_0" on ("personmaster_0".FirmID = null or "personmaster_0".FirmID = "testdatagen_temp_firmset1_0".ID)', $testData.sqls->at(1));
+   assertSqlEquals( 'select top 20 "personmaster_0".FirmID, "personmaster_0".ID, "personmaster_0".lastName from testDataGen_Temp_FirmSet1 as "testdatagen_temp_firmset1_0" inner join PersonMaster as "personmaster_0" on ("personmaster_0".FirmID = null or "personmaster_0".FirmID = "testdatagen_temp_firmset1_0".ID)', $testData.sqls->at(2));
    assertSqlEquals('\n' +
                 'select top 20 \n' +
                 '	"root".ID, "root".name \n' +
                 'from FirmSet2 as "root" \n' +
                 'where "root".name = \'Firm A\'', $testData.sqls->at(3));
-   assertSqlEquals('\n' +
-                'select top 20 \n' +
-                '	"personmaster_0".FirmID, "personmaster_0".ID, "personmaster_0".lastName \n' +
-                'from testDataGen_Temp_FirmSet2 as "testdatagen_temp_firmset2_0" \n' +
-                '	inner join PersonMaster \n' +
-                '	as "personmaster_0"\n' +
-                '	 on ("personmaster_0".FirmID = null or "personmaster_0".FirmID = "testdatagen_temp_firmset2_0".ID)', $testData.sqls->at(4));
-   assertSqlEquals('\n' +
-                'select top 20 \n' +
-                '	"personmaster_0".FirmID, "personmaster_0".ID, "personmaster_0".lastName \n' +
-                'from testDataGen_Temp_FirmSet2 as "testdatagen_temp_firmset2_0" \n' +
-                '	inner join PersonMaster \n' +
-                '	as "personmaster_0"\n' +
-                '	 on ("personmaster_0".FirmID = null or "personmaster_0".FirmID = "testdatagen_temp_firmset2_0".ID)', $testData.sqls->at(5));
+   assertSqlEquals('select top 20 "personmaster_0".FirmID, "personmaster_0".ID, "personmaster_0".lastName from testDataGen_Temp_FirmSet2 as "testdatagen_temp_firmset2_0" inner join PersonMaster as "personmaster_0" on ("personmaster_0".FirmID = "testdatagen_temp_firmset2_0".ID or "personmaster_0".FirmID = null)', $testData.sqls->at(4));
+   assertSqlEquals('select top 20 "personmaster_0".FirmID, "personmaster_0".ID, "personmaster_0".lastName from testDataGen_Temp_FirmSet2 as "testdatagen_temp_firmset2_0" inner join PersonMaster as "personmaster_0" on ("personmaster_0".FirmID = "testdatagen_temp_firmset2_0".ID or "personmaster_0".FirmID = null)', $testData.sqls->at(5));
 
    assertTestData( 'default\n' +
                    'FirmSet1\n' +
@@ -505,39 +453,15 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
                 '	"root".ID, "root".name \n' +
                 'from FirmSet1 as "root" \n' +
                 'where "root".name = \'Firm X\'', $testData.sqls->at(0));
-   assertSqlEquals('\n' +
-                'select top 20 \n' +
-                '	"personset1_0".FirmID, "personset1_0".ID, "personset1_0".lastName_s1 \n' +
-                'from testDataGen_Temp_FirmSet1 as "testdatagen_temp_firmset1_0" \n' +
-                '	inner join PersonSet1 \n' +
-                '	as "personset1_0"\n' +
-                '	 on ("personset1_0".FirmID = "testdatagen_temp_firmset1_0".ID or null = "testdatagen_temp_firmset1_0".ID or "personset1_0".FirmID = null)', $testData.sqls->at(1));
-   assertSqlEquals('\n' +
-                'select top 20 \n' +
-                '	"personset2_0".FirmID, "personset2_0".ID, "personset2_0".lastName_s2 \n' +
-                'from testDataGen_Temp_FirmSet1 as "testdatagen_temp_firmset1_0" \n' +
-                '	inner join PersonSet2 \n' +
-                '	as "personset2_0"\n' +
-                '	 on (null = "testdatagen_temp_firmset1_0".ID or "personset2_0".FirmID = "testdatagen_temp_firmset1_0".ID or "personset2_0".FirmID = null)', $testData.sqls->at(2));
+   assertSqlEquals('select top 20 "personset1_0".FirmID, "personset1_0".ID, "personset1_0".lastName_s1 from testDataGen_Temp_FirmSet1 as "testdatagen_temp_firmset1_0" inner join PersonSet1 as "personset1_0" on ("personset1_0".FirmID = null or null = "testdatagen_temp_firmset1_0".ID or "personset1_0".FirmID = "testdatagen_temp_firmset1_0".ID)', $testData.sqls->at(1));
+   assertSqlEquals('select top 20 "personset2_0".FirmID, "personset2_0".ID, "personset2_0".lastName_s2 from testDataGen_Temp_FirmSet1 as "testdatagen_temp_firmset1_0" inner join PersonSet2 as "personset2_0" on ("personset2_0".FirmID = null or "personset2_0".FirmID = "testdatagen_temp_firmset1_0".ID or null = "testdatagen_temp_firmset1_0".ID)', $testData.sqls->at(2));
    assertSqlEquals('\n' +
                 'select top 20 \n' +
                 '	"root".ID, "root".name \n' +
                 'from FirmSet2 as "root" \n' +
                 'where "root".name = \'Firm A\'', $testData.sqls->at(3));
-   assertSqlEquals('\n' +
-                'select top 20 \n' +
-                '	"personset1_0".FirmID, "personset1_0".ID, "personset1_0".lastName_s1 \n' +
-                'from testDataGen_Temp_FirmSet2 as "testdatagen_temp_firmset2_0" \n' +
-                '	inner join PersonSet1 \n' +
-                '	as "personset1_0"\n' +
-                '	 on ("personset1_0".FirmID = null or "personset1_0".FirmID = "testdatagen_temp_firmset2_0".ID or null = "testdatagen_temp_firmset2_0".ID)', $testData.sqls->at(4));
-   assertSqlEquals('\n' +
-                'select top 20 \n' +
-                '	"personset2_0".FirmID, "personset2_0".ID, "personset2_0".lastName_s2 \n' +
-                'from testDataGen_Temp_FirmSet2 as "testdatagen_temp_firmset2_0" \n' +
-                '	inner join PersonSet2 \n' +
-                '	as "personset2_0"\n' +
-                '	 on ("personset2_0".FirmID = null or null = "testdatagen_temp_firmset2_0".ID or "personset2_0".FirmID = "testdatagen_temp_firmset2_0".ID)', $testData.sqls->at(5));
+   assertSqlEquals('select top 20 "personset1_0".FirmID, "personset1_0".ID, "personset1_0".lastName_s1 from testDataGen_Temp_FirmSet2 as "testdatagen_temp_firmset2_0" inner join PersonSet1 as "personset1_0" on (null = "testdatagen_temp_firmset2_0".ID or "personset1_0".FirmID = "testdatagen_temp_firmset2_0".ID or "personset1_0".FirmID = null)', $testData.sqls->at(4));
+   assertSqlEquals('select top 20 "personset2_0".FirmID, "personset2_0".ID, "personset2_0".lastName_s2 from testDataGen_Temp_FirmSet2 as "testdatagen_temp_firmset2_0" inner join PersonSet2 as "personset2_0" on ("personset2_0".FirmID = "testdatagen_temp_firmset2_0".ID or null = "testdatagen_temp_firmset2_0".ID or "personset2_0".FirmID = null)', $testData.sqls->at(5));
 
    assertTestData( 'default\n' +
                    'FirmSet1\n' +
@@ -1133,7 +1057,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let testData  = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 1);
-   assertSqlEquals('select top 20 "root".ADDRESSID, "root".AGE, "root".FIRMID, "root".FIRSTNAME, "root".ID, "root".LASTNAME, "root".MANAGERID from personTable as "root" where "root".ID = 4 or "root".ID = 3 or "root".ID = 2 or "root".ID = 1', $testData.sqls->at(0));
+   assertSqlEquals('select top 20 "root".ADDRESSID, "root".AGE, "root".FIRMID, "root".FIRSTNAME, "root".ID, "root".LASTNAME, "root".MANAGERID from personTable as "root" where "root".ID = 1 or "root".ID = 2 or "root".ID = 3 or "root".ID = 4', $testData.sqls->at(0));
 
    assertTestData( 'default\n' +
                    'personTable\n' +
@@ -1165,7 +1089,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let testData  = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 1);
-   assertSqlEquals('select top 20 "root".FIRSTNAME, "root".ID, "root".LASTNAME from personTable as "root" where "root".ID = 4 or "root".ID = 3 or "root".ID = 2 or "root".ID = 1', $testData.sqls->at(0));
+   assertSqlEquals('select top 20 "root".FIRSTNAME, "root".ID, "root".LASTNAME from personTable as "root" where "root".ID = 1 or "root".ID = 2 or "root".ID = 3 or "root".ID = 4', $testData.sqls->at(0));
 
    assertTestData( 'default\n' +
                    'personTable\n' +
@@ -1195,7 +1119,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let testData  = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 1);
-   assertSqlEquals('select top 20 "root".FIRSTNAME, "root".ID, "root".LASTNAME from personTable as "root" where "root".ID = 4 or "root".ID = 3 or "root".ID = 2 or "root".ID = 1', $testData.sqls->at(0));
+   assertSqlEquals('select top 20 "root".FIRSTNAME, "root".ID, "root".LASTNAME from personTable as "root" where "root".ID = 1 or "root".ID = 2 or "root".ID = 3 or "root".ID = 4', $testData.sqls->at(0));
 
    assertTestData( 'default\n' +
                    'personTable\n' +
@@ -1234,8 +1158,8 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let testData  = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 2);
-   assertSqlEquals('select top 20 "root".ID, "root".LEGALNAME from firmTable as "root" where "root".ID = 4 or "root".ID = 3 or "root".ID = 2 or "root".ID = 1', $testData.sqls->at(0));
-   assertSqlEquals('select top 20 "root".FIRSTNAME, "root".ID from personTable as "root" where "root".ID = 4 or "root".ID = 3 or "root".ID = 2 or "root".ID = 1', $testData.sqls->at(1));
+   assertSqlEquals('select top 20 "root".ID, "root".LEGALNAME from firmTable as "root" where "root".ID = 1 or "root".ID = 2 or "root".ID = 3 or "root".ID = 4', $testData.sqls->at(0));
+   assertSqlEquals('select top 20 "root".FIRSTNAME, "root".ID from personTable as "root" where "root".ID = 1 or "root".ID = 2 or "root".ID = 3 or "root".ID = 4', $testData.sqls->at(1));
 
    assertTestData( 'default\n' +
                    'firmTable\n' +
@@ -1277,7 +1201,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let testData  = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 2);
-   assertSqlEquals('select top 20 "root".ADDRESSID, "root".AGE, "root".FIRMID, "root".FIRSTNAME, "root".ID, "root".LASTNAME, "root".MANAGERID from personTable as "root" where "root".ID = 4 or "root".ID = 3 or "root".ID = 2 or "root".ID = 1', $testData.sqls->at(0));
+   assertSqlEquals('select top 20 "root".ADDRESSID, "root".AGE, "root".FIRMID, "root".FIRSTNAME, "root".ID, "root".LASTNAME, "root".MANAGERID from personTable as "root" where "root".ID = 1 or "root".ID = 2 or "root".ID = 3 or "root".ID = 4', $testData.sqls->at(0));
    assertSqlEquals('select top 20 "persontable_0".ADDRESSID, "persontable_0".AGE, "persontable_0".FIRMID, "persontable_0".FIRSTNAME, "persontable_0".ID, "persontable_0".LASTNAME, "persontable_0".MANAGERID from testDataGen_Temp_personTable as "testdatagen_temp_persontable_0" inner join personTable as "persontable_0" on ("testdatagen_temp_persontable_0".ID = "persontable_0".ID)', $testData.sqls->at(1));
 
    assertTestData( 'default\n' +
@@ -1308,7 +1232,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let testData  = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 4);
-   assertSqlEquals('select top 20 "root".ID from personTable as "root" where "root".ID = 2 or "root".ID = 1', $testData.sqls->at(0));
+   assertSqlEquals('select top 20 "root".ID from personTable as "root" where "root".ID = 1 or "root".ID = 2', $testData.sqls->at(0));
    assertSqlEquals('select top 20 "firmtable_0".CEOID, "firmtable_0".ID from testDataGen_Temp_personTable as "testdatagen_temp_persontable_0" inner join firmTable as "firmtable_0" on ("testdatagen_temp_persontable_0".ID = "firmtable_0".ID)', $testData.sqls->at(1));
    assertSqlEquals('select top 20 "addresstable_0".COMMENTS, "addresstable_0".ID, "addresstable_0".NAME, "addresstable_0".STREET, "addresstable_0".TYPE from testDataGen_Temp_firmTable as "testdatagen_temp_firmtable_0" inner join addressTable as "addresstable_0" on ("testdatagen_temp_firmtable_0".CEOID = "addresstable_0".ID)', $testData.sqls->at(2));
    assertSqlEquals('select top 20 "locationtable_0".ID, "locationtable_0".PERSONID from testDataGen_Temp_personTable as "testdatagen_temp_persontable_0" inner join locationTable as "locationtable_0" on ("testdatagen_temp_persontable_0".ID = "locationtable_0".PERSONID)', $testData.sqls->at(3));
@@ -1369,9 +1293,9 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let testData  = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 4);
-   assertSqlEquals('select top 20 "root".ID from firmTable as "root" where "root".ID = 4 or "root".ID = 3 or "root".ID = 2 or "root".ID = 1', $testData.sqls->at(0));
+   assertSqlEquals('select top 20 "root".ID from firmTable as "root" where "root".ID = 1 or "root".ID = 2 or "root".ID = 3 or "root".ID = 4', $testData.sqls->at(0));
    assertSqlEquals('select top 20 "addresstable_0".COMMENTS, "addresstable_0".ID, "addresstable_0".NAME, "addresstable_0".STREET, "addresstable_0".TYPE from testDataGen_Temp_firmTable as "testdatagen_temp_firmtable_0" inner join addressTable as "addresstable_0" on ("testdatagen_temp_firmtable_0".ID = "addresstable_0".ID)', $testData.sqls->at(1));
-   assertSqlEquals('select top 20 "root".ID from personTable as "root" where "root".ID = 4 or "root".ID = 3 or "root".ID = 2 or "root".ID = 1', $testData.sqls->at(2));
+   assertSqlEquals('select top 20 "root".ID from personTable as "root" where "root".ID = 1 or "root".ID = 2 or "root".ID = 3 or "root".ID = 4', $testData.sqls->at(2));
    assertSqlEquals('select top 20 "addresstable_0".COMMENTS, "addresstable_0".ID, "addresstable_0".NAME, "addresstable_0".STREET, "addresstable_0".TYPE from testDataGen_Temp_personTable as "testdatagen_temp_persontable_0" inner join addressTable as "addresstable_0" on ("testdatagen_temp_persontable_0".ID = "addresstable_0".ID)', $testData.sqls->at(3));
 
    assertTestData( 'default\n' +
@@ -1424,7 +1348,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let testData  = generateTestData($query, $mapping, $runtime, $tableRowIdentifiers, meta::relational::extension::relationalExtensions())->toOne();
 
    assertSize($testData.sqls, 2);
-   assertSqlEquals('select top 20 "root".ADDRESSID, "root".AGE, "root".FIRMID, "root".FIRSTNAME, "root".ID, "root".LASTNAME, "root".MANAGERID from personTable as "root" where "root".ID = 4 or "root".ID = 3 or "root".ID = 2 or "root".ID = 1', $testData.sqls->at(0));
+   assertSqlEquals('select top 20 "root".ADDRESSID, "root".AGE, "root".FIRMID, "root".FIRSTNAME, "root".ID, "root".LASTNAME, "root".MANAGERID from personTable as "root" where "root".ID = 1 or "root".ID = 2 or "root".ID = 3 or "root".ID = 4', $testData.sqls->at(0));
    assertSqlEquals('select top 20 "firmtable_0".CEOID, "firmtable_0".ID from testDataGen_Temp_personTable as "testdatagen_temp_persontable_0" inner join firmTable as "firmtable_0" on ("testdatagen_temp_persontable_0".ID = "firmtable_0".ID)', $testData.sqls->at(1));
 
    assertTestData( 'default\n' +
@@ -2525,7 +2449,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
       '            type = Relation[name=ProductTable, type=TABLE, schema=default, database=meta::relational::tests::milestoning::db, columns=[("from_z",DATE), ("id",INT), ("name",VARCHAR(200)), ("thru_z",DATE), ("type",VARCHAR(200))]]\n' +
       '            resultSizeRange = *\n' +
       '            resultColumns = [("from_z", DATE), ("id", INT), ("name", VARCHAR(200)), ("thru_z", DATE), ("type", VARCHAR(200))]\n' +
-      '            sql = select top 20 "root".from_z as "from_z", "root".id as "id", "root".name as "name", "root".thru_z as "thru_z", "root".type as "type" from ProductTable as "root" where "root".from_z <= \'9999-12-30\' and "root".thru_z > \'9999-12-30\' and ("root".id = 3 or "root".id = 2)\n' +
+      '            sql = select top 20 "root".from_z as "from_z", "root".id as "id", "root".name as "name", "root".thru_z as "thru_z", "root".type as "type" from ProductTable as "root" where ("root".id = 2 or "root".id = 3) and "root".from_z <= \'9999-12-30\' and "root".thru_z > \'9999-12-30\'\n' +
       '            connection = TestDatabaseConnection(type = "H2")\n' +
       '          )\n' +
       '        )\n' +
@@ -2583,7 +2507,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
       '            type = Relation[name=TraderTable, type=TABLE, schema=default, database=meta::relational::tests::milestoning::db, columns=[("in_z",DATE), ("kerberos",VARCHAR(20)), ("out_z",DATE)]]\n' +
       '            resultSizeRange = *\n' +
       '            resultColumns = [("in_z", DATE), ("kerberos", VARCHAR(20)), ("out_z", DATE)]\n' +
-      '            sql = select top 20 "root".in_z as "in_z", "root".kerberos as "kerberos", "root".out_z as "out_z" from TraderTable as "root" where "root".in_z <= \'9999-12-30\' and "root".out_z > \'9999-12-30\' and "root".kerberos = \'ggekko\'\n' +
+      '            sql = select top 20 "root".in_z as "in_z", "root".kerberos as "kerberos", "root".out_z as "out_z" from TraderTable as "root" where "root".kerberos = \'ggekko\' and "root".in_z <= \'9999-12-30\' and "root".out_z > \'9999-12-30\'\n' +
       '            connection = TestDatabaseConnection(type = "H2")\n' +
       '          )\n' +
       '        )\n' +
@@ -2600,7 +2524,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
       '            type = Relation[name=BiTemporalLocationTable, type=TABLE, schema=default, database=meta::relational::tests::milestoning::db, columns=[("ID",INT), ("PLACE",VARCHAR(200)), ("from_z",DATE), ("in_z",DATE), ("kerberos",VARCHAR(20)), ("out_z",DATE), ("thru_z",DATE)]]\n' +
       '            resultSizeRange = *\n' +
       '            resultColumns = [("ID", INT), ("PLACE", VARCHAR(200)), ("from_z", DATE), ("in_z", DATE), ("kerberos", VARCHAR(20)), ("out_z", DATE), ("thru_z", DATE)]\n' +
-      '            sql = select top 20 "bitemporallocationtable_0".ID as "ID", "bitemporallocationtable_0".PLACE as "PLACE", "bitemporallocationtable_0".from_z as "from_z", "bitemporallocationtable_0".in_z as "in_z", "bitemporallocationtable_0".kerberos as "kerberos", "bitemporallocationtable_0".out_z as "out_z", "bitemporallocationtable_0".thru_z as "thru_z" from (select * from (${res_c0}) as "root") as "root" inner join BiTemporalLocationTable as "bitemporallocationtable_0" on ("root"."kerberos" = "bitemporallocationtable_0".kerberos) where "bitemporallocationtable_0".in_z <= \'9999-12-30\' and "bitemporallocationtable_0".out_z > \'9999-12-30\' and "bitemporallocationtable_0".from_z <= \'9999-12-01\' and "bitemporallocationtable_0".thru_z > \'9999-12-01\'\n' +
+      '            sql = select top 20 "bitemporallocationtable_0".ID as "ID", "bitemporallocationtable_0".PLACE as "PLACE", "bitemporallocationtable_0".from_z as "from_z", "bitemporallocationtable_0".in_z as "in_z", "bitemporallocationtable_0".kerberos as "kerberos", "bitemporallocationtable_0".out_z as "out_z", "bitemporallocationtable_0".thru_z as "thru_z" from (select * from (${res_c0}) as "root") as "root" inner join BiTemporalLocationTable as "bitemporallocationtable_0" on ("root"."kerberos" = "bitemporallocationtable_0".kerberos) where "bitemporallocationtable_0".from_z <= \'9999-12-01\' and "bitemporallocationtable_0".thru_z > \'9999-12-01\' and "bitemporallocationtable_0".in_z <= \'9999-12-30\' and "bitemporallocationtable_0".out_z > \'9999-12-30\'\n' +
       '            connection = TestDatabaseConnection(type = "H2")\n' +
       '          )\n' +
       '        )\n' +
@@ -2642,7 +2566,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
       '            type = Relation[name=ProductTableWithBusinessSnapshotMilestoning, type=TABLE, schema=default, database=meta::relational::tests::milestoning::db, columns=[("id",INT), ("name",VARCHAR(200)), ("snapshotDate",DATE), ("type",VARCHAR(200))]]\n' +
       '            resultSizeRange = *\n' +
       '            resultColumns = [("id", INT), ("name", VARCHAR(200)), ("snapshotDate", DATE), ("type", VARCHAR(200))]\n' +
-      '            sql = select top 20 "root".id as "id", "root".name as "name", "root".snapshotDate as "snapshotDate", "root".type as "type" from ProductTableWithBusinessSnapshotMilestoning as "root" where "root".snapshotDate = \'2015-08-26\' and ("root".id = \'3\' or "root".id = \'2\')\n' +
+      '            sql = select top 20 "root".id as "id", "root".name as "name", "root".snapshotDate as "snapshotDate", "root".type as "type" from ProductTableWithBusinessSnapshotMilestoning as "root" where ("root".id = \'2\' or "root".id = \'3\') and "root".snapshotDate = \'2015-08-26\'\n' +
       '            connection = TestDatabaseConnection(type = "H2")\n' +
       '          )\n' +
       '        )\n' +
