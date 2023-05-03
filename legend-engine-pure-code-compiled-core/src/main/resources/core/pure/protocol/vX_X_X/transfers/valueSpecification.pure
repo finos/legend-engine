@@ -480,6 +480,7 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                                     typeKeyName = $a.typeKeyName,
                                     includeType = $a.includeType,
                                     includeEnumType = $a.includeEnumType,
+                                    dateTimeFormat = $a.dateTimeFormat,
                                     removePropertiesWithNullValues = $a.removePropertiesWithNullValues,
                                     removePropertiesWithEmptySets = $a.removePropertiesWithEmptySets,
                                     fullyQualifiedTypePath = $a.fullyQualifiedTypePath,
