@@ -782,13 +782,13 @@ public class TestGraphQLAPI
     {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         Object entity = response.getEntity();
-        if (entity instanceof ExceptionError)
+        if (entity instanceof StreamingOutput)
         {
-            throw new RuntimeException(((ExceptionError) entity).getTrace());
+            StreamingOutput output = (StreamingOutput) response.getEntity();
+            output.write(byteArrayOutputStream);
+            return byteArrayOutputStream.toString("UTF-8");
         }
-        StreamingOutput output = (StreamingOutput) response.getEntity();
-        output.write(byteArrayOutputStream);
-        return byteArrayOutputStream.toString("UTF-8");
+        throw new RuntimeException(((ExceptionError) entity).getMessage());
     }
 
     private static List<ExecutionNode> allChildNodes(ExecutionNode node)
