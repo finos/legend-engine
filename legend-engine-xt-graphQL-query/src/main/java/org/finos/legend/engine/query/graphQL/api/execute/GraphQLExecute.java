@@ -300,14 +300,13 @@ public class GraphQLExecute extends GraphQL
                             try
                             {
                                 Map<String, Result> parameterMap = new HashMap<>();
-//                                extractFieldByName(graphQLQuery, p.propertyName).arguments.stream().forEach(a -> parameterMap.put(a.name, new ConstantResult(argumentValueToObject(a.value))));
                                 collectArguments(graphQLQuery.selectionSet,"",true).forEach(a -> parameterMap.put(a.name, new ConstantResult(argumentValueToObject(a.value))));
 
                                 generator.writeFieldName(p.propertyName);
                                 result = (JsonStreamingResult) planExecutor.execute(p.serializedPlan, parameterMap, null, profiles);
                                 result.getJsonStream().accept(generator);
                             }
-                            catch (Exception e)
+                            catch (IOException e)
                             {
                                 throw new RuntimeException(e);
                             }
