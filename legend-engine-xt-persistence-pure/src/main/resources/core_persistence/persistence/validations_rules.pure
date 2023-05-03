@@ -24,6 +24,7 @@ import meta::pure::graphFetch::*;
 import meta::pure::persistence::metamodel::*;
 import meta::pure::persistence::metamodel::persister::*;
 import meta::pure::persistence::metamodel::persister::targetshape::*;
+import meta::pure::persistence::metamodel::service::*;
 import meta::pure::persistence::validation::*;
 
 function meta::pure::persistence::validation::commonRules(extensions: Extension[*]): ValidationRuleSet<PersistenceContext>[1]
@@ -38,10 +39,77 @@ function meta::pure::persistence::validation::commonRules(extensions: Extension[
 }
 
 /**********
+ * service output target validations
+ **********/
+
+function meta::pure::persistence::validation::validateServiceAndOutput(service: Service[1], serviceOutput: ServiceOutput[1], extensions: Extension[*]): ValidationResult[1]
+{
+  $service.execution->match([
+    se: PureSingleExecution[1] | $serviceOutput->match([
+      tds: TdsServiceOutput[1] | validateSingleExecutionServiceAndTdsServiceOutput($service, $se, $tds, $extensions),
+      graphFetch: GraphFetchServiceOutput[1] | if ($graphFetch.path->isEmpty(),
+        | validateSingleExecutionServiceAndGraphFetchRootServiceOutput($service, $se, $graphFetch, $extensions),
+        | validateSingleExecutionServiceAndGraphFetchPathServiceOutput($service, $se, $graphFetch, $extensions)),
+      any: Any[1] | failure('Unknown service output')
+    ]),
+    me: PureMultiExecution[1] | $serviceOutput->match([
+      tds: TdsServiceOutput[1] | validateMultiExecutionServiceAndTdsServiceOutput($service, $me, $tds, $extensions),
+      graphFetch: GraphFetchServiceOutput[1] | if ($graphFetch.path->isEmpty(),
+        | validateMultiExecutionServiceAndGraphFetchRootServiceOutput($service, $me, $graphFetch, $extensions),
+        | validateMultiExecutionServiceAndGraphFetchPathServiceOutput($service, $me, $graphFetch, $extensions)),
+      any: Any[1] | failure('Unknown target shape')
+    ]),
+    any: Any[1] | failure('Unknown service output')
+  ]);
+}
+
+function meta::pure::persistence::validation::validateSingleExecutionServiceAndTdsServiceOutput(service: Service[1], execution: PureSingleExecution[1], serviceOutput: TdsServiceOutput[1], extensions: Extension[*]): ValidationResult[1]
+{
+  let classification = $execution->classify($extensions);
+  if ($classification->instanceOf(TdsExecutionClassification),
+    | success(),
+    | failure('TDS service output requires a service that returns a TDS'));
+}
+
+function meta::pure::persistence::validation::validateSingleExecutionServiceAndGraphFetchRootServiceOutput(service: Service[1], execution: PureSingleExecution[1], serviceOutput: GraphFetchServiceOutput[1], extensions: Extension[*]): ValidationResult[1]
+{
+  let classification = $execution->classify($extensions);
+  if ($classification->instanceOf(FlatGraphFetchSerialize),
+    | success(),
+    | failure('Graph fetch root service output requires a service that ends with a "graphFetch()->serialize()" expression that has only primitive properties off the root node'));
+}
+
+function meta::pure::persistence::validation::validateSingleExecutionServiceAndGraphFetchPathServiceOutput(service: Service[1], execution: PureSingleExecution[1], serviceOutput: GraphFetchServiceOutput[1], extensions: Extension[*]): ValidationResult[1]
+{
+  let classification = $execution->classify($extensions);
+  if ($classification->instanceOf(OneLevelGraphFetchSerialize),
+    | success(),
+    | failure('Graph fetch path service output requires a service that ends with a "graphFetch()->serialize()" expression that has 1) only complex properties off the root node and 2) only primitive properties off nodes at depth 1'));
+}
+
+function meta::pure::persistence::validation::validateMultiExecutionServiceAndTdsServiceOutput(service: Service[1], execution: PureMultiExecution[1], serviceOutput: TdsServiceOutput[1], extensions: Extension[*]): ValidationResult[1]
+{
+  //TODO: ledav -- implement
+  success();
+}
+
+function meta::pure::persistence::validation::validateMultiExecutionServiceAndGraphFetchRootServiceOutput(service: Service[1], execution: PureMultiExecution[1], serviceOutput: GraphFetchServiceOutput[1], extensions: Extension[*]): ValidationResult[1]
+{
+  //TODO: ledav -- implement
+  success();
+}
+
+function meta::pure::persistence::validation::validateMultiExecutionServiceAndGraphFetchPathServiceOutput(service: Service[1], execution: PureMultiExecution[1], serviceOutput: GraphFetchServiceOutput[1], extensions: Extension[*]): ValidationResult[1]
+{
+  //TODO: ledav -- implement
+  success();
+}
+
+/**********
  * target validations
  **********/
 
-function meta::pure::persistence::validation::validateTarget(target: TargetShape[1]): ValidationResult[1]
+function meta::pure::persistence::validation::validateTarget(target: TargetShape[0..1]): ValidationResult[1]
 {
   $target->match([
     f: FlatTarget[1] | if ($f.targetName->isEmpty(), | failure('Flat target name must not be empty'), | success()),
@@ -53,7 +121,7 @@ function meta::pure::persistence::validation::validateTarget(target: TargetShape
  * service + target validations
  **********/
 
-function meta::pure::persistence::validation::validateServiceAndTarget(service: Service[1], target: TargetShape[1], extensions: Extension[*]): ValidationResult[1]
+function meta::pure::persistence::validation::validateServiceAndTarget(service: Service[1], target: TargetShape[0..1], extensions: Extension[*]): ValidationResult[1]
 {
   $service.execution->match([
     se: PureSingleExecution[1] | $target->match([

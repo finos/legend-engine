@@ -118,8 +118,7 @@ function meta::pure::persistence::test::example::FlatM2mService(): Service[1]
     ),
     test = ^SingleExecutionTest(
       data = '',
-      asserts = ^TestContainer(assert = x:Result<Any|m>[1] | true)),
-    tests = ^ServiceTest(id = 'test1', assertions = ^EqualTo(id = 'assertion1', expected = ''))
+      asserts = ^TestContainer(assert = x:Result<Any|m>[1] | true))
   );
 }
 
