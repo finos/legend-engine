@@ -74,14 +74,10 @@ public class TrinoDelegatedKerberosAuthenticationStrategyRuntime extends org.fin
      */
     private Subject getSubjectWithSinglePrivateCredential(LegendKerberosCredential kerberosCredential)
     {
-        if(!kerberosCredential.isValid()) {
-            return kerberosCredential.getSubject();
-        }
-
         Set<KerberosTicket> credentials = kerberosCredential.getSubject().getPrivateCredentials(KerberosTicket.class);
 
-        // If only one credential found then don't do anything
-        if (credentials.size() <= 1) {
+        // If only one credential found or invalid credential then don't do anything
+        if (!kerberosCredential.isValid() || credentials.size() <= 1) {
             return kerberosCredential.getSubject();
         }
 
@@ -95,20 +91,15 @@ public class TrinoDelegatedKerberosAuthenticationStrategyRuntime extends org.fin
                 .collect(Collectors.toSet());
         KerberosTicket kerberosPrivateCredential = credentials.iterator().next();
         credentialsWithSingleKerberosPrivateCredentials.add(kerberosPrivateCredential);
-        return new Subject(true, kerberosCredential.getSubject().getPrincipals(), kerberosCredential.getSubject().getPublicCredentials(),credentialsWithSingleKerberosPrivateCredentials);
+        return new Subject(kerberosCredential.getSubject().isReadOnly(), kerberosCredential.getSubject().getPrincipals(), kerberosCredential.getSubject().getPublicCredentials(),credentialsWithSingleKerberosPrivateCredentials);
     }
 
     private static void logMultipleKerberosEntries(Set<KerberosTicket> credentials)
     {
         credentials.stream()
                 .filter(x -> x != null)
-                .forEach( x -> LOGGER.info("Multiple kerberos credentials found. server : {}, client: {}, startTime: {}, endTime: {}, renewTime: {}",
-                        x.getServer() != null ? x.getServer() : null,
-                        x.getClient() != null ? x.getClient() : null,
-                        x.getStartTime() != null ? x.getStartTime() : null,
-                        x.getEndTime() != null ? x.getEndTime() : null,
-                        x.getAuthTime() != null ? x.getAuthTime() : null,
-                        x.getRenewTill() != null ? x.getRenewTill() : null)
+                .forEach( x -> LOGGER.debug("Multiple kerberos credentials found. server : {}, client: {}, startTime: {}, endTime: {}, renewTime: {}", x.getServer(), x.getClient(),
+                        x.getStartTime(), x.getEndTime(), x.getAuthTime(), x.getRenewTill())
                 );
     }
 
