@@ -17,7 +17,6 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.auth
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionException;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.TrinoDelegatedKerberosAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
@@ -77,7 +76,8 @@ public class TrinoDelegatedKerberosAuthenticationStrategyRuntime extends org.fin
         Set<KerberosTicket> credentials = kerberosCredential.getSubject().getPrivateCredentials(KerberosTicket.class);
 
         // If only one credential found or invalid credential then don't do anything
-        if (!kerberosCredential.isValid() || credentials.size() <= 1) {
+        if (!kerberosCredential.isValid() || credentials.size() <= 1)
+        {
             return kerberosCredential.getSubject();
         }
 
@@ -98,8 +98,7 @@ public class TrinoDelegatedKerberosAuthenticationStrategyRuntime extends org.fin
     {
         credentials.stream()
                 .filter(x -> x != null)
-                .forEach( x -> LOGGER.debug("Multiple kerberos credentials found. server : {}, client: {}, startTime: {}, endTime: {}, renewTime: {}", x.getServer(), x.getClient(),
-                        x.getStartTime(), x.getEndTime(), x.getAuthTime(), x.getRenewTill())
+                .forEach(x -> LOGGER.debug("Multiple kerberos credentials found. server : {}, client: {}, startTime: {}, endTime: {}, renewTime: {}", x.getServer(), x.getClient(), x.getStartTime(), x.getEndTime(), x.getAuthTime(), x.getRenewTill())
                 );
     }
 
