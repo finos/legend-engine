@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,18 +14,17 @@
 
 package org.finos.legend.engine.persistence.components.logicalplan.values;
 
-public enum FunctionName
+import static org.immutables.value.Value.Immutable;
+import static org.immutables.value.Value.Style;
+
+@Immutable
+@Style(
+    typeAbstract = "*Abstract",
+    typeImmutable = "*",
+    jdkOnly = true,
+    optionalAcceptNullable = true,
+    strictBuilder = true
+)
+public interface ModuloBinaryValueOperatorAbstract extends BinaryValueOperator
 {
-    SUM,
-    MAX,
-    MIN,
-    COUNT,
-    COALESCE,
-    CURRENT_TIME,
-    CURRENT_DATE,
-    HASH,
-    CURRENT_TIMESTAMP,
-    UPPER,
-    ROW_NUMBER,
-    SUBSTRING;
 }

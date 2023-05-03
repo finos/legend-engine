@@ -17,6 +17,7 @@ package org.finos.legend.engine.persistence.components.relational.sqldom.schemao
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlDomException;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause;
+import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.table.ClusteringKeyConstraint;
 import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.table.TableConstraint;
 import org.finos.legend.engine.persistence.components.relational.sqldom.modifiers.TableModifier;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.Column;
@@ -39,6 +40,7 @@ public class CreateTable implements DDLStatement
     private final List<Column> columns; // schema
     private final List<TableConstraint> tableConstraints; // table level
     private final List<TableType> types; // dataset
+    private final List<ClusteringKeyConstraint> clusterKeys;
 
     public CreateTable()
     {
@@ -46,6 +48,7 @@ public class CreateTable implements DDLStatement
         this.columns = new ArrayList<>();
         this.tableConstraints = new ArrayList<>();
         this.types = new ArrayList<>();
+        this.clusterKeys = new ArrayList<>();
     }
 
     public CreateTable(Table table, List<TableModifier> modifiers, List<Column> columns, List<TableConstraint> tableConstraints, List<TableType> types)
@@ -55,6 +58,7 @@ public class CreateTable implements DDLStatement
         this.columns = columns;
         this.tableConstraints = tableConstraints;
         this.types = types;
+        this.clusterKeys = new ArrayList<>();
     }
 
     public CreateTable(List<TableType> types)
@@ -63,6 +67,7 @@ public class CreateTable implements DDLStatement
         this.columns = new ArrayList<>();
         this.tableConstraints = new ArrayList<>();
         this.types = types;
+        this.clusterKeys = new ArrayList<>();
     }
 
     /*
@@ -87,11 +92,20 @@ public class CreateTable implements DDLStatement
         builder.append(WHITE_SPACE);
         table.genSqlWithoutAlias(builder);
 
-        // COLUMNS + CONSTRAINTS
+        // Columns + table constraints
         builder.append(OPEN_PARENTHESIS);
         SqlGen.genSqlList(builder, columns, EMPTY, COMMA);
         SqlGen.genSqlList(builder, tableConstraints, COMMA, COMMA);
         builder.append(CLOSING_PARENTHESIS);
+
+        // Clustering keys
+        if (!clusterKeys.isEmpty())
+        {
+            builder.append(WHITE_SPACE + Clause.CLUSTER_BY.get() + WHITE_SPACE);
+            builder.append(OPEN_PARENTHESIS);
+            SqlGen.genSqlList(builder, clusterKeys, EMPTY, COMMA);
+            builder.append(CLOSING_PARENTHESIS);
+        }
     }
 
 
@@ -117,6 +131,10 @@ public class CreateTable implements DDLStatement
         else if (node instanceof TableConstraint)
         {
             tableConstraints.add((TableConstraint) node);
+        }
+        else if (node instanceof ClusteringKeyConstraint)
+        {
+            clusterKeys.add((ClusteringKeyConstraint) node);
         }
     }
 
