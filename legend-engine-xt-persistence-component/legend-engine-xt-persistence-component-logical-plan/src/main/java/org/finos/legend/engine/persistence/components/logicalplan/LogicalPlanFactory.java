@@ -22,6 +22,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.operations.Cre
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Insert;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.LoadCsv;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Show;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Function;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
@@ -41,6 +42,8 @@ public class LogicalPlanFactory
     public static final String IS_TABLE_NON_EMPTY = "isTableNonEmpty";
     public static final String TABLE_IS_NON_EMPTY = "1";
     public static final String TABLE_ALIAS = "X";
+    public static final String MAX_OF_FIELD = "MAX";
+    public static final String MIN_OF_FIELD = "MIN";
 
     public static LogicalPlan getLogicalPlanForIsDatasetEmpty(Dataset dataset)
     {
@@ -94,6 +97,17 @@ public class LogicalPlanFactory
             : MetadataDataset.builder().build();
         MetadataUtils metadataUtils = new MetadataUtils(metadataDataset);
         Selection selection = metadataUtils.getBatchId(mainTable).selection();
+        return LogicalPlan.builder().addOps(selection).build();
+    }
+
+    public static LogicalPlan getLogicalPlanForMinAndMaxForField(Dataset dataset, String fieldName)
+    {
+        FieldValue field = FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(fieldName).build();
+        Selection selection = Selection.builder()
+            .addFields(FunctionImpl.builder().functionName(FunctionName.MIN).addValue(field).alias(MIN_OF_FIELD).build())
+            .addFields(FunctionImpl.builder().functionName(FunctionName.MAX).addValue(field).alias(MAX_OF_FIELD).build())
+            .source(dataset)
+            .build();
         return LogicalPlan.builder().addOps(selection).build();
     }
 }

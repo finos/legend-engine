@@ -35,6 +35,7 @@ import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.application.query.model.Query;
 import org.finos.legend.engine.application.query.model.QueryEvent;
+import org.finos.legend.engine.application.query.model.QueryParameterValue;
 import org.finos.legend.engine.application.query.model.QuerySearchSpecification;
 import org.finos.legend.engine.application.query.model.QueryStoreStats;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
@@ -135,6 +136,17 @@ public class QueryStoreManager
                 stereotypePtr.profile = _doc.getString("profile");
                 stereotypePtr.value = _doc.getString("value");
                 return stereotypePtr;
+            });
+        }
+        String DEFAULT_PARAMETER_VALUES_CONST = "defaultParameterValues";
+        if (document.get(DEFAULT_PARAMETER_VALUES_CONST) != null)
+        {
+            query.defaultParameterValues = ListIterate.collect(document.getList(DEFAULT_PARAMETER_VALUES_CONST, Document.class), _doc ->
+            {
+                QueryParameterValue queryParameterValue = new QueryParameterValue();
+                queryParameterValue.name = _doc.getString("name");
+                queryParameterValue.content = _doc.getString("content");
+                return queryParameterValue;
             });
         }
         return query;

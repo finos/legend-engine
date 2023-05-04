@@ -28,11 +28,11 @@ import java.util.stream.Stream;
 
 public class TempTableStreamingResult extends StreamingResult
 {
-    public Stream inputStream;
+    public Stream<?> inputStream;
     public CreateAndPopulateTempTableExecutionNode node;
     public List<TempTableColumnMetaData> tempTableColumnMetaData;
 
-    public TempTableStreamingResult(Stream inputStream, CreateAndPopulateTempTableExecutionNode node)
+    public TempTableStreamingResult(Stream<?> inputStream, CreateAndPopulateTempTableExecutionNode node)
     {
         super(null);
         this.inputStream = inputStream;

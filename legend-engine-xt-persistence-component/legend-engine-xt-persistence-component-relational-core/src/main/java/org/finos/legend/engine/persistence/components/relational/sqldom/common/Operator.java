@@ -23,7 +23,8 @@ public enum Operator
     GT(">"),
     GTE(">="),
     LT("<"),
-    LTE("<=");
+    LTE("<="),
+    MOD("%");
 
     private String op;
 

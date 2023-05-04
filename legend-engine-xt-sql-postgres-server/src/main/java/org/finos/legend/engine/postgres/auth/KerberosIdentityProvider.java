@@ -15,8 +15,10 @@
 package org.finos.legend.engine.postgres.auth;
 
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.DefaultIdentityFactory;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
+
+import javax.security.auth.Subject;
 
 
 public class KerberosIdentityProvider implements IdentityProvider
@@ -24,6 +26,11 @@ public class KerberosIdentityProvider implements IdentityProvider
     @Override
     public Identity getIdentityForPassword(String userName, SecureString passwd)
     {
-        return DefaultIdentityFactory.INSTANCE.makeIdentity(SubjectTools.getSubjectFromUsernamePassword(userName, passwd.getChars()));
+        return IdentityFactoryProvider.getInstance().makeIdentity(SubjectTools.getSubjectFromUsernamePassword(userName, passwd.getChars()));
+    }
+
+    public static Identity getIdentityForSubject(Subject subject)
+    {
+        return IdentityFactoryProvider.getInstance().makeIdentity(subject);
     }
 }
