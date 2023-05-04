@@ -24,11 +24,11 @@ env:
   CI_GPG_PASSPHRASE: ${{ secrets.CI_GPG_PASSPHRASE }}
   DOCKER_USERNAME: finos
   DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-  MAVEN_OPTS: -Xmx4g
+  MAVEN_OPTS: -Xmx10g
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-16-cores
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -40,25 +40,6 @@ jobs:
           git config --global user.email "37706051+finos-admin@users.noreply.github.com"
           git config --global user.name "FINOS Administrator"
 
-      - name: Update And Commit Legend Stack Version Upgrade
-        run: |
-          pureVersion="${{ github.event.client_payload.legendPureVersion }}"
-          sharedVersion="${{ github.event.client_payload.legendSharedVersion }}"
-          echo "Legend Pure version: $pureVersion, Legend Shared version: $sharedVersion"
-          
-          if [ -n "$sharedVersion" ]; then
-            sed -i "s#<legend.shared.version>.*</legend.shared.version>#<legend.shared.version>${sharedVersion}</legend.shared.version>#g" pom.xml
-          fi
-          if [ -n "$pureVersion" ]; then
-            sed -i "s#<legend.pure.version>.*</legend.pure.version>#<legend.pure.version>${pureVersion}</legend.pure.version>#g" pom.xml
-          fi
-          
-          if [ -n "$sharedVersion" ] || [ -n "$pureVersion" ]; then
-            git add .
-            git commit -m "Legend Stack Versions upgrade"
-            git push origin master
-          fi
-
       - name: Set up Maven Central
         uses: actions/setup-java@v2
         with:
@@ -69,6 +50,25 @@ jobs:
           server-password: CI_DEPLOY_PASSWORD
           gpg-private-key: ${{ secrets.CI_GPG_PRIVATE_KEY }}
           gpg-passphrase: CI_GPG_PASSPHRASE
+
+      - name: Update And Commit Legend Stack Version Upgrade
+        run: |
+          pureVersion="${{ github.event.client_payload.legendPureVersion }}"
+          sharedVersion="${{ github.event.client_payload.legendSharedVersion }}"
+          echo "Legend Pure version: $pureVersion, Legend Shared version: $sharedVersion"
+          
+          if [ -n "$sharedVersion" ]; then
+            mvn versions:set-property -Dproperty=legend.shared.version -DnewVersion=${sharedVersion}
+          fi
+          if [ -n "$pureVersion" ]; then
+            mvn versions:set-property -Dproperty=legend.pure.version -DnewVersion=${pureVersion}
+          fi
+          
+          if [ -n "$sharedVersion" ] || [ -n "$pureVersion" ]; then
+            git add .
+            git commit -m "Legend Stack Versions upgrade"
+            git push origin master
+          fi
 
       - name: Compute next development version
         run: |
@@ -83,4 +83,5 @@ jobs:
         run: mvn -B -e release:prepare -Darguments='-B -e' -DpreparationGoals=clean -DreleaseVersion=${{ github.event.client_payload.releaseVersion }} -DdevelopmentVersion=${{ env.DEVELOPMENT_VERSION }} -P release
 
       - name: Perform release
-        run: mvn -B -e release:perform -Darguments='-B -e -DargLine="-Xmx2200m"' -P release,docker
+        run: mvn -B -e release:perform -Darguments='-B -e -T 4 -DargLine="-Xmx12g"' -P release,docker
+
