@@ -446,14 +446,7 @@ public class ExecutionNodeSerializerHelper
             else
             {
                 writeFieldName(name);
-                if (this.dateTimeFormat != null)
-                {
-                    writeString(value.format(this.dateTimeFormat));
-                }
-                else
-                {
-                    writeString(value.toString());
-                }
+                writeString(value.toString());
             }
         }
 
@@ -483,7 +476,14 @@ public class ExecutionNodeSerializerHelper
             else
             {
                 writeFieldName(name);
-                writeString(value.toString());
+                if (this.dateTimeFormat != null)
+                {
+                    writeString(value.format(this.dateTimeFormat));
+                }
+                else
+                {
+                    writeString(value.toString());
+                }
             }
         }
 

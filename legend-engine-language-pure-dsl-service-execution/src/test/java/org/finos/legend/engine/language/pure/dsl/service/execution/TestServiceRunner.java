@@ -376,7 +376,7 @@ public class TestServiceRunner
         Assert.assertEquals("{\"wheels\":55}", result);
     }
 
-        private static class SimpleM2MServiceRunnerForDateTimeSerialization extends AbstractServicePlanExecutor
+    private static class SimpleM2MServiceRunnerForDateTimeSerialization extends AbstractServicePlanExecutor
     {
         SimpleM2MServiceRunnerForDateTimeSerialization(String function)
         {
