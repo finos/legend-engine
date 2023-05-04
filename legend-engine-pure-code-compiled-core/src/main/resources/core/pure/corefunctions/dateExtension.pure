@@ -569,3 +569,24 @@ function meta::pure::functions::date::isLeap(year:Integer[1]):Boolean[1]
 {
    (date($year, 3, 1)->adjust(-1, DurationUnit.DAYS)->dayOfMonth())==29
 }
+
+
+function meta::pure::functions::date::fromEpochValue(secondsSinceEpoch:Integer[1]):DateTime[1]
+{
+  fromEpochValue($secondsSinceEpoch, DurationUnit.SECONDS);
+}
+
+function meta::pure::functions::date::fromEpochValue(value:Integer[1], unit:DurationUnit[1]):DateTime[1]
+{
+   adjust(%1970-01-01T00:00:00.000+0000, $value, $unit)->cast(@DateTime);
+}
+
+function meta::pure::functions::date::toEpochValue(d:Date[1]):Integer[1]
+{
+  toEpochValue($d, DurationUnit.SECONDS);
+}
+
+function meta::pure::functions::date::toEpochValue(d:Date[1], unit:DurationUnit[1]):Integer[1]
+{
+   dateDiff(%1970-01-01T00:00:00.000+0000, $d, $unit);
+}
