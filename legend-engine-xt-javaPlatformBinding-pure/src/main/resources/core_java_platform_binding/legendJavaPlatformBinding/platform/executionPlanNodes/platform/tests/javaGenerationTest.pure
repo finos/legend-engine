@@ -272,14 +272,9 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
   ];
 
   let wrongResults = [
-    meta::pure::functions::boolean::tests::testEqualEmptyCollections__Boolean_1_,
-    meta::pure::functions::boolean::tests::testEqualMixedCollections__Boolean_1_,
-    meta::pure::functions::boolean::tests::testEqualNonPrimitive__Boolean_1_,
-    meta::pure::functions::boolean::tests::testEqualRecursivePrimitiveCollections__Boolean_1_,
     meta::pure::functions::collection::tests::contains::testContainsNonPrimitive__Boolean_1_,
     meta::pure::functions::lang::tests::new::testNewWithAssociation__Boolean_1_,
     meta::pure::functions::lang::tests::subType::testWhenSubType__Boolean_1_,
-    meta::pure::functions::math::tests::rem::testRemWithDecimals__Boolean_1_,
     meta::pure::functions::string::tests::parseFloat::testParseZero__Boolean_1_,
     meta::pure::functions::string::tests::toString::testPersonToString__Boolean_1_,
     meta::pure::functions::string::tests::toString1::testComplexClassToString__Boolean_1_

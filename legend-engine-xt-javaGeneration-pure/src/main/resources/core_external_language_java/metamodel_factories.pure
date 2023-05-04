@@ -3462,7 +3462,6 @@ function <<access.private>> meta::external::language::java::factory::project::me
             $existingField->isEmpty();
          });
          let fields = $existing.fields->concatenate($newlyDefinedFields);
-
          let newlyDefinedMethods = $class.methods->filter({newMethod|
             let existingMethod = $existing.methods->filter({m| $m.name == $newMethod.name && $m.parameters.type == $newMethod.parameters.type});
             assert($existingMethod->isEmpty() || ($existingMethod.body == $newMethod.body && $existingMethod.bodyCode == $newMethod.bodyCode), {| $existingMethod.bodyCode->match([

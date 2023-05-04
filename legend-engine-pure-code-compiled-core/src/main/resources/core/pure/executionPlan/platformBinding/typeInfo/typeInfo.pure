@@ -639,8 +639,6 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo
         let classEqualityKeys = $class.properties->filter(f| $f->hasStereotype('Key',equality));
         let plusEqualityProperties = $classEqualityKeys->fold({p, i| $i->addPropertyForClassIfMissing($class, $p)}, $withSuperTypes);
 
-
-
         $class->getSpecializations()->fold(
           {special, agg |
             pair(list($agg.first.values->concatenate($special)), $agg.second->addBasicTypeInfoIfMissing($agg.first.values, $special))
