@@ -121,37 +121,6 @@ public class LegendTdsClient implements LegendExecutionClient
         }
     }
 
-
-    private JsonNode executeSchemaApi(String query)
-    {
-        LOGGER.info("executing schema query " + query);
-        try (CloseableHttpClient client = (CloseableHttpClient) HttpClientBuilder.getHttpClient(cookieStore))
-        {
-            String uri = protocol + "://" + this.host + ":" + this.port + "/api/sql/v1/execution/getSchemaFromQueryString";
-            HttpPost req = new HttpPost(uri);
-
-            StringEntity stringEntity = new StringEntity(query);
-            stringEntity.setContentType("text/plain");
-            req.setEntity(stringEntity);
-
-            try (CloseableHttpResponse res = client.execute(req))
-            {
-                JsonNode response = mapper.readValue(res.getEntity().getContent(), JsonNode.class);
-                if (res.getStatusLine().getStatusCode() != 200)
-                {
-                    String message = "Failed to execute schema query " + query + "\n Cause: " + response.toPrettyString();
-                    LOGGER.info(message);
-                }
-                return response;
-            }
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-
-
     private List<LegendColumn> getSchemaFromExecutionResponse(JsonNode jsonNode) throws JsonProcessingException
     {
         if (jsonNode.get("builder") != null)
