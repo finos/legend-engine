@@ -98,7 +98,7 @@ public class TrinoDelegatedKerberosAuthenticationStrategyRuntime extends org.fin
     {
         credentials.stream()
                 .filter(x -> x != null)
-                .forEach(x -> LOGGER.debug("Multiple kerberos credentials found. server : {}, client: {}, startTime: {}, endTime: {}, renewTime: {}", x.getServer(), x.getClient(), x.getStartTime(), x.getEndTime(), x.getAuthTime(), x.getRenewTill())
+                .forEach(x -> LOGGER.info("Multiple kerberos credentials found. server : {}, client: {}, startTime: {}, endTime: {}, renewTime: {}", x.getServer(), x.getClient(), x.getStartTime(), x.getEndTime(), x.getAuthTime(), x.getRenewTill())
                 );
     }
 
