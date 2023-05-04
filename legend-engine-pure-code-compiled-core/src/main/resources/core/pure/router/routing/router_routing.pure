@@ -162,8 +162,22 @@ function <<access.private>> meta::pure::router::routing::routeValueSpecification
    );
 }
 
+function meta::pure::router::routing::prevalFunctionExpressionIfRequired(fe:FunctionExpression[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]) : FunctionExpression[1]
+{
+    $fe.func->match(
+      [
+        f : FunctionDefinition<Any>[1] | if($f->hasStereotype('NormalizeRequiredFunction', functionType), 
+                                        | $fe->meta::pure::router::preeval::preval($inScopeVars->putAll($f->openVariableValues()), $extensions, noDebug()),
+                                        | $fe),
+        a:Any[*] | $fe;
+      ]
+    )->cast(@FunctionExpression);
+}
+
 function meta::pure::router::routing::routeFunctionExpression(fe:FunctionExpression[1], state:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
 {
+   
+
    $fe.func->match([
      p:Property<Nil,Any|*>[1] | $state.routingStrategy.processProperty($p, $fe, $state, $executionContext, $vars, $inScopeVars, $extensions, $debug);,
      f:Function<Any>[1]       | print(if($debug.debug,|$debug.space+if($f->instanceOf(NativeFunction),|'NativeFunction',|'FunctionDefinition')+' : '+$f->asString()+'\n',|''));
@@ -171,13 +185,15 @@ function meta::pure::router::routing::routeFunctionExpression(fe:FunctionExpress
                                 if($specializedFunctionProcessor->isNotEmpty(),
                                   | assert($specializedFunctionProcessor->size() == 1, | 'Only one match is authorized for specializedFunctionProcessor');
                                     $specializedFunctionProcessor->toOne()->evaluate([list($f), list($fe), list($state), list($executionContext), list($vars), list($inScopeVars), list($extensions), list($debug)])->toOne()->cast(@RoutingState);,
-                                  | $f->routeFunctionExpressionFunctionDefinition($fe, $state, $executionContext, $vars, $inScopeVars->putAll($f->openVariableValues()), $extensions, $debug));
+                                  | let newFe = prevalFunctionExpressionIfRequired($fe,$inScopeVars, $extensions, $debug);
+                                    let newf = $newFe.func->cast(@Function<Any>);
+                                    $newf->routeFunctionExpressionFunctionDefinition($newFe, $state, $executionContext, $vars, $inScopeVars->putAll($newf->openVariableValues()), $extensions, $debug););
    ]);
 }
 
 function meta::pure::router::routing::specializedFunctionExpressionRouterProcessor(extensions:meta::pure::extension::Extension[*]):Pair<Function<{FunctionExpression[1]->Boolean[1]}>, Function<{Function<Any>[1], FunctionExpression[1], RoutingState[1], ExecutionContext[1], Map<VariableExpression, ValueSpecification>[1], Map<String, List<Any>>[1], meta::pure::extension::Extension[*], DebugContext[1]->RoutingState[1]}>>[*]
 {
-  meta::pure::router::store::routing::specializedFunctionExpressionRouterProcessorForStore($extensions)
+    meta::pure::router::store::routing::specializedFunctionExpressionRouterProcessorForStore($extensions)
     ->concatenate(meta::pure::router::externalFormat::routing::specializedFunctionExpressionRouterProcessorForExternalFormat())
     ->concatenate($extensions.routerExtensions().routeFunctionExpressions)
 }
