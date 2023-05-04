@@ -1493,7 +1493,6 @@ public class Library
 
     private static boolean eq(Number left, Number right)
     {
-        // TODO make this more sophisticated
         if (left instanceof BigDecimal && right instanceof Double ||
                 left instanceof Double && right instanceof BigDecimal)
         {
