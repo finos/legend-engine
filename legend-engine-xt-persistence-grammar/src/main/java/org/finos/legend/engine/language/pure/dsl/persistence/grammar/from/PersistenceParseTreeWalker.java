@@ -43,6 +43,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.emptyhandling.EmptyDatasetHandling;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.emptyhandling.NoOp;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning.FieldBased;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning.FieldBasedForGraphFetch;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning.FieldBasedForTds;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning.NoPartitioning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning.Partitioning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.EmailNotifyee;
@@ -548,22 +550,24 @@ public class PersistenceParseTreeWalker
 
     private FieldBased visitFieldBasedPartitioning(DatasetTypeEnum datasetType, PersistenceParserGrammar.PartitioningFieldBasedContext ctx)
     {
-        FieldBased partitioning = new FieldBased();
-        partitioning.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-
         // keys
         if (datasetType == DatasetTypeEnum.GRAPH_FETCH)
         {
-            PersistenceParserGrammar.PartitionFieldsContext partitionFieldsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.partitionFields(), "partitionFields", partitioning.sourceInformation);
-            partitioning.partitionFieldPaths = visitPartitionPathFields(partitionFieldsContext);
+            FieldBasedForGraphFetch fieldBasedForGraphFetch = new FieldBasedForGraphFetch();
+            fieldBasedForGraphFetch.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+            PersistenceParserGrammar.PartitionFieldsContext partitionFieldsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.partitionFields(), "partitionFields", fieldBasedForGraphFetch.sourceInformation);
+            fieldBasedForGraphFetch.partitionFieldPaths = visitPartitionPathFields(partitionFieldsContext);
+            return fieldBasedForGraphFetch;
         }
         else if (datasetType == DatasetTypeEnum.TDS)
         {
-            PersistenceParserGrammar.PartitionFieldsContext partitionFieldsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.partitionFields(), "partitionFields", partitioning.sourceInformation);
-            partitioning.partitionFields = visitPartitionFields(partitionFieldsContext);
+            FieldBasedForTds fieldBasedForTds = new FieldBasedForTds();
+            fieldBasedForTds.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+            PersistenceParserGrammar.PartitionFieldsContext partitionFieldsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.partitionFields(), "partitionFields", fieldBasedForTds.sourceInformation);
+            fieldBasedForTds.partitionFields = visitPartitionFields(partitionFieldsContext);
+            return fieldBasedForTds;
         }
-
-        return partitioning;
+        throw new EngineException("Unrecognized field based partitioning", walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
     }
 
     private List<Path> visitPartitionPathFields(PersistenceParserGrammar.PartitionFieldsContext ctx)

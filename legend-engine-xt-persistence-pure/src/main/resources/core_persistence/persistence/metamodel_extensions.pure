@@ -112,7 +112,20 @@ Class
 {doc.doc = ''}
 meta::pure::persistence::metamodel::dataset::partitioning::FieldBased extends Partitioning
 {
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::dataset::partitioning::FieldBasedForGraphFetch extends FieldBased
+{
   partitionFields: String[1..*];
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::dataset::partitioning::FieldBasedForTds extends FieldBased
+{
+  partitionFieldPaths: Path<Nil, Any|*>[1..*];
 }
 
 /**********

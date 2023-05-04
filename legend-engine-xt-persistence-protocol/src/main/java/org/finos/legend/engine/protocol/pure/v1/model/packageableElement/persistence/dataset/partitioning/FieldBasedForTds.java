@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,22 +14,15 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import java.util.List;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type", defaultImpl = FieldBasedForGraphFetch.class)
-@JsonSubTypes({
-    @JsonSubTypes.Type(value = FieldBasedForGraphFetch.class, name = "fieldBasedForGraphFetch"),
-    @JsonSubTypes.Type(value = FieldBasedForTds.class, name = "fieldBasedForTds")
-})
-public abstract class FieldBased extends Partitioning
+public class FieldBasedForTds extends FieldBased
 {
+    public List<String> partitionFields;
 
     @Override
-    public <T> T accept(PartitioningVisitor<T> visitor)
+    public <T> T accept(FieldBasedVisitor<T> visitor)
     {
-        return visitor.visitFieldBased(this);
+        return visitor.visitFieldBasedForTds(this);
     }
-
-    public abstract <T> T accept(FieldBasedVisitor<T> visitor);
 }

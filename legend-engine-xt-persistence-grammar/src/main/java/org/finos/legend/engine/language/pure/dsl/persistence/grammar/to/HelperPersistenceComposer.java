@@ -42,6 +42,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.emptyhandling.EmptyDatasetHandlingVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.emptyhandling.NoOp;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning.FieldBased;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning.FieldBasedForGraphFetch;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning.FieldBasedForTds;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning.FieldBasedVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning.NoPartitioning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning.Partitioning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning.PartitioningVisitor;
@@ -436,7 +439,7 @@ public class HelperPersistenceComposer
         {
             return getTabString(indentLevel) + "partitioning: FieldBased\n" +
                     getTabString(indentLevel) + "{\n" +
-                    renderPartitionFields(val.partitionFields, indentLevel + 1) +
+                    val.accept(new FieldBasedPartitioningComposer(indentLevel + 1)) +
                     getTabString(indentLevel) + "}\n";
         }
 
@@ -444,13 +447,33 @@ public class HelperPersistenceComposer
         {
             return emptyDatasetHandling == null ? "" : emptyDatasetHandling.accept(new EmptyDatasetHandlingComposer(indentLevel));
         }
+    }
 
-        private static String renderPartitionFields(List<String> fields, int indentLevel)
+    private static class FieldBasedPartitioningComposer implements FieldBasedVisitor<String>
+    {
+        private final int indentLevel;
+
+        private FieldBasedPartitioningComposer(int indentLevel)
+        {
+            this.indentLevel = indentLevel;
+        }
+
+        @Override
+        public String visitFieldBasedForGraphFetch(FieldBasedForGraphFetch val)
         {
             return getTabString(indentLevel) + "partitionFields:\n" +
-                    getTabString(indentLevel) + "[\n" +
-                    getTabString(indentLevel + 1) + Iterate.makeString(fields, ", ") + "\n" +
-                    getTabString(indentLevel) + "]\n";
+                getTabString(indentLevel) + "[\n" +
+                getTabString(indentLevel + 1) + ListIterate.collect(val.partitionFieldPaths, ServiceOutputComposer::renderPath).makeString(", ") + "\n" +
+                getTabString(indentLevel) + "];\n";
+        }
+
+        @Override
+        public String visitFieldBasedForTds(FieldBasedForTds val)
+        {
+            return getTabString(indentLevel) + "partitionFields:\n" +
+                getTabString(indentLevel) + "[\n" +
+                getTabString(indentLevel + 1) + Iterate.makeString(val.partitionFields, ", ") + "\n" +
+                getTabString(indentLevel) + "];\n";
         }
     }
 
