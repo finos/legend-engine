@@ -405,7 +405,7 @@ public class TestServiceRunner
     {
         this.testServiceExecutionWithDateTimeSerialization("test::serializeDateTimeWithoutFormat__String_1_", "{\"birthDate\":\"2014-12-27T15:01:35.231\"}");
         this.testServiceExecutionWithDateTimeSerialization("test::serializeDateTime__String_1_", "{\"birthDate\":\"2014-12-27T15:01:35.231+0000\"}");
-        this.testServiceExecutionWithDateTimeSerialization("test::serializeDateTimeTimeZone__String_1_", "{\"birthDate\":\"2014-12-27 16:01:35.231+01\"}");
+        this.testServiceExecutionWithDateTimeSerialization("test::serializeDateTimeTimeZone__String_1_", "{\"birthDate\":\"2014-12-27 18:01:35.231+03\"}");
         this.testServiceExecutionWithDateTimeSerialization("test::serializeDateTimeStrictDatePattern__String_1_", "{\"birthDate\":\"2014-12-27\"}");
         this.testServiceExecutionWithDateTimeSerialization("test::serializeDateTimeCustomPattern__String_1_", "{\"birthDate\":\"12/27/2014 at 03:01PM GMT\"}");
 

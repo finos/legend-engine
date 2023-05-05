@@ -59,7 +59,7 @@ function test::serializeDateTime(): String[1]
 
 function test::serializeDateTimeTimeZone(): String[1]
 {
-   test::targetPerson.all()->graphFetch(#{test::targetPerson{birthDate}}#)->serialize(#{test::targetPerson{birthDate}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(dateTimeFormat='[CET]yyyy-MM-dd HH:mm:ss.SSSX'))
+   test::targetPerson.all()->graphFetch(#{test::targetPerson{birthDate}}#)->serialize(#{test::targetPerson{birthDate}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(dateTimeFormat='[EAT]yyyy-MM-dd HH:mm:ss.SSSX'))
 }
 
 function test::serializeDateTimeStrictDatePattern(): String[1]
