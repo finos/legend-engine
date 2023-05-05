@@ -7,8 +7,6 @@
     "core",
     "core_external_language_java",
     "core_java_platform_binding",
-    "core_nonrelational_mongodb",
-    "core_nonrelational_mongodb_java_platform_binding",
     "core_external_format_flatdata",
     "core_external_format_flatdata_java_platform_binding",
     "core_external_format_json",
