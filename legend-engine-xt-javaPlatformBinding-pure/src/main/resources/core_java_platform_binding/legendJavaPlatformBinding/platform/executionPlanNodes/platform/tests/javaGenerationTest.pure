@@ -98,9 +98,6 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
 		meta::pure::functions::collection::tests::zip::testZipSecondListEmpty__Boolean_1_, // requires meta::pure::functions::collection::zip_T_MANY__U_MANY__Pair_MANY_ 
 		meta::pure::functions::collection::tests::zip::testZipSecondListsIsOfPairs__Boolean_1_, // requires meta::pure::functions::collection::zip_T_MANY__U_MANY__Pair_MANY_ 
 		meta::pure::functions::collection::tests::testGetPropertyValues__Boolean_1_, // requires meta::pure::functions::collection::get_T_MANY__String_1__T_$0_1$_ 
-		meta::pure::functions::date::tests::testAverageTime__Boolean_1_, // requires meta::pure::functions::math::mod_Integer_1__Integer_1__Integer_1_ 
-		meta::pure::functions::date::tests::testDayOfWeekNumberForDayOfWeekWithNewDay__Boolean_1_, // requires meta::pure::functions::math::mod_Integer_1__Integer_1__Integer_1_ 
-		meta::pure::functions::date::tests::testTimeToAndFromSeconds__Boolean_1_, // requires meta::pure::functions::math::mod_Integer_1__Integer_1__Integer_1_ 
 		meta::pure::functions::hash::tests::testMD5_Hash__Boolean_1_, // requires meta::pure::functions::hash::hash_String_1__HashType_1__String_1_ 
 		meta::pure::functions::hash::tests::testSHA1_Hash__Boolean_1_, // requires meta::pure::functions::hash::hash_String_1__HashType_1__String_1_ 
 		meta::pure::functions::hash::tests::testSHA256_Hash__Boolean_1_, // requires meta::pure::functions::hash::hash_String_1__HashType_1__String_1_ 
