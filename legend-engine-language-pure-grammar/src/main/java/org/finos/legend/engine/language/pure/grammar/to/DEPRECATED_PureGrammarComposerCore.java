@@ -406,10 +406,11 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         builder.append("Mapping").append(" ").append(PureGrammarComposerUtility.convertPath(mapping.getPath()));
         builder.append("\n(\n");
         boolean isMappingContentEmpty = true;
+        PureGrammarComposerContext context = this.toContext();
         if (!mapping.includedMappings.isEmpty())
         {
             isMappingContentEmpty = false;
-            builder.append(LazyIterate.collect(mapping.includedMappings, mappingInclude -> getTabString() + HelperMappingGrammarComposer.renderMappingInclude(mappingInclude)).makeString("\n"));
+            builder.append(LazyIterate.collect(mapping.includedMappings, mappingInclude -> getTabString() + HelperMappingGrammarComposer.renderMappingInclude(mappingInclude, context)).makeString("\n"));
             builder.append("\n");
         }
         if (mapping.classMappings != null && !mapping.classMappings.isEmpty())
@@ -426,7 +427,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         {
             builder.append(isMappingContentEmpty ? "" : "\n");
             isMappingContentEmpty = false;
-            builder.append(LazyIterate.collect(mapping.associationMappings, associationMapping -> getTabString() + HelperMappingGrammarComposer.renderAssociationMapping(associationMapping, this.toContext())).makeString("\n"));
+            builder.append(LazyIterate.collect(mapping.associationMappings, associationMapping -> getTabString() + HelperMappingGrammarComposer.renderAssociationMapping(associationMapping, context)).makeString("\n"));
             builder.append("\n");
         }
         if (!mapping.enumerationMappings.isEmpty())

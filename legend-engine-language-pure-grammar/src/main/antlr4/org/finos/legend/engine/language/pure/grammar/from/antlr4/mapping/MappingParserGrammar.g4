@@ -36,7 +36,7 @@ mapping:                        MAPPING qualifiedName
                                         (tests|mappingTestSuites)?
                                     PAREN_CLOSE
 ;
-includeMapping:                 INCLUDE qualifiedName
+includeMapping:                 (INCLUDETYPE|INCLUDE) qualifiedName
                                     (BRACKET_OPEN (storeSubPath (COMMA storeSubPath)*)? BRACKET_CLOSE)?
 ;
 
