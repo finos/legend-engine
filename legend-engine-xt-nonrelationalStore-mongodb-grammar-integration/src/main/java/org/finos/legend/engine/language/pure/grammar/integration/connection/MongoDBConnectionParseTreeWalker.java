@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.language.pure.grammar.integration.connection;
 
-import org.antlr.v4.runtime.tree.ParseTree;
 import org.finos.legend.engine.language.pure.dsl.authentication.grammar.from.IAuthenticationGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
@@ -22,14 +21,11 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.Mong
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.MongoDBConnectionParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.runtime.DatabaseType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.runtime.MongoDBDatasourceSpecification;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.runtime.MongoDBURL;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.UserPasswordAuthenticationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.SystemPropertiesSecret;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.stream.Collectors;
 
 public class MongoDBConnectionParseTreeWalker
@@ -43,7 +39,7 @@ public class MongoDBConnectionParseTreeWalker
         this.extension = extension;
     }
 
-    public void visitServiceStoreConnectionValue(MongoDBConnectionParserGrammar.DefinitionContext ctx, MongoDBConnection connectionValue, boolean isEmbedded)
+    public void visitMongoDBConnectionValue(MongoDBConnectionParserGrammar.DefinitionContext ctx, MongoDBConnection connectionValue, boolean isEmbedded)
     {
         // store (optional if the store is provided by embedding context, if not provided, it is required)
         MongoDBConnectionParserGrammar.ConnectionStoreContext connectionStoreContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.connectionStore(), "store", connectionValue.sourceInformation);
@@ -51,6 +47,7 @@ public class MongoDBConnectionParseTreeWalker
         {
             connectionValue.element = PureGrammarParserUtility.fromQualifiedName(connectionStoreContext.qualifiedName().packagePath() == null ? Collections.emptyList() : connectionStoreContext.qualifiedName().packagePath().identifier(), connectionStoreContext.qualifiedName().identifier());
             connectionValue.elementSourceInformation = this.walkerSourceInformation.getSourceInformation(connectionStoreContext.qualifiedName());
+            connectionValue.type = DatabaseType.MongoDb;
         }
         else if (!isEmbedded)
         {

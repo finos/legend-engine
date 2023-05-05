@@ -45,13 +45,24 @@ function meta::protocols::pure::vX_X_X::extension::store::mongodb::getMongoDBSto
    moduleSerializerExtensions = meta::protocols::pure::vX_X_X::extension::store::mongodb::mongoDBModuleSerializerExtension(),
    transfers_executionPlan_transformNode = {mapping:Mapping[1], extensions:meta::pure::extension::Extension[*] |
           [
-              men:meta::external::store::mongodb::metamodel::pure::MongoDBExecutionNode[1]|
+              men:meta::external::store::mongodb::metamodel::pure::MongoDBExecutionNode[1] |
 
                   ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::mongodb::MongoDBExecutionNode(
-                    _type = 'MongoDBExecutionNode',
-                    resultType = $men.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                    _type           = 'MongoDBExecutionNode',
+                    resultType      = $men.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
                     databaseCommand = $men.databaseCommand->getDatabaseCommandJSON(),
-                    connection = $men.connection->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::store::mongodb::transformDatabaseConnection($extensions)
+                    connection      = $men.connection->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::store::mongodb::transformDatabaseConnection($extensions)
+                ),
+              mdIntern: meta::external::store::mongodb::metamodel::pure::MongoDBDocumentInternalizeExecutionNode[1] |
+                ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::mongodb::MongoDBDocumentInternalizeExecutionNode(
+                    _type             = 'MongoDBDocumentInternalizeExecutionNode',
+                    checked           = $mdIntern.checked,
+                    enableConstraints = $mdIntern.enableConstraints,
+                    binding           = $mdIntern.binding->elementToPath(),
+                    contentType       = $mdIntern.binding.contentType,
+                    tree              = $mdIntern.tree->map(t| $t->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], ^Map<String,List<Any>>(), $extensions))->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RootGraphFetchTree),
+                    resultType        = $mdIntern.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                    resultSizeRange   = $mdIntern.resultSizeRange->map(s| $s->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity())
                 ),
               exfin: meta::external::shared::format::executionPlan::ExternalFormatInternalizeExecutionNode[1] |
                 ^meta::protocols::pure::vX_X_X::metamodel::external::shared::format::executionPlan::ExternalFormatInternalizeExecutionNode(

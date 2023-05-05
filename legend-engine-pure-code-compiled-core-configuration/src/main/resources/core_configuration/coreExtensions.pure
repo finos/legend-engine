@@ -48,7 +48,7 @@ function meta::pure::extension::configuration::coreLegendJavaPlatformBinding(): 
       meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryLegendJavaPlatformBindingExtension(),
       meta::relational::executionPlan::platformBinding::legendJava::relationalLegendJavaPlatformBindingExtension(),
       meta::external::store::service::executionPlan::platformBinding::legendJava::serviceStoreLegendJavaPlatformBindingExtension(),
-      // meta::external::store::mongodb::executionPlan::platformBinding::legendJava::mongoDBStoreLegendJavaPlatformBindingExtension(),
+      //meta::external::store::mongodb::executionPlan::platformBinding::legendJava::mongoDBStoreLegendJavaPlatformBindingExtension(),
 
       // Bindings
       meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension([

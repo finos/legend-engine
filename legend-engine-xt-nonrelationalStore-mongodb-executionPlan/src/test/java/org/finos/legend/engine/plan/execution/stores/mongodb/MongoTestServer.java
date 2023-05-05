@@ -22,7 +22,6 @@ import org.junit.Assume;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
-import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -40,7 +39,7 @@ import static org.junit.Assume.assumeTrue;
 public class MongoTestServer
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(MongoTestServer.class);
-    public GenericContainer<MongoDBContainer> mongoDBContainer = new GenericContainer<>(DockerImageName.parse("mongo:4.4.1"));
+    public MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.4.1"));
 
     public static final String DB_ROOT_USERNAME = "sa";
     public static final String DB_ROOT_PASSWORD = "sa";

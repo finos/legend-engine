@@ -21,7 +21,7 @@ public class TestMongoDBConnectionGrammarRoundTrip extends TestGrammarRoundtrip.
 {
 
     @Test
-    public void testEmptyMongoDBStoreGrammar()
+    public void testMongoDBConnectionGrammar()
     {
         test("###Connection\n" +
                 "MongoDBConnection test::testConnection\n" +
