@@ -11,12 +11,12 @@ public void emit(Token token) {
 }
 
 // -------------------------------------- KEYWORD --------------------------------------
-
 MAPPING:                                'Mapping';
 IMPORT:                                 'import';
 INCLUDE:                                'include';
 TESTS:                                  'MappingTests';
 EXTENDS:                                'extends';
+INCLUDETYPE:                        'include '[a-z]([a-z])*' ';
 
 //--------------------------------------- TEST ------------------------------------------
 TEST_QUERY:                             'query';

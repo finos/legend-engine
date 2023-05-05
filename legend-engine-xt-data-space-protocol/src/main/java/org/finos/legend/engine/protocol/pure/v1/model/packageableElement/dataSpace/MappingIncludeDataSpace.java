@@ -12,21 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type", defaultImpl = MappingIncludeMapping.class)
-@JsonSubTypes({
-        @JsonSubTypes.Type(value = MappingIncludeMapping.class, name = "mappingIncludeMapping")
-})
-public abstract class MappingInclude
+public class MappingIncludeDataSpace extends MappingInclude
 {
-    public SourceInformation sourceInformation;
+    public String includedDataSpace;
 
     @JsonIgnore
-    public abstract String getFullName();
+    public String getFullName()
+    {
+        return includedDataSpace;
+    }
 }
