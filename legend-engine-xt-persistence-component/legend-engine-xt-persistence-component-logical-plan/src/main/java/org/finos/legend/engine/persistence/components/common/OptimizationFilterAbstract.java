@@ -34,4 +34,10 @@ public interface OptimizationFilterAbstract
 
     @Value.Parameter(order = 2)
     String upperBoundPattern();
+
+    @Value.Default
+    default boolean includesNullValues()
+    {
+        return false;
+    }
 }

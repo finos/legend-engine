@@ -412,7 +412,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
 
         String expectedMilestoneQuery = "UPDATE \"mydb\".\"main\" as sink " +
                 "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1 " +
-                "WHERE (sink.\"batch_id_out\" = 999999999) AND (sink.\"id\" >= '{ID_LOWER_BOUND}') AND (sink.\"id\" <= '{ID_UPPER_BOUND}') AND " +
+                "WHERE (sink.\"batch_id_out\" = 999999999) AND ((sink.\"id\" >= '{ID_LOWER_BOUND}') AND (sink.\"id\" <= '{ID_UPPER_BOUND}')) AND " +
                 "(EXISTS (SELECT * FROM \"mydb\".\"staging\" as stage " +
                 "WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND " +
                 "(sink.\"digest\" <> stage.\"digest\")))";
@@ -426,7 +426,48 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
                 "WHERE NOT (EXISTS " +
                 "(SELECT * FROM \"mydb\".\"main\" as sink WHERE (sink.\"batch_id_out\" = 999999999) AND " +
                 "(sink.\"digest\" = stage.\"digest\") AND ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) " +
-                "AND (sink.\"id\" >= '{ID_LOWER_BOUND}') AND (sink.\"id\" <= '{ID_UPPER_BOUND}'))))";
+                "AND ((sink.\"id\" >= '{ID_LOWER_BOUND}') AND (sink.\"id\" <= '{ID_UPPER_BOUND}')))))";
+
+        Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableBatchIdBasedCreateQuery, preActionsSql.get(0));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));
+
+        Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
+        Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
+
+        String incomingRecordCount = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging\" as stage";
+        String rowsUpdated = "SELECT COUNT(*) as \"rowsUpdated\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1";
+        String rowsDeleted = "SELECT 0 as \"rowsDeleted\"";
+        String rowsInserted = "SELECT (SELECT COUNT(*) FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_in\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'))-(SELECT COUNT(*) FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1) as \"rowsInserted\"";
+        String rowsTerminated = "SELECT 0 as \"rowsTerminated\"";
+
+        verifyStats(operations, incomingRecordCount, rowsUpdated, rowsDeleted, rowsInserted, rowsTerminated);
+    }
+
+    @Override
+    public void verifyUnitemporalDeltaNoDeleteIndNoAuditingWithOptimizationFiltersIncludesNullValues(GeneratorResult operations)
+    {
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> milestoningSql = operations.ingestSql();
+        List<String> metadataIngestSql = operations.metadataIngestSql();
+
+        String expectedMilestoneQuery = "UPDATE \"mydb\".\"main\" as sink " +
+            "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1 " +
+            "WHERE (sink.\"batch_id_out\" = 999999999) AND (((sink.\"id\" >= '{ID_LOWER_BOUND}') AND (sink.\"id\" <= '{ID_UPPER_BOUND}')) OR (sink.\"id\" IS NULL)) AND " +
+            "(EXISTS (SELECT * FROM \"mydb\".\"staging\" as stage " +
+            "WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND " +
+            "(sink.\"digest\" <> stage.\"digest\")))";
+
+        String expectedUpsertQuery = "INSERT INTO \"mydb\".\"main\" " +
+            "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"batch_id_in\", \"batch_id_out\") " +
+            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\"," +
+            "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata " +
+            "WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),999999999 " +
+            "FROM \"mydb\".\"staging\" as stage " +
+            "WHERE NOT (EXISTS " +
+            "(SELECT * FROM \"mydb\".\"main\" as sink WHERE (sink.\"batch_id_out\" = 999999999) AND " +
+            "(sink.\"digest\" = stage.\"digest\") AND ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) " +
+            "AND (((sink.\"id\" >= '{ID_LOWER_BOUND}') AND (sink.\"id\" <= '{ID_UPPER_BOUND}')) OR (sink.\"id\" IS NULL)))))";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableBatchIdBasedCreateQuery, preActionsSql.get(0));
         Assertions.assertEquals(AnsiTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));

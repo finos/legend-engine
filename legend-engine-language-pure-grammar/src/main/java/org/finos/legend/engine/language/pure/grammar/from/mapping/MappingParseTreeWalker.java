@@ -32,17 +32,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ModelStoreData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumerationMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.ExpectedOutputMappingTestAssert;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTestSuite;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest_Legacy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingStoreTestData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
@@ -101,28 +92,16 @@ public class MappingParseTreeWalker
 
     private MappingInclude visitMappingInclude(MappingParserGrammar.IncludeMappingContext ctx)
     {
-        MappingInclude mappingInclude = new MappingInclude();
-        mappingInclude.setIncludedMapping(PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier()));
-        mappingInclude.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        List<MappingParserGrammar.StoreSubPathContext> storeSubPathContextList = ctx.storeSubPath();
-
-        if (storeSubPathContextList.size() == 1)
+        String type = MappingIncludeParser.parseIncludeType(ctx.INCLUDETYPE());
+        MappingIncludeParser parser = this.extensions.getExtraMappingIncludeParser(type);
+        if (parser != null)
         {
-            visitStoreSubPath(storeSubPathContextList.get(0), mappingInclude);
+            return parser.parse(ctx, walkerSourceInformation);
         }
         else
         {
-            mappingInclude.sourceDatabasePath = null;
-            mappingInclude.targetDatabasePath = null;
+            throw new EngineException("Could not find MappingInclude parser extension for " + type, EngineErrorType.PARSER);
         }
-        return mappingInclude;
-    }
-
-    private MappingInclude visitStoreSubPath(MappingParserGrammar.StoreSubPathContext ctx, MappingInclude mappingInclude)
-    {
-        mappingInclude.sourceDatabasePath = PureGrammarParserUtility.fromQualifiedName(ctx.sourceStore().qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.sourceStore().qualifiedName().packagePath().identifier(), ctx.sourceStore().qualifiedName().identifier());
-        mappingInclude.targetDatabasePath = PureGrammarParserUtility.fromQualifiedName(ctx.targetStore().qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.targetStore().qualifiedName().packagePath().identifier(), ctx.targetStore().qualifiedName().identifier());
-        return mappingInclude;
     }
 
     private Mapping visitMappingElement(MappingParserGrammar.MappingElementContext ctx, Mapping mapping)

@@ -26,10 +26,7 @@ import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionExpressionBuilderRegistrationInfo;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandlerDispatchBuilderInfo;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandlerRegistrationInfo;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.*;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.MappingValidatorContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
@@ -195,6 +192,11 @@ public interface CompilerExtension
     default List<Function3<TestAssertion, CompileContext, ProcessingContext, Root_meta_pure_test_assertion_TestAssertion>> getExtraTestAssertionProcessors()
     {
         return Collections.emptyList();
+    }
+
+    default Map<String, IncludedMappingHandler> getExtraIncludedMappingHandlers()
+    {
+        return Maps.mutable.empty();
     }
 
     default CompilerExtension build()

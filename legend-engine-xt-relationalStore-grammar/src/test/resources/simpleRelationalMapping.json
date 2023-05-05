@@ -1140,6 +1140,7 @@
       ],
       "includedMappings": [
         {
+          "_type": "mappingIncludeMapping",
           "includedMapping": "meta::relational::tests::simpleRelationalMappingInc",
           "sourceDatabasePath": "meta::relational::tests::dbInc",
           "targetDatabasePath": "meta::relational::tests::db"

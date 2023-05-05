@@ -23,6 +23,8 @@ import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.language.pure.grammar.from.extension.data.EmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.test.assertion.TestAssertionParser;
+import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingIncludeParser;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
 
 import java.util.List;
 import java.util.ServiceLoader;
@@ -41,6 +43,8 @@ public class PureGrammarParserExtensions
     private final MapIterable<String, EmbeddedPureParser> embeddedPureParsers;
     private final MapIterable<String, TestAssertionParser> testAssertionParsers;
 
+    private final MapIterable<String, MappingIncludeParser> mappingIncludeParsers;
+
     private PureGrammarParserExtensions(Iterable<? extends PureGrammarParserExtension> extensions)
     {
         this.extensions = Lists.immutable.withAll(extensions);
@@ -51,6 +55,7 @@ public class PureGrammarParserExtensions
         this.embeddedDataParsers = indexEmbeddedDataParsers(this.extensions);
         this.testAssertionParsers = indexTestAssertionDataParsers(this.extensions);
         this.embeddedPureParsers = indexEmbeddedPureParsers(this.extensions);
+        this.mappingIncludeParsers = indexMappingIncludeParsers(this.extensions);
     }
 
     public List<PureGrammarParserExtension> getExtensions()
@@ -71,6 +76,11 @@ public class PureGrammarParserExtensions
     public MappingElementParser getExtraMappingElementParser(String type)
     {
         return this.mappingElementParsers.get(type);
+    }
+
+    public MappingIncludeParser getExtraMappingIncludeParser(String type)
+    {
+        return this.mappingIncludeParsers.get(type);
     }
 
     public MappingTestInputDataParser getExtraMappingTestInputDataParser(String type)
@@ -167,6 +177,13 @@ public class PureGrammarParserExtensions
     {
         return indexByKey(LazyIterate.flatCollect(extensions, PureGrammarParserExtension::getExtraTestAssertionParsers),
                 TestAssertionParser::getType,
+                "Conflicting parsers for mapping include types");
+    }
+
+    private static MapIterable<String, MappingIncludeParser> indexMappingIncludeParsers(Iterable<? extends PureGrammarParserExtension> extensions)
+    {
+        return indexByKey(LazyIterate.flatCollect(extensions, PureGrammarParserExtension::getExtraMappingIncludeParsers),
+                MappingIncludeParser::getMappingIncludeType,
                 "Conflicting parsers for test assertion type");
     }
 

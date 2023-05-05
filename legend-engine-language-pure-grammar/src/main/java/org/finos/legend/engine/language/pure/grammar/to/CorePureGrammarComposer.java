@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.grammar.to;
 
+import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.impl.factory.Lists;
@@ -26,8 +27,11 @@ import org.finos.legend.engine.language.pure.grammar.to.test.assertion.HelperTes
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingIncludeMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 
+import java.util.Collections;
 import java.util.List;
 
 public class CorePureGrammarComposer implements PureGrammarComposerExtension
@@ -92,5 +96,22 @@ public class CorePureGrammarComposer implements PureGrammarComposerExtension
         str.append("\n}");
 
         return str.toString();
+    }
+
+    @Override
+    public List<Function<MappingInclude, String>> getExtraMappingIncludeComposers()
+    {
+        return Collections.singletonList(this::renderMappingInclude);
+    }
+
+    private <T extends MappingInclude> String renderMappingInclude(T mappingInclude)
+    {
+        if (mappingInclude.getClass() == MappingIncludeMapping.class)
+        {
+            MappingIncludeMapping mappingIncludeMapping = (MappingIncludeMapping) mappingInclude;
+            return "include " + (mappingIncludeMapping.createdFromExplicitType ? "mapping " : "") + mappingIncludeMapping.getIncludedMapping()
+                    + (mappingIncludeMapping.sourceDatabasePath != null && mappingIncludeMapping.targetDatabasePath != null ? "[" + PureGrammarComposerUtility.convertPath(mappingIncludeMapping.sourceDatabasePath) + "->" + PureGrammarComposerUtility.convertPath(mappingIncludeMapping.targetDatabasePath) + "]" : "");
+        }
+        return null;
     }
 }
