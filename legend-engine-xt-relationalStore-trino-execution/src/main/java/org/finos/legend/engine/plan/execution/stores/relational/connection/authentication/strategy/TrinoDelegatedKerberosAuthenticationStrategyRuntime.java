@@ -25,13 +25,20 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.st
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.IdentityState;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
+import org.slf4j.Logger;
+
+import javax.security.auth.Subject;
+import javax.security.auth.kerberos.KerberosTicket;
 
 import java.sql.Connection;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class TrinoDelegatedKerberosAuthenticationStrategyRuntime extends org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy
 {
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(TrinoDelegatedKerberosAuthenticationStrategyRuntime.class);
     public String serverPrincipal;
     public String kerberosRemoteServiceName;
     public Boolean kerberosUseCanonicalHostname;
@@ -54,7 +61,45 @@ public class TrinoDelegatedKerberosAuthenticationStrategyRuntime extends org.fin
         }
         Properties properties = ds.getProperties();
         LegendKerberosCredential legendKerberosCredential = this.resolveCredential(properties);
-        return getConnectionUsingKerberos(ds.getDataSource(), legendKerberosCredential.getSubject());
+        return getConnectionUsingKerberos(ds.getDataSource(), getSubjectWithSinglePrivateCredential(legendKerberosCredential));
+    }
+
+    /**
+     * Trino client expects private credentials of type KerberosTicket should be one
+     * So here we are checking for multiple kerberos private credentials and if found
+     * then log and keep only single credential.
+     * @param kerberosCredential
+     * @return
+     */
+    private Subject getSubjectWithSinglePrivateCredential(LegendKerberosCredential kerberosCredential)
+    {
+        Set<KerberosTicket> credentials = kerberosCredential.getSubject().getPrivateCredentials(KerberosTicket.class);
+
+        // If only one credential found or invalid credential then don't do anything
+        if (!kerberosCredential.isValid() || credentials.size() <= 1)
+        {
+            return kerberosCredential.getSubject();
+        }
+
+        // In case of multiple credentials then log it
+        LOGGER.info("Kerberos Subject with multiple private credentials found");
+        logMultipleKerberosEntries(credentials);
+
+        // Re-create the subject with single credential
+        Set<Object> credentialsWithSingleKerberosPrivateCredentials = kerberosCredential.getSubject().getPrivateCredentials().stream()
+                .filter(x -> !(x instanceof KerberosTicket))
+                .collect(Collectors.toSet());
+        KerberosTicket kerberosPrivateCredential = credentials.iterator().next();
+        credentialsWithSingleKerberosPrivateCredentials.add(kerberosPrivateCredential);
+        return new Subject(kerberosCredential.getSubject().isReadOnly(), kerberosCredential.getSubject().getPrincipals(), kerberosCredential.getSubject().getPublicCredentials(),credentialsWithSingleKerberosPrivateCredentials);
+    }
+
+    private static void logMultipleKerberosEntries(Set<KerberosTicket> credentials)
+    {
+        credentials.stream()
+                .filter(x -> x != null)
+                .forEach(x -> LOGGER.info("Multiple kerberos credentials found. server : {}, client: {}, startTime: {}, endTime: {}, renewTime: {}", x.getServer(), x.getClient(), x.getStartTime(), x.getEndTime(), x.getAuthTime(), x.getRenewTill())
+                );
     }
 
     private LegendKerberosCredential resolveCredential(Properties properties)
