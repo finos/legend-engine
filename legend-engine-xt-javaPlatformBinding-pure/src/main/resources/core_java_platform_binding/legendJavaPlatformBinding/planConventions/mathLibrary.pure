@@ -55,6 +55,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::math::
 
          fc1(round_Number_1__Integer_1_,                               {ctx,num        | $library->j_invoke('round', $num, javaLong())}),
          fc2(round_Decimal_1__Integer_1__Decimal_1_,                   {ctx,num,scale  | $library->j_invoke('round', [$num, $scale], javaBigDecimal())}),
+         fc2(round_Float_1__Integer_1__Float_1_,                       {ctx,num,scale  | $library->j_invoke('round', [$num, $scale], javaDouble())}),
          fc1(ceiling_Number_1__Integer_1_,                             {ctx,num        | $library->j_invoke('ceiling', $num, javaLong())}),
          fc1(floor_Number_1__Integer_1_,                               {ctx,num        | $library->j_invoke('floor', $num, javaLong())}),
                           
