@@ -36,6 +36,11 @@ Class <<GraphQL.Query>> meta::external::query::graphQL::binding::fromPure::sdl::
   firmByName(n:String[1]){Firm.all()->filter(z|$z.legalName == $n)->first()}:Firm[0..1];
 }
 
+Class <<GraphQL.Input>> meta::external::query::graphQL::binding::fromPure::sdl::tests::model::InputClass
+{
+  idDecimal: Decimal[1];
+}
+
 function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testTransform():Boolean[1]
 {
   let res = meta::external::query::graphQL::binding::fromPure::sdl::transformPureToGraphQLSDL([Query])
@@ -67,4 +72,16 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '  datetime: DateTime!\n' +
     '  decimal: BigDecimal!\n' +
     '}', $res);
+}
+
+function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testInputObjectType(): Boolean[1]
+{
+  let res = meta::external::query::graphQL::binding::fromPure::sdl::transformPureToGraphQLSDL([InputClass])
+            ->map(x|$x->meta::external::query::graphQL::serialization::graphQLtoString())
+            ->joinStrings('\n\n');
+
+  assertEquals(
+    'input InputClass {\n' +
+    '  idDecimal: BigDecimal!\n' +
+    '}',$res);
 }

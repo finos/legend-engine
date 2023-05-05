@@ -46,6 +46,7 @@ import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.EnumTypeDef
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.EnumValueDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.ExecutableDirectiveLocation;
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.FieldDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.InputObjectTypeDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.InputValueDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.InterfaceTypeDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.ListTypeReference;
@@ -183,6 +184,10 @@ public class GraphQLGrammarParser
                 if (definitionContext.typeSystemDefinition().typeDefinition().objectTypeDefinition() != null)
                 {
                     return visitObjectTypeDefinition(definitionContext.typeSystemDefinition().typeDefinition().objectTypeDefinition());
+                }
+                else if (definitionContext.typeSystemDefinition().typeDefinition().inputObjectTypeDefinition() != null)
+                {
+                    return visitInputObjectTypeDefinition(definitionContext.typeSystemDefinition().typeDefinition().inputObjectTypeDefinition());
                 }
                 else if (definitionContext.typeSystemDefinition().typeDefinition().interfaceTypeDefinition() != null)
                 {
@@ -348,6 +353,14 @@ public class GraphQLGrammarParser
         objectTypeDefinition.fields = objectTypeDefinitionContext.fieldsDefinition() == null ? Collections.emptyList() : ListIterate.collect(objectTypeDefinitionContext.fieldsDefinition().fieldDefinition(), this::visitFieldsDefinitionContext);
         objectTypeDefinition._implements = visitImplementInterface(objectTypeDefinitionContext.implementsInterfaces(), Lists.mutable.empty()).reverseThis();
         return objectTypeDefinition;
+    }
+
+    private InputObjectTypeDefinition visitInputObjectTypeDefinition(GraphQLParser.InputObjectTypeDefinitionContext inputObjectTypeDefinitionContext)
+    {
+        InputObjectTypeDefinition inputObjectTypeDefinition = new InputObjectTypeDefinition();
+        inputObjectTypeDefinition.name = inputObjectTypeDefinitionContext.name().getText();
+        inputObjectTypeDefinition.inputValues = ListIterate.collect(inputObjectTypeDefinitionContext.inputFieldsDefinition().inputValueDefinition(), this::visitInputValueDefinition);
+        return inputObjectTypeDefinition;
     }
 
     private InterfaceTypeDefinition visitInterfaceTypeDefinition(GraphQLParser.InterfaceTypeDefinitionContext interfaceTypeDefinitionContext)

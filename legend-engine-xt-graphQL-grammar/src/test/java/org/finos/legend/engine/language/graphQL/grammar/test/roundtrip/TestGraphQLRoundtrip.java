@@ -64,6 +64,17 @@ public class TestGraphQLRoundtrip
     }
 
     @Test
+    public void testInputTypeRoundtrip()
+    {
+        check("input Filter {\n" +
+                "  id: ID!\n" +
+                "  name: String!\n" +
+                "  values: [String]\n" +
+                "  length: Float\n" +
+                "}");
+    }
+
+    @Test
     public void testScalarRoundtrip()
     {
         check("scalar MyScalar");

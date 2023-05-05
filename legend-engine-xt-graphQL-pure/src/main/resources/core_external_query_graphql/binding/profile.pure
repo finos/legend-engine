@@ -14,5 +14,5 @@
 
 Profile meta::external::query::graphQL::binding::GraphQL
 {
-  stereotypes : [Query, Mutation, Subscription];
+  stereotypes : [Query, Mutation, Subscription, Input];
 }

@@ -35,7 +35,8 @@ function meta::external::query::graphQL::serialization::graphQLtoString(definiti
       f:FragmentDefinition[1] | $f->graphQLtoString(),
       s:ScalarTypeDefinition[1] | $s->graphQLtoString(),
       s:SchemaDefinition[1] | $s->graphQLtoString(),
-      d:DirectiveDefinition[1] |$d->graphQLtoString()
+      d:DirectiveDefinition[1] |$d->graphQLtoString(),
+      ip:InputObjectTypeDefinition[1]|$ip->graphQLtoString()
     ]
   );
 }
@@ -79,9 +80,21 @@ function meta::external::query::graphQL::serialization::graphQLtoString(type: Ob
   '\n}'
 }
 
+function meta::external::query::graphQL::serialization::graphQLtoString(type: InputObjectTypeDefinition[1]):String[1]
+{
+  'input ' + $type.name + $type.directives->graphQLtoString() + ' {\n'+
+    $type.inputValues->map(f|'  ' + $f->graphQLtoString())->joinStrings('\n') +
+  '\n}'
+}
+
 function meta::external::query::graphQL::serialization::graphQLtoString(field: FieldDefinition[1]):String[1]
 {
   $field.name + $field.argumentDefinitions->graphQLtoString() + ': ' + $field.type->graphQLtoString() + $field.directives->graphQLtoString()
+}
+
+function meta::external::query::graphQL::serialization::graphQLtoString(field: InputValueDefinition[1]):String[1]
+{
+  $field.name + ': ' + $field.type->graphQLtoString() + $field.directives->graphQLtoString()
 }
 
 function meta::external::query::graphQL::serialization::graphQLtoString(type: InterfaceTypeDefinition[1]):String[1]

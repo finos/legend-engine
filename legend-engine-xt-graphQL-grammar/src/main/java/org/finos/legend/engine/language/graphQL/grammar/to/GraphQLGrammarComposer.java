@@ -32,6 +32,7 @@ import org.finos.legend.engine.protocol.graphQL.metamodel.executable.VariableDef
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.DirectiveDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.EnumTypeDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.FieldDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.InputObjectTypeDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.InputValueDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.InterfaceTypeDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.ListTypeReference;
@@ -130,6 +131,14 @@ public class GraphQLGrammarComposer
             public String visit(FragmentDefinition fragmentDefinition)
             {
                 return "fragment " + fragmentDefinition.name + (fragmentDefinition.typeCondition != null ? " on " + fragmentDefinition.typeCondition + " " : " ") + "{\n" + renderSelectionSet(fragmentDefinition.selectionSet, "  ") + "\n}";
+            }
+
+            @Override
+            public String visit(InputObjectTypeDefinition inputObjectTypeDefinition)
+            {
+                return "input " + inputObjectTypeDefinition.name + " {\n" +
+                        ListIterate.collect(inputObjectTypeDefinition.inputValues, i -> "  " + renderInputValueDefinition(i)).makeString("\n") +
+                        "\n}";
             }
 
             @Override
