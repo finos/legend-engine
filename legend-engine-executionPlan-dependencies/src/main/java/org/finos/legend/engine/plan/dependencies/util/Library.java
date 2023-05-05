@@ -824,6 +824,27 @@ public class Library
         }
     }
 
+    public static <T> List<T> removeAll(List<T> col1, List<T> col2, BiPredicate<T, T> eql)
+    {
+        if (eql == null)
+        {
+            return col1.stream().filter((T c1) -> !col2.contains(c1)).collect(Collectors.toList());
+        }
+        else
+        {
+            return col1.stream().filter((T c1) -> col2.stream().noneMatch((T c2) -> eql.test(c1, c2))).collect(Collectors.toList());
+        }
+    }
+
+    public static <T> List<T> repeat(long count, T val)
+    {
+        if (count <= 0)
+        {
+            return Collections.emptyList();
+        }
+        return Collections.nCopies((int) count, val);
+    }
+
     public static <T> Predicate<T> distinctByKey(Function<T, ?> key)
     {
         Set<Object> seen = ConcurrentHashMap.newKeySet();
