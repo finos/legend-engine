@@ -17,6 +17,7 @@ package org.finos.legend.engine.plan.execution.stores.relational;
 import com.google.common.collect.Iterators;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
+import org.apache.commons.csv.CSVFormat;
 import org.finos.legend.engine.plan.execution.result.ResultNormalizer;
 import org.finos.legend.engine.plan.execution.result.StreamingResult;
 import org.finos.legend.engine.plan.execution.result.builder.tds.TDSBuilder;
@@ -32,6 +33,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommandsVisitor;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.databricks.DatabricksCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Commands;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.mysql.MySQLCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.postgres.PostgresCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.redshift.RedshiftCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeCommands;
@@ -41,6 +43,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.result.TempTable
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RealizedRelationalResultCSVSerializer;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToCSVSerializer;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.StreamingTempTableResultCSVSerializer;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.result.SQLResultColumn;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.slf4j.Logger;
@@ -100,6 +103,10 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
         {
             return visitPostgres((PostgresCommands) databaseCommands);
         }
+        if (databaseCommands instanceof MySQLCommands)
+        {
+            return visitMySQL((MySQLCommands) databaseCommands);
+        }
         for (RelationalConnectionExtension extension: ServiceLoader.load(RelationalConnectionExtension.class))
         {
             Boolean result = extension.visit(this, databaseCommands);
@@ -122,9 +129,10 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
             try (TemporaryFile tempFile = new TemporaryFile(config.tempPath, RequestIdGenerator.generateId()))
             {
                 CsvSerializer csvSerializer;
+                boolean withHeader = false;
                 if (result instanceof RelationalResult)
                 {
-                    csvSerializer = new RelationalResultToCSVSerializer((RelationalResult) result, true);
+                    csvSerializer = new RelationalResultToCSVSerializer((RelationalResult) result, withHeader);
                     tempFile.writeFile(csvSerializer);
                     try (Statement statement = connection.createStatement())
                     {
@@ -145,7 +153,7 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
                 else if (result instanceof RealizedRelationalResult)
                 {
                     RealizedRelationalResult realizedRelationalResult = (RealizedRelationalResult) this.result;
-                    csvSerializer = new RealizedRelationalResultCSVSerializer(realizedRelationalResult, this.databaseTimeZone, false, false);
+                    csvSerializer = new RealizedRelationalResultCSVSerializer(realizedRelationalResult, this.databaseTimeZone, withHeader, false);
                     tempFile.writeFile(csvSerializer);
                     try (Statement statement = connection.createStatement())
                     {
@@ -155,7 +163,7 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
                 }
                 else if (result instanceof StreamingObjectResult)
                 {
-                    csvSerializer = new StreamingObjectResultCSVSerializer((StreamingObjectResult) result, true);
+                    csvSerializer = new StreamingObjectResultCSVSerializer((StreamingObjectResult) result, withHeader);
                     tempFile.writeFile(csvSerializer);
                     try (Statement statement = connection.createStatement())
                     {
@@ -165,7 +173,7 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
                 }
                 else if (result instanceof TempTableStreamingResult)
                 {
-                    csvSerializer = new StreamingTempTableResultCSVSerializer((TempTableStreamingResult) result, true);
+                    csvSerializer = new StreamingTempTableResultCSVSerializer((TempTableStreamingResult) result, withHeader);
                     tempFile.writeFile(csvSerializer);
                     try (Statement statement = connection.createStatement())
                     {
@@ -210,9 +218,10 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
             try (TemporaryFile tempFile = new TemporaryFile(config.tempPath))
             {
                 CsvSerializer csvSerializer;
+                boolean withHeader = true;
                 if (result instanceof RelationalResult)
                 {
-                    csvSerializer = new RelationalResultToCSVSerializer((RelationalResult) result, true);
+                    csvSerializer = new RelationalResultToCSVSerializer((RelationalResult) result, withHeader);
                     tempFile.writeFile(csvSerializer);
                     try (Statement statement = connection.createStatement())
                     {
@@ -232,7 +241,7 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
                 }
                 else if (result instanceof RealizedRelationalResult)
                 {
-                    csvSerializer = new RealizedRelationalResultCSVSerializer((RealizedRelationalResult) result, this.databaseTimeZone, true, false);
+                    csvSerializer = new RealizedRelationalResultCSVSerializer((RealizedRelationalResult) result, this.databaseTimeZone, withHeader, false);
                     tempFile.writeFile(csvSerializer);
                     try (Statement statement = connection.createStatement())
                     {
@@ -243,7 +252,7 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
                 }
                 else if (result instanceof StreamingObjectResult)
                 {
-                    csvSerializer = new StreamingObjectResultCSVSerializer((StreamingObjectResult) result, true);
+                    csvSerializer = new StreamingObjectResultCSVSerializer((StreamingObjectResult) result, withHeader);
                     tempFile.writeFile(csvSerializer);
                     try (Statement statement = connection.createStatement())
                     {
@@ -253,7 +262,7 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
                 }
                 else if (result instanceof TempTableStreamingResult)
                 {
-                    csvSerializer = new StreamingTempTableResultCSVSerializer((TempTableStreamingResult) result, true);
+                    csvSerializer = new StreamingTempTableResultCSVSerializer((TempTableStreamingResult) result, withHeader);
                     tempFile.writeFile(csvSerializer);
                     try (Statement statement = connection.createStatement())
                     {
@@ -291,6 +300,72 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
             ingestionMethod = postgresCommands.getDefaultIngestionMethod();
         }
         throw new UnsupportedOperationException("not yet implemented");
+    }
+
+    private Boolean visitMySQL(MySQLCommands mySQLCommands)
+    {
+        if (ingestionMethod == null)
+        {
+            ingestionMethod = mySQLCommands.getDefaultIngestionMethod();
+        }
+        if (ingestionMethod == IngestionMethod.CLIENT_FILE)
+        {
+            try (TemporaryFile tempFile = new TemporaryFile(config.tempPath))
+            {
+                CsvSerializer csvSerializer;
+                if (result instanceof RelationalResult || result instanceof RealizedRelationalResult || result instanceof TempTableStreamingResult)
+                {
+                    csvSerializer = result instanceof RelationalResult ?
+                            new RelationalResultToCSVSerializer((RelationalResult) result, CSVFormat.MYSQL.withHeader(((RelationalResult) result).getColumnListForSerializer().toArray(new String[0]))) :
+                            result instanceof RealizedRelationalResult ?
+                                    new RealizedRelationalResultCSVSerializer((RealizedRelationalResult) result, this.databaseTimeZone, true, false, CSVFormat.MYSQL) :
+                                    new StreamingTempTableResultCSVSerializer((TempTableStreamingResult) result, true);
+
+                    tempFile.writeFile(csvSerializer);
+                    try (Statement statement = connection.createStatement())
+                    {
+                        statement.execute(mySQLCommands.dropTempTable(tableName));
+
+                        // https://dev.mysql.com/doc/refman/8.0/en/datetime.html
+                        // https://dev.mysql.com/doc/refman/8.0/en/fractional-seconds.html
+                        // Default fractional second precision of MySQL (0) is different from SQL default (6)
+                        // Change to default (6) for timestamp columns
+                        Function<String, String> dataTypeTransformer = (s) -> s.equalsIgnoreCase("timestamp") ? "DATETIME(6)" : s;
+
+                        List<Column> columns;
+                        if (result instanceof RelationalResult)
+                        {
+                            columns = ((RelationalResult) result).getTdsColumns().stream().map(c -> new Column(c.name, dataTypeTransformer.apply(c.relationalType))).collect(Collectors.toList());
+                        }
+                        else
+                        {
+                            List<SQLResultColumn> sqlResultColumns = result instanceof RealizedRelationalResult ?
+                                    ((RealizedRelationalResult) result).columns :
+                                    ((TempTableStreamingResult) result).tempTableColumnMetaData.stream().map(col -> new SQLResultColumn(col.column)).collect(Collectors.toList());
+
+
+                            columns = sqlResultColumns.stream().map(c -> new Column(c.getNonQuotedLabel(), dataTypeTransformer.apply(c.dataType))).collect(Collectors.toList());
+                        }
+
+                        mySQLCommands.createAndLoadTempTable(tableName, columns, tempFile.getTemporaryPathForFile()).forEach(x -> checkedExecute(statement, x));
+                    }
+                }
+                else
+                {
+                    throw new RuntimeException("Result not supported yet: " + result.getClass().getName());
+                }
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+        else if (ingestionMethod == IngestionMethod.BATCH_INSERT)
+        {
+            throw new UnsupportedOperationException("not yet implemented");
+        }
+
+        return true;
     }
 
     private boolean checkedExecute(Statement statement, String sql)

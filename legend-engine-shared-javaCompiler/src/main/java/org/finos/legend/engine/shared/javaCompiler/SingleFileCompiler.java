@@ -21,11 +21,11 @@ import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
 import org.codehaus.janino.UnitCompiler;
 import org.codehaus.janino.util.ClassFile;
+import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.map.MutableMap;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
-import java.util.HashMap;
+import java.io.Reader;
 import java.util.Map;
 
 public class SingleFileCompiler
@@ -37,24 +37,21 @@ public class SingleFileCompiler
 
     public static Map<String, byte[]> compileFile(StringJavaSource source, ClassLoader parentClassLoader) throws IOException, CompileException
     {
-        IClassLoader classLoader = parentClassLoader == null ?
-                new ClassLoaderIClassLoader(Thread.currentThread().getContextClassLoader()) :
-                new ClassLoaderIClassLoader(parentClassLoader);
+        IClassLoader classLoader = new ClassLoaderIClassLoader((parentClassLoader == null) ? Thread.currentThread().getContextClassLoader() : parentClassLoader);
 
-        Scanner scanner = new Scanner(
-                source.getName(),
-                new InputStreamReader(source.openInputStream(), Charset.defaultCharset())
-        );
+        ClassFile[] classFiles;
+        try (Reader reader = source.openReader(true))
+        {
+            Parser parser = new Parser(new Scanner(source.getName(), reader));
+            UnitCompiler unitCompiler = new UnitCompiler(parser.parseAbstractCompilationUnit(), classLoader);
+            classFiles = unitCompiler.compileUnit(false, false, false);
+        }
 
-        Parser parser = new Parser(scanner);
-        UnitCompiler unitCompiler = new UnitCompiler(parser.parseAbstractCompilationUnit(), classLoader);
-        ClassFile[] classFiles = unitCompiler.compileUnit(false, false, false);
-        Map<String, byte[]> classes = new HashMap<>();
+        MutableMap<String, byte[]> classes = Maps.mutable.ofInitialCapacity(classFiles.length);
         for (ClassFile cf : classFiles)
         {
             classes.put(cf.getThisClassName(), cf.toByteArray());
         }
-
         return classes;
     }
 }

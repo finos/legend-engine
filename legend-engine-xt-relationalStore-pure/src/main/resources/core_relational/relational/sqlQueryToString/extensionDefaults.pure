@@ -459,7 +459,7 @@ function meta::relational::functions::sqlQueryToString::default::mapToDBUnitType
       pair(DurationUnit.SECONDS->toString(), 'SECOND'),
       pair(DurationUnit.MILLISECONDS->toString(), 'MILLISECOND'),
       pair(DurationUnit.MICROSECONDS->toString(), 'MICROSECOND')
-   ]->filter(p | $p.first == $unit).second->toOne();
+   ]->filter(p | $p.first == $unit).second->toOne('Unit not found: ' + $unit);
 }
 
 function meta::relational::functions::sqlQueryToString::default::regexpPattern(query: String[1]):String[1]

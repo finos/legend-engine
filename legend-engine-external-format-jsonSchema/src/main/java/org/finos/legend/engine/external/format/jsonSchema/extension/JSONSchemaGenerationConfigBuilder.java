@@ -17,14 +17,13 @@ package org.finos.legend.engine.external.format.jsonSchema.extension;
 import org.finos.legend.engine.external.format.jsonSchema.schema.generations.JSONSchemaConfig;
 import org.finos.legend.engine.language.pure.dsl.generation.config.ConfigBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationType;
 import org.finos.legend.engine.shared.core.operational.Assert;
 
 public class JSONSchemaGenerationConfigBuilder
 {
     public static JSONSchemaConfig build(FileGenerationSpecification fileGeneration)
     {
-        Assert.assertTrue(fileGeneration.type.equals(FileGenerationType.jsonSchema.name()), () -> "File generation of type of jsonSchema expected, got '" + fileGeneration.type + "'");
+        Assert.assertTrue(fileGeneration.type.equals("jsonSchema"), () -> "File generation of type of jsonSchema expected, got '" + fileGeneration.type + "'");
         JSONSchemaConfig jsonSchemaConfig = new JSONSchemaConfig();
         ConfigBuilder.duplicateCheck(fileGeneration.configurationProperties);
         ConfigBuilder.setScopeElements(fileGeneration, jsonSchemaConfig);

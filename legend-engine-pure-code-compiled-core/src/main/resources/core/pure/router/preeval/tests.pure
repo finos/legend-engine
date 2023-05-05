@@ -1054,7 +1054,7 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting40b():B
 
   let expected = {|
         let x = today();
-        $x->toOne()->toOne();
+        $x;
     };
 
   assertRoundTrip($input, $expected);
@@ -1402,6 +1402,93 @@ function <<test.Test>> meta::pure::router::preeval::tests::testFilterNoSimplific
   let expected = {o:OrganizationalEntity[1]| $o.positions(%2023-01-01)->filter(p | $p.id == true).id};
 
   assertRoundTrip($input, $expected);
+}
+
+
+function <<test.Test>> meta::pure::router::preeval::tests::testToOneManyElimination1():Boolean[1]
+{
+  let input = {| 'hello'->toOneMany()};
+
+  let expected = {| 'hello'};
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testToOneManyElimination2():Boolean[1]
+{
+  let input = {x:String[*]| $x->toOneMany()};
+
+  let expected = $input;
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testToOneManyElimination3():Boolean[1]
+{
+  let input = {x:String[1..*]| $x->toOneMany()};
+
+  let expected = {x:String[1..*]| $x};
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testToOneElimination1():Boolean[1]
+{
+  let input = {| 'hello'->toOne()};
+
+  let expected = {| 'hello'};
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testToOneElimination2():Boolean[1]
+{
+  let input = {x:String[*]| $x->toOne()};
+
+  let expected = $input;
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testToOneElimination3():Boolean[1]
+{
+  let input = {x:String[1]| $x->toOne()};
+
+  let expected = {x:String[1]| $x};
+
+  assertRoundTrip($input, $expected);
+}
+
+
+function <<test.Test>> meta::pure::router::preeval::tests::testRecursiveSimpleConcreteFunctionDefinition():Boolean[1]
+{
+  // This is specially selected to be a single function that is recursive on itself
+  // The test is to validate that we don't keep trying to inline ad infinitum 
+
+  let input = {s:Class<Any>[1]|meta::pure::functions::meta::hierarchicalProperties($s)};
+
+  let expected = {s:Class<Any>[1]| 
+    if($s == Any, {|[]}, {|$s.properties->concatenate($s.generalizations->map({g|$g.general.rawType->cast(Any)
+      ->toOne()
+      ->hierarchicalProperties()}))
+      ->removeDuplicates([], [])})
+  };
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testLetOnlyStatement():Boolean[1]
+{
+  let input = {|myFunc2()};
+
+  let expected = {| 'hello'};
+
+  assertRoundTrip($input, $expected);
+}
+
+function <<access.private>> meta::pure::router::preeval::tests::myFunc2():String[1]
+{
+  let x = 'hello';
 }
 
 function meta::pure::router::preeval::tests::getTestRuntimeWithModelConnection(sourceClass:Class<Any>[1], inputs:Any[*]):Runtime[1]

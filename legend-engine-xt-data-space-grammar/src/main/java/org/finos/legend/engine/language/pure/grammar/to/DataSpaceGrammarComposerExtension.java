@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.grammar.to;
 
+import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.LazyIterate;
@@ -21,14 +22,10 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.DataSpaceParserExtension;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceDiagram;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceExecutable;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceExecutionContext;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportCombinedInfo;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportEmail;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportInfo;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
@@ -121,17 +118,50 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
 
     private static String renderDataSpace(DataSpace dataSpace, PureGrammarComposerContext context)
     {
+        if (dataSpace.featuredDiagrams != null)
+        {
+            List<DataSpaceDiagram> featuredDiagrams = ListIterate.collect(dataSpace.featuredDiagrams, featuredDiagram ->
+            {
+                DataSpaceDiagram diagram = new DataSpaceDiagram();
+                diagram.title = "";
+                diagram.diagram = featuredDiagram;
+                return diagram;
+            });
+            if (dataSpace.diagrams != null)
+            {
+                dataSpace.diagrams.addAll(featuredDiagrams);
+            }
+            else
+            {
+                dataSpace.diagrams = featuredDiagrams;
+            }
+        }
         return "DataSpace " + HelperDomainGrammarComposer.renderAnnotations(dataSpace.stereotypes, dataSpace.taggedValues) + PureGrammarComposerUtility.convertPath(dataSpace.getPath()) + "\n" +
                 "{\n" +
                 getTabString() + "executionContexts:" + (dataSpace.executionContexts.isEmpty() ? " []" : "\n" + getTabString() + "[\n" + ListIterate.collect(dataSpace.executionContexts, DataSpaceGrammarComposerExtension::renderDataSpaceExecutionContext).makeString(",\n") + "\n" + getTabString() + "]") + ";\n" +
                 getTabString() + "defaultExecutionContext: " + convertString(dataSpace.defaultExecutionContext, true) + ";\n" +
                 (dataSpace.title != null ? (getTabString() + "title: " + convertString(dataSpace.title, true) + ";\n") : "") +
                 (dataSpace.description != null ? (getTabString() + "description: " + convertString(dataSpace.description, true) + ";\n") : "") +
-                (dataSpace.featuredDiagrams != null ? (getTabString() + "featuredDiagrams:" + (dataSpace.featuredDiagrams.isEmpty() ? " []" : "\n" + getTabString() + "[\n" + getTabString(2) + ListIterate.collect(dataSpace.featuredDiagrams, diagram -> diagram.path).makeString(",\n" + getTabString(2)) + "\n" + getTabString() + "]") + ";\n") : "") +
                 (dataSpace.diagrams != null ? (getTabString() + "diagrams:" + (dataSpace.diagrams.isEmpty() ? " []" : "\n" + getTabString() + "[\n" + ListIterate.collect(dataSpace.diagrams, DataSpaceGrammarComposerExtension::renderDataSpaceDiagram).makeString(",\n") + "\n" + getTabString() + "]") + ";\n") : "") +
-                (dataSpace.elements != null ? (getTabString() + "elements:" + (dataSpace.elements.isEmpty() ? " []" : "\n" + getTabString() + "[\n" + getTabString(2) + ListIterate.collect(dataSpace.elements, element -> element.path).makeString(",\n" + getTabString(2)) + "\n" + getTabString() + "]") + ";\n") : "") +
+                (dataSpace.elements != null ? (getTabString() + "elements:" + (dataSpace.elements.isEmpty() ? " []" : "\n" + getTabString() + "[\n" + getTabString(2) + ListIterate.collect(dataSpace.elements, element -> (element.exclude != null && element.exclude ? "-" : "") + element.path).makeString(",\n" + getTabString(2)) + "\n" + getTabString() + "]") + ";\n") : "") +
                 (dataSpace.executables != null ? (getTabString() + "executables:" + (dataSpace.executables.isEmpty() ? " []" : "\n" + getTabString() + "[\n" + ListIterate.collect(dataSpace.executables, DataSpaceGrammarComposerExtension::renderDataSpaceExecutable).makeString(",\n") + "\n" + getTabString() + "]") + ";\n") : "") +
                 (dataSpace.supportInfo != null ? (getTabString() + "supportInfo: " + renderDataSpaceSupportInfo(dataSpace.supportInfo) + ";\n") : "") +
                 "}";
+    }
+
+    @Override
+    public List<Function<MappingInclude, String>> getExtraMappingIncludeComposers()
+    {
+        return Collections.singletonList(this::renderMappingInclude);
+    }
+
+    private String renderMappingInclude(MappingInclude mappingInclude)
+    {
+        if (mappingInclude.getClass() == MappingIncludeDataSpace.class)
+        {
+            MappingIncludeDataSpace mappingIncludeDataSpace = (MappingIncludeDataSpace) mappingInclude;
+            return "include dataspace " + mappingIncludeDataSpace.includedDataSpace;
+        }
+        return null;
     }
 }

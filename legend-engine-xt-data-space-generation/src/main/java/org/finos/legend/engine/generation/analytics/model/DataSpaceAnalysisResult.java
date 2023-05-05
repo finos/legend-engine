@@ -44,7 +44,4 @@ public class DataSpaceAnalysisResult
     public List<DataSpaceExecutableAnalysisResult> executables = Collections.emptyList();
     public List<DataSpaceDiagramAnalysisResult> diagrams = Collections.emptyList();
     public List<DataSpaceModelDocumentationEntry> elementDocs = Collections.emptyList();
-
-    @Deprecated
-    public List<String> featuredDiagrams = Collections.emptyList();
 }

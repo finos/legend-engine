@@ -14,11 +14,13 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.UserDefinedFunctionHandler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.TypeAndMultiplicity;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
@@ -29,13 +31,42 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TagPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.Root_meta_pure_data_DataElement;
+import org.finos.legend.pure.generated.Root_meta_pure_data_DataElement_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_mapping_Mapping_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_Profile_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_Stereotype_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_Tag_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_TaggedValue_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_ConcreteFunctionDefinition_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_relationship_Association_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_section_SectionIndex;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_section_SectionIndex_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Enum_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Enumeration_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Measure_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_Connection;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableConnection;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableConnection_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime_Impl;
+import org.finos.legend.pure.m3.coreinstance.Package;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Stereotype;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Tag;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.TaggedValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
@@ -54,45 +85,37 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     @Override
     public PackageableElement visit(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
     {
-        return this.context.getExtraProcessorOrThrow(element).processFirstPass(element, this.context);
+        return setNameAndPackage(this.context.getExtraProcessorOrThrow(element).processFirstPass(element, this.context), element);
     }
 
     @Override
     public PackageableElement visit(Profile profile)
     {
         String fullPath = this.context.pureModel.buildPackageString(profile._package, profile.name);
-        final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile targetProfile = new Root_meta_pure_metamodel_extension_Profile_Impl(profile.name, SourceInformationHelper.toM3SourceInformation(profile.sourceInformation), context.pureModel.getClass("meta::pure::metamodel::extension::Profile"));
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile targetProfile = new Root_meta_pure_metamodel_extension_Profile_Impl(profile.name, SourceInformationHelper.toM3SourceInformation(profile.sourceInformation), this.context.pureModel.getClass("meta::pure::metamodel::extension::Profile"));
         this.context.pureModel.profilesIndex.put(fullPath, targetProfile);
-        org.finos.legend.pure.m3.coreinstance.Package pack = this.context.pureModel.getOrCreatePackage(profile._package);
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile res = targetProfile
-                ._name(profile.name)
-                ._p_stereotypes(ListIterate.collect(profile.stereotypes, s -> new Root_meta_pure_metamodel_extension_Stereotype_Impl(s, null, context.pureModel.getClass("meta::pure::metamodel::extension::Stereotype"))._value(s)._profile(targetProfile)))
-                ._p_tags(ListIterate.collect(profile.tags, t -> new Root_meta_pure_metamodel_extension_Tag_Impl(t, null, context.pureModel.getClass("meta::pure::metamodel::extension::Tag"))._value(t)._profile(targetProfile)))
-                ._package(pack);
-        pack._childrenAdd(res);
-        return res;
+        setNameAndPackage(targetProfile, profile);
+        return targetProfile
+                ._p_stereotypes(ListIterate.collect(profile.stereotypes, st -> newStereotype(targetProfile, st)))
+                ._p_tags(ListIterate.collect(profile.tags, t -> newTag(targetProfile, t)));
     }
 
     @Override
     public PackageableElement visit(Enumeration _enum)
     {
         String fullPath = this.context.pureModel.buildPackageString(_enum._package, _enum.name);
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration<Object> en = new Root_meta_pure_metamodel_type_Enumeration_Impl<>(_enum.name, null, context.pureModel.getClass("meta::pure::metamodel::type::Enumeration"));
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration<Object> en = new Root_meta_pure_metamodel_type_Enumeration_Impl<>(_enum.name, null, this.context.pureModel.getClass("meta::pure::metamodel::type::Enumeration"));
         this.context.pureModel.typesIndex.put(fullPath, en);
-        final GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(en);
+        GenericType genericType = newGenericType(en);
         this.context.pureModel.typesGenericTypeIndex.put(fullPath, genericType);
-        GenericType classGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.context.pureModel.getClass("meta::pure::metamodel::type::Enumeration"))._typeArguments(Lists.fixedSize.of(genericType));
-        org.finos.legend.pure.m3.coreinstance.Package pack = this.context.pureModel.getOrCreatePackage(_enum._package);
-        pack._childrenAdd(en);
-        return en._name(_enum.name)
-                ._classifierGenericType(classGenericType)
-                ._stereotypes(ListIterate.collect(_enum.stereotypes, s -> this.context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))
-                ._taggedValues(ListIterate.collect(_enum.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(this.context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.sourceInformation))._value(t.value)))
-                ._package(pack)
+        setNameAndPackage(en, _enum);
+        return en._classifierGenericType(newGenericType(this.context.pureModel.getClass("meta::pure::metamodel::type::Enumeration"), genericType))
+                ._stereotypes(ListIterate.collect(_enum.stereotypes, this::resolveStereotype))
+                ._taggedValues(ListIterate.collect(_enum.taggedValues, this::newTaggedValue))
                 ._values(ListIterate.collect(_enum.values, v -> new Root_meta_pure_metamodel_type_Enum_Impl(v.value, SourceInformationHelper.toM3SourceInformation(_enum.sourceInformation), null)
                         ._classifierGenericType(genericType)
-                        ._stereotypes(ListIterate.collect(v.stereotypes, s -> this.context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))
-                        ._taggedValues(ListIterate.collect(v.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(this.context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.sourceInformation))._value(t.value)))
+                        ._stereotypes(ListIterate.collect(v.stereotypes, this::resolveStereotype))
+                        ._taggedValues(ListIterate.collect(v.taggedValues, this::newTaggedValue))
                         ._name(v.value)));
     }
 
@@ -100,40 +123,28 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     public PackageableElement visit(Class _class)
     {
         String fullPath = this.context.pureModel.buildPackageString(_class._package, _class.name);
-        final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> targetClass = new Root_meta_pure_metamodel_type_Class_Impl<>(_class.name, SourceInformationHelper.toM3SourceInformation(_class.sourceInformation), this.context.pureModel.getClass("meta::pure::metamodel::type::Class"));
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> targetClass = new Root_meta_pure_metamodel_type_Class_Impl<>(_class.name, SourceInformationHelper.toM3SourceInformation(_class.sourceInformation), this.context.pureModel.getClass("meta::pure::metamodel::type::Class"));
         this.context.pureModel.typesIndex.put(fullPath, targetClass);
-        final GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(targetClass);
+        GenericType genericType = newGenericType(targetClass);
         this.context.pureModel.typesGenericTypeIndex.put(fullPath, genericType);
-        GenericType classGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.context.pureModel.getType("meta::pure::metamodel::type::Class"))._typeArguments(Lists.fixedSize.of(genericType));
-        org.finos.legend.pure.m3.coreinstance.Package pack = this.context.pureModel.getOrCreatePackage(_class._package);
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> res = targetClass
-                ._name(_class.name)
-                ._package(pack)
-                ._classifierGenericType(classGenericType)
-                ._stereotypes(ListIterate.collect(_class.stereotypes, s -> this.context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))
-                ._taggedValues(ListIterate.collect(_class.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(this.context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.tag.sourceInformation))._value(t.value)));
-        pack._childrenAdd(res);
-        return res;
+        setNameAndPackage(targetClass, _class);
+        return targetClass._classifierGenericType(newGenericType(this.context.pureModel.getType("meta::pure::metamodel::type::Class"), genericType))
+                ._stereotypes(ListIterate.collect(_class.stereotypes, this::resolveStereotype))
+                ._taggedValues(ListIterate.collect(_class.taggedValues, this::newTaggedValue));
     }
 
     @Override
     public PackageableElement visit(Measure measure)
     {
         String fullPath = this.context.pureModel.buildPackageString(measure._package, measure.name);
-        final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Measure targetMeasure = new Root_meta_pure_metamodel_type_Measure_Impl(measure.name, SourceInformationHelper.toM3SourceInformation(measure.sourceInformation), null);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Measure targetMeasure = new Root_meta_pure_metamodel_type_Measure_Impl(measure.name, SourceInformationHelper.toM3SourceInformation(measure.sourceInformation), null);
         this.context.pureModel.typesIndex.put(fullPath, targetMeasure);
-        final GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(targetMeasure);
+        GenericType genericType = newGenericType(targetMeasure);
         this.context.pureModel.typesGenericTypeIndex.put(fullPath, genericType);
-        GenericType measureGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.context.pureModel.getType("meta::pure::metamodel::type::Measure"));
-        org.finos.legend.pure.m3.coreinstance.Package pack = this.context.pureModel.getOrCreatePackage(measure._package);
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Measure res = targetMeasure
-                ._name(measure.name)
-                ._classifierGenericType(measureGenericType)
-                ._package(pack);
-        pack._childrenAdd(res);
+        targetMeasure._classifierGenericType(newGenericType(this.context.pureModel.getType("meta::pure::metamodel::type::Measure")));
         HelperMeasureBuilder.processUnitPackageableElementFirstPass(measure.canonicalUnit, this.context);
-        ListIterate.forEach(measure.nonCanonicalUnits, ncu -> HelperMeasureBuilder.processUnitPackageableElementFirstPass(ncu, this.context));
-        return res;
+        measure.nonCanonicalUnits.forEach(ncu -> HelperMeasureBuilder.processUnitPackageableElementFirstPass(ncu, this.context));
+        return setNameAndPackage(targetMeasure, measure);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -141,23 +152,24 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     public PackageableElement visit(Association srcAssociation)
     {
         String packageString = this.context.pureModel.buildPackageString(srcAssociation._package, srcAssociation.name);
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association association = new Root_meta_pure_metamodel_relationship_Association_Impl(srcAssociation.name, null, context.pureModel.getClass("meta::pure::metamodel::relationship::Association"));
-        org.finos.legend.pure.m3.coreinstance.Package pack = this.context.pureModel.getOrCreatePackage(srcAssociation._package);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association association = new Root_meta_pure_metamodel_relationship_Association_Impl(srcAssociation.name, null, this.context.pureModel.getClass("meta::pure::metamodel::relationship::Association"));
         this.context.pureModel.associationsIndex.put(packageString, association);
-        pack._childrenAdd(association);
 
         if (srcAssociation.properties.size() != 2)
         {
             throw new EngineException("Expected 2 properties for an association '" + packageString + "'", srcAssociation.sourceInformation, EngineErrorType.COMPILATION);
         }
+        setNameAndPackage(association, srcAssociation);
 
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class source = this.context.resolveClass(srcAssociation.properties.get(0).type, srcAssociation.properties.get(0).sourceInformation);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class target = this.context.resolveClass(srcAssociation.properties.get(1).type, srcAssociation.properties.get(1).sourceInformation);
 
-        String property0Ref = this.context.pureModel.addPrefixToTypeReference(HelperModelBuilder.getElementFullPath(source, context.pureModel.getExecutionSupport()));
-        String property1Ref = this.context.pureModel.addPrefixToTypeReference(HelperModelBuilder.getElementFullPath(target, context.pureModel.getExecutionSupport()));
+        String property0Ref = this.context.pureModel.addPrefixToTypeReference(HelperModelBuilder.getElementFullPath(source, this.context.pureModel.getExecutionSupport()));
+        String property1Ref = this.context.pureModel.addPrefixToTypeReference(HelperModelBuilder.getElementFullPath(target, this.context.pureModel.getExecutionSupport()));
 
-        if (org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(source).equals("meta::pure::metamodel::type::Any") || org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(target).equals("meta::pure::metamodel::type::Any"))
+        // TODO generalize this validation to all platform/core types
+        if ("meta::pure::metamodel::type::Any".equals(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(source)) ||
+                "meta::pure::metamodel::type::Any".equals(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(target)))
         {
             throw new EngineException("Associations to Any are not allowed. Found in '" + packageString + "'", srcAssociation.sourceInformation, EngineErrorType.COMPILATION);
         }
@@ -178,18 +190,13 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class cl = this.context.resolveGenericType(p.returnType, p.sourceInformation)._rawType() == source ? target : source;
             return HelperModelBuilder.processQualifiedPropertyFirstPass(this.context, association, org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(cl), ctx).valueOf(p);
         });
-        for (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty<Object> q : qualifiedProperties)
-        {
-            (q._genericType()._rawType() == source ? target : source)._qualifiedPropertiesFromAssociationsAdd(q);
-        }
+        qualifiedProperties.forEach(q -> (q._genericType()._rawType() == source ? target : source)._qualifiedPropertiesFromAssociationsAdd(q));
         ctx.flushVariable("this");
-        return association._name(srcAssociation.name)
-                ._originalMilestonedProperties(ListIterate.collect(srcAssociation.originalMilestonedProperties, HelperModelBuilder.processProperty(this.context, this.context.pureModel.getGenericTypeFromIndex(srcAssociation.properties.get(0).type), association)))
+        return association._originalMilestonedProperties(ListIterate.collect(srcAssociation.originalMilestonedProperties, HelperModelBuilder.processProperty(this.context, this.context.pureModel.getGenericTypeFromIndex(srcAssociation.properties.get(0).type), association)))
                 ._properties(Lists.mutable.with(property1, property2))
                 ._qualifiedProperties(qualifiedProperties)
-                ._stereotypes(ListIterate.collect(srcAssociation.stereotypes, s -> this.context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))
-                ._taggedValues(ListIterate.collect(srcAssociation.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(this.context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.sourceInformation))._value(t.value)))
-                ._package(pack);
+                ._stereotypes(ListIterate.collect(srcAssociation.stereotypes, this::resolveStereotype))
+                ._taggedValues(ListIterate.collect(srcAssociation.taggedValues, this::newTaggedValue));
     }
 
     @Override
@@ -199,24 +206,19 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         String functionSignature = HelperModelBuilder.getSignature(function);
         String functionFullName = this.context.pureModel.buildPackageString(function._package, functionSignature);
         String functionName = this.context.pureModel.buildPackageString(function._package, HelperModelBuilder.getFunctionNameWithoutSignature(function));
-        final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> targetFunc = new Root_meta_pure_metamodel_function_ConcreteFunctionDefinition_Impl<>(functionSignature, SourceInformationHelper.toM3SourceInformation(function.sourceInformation), null);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> targetFunc = new Root_meta_pure_metamodel_function_ConcreteFunctionDefinition_Impl<>(functionSignature, SourceInformationHelper.toM3SourceInformation(function.sourceInformation), null);
         this.context.pureModel.functionsIndex.put(functionFullName, targetFunc);
 
         ProcessingContext ctx = new ProcessingContext("Function '" + functionFullName + "' First Pass");
 
-        org.finos.legend.pure.m3.coreinstance.Package pack = this.context.pureModel.getOrCreatePackage(function._package);
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> res = targetFunc
-                ._name(HelperModelBuilder.getTerseSignature(function)) // function signature here - e.g. isAfterDay_Date_1__Date_1__Boolean_1_
+        setNameAndPackage(targetFunc, functionSignature, function._package, function.sourceInformation)
                 ._functionName(functionName) // function name to be used in the handler map -> meta::pure::functions::date::isAfterDay
-                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.context.pureModel.getType("meta::pure::metamodel::function::ConcreteFunctionDefinition"))
-                        ._typeArguments(Lists.fixedSize.of(PureModel.buildFunctionType(ListIterate.collect(function.parameters, p -> (VariableExpression) p.accept(new ValueSpecificationBuilder(this.context, Lists.mutable.empty(), ctx))), this.context.resolveGenericType(function.returnType, function.sourceInformation), this.context.pureModel.getMultiplicity(function.returnMultiplicity), context.pureModel))))
-                ._stereotypes(ListIterate.collect(function.stereotypes, s -> this.context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))
-                ._taggedValues(ListIterate.collect(function.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(this.context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.sourceInformation))._value(t.value)))
-                ._package(pack);
-        HelperModelBuilder.processFunctionConstraints(function, this.context, res, ctx);
-        pack._childrenAdd(res);
+                ._classifierGenericType(newGenericType(this.context.pureModel.getType("meta::pure::metamodel::function::ConcreteFunctionDefinition"), PureModel.buildFunctionType(ListIterate.collect(function.parameters, p -> (VariableExpression) p.accept(new ValueSpecificationBuilder(this.context, Lists.mutable.empty(), ctx))), this.context.resolveGenericType(function.returnType, function.sourceInformation), this.context.pureModel.getMultiplicity(function.returnMultiplicity), this.context.pureModel)))
+                ._stereotypes(ListIterate.collect(function.stereotypes, this::resolveStereotype))
+                ._taggedValues(ListIterate.collect(function.taggedValues, this::newTaggedValue));
+        HelperModelBuilder.processFunctionConstraints(function, this.context, targetFunc, ctx);
 
-        this.context.pureModel.handlers.register(new UserDefinedFunctionHandler(this.context.pureModel, functionFullName, res,
+        this.context.pureModel.handlers.register(new UserDefinedFunctionHandler(this.context.pureModel, functionFullName, targetFunc,
                 ps -> new TypeAndMultiplicity(this.context.resolveGenericType(function.returnType, function.sourceInformation), this.context.pureModel.getMultiplicity(function.returnMultiplicity)),
                 ps ->
                 {
@@ -240,79 +242,138 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
                     }
                     return false;
                 }));
-        return res;
+        return targetFunc;
     }
 
     @Override
     public PackageableElement visit(Mapping mapping)
     {
-        final org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping pureMapping = new Root_meta_pure_mapping_Mapping_Impl(mapping.name);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping pureMapping = new Root_meta_pure_mapping_Mapping_Impl(mapping.name);
         this.context.pureModel.mappingsIndex.put(this.context.pureModel.buildPackageString(mapping._package, mapping.name), pureMapping);
-        GenericType mappingGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.context.pureModel.getType("meta::pure::mapping::Mapping"));
-        org.finos.legend.pure.m3.coreinstance.Package pack = this.context.pureModel.getOrCreatePackage(mapping._package);
-        pureMapping._name(mapping.name)
-                ._package(pack)
-                ._classifierGenericType(mappingGenericType);
-        pack._childrenAdd(pureMapping);
-        return pureMapping;
+        GenericType mappingGenericType = newGenericType(this.context.pureModel.getType("meta::pure::mapping::Mapping"));
+        pureMapping._classifierGenericType(mappingGenericType);
+        return setNameAndPackage(pureMapping, mapping);
     }
 
     @Override
     public PackageableElement visit(PackageableRuntime packageableRuntime)
     {
-        Root_meta_pure_runtime_PackageableRuntime metamodel = new Root_meta_pure_runtime_PackageableRuntime_Impl(packageableRuntime.name, null, context.pureModel.getClass("meta::pure::runtime::PackageableRuntime"));
+        Root_meta_pure_runtime_PackageableRuntime metamodel = new Root_meta_pure_runtime_PackageableRuntime_Impl(packageableRuntime.name, null, this.context.pureModel.getClass("meta::pure::runtime::PackageableRuntime"));
         this.context.pureModel.packageableRuntimesIndex.put(this.context.pureModel.buildPackageString(packageableRuntime._package, packageableRuntime.name), metamodel);
-        GenericType packageableRuntimeGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.context.pureModel.getType("meta::pure::runtime::PackageableRuntime"));
-        org.finos.legend.pure.m3.coreinstance.Package pack = this.context.pureModel.getOrCreatePackage(packageableRuntime._package);
-        metamodel._name(packageableRuntime.name)
-                ._package(pack)
-                ._classifierGenericType(packageableRuntimeGenericType);
-        pack._childrenAdd(metamodel);
+        GenericType packageableRuntimeGenericType = newGenericType(this.context.pureModel.getType("meta::pure::runtime::PackageableRuntime"));
+        metamodel._classifierGenericType(packageableRuntimeGenericType);
 
         // NOTE: the whole point of this processing is to put the Pure Runtime in an index
-        Root_meta_pure_runtime_Runtime pureRuntime = new Root_meta_pure_runtime_Runtime_Impl("Root::meta::pure::runtime::Runtime", null,  context.pureModel.getClass("meta::pure::runtime::Runtime"));
+        Root_meta_pure_runtime_Runtime pureRuntime = new Root_meta_pure_runtime_Runtime_Impl("Root::meta::pure::runtime::Runtime", null, this.context.pureModel.getClass("meta::pure::runtime::Runtime"));
         this.context.pureModel.runtimesIndex.put(this.context.pureModel.buildPackageString(packageableRuntime._package, packageableRuntime.name), pureRuntime);
 
-        return metamodel;
+        return setNameAndPackage(metamodel, packageableRuntime);
     }
 
     @Override
     public PackageableElement visit(PackageableConnection packageableConnection)
     {
-        Root_meta_pure_runtime_PackageableConnection metamodel = new Root_meta_pure_runtime_PackageableConnection_Impl(packageableConnection.name, null, context.pureModel.getClass("meta::pure::runtime::PackageableConnection"));
+        Root_meta_pure_runtime_PackageableConnection metamodel = new Root_meta_pure_runtime_PackageableConnection_Impl(packageableConnection.name, null, this.context.pureModel.getClass("meta::pure::runtime::PackageableConnection"));
         this.context.pureModel.packageableConnectionsIndex.put(this.context.pureModel.buildPackageString(packageableConnection._package, packageableConnection.name), metamodel);
-        org.finos.legend.pure.m3.coreinstance.Package pack = this.context.pureModel.getOrCreatePackage(packageableConnection._package);
-        metamodel._name(packageableConnection.name)._package(pack);
-        pack._childrenAdd(metamodel);
         // NOTE: the whole point of this processing is to put the Pure Connection in an index
-        final Root_meta_pure_runtime_Connection connection = packageableConnection.connectionValue.accept(new ConnectionFirstPassBuilder(this.context));
+        Root_meta_pure_runtime_Connection connection = packageableConnection.connectionValue.accept(new ConnectionFirstPassBuilder(this.context));
         this.context.pureModel.connectionsIndex.put(this.context.pureModel.buildPackageString(packageableConnection._package, packageableConnection.name), connection);
-        return metamodel;
+        return setNameAndPackage(metamodel, packageableConnection);
     }
 
     @Override
     public PackageableElement visit(SectionIndex sectionIndex)
     {
-        org.finos.legend.pure.m3.coreinstance.Package pack = this.context.pureModel.getOrCreatePackage(sectionIndex._package);
-        Root_meta_pure_metamodel_section_SectionIndex stub = new Root_meta_pure_metamodel_section_SectionIndex_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::section::SectionIndex"))._package(pack)._name(sectionIndex.name);
-        pack._childrenAdd(stub);
+        Root_meta_pure_metamodel_section_SectionIndex stub = new Root_meta_pure_metamodel_section_SectionIndex_Impl(sectionIndex.name, null, this.context.pureModel.getClass("meta::pure::metamodel::section::SectionIndex"));
         // NOTE: we don't really need to add section index to the PURE graph
         sectionIndex.sections.forEach(section -> section.elements.forEach(elementPath -> this.context.pureModel.sectionsIndex.putIfAbsent(elementPath, section)));
-        return stub;
+        return setNameAndPackage(stub, sectionIndex);
     }
 
     @Override
     public PackageableElement visit(DataElement dataElement)
     {
         Root_meta_pure_data_DataElement compiled = new Root_meta_pure_data_DataElement_Impl(dataElement.name);
-        GenericType mappingGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.context.pureModel.getType("meta::pure::data::DataElement"));
-        org.finos.legend.pure.m3.coreinstance.Package pack = this.context.pureModel.getOrCreatePackage(dataElement._package);
-        compiled._name(dataElement.name)
-                ._package(pack)
-                ._classifierGenericType(mappingGenericType)
-                ._stereotypes(ListIterate.collect(dataElement.stereotypes, s -> context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))
-                ._taggedValues(ListIterate.collect(dataElement.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.tag.sourceInformation))._value(t.value)));
-        pack._childrenAdd(compiled);
-        return compiled;
+        GenericType mappingGenericType = newGenericType(this.context.pureModel.getType("meta::pure::data::DataElement"));
+        setNameAndPackage(compiled, dataElement);
+        return compiled._classifierGenericType(mappingGenericType)
+                ._stereotypes(ListIterate.collect(dataElement.stereotypes, this::resolveStereotype))
+                ._taggedValues(ListIterate.collect(dataElement.taggedValues, this::newTaggedValue));
+    }
+
+    private GenericType newGenericType(Type rawType)
+    {
+        return new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
+                ._rawType(rawType);
+    }
+
+    private GenericType newGenericType(Type rawType, GenericType typeArgument)
+    {
+        return newGenericType(rawType, Lists.fixedSize.with(typeArgument));
+    }
+
+    private GenericType newGenericType(Type rawType, RichIterable<? extends GenericType> typeArguments)
+    {
+        return newGenericType(rawType)._typeArguments(typeArguments);
+    }
+
+    private Stereotype newStereotype(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile profile, String name)
+    {
+        return new Root_meta_pure_metamodel_extension_Stereotype_Impl(name, null, this.context.pureModel.getClass("meta::pure::metamodel::extension::Stereotype"))
+                ._value(name)
+                ._profile(profile);
+    }
+
+    private Tag newTag(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile profile, String name)
+    {
+        return new Root_meta_pure_metamodel_extension_Tag_Impl(name, null, this.context.pureModel.getClass("meta::pure::metamodel::extension::Tag"))
+                ._value(name)
+                ._profile(profile);
+    }
+
+    private TaggedValue newTaggedValue(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue taggedValue)
+    {
+        return new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, this.context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))
+                ._tag(resolveTag(taggedValue.tag))
+                ._value(taggedValue.value);
+    }
+
+    private Tag resolveTag(TagPtr tagPointer)
+    {
+        return this.context.resolveTag(tagPointer.profile, tagPointer.value, tagPointer.profileSourceInformation, tagPointer.sourceInformation);
+    }
+
+    private Stereotype resolveStereotype(StereotypePtr stereotypePointer)
+    {
+        return this.context.resolveStereotype(stereotypePointer.profile, stereotypePointer.value, stereotypePointer.profileSourceInformation, stereotypePointer.sourceInformation);
+    }
+
+    private <T extends PackageableElement> T setNameAndPackage(T pureElement, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement sourceElement)
+    {
+        return setNameAndPackage(pureElement, sourceElement.name, sourceElement._package, sourceElement.sourceInformation);
+    }
+
+    private <T extends PackageableElement> T setNameAndPackage(T pureElement, String name, String packagePath, SourceInformation sourceInformation)
+    {
+        // Validate and set name
+        if ((name == null) || name.isEmpty())
+        {
+            throw new EngineException("PackageableElement name may not be null or empty", sourceInformation, EngineErrorType.COMPILATION);
+        }
+        if (!name.equals(pureElement.getName()))
+        {
+            throw new EngineException("PackageableElement name '" + name + "' must match CoreInstance name '" + pureElement.getName() + "'", sourceInformation, EngineErrorType.COMPILATION);
+        }
+        pureElement._name(name);
+
+        // Validate and set package
+        Package pack = this.context.pureModel.getOrCreatePackage(packagePath);
+        if (pack._children().anySatisfy(c -> name.equals(c._name())))
+        {
+            throw new EngineException("An element named '" + name + "' already exists in the package '" + packagePath + "'", sourceInformation, EngineErrorType.COMPILATION);
+        }
+        pureElement._package(pack);
+        pack._childrenAdd(pureElement);
+        return pureElement;
     }
 }

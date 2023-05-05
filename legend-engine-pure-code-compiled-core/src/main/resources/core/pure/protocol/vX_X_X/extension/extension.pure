@@ -50,6 +50,8 @@ Class meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X exten
    
    scan_buildBasePureModel_buildPureModelFromMapping1 : Function<{Nil[1]->Store[*]}>[*];
    scan_buildBasePureModel_buildPureModelFromMapping2 : Store[*];
+   
+   scan_buildBasePureModel_getExtraElementsFromStores : Function<{Store[*], meta::pure::extension::Extension[*]->meta::protocols::pure::vX_X_X::metamodel::PackageableElement[*]}>[0..1];
 
    scan_buildPureModelAsText_getAllElementsFromMapping : Function<{Store[*]->Store[*]}>[0..1];
    scan_buildPureModelAsText_getAllElementsFromMapping2 : Function<{Store[*]->PackageableElement[*]}>[0..1];

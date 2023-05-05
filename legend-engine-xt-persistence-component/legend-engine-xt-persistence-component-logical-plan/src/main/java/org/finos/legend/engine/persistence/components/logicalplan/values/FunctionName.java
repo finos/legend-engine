@@ -14,40 +14,18 @@
 
 package org.finos.legend.engine.persistence.components.logicalplan.values;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 public enum FunctionName
 {
-    SUM("SUM"),
-    MAX("MAX"),
-    MIN("MIN"),
-    COUNT("COUNT"),
-    COALESCE("COALESCE"),
-    CURRENT_TIME("CURRENT_TIME"),
-    CURRENT_DATE("CURRENT_DATE"),
-    HASH("HASH"),
-    CURRENT_TIMESTAMP("CURRENT_TIMESTAMP");
-
-    private static final Map<String, FunctionName> BY_NAME = Arrays
-        .stream(FunctionName.values())
-        .collect(Collectors.toMap(FunctionName::get, java.util.function.Function.identity()));
-
-    public static FunctionName fromName(String name)
-    {
-        return BY_NAME.get(name);
-    }
-
-    private final String name;
-
-    FunctionName(String name)
-    {
-        this.name = name;
-    }
-
-    public String get()
-    {
-        return name;
-    }
+    SUM,
+    MAX,
+    MIN,
+    COUNT,
+    COALESCE,
+    CURRENT_TIME,
+    CURRENT_DATE,
+    HASH,
+    CURRENT_TIMESTAMP,
+    UPPER,
+    ROW_NUMBER,
+    SUBSTRING;
 }

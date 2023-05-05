@@ -83,4 +83,21 @@ public class TestMappingGrammarTo
                         ")\n"
         );
     }
+
+    @Test
+    public void testIncludeDispatch()
+    {
+        testTo("simpleIncludeMapping.json",
+                "###Mapping\n" +
+                "Mapping mapping::simpleModelMapping\n" +
+                "(\n" +
+                "  include mapping test::mapping::DispatchMapping\n" +
+                "  include test::mapping::Mapping\n\n" +
+                "  *model::TargetClass[my_mapping_id]: Pure\n" +
+                "  {\n" +
+                "    ~src model::SourceClass\n" +
+                "    name: $src.name\n" +
+                "  }\n" +
+                ")\n");
+    }
 }

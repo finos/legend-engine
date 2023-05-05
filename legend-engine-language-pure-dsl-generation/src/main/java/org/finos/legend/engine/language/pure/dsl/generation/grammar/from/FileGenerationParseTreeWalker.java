@@ -24,7 +24,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.ConfigurationProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
@@ -68,8 +67,7 @@ public class FileGenerationParseTreeWalker
         }
         catch (IllegalArgumentException e)
         {
-            String supportedTypes = LazyIterate.collect(Arrays.asList(FileGenerationType.class.getEnumConstants()), Enum::name).makeString(",");
-            throw new EngineException("Generation type '" + typeString + "' is not supported. Supported types are: " + supportedTypes + ".", walkerSourceInformation.getSourceInformation(ctx.identifier()), EngineErrorType.PARSER);
+            throw new EngineException("Generation type '" + typeString + "' is not supported.", walkerSourceInformation.getSourceInformation(ctx.identifier()), EngineErrorType.PARSER);
         }
         // scopes (optional)
         FileGenerationParserGrammar.ScopeElementsContext scopeElementsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.scopeElements(), "scopeElements", fileGeneration.sourceInformation);

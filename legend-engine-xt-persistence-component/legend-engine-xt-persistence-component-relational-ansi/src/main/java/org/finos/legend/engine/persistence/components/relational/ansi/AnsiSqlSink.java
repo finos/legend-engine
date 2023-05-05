@@ -30,6 +30,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.conditions.Or;
 import org.finos.legend.engine.persistence.components.logicalplan.constraints.CascadeTableConstraint;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReferenceImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
@@ -59,6 +60,8 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.BatchSt
 import org.finos.legend.engine.persistence.components.logicalplan.values.Case;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DiffBinaryValueOperator;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.ModuloBinaryValueOperator;
+import org.finos.legend.engine.persistence.components.logicalplan.values.OrderedField;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.HashFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.InfiniteBatchIdValue;
@@ -69,6 +72,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.SelectV
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.SumBinaryValueOperator;
 import org.finos.legend.engine.persistence.components.logicalplan.values.TabularValues;
+import org.finos.legend.engine.persistence.components.logicalplan.values.WindowFunction;
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
@@ -84,6 +88,7 @@ import org.finos.legend.engine.persistence.components.relational.ansi.sql.visito
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.BatchStartTimestampVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.CaseVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.DatasetDefinitionVisitor;
+import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.DerivedDatasetVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.DatasetReferenceVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.DeleteVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.DiffBinaryValueOperatorVisitor;
@@ -91,6 +96,8 @@ import org.finos.legend.engine.persistence.components.relational.ansi.sql.visito
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.EqualsVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.ExistsConditionVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.FieldValueVisitor;
+import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.ModuloBinaryValueOperatorVisitor;
+import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.OrderedFieldVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.FieldVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.FunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.GreaterThanEqualToVisitor;
@@ -125,6 +132,7 @@ import org.finos.legend.engine.persistence.components.relational.ansi.sql.visito
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.TabularValuesVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.TruncateVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.TableConstraintVisitor;
+import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.WindowFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.util.Capability;
@@ -154,11 +162,13 @@ public class AnsiSqlSink extends RelationalSink
 
         logicalPlanVisitorByClass.put(Field.class, new FieldVisitor());
         logicalPlanVisitorByClass.put(FieldValue.class, new FieldValueVisitor());
+        logicalPlanVisitorByClass.put(OrderedField.class, new OrderedFieldVisitor());
         logicalPlanVisitorByClass.put(SchemaReference.class, new SchemaReferenceVisitor());
         logicalPlanVisitorByClass.put(SchemaDefinition.class, new SchemaDefinitionVisitor());
         logicalPlanVisitorByClass.put(DatasetReference.class, new DatasetReferenceVisitor());
         logicalPlanVisitorByClass.put(DatasetReferenceImpl.class, new DatasetReferenceVisitor());
         logicalPlanVisitorByClass.put(DatasetDefinition.class, new DatasetDefinitionVisitor());
+        logicalPlanVisitorByClass.put(DerivedDataset.class, new DerivedDatasetVisitor());
         logicalPlanVisitorByClass.put(JsonExternalDatasetReference.class, new DatasetReferenceVisitor());
 
         logicalPlanVisitorByClass.put(Not.class, new NotVisitor());
@@ -180,6 +190,7 @@ public class AnsiSqlSink extends RelationalSink
         logicalPlanVisitorByClass.put(Update.class, new SQLUpdateVisitor());
         logicalPlanVisitorByClass.put(FunctionImpl.class, new FunctionVisitor());
         logicalPlanVisitorByClass.put(HashFunction.class, new HashFunctionVisitor());
+        logicalPlanVisitorByClass.put(WindowFunction.class, new WindowFunctionVisitor());
         logicalPlanVisitorByClass.put(NumericalValue.class, new NumericalValueVisitor());
         logicalPlanVisitorByClass.put(ObjectValue.class, new ObjectValueVisitor());
         logicalPlanVisitorByClass.put(Case.class, new CaseVisitor());
@@ -199,6 +210,7 @@ public class AnsiSqlSink extends RelationalSink
         logicalPlanVisitorByClass.put(SelectValue.class, new SelectValueVisitor());
         logicalPlanVisitorByClass.put(SumBinaryValueOperator.class, new SumBinaryValueOperatorVisitor());
         logicalPlanVisitorByClass.put(DiffBinaryValueOperator.class, new DiffBinaryValueOperatorVisitor());
+        logicalPlanVisitorByClass.put(ModuloBinaryValueOperator.class, new ModuloBinaryValueOperatorVisitor());
         logicalPlanVisitorByClass.put(Show.class, new ShowVisitor());
         logicalPlanVisitorByClass.put(BatchIdValue.class, new BatchIdValueVisitor());
         logicalPlanVisitorByClass.put(InfiniteBatchIdValue.class, new InfiniteBatchIdValueVisitor());

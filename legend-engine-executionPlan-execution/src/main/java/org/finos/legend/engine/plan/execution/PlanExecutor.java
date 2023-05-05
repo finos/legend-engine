@@ -44,6 +44,7 @@ import org.finos.legend.engine.plan.execution.stores.*;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.url.EngineUrlStreamHandlerFactory;
 import org.finos.legend.engine.shared.core.url.InputStreamProvider;
@@ -217,12 +218,12 @@ public class PlanExecutor
         return execute(executionPlan, buildDefaultExecutionState(executionPlan, vars, planExecutionContext), user, profiles);
     }
 
-    public Result execute(SingleExecutionPlan executionPlan, Map<String, Result> vars, String user, MutableList<CommonProfile> profiles, PlanExecutionContext planExecutionContext, String sessionID)
+    public Result execute(SingleExecutionPlan executionPlan, Map<String, Result> vars, String user, MutableList<CommonProfile> profiles, PlanExecutionContext planExecutionContext, RequestContext requestContext)
     {
         ExecutionState state = buildDefaultExecutionState(executionPlan, vars, planExecutionContext);
-        if (sessionID != null)
+        if (requestContext != null)
         {
-            state.setSessionID(sessionID);
+            state.setRequestContext(requestContext);
         }
 
         return execute(executionPlan, state, user, profiles);
@@ -267,9 +268,9 @@ public class PlanExecutor
             {
                 // set up the state
                 setUpState(singleExecutionPlan, state, executeArgs.profiles, executeArgs.user);
-                if (executeArgs.sessionID != null)
+                if (executeArgs.requestContext != null)
                 {
-                    state.setSessionID(executeArgs.sessionID);
+                    state.setRequestContext(executeArgs.requestContext);
                 }
 
                 singleExecutionPlan.getExecutionStateParams(org.eclipse.collections.api.factory.Maps.mutable.empty()).forEach(state::addParameterValue);
@@ -607,7 +608,7 @@ public class PlanExecutor
         private Map<String, Object> params = Maps.mutable.empty();
         private MutableList<CommonProfile> profiles = Lists.mutable.empty();
         private String user;
-        private String sessionID;
+        private RequestContext requestContext;
 
 
         private ExecuteArgs(ExecuteArgsBuilder builder)
@@ -622,7 +623,7 @@ public class PlanExecutor
             this.params.putAll(builder.params);
             this.profiles.addAll(builder.profiles);
             this.user = builder.user;
-            this.sessionID = sessionID;
+            this.requestContext = builder.requestContext;
         }
 
         public static ExecuteArgsBuilder newArgs()
@@ -642,7 +643,7 @@ public class PlanExecutor
         private Map<String, Object> params = Maps.mutable.empty();
         private MutableList<CommonProfile> profiles = Lists.mutable.empty();
         private String user;
-        private String sessionID;
+        private RequestContext requestContext;
 
 
         private ExecuteArgsBuilder()
@@ -748,9 +749,9 @@ public class PlanExecutor
             return this;
         }
 
-        public ExecuteArgsBuilder withSessionID(String sessionID)
+        public ExecuteArgsBuilder withRequestContext(RequestContext requestContext)
         {
-            this.sessionID = sessionID;
+            this.requestContext = requestContext;
             return this;
         }
 

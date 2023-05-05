@@ -208,5 +208,86 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
 
     public abstract void verifyNontemporalDeltaPostActionSqlAndCleanStagingData(GeneratorResult operations);
 
+    @Test
+    void testNontemporalDeltaWithNoVersionAndStagingFilter()
+    {
+        TestScenario testScenario = scenarios.NO_VERSIONING__WITH_STAGING_FILTER();
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(testScenario.getIngestMode())
+                .relationalSink(getRelationalSink())
+                .collectStatistics(true)
+                .build();
+
+        GeneratorResult operations = generator.generateOperations(testScenario.getDatasets());
+        verifyNontemporalDeltaWithNoVersionAndStagingFilter(operations);
+    }
+
+    public abstract void verifyNontemporalDeltaWithNoVersionAndStagingFilter(GeneratorResult operations);
+
+    @Test
+    void testNontemporalDeltaWithMaxVersioningAndStagingFiltersWithDedup()
+    {
+        TestScenario testScenario = scenarios.MAX_VERSIONING_WITH_GREATER_THAN__DEDUP__WITH_STAGING_FILTER();
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(testScenario.getIngestMode())
+            .relationalSink(getRelationalSink())
+            .collectStatistics(true)
+            .build();
+
+        GeneratorResult operations = generator.generateOperations(testScenario.getDatasets());
+        verifyNontemporalDeltaWithMaxVersioningAndStagingFiltersWithDedup(operations);
+    }
+
+    public abstract void verifyNontemporalDeltaWithMaxVersioningAndStagingFiltersWithDedup(GeneratorResult operations);
+
+    @Test
+    void testNontemporalDeltaWithMaxVersioningNoDedupAndStagingFilters()
+    {
+        TestScenario testScenario = scenarios.MAX_VERSIONING_WITH_GREATER_THAN__NO_DEDUP__WITH_STAGING_FILTER();
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(testScenario.getIngestMode())
+            .relationalSink(getRelationalSink())
+            .collectStatistics(true)
+            .build();
+
+        GeneratorResult operations = generator.generateOperations(testScenario.getDatasets());
+        verifyNontemporalDeltaWithMaxVersioningNoDedupAndStagingFilters(operations);
+    }
+
+    public abstract void verifyNontemporalDeltaWithMaxVersioningNoDedupAndStagingFilters(GeneratorResult operations);
+
+    @Test
+    void testNontemporalDeltaWithMaxVersioningNoDedupWithoutStagingFilters()
+    {
+        TestScenario testScenario = scenarios.MAX_VERSIONING_WITH_GREATER_THAN__NO_DEDUP__WITHOUT_STAGING_FILTER();
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(testScenario.getIngestMode())
+            .relationalSink(getRelationalSink())
+            .collectStatistics(true)
+            .build();
+
+        GeneratorResult operations = generator.generateOperations(testScenario.getDatasets());
+        verifyNontemporalDeltaWithMaxVersioningNoDedupWithoutStagingFilters(operations);
+    }
+
+    public abstract void verifyNontemporalDeltaWithMaxVersioningNoDedupWithoutStagingFilters(GeneratorResult operations);
+
+    @Test
+    void testNontemporalDeltaWithWithMaxVersioningDedupEnabledAndUpperCaseWithoutStagingFilters()
+    {
+        TestScenario testScenario = scenarios.MAX_VERSIONING_WITH_GREATER_THAN_EQUAL__DEDUP__WITHOUT_STAGING_FILTER();
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(testScenario.getIngestMode())
+            .relationalSink(getRelationalSink())
+            .collectStatistics(true)
+            .caseConversion(CaseConversion.TO_UPPER)
+            .build();
+
+        GeneratorResult operations = generator.generateOperations(testScenario.getDatasets());
+        verifyNontemporalDeltaWithWithMaxVersioningDedupEnabledAndUpperCaseWithoutStagingFilters(operations);
+    }
+
+    public abstract void verifyNontemporalDeltaWithWithMaxVersioningDedupEnabledAndUpperCaseWithoutStagingFilters(GeneratorResult operations);
+
     public abstract RelationalSink getRelationalSink();
 }

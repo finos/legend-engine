@@ -111,11 +111,11 @@ public class TestAuthenticationGrammarRoundtrip_SecretTypes extends TestGrammarR
                 "        accessKeyId: PropertiesFileSecret\n" +
                 "        {\n" +
                 "          propertyName: 'property1';\n" +
-                "        }\n" +
+                "        };\n" +
                 "        secretAccessKey: PropertiesFileSecret\n" +
                 "        {\n" +
                 "          propertyName: 'property1';\n" +
-                "        }\n" +
+                "        };\n" +
                 "      }\n" +
                 "    };\n" +
                 "  }#;\n" +
@@ -146,11 +146,11 @@ public class TestAuthenticationGrammarRoundtrip_SecretTypes extends TestGrammarR
                 "          accessKeyId: PropertiesFileSecret\n" +
                 "          {\n" +
                 "            propertyName: 'property1';\n" +
-                "          }\n" +
+                "          };\n" +
                 "          secretAccessKey: PropertiesFileSecret\n" +
                 "          {\n" +
                 "            propertyName: 'property1';\n" +
-                "          }\n" +
+                "          };\n" +
                 "        }\n" +
                 "      }\n" +
                 "    };\n" +

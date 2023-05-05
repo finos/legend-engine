@@ -42,9 +42,16 @@ import org.finos.legend.engine.plan.execution.stores.relational.blockConnection.
 import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutionState;
-import org.finos.legend.engine.plan.execution.stores.relational.result.*;
+import org.finos.legend.engine.plan.execution.stores.relational.result.PreparedTempTableResult;
+import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
+import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
+import org.finos.legend.engine.plan.execution.stores.relational.result.ResultInterpreterExtension;
+import org.finos.legend.engine.plan.execution.stores.relational.result.ResultInterpreterExtensionLoader;
+import org.finos.legend.engine.plan.execution.stores.relational.result.SQLExecutionResult;
+import org.finos.legend.engine.plan.execution.stores.relational.result.VoidRelationalResult;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
@@ -62,7 +69,6 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.ServiceLoader;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -136,7 +142,7 @@ public class RelationalExecutor
         {
             if ((ExecutionNodeTDSResultHelper.isResultTDS(node) || (ExecutionNodeResultHelper.isResultSizeRangeSet(node) && !ExecutionNodeResultHelper.isSingleRecordResult(node))) && !executionState.realizeInMemory)
             {
-                return new RelationalResult(executionState.activities, node, node.resultColumns, databaseTypeName, databaseTimeZone, connectionManagerConnection, profiles, tempTableList, executionState.topSpan, executionState.getSessionID());
+                return new RelationalResult(executionState.activities, node, node.resultColumns, databaseTypeName, databaseTimeZone, connectionManagerConnection, profiles, tempTableList, executionState.topSpan, executionState.getRequestContext());
             }
             else if (node.isResultVoid())
             {
@@ -145,7 +151,7 @@ public class RelationalExecutor
             else
             {
                 // Refactor and clean up the flush to Constant
-                RelationalResult result = new RelationalResult(executionState.activities, node, node.resultColumns, databaseTypeName, databaseTimeZone, connectionManagerConnection, profiles, tempTableList, executionState.topSpan, executionState.getSessionID());
+                RelationalResult result = new RelationalResult(executionState.activities, node, node.resultColumns, databaseTypeName, databaseTimeZone, connectionManagerConnection, profiles, tempTableList, executionState.topSpan, executionState.getRequestContext());
 
                 if (node.isResultPrimitiveType())
                 {
@@ -200,7 +206,7 @@ public class RelationalExecutor
         }
         else
         {
-            return new RelationalResult(executionState.activities, node, node.resultColumns, databaseTypeName, databaseTimeZone, connectionManagerConnection, profiles, tempTableList, executionState.topSpan, executionState.getSessionID());
+            return new RelationalResult(executionState.activities, node, node.resultColumns, databaseTypeName, databaseTimeZone, connectionManagerConnection, profiles, tempTableList, executionState.topSpan, executionState.getRequestContext());
         }
     }
 
@@ -238,7 +244,7 @@ public class RelationalExecutor
             return new VoidRelationalResult(executionState.activities, connectionManagerConnection, profiles);
         }
 
-        return new SQLExecutionResult(executionState.activities, node, databaseType, databaseTimeZone, connectionManagerConnection, profiles, tempTableList, executionState.topSpan, executionState.getSessionID());
+        return new SQLExecutionResult(executionState.activities, node, databaseType, databaseTimeZone, connectionManagerConnection, profiles, tempTableList, executionState.topSpan, executionState.getRequestContext());
     }
 
     private void prepareForSQLExecution(ExecutionNode node, Connection connection, String databaseTimeZone, String databaseTypeName, List<String> tempTableList, MutableList<CommonProfile> profiles, ExecutionState executionState)
@@ -250,11 +256,12 @@ public class RelationalExecutor
         sqlComment = node instanceof RelationalExecutionNode ? ((RelationalExecutionNode) node).sqlComment() : ((SQLExecutionNode) node).sqlComment();
 
         DatabaseManager databaseManager = DatabaseManager.fromString(databaseTypeName);
+        RelationalDatabaseCommands relationalDatabaseCommands = databaseManager.relationalDatabaseSupport();
         for (Map.Entry<String, Result> var : executionState.getResults().entrySet())
         {
             if (var.getValue() instanceof StreamingResult && sqlQuery.contains("(${" + var.getKey() + "})"))
             {
-                String tableName = databaseManager.relationalDatabaseSupport().processTempTableName(var.getKey());
+                String tableName = relationalDatabaseCommands.processTempTableName(var.getKey());
                 this.prepareTempTable(connection, (StreamingResult) var.getValue(), tableName, databaseTypeName, databaseTimeZone, tempTableList);
                 tempTableList.add(tableName);
                 sqlQuery = sqlQuery.replace("(${" + var.getKey() + "})", tableName);
@@ -265,7 +272,16 @@ public class RelationalExecutor
             }
             else if (var.getValue() instanceof RelationalResult && (sqlQuery.contains("inFilterClause_" + var.getKey() + "})") || sqlQuery.contains("${" + var.getKey() + "}")))
             {
-                if (((RelationalResult) var.getValue()).columnCount == 1)
+                boolean isResultSetClosed = false;
+                try
+                {
+                    isResultSetClosed = ((RelationalResult) var.getValue()).resultSet.isClosed();
+                }
+                catch (SQLException ignored)
+                {
+                }
+
+                if (((RelationalResult) var.getValue()).columnCount == 1 && !isResultSetClosed)
                 {
                     RealizedRelationalResult realizedRelationalResult = (RealizedRelationalResult) var.getValue().realizeInMemory();
                     List<Map<String, Object>> rowValueMaps = realizedRelationalResult.getRowValueMaps(false);

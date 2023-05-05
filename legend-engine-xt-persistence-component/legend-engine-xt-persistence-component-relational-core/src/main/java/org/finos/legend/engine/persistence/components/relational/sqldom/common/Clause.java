@@ -50,7 +50,11 @@ public enum Clause
     WHEN("WHEN"),
     ELSE("ELSE"),
     END("END"),
-    LIMIT("LIMIT");
+    LIMIT("LIMIT"),
+    OVER("OVER"),
+    PARTITION_BY("PARTITION BY"),
+    ORDER_BY("ORDER BY"),
+    CLUSTER_BY("CLUSTER BY");
 
     private final String clause;
 

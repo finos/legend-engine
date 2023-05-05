@@ -18,7 +18,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.entitlement.services.EntitlementModelObjectMapperFactory;
+import org.finos.legend.engine.entitlement.services.EntitlementServiceExtension;
+import org.finos.legend.engine.entitlement.services.EntitlementServiceExtensionLoader;
 import org.finos.legend.engine.external.shared.format.imports.PureModelContextDataGenerator;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceAnalysisResult;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceAssociationDocumentationEntry;
@@ -32,6 +36,7 @@ import org.finos.legend.engine.generation.analytics.model.DataSpaceExecutableTDS
 import org.finos.legend.engine.generation.analytics.model.DataSpaceExecutableTDSResultColumn;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceExecutionContextAnalysisResult;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceModelDocumentationEntry;
+import org.finos.legend.engine.generation.analytics.model.DataSpacePropertyDocumentationEntry;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceServiceExecutableInfo;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceStereotypeInfo;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceTaggedValueInfo;
@@ -44,16 +49,17 @@ import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.analytics.model.MappingModelCoverageAnalysisResult;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
+import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.ResultType;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.TDSResultType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.BaseExecutionContext;
-import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.finos.legend.pure.generated.Root_meta_analytics_mapping_modelCoverage_MappingModelCoverageAnalysisResult;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureSingleExecution;
@@ -65,30 +71,47 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_analyt
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceClassDocumentationEntry;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceEnumerationDocumentationEntry;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceExecutionContextAnalysisResult;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_analytics_DataSpacePropertyDocumentationEntry;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_analytics_modelCoverage_DiagramModelCoverageAnalysisResult;
 import org.finos.legend.pure.generated.core_analytics_mapping_modelCoverage_serializer;
 import org.finos.legend.pure.generated.core_data_space_analytics_analytics;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
-import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.stream.Collectors;
 
+import static org.finos.legend.engine.shared.core.ObjectMapperFactory.withStandardConfigurations;
+
+
 public class DataSpaceAnalyticsHelper
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    private static final ObjectMapper objectMapper = getNewObjectMapper();
 
-    private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+    public static ObjectMapper getNewObjectMapper()
+    {
+        return EntitlementModelObjectMapperFactory.withEntitlementModelExtensions(withStandardConfigurations(PureProtocolObjectMapperFactory.withPureProtocolExtensions(new ObjectMapper())));
+    }
 
     private static DataSpaceBasicDocumentationEntry buildBasicDocumentationEntry(Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceBasicDocumentationEntry entry)
     {
         DataSpaceBasicDocumentationEntry docEntry = new DataSpaceBasicDocumentationEntry();
         docEntry.name = entry._name();
         docEntry.docs = new ArrayList<>(entry._docs().toList());
+        return docEntry;
+    }
+
+    private static DataSpacePropertyDocumentationEntry buildPropertyDocumentationEntry(Root_meta_pure_metamodel_dataSpace_analytics_DataSpacePropertyDocumentationEntry entry)
+    {
+        DataSpacePropertyDocumentationEntry docEntry = new DataSpacePropertyDocumentationEntry();
+        docEntry.name = entry._name();
+        docEntry.docs = new ArrayList<>(entry._docs().toList());
+        docEntry.milestoning = entry._milestoning();
+        docEntry.type = entry._type();
+        docEntry.multiplicity = new Multiplicity(entry._multiplicity()._lowerBound()._value().intValue(), entry._multiplicity()._upperBound()._value() != null ? entry._multiplicity()._upperBound()._value().intValue() : null);
         return docEntry;
     }
 
@@ -113,10 +136,10 @@ public class DataSpaceAnalyticsHelper
 
     public static DataSpaceAnalysisResult analyzeDataSpace(Root_meta_pure_metamodel_dataSpace_DataSpace dataSpace, PureModel pureModel, DataSpace dataSpaceProtocol, PureModelContextData pureModelContextData, String clientVersion)
     {
-        return analyzeDataSpace(dataSpace, pureModel, dataSpaceProtocol, pureModelContextData, clientVersion, Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class)));
+        return analyzeDataSpace(dataSpace, pureModel, dataSpaceProtocol, pureModelContextData, clientVersion, Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class)), EntitlementServiceExtensionLoader.extensions());
     }
 
-    public static DataSpaceAnalysisResult analyzeDataSpace(Root_meta_pure_metamodel_dataSpace_DataSpace dataSpace, PureModel pureModel, DataSpace dataSpaceProtocol, PureModelContextData pureModelContextData, String clientVersion, MutableList<PlanGeneratorExtension> generatorExtensions)
+    public static DataSpaceAnalysisResult analyzeDataSpace(Root_meta_pure_metamodel_dataSpace_DataSpace dataSpace, PureModel pureModel, DataSpace dataSpaceProtocol, PureModelContextData pureModelContextData, String clientVersion, MutableList<PlanGeneratorExtension> generatorExtensions, List<EntitlementServiceExtension> entitlementServiceExtensions)
     {
         Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceAnalysisResult analysisResult = core_data_space_analytics_analytics.Root_meta_pure_metamodel_dataSpace_analytics_analyzeDataSpace_DataSpace_1__PackageableRuntime_MANY__DataSpaceAnalysisResult_1_(
                 dataSpace,
@@ -163,6 +186,7 @@ public class DataSpaceAnalyticsHelper
             try
             {
                 excResult.mappingModelCoverageAnalysisResult = DataSpaceAnalyticsHelper.objectMapper.readValue(core_analytics_mapping_modelCoverage_serializer.Root_meta_analytics_mapping_modelCoverage_serialization_json_getSerializedMappingModelCoverageAnalysisResult_MappingModelCoverageAnalysisResult_1__String_1_(mappingModelCoverageAnalysisResult, pureModel.getExecutionSupport()), MappingModelCoverageAnalysisResult.class);
+                excResult.datasets = LazyIterate.flatCollect(entitlementServiceExtensions, extension -> extension.generateDatasetSpecifications(null, excResult.defaultRuntime, pureModel.getRuntime(excResult.defaultRuntime), excResult.mapping, pureModel.getMapping(excResult.mapping), pureModelContextData, pureModel)).toList();
             }
             catch (Exception ignored)
             {
@@ -172,7 +196,6 @@ public class DataSpaceAnalyticsHelper
         result.defaultExecutionContext = dataSpace._defaultExecutionContext()._name();
 
         // diagrams
-        result.featuredDiagrams = dataSpace._featuredDiagrams() != null ? dataSpace._featuredDiagrams().collect(diagram -> HelperModelBuilder.getElementFullPath(diagram, pureModel.getExecutionSupport())).toList() : Lists.mutable.empty();
         result.diagrams = dataSpace._diagrams() != null ? ListIterate.collect(dataSpace._diagrams().toList(), diagram ->
         {
             DataSpaceDiagramAnalysisResult diagramAnalysisResult = new DataSpaceDiagramAnalysisResult();
@@ -189,9 +212,7 @@ public class DataSpaceAnalyticsHelper
         PureModelContextData associations = PureModelContextDataGenerator.generatePureModelContextDataFromAssociations(diagramAnalysisResult._associations(), clientVersion, pureModel.getExecutionSupport());
         PureModelContextData.Builder builder = PureModelContextData.newBuilder();
         // add diagrams to model
-        List<String> allDiagramPaths = ListIterate.collect(result.diagrams, diagram -> diagram.diagram);
-        allDiagramPaths.addAll(result.featuredDiagrams);
-        pureModelContextData.getElements().stream().filter(el -> allDiagramPaths.contains(el.getPath())).forEach(builder::addElement);
+        pureModelContextData.getElements().stream().filter(el -> ListIterate.collect(result.diagrams, diagram -> diagram.diagram).contains(el.getPath())).forEach(builder::addElement);
         result.model = builder.build().combine(classes).combine(enums).combine(_profiles).combine(associations);
 
         // elements
@@ -207,8 +228,8 @@ public class DataSpaceAnalyticsHelper
                 ed.docs = new ArrayList<>(elementDoc._docs().toList());
 
                 Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceClassDocumentationEntry doc = (Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceClassDocumentationEntry) elementDoc;
-                ed.properties = doc._properties().toList().collect(DataSpaceAnalyticsHelper::buildBasicDocumentationEntry);
-                ed.inheritedProperties = doc._inheritedProperties().toList().collect(DataSpaceAnalyticsHelper::buildBasicDocumentationEntry);
+                ed.properties = doc._properties().toList().collect(DataSpaceAnalyticsHelper::buildPropertyDocumentationEntry);
+                ed.milestoning = doc._milestoning();
                 return ed;
             }
             else if (elementDoc instanceof Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceEnumerationDocumentationEntry)
@@ -230,7 +251,7 @@ public class DataSpaceAnalyticsHelper
                 ed.docs = new ArrayList<>(elementDoc._docs().toList());
 
                 Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceAssociationDocumentationEntry doc = (Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceAssociationDocumentationEntry) elementDoc;
-                ed.properties = doc._properties().toList().collect(DataSpaceAnalyticsHelper::buildBasicDocumentationEntry);
+                ed.properties = doc._properties().toList().collect(DataSpaceAnalyticsHelper::buildPropertyDocumentationEntry);
                 return ed;
             }
             DataSpaceModelDocumentationEntry ed = new DataSpaceModelDocumentationEntry();
@@ -289,7 +310,7 @@ public class DataSpaceAnalyticsHelper
                                 generatorExtensions.flatCollect(e -> e.getExtraExtensions(pureModel)),
                                 generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers)
                         ).plan.rootExecutionNode.resultType);
-
+                        executableAnalysisResult.datasets = LazyIterate.flatCollect(entitlementServiceExtensions, extension -> extension.generateDatasetSpecifications(null, pureModel.getRuntimePath(execution._runtime()), execution._runtime(), HelperModelBuilder.getElementFullPath(execution._mapping(), pureModel.getExecutionSupport()), execution._mapping(), pureModelContextData, pureModel)).toList();
                         result.executables.add(executableAnalysisResult);
                     }
                 }

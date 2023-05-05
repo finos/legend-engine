@@ -17,14 +17,13 @@ package org.finos.legend.engine.external.format.rosetta.extension;
 import org.finos.legend.engine.external.format.rosetta.model.RosettaGenerationConfig;
 import org.finos.legend.engine.language.pure.dsl.generation.config.ConfigBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationType;
 import org.finos.legend.engine.shared.core.operational.Assert;
 
 public class RosettaGenerationConfigFromFileGenerationSpecificationBuilder
 {
     public static RosettaGenerationConfig build(FileGenerationSpecification fileGeneration)
     {
-        Assert.assertTrue(fileGeneration.type.equals(FileGenerationType.rosetta.name()), () -> "File generation of type of rosetta expected, got '" + fileGeneration.type + "'");
+        Assert.assertTrue(fileGeneration.type.equals("rosetta"), () -> "File generation of type of rosetta expected, got '" + fileGeneration.type + "'");
         RosettaGenerationConfig rosettaConfig = new RosettaGenerationConfig();
         ConfigBuilder.noConfigurationPropertiesCheck(fileGeneration);
         ConfigBuilder.setScopeElements(fileGeneration, rosettaConfig);

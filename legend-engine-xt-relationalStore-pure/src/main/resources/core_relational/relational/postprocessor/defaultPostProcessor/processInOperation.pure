@@ -37,6 +37,13 @@ function meta::relational::postProcessor::getCollectionThresholdLimitForDatabase
    if($isTestRun, | $thresholdForTests, | $dbType->createDbConfig([]).dbExtension.collectionThresholdLimit);
 }
 
+function meta::relational::postProcessor::getDbSpecificTempTableCreationLogicSupplierForDatabaseType(dbType:DatabaseType[1], isTestRun:Boolean[1]):Function<{String[1]->String[1]}>[0..1]
+{
+   if($isTestRun, 
+      | {varName:String[1] | 'instanceOf(' + $varName + ', "StreamingResult")'}, 
+      | $dbType->createDbConfig([]).dbExtension.extraTempTableCreationLogicSupplierForIn);
+}
+
 function <<access.private>> meta::relational::postProcessor::prefixForWrapperAllocationNodeName():String[1]
 {
    'inFilterClause_';
@@ -45,10 +52,10 @@ function <<access.private>> meta::relational::postProcessor::prefixForWrapperAll
 function meta::relational::postProcessor::processInOperation(query:SQLQuery[1], runtime:Runtime[1], store:Database[0..1], exeCtx:ExecutionContext[1], extensions:Extension[*]):PostProcessorResult[1]
 {
    let connection = $runtime->connectionByElement($store->toOne())->meta::relational::mapping::updateConnection($extensions)->cast(@DatabaseConnection);
-   let dbThreshold = $connection.type->getCollectionThresholdLimitForDatabaseType(
-                                                      $connection->instanceOf(TestDatabaseConnection) ||
-                                                      ($connection->instanceOf(RelationalDatabaseConnection) && $connection->cast(@RelationalDatabaseConnection).datasourceSpecification->instanceOf(LocalH2DatasourceSpecification))
-                                                    );
+   let isTestRun  = $connection->instanceOf(TestDatabaseConnection) 
+                    || ($connection->instanceOf(RelationalDatabaseConnection) && $connection->cast(@RelationalDatabaseConnection).datasourceSpecification->instanceOf(LocalH2DatasourceSpecification));
+   let dbThreshold = $connection.type->getCollectionThresholdLimitForDatabaseType($isTestRun);
+   let dbSpecificTempTableCreationLogicSupplier = $connection.type->getDbSpecificTempTableCreationLogicSupplierForDatabaseType($isTestRun);
 
    if($dbThreshold->isEmpty(),
       |^meta::relational::mapping::PostProcessorResult(query = $query),
@@ -86,11 +93,11 @@ function meta::relational::postProcessor::processInOperation(query:SQLQuery[1], 
       let changedFunctionsNotRequiringConditionNode = $transformedQueryNotRequiringConditionNode.second->keyValues()->filter(p | $p.first->instanceOf(DynaFunction) && $p.first->cast(@DynaFunction).name == 'in' && $p.first->buildUniqueName(true, $extensions) != $p.second->buildUniqueName(true, $extensions));
       let changedFunctionsRequiringConditionNode    = $transformedQueryRequiringConditionNode.second->keyValues()->filter(p | $p.first->instanceOf(DynaFunction) && $p.first->cast(@DynaFunction).name == 'in' && $p.first->buildUniqueName(true, $extensions) != $p.second->buildUniqueName(true, $extensions));
 
-      $changedFunctionsNotRequiringConditionNode->concatenate($changedFunctionsRequiringConditionNode)->generatePostProcessorResult($transformedQueryRequiringConditionNode.first->cast(@SQLQuery), $connection, $dbThreshold->toOne(), $runtime, $store->toOne(), $exeCtx, $extensions);
+      $changedFunctionsNotRequiringConditionNode->concatenate($changedFunctionsRequiringConditionNode)->generatePostProcessorResult($transformedQueryRequiringConditionNode.first->cast(@SQLQuery), $connection, $dbThreshold->toOne(), $dbSpecificTempTableCreationLogicSupplier, $runtime, $store->toOne(), $exeCtx, $extensions);
    );
 }
 
-function meta::relational::postProcessor::generatePostProcessorResult(changedFunctions:Pair<RelationalOperationElement, RelationalOperationElement>[*], query:SQLQuery[1], connection:DatabaseConnection[1], dbThreshold:Integer[1], runtime:Runtime[1], store:Database[1], exeCtx:ExecutionContext[1], extensions:Extension[*]):PostProcessorResult[1]
+function meta::relational::postProcessor::generatePostProcessorResult(changedFunctions:Pair<RelationalOperationElement, RelationalOperationElement>[*], query:SQLQuery[1], connection:DatabaseConnection[1], dbThreshold:Integer[1], dbSpecificTempTableCreationLogicSupplier:Function<{String[1]->String[1]}>[0..1], runtime:Runtime[1], store:Database[1], exeCtx:ExecutionContext[1], extensions:Extension[*]):PostProcessorResult[1]
 {
    let getTypeLambda = {val:Any[1] |if($val->instanceOf(VarPlaceHolder), | $val->cast(@VarPlaceHolder).type, | $val->type())};
 
@@ -116,7 +123,7 @@ function meta::relational::postProcessor::generatePostProcessorResult(changedFun
 
                           let translationContext = ^TranslationContext(dbType=$connection.type);
                           let selectSqlQueryForTempTable            = generateTempTableSelectSQLQuery('default', $tempTableName, $tempTableColumnName, meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($collectionValueType)->translateCoreTypeToDbSpecificType($translationContext)->toOne());
-                          let processedResultForTempTable           = $selectSqlQueryForTempTable->postProcessSQLQuery($store->toOne(), [], ^Mapping(), $runtime, $exeCtx, $extensions);
+                          let processedResultForTempTable           = $selectSqlQueryForTempTable->postProcessSQLQueryWithDefaultPostProcessors($store->toOne(), [], ^Mapping(), $runtime, $exeCtx, $extensions);
 
                           let allocationNode                        = if($collectionValuesWithoutVarPlaceHolder->isNotEmpty(),
                                                                            |^AllocationExecutionNode(
@@ -148,7 +155,10 @@ function meta::relational::postProcessor::generatePostProcessorResult(changedFun
                                                                               | let conditionString            = $varPlaceHoldersInCollection->map(var | 'collectionSize(' + $var.name +'![])?number')
                                                                                                                                        ->concatenate(if($collectionValuesWithoutVarPlaceHolder->isEmpty(), | [], |$collectionValuesWithoutVarPlaceHolder->size()->toString()))
                                                                                                                                        ->joinStrings('((' ,' + ',') > ' + $dbThreshold->toString() + ')');
-                                                                                let conditionWithStreamHandled = $varPlaceHoldersInCollection->map(var | 'instanceOf(' +$var.name + ', "Stream")')->concatenate($conditionString)->joinStrings('(', ' || ', ')');
+                                                                                let conditionWithStreamHandled = $varPlaceHoldersInCollection->map(var | let streamCheck     = 'instanceOf(' +$var.name + ', "Stream")';
+                                                                                                                                                         let dbSpecificCheck = if($dbSpecificTempTableCreationLogicSupplier->isNotEmpty(), | $dbSpecificTempTableCreationLogicSupplier->toOne()->eval($var.name), | []);
+                                                                                                                                                         $streamCheck->concatenate($dbSpecificCheck);
+                                                                                                                                                  )->concatenate($conditionString)->joinStrings('(', ' || ', ')');
 
                                                                                 let trueString                 = $processedResultForTempTable.query->sqlQueryToString($connection.type, $connection.timeZone, $connection.quoteIdentifiers, $extensions);
                                                                                 let trueExecutionNodes         = $allocationNode->concatenate($createAndPopulateTempTableNode)->concatenate(^ConstantExecutionNode(values = $trueString, resultType = ^ResultType(type = String)));

@@ -35,10 +35,8 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionExpressionBuilderRegistrationInfo;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandlerDispatchBuilderInfo;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandlerRegistrationInfo;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.*;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.MappingValidatorContext;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -62,19 +60,11 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.MappingValidatorContext;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiConsumer;
-import java.util.function.Predicate;
 
 public class CompilerExtensions
 {
@@ -123,6 +113,8 @@ public class CompilerExtensions
     private final Map<String, Function3<Object, CompileContext, ProcessingContext, ValueSpecification>> extraClassInstanceProcessors;
     private final ImmutableList<BiConsumer<PureModel, MappingValidatorContext>> extraMappingPostValidators;
 
+    private final Map<String, IncludedMappingHandler> extraIncludedMappingHandlers;
+
     private CompilerExtensions(Iterable<? extends CompilerExtension> extensions)
     {
         this.extensions = Lists.immutable.withAll(extensions);
@@ -152,6 +144,8 @@ public class CompilerExtensions
         this.extraClassInstanceProcessors = Maps.mutable.empty();
         this.extensions.forEach(e -> extraClassInstanceProcessors.putAll(e.getExtraClassInstanceProcessors()));
         this.extraMappingPostValidators = this.extensions.flatCollect(CompilerExtension::getExtraMappingPostValidators);
+        this.extraIncludedMappingHandlers = Maps.mutable.empty();
+        this.extensions.forEach(e -> extraIncludedMappingHandlers.putAll(e.getExtraIncludedMappingHandlers()));
     }
 
     public List<CompilerExtension> getExtensions()
@@ -328,42 +322,34 @@ public class CompilerExtensions
 
     public List<Processor<?>> sortExtraProcessors()
     {
-        return sortExtraProcessors(getExtraProcessors(), p -> true, false);
+        return sortExtraProcessors(getExtraProcessors(), false);
     }
 
     public List<Processor<?>> sortExtraProcessors(Iterable<? extends Processor<?>> processors)
     {
-        return sortExtraProcessors(processors, p -> true, true);
+        return sortExtraProcessors(processors, true);
     }
 
-    public List<Processor<?>> sortExtraProcessors(Iterable<? extends Processor<?>> processors, Predicate<Processor> filter)
-    {
-        return sortExtraProcessors(processors, filter, true);
-    }
-
-    private List<Processor<?>> sortExtraProcessors(Iterable<? extends Processor<?>> processors, Predicate<Processor> filter, boolean validateProcessors)
+    private List<Processor<?>> sortExtraProcessors(Iterable<? extends Processor<?>> processors, boolean validateProcessors)
     {
         // Collect processor pre-requisites. Those without pre-requisites can go straight into the results list.
         MutableList<Processor<?>> results = Lists.mutable.empty();
         MutableMap<Processor<?>, Collection<? extends java.lang.Class<? extends PackageableElement>>> withPrerequisites = Maps.mutable.empty();
         processors.forEach(p ->
         {
-            if (filter.test(p))
+            // Validate that the processor is part of this set of extensions
+            if (validateProcessors && (p != this.extraProcessors.get(p.getElementClass())))
             {
-                // Validate that the processor is part of this set of extensions
-                if (validateProcessors && (p != this.extraProcessors.get(p.getElementClass())))
-                {
-                    throw new IllegalArgumentException("Unknown processor: " + p);
-                }
-                Collection<? extends Class<? extends PackageableElement>> prerequisites = p.getPrerequisiteClasses();
-                if (prerequisites.isEmpty())
-                {
-                    results.add(p);
-                }
-                else
-                {
-                    withPrerequisites.put(p, prerequisites);
-                }
+                throw new IllegalArgumentException("Unknown processor: " + p);
+            }
+            Collection<? extends Class<? extends PackageableElement>> prerequisites = p.getPrerequisiteClasses();
+            if (prerequisites.isEmpty())
+            {
+                results.add(p);
+            }
+            else
+            {
+                withPrerequisites.put(p, prerequisites);
             }
         });
 
@@ -476,5 +462,10 @@ public class CompilerExtensions
     public Map<String, Function3<Object, CompileContext, ProcessingContext, ValueSpecification>> getExtraClassInstanceProcessors()
     {
         return extraClassInstanceProcessors;
+    }
+
+    public IncludedMappingHandler getExtraIncludedMappingHandlers(String classType)
+    {
+        return this.extraIncludedMappingHandlers.get(classType);
     }
 }

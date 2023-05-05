@@ -216,7 +216,7 @@ function <<access.private>> meta::pure::tds::schema::resolveSchemaImpl(fe : Func
                ^TDSColumn(name = $p.second, type = $p.first->functionReturnType().rawType->toOne()->cast(@DataType))
                );
             createSchemaState($cols);
-         }),
+         }),     
          pair(restrict_TabularDataSet_1__String_MANY__TabularDataSet_1_->cast(@Function<Any>), {|
             let tdsSchema = resolveSchemaImpl($fe.parametersValues->at(0), $openVars, $extensions);
             let colNamesToRestrict = $fe.parametersValues->at(1)->reactivate($openVars)->cast(@String)->toOneMany();
@@ -289,6 +289,19 @@ function <<access.private>> meta::pure::tds::schema::resolveSchemaImpl(fe : Func
 
             $tdsSchema.olap(^TDSColumn(name=$colName, type=$colType));
          })
+      ))->concatenate([
+        eval_Function_1__V_m_,
+        eval_Function_1__T_n__V_m_,
+        eval_Function_1__T_n__U_p__V_m_,
+        eval_Function_1__T_n__U_p__W_q__V_m_,
+        eval_Function_1__T_n__U_p__W_q__X_r__V_m_,
+        eval_Function_1__T_n__U_p__W_q__X_r__Y_s__V_m_,
+        eval_Function_1__T_n__U_p__W_q__X_r__Y_s__Z_t__V_m_,
+        eval_Function_1__S_n__T_o__U_p__W_q__X_r__Y_s__Z_t__V_m_
+      ]->map(f|
+            pair($f->cast(@Function<Any>), {|
+            $fe.parametersValues->at(0)->reactivate()->cast(@FunctionDefinition<Any>).expressionSequence->evaluateAndDeactivate()->last()->toOne()->resolveSchemaImpl($openVars, $extensions);
+         }) 
       ));
 
    let handlerMatches = $handlers->filter(p|$p.first == $fe.func).second;

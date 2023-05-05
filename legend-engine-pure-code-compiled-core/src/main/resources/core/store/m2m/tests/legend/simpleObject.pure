@@ -778,27 +778,85 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
    assertEquals($expected, $res->meta::pure::executionPlan::toString::planToString(meta::pure::extension::defaultExtensions()));
 }
 
-
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
-{  serverVersion.start='v1_19_0'
-} 
-meta::pure::mapping::modelToModel::test::alloy::simple::testMappingWithTypeName() : Boolean[1]
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {  serverVersion.start='v1_19_0' } meta::pure::mapping::modelToModel::test::alloy::simple::testMappingWithTypeNameAndTypePath() : Boolean[1]
 {
-   let tree = #{Person {firstName,lastName,type,description} }#;
-
-   let result = execute(
-      |Person.all()->graphFetch($tree)->serialize($tree),
-      mappingWithTypeName,
-      ^Runtime(connections = ^JsonModelConnection(
+   let tree    = #{Person {firstName,lastName,type,description} }#;
+   let mapping = mappingWithTypeName;
+   let runtime = ^Runtime(connections = ^JsonModelConnection(
                                 element=^ModelStore(), 
                                 class=_S_Person, 
-                                url='data:application/json,{"fullName":"Pierre Doe"}'
+                                url='data:application/json,[{"fullName":"Pierre Doe"},' +
+                                                           '{"fullName":"John DoeA", "aName":"aName", "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA"},' +
+                                                           '{"fullName":"John DoeB", "bName":"bName", "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonB"},' +
+                                                           '{"fullName":"John DoeC", "cName":"cName", "@type":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonC"}]'
+                             ));
+
+   let result = meta::legend::executeLegendQuery(|Person.all()->graphFetch($tree)->meta::pure::mapping::from($mapping, $runtime)->serialize($tree), [], ^ExecutionContext(), meta::pure::extension::defaultExtensions());
+   
+   let expected = '{"builder":{"_type":"json"},"values":[{"firstName":"Pierre","lastName":"Doe","type":"_S_Person","description":"meta::pure::mapping::modelToModel::test::shared::src::_S_Person"},'+
+                                                        '{"firstName":"John","lastName":"DoeA","type":"_S_PersonA","description":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonA"},'+
+                                                        '{"firstName":"John","lastName":"DoeB","type":"_S_PersonB","description":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonB"},'+
+                                                        '{"firstName":"John","lastName":"DoeC","type":"_S_PersonC","description":"meta::pure::mapping::modelToModel::test::shared::src::_S_PersonC"}]}';
+
+   assert(jsonEquivalent($expected->parseJSON(), $result->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {  serverVersion.start='v1_19_0' } meta::pure::mapping::modelToModel::test::alloy::simple::testMappingWithTypeNameAndTypePathAtPropertyLevel() : Boolean[1]
+{
+   let tree    = #{ConsumerModel{taxonomy}}#;
+   let mapping = mappingWithTypeName;
+   let runtime = ^Runtime(connections = ^JsonModelConnection(
+                                element=^ModelStore(), 
+                                class=ContractualTrade, 
+                                url='data:application/json,{"executionTimestamp":"2022-10-11T01:30:51+0100","product":{"@type":"FxForward","currencyPair":"EUR/USD","valueDate":"2022-12-31"},"accountId":123456}'
+                             ));
+
+   let result = meta::legend::executeLegendQuery(|ConsumerModel.all()->graphFetch($tree)->meta::pure::mapping::from($mapping, $runtime)->serialize($tree), [], ^ExecutionContext(), meta::pure::extension::defaultExtensions());
+   
+   let expected = '{"builder":{"_type":"json"},"values":{"taxonomy":"FxForward[meta::pure::mapping::modelToModel::test::shared::src::FxForward]"}}';
+   
+   assert(jsonEquivalent($expected->parseJSON(), $result->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> { serverVersion.start='v1_19_0' } meta::pure::mapping::modelToModel::test::alloy::simple::testMappingWithTypeNameAndTypePathOnEnum() : Boolean[1]
+{
+   let tree    = #{TradeExtended {side, productName, productRegion} }#;
+   let mapping = mappingWithTypeName;
+   let runtime = ^Runtime(connections = ^JsonModelConnection(
+                                element=^ModelStore(), 
+                                class=TradeExtended, 
+                                url='data:application/json,[{"side":"Buy", "productName":"Product A", "productRegion": "Product A region"}]'
+                             ));
+
+   let result = meta::legend::executeLegendQuery(|TradeExtended.all()->graphFetch(#{TradeExtended {side, productName, productRegion} }#)->meta::pure::mapping::from($mapping, $runtime)->serialize(#{TradeExtended {side, sideDescription, productName, productRegion} }#), [], ^ExecutionContext(), meta::pure::extension::defaultExtensions());
+   
+   let expected = '{"builder":{"_type":"json"},"values":{"side":"Buy","sideDescription()":"Side[meta::pure::mapping::modelToModel::test::shared::dest::Side]","productName":"Product A","productRegion":"Product A region"}}';
+
+   assert(jsonEquivalent($expected->parseJSON(), $result->parseJSON()));
+}
+
+function meta::pure::mapping::modelToModel::test::alloy::simple::testUnionMappingSimilarClassWithFilter() : Boolean[1]
+{
+    let tree = #{meta::pure::mapping::modelToModel::test::shared::dest::UnionTarget {c {fld}}}#;
+  let res = meta::pure::executionPlan::executionPlan(
+      |meta::pure::mapping::modelToModel::test::shared::dest::UnionTarget.all()->meta::pure::graphFetch::execution::graphFetchChecked($tree)->meta::pure::graphFetch::execution::serialize($tree),
+      meta::pure::mapping::modelToModel::test::alloy::M,
+      ^meta::pure::runtime::Runtime(connections = ^meta::pure::mapping::modelToModel::JsonModelConnection(
+                                element=^meta::pure::mapping::modelToModel::ModelStore(),
+                                class=meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::UnionSource,
+                                url='data:application/json,{a : {id : "a"}, { b : { id : "b"}}}'
                              )
       ),
       meta::pure::extension::defaultExtensions()
    );
-
-   assert(jsonEquivalent('{"firstName":"Pierre","lastName":"Doe","type":"_S_Person","description":"meta::pure::mapping::modelToModel::test::shared::src::_S_Person"}'->parseJSON(), $result.values->toOne()->parseJSON()));
+   true;
+  // $res->meta::pure::executionPlan::generatePlatformCode(
+  //   meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(),
+  //   ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(),
+  //   meta::relational::executionPlan::platformBinding::legendJava::relationalExtensionsWithLegendJavaPlatformBinding())
+  //  ->meta::pure::executionPlan::toString::planToString(meta::pure::extension::defaultExtensions())->println();
+  // meta::pure::mapping::modelToModel::test::alloy::simple::simpleSerializeOfOneObjectWithSubTypeNameOnlyTypeReferenceHasDefectsIfMultipleClassesMatch2();
+  // print('ok', 1);
 }
 
 
@@ -938,6 +996,33 @@ Class meta::pure::mapping::modelToModel::test::alloy::simple::objects::dest::Fro
   epochDate: Integer[1];
   d : Date[1];
 }
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::UnionSource
+{
+  a : meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::UnionA[1];
+  b : meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::UnionB[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::UnionA
+{
+  fld : String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::UnionB 
+{
+  fld : String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::shared::dest::UnionTarget 
+{
+  c : meta::pure::mapping::modelToModel::test::shared::dest::UnionC[*];
+}
+
+Class meta::pure::mapping::modelToModel::test::shared::dest::UnionC 
+{
+  fld : String[1];
+}
+
 
 ###Mapping 
 import meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::*;
@@ -1135,4 +1220,33 @@ Mapping meta::pure::mapping::modelToModel::test::alloy::simple::simpleModelMappi
    }
 )
 
+Mapping meta::pure::mapping::modelToModel::test::alloy::M
+(
+  *meta::pure::mapping::modelToModel::test::shared::dest::UnionTarget : Pure
+  {
+    ~src meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::UnionSource 
+    c[c1] : $src.a ,
+    c[c2] : $src.b 
 
+  }
+
+  *meta::pure::mapping::modelToModel::test::shared::dest::UnionC[c_value] : Operation 
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(c1,c2)
+  }
+
+  meta::pure::mapping::modelToModel::test::shared::dest::UnionC[c1] : Pure 
+  {
+    ~src meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::UnionA
+    ~filter $src.fld->isNotEmpty()
+    fld : $src.fld+'_a'
+  }
+
+  meta::pure::mapping::modelToModel::test::shared::dest::UnionC[c2] : Pure 
+  {
+    ~src meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::UnionB
+    fld : $src.fld+'_b'
+  }
+
+
+)

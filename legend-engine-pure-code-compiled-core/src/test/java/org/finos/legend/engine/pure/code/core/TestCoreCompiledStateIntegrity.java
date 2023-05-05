@@ -14,13 +14,11 @@
 
 package org.finos.legend.engine.pure.code.core;
 
-import org.eclipse.collections.api.factory.Lists;
-import org.finos.legend.pure.m3.tests.AbstractCompiledStateIntegrityTest;
-import org.finos.legend.pure.m3.serialization.filesystem.PureCodeStorage;
-import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
-import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.MutableCodeStorage;
+import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.MutableRepositoryCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.ClassLoaderCodeStorage;
+import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.composite.CompositeCodeStorage;
+import org.finos.legend.pure.m3.tests.AbstractCompiledStateIntegrityTest;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -30,7 +28,7 @@ public class TestCoreCompiledStateIntegrity extends AbstractCompiledStateIntegri
     @BeforeClass
     public static void initialize()
     {
-        MutableCodeStorage codeStorage = new PureCodeStorage(null, new ClassLoaderCodeStorage(Lists.mutable.with(CodeRepository.newPlatformCodeRepository()).withAll(CodeRepositoryProviderHelper.findCodeRepositories())));
+        MutableRepositoryCodeStorage codeStorage = new CompositeCodeStorage(new ClassLoaderCodeStorage(CodeRepositoryProviderHelper.findCodeRepositories()));
         initialize(codeStorage);
     }
 

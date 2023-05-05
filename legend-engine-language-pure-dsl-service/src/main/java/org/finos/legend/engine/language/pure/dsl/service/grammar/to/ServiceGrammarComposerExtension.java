@@ -69,7 +69,32 @@ public class ServiceGrammarComposerExtension implements PureGrammarComposerExten
         return Lists.mutable.with((elements, context, composedSections) ->
         {
             List<Service> composableElements = ListIterate.selectInstancesOf(elements, Service.class);
-            return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, el -> ServiceGrammarComposerExtension.renderService(el, context)).makeString("###" + ServiceParserExtension.NAME + "\n", "\n\n", ""), composableElements);
+            List<ExecutionEnvironmentInstance> composableExecEnvironment = ListIterate.selectInstancesOf(elements, ExecutionEnvironmentInstance.class);
+            if (!composableElements.isEmpty() && !composableExecEnvironment.isEmpty())
+            {
+                composableExecEnvironment = ListIterate.selectInstancesOf(elements, ExecutionEnvironmentInstance.class);
+                return composableExecEnvironment.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(elements, el ->
+                {
+                    if (el instanceof Service)
+                    {
+                        return ServiceGrammarComposerExtension.renderService((Service) el, context);
+                    }
+                    else if (el instanceof ExecutionEnvironmentInstance)
+                    {
+                        return renderExecutionEnvironment((ExecutionEnvironmentInstance) el, context);
+                    }
+                    return "/* Can't transform element '" + el.getPath() + "' in this section */";
+                }).makeString("###" + ServiceParserExtension.NAME + "\n", "\n\n", ""), elements);
+            }
+            else if (composableExecEnvironment.isEmpty())
+            {
+                return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, el -> ServiceGrammarComposerExtension.renderService(el, context)).makeString("###" + ServiceParserExtension.NAME + "\n", "\n\n", ""), composableElements);
+            }
+            else
+            {
+                return new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableExecEnvironment, el -> renderExecutionEnvironment(el, context)).makeString("###" + ServiceParserExtension.NAME + "\n", "\n\n", ""), composableExecEnvironment);
+
+            }
         });
     }
 

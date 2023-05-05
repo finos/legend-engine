@@ -18,5 +18,5 @@ import java.util.List;
 
 public class DataSpaceAssociationDocumentationEntry extends DataSpaceModelDocumentationEntry
 {
-    public List<DataSpaceBasicDocumentationEntry> properties;
+    public List<DataSpacePropertyDocumentationEntry> properties;
 }

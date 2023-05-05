@@ -21,11 +21,10 @@ import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.pure.runtime.compiler.interpreted.natives.LegendCompileMixedProcessorSupport;
 import org.finos.legend.pure.m3.coreinstance.CoreInstanceFactoryRegistry;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
-import org.finos.legend.pure.m3.serialization.filesystem.PureCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
-import org.finos.legend.pure.m3.serialization.filesystem.repository.PlatformCodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.ClassLoaderCodeStorage;
+import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.composite.CompositeCodeStorage;
 import org.finos.legend.pure.m3.serialization.runtime.Message;
 import org.finos.legend.pure.m3.serialization.runtime.PureRuntime;
 import org.finos.legend.pure.m3.serialization.runtime.PureRuntimeBuilder;
@@ -45,11 +44,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @RunWith(Parameterized.class)
 public class LegendExecuteTest
@@ -60,7 +55,7 @@ public class LegendExecuteTest
 
         RichIterable<CodeRepository> repositories = getRepositories().select(p -> !p.getName().startsWith("other_") && !p.getName().startsWith("test_"));
         System.out.println(repositories.collect(CodeRepository::getName).makeString("Code Repos: ", ", ", ""));
-        PureCodeStorage codeStorage = new PureCodeStorage(null, new ClassLoaderCodeStorage(repositories));
+        CompositeCodeStorage codeStorage = new CompositeCodeStorage(new ClassLoaderCodeStorage(repositories));
 
         ClassLoaderPureGraphCache graphCache = new ClassLoaderPureGraphCache()
         {
@@ -136,10 +131,10 @@ public class LegendExecuteTest
     public static Collection<Object[]> modes() throws Exception
     {
         return Arrays.asList(new Object[][]
-            {
-                { "compiled",  compileExecution() },
-                { "interpreted", interpretedExecution() }
-            }
+                {
+                        { "compiled",  compileExecution() },
+                        { "interpreted", interpretedExecution() }
+                }
         );
     }
 
@@ -270,7 +265,7 @@ public class LegendExecuteTest
         {
             List<String> lines = IOUtils.readLines(is, StandardCharsets.UTF_8);
             lines.add("function test():Any[*]{");
-            lines.add("  let extensions = meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingExtensionsWithLegendJavaPlatformBinding([]);");
+            lines.add("  let extensions = meta::pure::extension::defaultExtensions();");
             lines.add("  let runtime = ^Runtime(");
             lines.add("                      connections = [");
             lines.add("                        ^JsonModelConnection(");
@@ -305,7 +300,6 @@ public class LegendExecuteTest
 
     private static RichIterable<CodeRepository> getRepositories()
     {
-        return CodeRepositoryProviderHelper.findCodeRepositories(true).toList()
-                .with(PlatformCodeRepository.newPlatformCodeRepository());
+        return CodeRepositoryProviderHelper.findCodeRepositories(true);
     }
 }

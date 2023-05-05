@@ -18,6 +18,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 
 import java.util.List;
 
+@Deprecated
 public class CompositeClassPathFilter implements ClassPathFilter
 {
     private final List<ClassPathFilter> delegates;

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::elasticsearch::v7::metamodel::specification::types::querydsl::*;
 import meta::pure::mapping::*;
 
 import meta::external::store::elasticsearch::v7::pureToEs::mappping::*;
@@ -36,14 +37,14 @@ function <<functionType.SideEffectFunction>> meta::external::store::elasticsearc
      index = $index,
      columns = $index.properties->collectPrimitiveTypeProperties()
                      ->toIndexed()
-                     ->map(ip | indexPropertyToTdsColumn($ip.first, $ip.second.first.values->toOneMany(), $ip.second.second))
+                     ->map(ip | indexPropertyToTdsColumn($ip.first, $ip.second.first.values->toOneMany()->joinStrings('.'), $ip.second.second))
   );
 }
 
-function meta::external::store::elasticsearch::v7::tds::indexPropertyToTdsColumn(offset: Integer[1], name: String[1..*], property: PropertyBase[1]):TDSColumn[1]
+function <<access.private>>  meta::external::store::elasticsearch::v7::tds::indexPropertyToTdsColumn(offset: Integer[1], name: String[1], property: PropertyBase[1]):TDSColumn[1]
 {
   ^TDSColumn(
-     name = $name->joinStrings('.'),
+     name = $name,
      offset = $offset,
      type = $property->propertySupport().pureType->cast(@DataType)
   );
@@ -51,10 +52,23 @@ function meta::external::store::elasticsearch::v7::tds::indexPropertyToTdsColumn
 
 Class <<typemodifiers.abstract>> meta::external::store::elasticsearch::v7::metamodel::tds::ResultPath
 {
-
+  fieldPath: String[1..*];
+  property: PropertyBase[1];
+  path(){
+    $this.fieldPath->joinStrings('.')
+  }:String[1];
 }
 
 Class meta::external::store::elasticsearch::v7::metamodel::tds::SourceFieldResultPath extends meta::external::store::elasticsearch::v7::metamodel::tds::ResultPath
 {
-  fieldPath: String[1..*];
+}
+
+Class meta::external::store::elasticsearch::v7::metamodel::tds::DocValueResultPath extends meta::external::store::elasticsearch::v7::metamodel::tds::ResultPath
+{
+  
+}
+
+Class meta::external::store::elasticsearch::v7::metamodel::tds::AggregateResultPath extends meta::external::store::elasticsearch::v7::metamodel::tds::ResultPath
+{
+  
 }

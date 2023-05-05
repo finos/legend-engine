@@ -61,24 +61,39 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
     dynaFnToSql('atan2',                  $allStates,            ^ToSql(format='atan2(%s,%s)')),
     dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='%s', transform={p:String[*]|generateDateDiffExpressionForPostgres($p)})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='Date(%s)')),
+    dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='date_part(\'day\', %s)')),
+    dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='date_part(\'dow\', %s)')),
+    dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='date_trunc(\'month\', %s)')),
+    dynaFnToSql('firstDayOfQuarter',      $allStates,            ^ToSql(format='date_trunc(\'quarter\', %s)')),
+    dynaFnToSql('firstDayOfThisMonth',    $allStates,            ^ToSql(format='date_trunc(\'month\', CURRENT_DATE)%s', transform={p:String[*] | ''})),
+    dynaFnToSql('firstDayOfThisQuarter',  $allStates,            ^ToSql(format='date_trunc(\'quarter\', CURRENT_DATE)%s', transform={p:String[*] | ''})),
+    dynaFnToSql('firstDayOfThisYear',     $allStates,            ^ToSql(format='date_trunc(\'year\', CURRENT_DATE)%s', transform={p:String[*] | ''})),
+    dynaFnToSql('firstDayOfWeek',         $allStates,            ^ToSql(format='date_trunc(\'week\', %s)')),
+    dynaFnToSql('firstDayOfYear',         $allStates,            ^ToSql(format='date_trunc(\'year\', %s)')),
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='date_part(\'hour\', %s)')),
+    dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='strpos(%s, %s)')),
     dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='string_agg(%s, %s)')),
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='char_length(%s)')),
+    dynaFnToSql('minute',                 $allStates,            ^ToSql(format='date_part(\'minute\', %s)')),
     dynaFnToSql('mod',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
+    dynaFnToSql('monthNumber',            $allStates,            ^ToSql(format='date_part(\'month\', %s)')),
     dynaFnToSql('now',                    $allStates,            ^ToSql(format='now()')),
+    dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='cast(%s as decimal)')),    
     dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
     dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as integer)')),
     dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s in %s)')),
     dynaFnToSql('quarter',                $allStates,            ^ToSql(format='quarter(%s)')),
-    dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='quarter(%s)')),
+    dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='date_part(\'quarter\', %s)')),
     dynaFnToSql('rem',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
     dynaFnToSql('round',                  $allStates,            ^ToSql(format='round((%s)::numeric, %s)', transform=transformRound_String_MANY__String_MANY_)),
-    dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
+    dynaFnToSql('second',                 $allStates,            ^ToSql(format='date_part(\'second\', %s)')),
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date')),
-    dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)'))
+    dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
+    dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='date_part(\'week\', %s)')),
+    dynaFnToSql('year',                   $allStates,            ^ToSql(format='date_part(\'year\', %s)'))
   ];
 }
 
@@ -86,7 +101,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
 {
   let enumList = [DurationUnit.YEARS,DurationUnit.MONTHS,DurationUnit.WEEKS,DurationUnit.DAYS,DurationUnit.HOURS,DurationUnit.MINUTES,DurationUnit.SECONDS,DurationUnit.MILLISECONDS]->map(e|$e->toString());
 
-  let indexOfDiff = $enumList->indexOf($params->at(2)->replace('Text', ''));
+  let indexOfDiff = $enumList->indexOf($params->at(2)->replace('\'', '')->replace('Text', ''));
 
   let dbSpecificUnits = [
 

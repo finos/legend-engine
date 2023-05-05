@@ -33,7 +33,7 @@ public class FunctionVisitor implements LogicalPlanVisitor<FunctionImpl>
     {
         org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Function function =
             new org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Function(
-                FunctionName.fromName(current.functionName().get()),
+                FunctionName.fromName(String.valueOf(current.functionName())),
                 new ArrayList<>(),
                 current.alias().orElse(null),
                 context.quoteIdentifier());

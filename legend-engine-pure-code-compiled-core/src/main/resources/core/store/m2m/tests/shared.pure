@@ -237,6 +237,14 @@ Class meta::pure::mapping::modelToModel::test::shared::dest::Trade
    productRegion: String[0..1];
 }
 
+Class meta::pure::mapping::modelToModel::test::shared::dest::TradeExtended extends Trade
+{
+   sideDescription()
+   {
+      $this.side->typeName() + '[' + $this.side->typePath() + ']'
+   }: String[1];
+}
+
 Enum meta::pure::mapping::modelToModel::test::shared::dest::Side
 {
    Buy, Sell   
@@ -299,4 +307,42 @@ Class meta::pure::mapping::modelToModel::test::shared::src::_Product2
 Class meta::pure::mapping::modelToModel::test::shared::src::ProductWithRegion
 {
    region : String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::shared::dest::ConsumerModel
+{
+  taxonomy: String[0..1];
+  underlyer: String[0..1];
+  booleanField: Boolean[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::shared::src::ContractualTrade
+{
+  executionTimestamp: DateTime[1];
+  product: ContractualProduct[1];
+  accountId: Integer[1];
+}
+
+Class <<meta::pure::profiles::typemodifiers.abstract>> meta::pure::mapping::modelToModel::test::shared::src::ContractualProduct
+{
+}
+
+Class meta::pure::mapping::modelToModel::test::shared::src::EquitySwap extends ContractualProduct
+{
+  underlyerRic: String[1];
+  terminationDate: StrictDate[1];
+  placeholder1: String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::shared::src::MetalForward extends ContractualProduct
+{
+  deliverable: String[1];
+  valueDate: StrictDate[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::shared::src::FxForward extends ContractualProduct
+{
+  currencyPair: String[1];
+  valueDate: StrictDate[1];
+  placeholder2: String[1];
 }

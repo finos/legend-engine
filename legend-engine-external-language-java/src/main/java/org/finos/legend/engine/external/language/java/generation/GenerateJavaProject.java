@@ -16,17 +16,11 @@ package org.finos.legend.engine.external.language.java.generation;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Sets;
-import org.finos.legend.pure.generated.Root_meta_external_language_java_metamodel_Class;
-import org.finos.legend.pure.generated.Root_meta_external_language_java_metamodel_project_Project;
-import org.finos.legend.pure.generated.Root_meta_external_language_java_metamodel_project_ProjectDirectory;
-import org.finos.legend.pure.generated.Root_meta_external_language_java_serialization_Stringifier;
-import org.finos.legend.pure.generated.core_external_language_java_metamodel_factories;
-import org.finos.legend.pure.generated.core_external_language_java_metamodel_serialization;
-import org.finos.legend.pure.m3.serialization.filesystem.PureCodeStorage;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
-import org.finos.legend.pure.m3.serialization.filesystem.repository.SVNCodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.VersionControlledClassLoaderCodeStorage;
+import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.composite.CompositeCodeStorage;
 import org.finos.legend.pure.runtime.java.compiled.compiler.JavaCompilerState;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledProcessorSupport;
@@ -58,9 +52,8 @@ public abstract class GenerateJavaProject
                 new JavaCompilerState(null, classLoader),
                 new CompiledProcessorSupport(classLoader, MetadataLazy.fromClassLoader(classLoader, CodeRepositoryProviderHelper.findCodeRepositories().collect(CodeRepository::getName)), Sets.mutable.empty()),
                 null,
-                new PureCodeStorage(null, new VersionControlledClassLoaderCodeStorage(classLoader, Lists.mutable.of(
-                        CodeRepository.newPlatformCodeRepository(),
-                        SVNCodeRepository.newSystemCodeRepository()
+                new CompositeCodeStorage(new VersionControlledClassLoaderCodeStorage(classLoader, Lists.mutable.of(
+                        CodeRepositoryProviderHelper.findPlatformCodeRepository()
                 ), null)),
                 null,
                 null,

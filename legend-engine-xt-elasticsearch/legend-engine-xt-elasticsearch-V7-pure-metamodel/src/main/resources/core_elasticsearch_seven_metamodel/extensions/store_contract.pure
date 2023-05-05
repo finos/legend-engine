@@ -121,7 +121,7 @@ function meta::external::store::elasticsearch::v7::contract::supports(): Functio
 {
   let supportedFunctions = meta::external::store::elasticsearch::v7::pureToEs::supportedRoutingFunctions().first; 
 
-  {f:FunctionExpression[1]|$f.func->in($supportedFunctions)};
+  {f:FunctionExpression[1]| $supportedFunctions->exists(x | $x->eval($f.func))};
 }
 
 function meta::external::store::elasticsearch::v7::contract::elasticsearchV7StoreSerializerExtension(version:String[1]):String[1]

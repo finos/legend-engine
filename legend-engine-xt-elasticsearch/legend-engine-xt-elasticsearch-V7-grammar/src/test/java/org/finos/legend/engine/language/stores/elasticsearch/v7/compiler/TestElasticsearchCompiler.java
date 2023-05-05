@@ -26,7 +26,17 @@ public class TestElasticsearchCompiler extends TestCompilationFromGrammar.TestCo
             "  indices: [\n" +
             "    index1: {\n" +
             "      properties: [\n" +
-            "        prop1: Keyword\n" +
+            "        prop1: Keyword,\n" +
+            "        prop2: Text,\n" +
+            "        prop3: Date,\n" +
+            "        prop4: Short,\n" +
+            "        prop5: Byte,\n" +
+            "        prop6: Integer,\n" +
+            "        prop7: Long,\n" +
+            "        prop8: Float,\n" +
+            "        prop9: HalfFloat,\n" +
+            "        prop10: Double,\n" +
+            "        prop11: Boolean\n" +
             "      ];\n" +
             "    }\n" +
             "  ];\n" +
@@ -57,7 +67,7 @@ public class TestElasticsearchCompiler extends TestCompilationFromGrammar.TestCo
     @Override
     protected String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [14:1-23:1]: Duplicated element 'abc::abc::Store'";
+        return "COMPILATION error at [24:1-43:1]: Duplicated element 'abc::abc::Store'";
     }
 
     @Test

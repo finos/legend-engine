@@ -311,7 +311,10 @@ public class GraphQLExecute extends GraphQL
                             }
                             finally
                             {
-                                result.close();
+                                if (result != null)
+                                {
+                                    result.close();
+                                }
                             }
                         });
                         generator.writeEndObject();

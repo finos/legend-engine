@@ -14,9 +14,9 @@
 
 package org.finos.legend.engine.shared.javaCompiler.test;
 
-import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
+import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.shared.javaCompiler.ClassPathFilter;
+import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
 import org.finos.legend.engine.shared.javaCompiler.JavaVersion;
 import org.finos.legend.engine.shared.javaCompiler.StringJavaSource;
@@ -54,12 +54,6 @@ public class TestJavaCompileClassPathFilter
             {
                 return packageName.equals(JavaVersion.class.getPackage().getName());
             }
-
-            @Override
-            public boolean isPermittedClass(String packageName, String className)
-            {
-                return isPermittedPackage(packageName);
-            }
         };
 
         EngineJavaCompiler c = new EngineJavaCompiler(JavaVersion.JAVA_8, filter);
@@ -77,12 +71,6 @@ public class TestJavaCompileClassPathFilter
             {
                 return !packageName.equals(JavaVersion.class.getPackage().getName());
             }
-
-            @Override
-            public boolean isPermittedClass(String packageName, String className)
-            {
-                return isPermittedPackage(packageName);
-            }
         };
 
         EngineJavaCompiler c = new EngineJavaCompiler(JavaVersion.JAVA_8, filter);
@@ -98,12 +86,6 @@ public class TestJavaCompileClassPathFilter
             public boolean isPermittedPackage(String packageName)
             {
                 return !packageName.equals(JavaVersion.class.getPackage().getName());
-            }
-
-            @Override
-            public boolean isPermittedClass(String packageName, String className)
-            {
-                return isPermittedPackage(packageName);
             }
         };
 
@@ -160,7 +142,7 @@ public class TestJavaCompileClassPathFilter
 
     private String execute(EngineJavaCompiler c) throws ClassNotFoundException, IllegalAccessException, InvocationTargetException, NoSuchMethodException
     {
-        Class cl = c.getClassLoader().loadClass("engine.generated.Example");
+        Class<?> cl = c.getClassLoader().loadClass("engine.generated.Example");
         return (String) cl.getMethod("execute").invoke(null);
     }
 }

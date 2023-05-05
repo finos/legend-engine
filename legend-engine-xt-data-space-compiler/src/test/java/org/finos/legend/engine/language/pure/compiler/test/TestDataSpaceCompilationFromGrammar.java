@@ -18,6 +18,123 @@ import org.junit.Test;
 
 public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
 {
+    @Test
+    public void testSuccessfulMappingIncludeDataspace()
+    {
+        String models = "Class test::A extends test::B {\n" +
+                "  prop1: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::S_A {\n" +
+                "  prop1: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "  currency: String[*];\n" +
+                "}\n" +
+                "\n";
+        test(models +
+                "###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "Mapping test::M1 (\n" +
+                "   include dataspace model::dataSpace\n" +
+                "   test::A[1]: Pure {\n" +
+                "      ~src test::S_A\n" +
+                "      prop1: $src.prop1\n" +
+                "   }\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testDuplicateMappingIncludeDataspaceWithImport()
+    {
+        String models = "Class test::A extends test::B {\n" +
+                "  prop1: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::S_A {\n" +
+                "  prop1: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "  currency: String[*];\n" +
+                "}\n" +
+                "\n";
+        test(models +
+                "###Mapping\n" +
+                "import model::mapping::*;\n" +
+                "Mapping model::mapping::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "Mapping test::M1 (\n" +
+                "   include mapping dummyMapping" +
+                "   include dataspace model::dataspace::dataSpace\n" +
+                "   test::A[1]: Pure {\n" +
+                "      ~src test::S_A\n" +
+                "      prop1: $src.prop1\n" +
+                "   }\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###DataSpace\n" +
+                "DataSpace model::dataspace::dataSpace" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::mapping::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "}\n", "COMPILATION error at [20:1-26:1]: Duplicated mapping include " +
+                "'model::mapping::dummyMapping' in mapping 'test::M1'");
+    }
+
     @Override
     public String getDuplicatedElementTestCode()
     {
@@ -160,7 +277,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "      defaultRuntime: model::dummyRuntime;\n" +
                 "    }\n" +
                 "  ];\n" +
-                "  defaultExecutionContext: 'Context 2';\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
                 "}\n", "COMPILATION error at [15:7-42]: Can't find packageable runtime 'model::dummyRuntime'");
 
         // Default runtime is not compatible with execution context mapping
@@ -201,6 +318,78 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
     }
 
     @Test
+    public void testDataSpaceWithElements()
+    {
+        test("Class model::element {}\n" +
+                "Class model::sub::element {}\n" +
+                "###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  elements: [model::element, model, -model::sub];\n" +
+                "}\n");
+
+        test("Class model::element {}\n" +
+                "###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                // no error should occur since, although the specified element is a mapping, it is excluded
+                "  elements: [model::element, model::dummyMapping, -model::dummyMapping];\n" +
+                "}\n");
+    }
+
+    @Test
     public void testDataSpaceWithUnsupportedElement()
     {
         test("Class model::element {}\n" +
@@ -233,9 +422,8 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "    }\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
-                "  featuredDiagrams: [];\n" +
                 "  elements: [model::element, model::dummyMapping];\n" +
-                "}\n", "COMPILATION error at [31:30-48]: Element is not of supported types (only classes, enumerations, and associations are supported)");
+                "}\n", "COMPILATION error at [30:30-48]: Included element is not of supported types (only packages, classes, enumerations, and associations are supported)");
     }
 
     @Test
@@ -271,47 +459,9 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "    }\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
-                "  featuredDiagrams: [];\n" +
                 "}\n");
 
-        test("###Diagram\n" +
-                "Diagram model::SomeDiagram\n" +
-                "{\n" +
-                "}\n" +
-                "\n" +
-                "\n" +
-                "###Mapping\n" +
-                "Mapping model::dummyMapping\n" +
-                "(\n" +
-                ")\n" +
-                "\n" +
-                "\n" +
-                "###Runtime\n" +
-                "Runtime model::dummyRuntime\n" +
-                "{\n" +
-                "  mappings:\n" +
-                "  [\n" +
-                "    model::dummyMapping\n" +
-                "  ];\n" +
-                "}\n" +
-                "\n" +
-                "\n" +
-                "###DataSpace\n" +
-                "DataSpace model::dataSpace" +
-                "{\n" +
-                "  executionContexts:\n" +
-                "  [\n" +
-                "    {\n" +
-                "      name: 'Context 1';\n" +
-                "      description: 'some information about the context';\n" +
-                "      mapping: model::dummyMapping;\n" +
-                "      defaultRuntime: model::dummyRuntime;\n" +
-                "    }\n" +
-                "  ];\n" +
-                "  defaultExecutionContext: 'Context 1';\n" +
-                "  featuredDiagrams: [model::SomeDiagram];\n" +
-                "}\n");
-
+        // backward compatible
         test("###Mapping\n" +
                 "Mapping model::dummyMapping\n" +
                 "(\n" +

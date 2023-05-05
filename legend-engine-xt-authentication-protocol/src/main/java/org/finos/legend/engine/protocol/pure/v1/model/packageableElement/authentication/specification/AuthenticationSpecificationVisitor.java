@@ -25,4 +25,6 @@ public interface AuthenticationSpecificationVisitor<T>
     T visit(EncryptedPrivateKeyPairAuthenticationSpecification authenticationSpecification);
 
     T visit(GCPWIFWithAWSIdPAuthenticationSpecification authenticationSpecification);
+
+    T visit(KerberosAuthenticationSpecification authenticationSpecification);
 }

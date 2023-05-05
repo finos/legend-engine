@@ -557,6 +557,18 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     }
 
     @Test
+    public void testSimpleOrWithArithmeticExpression()
+    {
+        test("Class test::C\n" +
+                "[\n" +
+                "  $this.id->isEmpty() || $this.id >= 0\n" +
+                "]\n" +
+                "{\n" +
+                "  id: Integer[0..1];\n" +
+                "}\n");
+    }
+
+    @Test
     public void testMathParenthesis3()
     {
         test("function f(s: Integer[1], s2: Interger[2]): String[1]\n" +

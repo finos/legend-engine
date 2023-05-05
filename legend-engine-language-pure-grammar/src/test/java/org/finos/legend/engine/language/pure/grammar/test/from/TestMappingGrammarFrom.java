@@ -19,7 +19,6 @@ import org.junit.Test;
 
 public class TestMappingGrammarFrom extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
-
     @Test
     public void testSimpleModelToModelMapping()
     {
@@ -34,5 +33,20 @@ public class TestMappingGrammarFrom extends TestGrammarRoundtrip.TestGrammarRoun
                 ")\n", "SimpleM2MMapping.json");
     }
 
+    @Test
+    public void testIncludeDispatch()
+    {
+        testFrom("###Mapping\n" +
+                        "Mapping mapping::simpleModelMapping\n" +
+                        "(\n" +
+                        "  include mapping test::mapping::DispatchMapping\n" +
+                        "  include test::mapping::Mapping\n" +
+                        "  *model::TargetClass[my_mapping_id]: Pure\n" +
+                        "  {\n" +
+                        "    ~src model::SourceClass\n" +
+                        "    name: $src.name\n" +
+                        "  }\n" +
+                        ")\n", "simpleIncludeMapping.json");
+    }
 
 }

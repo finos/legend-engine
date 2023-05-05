@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+@Deprecated
 public class ClassListFilter implements ClassPathFilter
 {
     private final List<Class<?>> classes;

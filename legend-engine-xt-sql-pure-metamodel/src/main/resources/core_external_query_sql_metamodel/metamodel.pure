@@ -152,6 +152,18 @@ Class meta::external::query::sql::metamodel::NullLiteral extends meta::external:
 {
 }
 
+Class meta::external::query::sql::metamodel::IntervalLiteral extends meta::external::query::sql::metamodel::Literal
+{
+  ago: Boolean[0..1];
+  years: Integer[0..1];
+  months: Integer[0..1];
+  weeks: Integer[0..1];
+  days: Integer[0..1];
+  hours: Integer[0..1];
+  minutes: Integer[0..1];
+  seconds: Integer[0..1];
+}
+
 Class meta::external::query::sql::metamodel::NamedArgumentExpression extends meta::external::query::sql::metamodel::Expression
 {
   name: String[1];
@@ -238,6 +250,12 @@ Class meta::external::query::sql::metamodel::WhenClause extends meta::external::
 {
   operand: meta::external::query::sql::metamodel::Expression[1];
   result: meta::external::query::sql::metamodel::Expression[1];
+}
+
+Class meta::external::query::sql::metamodel::Extract extends meta::external::query::sql::metamodel::Expression
+{
+  expression: meta::external::query::sql::metamodel::Expression[1];
+  field: meta::external::query::sql::metamodel::ExtractField[1];
 }
 
 Class meta::external::query::sql::metamodel::Join extends meta::external::query::sql::metamodel::Relation
@@ -380,4 +398,25 @@ Enum meta::external::query::sql::metamodel::CurrentTimeType
   DATE,
   TIME,
   TIMESTAMP
+}
+
+Enum meta::external::query::sql::metamodel::ExtractField
+{
+  CENTURY,
+  YEAR,
+  QUARTER,
+  MONTH,
+  WEEK,
+  DAY,
+  DAY_OF_MONTH,
+  DAY_OF_WEEK,
+  DOW,
+  DAY_OF_YEAR,
+  DOY,
+  HOUR,
+  MINUTE,
+  SECOND,
+  TIMEZONE_HOUR,
+  TIMEZONE_MINUTE,
+  EPOCH
 }

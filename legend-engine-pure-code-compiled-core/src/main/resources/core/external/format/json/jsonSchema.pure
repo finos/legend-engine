@@ -1075,7 +1075,7 @@ function <<access.private>> meta::json::schema::properties( class:Class<Any>[1],
                                                                        | false);
                                       ^JsonSchemaKeyValueMessage(key= if($p->shouldCreateArrayProperty(),
                                                                          | $p->createArrayProperty($root,$constraintHasType, $propertyConstraint,$constraintHasRef,$config),
-                                                                          | $p->createProperty($root,$constraintHasType, $propertyConstraint,$constraintHasRef,$config)
+                                                                         | $p->createProperty($root,$constraintHasType, $propertyConstraint,$constraintHasRef,$config)
                                                                       ),
                                                               message = if($constraintNoRef->filter(c| $c.property.name==$p.name).generationMessage->isNotEmpty(),
                                                                                        |[]->addError('Property ' +$class->elementToPath()+'.'+ $p.name->toOne() + ' references an unsupported schema and likely did not generate correctly' ),
@@ -1173,13 +1173,14 @@ function  <<access.private>> meta::json::schema::definitionsKey( config:JSONSche
 
 function <<access.private>> meta::json::schema::createArrayProperty( property:Property<Nil,Any|*>[1],root:Class<Any>[0..1],constraintHasType:Boolean[1], constraint:JSONObject[*],constraintHasRef:Boolean[1],config: JSONSchemaConfigInternal[1] ) : JSONKeyValue[1]
 {
+   let format = $property->propertyFormatValue();
    let propertyTypeValue = if($constraintHasRef,|[],|$property-> propertyType($root,$constraintHasType,$config));
    let isUnqiue = $constraint.keyValuePairs->filter(c| $c.key.value=='uniqueItems');
 
    let elementTags = $property->elementTags($config);
    let list = newJSONKeyStringValue('type', 'array')->concatenate($isUnqiue)->concatenate($elementTags);
 
-   let finalList = $list->concatenate(newJSONKeyValue('items', newJSONObject( $propertyTypeValue->concatenate($constraint.keyValuePairs->filter(p|$p.key.value!='uniqueItems')) ) ))
+   let finalList = $list->concatenate(newJSONKeyValue('items', newJSONObject( $propertyTypeValue->concatenate($format)->concatenate($constraint.keyValuePairs->filter(p|$p.key.value!='uniqueItems')) ) ))
            ->concatenate(arrayMinMaxItemKeyValue( $property ) );
 
    newJSONKeyValue( $property.name->toOne(), newJSONObject( $finalList));

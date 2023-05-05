@@ -34,11 +34,10 @@ Class meta::pure::router::store::routing::Void extends ValueSpecification
 }
 
 function meta::pure::router::store::routing::enrichStoreMappingRoutedValueSpecification(routedVs: StoreMappingRoutedValueSpecification[1], exeCtx: ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):StoreMappingRoutedValueSpecification[1]
-{
+{ 
    let setsInScope = $routedVs.routingStrategy->cast(@StoreMappingRoutingStrategy).sets;
    let mapping     = $routedVs.mapping;
    let runtime     = $routedVs.runtime;
-   
    if(!$setsInScope->isEmpty(),
      | 
       // Sets
@@ -62,15 +61,16 @@ function meta::pure::router::store::routing::enrichStoreMappingRoutedValueSpecif
       let filteredBuilt = $built->filter(v|!$v->instanceOf(Void));
 
       print(if($debug.debug,|'\n'+$debug.space+'Filtered Built queries:'+$filteredBuilt->size()->toString()+'\n', |''));
-
       let nbuilt = if($permutations->size() > 1,
                      | // Which concatenation to use (dataType/TDS = union all / type = union)?
                       let returnType = $filteredBuilt->at(0)->match([e:StoreMappingRoutedValueSpecification[1]|$e.value.genericType, v:ValueSpecification[1]|$v.genericType]);
                       let concatenate = $returnType.rawType->toOne()->instanceOf(DataType) || $returnType.rawType->toOne()->_subTypeOf(TabularDataSet);
                       let concat = buildConcatenate($filteredBuilt, $concatenate, $returnType);
                       print(if($debug.debug,|$debug.space+'Result: '+$concat->asString()+'\n',|''));
-                      $concat;,
-                     |$filteredBuilt->toOne()
+                       $concat;,
+                     |    if($filteredBuilt->size()!=1,
+                                |$routedVs,
+                                |$filteredBuilt->toOne());
                    );
       $nbuilt->cast(@StoreMappingRoutedValueSpecification);,
      |$routedVs;            // This is needed for expressions (like let x = 1->from($mapping, $runtime)) where there are no sets
@@ -125,8 +125,14 @@ function <<access.private>> meta::pure::router::store::routing::build(v:ValueSpe
                                                                                                                         let targetIds = $e.mapping->allSuperSetImplementationIds($t.id);
                                                                                                                         print(if($debug.debug,|$debug.space+'  Looking up propertyMapping for property "'+$propertyName+'" from "'+$s.id+'" to "'+$targetIds->joinStrings('[', ',', ']')+'"',|''));
                                                                                                                         let resByProperty = $targetIds->map(targetId | $s->cast(@InstanceSetImplementation)->meta::pure::mapping::propertyMappingByPropertyNameAndTargetIdWithInlineResolution($propertyName, $targetId))->first();
-                                                                                                                        let res = if($resByProperty->isEmpty(),| $e.mapping->_associationPropertyMappingsByIdRecursive($s.id)->filter(pm|$pm.targetSetImplementationId == $t.id && $pm.property.name==$propertyName),
-                                                                                                                                                                | $resByProperty);
+                                                                                                                        let resWithAssoc  = if($resByProperty->isEmpty(),
+                                                                                                                                              | $e.mapping->_associationPropertyMappingsByIdRecursive($s.id)->filter(pm|$pm.targetSetImplementationId == $t.id && $pm.property.name==$propertyName),
+                                                                                                                                              | $resByProperty);
+                                                                                                                        
+                                                                                                                        let res           = if($resWithAssoc->isEmpty() && $f.func->instanceOf(Property) && $s->isPropertyAutoMapped($f.func->cast(@Property<Nil, Any|*>), $extensions),
+                                                                                                                                              |$s->cast(@InstanceSetImplementation)->meta::pure::mapping::propertyMappingsByPropertyName($propertyName),
+                                                                                                                                              |$resWithAssoc);
+
                                                                                                                         print(if($debug.debug,|$debug.space+' -> Found: '+$res->size()->toString(),|''));
                                                                                                                         $res;
                                                                                                                         );
@@ -158,7 +164,7 @@ function <<access.private>> meta::pure::router::store::routing::build(v:ValueSpe
                                                                                             let property = $f.func->cast(@Property<Nil,Any|*>);
                                                                                             let propertyMappings = $setImplementation->match([
                                                                                                               i:InstanceSetImplementation[1]|let pMapping = $i->propertyMappingsByPropertyName($propertyName);
-                                                                                                                                              if($pMapping->isEmpty() && ($i->isNoMappingPassThru($property) || $i->isNoMappingDefaultToEmpty($property) || $i->isPartOfMerge()  ),
+                                                                                                                                              if($pMapping->isEmpty() && ($i->isPropertyAutoMapped($property, $extensions) || $i->isNoMappingDefaultToEmpty($property) || $i->isPartOfMerge()  ), 
                                                                                                                                                 | [],
                                                                                                                                                 {|  
                                                                                                                                                     assert(!$pMapping->isEmpty(), | 'No property mapping found for: "'+$propertyName+'" in "'+$setImplementation.id+'" in the mapping "'+$setImplementation.parent->elementToPath()+'"');
@@ -168,7 +174,7 @@ function <<access.private>> meta::pure::router::store::routing::build(v:ValueSpe
                                                                                                               o:OperationSetImplementation[1]|  $o->resolveOperation($e.mapping)->map(i|  let pMapping = $i->match([e:EmbeddedSetImplementation[1]| $e->propertyMappingsByPropertyName($propertyName),
                                                                                                                                                                                                                   a:InstanceSetImplementation[1]| $i->_propertyMappingsByPropertyName($propertyName)
                                                                                                                                                                                                                 ]);  
-                                                                                                                                                                                      if($pMapping->isEmpty() && ($i->isNoMappingPassThru($property) || $i->isNoMappingDefaultToEmpty($property) || $o->instanceOf(MergeOperationSetImplementation)),
+                                                                                                                                                                                      if($pMapping->isEmpty() && ($i->isPropertyAutoMapped($property, $extensions) || $i->isNoMappingDefaultToEmpty($property) || $o->instanceOf(MergeOperationSetImplementation)),
                                                                                                                                                                                         | [],                         
                                                                                                                                                                                         {| assert(!$pMapping->isEmpty(), | 'No property mapping found for: ' + $propertyName + ' in mapping ' + $i.class.name->toOne() + '[' + $i.id + ']');
                                                                                                                                                                                           $pMapping->toOne();

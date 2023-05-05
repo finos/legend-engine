@@ -152,6 +152,22 @@ public abstract class UnitmemporalDeltaBatchIdBasedTestCases extends BaseTest
     public abstract void verifyUnitemporalDeltaNoDeleteIndNoAuditingWithOptimizationFilters(GeneratorResult operations);
 
     @Test
+    void testUnitemporalDeltaNoDeleteIndNoDataSplitsWithOptimizationFiltersIncludesNullValues()
+    {
+        TestScenario scenario = scenarios.BATCH_ID_BASED__NO_DEL_IND__NO_DATA_SPLITS__WITH_OPTIMIZATION_FILTERS__INCLUDES_NULL_VALUES();
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(scenario.getIngestMode())
+            .relationalSink(getRelationalSink())
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .collectStatistics(true)
+            .build();
+        GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
+        verifyUnitemporalDeltaNoDeleteIndNoAuditingWithOptimizationFiltersIncludesNullValues(operations);
+    }
+
+    public abstract void verifyUnitemporalDeltaNoDeleteIndNoAuditingWithOptimizationFiltersIncludesNullValues(GeneratorResult operations);
+
+    @Test
     void testUnitemporalDeltaValidationBatchIdOutMissing()
     {
         try
@@ -242,6 +258,91 @@ public abstract class UnitmemporalDeltaBatchIdBasedTestCases extends BaseTest
         }
     }
 
+    @Test
+    void testUnitemporalDeltaWithNoVersioningAndStagingFilters()
+    {
+        TestScenario scenario = scenarios.BATCH_ID_BASED__NO_VERSIONING__WITH_STAGING_FILTER();
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(scenario.getIngestMode())
+                .relationalSink(getRelationalSink())
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .cleanupStagingData(true)
+                .build();
+        GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
+        verifyUnitemporalDeltaWithNoVersionAndStagingFilter(operations);
+    }
+
+    public abstract void verifyUnitemporalDeltaWithNoVersionAndStagingFilter(GeneratorResult operations);
+
+    @Test
+    void testUnitemporalDeltaWithMaxVersioningDedupEnabledAndStagingFiltersWithDedup()
+    {
+        TestScenario scenario = scenarios.BATCH_ID_BASED__MAX_VERSIONING_WITH_GREATER_THAN__DEDUP__WITH_STAGING_FILTER();
+
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(scenario.getIngestMode())
+                .relationalSink(getRelationalSink())
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .cleanupStagingData(true)
+                .build();
+        GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
+        this.verifyUnitemporalDeltaWithMaxVersionDedupEnabledAndStagingFilter(operations);
+    }
+
+    public abstract void verifyUnitemporalDeltaWithMaxVersionDedupEnabledAndStagingFilter(GeneratorResult operations);
+
+    @Test
+    void testUnitemporalDeltaWithMaxVersioningNoDedupAndStagingFilters()
+    {
+        TestScenario scenario = scenarios.BATCH_ID_BASED__MAX_VERSIONING_WITH_GREATER_THAN__NO_DEDUP__WITH_STAGING_FILTER();
+
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(scenario.getIngestMode())
+                .relationalSink(getRelationalSink())
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .cleanupStagingData(true)
+                .collectStatistics(true)
+                .build();
+        GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
+        this.verifyUnitemporalDeltaWithMaxVersionNoDedupAndStagingFilter(operations);
+    }
+
+    public abstract void verifyUnitemporalDeltaWithMaxVersionNoDedupAndStagingFilter(GeneratorResult operations);
+
+    @Test
+    void testUnitemporalDeltaWithMaxVersioningNoDedupWithoutStagingFilters()
+    {
+        TestScenario scenario = scenarios.BATCH_ID_BASED__MAX_VERSIONING_WITH_GREATER_THAN__NO_DEDUP__WITHOUT_STAGING_FILTER();
+
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(scenario.getIngestMode())
+                .relationalSink(getRelationalSink())
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .cleanupStagingData(true)
+                .build();
+        GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
+        this.verifyUnitemporalDeltaWithMaxVersioningNoDedupWithoutStagingFilters(operations);
+    }
+
+    public abstract void verifyUnitemporalDeltaWithMaxVersioningNoDedupWithoutStagingFilters(GeneratorResult operations);
+
+    @Test
+    void testUnitemporalDeltaWithMaxVersioningDedupEnabledAndUpperCaseWithoutStagingFilters()
+    {
+        TestScenario scenario = scenarios.BATCH_ID_BASED__MAX_VERSIONING_WITH_GREATER_THAN_EQUAL__DEDUP__WITHOUT_STAGING_FILTER();
+
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(scenario.getIngestMode())
+                .relationalSink(getRelationalSink())
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .cleanupStagingData(true)
+                .caseConversion(CaseConversion.TO_UPPER)
+                .build();
+        GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
+        this.verifyUnitemporalDeltaWithMaxVersioningDedupEnabledAndUpperCaseWithoutStagingFilters(operations);
+    }
+
+    public abstract void verifyUnitemporalDeltaWithMaxVersioningDedupEnabledAndUpperCaseWithoutStagingFilters(GeneratorResult operations);
 
     public abstract RelationalSink getRelationalSink();
 }

@@ -49,7 +49,7 @@ public class TestAuthenticationGrammarRoundtrip_AuthenticationTypes extends Test
                 "    value: PropertiesFileSecret\n" +
                 "    {\n" +
                 "      propertyName: 'property1';\n" +
-                "    }\n" +
+                "    };\n" +
                 "  }#;\n" +
                 "}\n");
     }
@@ -66,11 +66,11 @@ public class TestAuthenticationGrammarRoundtrip_AuthenticationTypes extends Test
                 "    privateKey: PropertiesFileSecret\n" +
                 "    {\n" +
                 "      propertyName: 'property1';\n" +
-                "    }\n" +
+                "    };\n" +
                 "    passphrase: PropertiesFileSecret\n" +
                 "    {\n" +
                 "      propertyName: 'property1';\n" +
-                "    }\n" +
+                "    };\n" +
                 "  }#;\n" +
                 "}\n");
     }
@@ -94,11 +94,11 @@ public class TestAuthenticationGrammarRoundtrip_AuthenticationTypes extends Test
                 "        accessKeyId: PropertiesFileSecret\n" +
                 "        {\n" +
                 "          propertyName: 'property1';\n" +
-                "        }\n" +
+                "        };\n" +
                 "        secretAccessKey: PropertiesFileSecret\n" +
                 "        {\n" +
                 "          propertyName: 'property1';\n" +
-                "        }\n" +
+                "        };\n" +
                 "      }\n" +
                 "    }\n" +
                 "    workload: GCPWorkload\n" +

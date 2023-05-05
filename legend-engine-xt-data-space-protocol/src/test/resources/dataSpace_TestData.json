@@ -37,9 +37,11 @@
         }
       ],
       "elements": [
+        { "path": "test::model" },
         { "path": "test::model::Class1" },
         { "path": "test::model::Class2" },
-        { "path": "test::model::Assoc1" }
+        { "path": "test::model::Assoc1" },
+        { "path": "test::model::MyEnum", "exclude": true }
       ],
       "executables": [
         {

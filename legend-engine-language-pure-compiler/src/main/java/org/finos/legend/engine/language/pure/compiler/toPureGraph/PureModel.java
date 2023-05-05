@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.block.predicate.Predicate;
 import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
@@ -86,18 +87,18 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
-import org.finos.legend.pure.m3.serialization.filesystem.PureCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
-import org.finos.legend.pure.m3.serialization.filesystem.repository.SVNCodeRepository;
+import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
+import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.ClassLoaderCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.VersionControlledClassLoaderCodeStorage;
+import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.composite.CompositeCodeStorage;
 import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.runtime.java.compiled.compiler.JavaCompilerState;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledProcessorSupport;
 import org.finos.legend.pure.runtime.java.compiled.execution.ConsoleCompiled;
 import org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtensionLoader;
-import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.Pure;
 import org.finos.legend.pure.runtime.java.compiled.metadata.ClassCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.FunctionCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.Metadata;
@@ -111,7 +112,6 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Predicate;
 
 public class PureModel implements IPureModel
 {
@@ -174,7 +174,7 @@ public class PureModel implements IPureModel
 
         if (classLoader == null)
         {
-            classLoader = Pure.class.getClassLoader();
+            classLoader = Thread.currentThread().getContextClassLoader();
         }
         this.deploymentMode = deploymentMode;
         this.pureModelProcessParameter = pureModelProcessParameter;
@@ -186,15 +186,15 @@ public class PureModel implements IPureModel
                     new JavaCompilerState(null, classLoader),
                     new CompiledProcessorSupport(classLoader, metaData == null ? new MetadataWrapper(this.root, METADATA_LAZY, this) : metaData, Sets.mutable.empty()),
                     null,
-                    new PureCodeStorage(null, new VersionControlledClassLoaderCodeStorage(classLoader, Lists.mutable.of(
-                            CodeRepository.newPlatformCodeRepository(),
-                            SVNCodeRepository.newSystemCodeRepository()
-                    ), null)),
+                    new CompositeCodeStorage(
+                            new ClassLoaderCodeStorage(CodeRepositoryProviderHelper.findCodeRepositories().select(CodeRepositoryProviderHelper.platformAndCore)),
+                            //TODO eventually remove, keep system so that we can get latestVersion in Alloy.
+                            new VersionControlledClassLoaderCodeStorage(classLoader, new GenericCodeRepository("system", ""), null)),
                     null,
                     null,
                     console,
                     new FunctionCache(),
-                    new ClassCache(),
+                    new ClassCache(classLoader),
                     null,
                     Sets.mutable.empty(),
                     CompiledExtensionLoader.extensions()
@@ -232,26 +232,20 @@ public class PureModel implements IPureModel
             PureModelContextDataIndex pureModelContextDataIndex = index(pureModelContextData);
 
             // First pass -> ensure all packageable elements are resolved as early as possible.
-            pureModelContextDataIndex.sectionIndices.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
-            pureModelContextDataIndex.profiles.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
-            pureModelContextDataIndex.classes.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
-            pureModelContextDataIndex.enumerations.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
-            pureModelContextDataIndex.functions.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
-            pureModelContextDataIndex.mappings.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
-            pureModelContextDataIndex.measures.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
-            pureModelContextDataIndex.runtimes.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
-            pureModelContextDataIndex.dataElements.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
-            this.extensions.sortExtraProcessors(pureModelContextDataIndex.stores.keysView()).forEach(p ->
-            {
-                MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store> stores = pureModelContextDataIndex.stores.get(p);
-                stores.forEach(el -> this.storesIndex.putIfAbsent(this.buildPackageString(el._package, el.name), (Store) visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el)))));
-            });
-            pureModelContextDataIndex.connections.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
-            this.extensions.sortExtraProcessors(pureModelContextDataIndex.otherElementsByProcessor.keysView()).forEach(p ->
-            {
-                MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> elements = pureModelContextDataIndex.otherElementsByProcessor.get(p);
-                elements.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
-            });
+            pureModelContextDataIndex.sectionIndices.forEach(this::processFirstPass);
+            pureModelContextDataIndex.profiles.forEach(this::processFirstPass);
+            pureModelContextDataIndex.classes.forEach(this::processFirstPass);
+            pureModelContextDataIndex.enumerations.forEach(this::processFirstPass);
+            pureModelContextDataIndex.functions.forEach(this::processFirstPass);
+            pureModelContextDataIndex.mappings.forEach(this::processFirstPass);
+            pureModelContextDataIndex.measures.forEach(this::processFirstPass);
+            pureModelContextDataIndex.runtimes.forEach(this::processFirstPass);
+            pureModelContextDataIndex.dataElements.forEach(this::processFirstPass);
+            this.extensions.sortExtraProcessors(pureModelContextDataIndex.stores.keysView())
+                    .forEach(p -> pureModelContextDataIndex.stores.get(p).forEach(store -> this.storesIndex.getIfAbsentPut(buildPackageString(store._package, store.name), () -> (Store) processFirstPass(store))));
+            pureModelContextDataIndex.connections.forEach(this::processFirstPass);
+            this.extensions.sortExtraProcessors(pureModelContextDataIndex.otherElementsByProcessor.keysView())
+                    .forEach(p -> pureModelContextDataIndex.otherElementsByProcessor.get(p).forEach(this::processFirstPass));
 
             this.loadTypes(pureModelContextDataIndex);
             long loadTypesFinished = System.currentTimeMillis();
@@ -323,7 +317,7 @@ public class PureModel implements IPureModel
             f.setAccessible(true);
             f.set(this.root, this.typesIndex.get("Package"));
         }
-        catch (Exception e)
+        catch (ReflectiveOperationException e)
         {
             throw new RuntimeException(e);
         }
@@ -428,11 +422,11 @@ public class PureModel implements IPureModel
 
     private void initializeMultiplicities()
     {
-        this.multiplicitiesIndex.put("zero", (PackageableMultiplicity) executionSupport.getMetadata(M3Paths.PackageableMultiplicity, "Root::meta::pure::metamodel::multiplicity::PureZero"));
-        this.multiplicitiesIndex.put("one", (PackageableMultiplicity) executionSupport.getMetadata(M3Paths.PackageableMultiplicity, "Root::meta::pure::metamodel::multiplicity::PureOne"));
-        this.multiplicitiesIndex.put("zeroone", (PackageableMultiplicity) executionSupport.getMetadata(M3Paths.PackageableMultiplicity, "Root::meta::pure::metamodel::multiplicity::ZeroOne"));
-        this.multiplicitiesIndex.put("onemany", (PackageableMultiplicity) executionSupport.getMetadata(M3Paths.PackageableMultiplicity, "Root::meta::pure::metamodel::multiplicity::OneMany"));
-        this.multiplicitiesIndex.put("zeromany", (PackageableMultiplicity) executionSupport.getMetadata(M3Paths.PackageableMultiplicity, "Root::meta::pure::metamodel::multiplicity::ZeroMany"));
+        this.multiplicitiesIndex.put("zero", (PackageableMultiplicity) this.executionSupport.getMetadata(M3Paths.PackageableMultiplicity, "Root::meta::pure::metamodel::multiplicity::PureZero"));
+        this.multiplicitiesIndex.put("one", (PackageableMultiplicity) this.executionSupport.getMetadata(M3Paths.PackageableMultiplicity, "Root::meta::pure::metamodel::multiplicity::PureOne"));
+        this.multiplicitiesIndex.put("zeroone", (PackageableMultiplicity) this.executionSupport.getMetadata(M3Paths.PackageableMultiplicity, "Root::meta::pure::metamodel::multiplicity::ZeroOne"));
+        this.multiplicitiesIndex.put("onemany", (PackageableMultiplicity) this.executionSupport.getMetadata(M3Paths.PackageableMultiplicity, "Root::meta::pure::metamodel::multiplicity::OneMany"));
+        this.multiplicitiesIndex.put("zeromany", (PackageableMultiplicity) this.executionSupport.getMetadata(M3Paths.PackageableMultiplicity, "Root::meta::pure::metamodel::multiplicity::ZeroMany"));
     }
 
     private void initializePrimitiveTypes()
@@ -451,28 +445,28 @@ public class PureModel implements IPureModel
     private void loadTypes(PureModelContextDataIndex pure)
     {
         // Second pass
-        pure.classes.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
-        pure.measures.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
+        pure.classes.forEach(this::processSecondPass);
+        pure.measures.forEach(this::processSecondPass);
 
         // Process - associations / inheritance
         // Need to move it with the other first pass processes
-        pure.associations.forEach(el -> visitWithErrorHandling(el, new PackageableElementFirstPassBuilder(this.getContext(el))));
+        pure.associations.forEach(this::processFirstPass);
 
         // Third pass - milestoning
-        pure.classes.forEach(el -> visitWithErrorHandling(el, new PackageableElementThirdPassBuilder(this.getContext(el))));
-        pure.associations.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
+        pure.classes.forEach(this::processThirdPass);
+        pure.associations.forEach(this::processSecondPass);
 
         // Fourth pass - qualifiers
-        pure.classes.forEach(el -> visitWithErrorHandling(el, new PackageableElementFourthPassBuilder(this.getContext(el))));
-        pure.enumerations.forEach(el -> visitWithErrorHandling(el, new PackageableElementFourthPassBuilder(this.getContext(el))));
-        pure.associations.forEach(el -> visitWithErrorHandling(el, new PackageableElementThirdPassBuilder(this.getContext(el))));
-        pure.functions.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
+        pure.classes.forEach(this::processFourthPass);
+        pure.enumerations.forEach(this::processFourthPass);
+        pure.associations.forEach(this::processThirdPass);
+        pure.functions.forEach(this::processSecondPass);
     }
 
     private void loadDataElements(PureModelContextDataIndex pure)
     {
         // Second pass
-        pure.dataElements.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
+        pure.dataElements.forEach(this::processSecondPass);
     }
 
     private void loadStores(PureModelContextDataIndex pure)
@@ -480,27 +474,27 @@ public class PureModel implements IPureModel
         this.extensions.sortExtraProcessors(pure.stores.keysView()).forEach(p ->
         {
             MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store> stores = pure.stores.get(p);
-            stores.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
-            stores.forEach(el -> visitWithErrorHandling(el, new PackageableElementThirdPassBuilder(this.getContext(el))));
-            stores.forEach(el -> visitWithErrorHandling(el, new PackageableElementFourthPassBuilder(this.getContext(el))));
-            stores.forEach(el -> visitWithErrorHandling(el, new PackageableElementFifthPassBuilder(this.getContext(el))));
+            stores.forEach(this::processSecondPass);
+            stores.forEach(this::processThirdPass);
+            stores.forEach(this::processFourthPass);
+            stores.forEach(this::processFifthPass);
         });
     }
 
     public void loadMappings(PureModelContextDataIndex pure)
     {
-        pure.mappings.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
-        pure.mappings.forEach(el -> visitWithErrorHandling(el, new PackageableElementThirdPassBuilder(this.getContext(el))));
-        pure.mappings.forEach(el -> visitWithErrorHandling(el, new PackageableElementFourthPassBuilder(this.getContext(el))));
-        pure.mappings.forEach(el -> visitWithErrorHandling(el, new PackageableElementFifthPassBuilder(this.getContext(el))));
+        pure.mappings.forEach(this::processSecondPass);
+        pure.mappings.forEach(this::processThirdPass);
+        pure.mappings.forEach(this::processFourthPass);
+        pure.mappings.forEach(this::processFifthPass);
 
     }
 
     public void loadConnectionsAndRuntimes(PureModelContextDataIndex pure)
     {
         // Connections must be loaded before runtimes
-        pure.connections.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
-        pure.runtimes.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
+        pure.connections.forEach(this::processSecondPass);
+        pure.runtimes.forEach(this::processSecondPass);
     }
 
     private void loadOtherElementsPreStores(PureModelContextDataIndex pure)
@@ -513,16 +507,41 @@ public class PureModel implements IPureModel
         loadOtherElements(pure, p -> p.getPrerequisiteClasses().contains(PackageableConnection.class) || p.getPrerequisiteClasses().contains(PackageableRuntime.class));
     }
 
-    private void loadOtherElements(PureModelContextDataIndex pure, Predicate<Processor> filter)
+    private void loadOtherElements(PureModelContextDataIndex pure, Predicate<? super Processor<?>> filter)
     {
-        this.extensions.sortExtraProcessors(pure.otherElementsByProcessor.keysView(), filter).forEach(p ->
+        this.extensions.sortExtraProcessors(pure.otherElementsByProcessor.keysView().select(filter)).forEach(p ->
         {
             MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> elements = pure.otherElementsByProcessor.get(p);
-            elements.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
-            elements.forEach(el -> visitWithErrorHandling(el, new PackageableElementThirdPassBuilder(this.getContext(el))));
-            elements.forEach(el -> visitWithErrorHandling(el, new PackageableElementFourthPassBuilder(this.getContext(el))));
-            elements.forEach(el -> visitWithErrorHandling(el, new PackageableElementFifthPassBuilder(this.getContext(el))));
+            elements.forEach(this::processSecondPass);
+            elements.forEach(this::processThirdPass);
+            elements.forEach(this::processFourthPass);
+            elements.forEach(this::processFifthPass);
         });
+    }
+
+    private org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement processFirstPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
+    {
+        return visitWithErrorHandling(element, new PackageableElementFirstPassBuilder(getContext(element)));
+    }
+
+    private void processSecondPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
+    {
+        visitWithErrorHandling(element, new PackageableElementSecondPassBuilder(getContext(element)));
+    }
+
+    private void processThirdPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
+    {
+        visitWithErrorHandling(element, new PackageableElementThirdPassBuilder(getContext(element)));
+    }
+
+    private void processFourthPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
+    {
+        visitWithErrorHandling(element, new PackageableElementFourthPassBuilder(getContext(element)));
+    }
+
+    private void processFifthPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
+    {
+        visitWithErrorHandling(element, new PackageableElementFifthPassBuilder(getContext(element)));
     }
 
     private <T> T visitWithErrorHandling(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element, PackageableElementVisitor<T> visitor)
@@ -657,25 +676,25 @@ public class PureModel implements IPureModel
             // Search for system types in the Pure graph
             try
             {
-                type = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type) executionSupport.getMetadata("meta::pure::metamodel::type::Class", "Root::" + fullPath);
+                type = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type) this.executionSupport.getMetadata("meta::pure::metamodel::type::Class", "Root::" + fullPath);
             }
             catch (Exception e)
             {
                 try
                 {
-                    type = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type) executionSupport.getMetadata("meta::pure::metamodel::type::Enumeration", "Root::" + fullPath);
+                    type = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type) this.executionSupport.getMetadata("meta::pure::metamodel::type::Enumeration", "Root::" + fullPath);
                 }
                 catch (Exception ee)
                 {
                     try
                     {
-                        type = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type) executionSupport.getMetadata("meta::pure::metamodel::type::Unit", "Root::" + fullPath);
+                        type = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type) this.executionSupport.getMetadata("meta::pure::metamodel::type::Unit", "Root::" + fullPath);
                     }
                     catch (Exception eee)
                     {
                         try
                         {
-                            type = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type) executionSupport.getMetadata("meta::pure::metamodel::type::Measure", "Root::" + fullPath);
+                            type = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type) this.executionSupport.getMetadata("meta::pure::metamodel::type::Measure", "Root::" + fullPath);
                         }
                         catch (Exception ignored)
                         {
@@ -835,7 +854,26 @@ public class PureModel implements IPureModel
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association getAssociation_safe(String fullPath)
     {
-        return this.associationsIndex.get(addPrefixToTypeReference(fullPath));
+        String fullPathWithPrefix = addPrefixToTypeReference(fullPath);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association association = this.associationsIndex.get(fullPathWithPrefix);
+        if (association == null)
+        {
+            // Search for system types in the Pure graph
+            try
+            {
+                association = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association) this.executionSupport.getMetadata("meta::pure::metamodel::relationship::Association", "Root::" + fullPath);
+            }
+            catch (Exception ignored)
+            {
+                // do nothing
+            }
+            if (association != null)
+            {
+                this.immutables.add(fullPathWithPrefix);
+                this.associationsIndex.put(fullPathWithPrefix, association);
+            }
+        }
+        return association;
     }
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile getProfile(String fullPath)
@@ -858,9 +896,9 @@ public class PureModel implements IPureModel
         {
             try
             {
-                profile = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile) executionSupport.getMetadata("meta::pure::metamodel::extension::Profile", "Root::" + pathWithTypeReference);
+                profile = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile) this.executionSupport.getMetadata("meta::pure::metamodel::extension::Profile", "Root::" + pathWithTypeReference);
             }
-            catch (Exception e)
+            catch (Exception ignore)
             {
                 //Do Nothing
             }
@@ -1131,7 +1169,7 @@ public class PureModel implements IPureModel
             return this.multiplicitiesIndex.get("zero");
         }
 
-        return new Root_meta_pure_metamodel_multiplicity_Multiplicity_Impl("")
+        return new Root_meta_pure_metamodel_multiplicity_Multiplicity_Impl("", null, this.getType(M3Paths.Multiplicity))
                 ._lowerBound(new Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl("")._value((long) multiplicity.lowerBound))
                 ._upperBound(multiplicity.isInfinite() ? new Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl("") : new Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl("")._value((long) multiplicity.getUpperBoundInt()));
     }

@@ -393,6 +393,48 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testWithFu
    assertEquals($expected->asString(true), $sourceTree->asString(true));
 }
 
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testWithFunctionsWithNewVarDeclarationInIfClause():Boolean[1]
+{
+   let tree = #{
+      A {
+         a1,
+         a2,
+         a3
+      }
+   }#;
+   
+   let sourceTree = calculateSourceTree($tree, testMappingWithNewVarDeclarationInIfClause, meta::pure::extension::defaultExtensions())->sortTree();
+   let expected = #{
+      _A {
+         a1 {
+            b {
+               c1
+            }
+         },
+         a2 {
+            b {
+               c2
+            }
+         },
+         a3,
+         a4 {
+            d1 {
+               c1
+            },
+            d2 {
+               e
+            }
+         },
+         a6 {
+            d2 {
+               e
+            }
+         }
+      }
+   }#;
+   assertEquals($expected->asString(true), $sourceTree->asString(true));
+}
+
 Class meta::pure::graphFetch::tests::sourceTreeCalc::withFunctions::A
 {
    a1: String[1];
@@ -441,6 +483,17 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withFunctions::testMappin
       {
          ~src _A
          a1: if($src.a3 > 10, |$src.a1.b.c1, |$src.a2.b.c2),
+         a2: $src.a4->filter(x| $x.d1.c1->in(['A', 'B','C'])).d2.e,
+         a3: $src.a6->at(0).d2.e
+      }
+)
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withFunctions::testMappingWithNewVarDeclarationInIfClause
+(
+   A: Pure
+      {
+         ~src _A
+         a1: if($src.a3 > 10, |let myVar1 = $src.a1.b; $myVar1.c1; , |$src.a2.b.c2),
          a2: $src.a4->filter(x| $x.d1.c1->in(['A', 'B','C'])).d2.e,
          a3: $src.a6->at(0).d2.e
       }
@@ -1062,7 +1115,7 @@ Class meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Person
 {
    address: Location[1];
 }
- 
+
 Class meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::Location
 {
    zipCode: String[1];
@@ -1606,6 +1659,313 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::SourceToTarg
     id : $src.s
   }
 )
+
+
+// Union on source classes with same property name, where one element in union has a filter
+###Pure
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::UnionSource
+{
+  a : meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::UnionA[1];
+  b : meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::UnionB[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::UnionA
+{
+  fld : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::UnionB 
+{
+  fld : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::UnionTarget 
+{
+  c : meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::UnionC[*];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::UnionC 
+{
+  fld : String[1];
+}
+
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::test::alloy::simple::sourceTreeCalc::simpleUnionWithCommonPropertiesAndSingleFilter() : Boolean[1]
+{
+  let tree = #{meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::UnionTarget { c { fld } }}#;
+  let expectedString = 'UnionSource\n' +
+                        '(\n' +
+                        '  a\n' +
+                        '  (\n' + 
+                        '    fld\n' + 
+                        '  )\n' + 
+                        '  b\n' +
+                        '  (\n' + 
+                        '    fld\n' + 
+                        '  )\n' + 
+                        ')';
+
+  let sourceTree = meta::pure::graphFetch::calculateSourceTree($tree, 
+                                                                meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::UnionMappingWithSingleFilter,
+                                                                meta::pure::extension::defaultExtensions());
+
+  assertEquals($expectedString, $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString());                                                            
+}
+
+
+
+
+###Mapping
+import meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::*;
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::UnionMappingWithSingleFilter
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::UnionTarget : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::UnionSource 
+    c[c1] : $src.a ,
+    c[c2] : $src.b 
+
+  }
+
+  *meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::UnionC[c_value] : Operation 
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(c1,c2)
+  }
+
+  meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::UnionC[c1] : Pure 
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::UnionA
+    ~filter $src.fld->isNotEmpty()
+    fld : $src.fld+'_a'
+  }
+
+  meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::UnionC[c2] : Pure 
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::UnionB
+    fld : $src.fld+'_b'
+  }
+
+
+)
+
+###Pure
+// Union mapping where sources are a mix between root class and property access
+Class meta::pure::graphFetch::tests::sourceTreeCalc::Asset
+{
+  calcTyp: Float[0..1];
+  redempVal: Float[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::AssetPutSchedule
+{
+  putScheduleDt: StrictDate[0..1];
+  putSchedulePct: Float[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::Debt
+{
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::PrincipalRedemptionSchedule
+{
+  startDate: StrictDate[1];
+  endDate: StrictDate[0..1];
+  redempPrice: Float[0..1];
+  redempAmount: Float[0..1];
+}
+
+Association meta::pure::graphFetch::tests::sourceTreeCalc::Asset_AssetPutSchedule
+{
+  BO: meta::pure::graphFetch::tests::sourceTreeCalc::Asset[1];
+  putSch: meta::pure::graphFetch::tests::sourceTreeCalc::AssetPutSchedule[*];
+}
+
+Association meta::pure::graphFetch::tests::sourceTreeCalc::Debt_PrincipalRedemptionSchedule
+{
+  principleRedemptionSchedule: meta::pure::graphFetch::tests::sourceTreeCalc::PrincipalRedemptionSchedule[*];
+  debt: meta::pure::graphFetch::tests::sourceTreeCalc::Debt[1];
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::test::alloy::simple::sourceTreeCalc::unionMappingFromSourceRootandSourceProperty():Boolean[1]
+{
+  let tree = #{meta::pure::graphFetch::tests::sourceTreeCalc::Debt{principleRedemptionSchedule{startDate,redempPrice,redempAmount,endDate}}}#;
+
+  let expectedString = 'Asset\n' +
+                        '(\n' +
+                        '  calcTyp\n' +
+                        '  putSch\n' +
+                        '  (\n' + 
+                        '    putScheduleDt\n' + 
+                        '    putSchedulePct\n' + 
+                        '  )\n' + 
+                        '  redempVal\n' +
+                        ')';
+
+  let sourceTree = meta::pure::graphFetch::calculateSourceTree($tree, 
+                                                                meta::pure::graphFetch::tests::sourceTreeCalc::MappingUnionFromRootClassAndProperty,
+                                                                meta::pure::extension::defaultExtensions());
+  assertEquals($expectedString, $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString());
+}
+
+
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::MappingUnionFromRootClassAndProperty
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::Debt: Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::Asset
+    principleRedemptionSchedule[m1]: $src,
+    principleRedemptionSchedule[m2]: $src.putSch
+  }
+  *meta::pure::graphFetch::tests::sourceTreeCalc::PrincipalRedemptionSchedule: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(m1,m2)
+  }
+  meta::pure::graphFetch::tests::sourceTreeCalc::PrincipalRedemptionSchedule[m1]: Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::Asset
+    ~filter $src->isNotEmpty()
+    redempAmount: if($src.calcTyp->toOne()->floor()->in([0,1,2,3,4]), |$src.redempVal, |[]),
+    startDate: 2023->date(6, 6),
+    redempPrice: if(!($src.calcTyp->toOne()->floor()->in([0,1,2,3,4])), |$src.redempVal, |[])
+  }
+  meta::pure::graphFetch::tests::sourceTreeCalc::PrincipalRedemptionSchedule[m2]: Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::AssetPutSchedule
+    ~filter $src->isNotEmpty()
+    redempPrice: $src.putSchedulePct,
+    startDate: $src.putScheduleDt->toOne(),
+    endDate: $src.putScheduleDt
+  }
+)
+
+
+###Pure
+// Union mapping with multiple src property accesses within and outside the union
+
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::Tradable
+{
+  bid: meta::pure::graphFetch::tests::sourceTreeCalc::Identifier1[*];
+}
+
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::Identifier1
+{
+  FROM_Z: StrictDate[1];
+  THRU_Z: StrictDate[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::Identifier2
+{
+
+  FROM_Z: StrictDate[1];
+  THRU_Z: StrictDate[1];
+}
+
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::Equity
+{
+  EquityTradable: meta::pure::graphFetch::tests::sourceTreeCalc::Tradable[*];
+  id2: meta::pure::graphFetch::tests::sourceTreeCalc::Identifier2[*];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::EquityPayload
+{
+  data: meta::pure::graphFetch::tests::sourceTreeCalc::Equity[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::EquityPayloadList
+{
+  payload: meta::pure::graphFetch::tests::sourceTreeCalc::EquityPayload[*];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::EquityTarget
+{
+  Identifiers2: meta::pure::graphFetch::tests::sourceTreeCalc::Identifier2[*];
+  Identifiers1: meta::pure::graphFetch::tests::sourceTreeCalc::Identifier1[*];
+}
+
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::test::alloy::simple::sourceTreeCalc::unionMappingAndSimpleMappingSourceAccesses():Boolean[1]
+{
+
+  let tree = #{meta::pure::graphFetch::tests::sourceTreeCalc::EquityTarget{Identifiers2{FROM_Z,THRU_Z},Identifiers1{FROM_Z,THRU_Z}}}#;
+
+  let expectedString ='EquityPayloadList\n' +
+                      '(\n' +
+                      '  payload\n' +
+                      '  (\n' +
+                      '    data\n' +
+                      '    (\n' +
+                      '      EquityTradable\n' +
+                      '      (\n' +
+                      '        bid\n' +
+                      '        (\n' +
+                      '          FROM_Z\n' +
+                      '          THRU_Z\n' +
+                      '        )\n' +
+                      '      )\n' +
+                      '      id2\n' +
+                      '      (\n' +
+                      '        FROM_Z\n' +
+                      '        THRU_Z\n' +
+                      '      )\n' +
+                      '    )\n' +
+                      '  )\n' +
+                      ')';
+  
+
+  let sourceTree = meta::pure::graphFetch::calculateSourceTree($tree, 
+                                                                meta::pure::graphFetch::tests::sourceTreeCalc::EquityTargetMapping,
+                                                                meta::pure::extension::defaultExtensions());
+  assertEquals($expectedString, $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString());
+}
+
+
+###Mapping
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::EquityTargetMapping
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::EquityTarget: Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::EquityPayloadList
+    Identifiers2[prodid]: $src,
+    Identifiers1[union1]: $src,
+    Identifiers1[union2]: $src
+
+
+  }
+  
+  *meta::pure::graphFetch::tests::sourceTreeCalc::Identifier1 : Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(union1, union2)
+  }
+  meta::pure::graphFetch::tests::sourceTreeCalc::Identifier2[prodid]: Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::EquityPayloadList
+   
+    FROM_Z*: $src.payload.data.id2.FROM_Z,
+    THRU_Z*: $src.payload.data.id2.THRU_Z
+  }
+  meta::pure::graphFetch::tests::sourceTreeCalc::Identifier1[union1]: Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::EquityPayloadList
+    
+    FROM_Z*: $src.payload.data.EquityTradable.bid.FROM_Z,
+    THRU_Z*: $src.payload.data.EquityTradable.bid.THRU_Z
+  }
+  meta::pure::graphFetch::tests::sourceTreeCalc::Identifier1[union2]: Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::EquityPayloadList
+    FROM_Z*: $src.payload.data.id2.FROM_Z,
+    THRU_Z*: $src.payload.data.id2.THRU_Z
+  }
+ 
+)
+
+
 
 ###Pure
 import meta::pure::graphFetch::tests::sourceTreeCalc::withFlatteningInTransform::*;

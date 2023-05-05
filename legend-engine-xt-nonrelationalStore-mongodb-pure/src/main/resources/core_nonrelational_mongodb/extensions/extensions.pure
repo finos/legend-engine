@@ -15,11 +15,6 @@
 import meta::pure::extension::*;
 import meta::external::store::mongodb::extension::*;
 
-function meta::external::store::mongodb::extension::mongoDBExtensions() : meta::pure::extension::Extension[*]
-{
-   [mongoDBExtensions('mongoDB')]
-}
-
 function meta::external::store::mongodb::extension::mongoDBSerializerExtension(version:String[1]):String[1]
 {
   'meta::protocols::pure::'+$version+'::extension::store::mongodb::getMongoDBStoreExtension_String_1__SerializerExtension_1_'

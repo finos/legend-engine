@@ -1,5 +1,5 @@
 ###DataSpace
-DataSpace domain::COVIDDatapace
+DataSpace domain::COVIDDataspace
 {
   executionContexts:
   [
@@ -12,12 +12,6 @@ DataSpace domain::COVIDDatapace
   defaultExecutionContext: 'dummyContext';
   title: 'COVID Sample Data';
   description: '# Peleus rupit\n\n## Sum super gerens paterque\n\nLorem markdownum presso, et tamen cogitis, Taenarius lactantia fluxerunt\nterrita, vota. Tempore flumina ferrumque bella.\n\n- Per dixit\n- Truces tellusque indignata ducem\n- Cervice venitis cavernis minus\n\n## Tum ausus fovebam incursus magis dici extemplo\n\nPiscator degenerat desertaque quid scelus tyranni feror ipsa mortis nec silva\nsparsus neci cum? Est patulas meam decorem, dat demit corpora exuritque Ulixes,\ngenitore. Captare certa amore pressos, Diamque\n[traxit](http://istecondar.net/ministropudoris) devorat duritia ecce, capillos\nfuerint progenitore curva relictas. Iubae pectus et quateret, non vires tibi\ncacumina figuram Antigonen rursus verti.\n\n## Dicta nec Thestiadae tristi exempla sed suoque\n\nFlumina quae loricaeque meruique defensae *me terram* tamen attollere totum\nneque nullos. Quem plus, stratum.\n\n## Quaeque si reddite summoque vultu Teleboasque vincere\n\nIsmariae me munus umbram. Usum pedem multis quotiensque mirantum Cephenum et\namori Procne locutum auctor Volturnus pavent virgineas.\n\n    if (edi + sidebarTooltip < aiffDisk) {\n        drive_key_firewire += bank(searchHardBoot(bus, packet_click));\n    }\n    var adRow = dlc_rootkit(rdramMegabit) - hertzBanner * 2 +\n            memory_adc.horizontal(class_box_rte, disk, lte_grep);\n    if (grayscale) {\n        spool_windows_metal.zif_firewire *= 3;\n        emoticon_mp = user.thunderboltIcqBus.installer_remote(4, searchCable) *\n                kibibyteYoutubeRaster.simm(-3, nosqlCharacter, sip);\n    }\n    var blob = -2;\n\n## Est magis interdum in luctus\n\nPrimus illa sub bis infregit saepe agrestem Cyllare lumen cultrosque **Cnosia**.\nSuis est fero durisque satis.\n\n- Nos quas est maesta aliquis se unum\n- Tu ossa Cupido sagitta hanc inflati profuso\n- Modo est proles pavor\n- Stillabant pallada invitaque et tantum dictaque in\n- Generum coegi tum edaci\n\nSuo nec cerae me omnem Famemque, passi si auditque ullo, praebita. Gravi annos\npudore formidabilis erat pectora perpetuo qua oscula cum ad sed Nabataeus\nRomethiumque deum Erectheus? O Victoria rostro utque terras vitisque classe.\nTibi [miserrima hirta](http://decentia-qui.net/docta-petentem), eratis saepius\ntuus.';
-  elements:
-  [
-    domain::COVIDData,
-    domain::Demographics,
-    domain::Virus
-  ];
   executables:
   [
     {

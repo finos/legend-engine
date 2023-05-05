@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode;
 
+import org.finos.legend.engine.persistence.components.common.OptimizationFilter;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicatesAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategyVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicatesAbstract;
@@ -22,6 +23,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStra
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -223,6 +225,96 @@ public class IngestModeVisitors
         public Boolean visitBitemporalDelta(BitemporalDeltaAbstract bitemporalDelta)
         {
             return true;
+        }
+    };
+
+    public static final IngestModeVisitor<Boolean> NEED_TO_CHECK_STAGING_EMPTY = new IngestModeVisitor<Boolean>()
+    {
+        @Override
+        public Boolean visitAppendOnly(AppendOnlyAbstract appendOnly)
+        {
+            return false;
+        }
+
+        @Override
+        public Boolean visitNontemporalSnapshot(NontemporalSnapshotAbstract nontemporalSnapshot)
+        {
+            return false;
+        }
+
+        @Override
+        public Boolean visitNontemporalDelta(NontemporalDeltaAbstract nontemporalDelta)
+        {
+            return false;
+        }
+
+        @Override
+        public Boolean visitUnitemporalSnapshot(UnitemporalSnapshotAbstract unitemporalSnapshot)
+        {
+            return true;
+        }
+
+        @Override
+        public Boolean visitUnitemporalDelta(UnitemporalDeltaAbstract unitemporalDelta)
+        {
+            return true;
+        }
+
+        @Override
+        public Boolean visitBitemporalSnapshot(BitemporalSnapshotAbstract bitemporalSnapshot)
+        {
+            return true;
+        }
+
+        @Override
+        public Boolean visitBitemporalDelta(BitemporalDeltaAbstract bitemporalDelta)
+        {
+            return false;
+        }
+    };
+
+    public static final IngestModeVisitor<List<OptimizationFilter>> RETRIEVE_OPTIMIZATION_FILTERS = new IngestModeVisitor<List<OptimizationFilter>>()
+    {
+        @Override
+        public List<OptimizationFilter> visitAppendOnly(AppendOnlyAbstract appendOnly)
+        {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public List<OptimizationFilter> visitNontemporalSnapshot(NontemporalSnapshotAbstract nontemporalSnapshot)
+        {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public List<OptimizationFilter> visitNontemporalDelta(NontemporalDeltaAbstract nontemporalDelta)
+        {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public List<OptimizationFilter> visitUnitemporalSnapshot(UnitemporalSnapshotAbstract unitemporalSnapshot)
+        {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public List<OptimizationFilter> visitUnitemporalDelta(UnitemporalDeltaAbstract unitemporalDelta)
+        {
+            return unitemporalDelta.optimizationFilters();
+        }
+
+        @Override
+        public List<OptimizationFilter> visitBitemporalSnapshot(BitemporalSnapshotAbstract bitemporalSnapshot)
+        {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public List<OptimizationFilter> visitBitemporalDelta(BitemporalDeltaAbstract bitemporalDelta)
+        {
+            return Collections.emptyList();
         }
     };
 

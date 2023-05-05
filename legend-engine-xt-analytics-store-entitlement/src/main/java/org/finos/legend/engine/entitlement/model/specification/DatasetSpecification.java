@@ -16,13 +16,11 @@ package org.finos.legend.engine.entitlement.model.specification;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import org.finos.legend.engine.entitlement.model.specification.relationalDatabase.RelationalDatabaseTableSpecification;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = RelationalDatabaseTableSpecification.class, name = "relationalDatabaseTable")
+        @JsonSubTypes.Type(value = DatasetSpecification.class, name = "datasetSpecification")
 })
-
 public class DatasetSpecification
 {
     private String name;
@@ -32,6 +30,10 @@ public class DatasetSpecification
     {
         this.name = name;
         this.type = type;
+    }
+
+    public DatasetSpecification()
+    {
     }
 
     public String getType()

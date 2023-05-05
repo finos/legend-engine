@@ -16,7 +16,13 @@ package org.finos.legend.engine.shared.javaCompiler;
 
 public interface ClassPathFilter
 {
-    boolean isPermittedPackage(String packageName);
+    default boolean isPermittedPackage(String packageName)
+    {
+        return true;
+    }
 
-    boolean isPermittedClass(String packageName, String className);
+    default boolean isPermittedClass(String packageName, String className)
+    {
+        return isPermittedPackage(packageName);
+    }
 }

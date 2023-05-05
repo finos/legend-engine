@@ -24,6 +24,7 @@ Class meta::external::query::sql::transformation::queryToPure::tests::FlatInput
   dateTimeIn: DateTime[1];
   stringIn: String[1];
   enumVal: meta::external::query::sql::transformation::queryToPure::tests::MyEnum[1];
+  type: meta::external::query::sql::transformation::queryToPure::tests::FieldType[1];
 }
 
 Enum meta::external::query::sql::transformation::queryToPure::tests::MyEnum
@@ -31,9 +32,15 @@ Enum meta::external::query::sql::transformation::queryToPure::tests::MyEnum
    Value1, Value2, Value_3, VALUE__4
 }
 
+Enum meta::external::query::sql::transformation::queryToPure::tests::FieldType
+{
+   Type1, Type2, Type_3, Type__4
+}
+
 ###Mapping
 Mapping meta::external::query::sql::transformation::queryToPure::tests::dummyMapping
 (
+  
 )
 
 ###Pure
@@ -107,6 +114,11 @@ function meta::external::query::sql::transformation::queryToPure::tests::functio
 
 function meta::external::query::sql::transformation::queryToPure::tests::serviceToSource(service:Service[1]): SQLSource[1]
 {
+  serviceToSource($service, []);
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::serviceToSource(service:Service[1], keys:SQLSourceArgument[*]): SQLSource[1]
+{
   let execution = $service.execution->cast(@PureSingleExecution);
 
   ^SQLSource(
@@ -117,7 +129,7 @@ function meta::external::query::sql::transformation::queryToPure::tests::service
       executionOptions = $execution.executionOptions,
       key = [
         ^SQLSourceArgument(name = 'pattern', value = $service.pattern, index = 0)
-      ]
+      ]->concatenate($keys)
   );
 }
 
@@ -188,12 +200,41 @@ function meta::external::query::sql::transformation::queryToPure::tests::Service
     (
       func = | FlatInput.all()->project(
         [
+          x | $x.idIn, x | $x.integerIn, x | $x.enumVal, x | $x.type
+        ],
+        [
+          'ID', 'Integer', 'The Enum Value', 'The Type'
+        ]
+      ),
+      mapping = dummyMapping,
+      runtime = dummyRuntime()
+    ),
+    test = ^SingleExecutionTest(
+      data = '',
+      asserts = ^TestContainer(assert = x:Result<Any|m>[1] | true))
+  );
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::Service4(): Service[1]
+{
+  ^Service
+  (
+    pattern = '/service/service4/{id}',
+    owners = ['dummy'],
+    documentation = '',
+    autoActivateUpdates = true,
+    execution = ^PureSingleExecution
+    (
+      func = {id:String[1], ints:Integer[*], date:StrictDate[0..1] | 
+
+        FlatInput.all()->filter(f | $f.idIn == $id && $f.integerIn->in($ints) && ($f.strictDateIn > $date))->project(
+        [
           x | $x.idIn, x | $x.integerIn, x | $x.enumVal
         ],
         [
-          'ID', 'Integer', 'The Enum Value'
+          'ID', 'Integer', 'Enum'
         ]
-      ),
+      );},
       mapping = dummyMapping,
       runtime = dummyRuntime()
     ),

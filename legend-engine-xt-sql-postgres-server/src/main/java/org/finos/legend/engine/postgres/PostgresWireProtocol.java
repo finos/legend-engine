@@ -22,6 +22,7 @@
 package org.finos.legend.engine.postgres;
 
 import com.google.common.net.InetAddresses;
+import com.sun.security.jgss.GSSUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -33,6 +34,8 @@ import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.sql.ParameterMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -44,13 +47,25 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import javax.net.ssl.SSLSession;
+import javax.security.auth.Subject;
+
 import org.finos.legend.engine.postgres.auth.AuthenticationMethod;
+import org.finos.legend.engine.postgres.auth.AuthenticationMethodType;
 import org.finos.legend.engine.postgres.auth.AuthenticationProvider;
+import org.finos.legend.engine.postgres.auth.KerberosIdentityProvider;
+import org.finos.legend.engine.postgres.config.GSSConfig;
 import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
 import org.finos.legend.engine.postgres.types.PGType;
 import org.finos.legend.engine.postgres.types.PGTypes;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
+import org.ietf.jgss.GSSContext;
+import org.ietf.jgss.GSSCredential;
+import org.ietf.jgss.GSSException;
+import org.ietf.jgss.GSSManager;
+import org.ietf.jgss.GSSName;
+import org.ietf.jgss.Oid;
 import org.slf4j.Logger;
 import static org.finos.legend.engine.postgres.FormatCodes.getFormatCode;
 
@@ -171,8 +186,6 @@ public class PostgresWireProtocol
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
             PostgresWireProtocol.class);
 
-    private static final String PASSWORD_AUTH_NAME = "PASSWORD";
-
     public static int SERVER_VERSION_NUM = 100500;
     public static String PG_SERVER_VERSION = "10.5";
 
@@ -181,6 +194,7 @@ public class PostgresWireProtocol
     private final SessionsFactory sessions;
     /* private final Function<CoordinatorSessionSettings, AccessControl> getAccessControl;*/
     private final AuthenticationProvider authService;
+    private final GSSConfig gssConfig;
     /*  private final Consumer<ChannelPipeline> addTransportHandler;
      */
     private DelayableWriteChannel channel;
@@ -193,7 +207,7 @@ public class PostgresWireProtocol
             /*Function<CoordinatorSessionSettings, AccessControl> getAcessControl,*/
             /*Consumer<ChannelPipeline> addTransportHandler,*/
                                 AuthenticationProvider authService,
-                                Supplier<SslContext> getSslContext)
+                                GSSConfig gssConfig, Supplier<SslContext> getSslContext)
     {
         this.sessions = sessions;
         //this.getAccessControl = getAcessControl;
@@ -201,6 +215,7 @@ public class PostgresWireProtocol
         this.authService = authService;
         this.decoder = new PgDecoder(getSslContext);
         this.handler = new MessageHandler();
+        this.gssConfig = gssConfig;
     }
 
 
@@ -225,6 +240,17 @@ public class PostgresWireProtocol
         }
         buffer.readBytes(bytes);
         return StandardCharsets.UTF_8.decode(ByteBuffer.wrap(bytes)).array();
+    }
+
+    private static byte[] readByteArray(ByteBuf buffer, int payloadLength)
+    {
+        if (payloadLength == 0)
+        {
+            return null;
+        }
+        byte[] bytes = new byte[payloadLength];
+        buffer.readBytes(bytes);
+        return bytes;
     }
 
     private Properties readStartupMessage(ByteBuf buffer)
@@ -356,7 +382,7 @@ public class PostgresWireProtocol
                     return;
                 case 'p':
                     LOGGER.trace("Dispatching password");
-                    handlePassword(buffer, channel);
+                    handlePassword(buffer, channel, decoder.payloadLength());
                     return;
                 case 'B':
                     LOGGER.trace("Dispatching bind");
@@ -483,9 +509,19 @@ public class PostgresWireProtocol
         else
         {
             authContext = new AuthenticationContext(authMethod, connProperties, userName, LOGGER);
-            if (PASSWORD_AUTH_NAME.equals(authMethod.name()))
+            if (authMethod.name() == AuthenticationMethodType.PASSWORD)
             {
                 Messages.sendAuthenticationCleartextPassword(channel);
+                return;
+            }
+            if (authMethod.name() == AuthenticationMethodType.GSS)
+            {
+                if (gssConfig == null)
+                {
+                    Messages.sendAuthenticationError(channel, "GSS Auth not configured in this server");
+                    return;
+                }
+                Messages.sendAuthenticationKerberos(channel);
                 return;
             }
             finishAuthentication(channel);
@@ -498,28 +534,54 @@ public class PostgresWireProtocol
         try
         {
             Identity authenticatedUser = authContext.authenticate();
-            String database = properties.getProperty("database");
-            session = sessions.createSession(database, authenticatedUser);
-            Messages.sendAuthenticationOK(channel)
-                    .addListener(f -> sendParams(channel))
-                    //.addListener(f -> Messages.sendKeyData(channel, session.id(), session.secret()))
-                    .addListener(f ->
-                    {
-                        Messages.sendReadyForQuery(channel);
-                    /*if (properties.containsKey("CrateDBTransport")) {
-                        switchToTransportProtocol(channel);
-                    }*/
-                    });
+            handleAuthSuccess(channel, authenticatedUser);
         }
         catch (Exception e)
         {
             Messages.sendAuthenticationError(channel, e.getMessage());
+            LOGGER.error("Auth Error", e);
         }
         finally
         {
             authContext.close();
             authContext = null;
         }
+    }
+
+    private void finishAuthentication(Channel channel, Subject delegSubject)
+    {
+        assert authContext != null : "finishAuthentication() requires an authContext instance";
+        try
+        {
+            Identity authenticatedUser = KerberosIdentityProvider.getIdentityForSubject(delegSubject);
+            handleAuthSuccess(channel, authenticatedUser);
+        }
+        catch (Exception e)
+        {
+            Messages.sendAuthenticationError(channel, e.getMessage());
+            LOGGER.error("Auth Error", e);
+        }
+        finally
+        {
+            authContext.close();
+            authContext = null;
+        }
+    }
+
+    private void handleAuthSuccess(Channel channel, Identity authenticatedUser) throws Exception
+    {
+        String database = properties.getProperty("database");
+        session = sessions.createSession(database, authenticatedUser);
+        Messages.sendAuthenticationOK(channel)
+                .addListener(f -> sendParams(channel))
+                //.addListener(f -> Messages.sendKeyData(channel, session.id(), session.secret()))
+                .addListener(f ->
+                {
+                    Messages.sendReadyForQuery(channel);
+                /*if (properties.containsKey("CrateDBTransport")) {
+                    switchToTransportProtocol(channel);
+                }*/
+                });
     }
 
 /*    private void switchToTransportProtocol(Channel channel) {
@@ -599,14 +661,53 @@ public class PostgresWireProtocol
         Messages.sendParseComplete(channel);
     }
 
-    private void handlePassword(ByteBuf buffer, final Channel channel)
+    private void handlePassword(ByteBuf buffer, final Channel channel, int payloadLength)
     {
-        char[] passwd = readCharArray(buffer);
-        if (passwd != null)
+        switch (authContext.getAuthenticationMethodType())
         {
-            authContext.setSecurePassword(passwd);
+            case GSS:
+                byte[] inputToken = readByteArray(buffer, payloadLength);
+                if (inputToken == null)
+                {
+                    Messages.sendErrorResponse(channel, new IllegalStateException("GSS Token cannot be empty"));
+                    return;
+                }
+                Subject serverSubject = SubjectTools.getSubjectFromKeytab(gssConfig.getKerberosKeytabFile(), gssConfig.getKerberosUserPrincipal(), false);
+                GSSManager manager = GSSManager.getInstance();
+
+                try
+                {
+                    GSSCredential gssCredential = Subject.doAs(serverSubject, new AcceptorCreator(manager, gssConfig.getKerberosUserPrincipal()));
+                    GSSContext gssContext = manager.createContext(gssCredential);
+                    gssContext.requestCredDeleg(true);
+                    gssContext.requestMutualAuth(true);
+                    byte[] outputToken;
+                    if (!gssContext.isEstablished())
+                    {
+                        outputToken = gssContext.acceptSecContext(inputToken, 0, inputToken.length);
+                        if (outputToken != null)
+                        {
+                            Messages.sendGssOutToken(channel, outputToken);
+                        }
+                    }
+
+                    Subject delegatedSubject = GSSUtil.createSubject(gssContext.getSrcName(), gssContext.getDelegCred());
+                    finishAuthentication(channel, delegatedSubject);
+                }
+                catch (PrivilegedActionException | GSSException e)
+                {
+                    throw new RuntimeException(e);
+                }
+                break;
+            case PASSWORD:
+            default:
+                char[] passwd = readCharArray(buffer);
+                if (passwd != null)
+                {
+                    authContext.setSecurePassword(passwd);
+                }
+                finishAuthentication(channel);
         }
-        finishAuthentication(channel);
     }
 
     /**
@@ -997,7 +1098,6 @@ public class PostgresWireProtocol
 
     }
 
-
     private void handleCancelRequestBody(ByteBuf buffer, Channel channel)
     {
    /*     var keyData = KeyData.of(buffer);
@@ -1008,5 +1108,28 @@ public class PostgresWireProtocol
         // This closes the new connection, not the one running the query.
         handler.closeSession();
         channel.close();
+    }
+
+    private static class AcceptorCreator implements PrivilegedExceptionAction<GSSCredential>
+    {
+        private final GSSManager manager;
+        private final String accountPrincipal;
+
+        public AcceptorCreator(GSSManager manager, String accountPrincipal)
+        {
+            this.manager = manager;
+            this.accountPrincipal = accountPrincipal;
+        }
+
+        @Override
+        public GSSCredential run() throws Exception
+        {
+            final GSSName gssName = manager.createName(this.accountPrincipal, GSSName.NT_USER_NAME);
+            return manager
+                    .createCredential(gssName, GSSCredential.DEFAULT_LIFETIME, new Oid[]{
+                            new Oid("1.2.840.113554.1.2.2"),    // Kerberos v5
+                            new Oid("1.3.6.1.5.5.2")            // SPNEGO
+                    }, GSSCredential.ACCEPT_ONLY);
+        }
     }
 }

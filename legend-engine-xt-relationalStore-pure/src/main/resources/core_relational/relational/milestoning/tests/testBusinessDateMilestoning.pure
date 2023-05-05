@@ -389,6 +389,31 @@ function <<test.Test>> meta::relational::tests::milestoning::businessdate::testB
    assertSameSQL('select "orderdescriptiontable_0".description as "orderDesc", "producttable_0".name as "prodName" from OrderTable as "root" left outer join OrderDescriptionTable as "orderdescriptiontable_0" on ("root".id = "orderdescriptiontable_0".id) left outer join ProductTable as "producttable_0" on ("root".prodFk = "producttable_0".id and "producttable_0".from_z <= \'2016-01-01\' and "producttable_0".thru_z > \'2016-01-01\')', $result);
 }
 
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testBusinessDatePropagationInColFunction_asQueryParam():Boolean[1]
+{
+  let f= {productBusDate:Date[1] | Order.all()->project([col([o|$o.description.description],'orderDesc'),col([o|$o.product($productBusDate).name],'prodName')])}->cast(@FunctionDefinition<Any>);     // queryParam is not resolved inside col lambda ( as its just a placeholder here)
+  let plan = executionPlan($f, milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());      //cant test via execute as params are not supplied
+  assertEquals(
+  'Sequence\n' +
+  '(\n' +
+  '  type = TDS[(orderDesc, String, VARCHAR(200), \"\"), (prodName, String, VARCHAR(200), \"\")]\n' +
+  '  (\n' +
+  '    FunctionParametersValidationNode\n' +
+  '    (\n' +
+  '      functionParameters = [productBusDate:Date[1]]\n' +
+  '    )\n' +
+  '    Relational\n' +
+  '    (\n' +
+  '      type = TDS[(orderDesc, String, VARCHAR(200), \"\"), (prodName, String, VARCHAR(200), \"\")]\n' +
+  '      resultColumns = [(\"orderDesc\", VARCHAR(200)), (\"prodName\", VARCHAR(200))]\n' +
+  '      sql = select \"orderdescriptiontable_0\".description as \"orderDesc\", \"producttable_0\".name as \"prodName\" from OrderTable as \"root\" left outer join OrderDescriptionTable as \"orderdescriptiontable_0\" on (\"root\".id = \"orderdescriptiontable_0\".id) left outer join ProductTable as \"producttable_0\" on (\"root\".prodFk = \"producttable_0\".id and \"producttable_0\".from_z <= \'${productBusDate}\' and \"producttable_0\".thru_z > \'${productBusDate}\')\n' +
+  '      connection = TestDatabaseConnection(type = \"H2\")\n' +
+  '    )\n' +
+  '  )\n' +
+  ')\n'
+  ,$plan->planToString(meta::relational::extension::relationalExtensions()));
+}
+
 function <<test.Test>> meta::relational::tests::milestoning::businessdate::testBusinessDatePropagationInColFunctionWithDoc():Boolean[1]
 {
    let productBusDate = %2016-01-01;
@@ -834,4 +859,31 @@ function <<test.Test, test.ToFix>> meta::relational::tests::milestoning::busines
       where "root".from_z <= '2022-01-01' and "root".thru_z > '2022-01-01'
    
    */
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testCalculationOnBusinessDateInGetAll():Boolean[1]
+{
+   let busDate = %2015-10-16;
+   let result = execute({|
+   
+      let businessDate = $busDate;
+
+      myGetAllProduct($busDate)->project([p|$p.name, p|$busDate->datePart()],['name','businessDate'])
+        ->concatenate(
+            myGetAllProduct($businessDate->adjust(-1, DurationUnit.DAYS))->project([p|$p.name, p|$businessDate->adjust(-1, DurationUnit.DAYS)->datePart()],['name','businessDate'])
+            )
+        ->restrict(['businessDate', 'name'])
+        ->sort([asc('businessDate'), asc('name')]);
+      }
+      , milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
+
+   let tds = $result.values->at(0);
+   assertEquals([%2015-10-15,'ProductName1', %2015-10-15,'ProductName3', %2015-10-16,'ProductName2', %2015-10-16,'ProductName3'],$tds.rows.values);
+   assertSameSQL('select "unionalias_0"."businessDate" as "businessDate", "unionalias_0"."name" as "name" from (select "root".name as "name", cast(truncate(\'2015-10-16\') as date) as "businessDate" from ProductTable as "root" where "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\' UNION ALL select "root".name as "name", cast(truncate(dateadd(DAY, -1, \'2015-10-16\')) as date) as "businessDate" from ProductTable as "root" where "root".from_z <= dateadd(DAY, -1, \'2015-10-16\') and "root".thru_z > dateadd(DAY, -1, \'2015-10-16\')) as "unionalias_0" order by "businessDate","name"', $result);   
+}
+
+// workaround for https://github.com/finos/legend-pure/issues/686
+function <<access.private>> meta::relational::tests::milestoning::businessdate::myGetAllProduct(d:Date[1]):Product[*]
+{
+  Product.all($d)
 }

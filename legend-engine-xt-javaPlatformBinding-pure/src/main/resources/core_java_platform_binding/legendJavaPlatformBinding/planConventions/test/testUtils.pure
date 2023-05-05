@@ -178,6 +178,11 @@ Class meta::pure::executionPlan::platformBinding::legendJava::tests::utils::Java
    context     : GenerationContext[1];
 }
 
+function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::javaPureTestWrapper(func: FunctionDefinition<{->Boolean[1]}>[1]): Boolean[1]
+{
+  javaPureTests(engineConventions([]), [$func])->runTests();
+}
+
 function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::javaPureTests(conventions:Conventions[1], pureTests:FunctionDefinition<{->Boolean[1]}>[*]): JavaPureTestSet[1]
 {
    ^JavaPureTestSet(
@@ -192,9 +197,20 @@ function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::a
    ^$set(pureTests=$set.pureTests->concatenate($tests)->removeDuplicates());
 }
 
+function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::excludeTestsWithin(set:JavaPureTestSet[1], pkg:Package[1]): JavaPureTestSet[1]
+{
+   let toRemove = $pkg->getAllConcreteFunctionDefinitionsInPackage(true)->filter(f| $f->isTest())->cast(@FunctionDefinition<{->Boolean[1]}>);
+   ^$set(pureTests=$set.pureTests->removeAll($toRemove));
+}
+
 function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::excludeTest(set:JavaPureTestSet[1], test:FunctionDefinition<{->Boolean[1]}>[1]): JavaPureTestSet[1]
 {
    ^$set(pureTests=$set.pureTests->remove($test));
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::excludeTests(set:JavaPureTestSet[1], tests:FunctionDefinition<{->Boolean[1]}>[*]): JavaPureTestSet[1]
+{
+   ^$set(pureTests=$set.pureTests->removeAll($tests));
 }
 
 function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::generate(set:JavaPureTestSet[1], type:meta::pure::metamodel::type::Type[1]): JavaPureTestSet[1]

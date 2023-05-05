@@ -53,7 +53,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::g
     dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateH2()})),
     dynaFnToSql('convertDateTime',        $allStates,            ^ToSql(format='%s' , transform={p:String[*] | $p->convertToDateTimeH2()})),
     dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='convert(%s, VARCHAR(128))')),
-    dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='datediff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->processDateDiffDurationUnitForH2(),$p->at(0),$p->at(1)]})),
+    dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='datediff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->replace('\'', '')->processDateDiffDurationUnitForH2(),$p->at(0),$p->at(1)]})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='cast(truncate(%s) as date)')),
     dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='DAY_OF_MONTH(%s)')),
     dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='%s',transform={p:String[1..2]| if($p->size()==1,| 'DAY_OF_WEEK('+$p->at(0)+')',|$p->dayOfWeekNumberH2());})),

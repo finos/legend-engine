@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.procedure.primitive.ObjectIntProcedure;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
@@ -29,6 +30,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enu
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.core_pure_router_operations_router_operations;
+import org.finos.legend.pure.generated.platform_functions_meta_getAllTypeGeneralisations;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EnumerationMapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.InstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
@@ -90,15 +92,22 @@ public class ClassMappingThirdPassBuilder implements ClassMappingVisitor<SetImpl
                 if (p._targetSetImplementationId() != null && !p._targetSetImplementationId().equals(""))
                 {
                     setImplementation = Root_meta_pure_mapping__classMappingByIdRecursive_Mapping_1__String_MANY__SetImplementation_MANY_(parentMapping, Lists.fixedSize.with(p._targetSetImplementationId()), this.context.pureModel.getExecutionSupport()).getFirst();
-                    Assert.assertTrue(setImplementation != null, () -> "Can't find class mapping '" + p._targetSetImplementationId() + "'", pSourceInformation, EngineErrorType.COMPILATION);
+                    boolean allowComplexPropertyMappingPassThrough = setImplementation == null && HelperModelBuilder.getElementFullPath((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) property._genericType()._rawType(), context.pureModel.getExecutionSupport()).replaceAll("::", "_").equals(p._targetSetImplementationId()) && checkTransformTypeMatchesPropertyType(property, last, context);
+                    if (allowComplexPropertyMappingPassThrough)
+                    {
+                        // We need to have this as we have been adding defaultId to property mappings when users don't provide something explicitly. This is valid now but having it raises wrong warning
+                        p._targetSetImplementationId("");
+                    }
+                    Assert.assertTrue((setImplementation != null) || (allowComplexPropertyMappingPassThrough), () -> "Can't find class mapping '" + p._targetSetImplementationId() + "'", pSourceInformation, EngineErrorType.COMPILATION);
                 }
                 else
                 {
                     setImplementation = Root_meta_pure_mapping__classMappingByClass_Mapping_1__Class_1__SetImplementation_MANY_(parentMapping, (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<Object>) property._genericType()._rawType(), this.context.pureModel.getExecutionSupport()).getFirst();
-                    Assert.assertTrue(setImplementation != null, () -> "Can't find class mapping for '" + HelperModelBuilder.getElementFullPath((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) property._genericType()._rawType(), this.context.pureModel.getExecutionSupport()) + "'", pSourceInformation, EngineErrorType.COMPILATION);
+                    boolean allowComplexPropertyMappingPassThrough = setImplementation == null && checkTransformTypeMatchesPropertyType(property, last, context);
+                    Assert.assertTrue((setImplementation != null) || (allowComplexPropertyMappingPassThrough), () -> "Can't find class mapping for '" + HelperModelBuilder.getElementFullPath((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) property._genericType()._rawType(), this.context.pureModel.getExecutionSupport()) + "'", pSourceInformation, EngineErrorType.COMPILATION);
                 }
 
-                List<? extends InstanceSetImplementation> setImpls = core_pure_router_operations_router_operations.Root_meta_pure_router_routing_resolveOperation_SetImplementation_MANY__Mapping_1__InstanceSetImplementation_MANY_(Lists.immutable.of(setImplementation), parentMapping, this.context.pureModel.getExecutionSupport()).toList();
+                List<? extends InstanceSetImplementation> setImpls = setImplementation != null ? core_pure_router_operations_router_operations.Root_meta_pure_router_routing_resolveOperation_SetImplementation_MANY__Mapping_1__InstanceSetImplementation_MANY_(Lists.immutable.of(setImplementation), parentMapping, this.context.pureModel.getExecutionSupport()).toList() : Collections.emptyList();
                 typesToCheck = setImpls.stream().map(setImpl -> ((PureInstanceSetImplementation) setImpl)._srcClass()).collect(Collectors.toList());
             }
             else if (((org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelToModel.PurePropertyMapping) p)._transformer() != null)
@@ -131,6 +140,7 @@ public class ClassMappingThirdPassBuilder implements ClassMappingVisitor<SetImpl
             {
                 typesToCheck = Collections.singletonList(property._genericType()._rawType());
             }
+
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity multiplicityToCheck = pm._explodeProperty() != null && pm._explodeProperty() ? this.context.pureModel.getMultiplicity("zeromany") : property._multiplicity();
             List<ValueSpecification> lines = ((PurePropertyMapping) classMapping.propertyMappings.get(i)).transform.body;
             typesToCheck.stream().filter(Objects::nonNull).forEach(t -> checkPureMappingCompatibility(this.context,
@@ -162,5 +172,11 @@ public class ClassMappingThirdPassBuilder implements ClassMappingVisitor<SetImpl
         {
             throw new EngineException(errorStub + " - Type error: '" + HelperModelBuilder.getElementFullPath((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) actualReturnType, context.pureModel.getExecutionSupport()) + "' is not in the class hierarchy of '" + HelperModelBuilder.getElementFullPath((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) signatureType, context.pureModel.getExecutionSupport()) + "'", errorSourceInformation, EngineErrorType.COMPILATION);
         }
+    }
+
+    private static boolean checkTransformTypeMatchesPropertyType(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> property, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification expression, CompileContext context)
+    {
+        RichIterable<? extends Type> classesTaxonomy = platform_functions_meta_getAllTypeGeneralisations.Root_meta_pure_functions_meta_getAllTypeGeneralisations_Type_1__Type_MANY_(expression._genericType()._rawType(), context.getExecutionSupport());
+        return classesTaxonomy.contains(property._genericType()._rawType());
     }
 }
