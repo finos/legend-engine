@@ -1,13 +1,11 @@
 {
   "port": 9998,
-  "authenticationMethod": "PASSWORD",
-  "identityType": "KERBEROS",
+  "authenticationMethod": "NO_PASSWORD",
+  "identityType": "ANONYMOUS",
   "handler": {
     "protocol": "http",
     "host": "localhost",
-    "port": "123",
-    "projectId": "project",
-    "sessionCookie": "cookie",
+    "port": "6300",
     "type": "LEGEND"
   }
 }

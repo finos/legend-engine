@@ -31,24 +31,26 @@ import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.internal.IterableIterate;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LegendTdsClient implements LegendExecutionClient
 {
     private final String protocol;
     private final String host;
     private final String port;
-    private final String projectId;
     private final CookieStore cookieStore;
     private static final ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(LegendTdsClient.class);
 
-    public LegendTdsClient(String protocol, String host, String port, String projectId, CookieStore cookieStore)
+
+    public LegendTdsClient(String protocol, String host, String port, CookieStore cookieStore)
     {
 
         this.protocol = protocol;
         this.host = host;
         this.port = port;
-        this.projectId = projectId;
         this.cookieStore = cookieStore;
     }
 
@@ -92,26 +94,23 @@ public class LegendTdsClient implements LegendExecutionClient
 
     private JsonNode executeQueryApi(String query)
     {
-        System.out.println("executing query " + query);
+        LOGGER.info("executing query " + query);
         try (CloseableHttpClient client = (CloseableHttpClient) HttpClientBuilder.getHttpClient(cookieStore))
         {
-            String uri = protocol + "://" + this.host + ":" + this.port + "/api/sql/v1/execution/executeQueryString/" + this.projectId;
+            String uri = protocol + "://" + this.host + ":" + this.port + "/api/sql/v1/execution/executeQueryString";
             HttpPost req = new HttpPost(uri);
 
             StringEntity stringEntity = new StringEntity(query);
-            stringEntity.setContentType("application/json");
+            stringEntity.setContentType("text/plain");
             req.setEntity(stringEntity);
 
             try (CloseableHttpResponse res = client.execute(req))
             {
-
-                System.out.println(res.getStatusLine());
                 JsonNode response = mapper.readValue(res.getEntity().getContent(), JsonNode.class);
-
                 if (res.getStatusLine().getStatusCode() != 200)
                 {
                     String message = "Failed to execute query " + query + "\n Cause: " + response.toPrettyString();
-                    System.out.println(message);
+                    LOGGER.info(message);
                 }
                 return response;
             }
@@ -131,6 +130,7 @@ public class LegendTdsClient implements LegendExecutionClient
         }
         return Collections.emptyList();
     }
+
 
     private static Iterable<TDSRow> getRowsFromExecutionResponse(JsonNode jsonNode)
     {
