@@ -35,13 +35,13 @@ Class meta::external::store::mongodb::executionTest::TestConfig
   runtime: meta::pure::runtime::Runtime[1];
 }
 
-function meta::external::store::mongodb::executionTest::getCompiledTestConfig(tag: String[1], mongoDBPort: Integer[1], pureSetupToCompileFileLoc: String[1]):meta::external::store::mongodb::executionTest::TestConfig[1]
+function meta::external::store::mongodb::executionTest::getCompiledTestConfig(tag: String[1], mongoDBHost: String[1], mongoDBPort: Integer[1], pureSetupToCompileFileLoc: String[1]):meta::external::store::mongodb::executionTest::TestConfig[1]
 {
 
 let tokenizedFile = meta::pure::functions::io::readFile($pureSetupToCompileFileLoc)->toOne();
 
 // Is there a better way to both compile our DSL grammar and inject the randomized mongodb port?
-let detokenizedFile = $tokenizedFile->replace('serverURLs: [localhost:__PORT_TOKEN__];', 'serverURLs: [localhost:' + $mongoDBPort->toString() + '];');
+let detokenizedFile = $tokenizedFile->replace('serverURLs: [__HOST_TOKEN__:__PORT_TOKEN__];', 'serverURLs: [' + $mongoDBHost + ':' + $mongoDBPort->toString() + '];');
 
 let compiled = meta::legend::compile($detokenizedFile);
 let compiledMapping = $compiled->at(3)->cast(@meta::pure::mapping::Mapping)->toOne();
@@ -445,7 +445,7 @@ function <<access.private>> meta::external::store::mongodb::executionTest::v7::c
   meta::external::store::mongodb::executionTest::utils::requestMongoDBTestServer($tag, $testDataToInsert);
 
   let config = meta::external::store::mongodb::executionTest::getCompiledTestConfig($tag,
-    $url.port, '/core_mongodb_execution_test/test_setup/testSetupDSL.txt');
+    $url.host, $url.port, '/core_mongodb_execution_test/test_setup/testSetupDSL.txt');
 
   meta::external::store::mongodb::executionTest::collectTest(
     $tag,
