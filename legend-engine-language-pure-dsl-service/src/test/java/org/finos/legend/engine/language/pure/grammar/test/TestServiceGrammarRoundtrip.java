@@ -1864,7 +1864,6 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  ];\n" +
                 "}\n";
         testComposedGrammarWithoutSectionIndex(expected, true);
-
     }
 
     @Test
@@ -1950,16 +1949,16 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "      runtime: test::MyRuntime;\n" +
                 "    }\n" +
                 "  ];\n" +
-                "}\n"+
-                "\n"+
+                "}\n" +
+                "\n" +
                 "\n" +
                 "###Pure" +
                 "Class anything::somethingElse" +
                 "{\n" +
                 "}\n";
         testComposedGrammarWithoutSectionIndex(expected, true);
-
     }
+
     private void testComposedGrammarWithoutSectionIndex(String code, boolean omitSectionIndex)
     {
         PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());
