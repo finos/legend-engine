@@ -79,8 +79,9 @@ public class MongoDBCommands
 
         LOGGER.debug("Performing MongoDB request for image: " + imageTag);
         Integer mongoPort = getPortForRunningContainerImage(imageTag);
+        String host = getHostForRunningContainerImage(imageTag);
 
-        MongoClient adminClient = mongoClientForRootAdminWithStaticUserNamePassword(mongoPort);
+        MongoClient adminClient = mongoClientForRootAdminWithStaticUserNamePassword(host, mongoPort);
 
         MongoDatabase userDatabase = adminClient.getDatabase(DB_USER_DATABASE);
 
@@ -98,6 +99,10 @@ public class MongoDBCommands
         return CONTAINERS.get(imageTag).getMappedPort(MONGO_PORT);
     }
 
+    private static String getHostForRunningContainerImage(String imageTag)
+    {
+        return CONTAINERS.get(imageTag).getHost();
+    }
 
     private static GenericContainer<MongoDBContainer> createContainer(String imageTag)
     {
@@ -116,7 +121,8 @@ public class MongoDBCommands
         container.start();
 
         Integer runningPort = container.getMappedPort(MONGO_PORT);
-        MongoClient adminClient = mongoClientForRootAdminWithStaticUserNamePassword(runningPort);
+        String host = container.getHost();
+        MongoClient adminClient = mongoClientForRootAdminWithStaticUserNamePassword(host, runningPort);
 
 
         MongoDatabase userDatabase = adminClient.getDatabase(DB_USER_DATABASE);
@@ -126,10 +132,10 @@ public class MongoDBCommands
         return container;
     }
 
-    private static MongoClient mongoClientForRootAdminWithStaticUserNamePassword(Integer port)
+    private static MongoClient mongoClientForRootAdminWithStaticUserNamePassword(String hostName, Integer port)
     {
         String connectionURL = "mongodb://" + DB_ROOT_USERNAME + ":" +
-                DB_ROOT_PASSWORD + "@localhost:" + port + "/admin";
+                DB_ROOT_PASSWORD + "@" +  hostName +":" + port + "/admin";
         return MongoClients.create(connectionURL);
     }
 
