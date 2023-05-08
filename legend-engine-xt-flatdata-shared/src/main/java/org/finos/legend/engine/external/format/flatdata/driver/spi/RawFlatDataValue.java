@@ -19,4 +19,14 @@ public interface RawFlatDataValue
     Object getAddress();
 
     String getRawValue();
+
+    default String typePath$()
+    {
+        return "meta::external::format::flatdata::executionPlan::model::RawFlatDataValue";
+    }
+
+    default String typeName$()
+    {
+        return "RawFlatDataValue";
+    }
 }

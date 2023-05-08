@@ -24,7 +24,8 @@ import org.finos.legend.engine.entitlement.model.specification.DatasetSpecificat
         @JsonSubTypes.Type(value = DatasetEntitlementAccessNotGrantedReport.class, name = "accessNotGranted"),
         @JsonSubTypes.Type(value = DatasetEntitlementUnsupportedReport.class, name = "unsupported"),
         @JsonSubTypes.Type(value = DatasetEntitlementAccessApprovedReport.class, name = "accessApproved"),
-        @JsonSubTypes.Type(value = DatasetEntitlementAccessRequestedReport.class, name = "accessRequested")
+        @JsonSubTypes.Type(value = DatasetEntitlementAccessRequestedReport.class, name = "accessRequested"),
+        @JsonSubTypes.Type(value = DatasetEntitlementAccessErrorReport.class, name = "errorReport")
 })
 public abstract class DatasetEntitlementReport
 {

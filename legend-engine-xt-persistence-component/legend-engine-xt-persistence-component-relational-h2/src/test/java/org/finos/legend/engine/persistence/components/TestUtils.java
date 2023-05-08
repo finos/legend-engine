@@ -120,6 +120,7 @@ public class TestUtils
     public static Field startTime = Field.builder().name(startTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(startTimeName).build();
     public static Field startTimeTimestamp = Field.builder().name(startTimeName).type(FieldType.of(DataType.TIMESTAMP, null, 6)).primaryKey(true).fieldAlias(startTimeName).build();
     public static Field expiryDate = Field.builder().name(expiryDateName).type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).fieldAlias(expiryDateName).build();
+    public static Field expiryDatePk = Field.builder().name(expiryDateName).type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(expiryDateName).build();
     public static Field date = Field.builder().name(dateName).type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(dateName).build();
     public static Field entity = Field.builder().name(entityName).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(entityName).build();
     public static Field price = Field.builder().name(priceName).type(FieldType.of(DataType.DECIMAL, 20, 2)).fieldAlias(priceName).build();
@@ -178,6 +179,24 @@ public class TestUtils
                 .build();
     }
 
+    public static DatasetDefinition getBasicMainTableWithVersion()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(income)
+                .addFields(startTime)
+                .addFields(expiryDate)
+                .addFields(digest)
+                .addFields(version)
+                .build()
+            )
+            .build();
+    }
+
     public static DatasetDefinition getMainTableWithBatchUpdateTimeField()
     {
         return DatasetDefinition.builder()
@@ -203,6 +222,18 @@ public class TestUtils
             .addFields(income)
             .addFields(startTime)
             .addFields(expiryDate)
+            .addFields(digest)
+            .build();
+    }
+
+    public static SchemaDefinition getStagingSchemaWithExpiryDatePk()
+    {
+        return SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(income)
+            .addFields(startTime)
+            .addFields(expiryDatePk)
             .addFields(digest)
             .build();
     }
@@ -297,6 +328,15 @@ public class TestUtils
             .group(testSchemaName)
             .name(stagingTableName)
             .schema(getStagingSchema())
+            .build();
+    }
+
+    public static DatasetDefinition getBasicStagingTableWithExpiryDatePk()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(getStagingSchemaWithExpiryDatePk())
             .build();
     }
 

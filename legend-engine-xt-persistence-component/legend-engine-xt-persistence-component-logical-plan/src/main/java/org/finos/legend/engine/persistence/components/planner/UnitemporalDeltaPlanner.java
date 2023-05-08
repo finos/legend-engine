@@ -73,7 +73,7 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
         {
             validateOptimizationFilters(ingestMode.optimizationFilters(), stagingDataset());
         }
-        // Validate if the versioningField are comparable if a versioningStrategy is present
+        // Validate if the versioningField is comparable if a versioningStrategy is present
         validateVersioningField(ingestMode().versioningStrategy(), stagingDataset());
 
         this.deleteIndicatorField = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD);
@@ -88,7 +88,7 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
         this.versioningCondition = ingestMode().versioningStrategy()
             .accept(new VersioningConditionVisitor(mainDataset(), stagingDataset(), false, ingestMode().digestField()));
         this.inverseVersioningCondition = ingestMode.versioningStrategy()
-            .accept(new VersioningConditionVisitor(mainDataset(), stagingDataset(), true, ingestMode.digestField()));
+            .accept(new VersioningConditionVisitor(mainDataset(), stagingDataset(), true, ingestMode().digestField()));
     }
 
     @Override
@@ -101,10 +101,14 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
     public LogicalPlan buildLogicalPlanForIngest(Resources resources, Set<Capability> capabilities)
     {
         List<Operation> operations = new ArrayList<>();
-        // Op 1: Milestone Records in main table
-        operations.add(getMilestoningLogic());
-        // Op 2: Insert records in main table
-        operations.add(getUpsertLogic());
+
+        if (!resources.stagingDataSetEmpty())
+        {
+            // Op 1: Milestone Records in main table
+            operations.add(getMilestoningLogic());
+            // Op 2: Insert records in main table
+            operations.add(getUpsertLogic());
+        }
 
         return LogicalPlan.of(operations);
     }

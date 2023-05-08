@@ -1,0 +1,64 @@
+{
+  "values":   {
+    "firstName": "Gelya",
+    "lastName": "Bowhay",
+    "firm":     {
+      "legalName": "Babblestorm",
+      "industrySectors": [
+"Finance",
+"Consumer Services",
+"Consumer Non-Durables"
+      ],
+      "address":       {
+        "country":         {
+          "continent": "America",
+          "countryCode": "US"
+        },
+        "city": "Boston",
+        "street": "1 Farmco Road",
+        "postalCode": "02208"
+      },
+      "dateFounded": "1998-07-05T18:09:35Z"
+    },
+    "phoneNumber": "+1 202 704 9709",
+    "address":     {
+      "country":       {
+        "continent": "America",
+        "countryCode": "US"
+      },
+      "city": "Washington",
+      "street": "0459 Kings Crossing",
+      "postalCode": "20508"
+    },
+    "car": [
+      {
+        "model": "Model X",
+        "manufacturer":         {
+          "country":           {
+            "continent": "America",
+            "countryCode": "US"
+          },
+          "name": "Tesla"
+        }
+      },
+      {
+        "model": "Leon",
+        "manufacturer":         {
+          "country":           {
+            "continent": "Europe",
+            "countryCode": "Spain"
+          },
+          "name": "Seat"
+        }
+      }
+    ],
+    "otherPhoneNumbers": [
+"+1 347 336 3704"
+    ],
+    "age": 25,
+    "email": "gbowhay0@1688.com"
+  },
+  "builder":   {
+    "_type": "json"
+  }
+}

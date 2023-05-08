@@ -43,12 +43,12 @@ function meta::analytics::store::entitlements::getTablesFromQuery(query:Function
 
 function meta::analytics::store::entitlements::getTablesFromDatabase(database: Database[1]): Table[*]
 {
-   meta::analytics::store::entitlements::getAllDatabases($database)->map(db|$db.schemas->map(s|$s.tables));
+   meta::analytics::store::entitlements::getAllDatabases($database, [])->map(db|$db.schemas->map(s|$s.tables));
 }
 
-function meta::analytics::store::entitlements::getAllDatabases(database : Database[1]): Database[*]
+function meta::analytics::store::entitlements::getAllDatabases(database : Database[1], visited: Database[*]): Database[*]
 {
-   $database->concatenate($database.includes->map(db|$db->cast(@Database)->meta::analytics::store::entitlements::getAllDatabases()));
+   if($database->in($visited), | [], | $database->concatenate($database.includes->map(db|$db->cast(@Database)->meta::analytics::store::entitlements::getAllDatabases($visited->concatenate($database)))));
 }
 
 function meta::analytics::store::entitlements::getRelationalDatabaseConnection(runtime: Runtime[1]): RelationalDatabaseConnection[*]
@@ -59,13 +59,15 @@ function meta::analytics::store::entitlements::getRelationalDatabaseConnection(r
 function meta::analytics::store::entitlements::runMappersOnTables(tables:Table[*], runtime: Runtime[1]):Table[*]
 {
    let mappers =  $runtime.connections->filter(c|$c->instanceOf(DatabaseConnection))->cast(@DatabaseConnection)->map(dc|$dc.queryPostProcessorsWithParameter).parameters;
-   let tableMappers = $mappers->filter(p | $p->instanceOf(meta::pure::alloy::connections::TableNameMapper))->cast(@meta::pure::alloy::connections::TableNameMapper);
-   let schemaMappers = $mappers->filter(p | $p->instanceOf(meta::pure::alloy::connections::SchemaNameMapper))->cast(@meta::pure::alloy::connections::SchemaNameMapper);
+   let tableMappers = $mappers->filter(p | $p->instanceOf(meta::relational::postProcessor::TableNameMapper))->cast(@meta::relational::postProcessor::TableNameMapper);
+   let schemaMappers = $mappers->filter(p | $p->instanceOf(meta::relational::postProcessor::SchemaNameMapper))->cast(@meta::relational::postProcessor::SchemaNameMapper);
+   let pureAlloyTableMappers = $mappers->filter(p | $p->instanceOf(meta::pure::alloy::connections::TableNameMapper))->cast(@meta::pure::alloy::connections::TableNameMapper);
+   let pureAlloySchemaMappers = $mappers->filter(p | $p->instanceOf(meta::pure::alloy::connections::SchemaNameMapper))->cast(@meta::pure::alloy::connections::SchemaNameMapper);
    $tables->map(t|if(!$t->isTemporaryTable(),
-                     | let nt = meta::analytics::store::entitlements::processTableMappers($t, $tableMappers);
+                     | let nt = meta::analytics::store::entitlements::processTableMappers($t, $tableMappers, $pureAlloyTableMappers);
                      if(!$nt->isEmpty(),
                         | $nt->toOne();,
-                        | let ns = meta::analytics::store::entitlements::processSchemaMappers($t.schema, $schemaMappers);
+                        | let ns = meta::analytics::store::entitlements::processSchemaMappers($t.schema, $schemaMappers, $pureAlloySchemaMappers);
                         if(!$ns->isEmpty(),|^$t(schema=$ns->toOne());,|$t);
                        );,
                      |$t
@@ -102,14 +104,19 @@ function meta::analytics::store::entitlements::getTablesFromMapping(mapping:Mapp
    let allTables = $tables->concatenate($tablesFromUnionQuery)->removeDuplicatesBy(t|$t.schema.name + $t.name);
 }
 
-function <<access.private>> meta::analytics::store::entitlements::processTableMappers(t:meta::relational::metamodel::relation::Table[1], tableNameMappers:meta::pure::alloy::connections::TableNameMapper[*]):meta::relational::metamodel::relation::Table[0..1]{
-    $tableNameMappers->map(m| if($t.name==$m.from && ($m.schema.from->toLower() == $t.schema.name->toLower()),| let processedSchema = meta::analytics::store::entitlements::processSchemaMappers($t.schema, $m.schema);
-                                                  if(!$processedSchema->isEmpty(),|^$t(name=$m.to, schema=$processedSchema->toOne()),|^$t(name=$m.to));
-                                                  ,|[]))->last()
+function <<access.private>> meta::analytics::store::entitlements::processTableMappers(t:meta::relational::metamodel::relation::Table[1], tableNameMappers:meta::relational::postProcessor::TableNameMapper[*], pureAlloyTableMappers: meta::pure::alloy::connections::TableNameMapper[*]):meta::relational::metamodel::relation::Table[0..1]
+{
+    $pureAlloyTableMappers->map(m| if($t.name==$m.from && ($m.schema.from->toLower() == $t.schema.name->toLower()),| let processedSchema = meta::analytics::store::entitlements::processSchemaMappers($t.schema,[],$m.schema);
+                                                                         if(!$processedSchema->isEmpty(),|^$t(name=$m.to, schema=$processedSchema->toOne()),|^$t(name=$m.to));
+                                                                         ,|[]))->concatenate(
+     $tableNameMappers->map(m| if($t.name==$m.in && ($m.schemaNameMapper.in->toLower() == $t.schema.name->toLower()),| let processedSchema = meta::analytics::store::entitlements::processSchemaMappers($t.schema, $m.schemaNameMapper, []);
+                                                                              if(!$processedSchema->isEmpty(),|^$t(name=$m.out, schema=$processedSchema->toOne()),|^$t(name=$m.out));
+                                                                              ,|[])))->last();
 }
 
-function <<access.private>> meta::analytics::store::entitlements::processSchemaMappers(schema:Schema[1], schemaNameMappers : meta::pure::alloy::connections::SchemaNameMapper[*]):Schema[0..1]{
-    $schemaNameMappers->map(m|if($schema.name == $m.from,| ^$schema(name=$m.to),|[]))->last()
+function <<access.private>> meta::analytics::store::entitlements::processSchemaMappers(schema:Schema[1], schemaNameMappers : meta::relational::postProcessor::SchemaNameMapper[*], pureAlloySchemaMappers: meta::pure::alloy::connections::SchemaNameMapper[*]):Schema[0..1]
+{
+    $schemaNameMappers->map(m|if($schema.name == $m.in,| ^$schema(name=$m.out),|[]))->concatenate($pureAlloySchemaMappers->map(m|if($schema.name == $m.from,| ^$schema(name=$m.to),|[])))->last();
 }
 
 function <<access.private>> meta::analytics::store::entitlements::getTables(r:RelationalOperationElement[1]):Table[*]

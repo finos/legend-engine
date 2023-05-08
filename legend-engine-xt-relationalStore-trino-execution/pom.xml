@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.7.2-SNAPSHOT</version>
+        <version>4.11.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -71,6 +71,13 @@
         </dependency>
         <!-- MISC -->
 
+        <!-- LOG -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <!-- LOG -->
         <!-- https://mvnrepository.com/artifact/io.trino/trino-jdbc -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

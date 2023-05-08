@@ -19,6 +19,38 @@ Database store::CovidDataStore
   Join CovidDataDemographicsJoin(DEMOGRAPHICS.FIPS = COVID_DATA.FIPS)
 )
 
+Database store::CovidDataStoreA
+(
+   include store::CovidDataStoreB
+)
+
+Database store::CovidDataStoreB
+(
+   include store::CovidDataStoreC
+)
+
+Database store::CovidDataStoreC
+(
+  include store::CovidDataStoreA
+  Table DEMOGRAPHICS
+  (
+    FIPS VARCHAR(200),
+    STATE VARCHAR(200)
+  )
+  Table COVID_DATA
+  (
+    ID INTEGER PRIMARY KEY,
+    FIPS VARCHAR(200),
+    DATE DATE,
+    CASE_TYPE VARCHAR(200),
+    CASES INTEGER,
+    LAST_REPORTED_FLAG BIT
+  )
+
+  Join CovidDataDemographicsJoin(DEMOGRAPHICS.FIPS = COVID_DATA.FIPS)
+)
+
+
 ###Pure
 Enum {doc.doc = 'List of known viruses'} domain::Virus
 {
@@ -89,11 +121,37 @@ RelationalDatabaseConnection runtime::connection::H2Connection
   auth: DefaultH2;
 }
 
+RelationalDatabaseConnection runtime::connection::H2ConnectionWithMappers
+{
+  store: store::CovidDataStore;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'DROP TABLE IF EXISTS COVID_DATA;\nDROP TABLE IF EXISTS DEMOGRAPHICS;\n\nCREATE TABLE DEMOGRAPHICS(\n  FIPS VARCHAR(200) PRIMARY KEY,\n  STATE VARCHAR(200)\n);\n\nCREATE TABLE COVID_DATA(\n  ID INT PRIMARY KEY,\n  FIPS VARCHAR(200),\n  DATE DATE,\n  CASE_TYPE VARCHAR(200),\n  CASES INT,\n  LAST_REPORTED_FLAG BIT,\n  FOREIGN KEY (FIPS) REFERENCES DEMOGRAPHICS(FIPS)\n);\n\nINSERT INTO DEMOGRAPHICS VALUES(\'1\', \'NY\');\nINSERT INTO DEMOGRAPHICS VALUES(\'2\', \'NJ\');\nINSERT INTO DEMOGRAPHICS VALUES(\'3\', \'CA\');\n\nINSERT INTO COVID_DATA VALUES(1, \'1\', \'2021-04-01\', \'Confirmed\', 405, 0);\nINSERT INTO COVID_DATA VALUES(2, \'2\', \'2021-04-01\', \'Active\', 290, 1);\n'
+      ];
+  };
+  auth: DefaultH2;
+  postProcessors:
+  [
+    mapper
+    {
+      mappers:
+      [
+        table {from: 'COVID_DATA'; to: 'COVID_DATA_PROD'; schemaFrom: 'default'; schemaTo: 'COVID';},
+        schema {from: 'default'; to: 'COVID';}
+      ];
+    }
+  ];
+}
+
 RelationalDatabaseConnection runtime::connection::SnowflakeConnection
 {
   store: store::CovidDataStore;
   type: Snowflake;
-  specification: LocalH2{};
+  specification: LocalH2
+  {
+  };
   auth: DefaultH2;
 }
 
@@ -113,7 +171,21 @@ Runtime runtime::H2Runtime
   ];
 }
 
-###Runtime
+Runtime runtime::H2RuntimeWithMappers
+{
+  mappings:
+  [
+    mapping::CovidDataMapping
+  ];
+  connections:
+  [
+    store::CovidDataStore:
+    [
+      connection_1: runtime::connection::H2ConnectionWithMappers
+    ]
+  ];
+}
+
 Runtime runtime::SnowflakeRuntime
 {
   mappings:
@@ -129,7 +201,6 @@ Runtime runtime::SnowflakeRuntime
   ];
 }
 
-###Runtime
 Runtime runtime::CompoundRuntime
 {
   mappings:

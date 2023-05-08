@@ -15,7 +15,9 @@
 package org.finos.legend.engine.entitlement;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.finos.legend.engine.entitlement.model.entitlementReport.DatasetEntitlementReport;
 import org.finos.legend.engine.entitlement.model.specification.DatasetSpecification;
+import org.finos.legend.engine.entitlement.model.specification.RelationalDatabaseTableSpecification;
 import org.finos.legend.engine.entitlement.services.EntitlementModelObjectMapperFactory;
 import org.finos.legend.engine.entitlement.services.RelationalDatabaseEntitlementServiceExtension;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
@@ -26,10 +28,15 @@ import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
+import org.finos.legend.pure.generated.core_relational_store_entitlement_utility_relationalTableAnalyzer;
+import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class TestRelationalStoreEntitlementAnalytics
@@ -54,7 +61,7 @@ public class TestRelationalStoreEntitlementAnalytics
         }
     }
 
-    private void testStoreEntitlementAnalyticsRelationalStoreExtension(String modelFilePath, String runtimePath, String mappingPath, String expectedAnalysisResult) throws Exception
+    private void testStoreEntitlementAnalyticsRelationalStoreExtension(String modelFilePath, String runtimePath, String mappingPath, String expectedDatasetResult, String expectedReportResult) throws Exception
     {
         String pureModelString = getResourceAsString(modelFilePath);
         PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModelString, false);
@@ -63,24 +70,67 @@ public class TestRelationalStoreEntitlementAnalytics
         Root_meta_pure_runtime_Runtime runtime = pureModel.getRuntime(runtimePath);
         RelationalDatabaseEntitlementServiceExtension extension = new RelationalDatabaseEntitlementServiceExtension();
         List<DatasetSpecification> datasets = extension.generateDatasetSpecifications(null, runtimePath, runtime, mappingPath, mapping, pureModelContextData, pureModel);
-        Assert.assertEquals(entitlementObjectMapper.writeValueAsString(datasets), expectedAnalysisResult);
+        Assert.assertEquals(entitlementObjectMapper.writeValueAsString(datasets), expectedDatasetResult);
+        List<DatasetEntitlementReport> reports = extension.generateDatasetEntitlementReports(datasets, null, runtimePath, runtime, mappingPath, mapping, pureModelContextData, pureModel, null);
+        Assert.assertEquals(entitlementObjectMapper.writeValueAsString(reports), expectedReportResult);
     }
 
     @Test
     public void testStoreEntitlementAnalyticsForH2() throws Exception
     {
-        testStoreEntitlementAnalyticsRelationalStoreExtension("models/relationalModel.pure", "runtime::H2Runtime", "mapping::CovidDataMapping", "[{\"name\":\"default.DEMOGRAPHICS\",\"type\":\"H2\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"DEMOGRAPHICS\"},{\"name\":\"default.COVID_DATA\",\"type\":\"H2\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"COVID_DATA\"}]");
+        testStoreEntitlementAnalyticsRelationalStoreExtension("models/relationalModel.pure",
+                "runtime::H2Runtime",
+                "mapping::CovidDataMapping",
+                "[{\"name\":\"default.DEMOGRAPHICS\",\"type\":\"H2\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"DEMOGRAPHICS\"},{\"name\":\"default.COVID_DATA\",\"type\":\"H2\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"COVID_DATA\"}]",
+                "[{\"dataset\":{\"_type\":\"relationalDatabaseTable\",\"name\":\"default.DEMOGRAPHICS\",\"type\":\"H2\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"DEMOGRAPHICS\"}},{\"dataset\":{\"_type\":\"relationalDatabaseTable\",\"name\":\"default.COVID_DATA\",\"type\":\"H2\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"COVID_DATA\"}}]");
+    }
+
+    @Test
+    public void testStoreEntitlementAnalyticsForH2WithMappers() throws Exception
+    {
+        testStoreEntitlementAnalyticsRelationalStoreExtension("models/relationalModel.pure",
+                "runtime::H2RuntimeWithMappers",
+                "mapping::CovidDataMapping",
+                "[{\"name\":\"COVID.DEMOGRAPHICS\",\"type\":\"H2\",\"database\":\"CovidDataStore\",\"schema\":\"COVID\",\"table\":\"DEMOGRAPHICS\"},{\"name\":\"COVID.COVID_DATA_PROD\",\"type\":\"H2\",\"database\":\"CovidDataStore\",\"schema\":\"COVID\",\"table\":\"COVID_DATA_PROD\"}]",
+                "[{\"dataset\":{\"_type\":\"relationalDatabaseTable\",\"name\":\"COVID.DEMOGRAPHICS\",\"type\":\"H2\",\"database\":\"CovidDataStore\",\"schema\":\"COVID\",\"table\":\"DEMOGRAPHICS\"}},{\"dataset\":{\"_type\":\"relationalDatabaseTable\",\"name\":\"COVID.COVID_DATA_PROD\",\"type\":\"H2\",\"database\":\"CovidDataStore\",\"schema\":\"COVID\",\"table\":\"COVID_DATA_PROD\"}}]");
     }
 
     @Test
     public void testStoreEntitlementAnalyticsForSnowflake() throws Exception
     {
-        testStoreEntitlementAnalyticsRelationalStoreExtension("models/relationalModel.pure", "runtime::SnowflakeRuntime", "mapping::CovidDataMapping", "[{\"name\":\"default.DEMOGRAPHICS\",\"type\":\"Snowflake\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"DEMOGRAPHICS\"},{\"name\":\"default.COVID_DATA\",\"type\":\"Snowflake\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"COVID_DATA\"}]");
+        testStoreEntitlementAnalyticsRelationalStoreExtension("models/relationalModel.pure",
+                "runtime::SnowflakeRuntime",
+                "mapping::CovidDataMapping",
+                "[{\"name\":\"default.DEMOGRAPHICS\",\"type\":\"Snowflake\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"DEMOGRAPHICS\"},{\"name\":\"default.COVID_DATA\",\"type\":\"Snowflake\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"COVID_DATA\"}]",
+                "[{\"dataset\":{\"_type\":\"relationalDatabaseTable\",\"name\":\"default.DEMOGRAPHICS\",\"type\":\"Snowflake\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"DEMOGRAPHICS\"}},{\"dataset\":{\"_type\":\"relationalDatabaseTable\",\"name\":\"default.COVID_DATA\",\"type\":\"Snowflake\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"COVID_DATA\"}}]");
     }
 
     @Test
     public void testStoreEntitlementAnalyticsForComplexRuntime() throws Exception
     {
-        testStoreEntitlementAnalyticsRelationalStoreExtension("models/relationalModel.pure", "runtime::CompoundRuntime", "mapping::CovidDataMapping", "[{\"name\":\"default.DEMOGRAPHICS\",\"type\":\"H2\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"DEMOGRAPHICS\"},{\"name\":\"default.COVID_DATA\",\"type\":\"H2\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"COVID_DATA\"},{\"name\":\"default.DEMOGRAPHICS\",\"type\":\"Snowflake\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"DEMOGRAPHICS\"},{\"name\":\"default.COVID_DATA\",\"type\":\"Snowflake\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"COVID_DATA\"}]");
+        testStoreEntitlementAnalyticsRelationalStoreExtension("models/relationalModel.pure",
+                "runtime::CompoundRuntime",
+                "mapping::CovidDataMapping",
+                "[{\"name\":\"default.DEMOGRAPHICS\",\"type\":\"H2\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"DEMOGRAPHICS\"},{\"name\":\"default.COVID_DATA\",\"type\":\"H2\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"COVID_DATA\"},{\"name\":\"default.DEMOGRAPHICS\",\"type\":\"Snowflake\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"DEMOGRAPHICS\"},{\"name\":\"default.COVID_DATA\",\"type\":\"Snowflake\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"COVID_DATA\"}]",
+        "[{\"dataset\":{\"_type\":\"relationalDatabaseTable\",\"name\":\"default.DEMOGRAPHICS\",\"type\":\"H2\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"DEMOGRAPHICS\"}},{\"dataset\":{\"_type\":\"relationalDatabaseTable\",\"name\":\"default.COVID_DATA\",\"type\":\"H2\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"COVID_DATA\"}},{\"dataset\":{\"_type\":\"relationalDatabaseTable\",\"name\":\"default.DEMOGRAPHICS\",\"type\":\"Snowflake\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"DEMOGRAPHICS\"}},{\"dataset\":{\"_type\":\"relationalDatabaseTable\",\"name\":\"default.COVID_DATA\",\"type\":\"Snowflake\",\"database\":\"CovidDataStore\",\"schema\":\"default\",\"table\":\"COVID_DATA\"}}]");
+    }
+
+    @Test
+    public void testGenerateDatasetEntitlementReports()
+    {
+        List<DatasetSpecification> datasets = new ArrayList<>(Arrays.asList(new DatasetSpecification("DummyTable", "DummyH2"), new RelationalDatabaseTableSpecification("default.DEMOGRAPHICS", "H2", "CovidDataStore", "default","DEMOGRAPHICS")));
+        RelationalDatabaseEntitlementServiceExtension extension = new RelationalDatabaseEntitlementServiceExtension();
+        List<DatasetEntitlementReport> reports = extension.generateDatasetEntitlementReports(datasets, null, "", null, "", null, null, null, null);
+        Assert.assertEquals(reports.size(), 1);
+    }
+
+    @Test
+    public void testCircularDatabaseRetrievability()
+    {
+        String pureModelString = getResourceAsString("models/relationalModel.pure");
+        PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModelString, false);
+        PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, null);
+        Store store = pureModel.getStore("store::CovidDataStoreA");
+        Assert.assertEquals(core_relational_store_entitlement_utility_relationalTableAnalyzer.Root_meta_analytics_store_entitlements_getTablesFromDatabase_Database_1__Table_MANY_((Database) store, pureModel.getExecutionSupport()).size(), 2);
     }
 }

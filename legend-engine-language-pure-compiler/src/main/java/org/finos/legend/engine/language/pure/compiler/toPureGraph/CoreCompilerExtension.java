@@ -15,17 +15,22 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.core.EmbeddedDataCompilerHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.IncludedMappingHandler;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.MappingIncludedMappingHandler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion.core.TestAssertionCompilerHelper;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingIncludeMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
 import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_TestAssertion;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class CoreCompilerExtension implements CompilerExtension
 {
@@ -45,6 +50,14 @@ public class CoreCompilerExtension implements CompilerExtension
     public List<Function3<TestAssertion, CompileContext, ProcessingContext, Root_meta_pure_test_assertion_TestAssertion>> getExtraTestAssertionProcessors()
     {
         return Collections.singletonList(TestAssertionCompilerHelper::compileCoreTestAssertionTypes);
+    }
+
+    @Override
+    public Map<String, IncludedMappingHandler> getExtraIncludedMappingHandlers()
+    {
+        return Maps.mutable.of(
+                MappingIncludeMapping.class.getName(), new MappingIncludedMappingHandler()
+        );
     }
 
     @Override

@@ -33,6 +33,7 @@ public enum FunctionName
     CURRENT_TIMESTAMP("CURRENT_TIMESTAMP"),
     SYSDATE("SYSDATE"),
     UPPER("UPPER"),
+    SUBSTRING("SUBSTRING"),
     ROW_NUMBER("ROW_NUMBER");
 
     private static final Map<String, FunctionName> BY_NAME = Arrays

@@ -38,6 +38,24 @@ public class MemsqlTestArtifacts
             "`digest` VARCHAR(256)," +
             "PRIMARY KEY (`id`, `name`))";
 
+    public static String expectedBaseTablePlusDigestPlusVersionCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`main`(" +
+        "`id` INTEGER NOT NULL," +
+        "`name` VARCHAR(256) NOT NULL," +
+        "`amount` DOUBLE," +
+        "`biz_date` DATE," +
+        "`digest` VARCHAR(256)," +
+        "`version` INTEGER," +
+        "PRIMARY KEY (`id`, `name`))";
+
+    public static String expectedBaseTablePlusDigestPlusVersionCreateQueryUpperCase = "CREATE REFERENCE TABLE IF NOT EXISTS `MYDB`.`MAIN`(" +
+        "`ID` INTEGER NOT NULL," +
+        "`NAME` VARCHAR(256) NOT NULL," +
+        "`AMOUNT` DOUBLE," +
+        "`BIZ_DATE` DATE," +
+        "`DIGEST` VARCHAR(256)," +
+        "`VERSION` INTEGER," +
+        "PRIMARY KEY (`ID`, `NAME`))";
+
     public static String expectedBaseTablePlusDigestCreateQueryWithUpperCase = "CREATE REFERENCE TABLE IF NOT EXISTS `MYDB`.`MAIN`(" +
             "`ID` INTEGER NOT NULL," +
             "`NAME` VARCHAR(256) NOT NULL," +

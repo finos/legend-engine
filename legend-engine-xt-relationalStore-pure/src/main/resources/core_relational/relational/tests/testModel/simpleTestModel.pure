@@ -97,6 +97,12 @@ Class meta::relational::tests::model::simple::PersonNameParameterNested
    prefix:String[1];
 }
 
+Class meta::relational::tests::model::simple::ValidPerson
+{
+  firstName : String[1];
+  age       : Integer[0..1];
+}
+
 Class meta::relational::tests::model::simple::Person extends EntityWithAddress, EntityWithLocations
 {
     firstName : String[1];

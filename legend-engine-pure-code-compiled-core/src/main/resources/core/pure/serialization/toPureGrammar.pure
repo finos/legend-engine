@@ -90,8 +90,9 @@ function meta::pure::metamodel::serialization::grammar::printInstanceValue(i:Ins
 function meta::pure::metamodel::serialization::grammar::printPropertyOrFunctionExpression(functionExpression:FunctionExpression[1], space:String[1]):String[1]
 {
     $functionExpression.func->match([
-                                        p:Property<Nil,Any|*>[1]| let o = $functionExpression.parametersValues->first()->toOne(); printProperty($p, $o, $space);, 
-                                        p:Any[1]|printFunctionExpression($functionExpression, $space)
+                                        p:Property<Nil,Any|*>[1]   | printProperty($p, $functionExpression.parametersValues->at(0), $space), 
+                                        q:QualifiedProperty<Any>[1]| printProperty($q, $functionExpression.parametersValues, $space),
+                                        a:Any[1]                   | printFunctionExpression($functionExpression, $space)
                                     ])
 }
 
@@ -137,6 +138,11 @@ function meta::pure::metamodel::serialization::grammar::printFunctionExpression(
 function meta::pure::metamodel::serialization::grammar::printProperty(p:Property<Nil,Any|*>[1], o:ValueSpecification[1], space:String[1]):String[1]
 {
    $o->printValueSpecification($space) + '.' + $p.name->toOne();
+}
+
+function meta::pure::metamodel::serialization::grammar::printProperty(p:QualifiedProperty<Any>[1], params:ValueSpecification[*], space:String[1]):String[1]
+{
+   $params->at(0)->printValueSpecification($space) + '.' + $p.name->toOne() + '(%s)'->format($params->tail()->map(x | $x->printValueSpecification($space))->joinStrings(', '));
 }
 
 function <<access.private>> meta::pure::metamodel::serialization::grammar::printStatements(statements:String[*]):String[1]

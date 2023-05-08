@@ -208,6 +208,19 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByIndex():Boolean[1]
+{
+  let sqlString = 'SELECT Integer, String FROM service."/service/service1" ORDER BY 1 DESC, 2 ASC';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->restrict(['Integer', 'String'])
+      ->sort([desc('Integer'), asc('String')])
+      };
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+}
+
 //WHERE
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testWhere():Boolean[1]
 {
@@ -550,65 +563,53 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 }
 
 //JOIN
-function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure::tests::testLeftJoinSubqueryOn():Boolean[1]
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLeftJoinSubqueryOn():Boolean[1]
 {
-  let sqlString = 'SELECT table1.Integer FROM service."/service/service1" "table1" LEFT OUTER JOIN (SELECT String FROM service."/service/service2") AS "table2" ON "table1"."Integer" = "table2"."Integer"';
+  let sqlString = 'SELECT table1.Integer FROM service."/service/service1" "table1" LEFT OUTER JOIN (SELECT Integer FROM service."/service/service2") AS "table2" ON "table1"."Integer" = "table2"."Integer"';
 
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {| FlatInput.all()->project(
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
-          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->restrict('Integer')
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
         ->join(FlatInput.all()->project(
-                [x | $x.integerIn, x | $x.stringIn],
-                ['Integer', 'String']
-              )->restrict(['Integer', 'String']), meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('Integer') == $row2.getInteger('Integer')}
+                [x | $x.idIn, x | $x.integerIn, x | $x.stringIn],
+                ['ID', 'Integer', 'String']
+              )->restrict(['Integer']), meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('Integer') == $row2.getInteger('Integer')}
         )->restrict('Integer')
       };
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
 
-function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure::tests::testLeftJoinSubqueryUsing():Boolean[1]
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLeftJoinSubqueryUsing():Boolean[1]
 {
-  let sqlString = 'SELECT table1.Integer AS Integer, table2.String AS String FROM service."/service/service1" AS table1 LEFT OUTER JOIN (SELECT String FROM service."/service/service1") AS table2 USING (Integer) ';
+  let sqlString = 'SELECT table1.Integer AS "Int", table2.String AS "Str" FROM service."/service/service1" AS table1 LEFT OUTER JOIN (SELECT Integer, String FROM service."/service/service1") AS table2 USING (Integer) ';
 
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {| FlatInput.all()->project(
         [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
-        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->restrict('Integer')->join(
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->join(
           FlatInput.all()->project(
             [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
             [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->restrict(['Integer', 'String']), meta::relational::metamodel::join::JoinType.LEFT_OUTER, ['Integer']
-        )
+        )->renameColumns([
+          pair('Integer', 'Int'),
+          pair('String', 'Str')
+        ])->restrict(['Int', 'Str'])
       };
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
 
-function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure::tests::testLeftJoinRelationOn():Boolean[1]
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLeftJoinRelationOn():Boolean[1]
 {
   let sqlString = 'SELECT table1.Integer AS Integer, table2.String AS String FROM service."/service/service1" AS table1 LEFT OUTER JOIN service."/service/service2" AS table2 ON (table1.Integer = table2.Integer)';
 
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {| FlatInput.all()->project(
         [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
-        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->restrict('Integer')->join(FlatInput.all()->project(
-            [x | $x.integerIn, x | $x.stringIn],
-            ['Integer', 'String']
-        )->restrict(['Integer', 'String']), meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('Integer') == $row2.getInteger('Integer')})
-      };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
-}
-
-function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure::tests::testLeftJoinRelationOnAlias():Boolean[1]
-{
-  let sqlString = 'SELECT Boolean, table1.String, ID, table2.String FROM service."/service/service1" AS table1 LEFT OUTER JOIN service."/service/service2" AS table2 ON (table1.Integer = ID)';
-
-  let sqlTransformContext = $sqlString->processQuery();
-  let expected = {| FlatInput.all()->project(
-        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
-        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->restrict('Integer')->join(FlatInput.all()->project(
-            [x | $x.integerIn, x | $x.stringIn],
-            ['Integer', 'String']
-        )->restrict(['Integer', 'String']), meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('Integer') == $row2.getInteger('Integer')})
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->join(FlatInput.all()->project(
+            [x | $x.idIn, x | $x.integerIn, x | $x.stringIn],
+            ['ID', 'Integer', 'String']
+        ), meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('Integer') == $row2.getInteger('Integer')})->restrict(['Integer', 'String'])
       };
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
@@ -770,8 +771,11 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 {
   let sqlString = 'SELECT ' +
                   'StrictDate + INTERVAL \'1 YEAR 3 WEEKS 2 DAYS\' AS "INTERVAL_ADD", ' +
+                  'StrictDate + 1 + INTERVAL \'1 YEAR 3 WEEKS 2 DAYS\' AS "INTERVAL_MULTI_ADD", ' +
                   'StrictDate + 1 AS "NUMERIC_ADD", ' +
-                  'StrictDate + 6 * INTERVAL \'1 YEAR 3 WEEKS 2 DAYS\' AS "INTERVAL_TIMES" ' +
+                  'StrictDate + 6 * INTERVAL \'1 YEAR 3 WEEKS 2 DAYS\' AS "INTERVAL_TIMES", ' +
+                  'StrictDate + NULL * INTERVAL \'1 YEAR 3 WEEKS 2 DAYS\' AS "INTERVAL_TIMES_NULL", ' +
+                  'StrictDate + NULL + INTERVAL \'1 YEAR 3 WEEKS 2 DAYS\' AS "INTERVAL_ADD_NULL" ' +
                   'FROM service."/service/service1"';
 
   let sqlTransformContext = $sqlString->processQuery();
@@ -781,9 +785,12 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
               [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
             ->project([
-                col(row:TDSRow[1] | adjust(adjust(adjust($row.getStrictDate('StrictDate'), 1, DurationUnit.YEARS), 3, DurationUnit.WEEKS), 2, DurationUnit.DAYS), 'INTERVAL_ADD'),
-                col(row:TDSRow[1] | adjust($row.getStrictDate('StrictDate'), 1, DurationUnit.DAYS), 'NUMERIC_ADD'),
-                col(row:TDSRow[1] | adjust(adjust(adjust($row.getStrictDate('StrictDate'), 6, DurationUnit.YEARS), 18, DurationUnit.WEEKS), 12, DurationUnit.DAYS), 'INTERVAL_TIMES')
+                col(row:TDSRow[1] | $row.getStrictDate('StrictDate')->adjust(1, DurationUnit.YEARS)->adjust(3, DurationUnit.WEEKS)->adjust(2, DurationUnit.DAYS), 'INTERVAL_ADD'),
+                col(row:TDSRow[1] | $row.getStrictDate('StrictDate')->adjust(1, DurationUnit.DAYS)->adjust(1, DurationUnit.YEARS)->adjust(3, DurationUnit.WEEKS)->adjust(2, DurationUnit.DAYS), 'INTERVAL_MULTI_ADD'),
+                col(row:TDSRow[1] | $row.getStrictDate('StrictDate')->adjust(1, DurationUnit.DAYS), 'NUMERIC_ADD'),
+                col(row:TDSRow[1] | $row.getStrictDate('StrictDate')->adjust(6, DurationUnit.YEARS)->adjust(18, DurationUnit.WEEKS)->adjust(12, DurationUnit.DAYS), 'INTERVAL_TIMES'),
+                col(row:TDSRow[1] | []->cast(@Date), 'INTERVAL_TIMES_NULL'),
+                col(row:TDSRow[1] | []->cast(@Date), 'INTERVAL_ADD_NULL')
               ])
       };
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
@@ -947,16 +954,16 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
 function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure::tests::testFromScopingJoin():Boolean[1]
 {
-  let sqlString = 'SELECT table1.Integer FROM service."/service/service1" "table1" LEFT OUTER JOIN (SELECT String FROM service."/service/service2") AS "table2" ON "table1"."Integer" = "table2"."Integer"';
+  let sqlString = 'SELECT table1.Integer FROM service."/service/service1" "table1" LEFT OUTER JOIN (SELECT Integer AS "int" FROM service."/service/service2") AS "table2" ON "table1"."Integer" = "table2"."int"';
 
   let sqlTransformContext = $sqlString->processQuery(true);
   let expected = {| FlatInput.all()->project(
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
           [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->restrict('Integer')->from(dummyMapping, dummyRuntime())
         ->join(FlatInput.all()->project(
-                [x | $x.integerIn, x | $x.stringIn],
-                ['Integer', 'String']
-              )->restrict(['Integer', 'String'])->from(dummyMapping, dummyRuntime()), meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('Integer') == $row2.getInteger('Integer')}
+                [x | $x.idIn, x | $x.integerIn, x | $x.stringIn],
+                ['ID', 'Integer', 'String']
+              )->renameColumns(pair('Integer', 'int'))->restrict(['int'])->from(dummyMapping, dummyRuntime()), meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('Integer') == $row2.getInteger('int')}
         )->restrict('Integer')
       }->meta::pure::router::preeval::preval(sqlExtensions());
 
@@ -984,6 +991,36 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       }->meta::pure::router::preeval::preval(sqlExtensions());
 
   assertLambdaJSONEquals($expected, $sqlTransformContext.lambda());
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testParameterizedAllSupplied():Boolean[1]
+{
+  let sqlString = 'SELECT * FROM service(\'/service/service4/{id}\', id => \'abc\', ints => [1,2,3], date => \'2023-01-01\') LIMIT 1';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {|{id:String[1], ints:Integer[*], date:StrictDate[0..1] |FlatInput.all()->filter(f | $f.idIn == $id && $f.integerIn->in($ints) && ($f.strictDateIn > $date))->project(
+        [
+          x | $x.idIn, x | $x.integerIn, x | $x.enumVal
+        ],
+        [
+          'ID', 'Integer', 'Enum'
+        ]
+      )}->eval('abc', [1,2, 3], %2023-01-01)->limit(1)};
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testParameterizedNotSupplied():Boolean[1]
+{
+  let sqlString = 'SELECT * FROM service(\'/service/service4/{id}\', id => \'abc\') LIMIT 1';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {|{id:String[1], ints:Integer[*], date:StrictDate[0..1] |FlatInput.all()->filter(f | $f.idIn == $id && $f.integerIn->in($ints) && ($f.strictDateIn > $date))->project(
+        [
+          x | $x.idIn, x | $x.integerIn, x | $x.enumVal
+        ],
+        [
+          'ID', 'Integer', 'Enum'
+        ]
+      )}->eval('abc', [], [])->limit(1)};
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSchemaService1():Boolean[1]
@@ -1040,15 +1077,23 @@ function meta::external::query::sql::transformation::queryToPure::tests::process
   processQuery($sql, false);
 }
 
+
+
 function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1], scopeWithFrom:Boolean[1]): SqlTransformContext[1]
+{
+  processQuery($sql, [
+    serviceToSource(Service1()),
+    serviceToSource(Service2()),
+    serviceToSource(Service3()),
+    serviceToSource(Service4())
+  ], $scopeWithFrom);
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1], sources:SQLSource[*], scopeWithFrom:Boolean[1]): SqlTransformContext[1]
 {
   let query = meta::legend::compileVS('#SQL{' + $sql + '}#')->cast(@Query);
   let context = ^SqlTransformContext(
-    sources = [
-      serviceToSource(Service1()),
-      serviceToSource(Service2()),
-      serviceToSource(Service3())
-    ],
+    sources = $sources,
     extensions = sqlExtensions(),
     scopeWithFrom = $scopeWithFrom,
     aliases = ^Map<String, String>(),

@@ -34,11 +34,10 @@ Class meta::pure::router::store::routing::Void extends ValueSpecification
 }
 
 function meta::pure::router::store::routing::enrichStoreMappingRoutedValueSpecification(routedVs: StoreMappingRoutedValueSpecification[1], exeCtx: ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):StoreMappingRoutedValueSpecification[1]
-{
+{ 
    let setsInScope = $routedVs.routingStrategy->cast(@StoreMappingRoutingStrategy).sets;
    let mapping     = $routedVs.mapping;
    let runtime     = $routedVs.runtime;
-   
    if(!$setsInScope->isEmpty(),
      | 
       // Sets
@@ -62,15 +61,16 @@ function meta::pure::router::store::routing::enrichStoreMappingRoutedValueSpecif
       let filteredBuilt = $built->filter(v|!$v->instanceOf(Void));
 
       print(if($debug.debug,|'\n'+$debug.space+'Filtered Built queries:'+$filteredBuilt->size()->toString()+'\n', |''));
-
       let nbuilt = if($permutations->size() > 1,
                      | // Which concatenation to use (dataType/TDS = union all / type = union)?
                       let returnType = $filteredBuilt->at(0)->match([e:StoreMappingRoutedValueSpecification[1]|$e.value.genericType, v:ValueSpecification[1]|$v.genericType]);
                       let concatenate = $returnType.rawType->toOne()->instanceOf(DataType) || $returnType.rawType->toOne()->_subTypeOf(TabularDataSet);
                       let concat = buildConcatenate($filteredBuilt, $concatenate, $returnType);
                       print(if($debug.debug,|$debug.space+'Result: '+$concat->asString()+'\n',|''));
-                      $concat;,
-                     |$filteredBuilt->toOne()
+                       $concat;,
+                     |    if($filteredBuilt->size()!=1,
+                                |$routedVs,
+                                |$filteredBuilt->toOne());
                    );
       $nbuilt->cast(@StoreMappingRoutedValueSpecification);,
      |$routedVs;            // This is needed for expressions (like let x = 1->from($mapping, $runtime)) where there are no sets

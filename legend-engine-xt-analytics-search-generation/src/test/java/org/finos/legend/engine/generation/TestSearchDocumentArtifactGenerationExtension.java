@@ -29,6 +29,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.junit.Assert;
 import org.junit.Test;
@@ -55,6 +56,18 @@ public class TestSearchDocumentArtifactGenerationExtension
     }
 
     @Test
+    public void testArtifactGenerationWithStereotypeInProgress()
+    {
+        String pureModelString = getResourceAsString("models/Model.pure");
+        PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModelString);
+        PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, null);
+        SearchDocumentArtifactGenerationExtension extension = new SearchDocumentArtifactGenerationExtension();
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = pureModel.getPackageableElement("test::Service");
+        Root_meta_legend_service_metamodel_Service metamodelClass = (Root_meta_legend_service_metamodel_Service) packageableElement;
+        Assert.assertFalse(extension.canGenerate(metamodelClass));
+    }
+
+    @Test
     public void testSearchDocumentArtifactGenerationExtensionWithUnknownMavenCoordinates()
     {
         String pureModelString = getResourceAsString("models/Model.pure");
@@ -69,10 +82,10 @@ public class TestSearchDocumentArtifactGenerationExtension
         List<Artifact> outputs = extension.generate(packageableElement, pureModel, pureModelContextData, PureClientVersions.production);
         Assert.assertEquals(1, outputs.size());
         Artifact searchDocumentResult = outputs.get(0);
-        Assert.assertEquals(searchDocumentResult.format, "json");
-        Assert.assertEquals(searchDocumentResult.path, FILE_NAME);
+        Assert.assertEquals("json", searchDocumentResult.format);
+        Assert.assertEquals(FILE_NAME, searchDocumentResult.path);
         Assert.assertNotNull(searchDocumentResult.content);
-        Assert.assertEquals(searchDocumentResult.content, "{\"package\":\"model\",\"name\":\"Person\",\"projectCoordinates\":{\"versionId\":\"UNKNOWN\",\"groupId\":\"UNKNOWN\",\"artifactId\":\"UNKNOWN\"},\"id\":\"model::Person\",\"type\":\"Class\",\"properties\":[\"firstName\",\"lastName\"]}");
+        Assert.assertEquals("{\"taggedValues\":{},\"package\":\"model\",\"name\":\"Person\",\"description\":\"\",\"projectCoordinates\":{\"versionId\":\"UNKNOWN\",\"groupId\":\"UNKNOWN\",\"artifactId\":\"UNKNOWN\"},\"id\":\"model::Person\",\"type\":\"Class\",\"properties\":[{\"taggedValues\":{},\"name\":\"firstName\"},{\"taggedValues\":{},\"name\":\"lastName\"}]}", searchDocumentResult.content);
     }
 
     @Test
@@ -99,9 +112,9 @@ public class TestSearchDocumentArtifactGenerationExtension
         List<Artifact> outputs = extension.generate(packageableElement, pureModel, pureModelContextDataWithOrigin, PureClientVersions.production);
         Assert.assertEquals(1, outputs.size());
         Artifact searchDocumentResult = outputs.get(0);
-        Assert.assertEquals(searchDocumentResult.format, "json");
-        Assert.assertEquals(searchDocumentResult.path, FILE_NAME);
+        Assert.assertEquals("json", searchDocumentResult.format);
+        Assert.assertEquals(FILE_NAME, searchDocumentResult.path);
         Assert.assertNotNull(searchDocumentResult.content);
-        Assert.assertEquals(searchDocumentResult.content, "{\"package\":\"model\",\"name\":\"Person\",\"projectCoordinates\":{\"versionId\":\"0.0.1-SNAPSHOT\",\"groupId\":\"org.finos.test\",\"artifactId\":\"test-project\"},\"id\":\"model::Person\",\"type\":\"Class\",\"properties\":[\"firstName\",\"lastName\"]}");
+        Assert.assertEquals("{\"taggedValues\":{},\"package\":\"model\",\"name\":\"Person\",\"description\":\"\",\"projectCoordinates\":{\"versionId\":\"0.0.1-SNAPSHOT\",\"groupId\":\"org.finos.test\",\"artifactId\":\"test-project\"},\"id\":\"model::Person\",\"type\":\"Class\",\"properties\":[{\"taggedValues\":{},\"name\":\"firstName\"},{\"taggedValues\":{},\"name\":\"lastName\"}]}",searchDocumentResult.content);
     }
 }

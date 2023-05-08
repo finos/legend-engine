@@ -22,13 +22,16 @@ import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.dsl.authentication.grammar.to.IAuthenticationGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.integration.extensions.IMongoDBGrammarComposerExtension;
+import org.finos.legend.engine.language.pure.grammar.integration.util.MongoDBMappingComposer;
 import org.finos.legend.engine.language.pure.grammar.integration.util.MongoDBSchemaComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDatabase;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.RootMongoDBClassMapping;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.runtime.MongoDBURL;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -83,4 +86,23 @@ public class MongoDBGrammarComposerExtension implements IMongoDBGrammarComposerE
         return serverURLs.stream().map(i -> i.baseUrl + ":" + i.port).collect(Collectors.joining());
     }
 
+    @Override
+    public List<Function2<ClassMapping, PureGrammarComposerContext, String>> getExtraClassMappingComposers()
+    {
+        return Lists.mutable.with((classMapping, context) ->
+        {
+            if (classMapping instanceof RootMongoDBClassMapping)
+            {
+                RootMongoDBClassMapping rootMongoDBClassMapping = (RootMongoDBClassMapping) classMapping;
+                StringBuilder builder = new StringBuilder();
+                builder.append(": ").append(MongoDBGrammarParserExtension.MONGO_DB_MAPPING_ELEMENT_TYPE).append("\n");
+                builder.append(getTabString()).append("{\n");
+                String mapping = MongoDBMappingComposer.renderRootMongoDBClassMapping(rootMongoDBClassMapping);
+                builder.append(mapping);
+                builder.append(getTabString()).append("}");
+                return builder.toString();
+            }
+            return null;
+        });
+    }
 }

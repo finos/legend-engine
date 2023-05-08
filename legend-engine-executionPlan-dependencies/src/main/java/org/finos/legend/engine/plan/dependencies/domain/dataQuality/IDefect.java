@@ -31,4 +31,14 @@ public interface IDefect
     RuleType getRuleType();
 
     List<RelativePathNode> getPath();
+
+    default String typePath$()
+    {
+        return "meta::pure::dataQuality::Defect";
+    }
+
+    default String typeName$()
+    {
+        return "Defect";
+    }
 }

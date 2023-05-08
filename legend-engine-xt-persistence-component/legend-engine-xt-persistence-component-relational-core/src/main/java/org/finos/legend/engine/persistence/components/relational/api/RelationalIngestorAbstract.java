@@ -14,7 +14,10 @@
 
 package org.finos.legend.engine.persistence.components.relational.api;
 
+import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.persistence.components.common.Datasets;
+import org.finos.legend.engine.persistence.components.common.OptimizationFilter;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.DigestInfo;
@@ -51,6 +54,7 @@ import org.immutables.value.Value.Immutable;
 import org.immutables.value.Value.Style;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -63,6 +67,8 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.MAX_OF_FIELD;
+import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.MIN_OF_FIELD;
 import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.TABLE_IS_NON_EMPTY;
 import static org.finos.legend.engine.persistence.components.transformer.Transformer.TransformOptionsAbstract.DATE_TIME_FORMATTER;
 
@@ -140,7 +146,6 @@ public abstract class RelationalIngestorAbstract
     @Derived
     protected TransformOptions transformOptions()
     {
-
         TransformOptions.Builder builder = TransformOptions.builder()
             .executionTimestampClock(executionTimestampClock())
             .batchIdPattern(BATCH_ID_PATTERN);
@@ -188,7 +193,7 @@ public abstract class RelationalIngestorAbstract
         }
 
         // Check if staging dataset is empty
-        if (executor.datasetExists(updatedDatasets.stagingDataset()))
+        if (ingestMode().accept(IngestModeVisitors.NEED_TO_CHECK_STAGING_EMPTY) && executor.datasetExists(updatedDatasets.stagingDataset()))
         {
             resourcesBuilder.stagingDataSetEmpty(datasetEmpty(updatedDatasets.stagingDataset(), transformer, executor));
         }
@@ -388,9 +393,32 @@ public abstract class RelationalIngestorAbstract
     {
         Map<String, String> placeHolderKeyValues = new HashMap<>();
         Optional<Long> nextBatchId = getNextBatchId(datasets, executor, transformer, ingestMode);
+        Optional<Map<OptimizationFilter, Pair<Object, Object>>> optimizationFilters = getOptimizationFilterBounds(datasets, executor, transformer, ingestMode);
         if (nextBatchId.isPresent())
         {
             placeHolderKeyValues.put(BATCH_ID_PATTERN, nextBatchId.get().toString());
+        }
+        if (optimizationFilters.isPresent())
+        {
+            for (OptimizationFilter filter : optimizationFilters.get().keySet())
+            {
+                Object lowerBound = optimizationFilters.get().get(filter).getOne();
+                Object upperBound = optimizationFilters.get().get(filter).getTwo();
+                if (lowerBound instanceof Date)
+                {
+                    placeHolderKeyValues.put(filter.lowerBoundPattern(), lowerBound.toString());
+                    placeHolderKeyValues.put(filter.upperBoundPattern(), upperBound.toString());
+                }
+                else if (lowerBound instanceof Number)
+                {
+                    placeHolderKeyValues.put(SINGLE_QUOTE + filter.lowerBoundPattern() + SINGLE_QUOTE, lowerBound.toString());
+                    placeHolderKeyValues.put(SINGLE_QUOTE + filter.upperBoundPattern() + SINGLE_QUOTE, upperBound.toString());
+                }
+                else
+                {
+                    throw new IllegalStateException("Unexpected data type for optimization filter");
+                }
+            }
         }
         if (planner.dataSplitExecutionSupported() && dataSplitRange.isPresent())
         {
@@ -426,6 +454,35 @@ public abstract class RelationalIngestorAbstract
                     return Optional.of((Long) nextBatchId.get());
                 }
             }
+        }
+        return Optional.empty();
+    }
+
+    private Optional<Map<OptimizationFilter, Pair<Object, Object>>> getOptimizationFilterBounds(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor,
+                                                                                        Transformer<SqlGen, SqlPlan> transformer, IngestMode ingestMode)
+    {
+        List<OptimizationFilter> filters = ingestMode.accept(IngestModeVisitors.RETRIEVE_OPTIMIZATION_FILTERS);
+        if (!filters.isEmpty())
+        {
+            Map<OptimizationFilter, Pair<Object, Object>> map = new HashMap<>();
+            for (OptimizationFilter filter : filters)
+            {
+                LogicalPlan logicalPlanForMinAndMaxForField = LogicalPlanFactory.getLogicalPlanForMinAndMaxForField(datasets.stagingDataset(), filter.fieldName());
+                List<TabularData> tabularData = executor.executePhysicalPlanAndGetResults(transformer.generatePhysicalPlan(logicalPlanForMinAndMaxForField));
+                Map<String, Object> resultMap = tabularData.stream()
+                    .findFirst()
+                    .map(TabularData::getData)
+                    .flatMap(t -> t.stream().findFirst())
+                    .orElseThrow(IllegalStateException::new);
+                // Put into map only when not null
+                Object lower = resultMap.get(MIN_OF_FIELD);
+                Object upper = resultMap.get(MAX_OF_FIELD);
+                if (lower != null && upper != null)
+                {
+                    map.put(filter, Tuples.pair(lower, upper));
+                }
+            }
+            return Optional.of(map);
         }
         return Optional.empty();
     }

@@ -15,8 +15,10 @@
 package org.finos.legend.engine.language.pure.grammar.to;
 
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.extension.ContentWithType;
@@ -27,9 +29,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 
 import java.util.List;
@@ -62,6 +64,7 @@ public class PureGrammarComposerContext
     public final List<Function2<EmbeddedData, PureGrammarComposerContext, ContentWithType>> extraEmbeddedDataComposers;
     public final List<Function2<TestAssertion, PureGrammarComposerContext, ContentWithType>> extraTestAssertionComposers;
     public final Map<String, Function2<Object, PureGrammarComposerContext, String>> extraEmbeddedPureComposers;
+    public final MutableList<Function<MappingInclude, String>> extraMappingIncludeComposers;
 
     protected PureGrammarComposerContext(Builder builder)
     {
@@ -78,6 +81,7 @@ public class PureGrammarComposerContext
         this.extraAssociationMappingComposers = ListIterate.flatCollect(this.extensions, PureGrammarComposerExtension::getExtraAssociationMappingComposers);
         this.extraConnectionValueComposers = ListIterate.flatCollect(this.extensions, PureGrammarComposerExtension::getExtraConnectionValueComposers);
         this.extraMappingTestInputDataComposers = ListIterate.flatCollect(this.extensions, PureGrammarComposerExtension::getExtraMappingTestInputDataComposers);
+        this.extraMappingIncludeComposers = ListIterate.flatCollect(this.extensions, PureGrammarComposerExtension::getExtraMappingIncludeComposers);
         this.extraEmbeddedDataComposers = ListIterate.flatCollect(this.extensions, PureGrammarComposerExtension::getExtraEmbeddedDataComposers);
         this.extraEmbeddedPureComposers = merge(ListIterate.collect(this.extensions, PureGrammarComposerExtension::getExtraEmbeddedPureComposers));
         this.extraTestAssertionComposers = ListIterate.flatCollect(this.extensions, PureGrammarComposerExtension::getExtraTestAssertionComposers);

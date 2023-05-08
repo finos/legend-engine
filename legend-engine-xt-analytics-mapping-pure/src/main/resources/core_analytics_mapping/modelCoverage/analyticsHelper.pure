@@ -154,8 +154,7 @@ function meta::analytics::mapping::modelCoverage::mapToSupportedType(type: Type[
       pair(Enum, MappedPropertyType.Enumeration),
       pair(Float, MappedPropertyType.Float),
       pair(Integer, MappedPropertyType.Integer),
-      pair(Decimal, MappedPropertyType.Decimal),
-      pair(Binary, MappedPropertyType.Binary)
+      pair(Decimal, MappedPropertyType.Decimal)
    ]->findValues($type)->first();
 }
 

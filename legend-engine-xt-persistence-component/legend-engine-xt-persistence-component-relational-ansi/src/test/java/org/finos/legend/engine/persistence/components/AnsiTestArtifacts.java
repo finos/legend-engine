@@ -101,6 +101,23 @@ public class AnsiTestArtifacts
             "\"digest\" VARCHAR," +
             "PRIMARY KEY (\"id\", \"name\"))";
 
+    public static String expectedBaseTablePlusDigestPlusVersionCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
+        "\"id\" INTEGER NOT NULL," +
+        "\"name\" VARCHAR NOT NULL," +
+        "\"amount\" DOUBLE," +
+        "\"biz_date\" DATE," +
+        "\"digest\" VARCHAR," +
+        "\"version\" INTEGER," +
+        "PRIMARY KEY (\"id\", \"name\"))";
+
+    public static String expectedBaseTablePlusDigestPlusVersionCreateQueryUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN\"(" +
+        "\"ID\" INTEGER NOT NULL," +
+        "\"NAME\" VARCHAR NOT NULL," +
+        "\"AMOUNT\" DOUBLE," +
+        "\"BIZ_DATE\" DATE," +
+        "\"DIGEST\" VARCHAR," +
+        "\"VERSION\" INTEGER," +
+        "PRIMARY KEY (\"ID\", \"NAME\"))";
     public static String expectedBaseTableCreateQueryWithNoPKs = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
             "\"id\" INTEGER,\"name\" VARCHAR,\"amount\" DOUBLE,\"biz_date\" DATE,\"digest\" VARCHAR)";
 
