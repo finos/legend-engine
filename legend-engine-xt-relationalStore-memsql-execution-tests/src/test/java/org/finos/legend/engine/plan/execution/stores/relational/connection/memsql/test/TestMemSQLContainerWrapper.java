@@ -20,7 +20,6 @@ import org.junit.Test;
 import org.testcontainers.DockerClientFactory;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
@@ -28,15 +27,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
-public class TestMemSQLTestContainerWrapper
+public class TestMemSQLContainerWrapper
 {
-    private MemSQLTestContainerWrapper memSQLTestContainerWrapper;
+    private MemSQLContainerWrapper memSQLContainerWrapper;
 
     private void startMemSQLContainer()
     {
         assumeTrue("Cannot start MemSQL Container, skipping test.", DockerClientFactory.instance().isDockerAvailable());
-        this.memSQLTestContainerWrapper = MemSQLTestContainerWrapper.build("SINGLESTORE_INTEGRATION_LICENSE_KEY");
-        this.memSQLTestContainerWrapper.start();
+        this.memSQLContainerWrapper = MemSQLContainerWrapper.build("SINGLESTORE_INTEGRATION_LICENSE_KEY");
+        this.memSQLContainerWrapper.start();
     }
 
     @Before
@@ -48,23 +47,17 @@ public class TestMemSQLTestContainerWrapper
     @After
     public void cleanup()
     {
-        if (this.memSQLTestContainerWrapper != null)
+        if (this.memSQLContainerWrapper != null)
         {
-            this.memSQLTestContainerWrapper.stop();
+            this.memSQLContainerWrapper.stop();
         }
     }
 
     @Test
-    public void testDirectJDBCConnection() throws Exception
+    public void testDirectJDBCConnection()
     {
-        Class.forName(this.memSQLTestContainerWrapper.getDriverClassName());
-
         try (
-                Connection connection =
-                        DriverManager.getConnection(
-                                this.memSQLTestContainerWrapper.getJdbcUrl(),
-                                this.memSQLTestContainerWrapper.getUser(),
-                                this.memSQLTestContainerWrapper.getPassword());
+                Connection connection = this.memSQLContainerWrapper.getConnection();
                 Statement statement = connection.createStatement();
                 ResultSet resultSet = statement.executeQuery("select current_user();"))
         {
