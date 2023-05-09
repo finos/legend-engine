@@ -89,7 +89,7 @@ MongoDBConnection test::mongodb::testConnection
 {
     database: userDatabase;
     store: test::mongodb::mydatabase;
-    serverURLs: [localhost:__PORT_TOKEN__];
+    serverURLs: [__HOST_TOKEN__:__PORT_TOKEN__];
     authentication: # UserPassword {
         username: 'sa';
         password: SystemPropertiesSecret

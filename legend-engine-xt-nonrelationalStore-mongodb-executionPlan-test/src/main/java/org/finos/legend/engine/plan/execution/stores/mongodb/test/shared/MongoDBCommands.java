@@ -40,15 +40,15 @@ public class MongoDBCommands
 
     public static final String DB_ROOT_USERNAME = "sa";
     public static final String DB_ROOT_PASSWORD = "sa";
-
+    public static final Map<String, GenericContainer<MongoDBContainer>> CONTAINERS = Maps.mutable.empty();
+    public static final ObjectMapper OBJECT_MAPPER = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
     private static final String DB_USER_DATABASE = "userDatabase";
     private static final String DB_USER_DB_PERSON_COLLECTION = "person";
     private static final int MONGO_PORT = 27017;
     private static final Logger LOGGER = LoggerFactory.getLogger(MongoDBCommands.class);
-    public static final Map<String, GenericContainer<MongoDBContainer>> CONTAINERS = Maps.mutable.empty();
-    public static final ObjectMapper OBJECT_MAPPER = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
-
     public static String START_SERVER_FUNCTION = "startMongoDBTestServer_String_1__URL_1_";
+    public static String STOP_SERVER_FUNCTION = "stopMongoDBTestServer_String_1__Nil_0_";
+    public static String REQUEST_SERVER_FUNCTION = "requestMongoDBTestServer_String_1__String_1__String_1_";
 
     public static Root_meta_pure_functions_io_http_URL startServer(String imageTag)
     {
@@ -63,24 +63,20 @@ public class MongoDBCommands
         return url;
     }
 
-    public static String STOP_SERVER_FUNCTION = "stopMongoDBTestServer_String_1__Nil_0_";
-
     public static void stopServer(String imageTag)
     {
         LOGGER.debug("Stopping MongoDB docker image + " + imageTag);
         Optional.ofNullable(CONTAINERS.remove(imageTag)).ifPresent(GenericContainer::stop);
     }
 
-
-    public static String REQUEST_SERVER_FUNCTION = "requestMongoDBTestServer_String_1__String_1__String_1_";
-
     public static String request(String imageTag, String json)
     {
 
         LOGGER.debug("Performing MongoDB request for image: " + imageTag);
         Integer mongoPort = getPortForRunningContainerImage(imageTag);
+        String host = getHostForRunningContainerImage(imageTag);
 
-        MongoClient adminClient = mongoClientForRootAdminWithStaticUserNamePassword(mongoPort);
+        MongoClient adminClient = mongoClientForRootAdminWithStaticUserNamePassword(host, mongoPort);
 
         MongoDatabase userDatabase = adminClient.getDatabase(DB_USER_DATABASE);
 
@@ -98,6 +94,10 @@ public class MongoDBCommands
         return CONTAINERS.get(imageTag).getMappedPort(MONGO_PORT);
     }
 
+    private static String getHostForRunningContainerImage(String imageTag)
+    {
+        return CONTAINERS.get(imageTag).getHost();
+    }
 
     private static GenericContainer<MongoDBContainer> createContainer(String imageTag)
     {
@@ -116,7 +116,8 @@ public class MongoDBCommands
         container.start();
 
         Integer runningPort = container.getMappedPort(MONGO_PORT);
-        MongoClient adminClient = mongoClientForRootAdminWithStaticUserNamePassword(runningPort);
+        String host = container.getHost();
+        MongoClient adminClient = mongoClientForRootAdminWithStaticUserNamePassword(host, runningPort);
 
 
         MongoDatabase userDatabase = adminClient.getDatabase(DB_USER_DATABASE);
@@ -126,10 +127,10 @@ public class MongoDBCommands
         return container;
     }
 
-    private static MongoClient mongoClientForRootAdminWithStaticUserNamePassword(Integer port)
+    private static MongoClient mongoClientForRootAdminWithStaticUserNamePassword(String hostName, Integer port)
     {
         String connectionURL = "mongodb://" + DB_ROOT_USERNAME + ":" +
-                DB_ROOT_PASSWORD + "@localhost:" + port + "/admin";
+                DB_ROOT_PASSWORD + "@" + hostName + ":" + port + "/admin";
         return MongoClients.create(connectionURL);
     }
 
