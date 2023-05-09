@@ -172,6 +172,10 @@ public class TestPersistenceGrammarV2Roundtrip extends TestGrammarRoundtrip.Test
                 "          ];\n" +
                 "        }\n" +
                 "      }\n" +
+                "      deduplication: MaxVersion\n" +
+                "      {\n" +
+                "        versionField: version;\n" +
+                "      }\n" +
                 "    }\n" +
                 "    ->\n" +
                 "    {\n" +
@@ -192,11 +196,74 @@ public class TestPersistenceGrammarV2Roundtrip extends TestGrammarRoundtrip.Test
                 "          ];\n" +
                 "        }\n" +
                 "      }\n" +
+                "      deduplication: MaxVersion\n" +
+                "      {\n" +
+                "        versionField: #/test::example::MyType/prop/version#;\n" +
+                "      }\n" +
                 "    }\n" +
                 "    ->\n" +
                 "    {\n" +
                 "    }\n" +
                 "  ];\n" +
                 "}\n");
+    }
+
+    @Test
+    public void persistenceDelta()
+    {
+        test("###Persistence\n" +
+            "Persistence test::TestPersistence\n" +
+            "{\n" +
+            "  doc: 'This is test documentation.';\n" +
+            "  trigger: Manual;\n" +
+            "  service: test::Service;\n" +
+            "  serviceOutputTargets:\n" +
+            "  [\n" +
+            "    ROOT\n" +
+            "    {\n" +
+            "      keys:\n" +
+            "      [\n" +
+            "        foo, bar\n" +
+            "      ]\n" +
+            "      datasetType: Delta\n" +
+            "      {\n" +
+            "        actionIndicator: DeleteIndicator\n" +
+            "        {\n" +
+            "          deleteField: toBeDeleted;\n" +
+            "          deleteValues: ['Yes', 'true'];\n" +
+            "        }\n" +
+            "      }\n" +
+            "      deduplication: MaxVersion\n" +
+            "      {\n" +
+            "        versionField: version;\n" +
+            "      }\n" +
+            "    }\n" +
+            "    ->\n" +
+            "    {\n" +
+            "    },\n" +
+            "    #/test::example::MyType/prop#\n" +
+            "    {\n" +
+            "      keys:\n" +
+            "      [\n" +
+            "        #/test::example::MyType/prop/foo#, #/test::example::MyType/prop/bar#\n" +
+            "      ]\n" +
+            "      datasetType: Delta\n" +
+            "      {\n" +
+            "        actionIndicator: DeleteIndicator\n" +
+            "        {\n" +
+            "          deleteField: #/test::example::MyType/prop/toBeDeleted#;\n" +
+            "          deleteValues: ['Yes', 'true'];\n" +
+            "        }\n" +
+            "      }\n" +
+            "      deduplication: MaxVersion\n" +
+            "      {\n" +
+            "        versionField: #/test::example::MyType/prop/version#;\n" +
+            "      }\n" +
+            "    }\n" +
+            "    ->\n" +
+            "    {\n" +
+            "    }\n" +
+            "  ];\n" +
+            "}\n");
     }
 }
