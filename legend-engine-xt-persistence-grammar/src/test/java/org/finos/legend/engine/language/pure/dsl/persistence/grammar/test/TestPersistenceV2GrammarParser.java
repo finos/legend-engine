@@ -68,7 +68,7 @@ public class TestPersistenceV2GrammarParser extends TestGrammarParser.TestGramma
                 "      ]\n" +
                 "      deduplication: MaxVersion\n" +
                 "      {\n" +
-                "        versionField: version;\n" +
+                "        versionField: #/test::example::MyType/prop/version#;\n" +
                 "      }\n" +
                 "      datasetType: Snapshot\n" +
                 "      {\n" +

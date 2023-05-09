@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,21 +14,15 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type", defaultImpl = MaxVersionForGraphFetch.class)
-@JsonSubTypes({
-    @JsonSubTypes.Type(value = MaxVersionForGraphFetch.class, name = "maxVersionForGraphFetch"),
-    @JsonSubTypes.Type(value = MaxVersionForTds.class, name = "maxVersionForTds")
-})
-public abstract class MaxVersion extends Deduplication
+public class MaxVersionForGraphFetch extends MaxVersion
 {
-    @Override
-    public <T> T accept(DeduplicationVisitor<T> visitor)
-    {
-        return visitor.visitMaxVersion(this);
-    }
+    public Path versionFieldPath;
 
-    public abstract <T> T accept(MaxVersionVisitor<T> visitor);
+    @Override
+    public <T> T accept(MaxVersionVisitor<T> visitor)
+    {
+        return visitor.visitMaxVersionForGraphFetch(this);
+    }
 }

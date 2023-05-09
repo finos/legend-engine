@@ -31,11 +31,17 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.ActionIndicatorFields;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.ActionIndicatorFieldsVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.DeleteIndicator;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.DeleteIndicatorForGraphFetch;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.DeleteIndicatorForTds;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.DeleteIndicatorVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.NoActionIndicator;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication.AnyVersion;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication.Deduplication;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication.DeduplicationVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication.MaxVersion;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication.MaxVersionForGraphFetch;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication.MaxVersionForTds;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication.MaxVersionVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication.NoDeduplication;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.emptyhandling.DeleteTargetDataset;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.emptyhandling.EmptyDatasetHandling;
@@ -519,7 +525,7 @@ public class HelperPersistenceComposer
         {
             return getTabString(indentLevel) + "actionIndicator: DeleteIndicator\n" +
                     getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel + 1) + "deleteField: " + val.deleteField + ";\n" +
+                    getTabString(indentLevel + 1) + "deleteField: " + val.accept(new DeleteIndicatorComposer()) + ";\n" +
                     renderDeleteValues(val, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
         }
@@ -537,6 +543,21 @@ public class HelperPersistenceComposer
                 builder.append("[];\n");
             }
             return builder.toString();
+        }
+    }
+
+    private static class DeleteIndicatorComposer implements DeleteIndicatorVisitor<String>
+    {
+        @Override
+        public String visitDeleteIndicatorForGraphFetch(DeleteIndicatorForGraphFetch val)
+        {
+            return ServiceOutputComposer.renderPath(val.deleteFieldPath);
+        }
+
+        @Override
+        public String visitDeleteIndicatorForTds(DeleteIndicatorForTds val)
+        {
+            return val.deleteField;
         }
     }
 
@@ -566,8 +587,23 @@ public class HelperPersistenceComposer
         {
             return getTabString(indentLevel) + "deduplication: MaxVersion\n" +
                     getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel + 1) + "versionField: " + val.versionField + ";\n" +
+                    getTabString(indentLevel + 1) + "versionField: " + val.accept(new MaxVersionComposer()) + ";\n" +
                     getTabString(indentLevel) + "}\n";
+        }
+    }
+
+    private static class MaxVersionComposer implements MaxVersionVisitor<String>
+    {
+        @Override
+        public String visitMaxVersionForGraphFetch(MaxVersionForGraphFetch val)
+        {
+            return ServiceOutputComposer.renderPath(val.versionFieldPath);
+        }
+
+        @Override
+        public String visitMaxVersionForTds(MaxVersionForTds val)
+        {
+            return val.versionField;
         }
     }
 

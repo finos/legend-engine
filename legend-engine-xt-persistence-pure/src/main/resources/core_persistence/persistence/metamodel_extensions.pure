@@ -87,6 +87,19 @@ Class
 {doc.doc = ''}
 meta::pure::persistence::metamodel::dataset::deduplication::MaxVersion extends Deduplication
 {
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::dataset::deduplication::MaxVersionForGraphFetch extends MaxVersion
+{
+  versionFieldPath: Path<Nil, Any|*>[1];
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::dataset::deduplication::MaxVersionForTds extends MaxVersion
+{
   versionField: String[1];
 }
 
@@ -118,14 +131,14 @@ Class
 {doc.doc = ''}
 meta::pure::persistence::metamodel::dataset::partitioning::FieldBasedForGraphFetch extends FieldBased
 {
-  partitionFields: String[1..*];
+  partitionFieldPaths: Path<Nil, Any|*>[1..*];
 }
 
 Class
 {doc.doc = ''}
 meta::pure::persistence::metamodel::dataset::partitioning::FieldBasedForTds extends FieldBased
 {
-  partitionFieldPaths: Path<Nil, Any|*>[1..*];
+  partitionFields: String[1..*];
 }
 
 /**********
@@ -172,8 +185,21 @@ Class
 {doc.doc = ''}
 meta::pure::persistence::metamodel::dataset::actionindicator::DeleteIndicator extends ActionIndicatorFields
 {
-  deleteField: String[1];
   deleteValues: String[1..*];
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::dataset::actionindicator::DeleteIndicatorForGraphFetch extends DeleteIndicator
+{
+  deleteFieldPath: Path<Nil, Any|*>[1];
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::dataset::actionindicator::DeleteIndicatorForTds extends DeleteIndicator
+{
+  deleteField: String[1];
 }
 
 /**********

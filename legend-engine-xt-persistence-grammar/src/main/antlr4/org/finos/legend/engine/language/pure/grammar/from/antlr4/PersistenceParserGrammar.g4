@@ -250,7 +250,7 @@ deduplicationMax:                           DEDUPLICATION_MAX
                                                     (deduplicationMaxVersionField)*
                                                 BRACE_CLOSE
 ;
-deduplicationMaxVersionField:               DEDUPLICATION_MAX_VERSION_FIELD COLON identifier SEMI_COLON
+deduplicationMaxVersionField:               DEDUPLICATION_MAX_VERSION_FIELD COLON serviceOutputValue SEMI_COLON
 ;
 datasetType:                                DATASET_TYPE COLON
                                                 (
@@ -328,7 +328,7 @@ deleteIndicator:                            ACTION_INDICATOR_DELETE_INDICATOR
                                                     )*
                                                 BRACE_CLOSE
 ;
-deleteIndicatorField:                       ACTION_INDICATOR_DELETE_INDICATOR_FIELD COLON identifier SEMI_COLON
+deleteIndicatorField:                       ACTION_INDICATOR_DELETE_INDICATOR_FIELD COLON serviceOutputValue SEMI_COLON
 ;
 deleteIndicatorValues:                      ACTION_INDICATOR_DELETE_INDICATOR_VALUES COLON
                                                 BRACKET_OPEN

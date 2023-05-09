@@ -14,11 +14,18 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 import java.util.List;
 
-public class DeleteIndicator extends ActionIndicatorFields
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type", defaultImpl = DeleteIndicatorForGraphFetch.class)
+@JsonSubTypes({
+    @JsonSubTypes.Type(value = DeleteIndicatorForGraphFetch.class, name = "deleteIndicatorForGraphFetch"),
+    @JsonSubTypes.Type(value = DeleteIndicatorForTds.class, name = "deleteIndicatorForTds")
+})
+public abstract class DeleteIndicator extends ActionIndicatorFields
 {
-    public String deleteField;
     public List<String> deleteValues;
 
     @Override
@@ -26,4 +33,6 @@ public class DeleteIndicator extends ActionIndicatorFields
     {
         return visitor.visitDeleteIndicator(this);
     }
+
+    public abstract <T> T accept(DeleteIndicatorVisitor<T> visitor);
 }
