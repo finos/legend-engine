@@ -115,4 +115,16 @@ public class TestMongoDBConnectionGrammarRoundTrip extends TestGrammarRoundtrip.
         testMongoDBConnectionGrammarWithDifferentHostnames("host-name");
     }
 
+    @Test
+    public void testMongoDBConnectionGrammarWithDifferentHostnames9()
+    {
+        testMongoDBConnectionGrammarWithDifferentHostnames("f12345-001.ab.AB.com");
+    }
+
+    @Test
+    public void testMongoDBConnectionGrammarWithDifferentHostnames10()
+    {
+        testMongoDBConnectionGrammarWithDifferentHostnames("fad12345df-001.aB.Ab.com");
+    }
+
 }

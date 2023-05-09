@@ -25,7 +25,7 @@ unquotedIdentifier:                         VALID_STRING
                                             | AUTHENTICATION
 ;
 
-identifier:                                 unquotedIdentifier | STRING
+identifier:                                 unquotedIdentifier | STRING | VALID_STRING
 ;
 
 definition:                                 (
@@ -46,12 +46,7 @@ serverDetails:                              SERVER_URLS COLON
                                                 BRACKET_CLOSE SEMI_COLON
 ;
 
-
-
-dbHost:                                      VALID_STRING ('-'? VALID_STRING)* ('.' VALID_STRING ('-'? VALID_STRING)* )*
-;
-
-serverURLDef:                               dbHost COLON INTEGER
+serverURLDef:                               VALID_STRING COLON INTEGER
 ;
 
 database:                                   DATABASE COLON identifier SEMI_COLON
