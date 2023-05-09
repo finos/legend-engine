@@ -99,6 +99,25 @@ meta::pure::executionPlan::platformBinding::legendJava::library::math::tests::te
          ->assert('%s == 35.0')
       ->addTest('Float n\'ary times', {|[6.0, 7.0, 5.0]->times()}, 'java.util.Arrays.asList(6.0, 7.0, 5.0).stream().reduce(1.0, org.finos.legend.engine.plan.dependencies.util.Library::floatMultiply).doubleValue()', javaDouble())
          ->assert('%s == 210.0')
+      // extra divide tests
+      ->addTest('Integer Divide', {|1 / 2}, 'org.finos.legend.engine.plan.dependencies.util.Library.divide(1L, 2L)', javaDouble())
+         ->assert('%s == 0.5')
+      ->addTest('Decimal Scale 0 Decimal Scale 0 Divide', {|1D / 2D}, 'org.finos.legend.engine.plan.dependencies.util.Library.divide(new java.math.BigDecimal("1"), new java.math.BigDecimal("2"))', javaDouble())
+         ->assert('%s == 0.5')
+      ->addTest('Decimal Scale 1 Decimal Scale 0 Divide', {|1.0D / 2D}, 'org.finos.legend.engine.plan.dependencies.util.Library.divide(new java.math.BigDecimal("1.0"), new java.math.BigDecimal("2"))', javaDouble())
+         ->assert('%s == 0.5')
+      ->addTest('Decimal Scale 0 Decimal Scale 1 Divide', {|1D / 2.0D}, 'org.finos.legend.engine.plan.dependencies.util.Library.divide(new java.math.BigDecimal("1"), new java.math.BigDecimal("2.0"))', javaDouble())
+         ->assert('%s == 0.5')
+      ->addTest('Decimal Scale 0 Integer Divide', {|1D / 2}, 'org.finos.legend.engine.plan.dependencies.util.Library.divide(new java.math.BigDecimal("1"), 2L)', javaDouble())
+         ->assert('%s == 0.5')
+      ->addTest('Decimal Scale 0 Float Divide', {|1D / 2.0}, 'org.finos.legend.engine.plan.dependencies.util.Library.divide(new java.math.BigDecimal("1"), 2.0)', javaDouble())
+         ->assert('%s == 0.5')
+      ->addTest('Integer Decimal Scale 0 Divide', {|1 / 2D}, 'org.finos.legend.engine.plan.dependencies.util.Library.divide(1L, new java.math.BigDecimal("2"))', javaDouble())
+         ->assert('%s == 0.5')
+      ->addTest('Float Decimal Scale 1 Divide', {|1.0 / 2D}, 'org.finos.legend.engine.plan.dependencies.util.Library.divide(1.0, new java.math.BigDecimal("2"))', javaDouble())
+         ->assert('%s == 0.5')
+      ->addTest('Float Divide', {|1.0 / 2.0}, 'org.finos.legend.engine.plan.dependencies.util.Library.divide(1.0, 2.0)', javaDouble())
+         ->assert('%s == 0.5')
       // go
       ->runTests();
 }
