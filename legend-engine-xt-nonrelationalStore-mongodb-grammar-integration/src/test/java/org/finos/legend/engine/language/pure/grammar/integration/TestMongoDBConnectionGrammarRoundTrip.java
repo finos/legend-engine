@@ -39,15 +39,17 @@ public class TestMongoDBConnectionGrammarRoundTrip extends TestGrammarRoundtrip.
                 "}\n");
     }
 
-    @Test
-    public void testMongoDBConnectionGrammarLocalhostWithHyphen()
+
+
+
+    public void testMongoDBConnectionGrammarWithDifferentHostnames(String hostname)
     {
         test("###Connection\n" +
                 "MongoDBConnection test::testConnection\n" +
                 "{\n" +
                 "  database: legend_db;\n" +
                 "  store: mongo::test::db;\n" +
-                "  serverURLs: [host-name:27071];\n" +
+                "  serverURLs: [" + hostname + ":27071];\n" +
                 "  authentication: # UserPassword {\n" +
                 "    username: 'mongo_ro';\n" +
                 "    password: SystemPropertiesSecret\n" +
@@ -56,6 +58,61 @@ public class TestMongoDBConnectionGrammarRoundTrip extends TestGrammarRoundtrip.
                 "    };\n" +
                 "  }#;\n" +
                 "}\n");
+    }
+
+    @Test
+    public void testMongoDBConnectionGrammarLocalhostWithHyphen2()
+    {
+        testMongoDBConnectionGrammarWithDifferentHostnames("localhost");
+
+    }
+
+    @Test
+    public void testMongoDBConnectionGrammarWithDifferentHostnames1()
+    {
+        testMongoDBConnectionGrammarWithDifferentHostnames("host-subdomain456.com");
+    }
+
+    @Test
+    public void testMongoDBConnectionGrammarWithDifferentHostnames2()
+    {
+        testMongoDBConnectionGrammarWithDifferentHostnames("localhost");
+    }
+
+    @Test
+    public void testMongoDBConnectionGrammarWithDifferentHostnames3()
+    {
+        testMongoDBConnectionGrammarWithDifferentHostnames("host123-subdomain456.com");
+    }
+
+    @Test
+    public void testMongoDBConnectionGrammarWithDifferentHostnames4()
+    {
+        testMongoDBConnectionGrammarWithDifferentHostnames("subdomain.examplehost.com");
+    }
+
+    @Test
+    public void testMongoDBConnectionGrammarWithDifferentHostnames5()
+    {
+        testMongoDBConnectionGrammarWithDifferentHostnames("host123.examplehost.com");
+    }
+
+    @Test
+    public void testMongoDBConnectionGrammarWithDifferentHostnames6()
+    {
+        testMongoDBConnectionGrammarWithDifferentHostnames("host123.examplehost.co.nz");
+    }
+
+    @Test
+    public void testMongoDBConnectionGrammarWithDifferentHostnames7()
+    {
+        testMongoDBConnectionGrammarWithDifferentHostnames("host123-subdomain456.examplehost.co.in");
+    }
+
+    @Test
+    public void testMongoDBConnectionGrammarWithDifferentHostnames8()
+    {
+        testMongoDBConnectionGrammarWithDifferentHostnames("host-name");
     }
 
 }
