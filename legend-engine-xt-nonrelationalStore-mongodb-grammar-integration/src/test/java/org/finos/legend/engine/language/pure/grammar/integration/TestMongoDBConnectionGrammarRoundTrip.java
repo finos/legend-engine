@@ -19,16 +19,14 @@ import org.junit.Test;
 
 public class TestMongoDBConnectionGrammarRoundTrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
-
-    @Test
-    public void testMongoDBConnectionGrammar()
+    public void testMongoDBConnectionGrammarWithDifferentHostnames(String hostname)
     {
         test("###Connection\n" +
                 "MongoDBConnection test::testConnection\n" +
                 "{\n" +
                 "  database: legend_db;\n" +
                 "  store: mongo::test::db;\n" +
-                "  serverURLs: [localhost:27071];\n" +
+                "  serverURLs: [" + hostname + ":27071];\n" +
                 "  authentication: # UserPassword {\n" +
                 "    username: 'mongo_ro';\n" +
                 "    password: SystemPropertiesSecret\n" +
@@ -39,4 +37,15 @@ public class TestMongoDBConnectionGrammarRoundTrip extends TestGrammarRoundtrip.
                 "}\n");
     }
 
+    @Test
+    public void testMongoDBConnectionGrammarLocalhost()
+    {
+        testMongoDBConnectionGrammarWithDifferentHostnames("localhost");
+    }
+
+    @Test
+    public void testMongoDBConnectionGrammarWithHyphenAndDots()
+    {
+        testMongoDBConnectionGrammarWithDifferentHostnames("f12345-001.ab.com");
+    }
 }
