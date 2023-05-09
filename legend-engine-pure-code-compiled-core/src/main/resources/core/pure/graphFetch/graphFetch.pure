@@ -78,16 +78,27 @@ function meta::pure::graphFetch::execution::checkCompatibility(fe: FunctionExpre
             'Query returns: \'' + $fe.genericType.rawType.name->toOne() + '\'')
 }
 
-
-
 Class meta::pure::graphFetch::execution::AlloySerializationConfig
 {
+    {doc.doc = 'Give a custom typeKey name. Defaults to @Type'}
     typeKeyName : String[1];
+
+    {doc.doc = 'Set to true to include type info of the serialized class'}
     includeType: Boolean[0..1];
+
+    {doc.doc = 'Set to True to include path to element for Enums'}
     includeEnumType: Boolean[0..1];
+
+    {doc.doc = 'Give a valid string of dateTime format to serialize the dateTime properties respectively'}
+    dateTimeFormat: String[0..1];
+
     removePropertiesWithNullValues: Boolean[0..1];
     removePropertiesWithEmptySets: Boolean[0..1];
+
+    {doc.doc = 'Set to true to include fully qualified type info of the serialized class'}
     fullyQualifiedTypePath: Boolean[0..1];
+
+    {doc.doc = 'Set to True to include Alloy Store Object Reference'}
     includeObjectReference: Boolean[0..1];
 }
 
@@ -125,6 +136,20 @@ function meta::pure::graphFetch::execution::alloyConfig(includeType:Boolean[1], 
 function meta::pure::graphFetch::execution::alloyConfig(includeType:Boolean[1], includeEnumType:Boolean[1], removePropertiesWithNullValues:Boolean[1],  removePropertiesWithEmptySets:Boolean[1], typeString:String[1], fullyQualifiedTypePath:Boolean[1]): meta::pure::graphFetch::execution::AlloySerializationConfig[1]
 {
   meta::pure::graphFetch::execution::alloyConfig($includeType, $includeEnumType, $removePropertiesWithNullValues, $removePropertiesWithEmptySets, $typeString, $fullyQualifiedTypePath, false);
+}
+
+function meta::pure::graphFetch::execution::alloyConfig(includeType:Boolean[1], includeEnumType:Boolean[1], dateTimeFormat: String[1], removePropertiesWithNullValues:Boolean[1],  removePropertiesWithEmptySets:Boolean[1], typeString:String[1], fullyQualifiedTypePath:Boolean[1], includeObjectReference:Boolean[1]): meta::pure::graphFetch::execution::AlloySerializationConfig[1]
+{
+   ^meta::pure::graphFetch::execution::AlloySerializationConfig(
+      typeKeyName = $typeString,
+      includeType = $includeType,
+      includeEnumType = $includeEnumType,
+      dateTimeFormat = $dateTimeFormat,
+      removePropertiesWithNullValues = $removePropertiesWithNullValues,
+      removePropertiesWithEmptySets = $removePropertiesWithEmptySets,
+      fullyQualifiedTypePath = $fullyQualifiedTypePath,
+      includeObjectReference = $includeObjectReference
+   );
 }
 
 function meta::pure::graphFetch::execution::alloyConfig(includeType:Boolean[1], includeEnumType:Boolean[1], removePropertiesWithNullValues:Boolean[1],  removePropertiesWithEmptySets:Boolean[1], typeString:String[1], fullyQualifiedTypePath:Boolean[1], includeObjectReference:Boolean[1]): meta::pure::graphFetch::execution::AlloySerializationConfig[1]

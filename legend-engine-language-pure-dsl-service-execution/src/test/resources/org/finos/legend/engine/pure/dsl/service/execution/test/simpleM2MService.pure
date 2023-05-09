@@ -37,12 +37,44 @@ Class test::sourcePerson
 {
   legalName: String[0..1];
   age: Integer[1];
+  birthDate: DateTime[0..1];
 }
 
 Class test::targetPerson
 {
   name: String[1];
   age: Integer[1];
+  birthDate: DateTime[0..1];
+}
+
+function test::serializeDateTimeWithoutFormat(): String[1]
+{
+   test::targetPerson.all()->graphFetch(#{test::targetPerson{birthDate}}#)->serialize(#{test::targetPerson{birthDate}}#)
+}
+
+function test::serializeDateTime(): String[1]
+{
+   test::targetPerson.all()->graphFetch(#{test::targetPerson{birthDate}}#)->serialize(#{test::targetPerson{birthDate}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(dateTimeFormat='yyyy-MM-dd"T"HH:mm:ss.SSSZ'))
+}
+
+function test::serializeDateTimeTimeZone(): String[1]
+{
+   test::targetPerson.all()->graphFetch(#{test::targetPerson{birthDate}}#)->serialize(#{test::targetPerson{birthDate}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(dateTimeFormat='[EAT]yyyy-MM-dd HH:mm:ss.SSSX'))
+}
+
+function test::serializeDateTimeStrictDatePattern(): String[1]
+{
+   test::targetPerson.all()->graphFetch(#{test::targetPerson{birthDate}}#)->serialize(#{test::targetPerson{birthDate}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(dateTimeFormat='yyyy-MM-dd'))
+}
+
+function test::serializeDateTimeCustomPattern(): String[1]
+{
+   test::targetPerson.all()->graphFetch(#{test::targetPerson{birthDate}}#)->serialize(#{test::targetPerson{birthDate}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(dateTimeFormat='MM/dd/yyyy "at" hh:mma z'))
+}
+
+function test::serializeInvalidDateTimeFormat(): String[1]
+{
+   test::targetPerson.all()->graphFetch(#{test::targetPerson{age,birthDate}}#)->serialize(#{test::targetPerson{age,birthDate}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(dateTimeFormat='yyyy-MM-dd"T"HH:mmm:ss.SSSZ'))
 }
 
 function test::M2MErrorMessage(input: String[1]): String[1]
@@ -96,7 +128,8 @@ Mapping test::Map
    {
      ~src test::sourcePerson
       name: $src.legalName->toOne(),
-      age: $src.age
+      age: $src.age,
+      birthDate: $src.birthDate
    }
 )
 
@@ -132,7 +165,7 @@ Runtime test::Runtime
          JsonModelConnection
          {
            class: test::sourcePerson;
-           url: 'data:application/json,{"age":25}';
+           url: 'data:application/json,{"age":25, "birthDate":"2014-12-27T10:01:35.231-0500"}';
          }
        }#
     ]
