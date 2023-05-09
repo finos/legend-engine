@@ -24,11 +24,7 @@ SERVER_URLS:                                'serverURLs';
 DATABASE:                                   'database';
 DEBUG:                                      'debug';
 AUTHENTICATION:                             'authentication';
-VALID_STRING:                               ValidString;
+HOST_STRING:                                HostString;
 
-fragment Letter:                        [A-Za-z]
-;
-fragment Digit:                         [0-9]
-;
-fragment ValidString:                   (Letter | '_' ) (Letter | Digit | '_' | '$' | '-' | '.' )*
+fragment HostString:                       (Letter | '_' ) (Letter | Digit | '_' | '$' | '-' | '.' )*
 ;

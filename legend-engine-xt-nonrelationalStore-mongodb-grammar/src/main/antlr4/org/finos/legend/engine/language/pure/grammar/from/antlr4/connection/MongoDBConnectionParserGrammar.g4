@@ -19,13 +19,13 @@ import CoreParserGrammar;
 
 options { tokenVocab = MongoDBConnectionLexerGrammar; }
 
-unquotedIdentifier:                         VALID_STRING
+unquotedIdentifier:                         VALID_STRING | HOST_STRING
                                             | STORE | SERVER_URLS
                                             | DATABASE | DEBUG
                                             | AUTHENTICATION
 ;
 
-identifier:                                 unquotedIdentifier | STRING | VALID_STRING
+identifier:                                 unquotedIdentifier | STRING
 ;
 
 definition:                                 (
@@ -46,7 +46,7 @@ serverDetails:                              SERVER_URLS COLON
                                                 BRACKET_CLOSE SEMI_COLON
 ;
 
-serverURLDef:                               VALID_STRING COLON INTEGER
+serverURLDef:                               HOST_STRING COLON INTEGER
 ;
 
 database:                                   DATABASE COLON identifier SEMI_COLON
