@@ -14,7 +14,11 @@
 
 package org.finos.legend.engine.plan.execution.stores.mongodb.specifics;
 
-public class MongoDBRootGraphExecutionNodeSpecifics
-{
+import com.mongodb.client.MongoCursor;
+import org.bson.Document;
+import org.finos.legend.engine.plan.dependencies.store.inMemory.IStoreStreamReader;
 
+public interface IMongoDocumentDeserializeExecutionNodeSpecifics
+{
+    IStoreStreamReader streamReader(MongoCursor<Document> mCursor);
 }

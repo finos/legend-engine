@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::*;
 import meta::pure::model::unit::*;
 import meta::external::shared::format::executionPlan::platformBinding::legendJava::*;
 import meta::external::shared::format::utils::*;
@@ -46,6 +47,8 @@ import meta::external::store::mongodb::metamodel::pure::*;
 import meta::external::store::mongodb::metamodel::mapping::*;
 import meta::pure::executionPlan::platformBinding::localBinding::*;
 
+import meta::pure::executionPlan::platformBinding::legendJava::library::jackson::*;
+
 function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::mongoDBStoreLegendJavaPlatformBindingExtension(): LegendJavaPlatformBindingExtension[1]
 {
    ^LegendJavaPlatformBindingExtension
@@ -64,14 +67,14 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
 
          ^meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::LegendJavaInMemoryGraphFetchExtension
          (
-          
+
             filterCodeGenerator = {set: InstanceSetImplementation[1], src: Code[1], withoutFilter: Code[1..*], context: GenerationContext[1], debug:DebugContext[1] |
                [
                   mdsi: MongoDBSetImplementation[1]  | $withoutFilter,
                   emsi: EmbeddedMongoDBSetImplementation[1]  | $withoutFilter
                ]
             }
-            
+
             ,
             mappingTransformExtractors = [
                {spm : MongoDBPropertyMapping[1] | let dummyLambda = {|'ok'};
@@ -126,7 +129,7 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
                spm : MongoDBPropertyMapping[1]           | [],
                epm : EmbeddedMongoDBSetImplementation[1] | []
             ]
-            
+
          )
 
       ],
@@ -147,7 +150,14 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
             s: MongoDBDocumentInternalizeExecutionNode[1] | $s->meta::external::store::mongodb::executionPlan::platformBinding::legendJava::generateForMongoDocumentInternalizeExecutionNode($path, $context, $debug),
             n: ExecutionNode[1]                            | ^GeneratedCode()
          ])
-      }
+      },
+
+      // adhoc Extensions
+      adhocExtensions = [
+        ^LegendJavaPlatformDependencyUpdateExtension(
+          platformDependencyUpdate = {conventions: Conventions[1], extensions: Extension[*] | extendMongoDocumentJavaEngineDependencies($conventions)})
+      ]
+
    )
 }
 
@@ -161,7 +171,7 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
    let dependentClass     = $context.typeInfos->classDependenciesViaPropertiesWithSubTypes($pureClass);
    let readableClasses    = $pureClass->concatenate($dependentClass);
    let readableEnums      = $context.typeInfos->enumDependenciesViaProperties($pureClass);
-   
+
    let bindingDetail      = $context->nodeInfosForPath($path).data->toOne()->cast(@SuccessfulBindingDetail);
    let mainClassProject   = $pureClass->createStreamReadingDataClass($path, $context, ^ConstraintCheckingGenerationContext(enableConstraints=$node.enableConstraints, topLevelOnly=$node.tree->isEmpty(), graphFetchTree=$node.tree), $debug->indent());
    let dataClassesProject = if($dependentClass->isEmpty(),
@@ -170,27 +180,33 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
                               );
 
    let storeReaderProject = createJsonReading($pureClass, $conventions->className($pureClass), $path, $node.config->cast(@MongoDBDocumentInternalizeConfig).path, $readableClasses, $readableEnums, $context, $debug->indent());
+   // Swap out the readChecked with Documents from cursor.next().toJson()
+   let expectedClass = $context.conventions->jsonReaderClass($path, $pureClass);
+   let existingJsonReaderClass = $storeReaderProject->allClasses()
+    ->filter(c | $c.simpleName == $context.conventions->jsonReaderClass($path, $pureClass).simpleName)->toOne();
+   let modifiedJsonReaderClass = $existingJsonReaderClass->modifyJsonReaderForMongoCursor($pureClass, $conventions->className($pureClass), $path, $context);
+   let modifiedStoreReaderProj = $storeReaderProject->replaceClass($modifiedJsonReaderClass);
 
-   let sourceStreamParam       = j_parameter(javaInputStream(), 'sourceStream');
+   let sourceCursorParam       = j_parameter(javaMongoDocumentCursor(), 'mCursor');
    let streamReaderMethodCodes = $conventions->jsonReaderClass($path, $pureClass)
-                                             ->j_new($sourceStreamParam)
+                                             ->j_new($sourceCursorParam)
                                              ->j_return();
 
    let executeClassWithImports = $conventions->planNodeClass('public', $path, 'Execute')
                                              ->usingKnownPackages($conventions->knownPackages())
                                              ->imports($conventions->standardImports())
-                                             ->imports(javaInputStream())
-                                             ->imports([_IJsonDeserializeExecutionNodeSpecifics, StoreStreamReader]->map(x | $conventions->className($x)))
-                                             ->implements($conventions->className(_IJsonDeserializeExecutionNodeSpecifics));
+                                             ->imports(javaMongoCursor())
+                                             ->imports([_IMongoDocumentDeserializeExecutionNodeSpecifics, StoreStreamReader]->map(x | $conventions->className($x)))
+                                             ->implements($conventions->className(_IMongoDocumentDeserializeExecutionNodeSpecifics));
 
    let executeClass = $executeClassWithImports->addMethod(
-      javaMethod(['public'], $conventions->className(StoreStreamReader), 'streamReader', [$sourceStreamParam], $streamReaderMethodCodes)
+      javaMethod(['public'], $conventions->className(StoreStreamReader), 'streamReader', [$sourceCursorParam], $streamReaderMethodCodes)
    );
 
    let executeProject = newProject()->addClasses($executeClass);
    let allProjects    = $executeProject
       ->concatenate($dataClassesProject)
-      ->concatenate($storeReaderProject)
+      ->concatenate($modifiedStoreReaderProj)
       ->concatenate($streamReaderMethodCodes->dependencies()->resolveAndGetProjects())
       ->toOneMany();
 
@@ -214,12 +230,12 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
    let simpleType                          = ^SimpleJavaType(pureType=$class, javaType=$conventions->className($class));
    let sourceRecordTree                    = $externalFormatContract.sourceRecordSerializeTree->toOne();
    let returnType                          = if($node.checked, | ^CheckedJavaType(checkedOf=$simpleType, source=^SimpleJavaType(pureType=$sourceRecordTree.class, javaType=$conventions->className($sourceRecordTree.class))), | $simpleType);
-   let bindingDetail                       = if($externalFormatContract.externalFormatBindingValidator->isNotEmpty(), 
+   let bindingDetail                       = if($externalFormatContract.externalFormatBindingValidator->isNotEmpty(),
                                                 | $externalFormatContract.externalFormatBindingValidator->toOne()->eval($node.binding),
                                                 | []);
    let nodeInfo                            = ^NodeInfo(
-                                                  path            = $path, 
-                                                  returnType      = $returnType, 
+                                                  path            = $path,
+                                                  returnType      = $returnType,
                                                   graphFetchTrees = $sourceRecordTree,
                                                   data            = $bindingDetail
                                               );
@@ -237,6 +253,125 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
 }
 
 
+function <<access.private>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::modifyJsonReaderForMongoCursor(origClass:meta::external::language::java::metamodel::Class[1], pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
+{
+  //proto:meta::external::language::java::metamodel::Class[1], pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1])
+  $origClass->imports(javaBsonDocument())
+      ->imports(javaMongoCursor())
+      ->addField(javaField('private', javaMongoDocumentCursor(), 'mCursor'))
+      ->addMongoCursorConstructor()
+      ->replaceInitReading($context.typeInfos->hasDecimal())
+      ->replaceIsFinished()
+      ->replaceDestroyReading()
+      ->replaceCheckedObjects($pureClass, $javaInterface, $path, $context)
+}
+
+function <<access.private>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::javaMongoDocumentCursor(): meta::external::language::java::metamodel::ParameterizedType[1]
+{
+  let documentClass =    ^meta::external::language::java::metamodel::Class(simpleName = 'Document', package = ^meta::external::language::java::metamodel::Package(name = 'bson', parent = ^meta::external::language::java::metamodel::Package(name = 'org')));
+  ^meta::external::language::java::metamodel::ParameterizedType(rawType=javaClass('com.mongodb.client.MongoCursor'), typeArguments=$documentClass->toBoxed());
+}
+
+function <<access.private>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::javaBsonDocument(): meta::external::language::java::metamodel::Class[1]
+{
+  javaClass('org.bson.Document');
+}
+
+function <<access.private>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::javaMongoCursor(): meta::external::language::java::metamodel::Class[1]
+{
+  javaClass('com.mongodb.client.MongoCursor');
+}
+
+function <<access.private>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::addMongoCursorConstructor(class:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+{
+   let mCursor = j_parameter(javaMongoDocumentCursor(),'mCursor');
+
+   $class->addConstructor(
+      javaConstructor([], [$mCursor]->cast(@meta::external::language::java::metamodel::Parameter),
+         [
+            j_this($class)->j_field('mCursor')->j_assign($mCursor)
+         ]
+      )
+   );
+}
+
+function <<access.private>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::replaceInitReading(class:meta::external::language::java::metamodel::Class[1], useBigDecimalForFloats:Boolean[0..1]): meta::external::language::java::metamodel::Class[1]
+{
+   let jThis  = j_this($class);
+   let objectMapper = $jThis->j_field('objectMapper');
+   let objectMapperInstantiation = if($useBigDecimalForFloats->isTrue(),
+                                      | $objectMapper->j_assign(objectMapper()->j_new([])->j_invoke('configure', [deserializationFeatureBigDecimalForFloats()->j_field('USE_BIG_DECIMAL_FOR_FLOATS', deserializationFeatureBigDecimalForFloats()), j_true()] , objectMapper())),
+                                      | $objectMapper->j_assign(objectMapper()->j_new([]))
+                                    );
+   let newInitMethod = javaMethod('public', javaVoid(), 'initReading', [],[$objectMapperInstantiation]);
+
+   ^$class(methods = $class.methods->filter({m| $m.name != 'initReading'})->concatenate($newInitMethod));
+}
+
+function <<access.private>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::replaceIsFinished(class:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+{
+   let jThis  = j_this($class);
+   let exception        = j_parameter(javaIllegalStateException(), 'ex');
+   let exCheckExpression = $exception->j_invoke('getMessage', [], javaString())->j_invoke('equals', j_string('Cursor has been closed'))->j_if(j_boolean('true')->j_return(), $exception->j_throw());
+   //let exCheckExpression = $exception->j_throw();
+
+   let cursorFinished = j_not($jThis->j_field('mCursor')->j_invoke('hasNext',[], javaBoolean()))->j_return()->j_try(j_catch($exception, $exCheckExpression));
+   
+   let newIsFinishedMethod = javaMethod('public', javaBoolean(), 'isFinished', [],[$cursorFinished]);
+   // Remove nextToken, getCurrentToken method as we don't need it.
+   ^$class(methods = $class.methods->filter({m| $m.name->in(['isFinished', 'nextToken','getCurrentToken'])->not()})->concatenate($newIsFinishedMethod));
+}
+
+function <<access.private>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::replaceDestroyReading(class:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+{
+   let jThis  = j_this($class);
+   let closeCursor = $jThis->j_field('mCursor')->j_invoke('close',[], javaVoid());
+   let newDestroyReadingMethod = javaMethod('public', javaVoid(), 'destroyReading', [],[$closeCursor]);
+
+   ^$class(methods = $class.methods->filter({m| $m.name != 'destroyReading'})->concatenate($newDestroyReadingMethod));
+}
+
+
+
+function <<access.private>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::replaceCheckedObjects(proto:meta::external::language::java::metamodel::Class[1], pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
+{
+   let conv            = $context.conventions;
+   let checkedClass    = $context.baseProject->toOne()->resolve($conv->className(meta::pure::dataQuality::Checked));
+   let checkedSource   = javaParameterizedType($checkedClass, $javaInterface);
+   let checked         = j_variable($checkedSource, 'object');
+   let sourceRead      = $pureClass->readMethodName($conv);
+   let ioEx            = j_parameter(javaIOException(), 'e');
+   let jThis           = j_this($proto);
+   let recordType      = $conv->className(meta::pure::mapping::modelToModel::JsonDataRecord);
+   let json            = j_variable(javaString(), 'json');
+   let recordNumber    = j_variable(javaLong(), 'recordNumber');
+   let source          = j_variable($recordType, 'source');
+   let node            = j_variable(jsonNode(), 'node');
+
+   let newReadChecked =
+      javaMethod('public', javaCollection($checkedSource), 'readCheckedObjects', [],
+         [
+            $jThis->j_field('recordCount')->j_inc(),
+
+            $node->j_declare($jThis->j_field('objectMapper', objectMapper())->j_invoke('readTree', [$jThis->j_field('mCursor', javaMongoDocumentCursor())->j_invoke('next', [], javaBsonDocument())->j_invoke('toJson', [], javaString())], jsonNode())),
+            $checked->j_declare($jThis->j_invoke($sourceRead, [$node], $checkedSource)),
+
+            $recordNumber->j_declare($jThis->j_field('recordCount')),
+            $json->j_declare($node->j_invoke('toString', [])),
+
+            $source->j_declare($recordType->j_newAnon([], [
+               j_method('public', javaLong(), $conv->getterName('number'), [], $recordNumber->j_return()),
+               j_method('public', javaString(), $conv->getterName('record'), [], $json->j_return())
+            ])),
+
+            javaCollections()->j_invoke('singleton', $conv->dynamicChecked($conv->checkedGetDefects($checked), $source, $conv->checkedGetValue($checked)), javaCollection($checkedSource))->j_return()
+         ]->j_ioExTryCatch()
+      );
+
+
+   ^$proto(methods = $proto.methods->filter({m| $m.name != 'readCheckedObjects'})->concatenate($newReadChecked));
+}
+
 function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::mongoDBLegendJavaPlatformBindingExtensions(): Extension[*]
 {
 //Pulls together store extension + PlatformBinding extension to a single method.
@@ -252,6 +387,28 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
   ])
   ]
 }
+
+
+
+Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava::_IMongoDocumentDeserializeExecutionNodeSpecifics {}
+
+/*
+ * This function should be assigned to the router extension:
+ *
+ *     plan_javaRuntime_enginePlatformDependencies_conventions = meta::external::format::json::executionPlan::platformBinding::legendJava::extendJavaEngineDependencies_Conventions_1__Conventions_1_
+ */
+
+function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::extendMongoDocumentJavaEngineDependencies(conventions:Conventions[1]):Conventions[1]
+{
+   let jIStoreStreamReader = $conventions->className(meta::pure::executionPlan::platformBinding::legendJava::StoreStreamReader);
+
+   let jIMongoDocumentDeserializeExecutionNodeSpecifics = javaClass('public', 'org.finos.legend.engine.plan.execution.stores.mongodb.specifics.IMongoDocumentDeserializeExecutionNodeSpecifics')
+      ->addMethod(javaMethod('public', $jIStoreStreamReader, 'mCursor', [javaParam(javaMongoDocumentCursor(), 'p0')]));
+
+   $conventions
+      ->addProvidedType(meta::external::store::mongodb::executionPlan::platformBinding::legendJava::_IMongoDocumentDeserializeExecutionNodeSpecifics, $jIMongoDocumentDeserializeExecutionNodeSpecifics);
+}
+
 
 function <<LocalPlatformBinding.TestPlanBinder>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::bindMongoDBTestPlanToPlatform(): LocalPlatformBinder[1]
 {

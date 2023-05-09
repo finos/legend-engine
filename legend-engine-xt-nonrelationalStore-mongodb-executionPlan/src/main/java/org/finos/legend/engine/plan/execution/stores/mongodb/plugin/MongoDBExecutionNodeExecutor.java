@@ -15,12 +15,12 @@
 package org.finos.legend.engine.plan.execution.stores.mongodb.plugin;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.client.MongoCursor;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
+import org.bson.Document;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
-import org.finos.legend.engine.external.format.json.read.IJsonDeserializeExecutionNodeSpecifics;
-import org.finos.legend.engine.external.shared.runtime.read.ExecutionHelper;
 import org.finos.legend.engine.external.shared.utils.ExternalFormatRuntime;
 import org.finos.legend.engine.language.pure.grammar.to.MongoDBQueryJsonComposer;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicChecked;
@@ -36,6 +36,8 @@ import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.StoreStreamReadingObjectsIterator;
 import org.finos.legend.engine.plan.execution.stores.mongodb.MongoDBExecutor;
+import org.finos.legend.engine.plan.execution.stores.mongodb.result.MongoCursorResult;
+import org.finos.legend.engine.plan.execution.stores.mongodb.specifics.IMongoDocumentDeserializeExecutionNodeSpecifics;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DatabaseCommand;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBDocumentInternalizeExecutionNode;
@@ -46,7 +48,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPl
 import org.pac4j.core.profile.CommonProfile;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -113,23 +114,32 @@ public class MongoDBExecutionNodeExecutor implements ExecutionNodeVisitor<Result
 
     private Result executeDocumentInternalizeExecutionNode(MongoDBDocumentInternalizeExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
-        InputStream stream = ExecutionHelper.inputStreamFromResult(node.executionNodes().getFirst().accept(new ExecutionNodeExecutor(profiles, new ExecutionState(executionState))));
-        StreamingObjectResult<?> streamingObjectResult = executeInternalizeExecutionNode(node, stream, profiles, executionState);
+        MongoCursor<Document> resultCursor = getResultCursor(node.executionNodes().getFirst().accept(new ExecutionNodeExecutor(profiles, new ExecutionState(executionState))));
+        StreamingObjectResult<?> streamingObjectResult = executeInternalizeExecutionNode(node, resultCursor, profiles, executionState);
         return applyConstraints(streamingObjectResult, node.checked, node.enableConstraints);
     }
 
+    private MongoCursor<Document> getResultCursor(Result mongoResult)
+    {
+        if (mongoResult instanceof MongoCursorResult)
+        {
+            return ((MongoCursorResult) mongoResult).getMongoCursor();
+        }
+        return null;
+    }
 
-    private StreamingObjectResult<?> executeInternalizeExecutionNode(MongoDBDocumentInternalizeExecutionNode node, InputStream inputStream, MutableList<CommonProfile> profiles, ExecutionState executionState)
+
+    private StreamingObjectResult<?> executeInternalizeExecutionNode(MongoDBDocumentInternalizeExecutionNode node, MongoCursor<Document> resultCursor, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
         try
         {
             String specificsClassName = JavaHelper.getExecutionClassFullName((JavaPlatformImplementation) node.implementation);
             //We don't need specifics class for reader - as we know the object.
             Class<?> specificsClass = ExecutionNodeJavaPlatformHelper.getClassToExecute(node, specificsClassName, executionState, profiles);
-            IJsonDeserializeExecutionNodeSpecifics specifics = (IJsonDeserializeExecutionNodeSpecifics) specificsClass.getConstructor().newInstance();
+            IMongoDocumentDeserializeExecutionNodeSpecifics specifics = (IMongoDocumentDeserializeExecutionNodeSpecifics) specificsClass.getConstructor().newInstance();
 
             // checked made true and enableConstraints made false as these are incorporated in ExternalFormatRuntime centrally
-            StoreStreamReadingObjectsIterator<?> storeObjectsIterator = StoreStreamReadingObjectsIterator.newObjectsIterator(specifics.streamReader(inputStream), false, true);
+            StoreStreamReadingObjectsIterator<?> storeObjectsIterator = StoreStreamReadingObjectsIterator.newObjectsIterator(specifics.streamReader(resultCursor), false, true);
 
             Stream<?> objectStream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(storeObjectsIterator, Spliterator.ORDERED), false);
             return new StreamingObjectResult<>(objectStream);
