@@ -39,4 +39,23 @@ public class TestMongoDBConnectionGrammarRoundTrip extends TestGrammarRoundtrip.
                 "}\n");
     }
 
+    @Test
+    public void testMongoDBConnectionGrammarLocalhostWithHyphen()
+    {
+        test("###Connection\n" +
+                "MongoDBConnection test::testConnection\n" +
+                "{\n" +
+                "  database: legend_db;\n" +
+                "  store: mongo::test::db;\n" +
+                "  serverURLs: [host-name:27071];\n" +
+                "  authentication: # UserPassword {\n" +
+                "    username: 'mongo_ro';\n" +
+                "    password: SystemPropertiesSecret\n" +
+                "    {\n" +
+                "      systemPropertyName: 'sys.prop.name';\n" +
+                "    };\n" +
+                "  }#;\n" +
+                "}\n");
+    }
+
 }

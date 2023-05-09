@@ -77,7 +77,7 @@ public class MongoDBConnectionParseTreeWalker
         dsSpecification.serverURLs = serverDetailsContext.serverURLDef().stream().map(i ->
         {
             MongoDBURL url = new MongoDBURL();
-            url.baseUrl = i.VALID_STRING().getText();
+            url.baseUrl = i.dbHost().getText();
             url.port = Long.parseLong(i.INTEGER().getText());
             return url;
         }).collect(Collectors.toList());

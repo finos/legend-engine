@@ -46,7 +46,10 @@ serverDetails:                              SERVER_URLS COLON
                                                 BRACKET_CLOSE SEMI_COLON
 ;
 
-serverURLDef:                               VALID_STRING COLON INTEGER
+dbHost:                                     VALID_STRING | (VALID_STRING '-' VALID_STRING)
+;
+
+serverURLDef:                               dbHost COLON INTEGER
 ;
 
 database:                                   DATABASE COLON identifier SEMI_COLON
