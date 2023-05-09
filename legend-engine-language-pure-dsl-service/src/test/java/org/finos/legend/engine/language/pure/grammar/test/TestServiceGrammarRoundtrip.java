@@ -1952,8 +1952,8 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "}\n" +
                 "\n" +
                 "\n" +
-                "###Pure" +
-                "Class anything::somethingElse" +
+                "###Pure\n" +
+                "Class anything::somethingElse\n" +
                 "{\n" +
                 "}\n";
         testComposedGrammarWithoutSectionIndex(expected, true);
