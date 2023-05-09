@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.dsl.service.grammar.to;
 
 import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
@@ -66,35 +67,24 @@ public class ServiceGrammarComposerExtension implements PureGrammarComposerExten
     @Override
     public List<Function3<List<PackageableElement>, PureGrammarComposerContext, List<String>, PureFreeSectionGrammarComposerResult>> getExtraFreeSectionComposers()
     {
-        return Lists.mutable.with((elements, context, composedSections) ->
+        return Lists.fixedSize.of((elements, context, composedSections) ->
         {
-            List<Service> composableElements = ListIterate.selectInstancesOf(elements, Service.class);
-            List<ExecutionEnvironmentInstance> composableExecEnvironment = ListIterate.selectInstancesOf(elements, ExecutionEnvironmentInstance.class);
-            if (!composableElements.isEmpty() && !composableExecEnvironment.isEmpty())
-            {
-                composableExecEnvironment = ListIterate.selectInstancesOf(elements, ExecutionEnvironmentInstance.class);
-                return composableExecEnvironment.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(elements, el ->
-                {
-                    if (el instanceof Service)
+            MutableList<PackageableElement> composableElements = ListIterate.select(elements, e -> e instanceof Service || e instanceof ExecutionEnvironmentInstance);
+            return composableElements.isEmpty()
+                    ? null
+                    : new PureFreeSectionGrammarComposerResult(composableElements
+                    .collect(element ->
                     {
-                        return ServiceGrammarComposerExtension.renderService((Service) el, context);
-                    }
-                    else if (el instanceof ExecutionEnvironmentInstance)
-                    {
-                        return renderExecutionEnvironment((ExecutionEnvironmentInstance) el, context);
-                    }
-                    return "/* Can't transform element '" + el.getPath() + "' in this section */";
-                }).makeString("###" + ServiceParserExtension.NAME + "\n", "\n\n", ""), elements);
-            }
-            else if (composableExecEnvironment.isEmpty())
-            {
-                return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, el -> ServiceGrammarComposerExtension.renderService(el, context)).makeString("###" + ServiceParserExtension.NAME + "\n", "\n\n", ""), composableElements);
-            }
-            else
-            {
-                return new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableExecEnvironment, el -> renderExecutionEnvironment(el, context)).makeString("###" + ServiceParserExtension.NAME + "\n", "\n\n", ""), composableExecEnvironment);
-
-            }
+                        if (element instanceof Service)
+                        {
+                            return ServiceGrammarComposerExtension.renderService((Service) element, context);
+                        }
+                        else
+                        {
+                            return renderExecutionEnvironment((ExecutionEnvironmentInstance) element, context);
+                        }
+                    })
+                    .makeString("###" + ServiceParserExtension.NAME + "\n", "\n\n", ""), composableElements);
         });
     }
 
