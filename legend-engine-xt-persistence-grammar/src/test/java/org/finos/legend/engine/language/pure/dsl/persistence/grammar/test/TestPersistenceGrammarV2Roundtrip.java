@@ -61,7 +61,7 @@ public class TestPersistenceGrammarV2Roundtrip extends TestGrammarRoundtrip.Test
     }
 
     @Test
-    public void persistenceOptionalFieldsDefaulted()
+    public void persistenceTdsOptionalFieldsDefaulted()
     {
         test("###Persistence\n" +
                 "Persistence test::TestPersistence\n" +
@@ -86,11 +86,11 @@ public class TestPersistenceGrammarV2Roundtrip extends TestGrammarRoundtrip.Test
                 "    ->\n" +
                 "    {\n" +
                 "    },\n" +
-                "    #/test::example::MyType/prop#\n" +
+                "    ROOT\n" +
                 "    {\n" +
                 "      keys:\n" +
                 "      [\n" +
-                "        #/test::example::MyType/prop/foo#, #/test::example::MyType/prop/bar#\n" +
+                "        hello, hi\n" +
                 "      ]\n" +
                 "      datasetType: Snapshot\n" +
                 "      {\n" +
@@ -143,6 +143,91 @@ public class TestPersistenceGrammarV2Roundtrip extends TestGrammarRoundtrip.Test
                 "    }\n" +
                 "  ]\n" +
                 "}\n");
+    }
+
+    @Test
+    public void persistenceGraphFetchOptionalFieldsDefaulted()
+    {
+        test("###Persistence\n" +
+            "Persistence test::TestPersistence\n" +
+            "{\n" +
+            "  doc: 'This is test documentation.';\n" +
+            "  trigger: Manual;\n" +
+            "  service: test::Service;\n" +
+            "  serviceOutputTargets:\n" +
+            "  [\n" +
+            "    #/test::example::MyType/hello#\n" +
+            "    {\n" +
+            "      keys:\n" +
+            "      [\n" +
+            "        #/test::example::MyType/hello/key1#, #/test::example::MyType/hello/key2#\n" +
+            "      ]\n" +
+            "      datasetType: Delta\n" +
+            "      {\n" +
+            "        actionIndicator: None;\n" +
+            "      }\n" +
+            "      deduplication: None;\n" +
+            "    }\n" +
+            "    ->\n" +
+            "    {\n" +
+            "    },\n" +
+            "    #/test::example::MyType/prop#\n" +
+            "    {\n" +
+            "      keys:\n" +
+            "      [\n" +
+            "        #/test::example::MyType/prop/foo#, #/test::example::MyType/prop/bar#\n" +
+            "      ]\n" +
+            "      datasetType: Snapshot\n" +
+            "      {\n" +
+            "        partitioning: None\n" +
+            "        {\n" +
+            "          emptyDatasetHandling: NoOp;\n" +
+            "        }\n" +
+            "      }\n" +
+            "      deduplication: None;\n" +
+            "    }\n" +
+            "    ->\n" +
+            "    {\n" +
+            "    }\n" +
+            "  ];\n" +
+            "  tests:\n" +
+            "  [\n" +
+            "    test1:\n" +
+            "    {\n" +
+            "      testBatches:\n" +
+            "      [\n" +
+            "        testBatch1:\n" +
+            "        {\n" +
+            "          data:\n" +
+            "          {\n" +
+            "            connection:\n" +
+            "            {\n" +
+            "              ExternalFormat\n" +
+            "              #{\n" +
+            "                contentType: 'application/x.flatdata';\n" +
+            "                data: 'FIRST_NAME,LAST_NAME\\nFred,Bloggs\\nJane,Doe';\n" +
+            "              }#\n" +
+            "            }\n" +
+            "          }\n" +
+            "          asserts:\n" +
+            "          [\n" +
+            "            assert1:\n" +
+            "              EqualToJson\n" +
+            "              #{\n" +
+            "                expected : \n" +
+            "                  ExternalFormat\n" +
+            "                  #{\n" +
+            "                    contentType: 'application/json';\n" +
+            "                    data: '{\"Age\":12, \"Name\":\"dummy\"}';\n" +
+            "                  }#;\n" +
+            "              }#\n" +
+            "          ]\n" +
+            "        }\n" +
+            "      ]\n" +
+            "      isTestDataFromServiceOutput: false;\n" +
+            "    }\n" +
+            "  ]\n" +
+            "}\n");
     }
 
     @Test
