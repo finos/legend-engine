@@ -123,7 +123,7 @@ MongoDBConnection test::mongodb::testConnection
 {
     database: userDatabase;
     store: test::mongodb::mydatabase;
-    serverURLs: [localhost:49634];
+    serverURLs: [localhost:27017];
     authentication: # UserPassword {
         username: 'sa';
         password: SystemPropertiesSecret

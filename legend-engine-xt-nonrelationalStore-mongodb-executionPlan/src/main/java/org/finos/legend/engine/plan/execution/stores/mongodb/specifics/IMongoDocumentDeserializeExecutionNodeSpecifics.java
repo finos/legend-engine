@@ -14,7 +14,10 @@
 
 package org.finos.legend.engine.plan.execution.stores.mongodb.specifics;
 
-public class MongoDBRootGraphExecutionNodeSpecifics
-{
+import org.finos.legend.engine.plan.dependencies.store.inMemory.IStoreStreamReader;
+import org.finos.legend.engine.plan.execution.stores.mongodb.result.MongoDBResult;
 
+public interface IMongoDocumentDeserializeExecutionNodeSpecifics
+{
+    IStoreStreamReader streamReader(MongoDBResult mongoResult);
 }

@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.mongodb;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.mongodb.client.MongoClient;
@@ -22,23 +21,14 @@ import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
-import org.finos.legend.authentication.credentialprovider.impl.UserPasswordCredentialProvider;
-import org.finos.legend.authentication.intermediationrule.IntermediationRuleProvider;
-import org.finos.legend.authentication.intermediationrule.impl.UserPasswordFromVaultRule;
-import org.finos.legend.authentication.vault.CredentialVaultProvider;
-import org.finos.legend.authentication.vault.PlatformCredentialVaultProvider;
-import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
-import org.finos.legend.authentication.vault.impl.SystemPropertiesCredentialVault;
-import org.finos.legend.engine.plan.execution.result.InputStreamResult;
 import org.finos.legend.engine.plan.execution.stores.mongodb.auth.MongoDBConnectionSpecification;
 import org.finos.legend.engine.plan.execution.stores.mongodb.auth.MongoDBStoreConnectionProvider;
+import org.finos.legend.engine.plan.execution.stores.mongodb.result.MongoDBResult;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential;
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.util.Properties;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionCategory;
 
 public class MongoDBExecutor
 {
@@ -51,7 +41,7 @@ public class MongoDBExecutor
         this.credentialProviderProvider = credentialProviderProvider;
     }
 
-    public InputStreamResult executeMongoDBQuery(String dbCommand, MongoDBConnection dbConnection)
+    public MongoDBResult executeMongoDBQuery(String dbCommand, MongoDBConnection dbConnection)
     {
         try
         {
@@ -66,26 +56,29 @@ public class MongoDBExecutor
 
             ObjectMapper mapper = new ObjectMapper();
             ArrayNode arrayNode = mapper.createArrayNode();
-
-            try (MongoCursor<Document> cursor = mongoDatabase.getCollection(bsonCmd.getString("aggregate"))
-                    .aggregate(bsonCmd.getList("pipeline", Document.class))
-                    .batchSize(DEFAULT_BATCH_SIZE).iterator())
+            MongoDBResult mongoDBResult;
+            try
             {
-                while (cursor.hasNext())
-                {
-                    JsonNode jsonNode = mapper.readTree(cursor.next().toJson());
-                    arrayNode.add(jsonNode);
-                }
+                MongoCursor<Document> cursor = mongoDatabase.getCollection(bsonCmd.getString("aggregate"))
+                        .aggregate(bsonCmd.getList("pipeline", Document.class))
+                        .batchSize(DEFAULT_BATCH_SIZE).iterator();
+                mongoDBResult = new MongoDBResult(mongoClient, cursor);
             }
-
-            InputStream inputStream = new ByteArrayInputStream(arrayNode.toString().getBytes());
-
-            return new InputStreamResult(inputStream);
-
+            catch (Exception e)
+            {
+                throw new EngineException(
+                        String.format("Failed to execute query : %s, database: %s", dbCommand.toString(), dbConnection.dataSourceSpecification.databaseName),
+                        e,
+                        ExceptionCategory.SERVER_EXECUTION_ERROR);
+            }
+            return mongoDBResult;
         }
         catch (Exception e)
         {
-            throw new RuntimeException("error streaming MongoDB Results", e);
+            throw new EngineException(
+                    String.format("Failed to execute query : %s, database: %s", dbCommand.toString(), dbConnection.dataSourceSpecification.databaseName),
+                    e,
+                    ExceptionCategory.SERVER_EXECUTION_ERROR);
         }
     }
 
