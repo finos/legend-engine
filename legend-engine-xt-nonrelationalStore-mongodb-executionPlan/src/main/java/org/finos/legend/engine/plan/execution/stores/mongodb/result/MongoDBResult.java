@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.mongodb.result;
 
+import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCursor;
 import org.bson.Document;
 import org.finos.legend.engine.plan.execution.result.ExecutionActivity;
@@ -25,19 +26,22 @@ import org.finos.legend.engine.plan.execution.result.builder.stream.StreamBuilde
 import java.util.Collections;
 import java.util.List;
 
-public class MongoCursorResult extends Result
+public class MongoDBResult extends Result
 {
     private final MongoCursor<Document> mongoCursor;
 
-    public MongoCursorResult(MongoCursor<Document> mongoCursor)
+    private final MongoClient mongoClient;
+
+    public MongoDBResult(MongoClient mongoClient, MongoCursor<Document> mongoCursor)
     {
-        this(mongoCursor, Collections.emptyList());
+        this(mongoClient, mongoCursor, Collections.emptyList());
     }
 
-    public MongoCursorResult(MongoCursor<Document> mongoCursor, List<ExecutionActivity> activities)
+    public MongoDBResult(MongoClient mongoClient, MongoCursor<Document> mongoCursor, List<ExecutionActivity> activities)
     {
         super("success", activities);
         this.mongoCursor = mongoCursor;
+        this.mongoClient = mongoClient;
     }
 
     public MongoCursor<Document> getMongoCursor()
@@ -51,8 +55,15 @@ public class MongoCursorResult extends Result
     }
 
     @Override
+    public void close()
+    {
+        this.mongoCursor.close();
+        this.mongoClient.close();
+    }
+
+    @Override
     public <V> V accept(ResultVisitor<V> resultVisitor)
     {
-        throw new UnsupportedOperationException("Streaming MongoCursorResult result is not supported. Please raise a issue with dev team");
+        throw new UnsupportedOperationException("Streaming MongoDBResult result is not supported. Please raise a issue with dev team");
     }
 }

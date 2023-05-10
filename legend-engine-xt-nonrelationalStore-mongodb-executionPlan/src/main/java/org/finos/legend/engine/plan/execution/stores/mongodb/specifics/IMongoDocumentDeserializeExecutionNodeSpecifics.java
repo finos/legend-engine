@@ -14,11 +14,10 @@
 
 package org.finos.legend.engine.plan.execution.stores.mongodb.specifics;
 
-import com.mongodb.client.MongoCursor;
-import org.bson.Document;
 import org.finos.legend.engine.plan.dependencies.store.inMemory.IStoreStreamReader;
+import org.finos.legend.engine.plan.execution.stores.mongodb.result.MongoDBResult;
 
 public interface IMongoDocumentDeserializeExecutionNodeSpecifics
 {
-    IStoreStreamReader streamReader(MongoCursor<Document> mCursor);
+    IStoreStreamReader streamReader(MongoDBResult mongoResult);
 }

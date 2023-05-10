@@ -181,20 +181,21 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
    let modifiedJsonReaderClass = $existingJsonReaderClass->modifyJsonReaderForMongoCursor($pureClass, $conventions->className($pureClass), $path, $context);
    let modifiedStoreReaderProj = $storeReaderProject->replaceClass($modifiedJsonReaderClass);
 
-   let sourceCursorParam       = j_parameter(javaMongoDocumentCursor(), 'mCursor');
+   let sourceDBResultParam       = j_parameter(javaMongoDBResult(), 'mResult');
    let streamReaderMethodCodes = $conventions->jsonReaderClass($path, $pureClass)
-                                             ->j_new($sourceCursorParam)
+                                             ->j_new($sourceDBResultParam)
                                              ->j_return();
 
    let executeClassWithImports = $conventions->planNodeClass('public', $path, 'Execute')
                                              ->usingKnownPackages($conventions->knownPackages())
                                              ->imports($conventions->standardImports())
                                              ->imports(javaMongoCursor())
+                                             ->imports(javaMongoDBResult())
                                              ->imports([_IMongoDocumentDeserializeExecutionNodeSpecifics, StoreStreamReader]->map(x | $conventions->className($x)))
                                              ->implements($conventions->className(_IMongoDocumentDeserializeExecutionNodeSpecifics));
 
    let executeClass = $executeClassWithImports->addMethod(
-      javaMethod(['public'], $conventions->className(StoreStreamReader), 'streamReader', [$sourceCursorParam], $streamReaderMethodCodes)
+      javaMethod(['public'], $conventions->className(StoreStreamReader), 'streamReader', [$sourceDBResultParam], $streamReaderMethodCodes)
    );
 
    let executeProject = newProject()->addClasses($executeClass);
@@ -252,8 +253,10 @@ function <<access.private>> meta::external::store::mongodb::executionPlan::platf
   //proto:meta::external::language::java::metamodel::Class[1], pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1])
   $origClass->imports(javaBsonDocument())
       ->imports(javaMongoCursor())
+      ->imports(javaMongoDBResult())
+      ->removeUnusedImports()
       ->addField(javaField('private', javaMongoDocumentCursor(), 'mCursor'))
-      ->addMongoCursorConstructor()
+      ->addMongoResultConstructor()
       ->replaceInitReading($context.typeInfos->hasDecimal())
       ->replaceIsFinished()
       ->replaceDestroyReading()
@@ -276,14 +279,28 @@ function <<access.private>> meta::external::store::mongodb::executionPlan::platf
   javaClass('com.mongodb.client.MongoCursor');
 }
 
-function <<access.private>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::addMongoCursorConstructor(class:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::javaMongoDBResult(): meta::external::language::java::metamodel::Class[1]
 {
-   let mCursor = j_parameter(javaMongoDocumentCursor(),'mCursor');
+  javaClass('org.finos.legend.engine.plan.execution.stores.mongodb.result.MongoDBResult');
+}
+
+function <<access.private>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::removeUnusedImports(class:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+{
+   ^$class(additionalImports = $class.additionalImports
+    ->filter({m| $m->in(['com.fasterxml.jackson.core.JsonToken', 
+      'com.fasterxml.jackson.core.filter.FilteringParserDelegate',
+      'com.fasterxml.jackson.core.filter.JsonPointerBasedFilter',
+      'com.fasterxml.jackson.core.JsonFactory'])->not()}));
+}
+
+function <<access.private>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::addMongoResultConstructor(class:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+{
+   let mResult = j_parameter(javaMongoDBResult(),'mongoResult');
 
    $class->addConstructor(
-      javaConstructor([], [$mCursor]->cast(@meta::external::language::java::metamodel::Parameter),
+      javaConstructor([], [$mResult]->cast(@meta::external::language::java::metamodel::Parameter),
          [
-            j_this($class)->j_field('mCursor')->j_assign($mCursor)
+            j_this($class)->j_field('mCursor')->j_assign($mResult->j_invoke('getMongoCursor', [], javaMongoDocumentCursor()))
          ]
       )
    );
@@ -319,8 +336,10 @@ function <<access.private>> meta::external::store::mongodb::executionPlan::platf
 function <<access.private>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::replaceDestroyReading(class:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
 {
    let jThis  = j_this($class);
-   let closeCursor = $jThis->j_field('mCursor')->j_invoke('close',[], javaVoid());
-   let newDestroyReadingMethod = javaMethod('public', javaVoid(), 'destroyReading', [],[$closeCursor]);
+   //let closeCursor = $jThis->j_field('mCursor')->j_invoke('close',[], javaVoid());
+   //let newDestroyReadingMethod = javaMethod('public', javaVoid(), 'destroyReading', [],[$closeCursor]);
+   // Blank out destroyReading, as we are not maintaining anything internally.
+   let newDestroyReadingMethod = javaMethod('public', javaVoid(), 'destroyReading', [],[]);
 
    ^$class(methods = $class.methods->filter({m| $m.name != 'destroyReading'})->concatenate($newDestroyReadingMethod));
 }

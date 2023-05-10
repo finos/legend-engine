@@ -18,6 +18,8 @@ import com.mongodb.client.MongoCursor;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionPlanJavaCompilerExtension;
+import org.finos.legend.engine.plan.execution.result.Result;
+import org.finos.legend.engine.plan.execution.stores.mongodb.result.MongoDBResult;
 import org.finos.legend.engine.plan.execution.stores.mongodb.specifics.IMongoDocumentDeserializeExecutionNodeSpecifics;
 import org.finos.legend.engine.shared.javaCompiler.ClassPathFilter;
 import org.finos.legend.engine.shared.javaCompiler.ClassPathFilters;
@@ -36,6 +38,8 @@ public class MongoDBDocumentFormatJavaCompilerExtension implements ExecutionPlan
         DEPENDENCIES.put("org.bson.Document", Document.class);
         DEPENDENCIES.put("com.mongodb.client.MongoCursor", MongoCursor.class);
         DEPENDENCIES.put("org.bson.conversions.Bson", Bson.class);
+        DEPENDENCIES.put("org.finos.legend.engine.plan.execution.stores.mongodb.result.MongoDBResult", MongoDBResult.class);
+        DEPENDENCIES.put("org.finos.legend.engine.plan.execution.result.Result", Result.class);
         DEPENDENCIES.put(PURE_PACKAGE + "_IMongoDocumentDeserializeExecutionNodeSpecifics", IMongoDocumentDeserializeExecutionNodeSpecifics.class);
     }
 

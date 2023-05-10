@@ -23,7 +23,7 @@ import org.bson.Document;
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
 import org.finos.legend.engine.plan.execution.stores.mongodb.auth.MongoDBConnectionSpecification;
 import org.finos.legend.engine.plan.execution.stores.mongodb.auth.MongoDBStoreConnectionProvider;
-import org.finos.legend.engine.plan.execution.stores.mongodb.result.MongoCursorResult;
+import org.finos.legend.engine.plan.execution.stores.mongodb.result.MongoDBResult;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential;
@@ -41,7 +41,7 @@ public class MongoDBExecutor
         this.credentialProviderProvider = credentialProviderProvider;
     }
 
-    public MongoCursorResult executeMongoDBQuery(String dbCommand, MongoDBConnection dbConnection)
+    public MongoDBResult executeMongoDBQuery(String dbCommand, MongoDBConnection dbConnection)
     {
         try
         {
@@ -56,13 +56,13 @@ public class MongoDBExecutor
 
             ObjectMapper mapper = new ObjectMapper();
             ArrayNode arrayNode = mapper.createArrayNode();
-            MongoCursorResult mongoCursorResult;
+            MongoDBResult mongoDBResult;
             try
             {
                 MongoCursor<Document> cursor = mongoDatabase.getCollection(bsonCmd.getString("aggregate"))
                         .aggregate(bsonCmd.getList("pipeline", Document.class))
                         .batchSize(DEFAULT_BATCH_SIZE).iterator();
-                mongoCursorResult = new MongoCursorResult(cursor);
+                mongoDBResult = new MongoDBResult(mongoClient, cursor);
             }
             catch (Exception e)
             {
@@ -71,7 +71,7 @@ public class MongoDBExecutor
                         e,
                         ExceptionCategory.SERVER_EXECUTION_ERROR);
             }
-            return mongoCursorResult;
+            return mongoDBResult;
         }
         catch (Exception e)
         {
