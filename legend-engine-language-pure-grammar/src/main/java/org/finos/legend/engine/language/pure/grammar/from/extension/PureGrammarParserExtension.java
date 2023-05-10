@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.grammar.from.extension;
 
 import org.finos.legend.engine.language.pure.grammar.from.extension.data.EmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.test.assertion.TestAssertionParser;
+import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingIncludeParser;
 
 import java.util.Collections;
 
@@ -52,6 +53,11 @@ public interface PureGrammarParserExtension
     }
 
     default Iterable<? extends TestAssertionParser> getExtraTestAssertionParsers()
+    {
+        return Collections.emptyList();
+    }
+
+    default Iterable<? extends MappingIncludeParser> getExtraMappingIncludeParsers()
     {
         return Collections.emptyList();
     }

@@ -25,3 +25,17 @@ function <<test.Test>> meta::pure::functions::tests::date::testLeapYear():Boolea
    let allNotLeaps = ![2019, 2015, 2011, 2007]->map(d|$d->meta::pure::functions::date::isLeap())->contains(true);
    assert($allLeaps && $allNotLeaps);
 }
+
+function <<test.Test>> meta::pure::functions::tests::date::fromEpochValue():Boolean[1]
+{
+  assertEquals(%1970-01-01T00:00:00.000+0000, 0->fromEpochValue());
+  assertEquals(%1970-01-01T00:00:10.000+0000, 10->fromEpochValue());
+  assertEquals(%2023-05-04T10:09:57.000+0000, 1683194997->fromEpochValue());
+}
+
+function <<test.Test>> meta::pure::functions::tests::date::toEpochValue():Boolean[1]
+{
+  assertEquals(0, %1970-01-01T00:00:00->toEpochValue());
+  assertEquals(10, %1970-01-01T00:00:10->toEpochValue());
+  assertEquals(1683194997, %2023-05-04T10:09:57+0000->toEpochValue());
+}

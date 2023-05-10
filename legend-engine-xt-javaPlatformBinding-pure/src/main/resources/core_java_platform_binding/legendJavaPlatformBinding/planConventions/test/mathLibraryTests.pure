@@ -75,6 +75,8 @@ meta::pure::executionPlan::platformBinding::legendJava::library::math::tests::te
          ->assert('%s == 5L')
       ->addTest('Integer Binary plus', {|7+5}, 'java.util.Arrays.asList(7L, 5L).stream().reduce(0L, org.finos.legend.engine.plan.dependencies.util.Library::integerPlus).longValue()', javaLong())
          ->assert('%s == 12L')
+      ->addTest('Integer Modulo', {|mod(10,3)}, '10L % 3L', javaLong())
+         ->assert('%s == 1L')
       ->addTest('Integer n\'ary plus', {|[6, 7, 5]->plus()}, 'java.util.Arrays.asList(6L, 7L, 5L).stream().reduce(0L, org.finos.legend.engine.plan.dependencies.util.Library::integerPlus).longValue()', javaLong())
          ->assert('%s == 18L')
       ->addTest('Integer Binary times', {|7*5}, 'java.util.Arrays.asList(7L, 5L).stream().reduce(1L, org.finos.legend.engine.plan.dependencies.util.Library::integerMultiply).longValue()', javaLong())
@@ -110,6 +112,18 @@ meta::pure::executionPlan::platformBinding::legendJava::library::math::tests::te
       ->runTests();
 }
 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::platformBinding::legendJava::library::math::tests::testSqrt() : Boolean[1]
+{
+   javaExpressionTests(engineConventions([]))
+      ->addTest('Sqrt (integer root)', {|sqrt(16.0d)}, 'Math.sqrt(new java.math.BigDecimal("16.0").doubleValue())', javaDouble())
+         ->assert('%s == 4.0d')
+      ->addTest('Sqrt (real root)', {|sqrt(3.0d)}, 'Math.sqrt(new java.math.BigDecimal("3.0").doubleValue())', javaDouble())
+         ->assert('%s > 1.732d')
+         ->assert('%s < 1.7321d')
+      ->runTests();
+}
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }

@@ -318,23 +318,6 @@ public class HelperMappingBuilder
                 ._expressionSequence(valueSpecifications);
     }
 
-
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.MappingInclude processMappingInclude(MappingInclude mappingInclude, CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping parentMapping, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping includedMapping)
-    {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.MappingInclude include = new Root_meta_pure_mapping_MappingInclude_Impl("", null, context.pureModel.getClass("meta::pure::mapping::MappingInclude"));
-        include._owner(parentMapping);
-        if (mappingInclude.sourceDatabasePath != null && mappingInclude.targetDatabasePath != null)
-        {
-            org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SubstituteStore substituteStore = new Root_meta_pure_mapping_SubstituteStore_Impl("", null, context.pureModel.getClass("meta::pure::mapping::SubstituteStore"));
-            substituteStore._owner(include);
-            substituteStore._original(mappingInclude.sourceDatabasePath != null ? context.resolveStore(mappingInclude.sourceDatabasePath) : null);
-            substituteStore._substitute(mappingInclude.targetDatabasePath != null ? context.resolveStore(mappingInclude.targetDatabasePath) : null);
-            include._storeSubstitutionsAdd(substituteStore);
-        }
-        include._included(includedMapping);
-        return include;
-    }
-
     public static void processMappingTest(MappingTest_Legacy mappingTestLegacy, CompileContext context)
     {
         HelperValueSpecificationBuilder.buildLambda(mappingTestLegacy.query, context);

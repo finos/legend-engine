@@ -1,0 +1,100 @@
+###MongoDB
+Database test::mongodb::mydatabase
+(
+    Collection person
+    (
+        validationLevel: strict;
+        validationAction: warn;
+        jsonSchema: {
+            "bsonType": "object",
+            "title": "Record of Firm",
+            "properties": {
+                "firstName": {
+                    "bsonType": "string",
+                    "description": "firstName of the person",
+                    "minLength": 2
+                },
+                "lastName": {
+                    "bsonType": "string",
+                    "description": "lastName of the person",
+                    "minLength": 2
+                },
+                "age": {
+                    "bsonType": "int",
+                    "description": "age of the person",
+                    "minLength": 2
+                },
+                "firm": {
+                    "bsonType": "object",
+                    "description": "firm of the person",
+                    "properties": {
+                        "legalName": {
+                            "bsonType": "string",
+                            "description": "legal name of the firm"
+                        },
+                        "address": {
+                          "bsonType": "string",
+                          "description": "address of the firm"
+                        }
+                    }
+                }
+            },
+            "additionalProperties": false
+        };
+    )
+)
+
+###Runtime
+Runtime test::mongodb::runtime::TestMongoDBRuntime
+{
+    mappings :
+    [
+        test::mongodb::TestPersonMapping
+    ];
+    connections :
+    [
+        test::mongodb::mydatabase :
+        [
+            connection_1 : test::mongodb::testConnection
+        ]
+    ];
+}
+
+###ExternalFormat
+Binding meta::external::store::mongodb::showcase::store::PersonCollectionBinding
+{
+    contentType   : 'application/json';
+    modelIncludes : [
+        meta::external::store::mongodb::executionTest::domain::Person,
+        meta::external::store::mongodb::executionTest::domain::Firm,
+        meta::external::store::mongodb::executionTest::domain::Address,
+        meta::external::store::mongodb::executionTest::domain::Country,
+        meta::external::store::mongodb::executionTest::domain::Car,
+        meta::external::store::mongodb::executionTest::domain::Manufacturer
+    ];
+}
+
+###Mapping
+Mapping test::mongodb::TestPersonMapping
+(
+    *meta::external::store::mongodb::executionTest::domain::Person[Person]: MongoDB
+    {
+        ~mainCollection [test::mongodb::mydatabase] person
+        ~binding meta::external::store::mongodb::showcase::store::PersonCollectionBinding
+    }
+)
+
+###Connection
+MongoDBConnection test::mongodb::testConnection
+{
+    database: userDatabase;
+    store: test::mongodb::mydatabase;
+    serverURLs: [__HOST_TOKEN__:__PORT_TOKEN__];
+    authentication: # UserPassword {
+        username: 'sa';
+        password: SystemPropertiesSecret
+        {
+            systemPropertyName: 'mongo_pwd';
+        };
+    }#;
+}
