@@ -511,20 +511,9 @@ function <<test.Test>> meta::relational::tests::query::function::testJoinStringF
    let res2 = toSQLString(|Person.all()->filter(p|$p.firstName == 'John')->map(m|[$m.firstName, $m.lastName]->joinStrings('#') + ' ' + [$m.firstName, $m.lastName]->joinStrings()), simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".FIRSTNAME+\'#\'+"root".LASTNAME+\' \'+"root".FIRSTNAME+"root".LASTNAME from personTable as "root" where "root".FIRSTNAME = \'John\'', $res2);
    
-   let res3 = toSQLString(|Person.all()->filter(p|$p.firstName == 'John')->map(m|[$m.firstName, $m.lastName]->joinStrings('#') + ' ' + [$m.firstName, $m.lastName]->joinStrings()), simpleRelationalMapping, DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-   assertEquals('select concat(concat(`root`.FIRSTNAME,\'#\',`root`.LASTNAME), \' \', concat(`root`.FIRSTNAME, `root`.LASTNAME)) from personTable as `root` where `root`.FIRSTNAME = \'John\'', $res3);
-   
    let result = execute(|Person.all()->filter(p|$p.firstName == 'John')->map(m|[$m.firstName, $m.lastName]->joinStrings('#') + ' ' + [$m.firstName, $m.lastName]->joinStrings()), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements(['John#Johnson JohnJohnson', 'John#Hill JohnHill'], $result.values);
    assertSameSQL('select concat(concat("root".FIRSTNAME,\'#\',"root".LASTNAME), \' \', concat("root".FIRSTNAME, "root".LASTNAME)) from personTable as "root" where "root".FIRSTNAME = \'John\'', $result);
-}
-
-function <<test.Test>> meta::relational::tests::query::function::testWrapReservedWordMemSQL():Boolean[1]
-{
-
-   let fn = {|Person.all()->project([s | $s.age], ['KEY'])};
-   let s = toSQLString($fn, simpleRelationalMappingPersonForMemSQL, meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-   assertEquals('select `personTable_d#2_d_m1`.`key` as `KEY` from personTable as `root` left outer join personTable as `personTable_d#2_d_m1` on (`root`.`key` = `personTable_d#2_d_m1`.`key`)',$s);
 }
 
 function <<test.Test>> meta::relational::tests::query::function::dates::testDayOfWeekNumberWithFirstDaySybase():Boolean[1]

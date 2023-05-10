@@ -43,8 +43,6 @@ function <<test.Test>> meta::relational::tests::query::take::testSliceByVendor()
 
    let s = toSQLString($f1, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" limit 3,2', $s);
-   let s2 = toSQLString($f1, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-   assertEquals('select `root`.ID as `pk_0`, `root`.FIRSTNAME as `firstName`, `root`.AGE as `age`, `root`.LASTNAME as `lastName` from personTable as `root` limit 3,2', $s2);
    let s3 = toSQLString($f1, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" offset 3 limit 2', $s3);   
    
@@ -116,8 +114,6 @@ function <<test.Test>> meta::relational::tests::query::take::testLimitByVendor()
    assertEquals('select top 1 "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root"', $s);
    let s2 = toSQLString(|Person.all()->limit(1);,meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" limit 1', $s2);
-   let s3 = toSQLString(|Person.all()->limit(1);,meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-   assertEquals('select `root`.ID as `pk_0`, `root`.FIRSTNAME as `firstName`, `root`.AGE as `age`, `root`.LASTNAME as `lastName` from personTable as `root` limit 1', $s3);
 }
 
 function <<test.Test>> meta::relational::tests::query::take::testTakeByVendor():Boolean[1]
@@ -126,8 +122,6 @@ function <<test.Test>> meta::relational::tests::query::take::testTakeByVendor():
    assertEquals('select top 10 "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root"', $s);
    let s2 = toSQLString(|Person.all()->take(10);, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select top 10 "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root"', $s2);
-   let s3 = toSQLString(|Person.all()->take(10);, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-   assertEquals('select `root`.ID as `pk_0`, `root`.FIRSTNAME as `firstName`, `root`.AGE as `age`, `root`.LASTNAME as `lastName` from personTable as `root` limit 10', $s3);
    let s4 = toSQLString(|Person.all()->take(10);, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" limit 10', $s4);
    let s5 = toSQLString(|Person.all()->take(10);, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
@@ -142,16 +136,6 @@ function <<test.Test>> meta::relational::tests::query::take::testDropByVendor():
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" offset 10', $s);
    let s2 = toSQLString(|Person.all()->drop(10);, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" limit \'\' offset 10', $s2);
-   let s3 = toSQLString(|Person.all()->drop(10);, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-   assertEquals('select `limitoffset_via_window_subquery`.`pk_0` as `pk_0`, `limitoffset_via_window_subquery`.`firstName` as `firstName`, `limitoffset_via_window_subquery`.`age` as `age`, `limitoffset_via_window_subquery`.`lastName` as `lastName` from (select `root`.ID as `pk_0`, `root`.FIRSTNAME as `firstName`, `root`.AGE as `age`, `root`.LASTNAME as `lastName`, row_number() OVER (Order By `root`.ID) as `row_number` from personTable as `root`) as `limitoffset_via_window_subquery` where `limitoffset_via_window_subquery`.row_number > 10', $s3);
-   let s4 = toSQLString(|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])->drop(10);, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-   assertEquals('select `limitoffset_via_window_subquery`.`firstName` as `firstName`, `limitoffset_via_window_subquery`.`lastName` as `lastName` from (select `root`.FIRSTNAME as `firstName`, `root`.LASTNAME as `lastName`, row_number() OVER (Order By `root`.FIRSTNAME) as `row_number` from personTable as `root`) as `limitoffset_via_window_subquery` where `limitoffset_via_window_subquery`.row_number > 10', $s4);
-}
-
-function <<test.Test>> meta::relational::tests::query::take::testDropLimitByVendor():Boolean[1]
-{
-   let s = toSQLString(|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])->drop(10)->limit(100);, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-   assertEquals('select `firstName` as `firstName`, `lastName` as `lastName` from (select `limitoffset_via_window_subquery`.`firstName` as `firstName`, `limitoffset_via_window_subquery`.`lastName` as `lastName` from (select `root`.FIRSTNAME as `firstName`, `root`.LASTNAME as `lastName`, row_number() OVER (Order By `root`.FIRSTNAME) as `row_number` from personTable as `root`) as `limitoffset_via_window_subquery` where `limitoffset_via_window_subquery`.row_number > 10) as `subselect` limit 100', $s);
 }
 
 function <<test.Test>> meta::relational::tests::query::drop::testSimpleDrop():Boolean[1]

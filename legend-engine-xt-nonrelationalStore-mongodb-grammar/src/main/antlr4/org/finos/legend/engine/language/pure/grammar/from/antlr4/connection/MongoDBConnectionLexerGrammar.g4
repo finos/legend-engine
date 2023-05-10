@@ -24,3 +24,7 @@ SERVER_URLS:                                'serverURLs';
 DATABASE:                                   'database';
 DEBUG:                                      'debug';
 AUTHENTICATION:                             'authentication';
+HOST_STRING:                                HostString;
+
+fragment HostString:                       (Letter | '_' ) (Letter | Digit | '_' | '$' | '-' | '.' )*
+;
