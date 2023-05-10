@@ -129,8 +129,9 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
                spm : MongoDBPropertyMapping[1]           | [],
                epm : EmbeddedMongoDBSetImplementation[1] | []
             ]
-
-         )
+         ),
+         ^LegendJavaPlatformDependencyUpdateExtension(
+                   platformDependencyUpdate = {conventions: Conventions[1], extensions: Extension[*] | extendMongoDocumentJavaEngineDependencies($conventions)})
 
       ],
       // Prep Context
@@ -150,14 +151,7 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
             s: MongoDBDocumentInternalizeExecutionNode[1] | $s->meta::external::store::mongodb::executionPlan::platformBinding::legendJava::generateForMongoDocumentInternalizeExecutionNode($path, $context, $debug),
             n: ExecutionNode[1]                            | ^GeneratedCode()
          ])
-      },
-
-      // adhoc Extensions
-      adhocExtensions = [
-        ^LegendJavaPlatformDependencyUpdateExtension(
-          platformDependencyUpdate = {conventions: Conventions[1], extensions: Extension[*] | extendMongoDocumentJavaEngineDependencies($conventions)})
-      ]
-
+      }
    )
 }
 
