@@ -50,7 +50,6 @@ public class Library
     private static final List<Class> PRIMITIVE_CLASS_COMPARISON_ORDER = Arrays.asList(Long.class, Double.class, PureDate.class, Boolean.class, String.class);
     private static final Comparator<Object> DEFAULT_COMPARATOR = Library::compareInt;
     private static final TimeZone GMT_TIME_ZONE = TimeZone.getTimeZone("GMT");
-    private static final int SCALE = 34;
 
     public static PureDate adjustDate(PureDate date, long number, DurationUnit unit)
     {
@@ -524,7 +523,7 @@ public class Library
 
     public static double divide(Number left, Number right)
     {
-        return Library.divide(left, right, Library.SCALE);
+        return Library.divide(left, right, 20L);
     }
 
     public static Number rem(Number left, Number right)
