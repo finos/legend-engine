@@ -97,7 +97,7 @@ public class SQLExecutionResult extends Result implements StoreExecutable
             LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, sql).toString());
             if (this.requestContext != null)
             {
-                StoreExecutableManager.INSTANCE.addExecutable(RequestContext.getSessionID(this.requestContext), this);
+                StoreExecutableManager.INSTANCE.addExecutable(requestContext, this);
             }
 
             this.resultSet = this.statement.executeQuery(sql);
@@ -119,7 +119,7 @@ public class SQLExecutionResult extends Result implements StoreExecutable
 
             if (this.requestContext != null)
             {
-                StoreExecutableManager.INSTANCE.removeExecutable(RequestContext.getSessionID(this.requestContext), this);
+                StoreExecutableManager.INSTANCE.removeExecutable(requestContext, this);
             }
         }
         catch (Throwable e)
