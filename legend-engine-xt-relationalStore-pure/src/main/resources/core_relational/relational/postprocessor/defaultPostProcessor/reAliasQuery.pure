@@ -182,9 +182,12 @@ function <<access.private>> meta::relational::postProcessor::reAlias::transformA
       
                 va:VariableArityOperation[1] |let transformedArgs = $va.args->map(a | $a->transformAliasName($m));
                                               ^$va(args=$transformedArgs);,
-      
+
                 d:DynaFunction[1] | let transformedParams = $d.parameters->map(p | $p->transformAliasName($m));
                                     ^$d(parameters=$transformedParams);,
+
+                fm:FreeMarkerOperationHolder[1] | let transformedParams = $fm.parameters->map(p | $p->transformAliasName($m));
+                                    ^$fm(parameters=$transformedParams);,
       
                 wc:WindowColumn[1] |let transformedWindow = $wc.window->transformAliasName($m);
                                     let transformedFunc = $wc.func->transformAliasName($m);
