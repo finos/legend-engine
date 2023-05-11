@@ -276,6 +276,8 @@
         <module>legend-engine-xt-openapi-generation</module>
         <module>legend-engine-test-runner-mapping-api</module>
         <module>legend-engine-xt-openapi-pure</module>
+        <module>legend-engine-test-data-generation</module>
+
 
         <!-- NOTE: Do not change the ordering of this block, we want to build these modules last -->
         <module>legend-engine-test-reports</module>
@@ -1379,6 +1381,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-analytics-mapping-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-test-data-generation</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

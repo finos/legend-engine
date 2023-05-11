@@ -447,6 +447,10 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-test-data-generation</artifactId>
+        </dependency>
         <!-- ENGINE -->
 
         <!-- Shared Drop Wizard Bundles -->

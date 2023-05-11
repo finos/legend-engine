@@ -387,4 +387,6 @@ public enum LoggingEventType implements ILoggingEventType
 
     EXPLAIN_SERVICE_EXECUTION_ERROR,
     EXPLAIN_INTERACTIVE_EXECUTION_ERROR,
+
+    TEST_DATA_GENERATION_ERROR
 }
