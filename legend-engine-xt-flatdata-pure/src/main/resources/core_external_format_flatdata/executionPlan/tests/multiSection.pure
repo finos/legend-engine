@@ -41,7 +41,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   assertEquals('{"builder":{"_type":"json"},"values":[{"accountId":7010055601,"synonym":"6576V3","synonymType":"GSN","currency":"USD","closePrice":0.01,"priceFile":{"header":{"closeOfBusiness":"2021-06-08"}}},{"accountId":7010055601,"synonym":"6A8TY4","synonymType":"GSN","currency":"USD","closePrice":91.997002,"priceFile":{"header":{"closeOfBusiness":"2021-06-08"}}},{"accountId":7010055601,"synonym":"6A8UE6","synonymType":"GSN","currency":"USD","closePrice":91.997003,"priceFile":{"header":{"closeOfBusiness":"2021-06-08"}}},{"accountId":7010055601,"synonym":"6A8TY4","synonymType":"GSN","currency":"USD","closePrice":91.997004,"priceFile":{"header":{"closeOfBusiness":"2021-06-08"}}},{"accountId":7010055601,"synonym":"6A8UE6","synonymType":"GSN","currency":"USD","closePrice":91.997005,"priceFile":{"header":{"closeOfBusiness":"2021-06-08"}}},{"accountId":7010055601,"synonym":"6A8TY4","synonymType":"GSN","currency":"USD","closePrice":91.997006,"priceFile":{"header":{"closeOfBusiness":"2021-06-08"}}}]}', $result);
 }
 
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::multiSection::testMultiSectionFlatdataWithByteStreamInput(): Boolean[1]
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::multiSection::testMultiSectionFlatdataWithByteInput(): Boolean[1]
 {
   let binding = getWholeLoanPriceFileBinding();
   let tree    = #{PricesRecord{
@@ -56,9 +56,9 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
                   }}}}#;
 
   let data    = readFile('/core_external_format_flatdata/executionPlan/tests/resources/prices.csv')->toOne();
-  let query   = {data:ByteStream[1]|PricesRecord->internalize($binding, $data)->graphFetch($tree)->serialize($tree)};
+  let query   = {data:Byte[*]|PricesRecord->internalize($binding, $data)->graphFetch($tree)->serialize($tree)};
 
-  let result  = executeFlatdataBindingQuery($query, pair('data', conertStringToByteStream($data)));
+  let result  = executeFlatdataBindingQuery($query, pair('data', convertStringToBytes($data)));
 
   assertEquals('{"builder":{"_type":"json"},"values":[{"accountId":7010055601,"synonym":"6576V3","synonymType":"GSN","currency":"USD","closePrice":0.01,"priceFile":{"header":{"closeOfBusiness":"2021-06-08"}}},{"accountId":7010055601,"synonym":"6A8TY4","synonymType":"GSN","currency":"USD","closePrice":91.997002,"priceFile":{"header":{"closeOfBusiness":"2021-06-08"}}},{"accountId":7010055601,"synonym":"6A8UE6","synonymType":"GSN","currency":"USD","closePrice":91.997003,"priceFile":{"header":{"closeOfBusiness":"2021-06-08"}}},{"accountId":7010055601,"synonym":"6A8TY4","synonymType":"GSN","currency":"USD","closePrice":91.997004,"priceFile":{"header":{"closeOfBusiness":"2021-06-08"}}},{"accountId":7010055601,"synonym":"6A8UE6","synonymType":"GSN","currency":"USD","closePrice":91.997005,"priceFile":{"header":{"closeOfBusiness":"2021-06-08"}}},{"accountId":7010055601,"synonym":"6A8TY4","synonymType":"GSN","currency":"USD","closePrice":91.997006,"priceFile":{"header":{"closeOfBusiness":"2021-06-08"}}}]}', $result);
 }
@@ -78,9 +78,9 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
                   }}}}#;
 
   let data    = readFile('/core_external_format_flatdata/executionPlan/tests/resources/pricesWithDefects.csv')->toOne();
-  let query   = {data:ByteStream[1]|PricesRecord->internalize($binding, $data)->graphFetchChecked($tree)->serialize($tree)};
+  let query   = {data:Byte[*]|PricesRecord->internalize($binding, $data)->graphFetchChecked($tree)->serialize($tree)};
 
-  let result  = executeFlatdataBindingQuery($query, pair('data', conertStringToByteStream($data)));
+  let result  = executeFlatdataBindingQuery($query, pair('data', convertStringToBytes($data)));
 
   assertEquals('{"builder":{"_type":"json"},"values":[{"defects":[],"source":{"number":1,"lineNumber":2,"record":"7010055601~GSN~6576V3~USD~~~~~0.01","recordValues":[{"address":1,"rawValue":"7010055601"},{"address":2,"rawValue":"GSN"},{"address":3,"rawValue":"6576V3"},{"address":4,"rawValue":"USD"},{"address":5,"rawValue":""},{"address":6,"rawValue":""},{"address":7,"rawValue":""},{"address":8,"rawValue":""},{"address":9,"rawValue":"0.01"}]},"value":{"accountId":7010055601,"synonym":"6576V3","synonymType":"GSN","currency":"USD","closePrice":0.01,"priceFile":{"header":{"closeOfBusiness":"2021-06-08"}}}},{"defects":[{"id":"currencyConstraint","externalId":null,"message":"Constraint :[currencyConstraint] violated in the Class PricesRecord","enforcementLevel":"Error","ruleType":"ClassConstraint","ruleDefinerPath":"meta::external::format::flatdata::executionPlan::test::multiSection::PricesRecord","path":[]}],"source":{"number":2,"lineNumber":3,"record":"7010055601~GSN~6576V3~INR~~~~~0.01","recordValues":[{"address":1,"rawValue":"7010055601"},{"address":2,"rawValue":"GSN"},{"address":3,"rawValue":"6576V3"},{"address":4,"rawValue":"INR"},{"address":5,"rawValue":""},{"address":6,"rawValue":""},{"address":7,"rawValue":""},{"address":8,"rawValue":""},{"address":9,"rawValue":"0.01"}]},"value":{"accountId":7010055601,"synonym":"6576V3","synonymType":"GSN","currency":"INR","closePrice":0.01,"priceFile":{"header":{"closeOfBusiness":"2021-06-08"}}}}]}', $result);
 }
@@ -98,9 +98,9 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
                 }}#;
 
   let data    = readFile('/core_external_format_flatdata/executionPlan/tests/resources/prices.csv')->toOne();
-  let query   = {data:ByteStream[1]|LoanPrice.all()->graphFetch($tree)->from(PriceRowToLoanPrice, getRuntimeWithModelQueryConnection(PricesRecord, $binding, $data))->serialize($tree)};
+  let query   = {data:Byte[*]|LoanPrice.all()->graphFetch($tree)->from(PriceRowToLoanPrice, getRuntimeWithModelQueryConnection(PricesRecord, $binding, $data))->serialize($tree)};
 
-  let result  = executeFlatdataBindingQuery($query, pair('data', conertStringToByteStream($data)));
+  let result  = executeFlatdataBindingQuery($query, pair('data', convertStringToBytes($data)));
 
   assertEquals('{"builder":{"_type":"json"},"values":[{"accountNo":7010055601,"productIdType":"GSN","productId":"6576V3","eventDate":"2021-06-08","currency":"USD","closePrice":0.01},{"accountNo":7010055601,"productIdType":"GSN","productId":"6A8TY4","eventDate":"2021-06-08","currency":"USD","closePrice":91.997002},{"accountNo":7010055601,"productIdType":"GSN","productId":"6A8UE6","eventDate":"2021-06-08","currency":"USD","closePrice":91.997003},{"accountNo":7010055601,"productIdType":"GSN","productId":"6A8TY4","eventDate":"2021-06-08","currency":"USD","closePrice":91.997004},{"accountNo":7010055601,"productIdType":"GSN","productId":"6A8UE6","eventDate":"2021-06-08","currency":"USD","closePrice":91.997005},{"accountNo":7010055601,"productIdType":"GSN","productId":"6A8TY4","eventDate":"2021-06-08","currency":"USD","closePrice":91.997006}]}', $result);
 }
@@ -118,9 +118,9 @@ function <<meta::pure::profiles::test.ToFix>> meta::external::format::flatdata::
                 }}#;
 
   let data    = readFile('/core_external_format_flatdata/executionPlan/tests/resources/pricesWithDefects.csv')->toOne();
-  let query   = {data:ByteStream[1]|LoanPrice.all()->graphFetchChecked($tree)->from(PriceRowToLoanPrice, getRuntimeWithModelQueryConnection(PricesRecord, $binding, $data))->serialize($tree)};
+  let query   = {data:Byte[*]|LoanPrice.all()->graphFetchChecked($tree)->from(PriceRowToLoanPrice, getRuntimeWithModelQueryConnection(PricesRecord, $binding, $data))->serialize($tree)};
 
-  let result  = executeFlatdataBindingQuery($query, pair('data', conertStringToByteStream($data)));
+  let result  = executeFlatdataBindingQuery($query, pair('data', convertStringToBytes($data)));
 
   assertEquals('{"builder":{"_type":"json"},"values":[{"accountNo":7010055601,"productIdType":"GSN","productId":"6576V3","eventDate":"2021-06-08","currency":"USD","closePrice":0.01},{"accountNo":7010055601,"productIdType":"GSN","productId":"6A8TY4","eventDate":"2021-06-08","currency":"USD","closePrice":91.997002},{"accountNo":7010055601,"productIdType":"GSN","productId":"6A8UE6","eventDate":"2021-06-08","currency":"USD","closePrice":91.997003},{"accountNo":7010055601,"productIdType":"GSN","productId":"6A8TY4","eventDate":"2021-06-08","currency":"USD","closePrice":91.997004},{"accountNo":7010055601,"productIdType":"GSN","productId":"6A8UE6","eventDate":"2021-06-08","currency":"USD","closePrice":91.997005},{"accountNo":7010055601,"productIdType":"GSN","productId":"6A8TY4","eventDate":"2021-06-08","currency":"USD","closePrice":91.997006}]}', $result);
 }
@@ -139,9 +139,9 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 
   let data    = readFile('/core_external_format_flatdata/executionPlan/tests/resources/pricesWithFooter.csv')->toOne();
   
-  let query   = {data:ByteStream[1]|LoanPrice.all()->graphFetch($tree)->from(PriceRowToLoanPrice, getRuntimeWithModelQueryConnection(PricesRecord, $binding, $data))->serialize($tree)};
+  let query   = {data:Byte[*]|LoanPrice.all()->graphFetch($tree)->from(PriceRowToLoanPrice, getRuntimeWithModelQueryConnection(PricesRecord, $binding, $data))->serialize($tree)};
 
-  let result  = executeFlatdataBindingQuery($query, pair('data', conertStringToByteStream($data)));
+  let result  = executeFlatdataBindingQuery($query, pair('data', convertStringToBytes($data)));
 
   assertEquals('{"builder":{"_type":"json"},"values":[{"accountNo":7010055601,"productIdType":"GSN","productId":"6576V3","eventDate":"2021-06-08","currency":"USD","closePrice":0.01},{"accountNo":7010055601,"productIdType":"GSN","productId":"6A8TY4","eventDate":"2021-06-08","currency":"USD","closePrice":91.997002},{"accountNo":7010055601,"productIdType":"GSN","productId":"6A8UE6","eventDate":"2021-06-08","currency":"USD","closePrice":91.997003},{"accountNo":7010055601,"productIdType":"GSN","productId":"6A8TY4","eventDate":"2021-06-08","currency":"USD","closePrice":91.997004},{"accountNo":7010055601,"productIdType":"GSN","productId":"6A8UE6","eventDate":"2021-06-08","currency":"USD","closePrice":91.997005},{"accountNo":7010055601,"productIdType":"GSN","productId":"6A8TY4","eventDate":"2021-06-08","currency":"USD","closePrice":91.997006}]}', $result);
 }

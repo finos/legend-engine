@@ -192,7 +192,7 @@ abstract class FunctionParameterTypeValidator
         }
     };
 
-    private static final FunctionParameterTypeValidator byteStreamValidator = new FunctionParameterTypeValidator("ByteStream")
+    private static final FunctionParameterTypeValidator byteValidator = new FunctionParameterTypeValidator("Byte")
     {
         @Override
         protected boolean isValidJavaType(Object parameterValue)
@@ -207,7 +207,7 @@ abstract class FunctionParameterTypeValidator
         }
     };
 
-    private static final ImmutableMap<String, FunctionParameterTypeValidator> VALIDATORS = Lists.immutable.with(strictDateValidator, dateTimeValidator, dateValidator, integerValidator, floatValidator, decimalValidator, booleanValidator, stringValidator, byteStreamValidator).groupByUniqueKey(FunctionParameterTypeValidator::getType);
+    private static final ImmutableMap<String, FunctionParameterTypeValidator> VALIDATORS = Lists.immutable.with(strictDateValidator, dateTimeValidator, dateValidator, integerValidator, floatValidator, decimalValidator, booleanValidator, stringValidator, byteValidator).groupByUniqueKey(FunctionParameterTypeValidator::getType);
 
     private final String type;
 

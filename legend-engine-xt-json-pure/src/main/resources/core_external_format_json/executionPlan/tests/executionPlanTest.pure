@@ -179,7 +179,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
    let tree = #{meta::external::format::json::executionPlan::test::Person {firstName, lastName, firm {legalName}}}#;
 
    let plan = executionPlan(
-      data:ByteStream[1]|meta::external::format::json::executionPlan::test::Person->internalize($binding, $data)->graphFetchChecked($tree)->externalize($binding, checked($tree, $binding)),
+      data:Byte[*]|meta::external::format::json::executionPlan::test::Person->internalize($binding, $data)->graphFetchChecked($tree)->externalize($binding, checked($tree, $binding)),
       ^ExecutionContext(),
       $extensions,
       noDebug()
@@ -194,7 +194,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
                   '  (\n' +
                   '    FunctionParametersValidationNode\n' +
                   '    (\n' +
-                  '      functionParameters = [data:ByteStream[1]]\n' +
+                  '      functionParameters = [data:Byte[*]]\n' +
                   '    )\n' +
                   '    ExternalFormat_Externalize\n' +
                   '    (\n' +
@@ -216,7 +216,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
                   '          (\n' +
                   '            VariableResolution\n' +
                   '            (\n' +
-                  '              type = ByteStream\n' +
+                  '              type = Byte\n' +
                   '              varName = data\n' +
                   '\n' +
                   '            )\n' +
