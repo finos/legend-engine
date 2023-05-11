@@ -219,6 +219,15 @@ function <<test.Test>> meta::relational::tests::postProcessor::testSqlRealiasVie
    assertEquals('select "root".accountId as "pk_0", "root".orderPnl as "pnl" from (select "root".accountID as accountId, sum("orderpnltable_0".pnl) as orderPnl from orderTable as "root" left outer join orderPnlTable as "orderpnltable_0" on ("orderpnltable_0".ORDER_ID = "root".ID) group by "root".accountID) as "root"', $result->sqlRemoveFormatting());
 }
 
+function <<test.Test>> meta::relational::tests::postProcessor::testSqlRealiasFreeMarker():Boolean[1]
+{
+   let result = execute({| let type = meta::relational::tests::model::simple::ProductSynonymType.CUSIP;
+                           meta::relational::tests::model::simple::Trade.all()->filter(x|$x.product->toOne().synonymByType(meta::relational::tests::model::simple::ProductSynonymType.CUSIP).type == $type)->project([t|$t.product.name],['id'])->distinct();}, 
+                           simpleRelationalMapping,  testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSameElements(['Firm A,Firm C,Firm X'], $result.values.rows->map(r|$r.values)->makeString(','));
+   assertSameSQL('select distinct "producttable_0".NAME as "id" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".PRODID = "producttable_0".ID and "synonymtable_0".TYPE = \'CUSIP\') where "synonymtable_0".TYPE = \'CUSIP\'', $result);
+}
+
 function <<test.Test>> meta::relational::tests::postProcessor::testSQLRealiasCaseSensitiveTableNames():Boolean[1]
 {
   let result = execute(|Firm.all()->project([f|$f.employees.firstName, f|$f.employees.age],['firstName', 'age']), caseSentitiveMapping, testRuntime(), meta::relational::extension::relationalExtensions());
