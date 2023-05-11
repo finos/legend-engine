@@ -235,6 +235,7 @@
         <module>legend-engine-protocol</module>
         <module>legend-engine-protocol-generation</module>
         <module>legend-engine-protocol-pure</module>
+        <module>legend-engine-protocol-api</module>
         <module>legend-engine-application-query</module>
         <module>legend-engine-query-pure</module>
         <module>legend-engine-shared-core</module>
@@ -1531,6 +1532,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-protocol-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-protocol-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
