@@ -41,30 +41,17 @@ import org.finos.legend.engine.language.pure.grammar.from.data.DataParseTreeWalk
 import org.finos.legend.engine.language.pure.grammar.from.data.embedded.ExternalFormatEmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.data.embedded.ModelStoreEmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.data.embedded.ReferenceEmbeddedDataParser;
-import org.finos.legend.engine.language.pure.grammar.from.extension.ConnectionValueParser;
-import org.finos.legend.engine.language.pure.grammar.from.extension.MappingElementParser;
-import org.finos.legend.engine.language.pure.grammar.from.extension.MappingTestInputDataParser;
-import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
-import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.*;
 import org.finos.legend.engine.language.pure.grammar.from.extension.data.EmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.test.assertion.TestAssertionParser;
-import org.finos.legend.engine.language.pure.grammar.from.mapping.AggregationAwareMappingParseTreeWalker;
-import org.finos.legend.engine.language.pure.grammar.from.mapping.EnumerationMappingParseTreeWalker;
-import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingElementSourceCode;
-import org.finos.legend.engine.language.pure.grammar.from.mapping.OperationClassMappingParseTreeWalker;
-import org.finos.legend.engine.language.pure.grammar.from.mapping.PureInstanceClassMappingParseTreeWalker;
-import org.finos.legend.engine.language.pure.grammar.from.mapping.XStoreAssociationMappingParseTreeWalker;
+import org.finos.legend.engine.language.pure.grammar.from.mapping.*;
 import org.finos.legend.engine.language.pure.grammar.from.test.assertion.EqualToGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.test.assertion.EqualToJsonGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumerationMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MergeOperationClassMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.OperationClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregateSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
@@ -80,6 +67,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.m
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class CorePureGrammarParser implements PureGrammarParserExtension
@@ -144,6 +132,14 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
         return Lists.immutable.with(
                 new EqualToGrammarParser(),
                 new EqualToJsonGrammarParser());
+    }
+
+    @Override
+    public Iterable<? extends MappingIncludeParser> getExtraMappingIncludeParsers()
+    {
+        return Lists.immutable.with(
+                MappingIncludeParser.newParser("mapping", CorePureGrammarParser::parseMappingInclude)
+        );
     }
 
     private static Connection parseJsonModelConnection(ConnectionValueSourceCode connectionValueSourceCode)
@@ -412,5 +408,29 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
         parser.removeErrorListeners();
         parser.addErrorListener(errorListener);
         return new SourceCodeParserInfo(sectionSourceCode.code, input, sectionSourceCode.sourceInformation, sectionSourceCode.walkerSourceInformation, lexer, parser, parser.definition());
+    }
+
+    private static MappingInclude parseMappingInclude(MappingParserGrammar.IncludeMappingContext ctx, ParseTreeWalkerSourceInformation walkerSourceInformation)
+    {
+        MappingIncludeMapping mappingIncludeMapping = new MappingIncludeMapping();
+        mappingIncludeMapping.setIncludedMapping(PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier()));
+        mappingIncludeMapping.createdFromExplicitType = (ctx.INCLUDETYPE() != null);
+        mappingIncludeMapping.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        List<MappingParserGrammar.StoreSubPathContext> storeSubPathContextList = ctx.storeSubPath();
+
+        if (storeSubPathContextList.size() == 1)
+        {
+            MappingParserGrammar.StoreSubPathContext storeSubPathContext = storeSubPathContextList.get(0);
+            mappingIncludeMapping.sourceDatabasePath =
+                    PureGrammarParserUtility.fromQualifiedName(storeSubPathContext.sourceStore().qualifiedName().packagePath() == null ? Collections.emptyList() : storeSubPathContext.sourceStore().qualifiedName().packagePath().identifier(), storeSubPathContext.sourceStore().qualifiedName().identifier());
+            mappingIncludeMapping.targetDatabasePath =
+                    PureGrammarParserUtility.fromQualifiedName(storeSubPathContext.targetStore().qualifiedName().packagePath() == null ? Collections.emptyList() : storeSubPathContext.targetStore().qualifiedName().packagePath().identifier(), storeSubPathContext.targetStore().qualifiedName().identifier());
+        }
+        else
+        {
+            mappingIncludeMapping.sourceDatabasePath = null;
+            mappingIncludeMapping.targetDatabasePath = null;
+        }
+        return mappingIncludeMapping;
     }
 }

@@ -25,23 +25,15 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBui
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtensions;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.IncludedMappingHandler;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumValueMappingSourceValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMappingsImplementation;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementationAccessor;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.*;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class MappingValidator
@@ -78,9 +70,12 @@ public class MappingValidator
     private void visitMappingInclude(Mapping mapping, PureModel pureModel, Map<String, Mapping> mappings, Set<Mapping> visited, Set<Mapping> discovered)
     {
         discovered.add(mapping);
-        mapping.includedMappings.forEach(mappingInclude ->
+        RichIterable<? extends MappingInclude> mappingIncludes = pureModel.getContext().resolveMapping(pureModel.buildPackageString(mapping._package,
+                mapping.name))._includes();
+        mappingIncludes.forEach(mappingInclude ->
         {
-            Mapping includedMapping = mappings.get(mappingInclude.getIncludedMapping());
+            String underlyingMappingName = IncludedMappingHandler.parseIncludedMappingNameRecursively(mappingInclude);
+            Mapping includedMapping = mappings.get(underlyingMappingName);
             if (includedMapping != null)
             {
                 if (discovered.contains(includedMapping))
@@ -130,6 +125,7 @@ public class MappingValidator
             }
         });
     }
+
 
     /**
      * Validate that for each enumeration mapping, the mapped value all of their enum values are consistent with the source type

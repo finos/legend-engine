@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores;
 
+import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -39,6 +40,40 @@ public class TestStoreExecutableManager
         assert (StoreExecutableManager.INSTANCE.getExecutables(session).size() == 1);
         StoreExecutableManager.INSTANCE.removeExecutable(session, test2);
         assert (StoreExecutableManager.INSTANCE.getExecutables(session).size() == 0);
+        StoreExecutableManager.INSTANCE.reset(); //clean up state of singleton
+
+    }
+
+    @Test
+    public void testIDFromRequestContext()
+    {
+        String token = "requestToken";
+        String session = "testSession";
+        StoreExecutableManager.INSTANCE.registerManager();
+
+        RequestContext context = new RequestContext(session, "referral", token);
+
+
+        TestExecutable test1 = new TestExecutable();
+        TestExecutable test2 = new TestExecutable();
+        assert (StoreExecutableManager.INSTANCE.getExecutables(token).size() == 0);
+
+        StoreExecutableManager.INSTANCE.addExecutable(token, test1);
+
+        assert (StoreExecutableManager.INSTANCE.getExecutables(token).size() == 1);
+        assert (StoreExecutableManager.INSTANCE.getExecutables(context).size() == 1);
+
+        StoreExecutableManager.INSTANCE.addExecutable(token, test2);
+        assert (StoreExecutableManager.INSTANCE.getExecutables(token).size() == 2);
+        assert (StoreExecutableManager.INSTANCE.getExecutables(context).size() == 2);
+
+        StoreExecutableManager.INSTANCE.removeExecutable(context, test1);
+        assert (StoreExecutableManager.INSTANCE.getExecutables(token).size() == 1);
+        assert (StoreExecutableManager.INSTANCE.getExecutables(context).size() == 1);
+        assert (StoreExecutableManager.INSTANCE.getExecutables(session).size() == 0);
+
+        StoreExecutableManager.INSTANCE.removeExecutable(context, test2);
+        assert (StoreExecutableManager.INSTANCE.getExecutables(token).size() == 0);
         StoreExecutableManager.INSTANCE.reset(); //clean up state of singleton
 
     }

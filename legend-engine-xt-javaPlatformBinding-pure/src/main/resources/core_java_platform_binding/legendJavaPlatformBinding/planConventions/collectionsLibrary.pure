@@ -58,8 +58,8 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::collec
          fc1(init_T_MANY__T_MANY_,                                               {ctx,collection               | if($collection.type->isJavaList(), |$library->j_invoke('init', $collection, $collection.type), | j_null($ctx.returnType->elementType())) }),
          fc1(tail_T_MANY__T_MANY_,                                               {ctx,collection               | $collection->j_streamOf()->js_skip(j_long(1))}),
          fc1(last_T_MANY__T_$0_1$_,                                              {ctx,collection               | if($collection.type->isJavaList(), | j_conditional($collection->j_invoke('isEmpty', []), j_null($collection.type->elementType()) ,$collection->j_invoke('get', $collection->j_invoke('size', [])->j_minus(j_int(1)))), | $collection )}),
-         fc1(reverse_T_m__T_m_,                                                  {ctx,collection               | if($collection.type->isJavaList(), | javaCollections()->j_invoke('reverse', javaArrayList($collection.type->elementType())->j_new($collection), $collection.type), | $collection ) }),
-         
+         fc1(reverse_T_m__T_m_,                                                  {ctx,collection               | if($collection.type->isJavaList(), | $library->j_invoke('reverse', $collection, $collection.type), | $collection) }),
+
          fc1(sort_T_m__T_m_,                                                     {ctx,collection               | if($collection.type->isJavaList(), | $library->j_invoke('sort', $collection, $collection.type), | $collection) }),
          fc2(sort_T_m__Function_$0_1$__T_m_,                                     {ctx,collection,comp          | if($collection.type->isJavaList(), | sortComp($ctx, $collection, $comp, $library),              | $collection) }),
          fc2(sortBy_T_m__Function_$0_1$__T_m_,                                   {ctx,collection,key           | if($collection.type->isJavaList(), | sortBy($collection, $key, $library),                       | $collection) }),

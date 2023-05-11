@@ -21,6 +21,7 @@ import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.ResultNormalizer;
+import org.finos.legend.engine.plan.execution.result.StreamingResult;
 import org.finos.legend.engine.plan.execution.result.freemarker.PlanDateParameterDateFormatFactory;
 
 import java.io.StringReader;
@@ -57,6 +58,10 @@ public class FreeMarkerExecutor
                             value;
                     variableMap.put(k, value);
                 }
+            }
+            else if (v instanceof StreamingResult)
+            {
+                variableMap.put(k, v);  // This is here for evaluating conditional checks only and should not be actually processed to extract value
             }
         });
         String templateFunctions = String.join("", executionState.getTemplateFunctions());

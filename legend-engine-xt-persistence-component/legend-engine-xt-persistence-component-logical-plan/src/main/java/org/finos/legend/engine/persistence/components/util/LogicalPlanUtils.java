@@ -21,6 +21,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.conditions.Con
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.GreaterThanEqualTo;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.In;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.IsNull;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.LessThanEqualTo;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.NotEquals;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.NotIn;
@@ -301,15 +302,20 @@ public class LogicalPlanUtils
         for (OptimizationFilter filter: optimizationFilters)
         {
             Condition lowerBoundCondition =
-                    GreaterThanEqualTo.of(
-                            FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(filter.fieldName()).build(),
-                            StringValue.of(filter.lowerBoundPattern()));
+                GreaterThanEqualTo.of(
+                    FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(filter.fieldName()).build(),
+                    StringValue.of(filter.lowerBoundPattern()));
             Condition upperBoundCondition =
-                    LessThanEqualTo.of(
-                            FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(filter.fieldName()).build(),
-                            StringValue.of(filter.upperBoundPattern()));
-            optimizationConditions.add(lowerBoundCondition);
-            optimizationConditions.add(upperBoundCondition);
+                LessThanEqualTo.of(
+                    FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(filter.fieldName()).build(),
+                    StringValue.of(filter.upperBoundPattern()));
+            Condition optimizationCondition = And.builder().addConditions(lowerBoundCondition, upperBoundCondition).build();
+            if (filter.includesNullValues())
+            {
+                Condition nullCondition = IsNull.of(FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(filter.fieldName()).build());
+                optimizationCondition = Or.builder().addConditions(optimizationCondition, nullCondition).build();
+            }
+            optimizationConditions.add(optimizationCondition);
         }
         return optimizationConditions;
     }

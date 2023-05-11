@@ -1,0 +1,11 @@
+{
+  "name": "core_relational_memsql",
+  "pattern": "(meta::relational::functions::sqlQueryToString::memsql|meta::relational::tests::sqlQueryToString::memsql|meta::relational::memsql::tests)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_functions",
+    "platform_store_relational",
+    "core",
+    "core_relational"
+  ]
+}

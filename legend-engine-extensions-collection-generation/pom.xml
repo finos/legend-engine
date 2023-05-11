@@ -19,7 +19,7 @@
     <parent>
         <artifactId>legend-engine</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.8.1-SNAPSHOT</version>
+        <version>4.11.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -365,6 +365,12 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-nonrelationalStore-mongodb-protocol</artifactId>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-openapi-generation</artifactId>
         </dependency>
 
         <!-- ENGINE XT -->

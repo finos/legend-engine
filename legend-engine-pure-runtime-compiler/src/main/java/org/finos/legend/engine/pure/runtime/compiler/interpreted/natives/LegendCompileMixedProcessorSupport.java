@@ -15,18 +15,27 @@
 package org.finos.legend.engine.pure.runtime.compiler.interpreted.natives;
 
 import org.eclipse.collections.api.list.ListIterable;
+import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.pure.m3.compiler.Context;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Any;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
+import org.finos.legend.pure.m3.navigation.Instance;
+import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.M3ProcessorSupport;
+import org.finos.legend.pure.m3.navigation.M3Properties;
+import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation._package._Package;
 import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.m4.coreinstance.SourceInformation;
+import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.coreinstance.AbstractCompiledCoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.coreinstance.ValCoreInstance;
+import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap;
+import org.finos.legend.pure.runtime.java.interpreted.natives.MapCoreInstance;
 
 public class LegendCompileMixedProcessorSupport extends M3ProcessorSupport
 {
@@ -58,61 +67,104 @@ public class LegendCompileMixedProcessorSupport extends M3ProcessorSupport
                     return type;
                 }
             }
-            return any.getClassifier();
         }
-        return instance.getClassifier();
+        CoreInstance classifier = instance.getClassifier();
+
+        if (classifier == null && instance instanceof GenericType)
+        {
+            return this.newGenericType(null, null, false);
+        }
+        return classifier;
     }
 
     @Override
     public CoreInstance newGenericType(SourceInformation sourceInformation, CoreInstance source, boolean inferred)
     {
-        CoreInstance coreInstance = _Package.getByUserPath("meta::pure::metamodel::type::generics::GenericType", this.originalProcessorSupport);
+        CoreInstance coreInstance = _Package.getByUserPath(M3Paths.GenericType, this.originalProcessorSupport);
         return this.modelRepository.newCoreInstance("", coreInstance, null);
     }
 
     // Intended mainly to convert ValCoreInstance (String, Integer, etc.) into M3 equivalent instances (StringCoreInstance, IntegerCoreInstance, etc)
-    private CoreInstance convertValCoreInstance(CoreInstance value)
+    private CoreInstance convertCompileToInterpretedCoreInstance(Object value)
     {
         if (value instanceof ValCoreInstance)
         {
             ValCoreInstance val = (ValCoreInstance) value;
             return this.modelRepository.newCoreInstance(val.getName(), getClassifier(val), null);
         }
+        else if (value instanceof PureMap)
+        {
+            PureMap map = (PureMap) value;
+            MapCoreInstance mapCoreInstance = new MapCoreInstance(Lists.immutable.<CoreInstance>empty(), "", null, _Package.getByUserPath(M3Paths.Map, this), -1, modelRepository, false, this);
+            MutableMap<CoreInstance, CoreInstance> target = mapCoreInstance.getMap();
+            map.getMap().forEachKeyValue((k, v) -> target.put(this.convertCompileToInterpretedCoreInstance(k), this.convertCompileToInterpretedCoreInstance(v)));
+            return mapCoreInstance;
+        }
         else
         {
-            return value;
+            return (CoreInstance) value;
         }
     }
 
     @Override
     public void instance_addValueToProperty(CoreInstance owner, ListIterable<String> path, Iterable<? extends CoreInstance> values)
     {
-        values = LazyIterate.collect(values, this::convertValCoreInstance);
+        values = LazyIterate.collect(values, this::convertCompileToInterpretedCoreInstance);
         super.instance_addValueToProperty(owner, path, values);
     }
 
     @Override
     public void instance_setValuesForProperty(CoreInstance owner, CoreInstance property, ListIterable<? extends CoreInstance> values)
     {
-        values = values.collect(this::convertValCoreInstance);
+        values = values.collect(this::convertCompileToInterpretedCoreInstance);
         super.instance_setValuesForProperty(owner, property, values);
     }
 
     @Override
     public CoreInstance instance_getValueForMetaPropertyToOneResolved(CoreInstance owner, String property)
     {
-        return convertValCoreInstance(super.instance_getValueForMetaPropertyToOneResolved(owner, property));
+        if (owner instanceof AbstractCompiledCoreInstance)
+        {
+            CoreInstance prop = this.findProperty(owner, property);
+            CoreInstance type = Instance.getValueForMetaPropertyToOneResolved(prop, M3Properties.genericType, M3Properties.rawType, this);
+            CoreInstance mapType = _Package.getByUserPath(M3Paths.Map, this);
+            if (this.type_subTypeOf(type, mapType))
+            {
+                try
+                {
+                    PureMap map = (PureMap) owner.getClass().getMethod("_" + property).invoke(owner);
+                    return convertCompileToInterpretedCoreInstance(map);
+                }
+                catch (ReflectiveOperationException e)
+                {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+
+        return convertCompileToInterpretedCoreInstance(super.instance_getValueForMetaPropertyToOneResolved(owner, property));
     }
 
     @Override
     public ListIterable<? extends CoreInstance> instance_getValueForMetaPropertyToMany(CoreInstance owner, String propertyName)
     {
-        return super.instance_getValueForMetaPropertyToMany(owner, propertyName).collect(this::convertValCoreInstance);
+        return super.instance_getValueForMetaPropertyToMany(owner, propertyName).collect(this::convertCompileToInterpretedCoreInstance);
     }
 
     @Override
     public ListIterable<? extends CoreInstance> instance_getValueForMetaPropertyToMany(CoreInstance owner, CoreInstance property)
     {
-        return super.instance_getValueForMetaPropertyToMany(owner, property).collect(this::convertValCoreInstance);
+        return super.instance_getValueForMetaPropertyToMany(owner, property).collect(this::convertCompileToInterpretedCoreInstance);
+    }
+
+    private CoreInstance findProperty(CoreInstance owner, String propertyName)
+    {
+        CoreInstance classifier = this.getClassifier(owner);
+        CoreInstance property = this.class_findPropertyUsingGeneralization(classifier, propertyName);
+        if (property == null)
+        {
+            throw new RuntimeException("Cannot find property '" + propertyName + "' on " + PackageableElement.getUserPathForPackageableElement(classifier));
+        }
+        return property;
     }
 }

@@ -118,14 +118,14 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
    {
      let translator = $this.ddlCommandsTranslator;
      assert($translator.createSchema->isNotEmpty(), '[unsupported-api] Create schema translation not supported for Database Type: ' + $this.dbType->toString());
-     $translator.createSchema->toOne()->eval($c);
+     $translator.createSchema->toOne()->eval($c, $this);
    }: String[*];
 
    translateDropSchema(d:DropSchemaSQL[1])
    {
      let translator = $this.ddlCommandsTranslator;
      assert($translator.dropSchema->isNotEmpty(), '[unsupported-api] Drop schema translation not supported for Database Type: ' + $this.dbType->toString());
-     $translator.dropSchema->toOne()->eval($d);
+     $translator.dropSchema->toOne()->eval($d, $this);
    }: String[*];
 
    translateCreateTable(c:CreateTableSQL[1])
@@ -139,7 +139,7 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
    {
      let translator = $this.ddlCommandsTranslator;
      assert($translator.dropTable->isNotEmpty(), '[unsupported-api] Drop table translation not supported for Database Type: ' + $this.dbType->toString());
-     $translator.dropTable->toOne()->eval($d);
+     $translator.dropTable->toOne()->eval($d, $this);
    }: String[*];
 
    translateLoadTable(l:LoadTableSQL[1])
@@ -180,6 +180,7 @@ Class meta::relational::functions::sqlQueryToString::DbExtension
 {
    isBooleanLiteralSupported: Boolean[1];
    collectionThresholdLimit: Integer[0..1];
+   <<doc.deprecated>> extraTempTableCreationLogicSupplierForIn: meta::pure::metamodel::function::Function<{String[1] -> String[1]}>[0..1];
    aliasLimit: Integer[0..1];
    coreTypeToDbSpecificSqlTranslator: meta::pure::metamodel::function::Function<{CoreDataType[1] -> String[0..1]}>[0..1];
    isDbReservedIdentifier: meta::pure::metamodel::function::Function<{String[1] -> Boolean[1]}>[1];
@@ -199,9 +200,9 @@ Class meta::relational::functions::sqlQueryToString::DbExtension
 
 Class meta::relational::functions::sqlQueryToString::RelationalDDLCommandsTranslator
 {
-  createSchema: meta::pure::metamodel::function::Function<{CreateSchemaSQL[1]->String[*]}>[0..1];
-  dropSchema : meta::pure::metamodel::function::Function<{DropSchemaSQL[1]->String[*]}>[0..1];
-  dropTable : meta::pure::metamodel::function::Function<{DropTableSQL[1] -> String[*]}>[0..1];
+  createSchema: meta::pure::metamodel::function::Function<{CreateSchemaSQL[1], DbConfig[1] ->String[*]}>[0..1];
+  dropSchema : meta::pure::metamodel::function::Function<{DropSchemaSQL[1], DbConfig[1] ->String[*]}>[0..1];
+  dropTable : meta::pure::metamodel::function::Function<{DropTableSQL[1], DbConfig[1] -> String[*]}>[0..1];
   createTable : meta::pure::metamodel::function::Function<{CreateTableSQL[1], DbConfig[1] -> String[*]}>[0..1];
   loadTable: meta::pure::metamodel::function::Function<{LoadTableSQL[1], DbConfig[1] ->  String[*]}>[0..1];
 }

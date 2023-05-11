@@ -48,7 +48,16 @@ public class TestElasticsearchGrammarRoundtrip extends TestGrammarRoundtrip.Test
                 "    index1: {\n" +
                 "      properties: [\n" +
                 "        prop1: Keyword,\n" +
-                "        prop2: Keyword\n" +
+                "        prop2: Text,\n" +
+                "        prop3: Date,\n" +
+                "        prop4: Short,\n" +
+                "        prop5: Byte,\n" +
+                "        prop6: Integer,\n" +
+                "        prop7: Long,\n" +
+                "        prop8: Float,\n" +
+                "        prop9: HalfFloat,\n" +
+                "        prop10: Double,\n" +
+                "        prop11: Boolean\n" +
                 "      ];\n" +
                 "    }\n" +
                 "  ];\n" +

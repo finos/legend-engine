@@ -19,16 +19,14 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtensions;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.IncludedMappingHandler;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
@@ -206,16 +204,25 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
         }
         if (!mapping.includedMappings.isEmpty())
         {
-            RichIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.MappingInclude> mappingIncludes = ListIterate.collect(mapping.includedMappings, i ->
-                    HelperMappingBuilder.processMappingInclude(i, this.context, pureMapping, this.context.resolveMapping(i.getIncludedMapping(), i.sourceInformation)));
+            CompilerExtensions extensions = context.pureModel.extensions;
+            RichIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.MappingInclude> mappingIncludes =
+                    ListIterate.collect(mapping.includedMappings, i ->
+                    {
+                        IncludedMappingHandler handler = extensions.getExtraIncludedMappingHandlers(i.getClass().getName());
+                        return handler.processMappingInclude(i, this.context, pureMapping,
+                                handler.resolveMapping(i, this.context));
+                    });
             pureMapping._includesAddAll(mappingIncludes);
             // validate no duplicated included mappings
             Set<String> uniqueMappingIncludes = new HashSet<>();
-            mapping.includedMappings.forEach(includedMapping ->
+            mappingIncludes.forEach(includedMapping ->
             {
-                if (!uniqueMappingIncludes.add(includedMapping.getIncludedMapping()))
+                String mappingName = IncludedMappingHandler.parseIncludedMappingNameRecursively(includedMapping);
+                if (!uniqueMappingIncludes.add(mappingName))
                 {
-                    throw new EngineException("Duplicated mapping include '" + includedMapping.getIncludedMapping() + "' in mapping '" + this.context.pureModel.buildPackageString(mapping._package, mapping.name) + "'", mapping.sourceInformation, EngineErrorType.COMPILATION);
+                    throw new EngineException("Duplicated mapping include '" + mappingName +
+                            "' in " + "mapping " +
+                            "'" + this.context.pureModel.buildPackageString(mapping._package, mapping.name) + "'", mapping.sourceInformation, EngineErrorType.COMPILATION);
                 }
             });
         }

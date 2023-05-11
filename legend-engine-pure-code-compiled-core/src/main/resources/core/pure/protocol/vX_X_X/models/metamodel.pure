@@ -499,6 +499,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::AlloySe
     typeKeyName : String[1];
     includeType: Boolean[0..1];
     includeEnumType: Boolean[0..1];
+    dateTimeFormat: String[0..1];
     removePropertiesWithNullValues: Boolean[0..1];
     removePropertiesWithEmptySets: Boolean[0..1];
     fullyQualifiedTypePath: Boolean[0..1];

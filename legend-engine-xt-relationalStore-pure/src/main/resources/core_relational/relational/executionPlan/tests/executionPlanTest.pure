@@ -75,7 +75,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterInWithResultS
                         let z = $y->split(',');
                         meta::relational::tests::model::simple::Firm.all()->filter(e|$e.legalName->in($z))->project([f|$f.legalName], ['firm']);},
                         meta::relational::tests::simpleRelationalMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-                        let expected = 'Sequence(type=TDS[(firm,String,VARCHAR(200),"")](FunctionParametersValidationNode(functionParameters=[y:String[1]])Allocation(type=StringresultSizeRange=*name=zvalue=(PureExp(type=StringresultSizeRange=*requires=[y(String[1])]expression=$y->split(\',\'))))RelationalBlockExecutionNode(type=TDS[(firm,String,VARCHAR(200),"")](Allocation(type=Stringname=inFilterClause_zvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(z,"Stream")||((collectionSize(z![])?number)>50))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[z]tempTableName=tempTableForIn_ztempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=TestDatabaseConnection(type="H2"))Constant(type=Stringvalues=[select"temptableforin_z_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_zas"temptableforin_z_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(z![]",""\'""\'"{"\'":"\'\'"}"null")}])))))Relational(type=TDS[(firm,String,VARCHAR(200),"")]resultColumns=[("firm",VARCHAR(200))]sql=select"root".LEGALNAMEas"firm"fromfirmTableas"root"where"root".LEGALNAMEin(${inFilterClause_z})connection=TestDatabaseConnection(type="H2"))))))';
+                        let expected = 'Sequence(type=TDS[(firm,String,VARCHAR(200),"")](FunctionParametersValidationNode(functionParameters=[y:String[1]])Allocation(type=StringresultSizeRange=*name=zvalue=(PureExp(type=StringresultSizeRange=*requires=[y(String[1])]expression=$y->split(\',\'))))RelationalBlockExecutionNode(type=TDS[(firm,String,VARCHAR(200),"")](Allocation(type=Stringname=inFilterClause_zvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(z,"Stream")||instanceOf(z,"StreamingResult")||((collectionSize(z![])?number)>50))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[z]tempTableName=tempTableForIn_ztempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=TestDatabaseConnection(type="H2"))Constant(type=Stringvalues=[select"temptableforin_z_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_zas"temptableforin_z_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(z![]",""\'""\'"{"\'":"\'\'"}"null")}])))))Relational(type=TDS[(firm,String,VARCHAR(200),"")]resultColumns=[("firm",VARCHAR(200))]sql=select"root".LEGALNAMEas"firm"fromfirmTableas"root"where"root".LEGALNAMEin(${inFilterClause_z})connection=TestDatabaseConnection(type="H2"))))))';
    assertEquals($expected, $result->meta::pure::executionPlan::toString::planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));                 
 }
 
@@ -144,28 +144,6 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
                      '  )\n'+
                      ')\n';
    assertPlanGenerationForOptionalParameter(DatabaseType.Sybase, $expectedPlan); 
-}
-
-function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOptionalParameter_MemSQL():Boolean[1]      
-{
-   let expectedPlan ='Sequence\n'+
-                     '(\n'+
-                     '  type = TDS[(Time, Integer, INT, "")]\n'+
-                     '  (\n'+
-                     '    FunctionParametersValidationNode\n'+
-                     '    (\n'+
-                     '      functionParameters = [optionalID:String[0..1], optionalActive:Boolean[0..1]]\n'+
-                     '    )\n'+
-                     '    Relational\n'+
-                     '    (\n'+
-                     '      type = TDS[(Time, Integer, INT, "")]\n'+
-                     '      resultColumns = [("Time", INT)]\n'+
-                     '      sql = select `root`.time as `Time` from interactionTable as `root` where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'`root`.ID = ${varPlaceHolderToString(optionalID![] "\\\'" "\\\'" {"\\\'" : "\\\'\\\'"} "null")}\', \'`root`.ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when `root`.active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![] "\\\'" "\\\'" {} "null")}\', \'case when `root`.active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
-                     '      connection = DatabaseConnection(type = "MemSQL")\n'+
-                     '    )\n'+
-                     '  )\n'+
-                     ')\n';
-   assertPlanGenerationForOptionalParameter(DatabaseType.MemSQL, $expectedPlan);
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOptionalParameter_Snowflake():Boolean[1]      
@@ -1603,7 +1581,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testDatabaseConnectionS
 
    let resultConnection = $result.rootExecutionNode->cast(@RelationalInstantiationExecutionNode).executionNodes->at(0)->cast(@SQLExecutionNode).connection->cast(@TestDatabaseConnection);
 
-   assertSize($resultConnection.testDataSetupSqls, 48);
+   assertSize($resultConnection.testDataSetupSqls, 50);
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::testDatabaseConnectionSQLPopulation():Boolean[1]
@@ -1622,7 +1600,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testDatabaseConnectionS
       .connection->cast(@meta::pure::alloy::connections::RelationalDatabaseConnection).datasourceSpecification
                  ->cast(@meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification);
 
-   assertSize($resultConnection.testDataSetupSqls, 48);
+   assertSize($resultConnection.testDataSetupSqls, 50);
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::tdsJoinOneDBOneExpression():Boolean[1]
@@ -2153,16 +2131,6 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPLanGenera
    assertEquals($expected, $res->planToString(meta::relational::extension::relationalExtensions()));
 }
 
-function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenerationForInWithCollectionInput() : Boolean[1]
-{
-   let res = executionPlan(
-      {name:String[*] |_Person.all()->filter(x | $x.fullName->in($name))->project([x | $x.fullName], ['fullName']);},
-      meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.MemSQL)), meta::relational::extension::relationalExtensions()
-   );
-   let expected = 'RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[name:String[*]])Allocation(type=Stringname=inFilterClause_namevalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name,"Stream")||((collectionSize(name![])?number)>1048576))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[name]tempTableName=tempTableForIn_nametempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="MemSQL"))Constant(type=Stringvalues=[select`temptableforin_name_0`.ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_nameas`temptableforin_name_0`]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name![]",""\'""\'"{"\'":"\'\'"}"null")}])))))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select`root`.fullnameas`fullName`fromPersonas`root`where`root`.fullnamein(${inFilterClause_name})connection=DatabaseConnection(type="MemSQL"))))';
-   assertEquals($expected, $res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
-}
-
 function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenerationForNotInWithCollectionInputForSnowflake() : Boolean[1]
 {
    let res = executionPlan(
@@ -2181,16 +2149,6 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenera
       meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.H2)), meta::relational::extension::relationalExtensions()
    );
    let expected = 'Sequence(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[lengths:Integer[*]])Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"wherechar_length("root".fullname)in(${renderCollection(lengths![]","""""{}"null")})connection=DatabaseConnection(type="H2"))))';
-   assertEquals($expected, $res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
-}
-
-function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenerationForInWithCollectionIntegerInput():Boolean[1]
-{
-   let res = executionPlan(
-      {lengths:Integer[*] |_Person.all()->filter(x | $x.fullName->length()->in($lengths))->project([x | $x.fullName], ['fullName']);},
-      meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.MemSQL)), meta::relational::extension::relationalExtensions()
-   );
-   let expected = 'RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[lengths:Integer[*]])Allocation(type=Stringname=inFilterClause_lengthsvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(lengths,"Stream")||((collectionSize(lengths![])?number)>1048576))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=VoidinputVarNames=[lengths]tempTableName=tempTableForIn_lengthstempTableColumns=[(ColumnForStoringInCollection,INT)]connection=DatabaseConnection(type="MemSQL"))Constant(type=Stringvalues=[select`temptableforin_lengths_0`.ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_lengthsas`temptableforin_lengths_0`]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(lengths![]","""""{}"null")}])))))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select`root`.fullnameas`fullName`fromPersonas`root`wherechar_length(`root`.fullname)in(${inFilterClause_lengths})connection=DatabaseConnection(type="MemSQL"))))';
    assertEquals($expected, $res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
 }
 

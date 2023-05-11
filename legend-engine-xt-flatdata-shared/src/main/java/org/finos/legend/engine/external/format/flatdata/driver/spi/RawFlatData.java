@@ -25,4 +25,14 @@ public interface RawFlatData
     String getRecord();
 
     List<RawFlatDataValue> getRecordValues();
+
+    default String typePath$()
+    {
+        return "meta::external::format::flatdata::executionPlan::model::RawFlatData";
+    }
+
+    default String typeName$()
+    {
+        return "RawFlatData";
+    }
 }

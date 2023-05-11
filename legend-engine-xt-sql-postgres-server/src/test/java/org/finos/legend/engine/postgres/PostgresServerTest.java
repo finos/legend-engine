@@ -26,6 +26,7 @@ import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.finos.legend.engine.postgres.auth.AnonymousIdentityProvider;
 import org.finos.legend.engine.postgres.auth.NoPasswordAuthenticationMethod;
+import org.finos.legend.engine.postgres.config.ServerConfig;
 import org.finos.legend.engine.postgres.handler.legend.LegendSessionFactory;
 import org.finos.legend.engine.postgres.handler.legend.LegendTdsClient;
 import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
@@ -51,19 +52,29 @@ public class PostgresServerTest
     {
         CookieStore cookieStore = new BasicCookieStore();
         CloseableHttpClient httpClient = (CloseableHttpClient) HttpClientBuilder.getHttpClient(cookieStore);
-        LegendTdsClient client = new LegendTdsClient("http", "localhost", "" + wireMockRule.port(), "SAMPLE-123", new BasicCookieStore());
+        LegendTdsClient client = new LegendTdsClient("http", "localhost", "" + wireMockRule.port(),  new BasicCookieStore());
         LegendSessionFactory legendSessionFactory = new LegendSessionFactory(client);
+        ServerConfig serverConfig = new ServerConfig();
+        serverConfig.setPort(0);
 
-        testPostgresServer = new TestPostgresServer(0, legendSessionFactory, (user, connectionProperties) -> new NoPasswordAuthenticationMethod(new AnonymousIdentityProvider()));
+        testPostgresServer = new TestPostgresServer(serverConfig, legendSessionFactory, (user, connectionProperties) -> new NoPasswordAuthenticationMethod(new AnonymousIdentityProvider()));
         testPostgresServer.startUp();
-        wireMockRule.stubFor(post(urlEqualTo("/api/sql/v1/execution/executeQueryString/SAMPLE-123"))
+        wireMockRule.stubFor(post(urlEqualTo("/api/sql/v1/execution/executeQueryString"))
                 .willReturn(aResponse()
                         .withBody("{}"))
         );
-        wireMockRule.stubFor(post(urlEqualTo("/api/sql/v1/execution/executeQueryString/SAMPLE-123"))
+
+        wireMockRule.stubFor(post(urlEqualTo("/api/sql/v1/execution/executeQueryString"))
                 .withRequestBody(equalTo("SELECT * FROM service.\"/personService\""))
                 .willReturn(aResponse()
                         .withBody("{ \"builder\": { \"_type\": \"tdsBuilder\", \"columns\": [ { \"name\": \"Age\", \"type\": \"Integer\", \"relationalType\": \"INTEGER\" }, { \"name\": \"First Name\", \"type\": \"String\", \"relationalType\": \"VARCHAR(200)\" }, { \"name\": \"Last Name\", \"type\": \"String\", \"relationalType\": \"VARCHAR(200)\" } ] }, \"activities\": [ { \"_type\": \"relational\", \"sql\": \"select \\\"root\\\".AGE as \\\"Age\\\", \\\"root\\\".FIRSTNAME as \\\"First Name\\\", \\\"root\\\".LASTNAME as \\\"Last Name\\\" from personTable as \\\"root\\\"\" } ], \"result\": { \"columns\": [ \"Age\", \"First Name\", \"Last Name\" ], \"rows\": [ { \"values\": [ 23, \"Peter\", \"Smith\" ] }, { \"values\": [ 30, \"Leonid\", \"Shtivelman\" ] }, { \"values\": [ 25, \"Vignesh\", \"Manickavasagam\" ] }, { \"values\": [ 31, \"Andrew\", \"Ormerod\" ] }, { \"values\": [ 32, \"Pierre\", \"De Belen\" ] } ] } }")
+                )
+        );
+
+        wireMockRule.stubFor(post(urlEqualTo("/api/sql/v1/execution/getSchemaFromQueryString"))
+                .withRequestBody(equalTo("SELECT * FROM service.\"/personService\""))
+                .willReturn(aResponse()
+                        .withBody("{ \"_type\": \"tdsBuilder\", \"columns\": [ { \"name\": \"Age\", \"type\": \"Integer\", \"relationalType\": \"INTEGER\" }, { \"name\": \"First Name\", \"type\": \"String\", \"relationalType\": \"VARCHAR(200)\" }, { \"name\": \"Last Name\", \"type\": \"String\", \"relationalType\": \"VARCHAR(200)\" } ] } }")
                 )
         );
     }

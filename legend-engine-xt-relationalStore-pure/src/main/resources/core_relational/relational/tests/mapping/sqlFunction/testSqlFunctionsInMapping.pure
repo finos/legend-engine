@@ -59,12 +59,6 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseDate:
   assertEquals('select date_parse("root".string2date,\'%Y-%m-%d %H:%i:%s\') as "timestamp" from dataTable as "root"',$prestoSql->sqlRemoveFormatting());
 }
 
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseDate::testToSQLStringWithParseDateInQueryForMemSQL():Boolean[1]
-{
-  let memSQLSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2TimestampStr->parseDate()], ['timestamp']), testMapping, meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());  
-  assertEquals('select to_timestamp(`root`.string2date,\'YYYY-MM-DD HH24:MI:SS\') as `timestamp` from dataTable as `root`',$memSQLSql->sqlRemoveFormatting());
-}
-
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseDate::testToSQLStringWithParseDateInQueryForSybaseIQ():Boolean[1]
 {
   let sybaseIqSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2TimestampStr->parseDate()], ['timestamp']), testMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());  
@@ -82,12 +76,6 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseDate:
 {
   let prestoSQL = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2TimestampFormat], ['timestamp']), testMapping, meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
   assertEquals('select date_parse("root".stringDateTimeFormat,\'%Y-%m-%d %H:%i:%s\') as "timestamp" from dataTable as "root"',$prestoSQL->sqlRemoveFormatting());
-}
-
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseDate::testToSQLStringParseDateForMemSQL():Boolean[1]
-{
-  let trialSQL = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2TimestampFormat], ['timestamp']), testMapping, meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-  assertEquals('select to_timestamp(`root`.stringDateTimeFormat,\'YYYY-MM-DD HH24:MI:SS\') as `timestamp` from dataTable as `root`',$trialSQL->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseDate::testToSQLStringParseDateForSybaseIQ():Boolean[1]
@@ -173,14 +161,6 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::rtrim::tes
    assertEquals('select rtrim("root".string2) as "rtrim" from dataTable as "root"',$prestoSql);
 }
 
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::rtrim::testToSQLStringRtrimMemSQl():Boolean[1]
-{
-   let memSQLSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.rtrimResult], ['rtrim']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-   assertEquals('select rtrim(`root`.string2) as `rtrim` from dataTable as `root`',$memSQLSql);
-}
-
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::rtrim::testFilter():Boolean[1]
 {
     let result = execute(|SqlFunctionDemo.all()->filter(s | $s.rtrimResult == ' Bloggs')->project([s | $s.rtrimResult], ['rtrim']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
@@ -219,10 +199,6 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::trim::test
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
 
-   let sMemsql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.trimResult], ['trim']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-
    let sDB2 = toSQLString(|SqlFunctionDemo.all()->project([s | $s.trimResult], ['trim']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.DB2, meta::relational::extension::relationalExtensions());
@@ -245,7 +221,6 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::trim::test
 
    assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sIQ);
    assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sH2);
-   assertEquals('select trim(`root`.string2) as `trim` from dataTable as `root`',$sMemsql);
    assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sDB2);
    assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sPostgre);
    assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sHive);
@@ -609,11 +584,6 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToFl
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToFloat::testToSQLStringStringToFloatPresto():Boolean[1]
 {
-   let memSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Float], ['string2Float']),
-                         testMapping,
-                         meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-   assertEquals('select cast(`root`.string2float as decimal) as `string2Float` from dataTable as `root`',$memSql);
-
    let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Float], ['string2Float']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
@@ -634,14 +604,6 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDa
                                                 meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
    assertEquals('select cast("root".string2date as timestamp) as "string2Date" from dataTable as "root"',$s);
 
-}
-
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::toString::testToSQLStringToStringinMemsql():Boolean[1]
-{
-    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.int1String], ['toString']),
-                                                 testMapping,
-                                                 meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-    assertEquals('select cast(`root`.int1 as char) as `toString` from dataTable as `root`',$s);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::toString::testToSQLStringToStringInDB2():Boolean[1]
@@ -713,14 +675,6 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteg
    assertEquals('select cast("root".string2Integer as integer) as "parseInteger" from dataTable as "root"',$s);
 
 }
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteger::testToSQLStringParseIntegerinMemSQL():Boolean[1]
-{
-   let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Integer], ['parseInteger']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-   assertEquals('select cast(`root`.string2Integer as signed integer) as `parseInteger` from dataTable as `root`',$s);
-
-}
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteger::testToSQLStringParseIntegerinPresto():Boolean[1]
 {
@@ -728,28 +682,6 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteg
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
    assertEquals('select cast("root".string2Integer as integer) as "parseInteger" from dataTable as "root"',$prestoSql);
-}
-
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteger::testToSQLStringDateDiffInMemSQL():Boolean[1]
-{
-
-   let da = meta::pure::functions::date::date(2017,3,1);
-   let db = meta::pure::functions::date::date(2017,4,1);
-   let s = toSQLString(|SqlFunctionDemo.all()->project([s | dateDiff($da, $db, DurationUnit.DAYS)], ['dateDiff']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-   assertEquals('select (datediff(\'2017-04-01\' , \'2017-03-01\')) as `dateDiff` from dataTable as `root`',$s);
-}
-
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteger::testToSQLStringDateDiffInSecondsInMemSQL():Boolean[1]
-{
-   let da = %2017-03-01T19:09:20;
-   let db = %2017-03-01T20:08:08;
-   let s = toSQLString(|SqlFunctionDemo.all()->project([s | dateDiff($da, $db, DurationUnit.SECONDS)], ['dateDiff']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.MemSQL,
-                                                meta::relational::extension::relationalExtensions());
-   assertEquals('select (time_to_sec(timediff(\'2017-03-01 20:08:08\' , \'2017-03-01 19:09:20\'))) as `dateDiff` from dataTable as `root`',$s);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteger::testToSQLStringDateDiffInPresto():Boolean[1]
@@ -786,17 +718,6 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteg
                 ' datediff(hour,\'2013-03-01 19:09:20\',\'2017-03-01 20:08:08\') as "dateDiffHours",'+
                 ' datediff(minute,\'2013-03-01 19:09:20\',\'2017-03-01 20:08:08\') as "dateDiffMinutes",'+
                 ' datediff(second,\'2013-03-01 19:09:20\',\'2017-03-01 20:08:08\') as "dateDiffSeconds"'+ ' from dataTable as "root"',$test);
-}
-
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteger::testToSQLStringConvertVarchar128InMemSQL():Boolean[1]
-{
-
-
-   let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertVarchar128], ['convertVarchar128']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-   assertEquals('select convert(`root`.int1, CHAR) as `convertVarchar128` from dataTable as `root`',$s);
-
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteger::testToSQLStringConvertVarchar128InSnowflake():Boolean[1]
@@ -870,25 +791,6 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDa
    println($result.values->meta::json::toJSON());
    assertEquals('select cast( parseDateTime("root".stringUserDefinedDateFormat,\'MMMyyyy\') as date) as "convertToDateUserDefinedFormat" from dataTable as "root"',$result->sqlRemoveFormatting());
    assertEquals([%1995-11-01, %1995-11-01], $result.values->at(0).rows.values);
-}
-
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDate::testToSQLStringconvertToDateinMemSQL():Boolean[1]
-{
-
-   let s =toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDate1], ['convertToDate']),
-                                                       testMapping,
-                                                       meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-
-   assertEquals('select cast( to_date(`root`.stringDateFormat,\'YYYY-MM-DD\') as date) as `convertToDate` from dataTable as `root`', $s);
-}
-
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDate::testToSQLStringconvertToDateinMemSQLUserDefinedFormat():Boolean[1]
-{
-
-   let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDateUserDefinedFormat1], ['convertToDateUserDefinedFormat']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-   assertEquals('select cast( to_date(`root`.stringUserDefinedDateFormat,\'MMMYYYY\') as date) as `convertToDateUserDefinedFormat` from dataTable as `root`', $s);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToDate::testToSQLStringconvertToDateinSnowflake():Boolean[1]
@@ -1075,28 +977,12 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::indexOf::t
     assertEquals('select LOCATE(\'o\', \'String Random\') as "indexOf" from dataTable as "root"',$result->sqlRemoveFormatting());
 }
 
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::indexOf::testToSQLStringIndexOfinMemSQL():Boolean[1]
-{
-    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.indexOfResult], ['indexOf']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-    assertEquals('select LOCATE(\'o\', \'String Random\') as `indexOf` from dataTable as `root`',$s);
-}
-
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::indexOf::testToSQLStringIndexOfinPresto():Boolean[1]
 {
     let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.indexOfResult], ['indexOf']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
     assertEquals('select strpos(\'String Random\', \'o\') as "indexOf" from dataTable as "root"',$s);
-}
-
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::position::testToSQLStringPositioninMemSQL():Boolean[1]
-{
-    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.indexOfResult], ['position']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-    assertEquals('select LOCATE(\'o\', \'String Random\') as `position` from dataTable as `root`',$s);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::isNumeric::testProject():Boolean[1]
@@ -1163,15 +1049,6 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::sqlFunc
       testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals(['bG9yZW1pcHN1bTMz', 'loremipsum33', 'bG9yZW00Mmlwc3Vt', 'lorem42ipsum'], $result.values->at(0).rows.values);
     assertEquals('select legend_h2_extension_base64_encode("root".alphaNumericString) as "res1", legend_h2_extension_base64_decode(legend_h2_extension_base64_encode("root".alphaNumericString)) as "res2" from dataTable as "root"', $result->sqlRemoveFormatting());
-}
-
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::base64::testBase64MemSQL():Boolean[1]
-{
-    let s = toSQLString(
-      |SqlFunctionDemo.all()->project([s | $s.encodeBase64Result, s | $s.decodeBase64Result], ['res1', 'res2']),
-      testMapping,
-      meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-    assertEquals('select cast(to_base64(`root`.alphaNumericString) as char) as `res1`, cast(from_base64(cast(to_base64(`root`.alphaNumericString) as char)) as char) as `res2` from dataTable as `root`', $s);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::testDayOfWeekNumberWithFirstDay():Boolean[1]

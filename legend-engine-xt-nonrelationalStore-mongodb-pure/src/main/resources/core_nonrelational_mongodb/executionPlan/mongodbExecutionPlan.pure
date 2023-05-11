@@ -22,3 +22,18 @@ Class meta::external::store::mongodb::metamodel::pure::MongoDBExecutionNode exte
   databaseCommand: DatabaseCommand[1];
   connection: MongoDBConnection[1];
 }
+
+Class meta::external::store::mongodb::metamodel::pure::MongoDBDocumentInternalizeExecutionNode extends meta::pure::executionPlan::ExecutionNode
+{
+   binding           : meta::external::shared::format::binding::Binding[1];
+   tree              : meta::pure::graphFetch::RootGraphFetchTree<Any>[0..1];
+   enableConstraints : Boolean[1];
+   checked           : Boolean[1];
+   config            : meta::external::store::mongodb::metamodel::pure::MongoDBDocumentInternalizeConfig[0..1];
+}
+
+Class meta::external::store::mongodb::metamodel::pure::MongoDBDocumentInternalizeConfig
+{
+  path : String[1];
+   // pathReference : meta::external::format::json::metamodel::internalize::JsonPathReference[0..1];
+}

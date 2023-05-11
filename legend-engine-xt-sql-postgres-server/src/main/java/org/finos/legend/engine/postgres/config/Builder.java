@@ -20,7 +20,7 @@ import org.apache.http.impl.cookie.BasicClientCookie;
 import org.finos.legend.engine.postgres.SessionsFactory;
 import org.finos.legend.engine.postgres.auth.AnonymousIdentityProvider;
 import org.finos.legend.engine.postgres.auth.AuthenticationMethod;
-import org.finos.legend.engine.postgres.auth.AuthenticationMethodType;
+import org.finos.legend.engine.postgres.auth.GSSAuthenticationMethod;
 import org.finos.legend.engine.postgres.auth.IdentityProvider;
 import org.finos.legend.engine.postgres.auth.IdentityType;
 import org.finos.legend.engine.postgres.auth.KerberosIdentityProvider;
@@ -44,14 +44,7 @@ public class Builder
         {
             LegendHandlerConfig config = (LegendHandlerConfig) serverConfig.getHandler();
             CookieStore cookieStore = new BasicCookieStore();
-
-            if (config.getSessionCookie() != null)
-            {
-                BasicClientCookie legendSdlcJsessionid = new BasicClientCookie("LEGEND_SDLC_JSESSIONID", config.getSessionCookie());
-                legendSdlcJsessionid.setDomain("localhost");
-                cookieStore.addCookie(legendSdlcJsessionid);
-            }
-            LegendTdsClient client = new LegendTdsClient(config.getProtocol(), config.getHost(), config.getPort(), config.getProjectId(), cookieStore);
+            LegendTdsClient client = new LegendTdsClient(config.getProtocol(), config.getHost(), config.getPort(), cookieStore);
             return new LegendSessionFactory(client);
         }
         else
@@ -76,17 +69,16 @@ public class Builder
             throw new UnsupportedOperationException("Identity type not supported :" + serverConfig.getIdentityType());
         }
 
-        if (serverConfig.getAuthenticationMethod() == AuthenticationMethodType.PASSWORD)
+        switch (serverConfig.getAuthenticationMethod())
         {
-            return new UsernamePasswordAuthenticationMethod(identityProvider);
-        }
-        else if (serverConfig.getAuthenticationMethod() == AuthenticationMethodType.NO_PASSWORD)
-        {
-            return new NoPasswordAuthenticationMethod(identityProvider);
-        }
-        else
-        {
-            throw new UnsupportedOperationException("Authentication Method not supported :" + serverConfig.getAuthenticationMethod());
+            case PASSWORD:
+                return new UsernamePasswordAuthenticationMethod(identityProvider);
+            case NO_PASSWORD:
+                return new NoPasswordAuthenticationMethod(identityProvider);
+            case GSS:
+                return new GSSAuthenticationMethod(identityProvider);
+            default:
+                throw new UnsupportedOperationException("Authentication Method not supported :" + serverConfig.getAuthenticationMethod());
         }
     }
 }

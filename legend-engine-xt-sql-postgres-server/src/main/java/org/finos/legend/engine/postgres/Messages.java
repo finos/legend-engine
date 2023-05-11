@@ -178,7 +178,7 @@ public class Messages
     static void sendAuthenticationError(Channel channel, String message)
     {
         LOGGER.warn(message);
-        byte[] msg = message.getBytes(StandardCharsets.UTF_8);
+        byte[] msg = message != null ? message.getBytes(StandardCharsets.UTF_8) : "Unknown Auth Error".getBytes(StandardCharsets.UTF_8);
         byte[] errorCode = PGErrorStatus.INVALID_AUTHORIZATION_SPECIFICATION.code()
                 .getBytes(StandardCharsets.UTF_8);
 
@@ -200,7 +200,8 @@ public class Messages
         writeCString(buffer, PGError.SEVERITY_ERROR);
 
         buffer.writeByte('M');
-        writeCString(buffer, error.message().getBytes(StandardCharsets.UTF_8));
+        String message = error.message() == null ? "Unknown Error" : error.message();
+        writeCString(buffer, message.getBytes(StandardCharsets.UTF_8));
 
         buffer.writeByte('C');
         writeCString(buffer, error.status().code().getBytes(StandardCharsets.UTF_8));
@@ -243,10 +244,7 @@ public class Messages
         buffer.writeByte(0);
         buffer.setInt(1, buffer.writerIndex() - 1); // exclude msg type from length
         ChannelFuture channelFuture = channel.writeAndFlush(buffer);
-        if (LOGGER.isTraceEnabled())
-        {
-            channelFuture.addListener(f -> LOGGER.trace("sentErrorResponse msg={}", error.message()));
-        }
+        channelFuture.addListener(f -> LOGGER.trace("sentErrorResponse", error.throwable()));
         return channelFuture;
     }
 
@@ -387,6 +385,11 @@ public class Messages
         buffer.writeByte(0);
     }
 
+    static void writeByteArray(ByteBuf buffer, byte[] valBytes)
+    {
+        buffer.writeBytes(valBytes);
+    }
+
     /**
      * ParameterDescription (B)
      * <p>
@@ -505,6 +508,23 @@ public class Messages
         sendShortMsg(channel, '1', "sentParseComplete");
     }
 
+    static void sendGssOutToken(Channel channel, byte[] outputToken)
+    {
+        int integerLength = 8;
+        int gssSuccessFlag = 8;
+        int length = outputToken.length + integerLength;
+        int nullStopByteLength = 1;
+        ByteBuf buffer = channel.alloc().buffer(length + nullStopByteLength);
+        buffer.writeByte('R');
+        buffer.writeInt(length);
+        buffer.writeInt(gssSuccessFlag);
+        writeByteArray(buffer, outputToken);
+        ChannelFuture channelFuture = channel.writeAndFlush(buffer);
+        channelFuture.addListener(
+                ignoredFuture -> LOGGER.trace("sentGssOutToken")
+        );
+    }
+
     /**
      * BindComplete | '2' | int32 len |
      */
@@ -580,6 +600,27 @@ public class Messages
         {
             channelFuture.addListener(
                     (ChannelFutureListener) future -> LOGGER.trace("sentAuthenticationCleartextPassword"));
+        }
+    }
+
+    static void sendAuthenticationKerberos(Channel channel)
+    {
+        int integerLength = 8;
+        int AUTH_REQ_GSS = 7;
+        int nullStopByteLength = 1;
+        int length = integerLength + nullStopByteLength;
+
+        ByteBuf buffer = channel.alloc().buffer(length);
+        buffer.writeByte('R');
+        buffer.writeInt(integerLength);
+        buffer.writeInt(AUTH_REQ_GSS);
+
+        ChannelFuture channelFuture = channel.writeAndFlush(buffer);
+        if (LOGGER.isTraceEnabled())
+        {
+            channelFuture.addListener(
+                    future -> LOGGER.trace("sentAuthenticationKerberos")
+            );
         }
     }
 

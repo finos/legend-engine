@@ -23,10 +23,16 @@ public class ServerConfig
     private Integer port;
     private AuthenticationMethodType authenticationMethod;
     private IdentityType identityType;
+    private GSSConfig gss;
 
     public Integer getPort()
     {
         return port;
+    }
+
+    public void setPort(Integer port)
+    {
+        this.port = port;
     }
 
     public AuthenticationMethodType getAuthenticationMethod()
@@ -37,6 +43,11 @@ public class ServerConfig
     public IdentityType getIdentityType()
     {
         return identityType;
+    }
+
+    public GSSConfig getGss()
+    {
+        return gss;
     }
 
     public ServerConfig()

@@ -1993,10 +1993,18 @@ function meta::relational::functions::pureToSqlQuery::processFunctionExpressionF
 function meta::relational::functions::pureToSqlQuery::flattenConcatenate(f:ValueSpecification[1]):ValueSpecification[*]
 {
    $f->match([
-      fe:FunctionExpression[1] | if ($fe.func->in([concatenate_T_MANY__T_MANY__T_MANY_, union_T_MANY__T_MANY__T_MANY_, concatenate_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_]),
+      fe:FunctionExpression[1] | if ($fe.func->in([
+                                            concatenate_T_MANY__T_MANY__T_MANY_, union_T_MANY__T_MANY__T_MANY_, 
+                                            concatenate_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_,
+                                            concatenate_TabularDataSet_1__TabularDataSet_MANY__TabularDataSet_1_
+                                            ]),
                                        | $fe.parametersValues->at(0)->flattenConcatenate()->concatenate($fe.parametersValues->at(1)->flattenConcatenate()),
                                        | $fe
                                  );,
+      iv:InstanceValue[1]| $iv.values->match([
+                              v:ValueSpecification[*]|$v, 
+                              a:Any[*]| $iv
+                                ]),
       v:ValueSpecification[1] | $v
    ])
 }
@@ -2824,7 +2832,12 @@ function meta::relational::functions::pureToSqlQuery::addSelfJoin(s:SelectSQLQue
    let rootJtnAliasTablePks = $rootJtnAliasTable.second.values;
    let database = $rootJtnAliasTable.first;
 
-   let genJtnAliasName='gen_'+$rootJtnAlias->buildUniqueName(true, $extensions);
+   let genAliasSuffix = $rootJtn->match([
+      root: RootJoinTreeNode[1] | $root,
+      join: JoinTreeNode[1]     | ^RootJoinTreeNode(alias = ^TableAlias(name = 'fakeRoot', relationalElement = ^NamedRelation(name = 'fakeRoot')), childrenData = $join)
+   ])->buildUniqueName(false, $extensions);
+
+   let genJtnAliasName='gen_'+$genAliasSuffix;
    let genJtnAlias=^$rootJtnAlias(name=$genJtnAliasName);
 
    let oldAndNewReprocessedJoinJtns = $j->children()->cast(@JoinTreeNode)->map(c|
@@ -7386,6 +7399,7 @@ function meta::relational::functions::pureToSqlQuery::getSupportedFunctions():Ma
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::tds::project_T_MANY__Path_MANY__TabularDataSet_1_, second=meta::relational::functions::pureToSqlQuery::processProjectPaths_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::tds::project_T_MANY__ColumnSpecification_MANY__TabularDataSet_1_, second=meta::relational::functions::pureToSqlQuery::processProjectColumns_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::tds::concatenate_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_, second=meta::relational::functions::pureToSqlQuery::processConcatenate_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::tds::concatenate_TabularDataSet_1__TabularDataSet_MANY__TabularDataSet_1_, second=meta::relational::functions::pureToSqlQuery::processConcatenate_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::tds::groupBy_TabularDataSet_1__String_MANY__AggregateValue_MANY__TabularDataSet_1_, second=meta::relational::functions::pureToSqlQuery::processGroupBy_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::tds::filter_TabularDataSet_1__Function_1__TabularDataSet_1_, second=meta::relational::functions::pureToSqlQuery::processTdsFilter_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::tds::distinct_TabularDataSet_1__TabularDataSet_1_, second=meta::relational::functions::pureToSqlQuery::processDistinct_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),

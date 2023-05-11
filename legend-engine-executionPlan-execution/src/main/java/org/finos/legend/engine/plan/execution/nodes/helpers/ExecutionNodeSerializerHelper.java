@@ -148,6 +148,7 @@ public class ExecutionNodeSerializerHelper
         private final JsonGenerator generator;
         private final Consumer<String> typeWriter;
         private final boolean includeEnumType;
+        private final String dateTimeFormat;
         private final boolean removePropertiesWithEmptySets;
         private final boolean removePropertiesWithNullValues;
         private final boolean includeObjectReference;
@@ -157,6 +158,7 @@ public class ExecutionNodeSerializerHelper
         {
             this.generator = generator;
             this.includeEnumType = config != null && config.includeEnumType;
+            this.dateTimeFormat = config != null ? config.dateTimeFormat : null;
             this.removePropertiesWithEmptySets = config != null && config.removePropertiesWithEmptySets;
             this.removePropertiesWithNullValues = config != null && config.removePropertiesWithNullValues;
             this.includeObjectReference = config != null && config.includeObjectReference;
@@ -474,7 +476,14 @@ public class ExecutionNodeSerializerHelper
             else
             {
                 writeFieldName(name);
-                writeString(value.toString());
+                if (this.dateTimeFormat != null)
+                {
+                    writeString(value.format(this.dateTimeFormat));
+                }
+                else
+                {
+                    writeString(value.toString());
+                }
             }
         }
 
@@ -489,7 +498,14 @@ public class ExecutionNodeSerializerHelper
             {
                 writeFieldName(name);
                 writeStartArray();
-                values.forEach(v -> writeString(v.toString()));
+                if (this.dateTimeFormat != null)
+                {
+                    values.forEach(v -> writeString(v.format(this.dateTimeFormat)));
+                }
+                else
+                {
+                    values.forEach(v -> writeString(v.toString()));
+                }
                 writeEndArray();
             }
         }

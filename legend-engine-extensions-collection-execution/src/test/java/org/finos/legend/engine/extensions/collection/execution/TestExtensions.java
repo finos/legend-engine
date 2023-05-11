@@ -51,6 +51,7 @@ public class TestExtensions
                 .with(RelationalExecutionExtension.class)
                 .with(ExternalFormatExecutionExtension.class)
                 .with(ServiceStoreExecutionExtension.class)
+                .with(org.finos.legend.engine.plan.execution.stores.mongodb.MongoDBStoreExecutionExtension.class)
                 .with(org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.Elasticsearch7ExecutionExtension.class);
     }
 
@@ -100,6 +101,7 @@ public class TestExtensions
                 .with(InMemoryStoreExecutorBuilder.class)
                 .with(RelationalStoreExecutorBuilder.class)
                 .with(ServiceStoreExecutorBuilder.class)
+                .with(org.finos.legend.engine.plan.execution.stores.mongodb.plugin.MongoDBStoreExecutorBuilder.class)
                 .with(org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.plugin.ElasticsearchV7StoreExecutorBuilder.class);
     }
 

@@ -19,6 +19,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBDocumentInternalizeExecutionNode;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.pac4j.core.profile.CommonProfile;
@@ -36,8 +37,11 @@ public class MongoDBStoreExecutionExtension implements IMongoDBStoreExecutionExt
             {
                 return executionNode.accept(executionState.getStoreExecutionState(StoreType.NonRelational_MongoDB).getVisitor(profiles, executionState));
             }
+            else if (executionNode instanceof MongoDBDocumentInternalizeExecutionNode)
+            {
+                return executionNode.accept(executionState.getStoreExecutionState(StoreType.NonRelational_MongoDB).getVisitor(profiles, executionState));
+            }
             return null;
         }));
     }
-
 }

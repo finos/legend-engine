@@ -60,6 +60,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.BatchSt
 import org.finos.legend.engine.persistence.components.logicalplan.values.Case;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DiffBinaryValueOperator;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.ModuloBinaryValueOperator;
 import org.finos.legend.engine.persistence.components.logicalplan.values.OrderedField;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.HashFunction;
@@ -95,6 +96,7 @@ import org.finos.legend.engine.persistence.components.relational.ansi.sql.visito
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.EqualsVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.ExistsConditionVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.FieldValueVisitor;
+import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.ModuloBinaryValueOperatorVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.OrderedFieldVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.FieldVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.FunctionVisitor;
@@ -208,6 +210,7 @@ public class AnsiSqlSink extends RelationalSink
         logicalPlanVisitorByClass.put(SelectValue.class, new SelectValueVisitor());
         logicalPlanVisitorByClass.put(SumBinaryValueOperator.class, new SumBinaryValueOperatorVisitor());
         logicalPlanVisitorByClass.put(DiffBinaryValueOperator.class, new DiffBinaryValueOperatorVisitor());
+        logicalPlanVisitorByClass.put(ModuloBinaryValueOperator.class, new ModuloBinaryValueOperatorVisitor());
         logicalPlanVisitorByClass.put(Show.class, new ShowVisitor());
         logicalPlanVisitorByClass.put(BatchIdValue.class, new BatchIdValueVisitor());
         logicalPlanVisitorByClass.put(InfiniteBatchIdValue.class, new InfiniteBatchIdValueVisitor());

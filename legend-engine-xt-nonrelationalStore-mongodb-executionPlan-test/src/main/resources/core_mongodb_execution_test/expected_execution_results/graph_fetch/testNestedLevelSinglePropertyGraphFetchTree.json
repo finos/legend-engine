@@ -1,0 +1,15 @@
+{
+  "values":   {
+    "firm":     {
+      "address":       {
+        "country":         {
+          "continent": "America",
+          "countryCode": "US"
+        }
+      }
+    }
+  },
+  "builder":   {
+    "_type": "json"
+  }
+}

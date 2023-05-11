@@ -326,13 +326,13 @@ function
                                                 ));
 
    let newRows = $set->map(value|
-                         $functions->tail()->fold(
+                         $functions->fold(
                                {
                                   path, list | let res = $path->eval($value);
                                                let updated = if ($res->size() == 0,|^TDSNull(),|$res);
                                                ^List<TDSRow>(values = $updated->map(navValue|$list.values->map(row|^$row(values+=$navValue))));
                                },
-                               ^List<TDSRow>(values = $functions->at(0)->eval($value)->map(navValue|^TDSRow(values=$navValue, parent=$res)))
+                               ^List<TDSRow>(values = ^TDSRow(values=[], parent=$res))
                          ).values;
                       );
    $res->mutateAdd('rows',$newRows);
@@ -448,21 +448,30 @@ function
 }
 
 function 
-   {doc.doc = 'Append the rows from the second TDS to the rows in the first TDS.  N.B. The column must be the same for the two input TDSs'}
-   meta::pure::tds::concatenate(tds1:TabularDataSet[1], tds2:TabularDataSet[1]):TabularDataSet[1]
+   {doc.doc = 'Append the rows from the additional TDSs to the rows in the first TDS.  N.B. The column must be the same for the TDSs'}
+   meta::pure::tds::concatenate(tds1:TabularDataSet[1], tdss:TabularDataSet[*]):TabularDataSet[1]
 {
+  $tdss->forAll(tds2|
    assert($tds1.columns->size() == $tds2.columns->size(), | 'Number of columns must match to concatenate, got ' + $tds1.columns.name->joinStrings('[', ',', ']') + ' and ' +  $tds2.columns.name->joinStrings('[', ',', ']') );
    assertEquals($tds1.columns.name, $tds2.columns.name, | 'Columns names must match to concatenate, got ' + $tds1.columns.name->joinStrings('[', ',', ']') + ' and ' +  $tds2.columns.name->joinStrings('[', ',', ']') );
    assert(zip($tds1.columns, $tds2.columns)->forAll(pair | 
                assertEquals($pair.first.name, $pair.second.name); 
                assertEquals($pair.first.type, $pair.second.type, | 'Column types must match to concatenate, mismatched for column ' + $pair.first.name + ' (' + $pair.first.type->makeString() + ' vs ' + $pair.second.type->makeString() + ')');
             ));
+  );
 
    let tds = ^TabularDataSet(columns=$tds1.columns->map(col|^TDSColumn(offset=$col.offset, name=$col.name, type=$col.type)));
 
-   let newRows = $tds1.rows->concatenate($tds2.rows)->map(r|^TDSRow(parent=$tds,values=$r.values));
+   let newRows = $tds1.rows->concatenate($tdss.rows)->map(r|^TDSRow(parent=$tds,values=$r.values));
    $tds->mutateAdd('rows', $newRows);
    $tds;
+}
+
+function 
+   {doc.doc = 'Append the rows from the second TDS to the rows in the first TDS.  N.B. The column must be the same for the two input TDSs'}
+   meta::pure::tds::concatenate(tds1:TabularDataSet[1], tds2:TabularDataSet[1]):TabularDataSet[1]
+{
+   $tds1->concatenate($tds2->toOneMany());
 }
 
 function meta::pure::tds::validatePaths(paths:Path<Nil,Any|*>[*]):Boolean[1]

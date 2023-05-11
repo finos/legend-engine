@@ -506,7 +506,6 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
                                                                                                                  $pgft->getSubTreeNodesAtPath($val, $setClasses->cast(@Class<Any>), $extensions);
                                                                                                             );
                                                                                                      ));
-
          let srcNodeProperties   = $withSubTypes->filter(p | $owner->getAllTypeGeneralisations()->contains($p.property->meta::pure::functions::meta::ownerClass()));
          let withFoundProperties = $srcNode->addSubTrees($srcNodeProperties);
 
@@ -518,16 +517,19 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
                                    | $withFoundProperties
                                   );
 
-         let withNextSetImpl     = $childSetImpls->fold(
-                                      {setImpl, tree |
-                                         let appendAtPaths = $propertyPaths.current;
-                                         if($appendAtPaths->isEmpty(),
-                                            | $tree->enrichSourceTreeNode($setImpl, $tgtPgft, $extensions),
-                                            | $appendAtPaths->fold({path,tree | $tree->enrichSourceTreeNodeAtPath($path, $setImpl, $tgtPgft, $extensions)}, $tree)
-                                         );
-                                      },
-                                      $withRootSubTypes
-                                   );
+         let withNextSetImpl     = $childSetImpls->fold({setImpl, tree |
+                                                        let appendAtPaths = $propertyPaths.current->removeDuplicates();
+                                                        if($appendAtPaths->isEmpty(),
+                                                            | $tree->enrichSourceTreeNode($setImpl, $tgtPgft, $extensions),
+                                                            | $appendAtPaths->fold({path,tree | 
+                                                                      if($path.values->isEmpty(), 
+                                                                        | $tree->enrichSourceTreeNode($setImpl, $tgtPgft, $extensions),
+                                                                        | $tree->enrichSourceTreeNodeAtPath($path, $setImpl, $tgtPgft, $extensions))                                                     
+                                                              }, $tree)
+                                                        );
+                                                        },
+                                                        $withRootSubTypes
+                                                      );
 
          let withPassThruSubTrees = if($childSetImpls->isEmpty() && $returnType->instanceOf(Class) && $requiredProperty->toOne()->isPropertyAutoMapped($setImplementation),
                                       |let appendAtPaths = $propertyPaths.current->filter(path| $path.values->isNotEmpty());

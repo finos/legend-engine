@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.8.1-SNAPSHOT</version>
+    <version>4.11.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -139,6 +139,10 @@
         <module>legend-engine-xt-relationalStore-trino-grammar</module>
         <module>legend-engine-xt-relationalStore-trino-protocol</module>
         <module>legend-engine-xt-relationalStore-trino-pure</module>
+
+        <module>legend-engine-xt-relationalStore-memsql-execution</module>
+        <module>legend-engine-xt-relationalStore-memsql-execution-tests</module>
+        <module>legend-engine-xt-relationalStore-memsql-pure</module>
 
         <module>legend-engine-xt-avro</module>
         <module>legend-engine-xt-avro-pure</module>
@@ -266,10 +270,12 @@
         <module>legend-engine-xt-nonrelationalStore-mongodb-grammar-integration</module>
         <module>legend-engine-xt-nonrelationalStore-mongodb-protocol</module>
         <module>legend-engine-xt-nonrelationalStore-mongodb-executionPlan</module>
+        <module>legend-engine-xt-nonrelationalStore-mongodb-executionPlan-test</module>
         <module>legend-engine-xt-nonrelationalStore-mongodb-javaPlatformBinding-pure</module>
         <module>legend-engine-xt-artifact-generation-api</module>
+        <module>legend-engine-xt-openapi-generation</module>
         <module>legend-engine-test-runner-mapping-api</module>
-
+        <module>legend-engine-xt-openapi-pure</module>
 
         <!-- NOTE: Do not change the ordering of this block, we want to build these modules last -->
         <module>legend-engine-test-reports</module>
@@ -278,13 +284,12 @@
         <module>legend-engine-server-integration-tests</module>
         <module>legend-engine-extensions-collection-execution</module>
         <module>legend-engine-extensions-collection-generation</module>
-        <!-- NOTE: Do not change the ordering of this block, we want to build these modules lastue
-         -->
+        <!-- NOTE: Do not change the ordering of this block, we want to build these modules last -->
     </modules>
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>4.5.0</legend.pure.version>
+        <legend.pure.version>4.5.1</legend.pure.version>
         <legend.shared.version>0.23.3</legend.shared.version>
 
         <!-- SONAR -->
@@ -309,6 +314,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.release>8</maven.compiler.release>
         <maven.enforcer.requireJavaVersion>[11.0.10,12)</maven.enforcer.requireJavaVersion>
+        <project.build.outputTimestamp>1680115922</project.build.outputTimestamp>
         <surefire.vm.params>-XX:SoftRefLRUPolicyMSPerMB=1</surefire.vm.params>
 
         <!-- Databases -->
@@ -860,6 +866,16 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-test-server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-memsql-execution</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-memsql-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -1852,7 +1868,21 @@
                 <artifactId>legend-engine-xt-nonrelationalStore-mongodb-javaPlatformBinding-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-nonrelationalStore-mongodb-executionPlan-test</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-openapi-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-openapi-generation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <!-- ENGINE -->
 
             <!-- PURE -->
@@ -2674,6 +2704,11 @@
             <dependency>
                 <groupId>org.testcontainers</groupId>
                 <artifactId>testcontainers</artifactId>
+                <version>${testcontainers.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>jdbc</artifactId>
                 <version>${testcontainers.version}</version>
             </dependency>
             <dependency>

@@ -41,6 +41,7 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xt-mastery-pure", "mastery"))
                 .with(this.buildCore("legend-engine-xt-relationalStore-pure", "relational"))
                 .with(this.buildCore("legend-engine-xt-relationalStore-sqlserver-pure", "relational_sqlserver"))
+                .with(this.buildCore("legend-engine-xt-relationalStore-memsql-pure", "relational_memsql"))
                 .with(this.buildCore("legend-engine-xt-relationalStore-bigquery-pure", "relational_bigquery"))
                 .with(this.buildCore("legend-engine-xt-relationalStore-spanner-pure", "relational_spanner"))
                 .with(this.buildCore("legend-engine-xt-relationalStore-athena-pure", "relational_athena"))
@@ -54,6 +55,7 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xt-flatdata-pure", "external-format-flatdata"))
                 .with(this.buildCore("legend-engine-xt-json-pure", "external-format-json"))
                 .with(this.buildCore("legend-engine-xt-xml-pure", "external-format-xml"))
+                .with(this.buildCore("legend-engine-xt-openapi-pure", "external-format-openapi"))
                 .with(this.buildCore("legend-engine-xt-graphQL-pure", "external-query-graphql"))
                 .with(this.buildCore("legend-engine-xt-graphQL-pure-metamodel", "external-query-graphql-metamodel"))
                 .with(this.buildCore("legend-engine-xt-protobuf-pure", "external-format-protobuf"))
@@ -84,7 +86,7 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xt-elasticsearch/legend-engine-xt-elasticsearch-V7-pure-metamodel", "elasticsearch_seven_metamodel"))
                 .with(this.buildCore("legend-engine-xt-nonrelationalStore-mongodb-pure","nonrelational-mongodb"))
                 .with(this.buildCore("legend-engine-xt-nonrelationalStore-mongodb-javaPlatformBinding-pure","nonrelational-mongodb-java-platform-binding"))
-                ;
+               ;
     }
 
     @Override

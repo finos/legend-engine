@@ -42,7 +42,6 @@ function <<test.Test>> meta::external::store::elasticsearch::v7::specification::
 
 function meta::external::store::elasticsearch::v7::specification::utils::property::propertySupport(property: PropertyBase[1]): PropertySupport[1]
 {    
-  let type = $property->type();
   $property->match(propertySupports());
 }
 

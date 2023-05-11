@@ -14,35 +14,19 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
-public class MappingInclude
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type", defaultImpl = MappingIncludeMapping.class)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = MappingIncludeMapping.class, name = "mappingIncludeMapping")
+})
+public abstract class MappingInclude
 {
-    // NOTE: we have 2 ways of expressing includedMapping path, `includedMapping` is the fullPath and we also split it into package and name
-    // the latter is for backward compatibility
-    private String includedMapping; // set the field as private so Jackson has to use getter and setter
-    @Deprecated
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) // exclude these fields during serialization
-    public String includedMappingName;
-    @Deprecated
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) // exclude these fields during serialization
-    public String includedMappingPackage;
-    public String sourceDatabasePath;
-    public String targetDatabasePath;
     public SourceInformation sourceInformation;
 
-    /**
-     * There are cases when the model is serialized and not processed, hence this method provides a backward compatible
-     * way to extract the includedMapping path.
-     */
-    public String getIncludedMapping()
-    {
-        return this.includedMapping != null ? this.includedMapping : this.includedMappingPackage + "::" + this.includedMappingName;
-    }
-
-    public void setIncludedMapping(String includedMapping)
-    {
-        this.includedMapping = includedMapping;
-    }
+    @JsonIgnore
+    public abstract String getFullName();
 }
