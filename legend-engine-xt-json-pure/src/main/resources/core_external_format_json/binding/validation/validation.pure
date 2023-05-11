@@ -85,7 +85,7 @@ function <<access.private>> meta::external::format::json::binding::validation::m
        let requiredMultiplicity = $propertyToBeMatched->functionReturnMultiplicity();
        let actualMultiplicity = $propertyMatchedByName->toOne()->functionReturnMultiplicity();
       
-       if( !subsumesType($actualReturnType, $requiredReturnType), 
+       if( !subsumesType($actualReturnType, $requiredReturnType) && !subsumesType($requiredReturnType, $actualReturnType), 
           |^FailedBindingDetail(errorMessages = 'Incompatible return type for json schema property(' + $propertyToBeMatched.name->orElse('Unknown property name') + '). Expected : ' + $requiredReturnType->elementToPath() + ', Found : ' + $actualReturnType->elementToPath() + '.'),
           |
        if( !multiplicitySubsumes($actualMultiplicity, $requiredMultiplicity), 
