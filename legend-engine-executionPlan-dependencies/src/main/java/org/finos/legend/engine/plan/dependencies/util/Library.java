@@ -1426,11 +1426,6 @@ public class Library
         return true;
     }
 
-    public static long mod(long dividend, long divisor)
-    {
-        return BigInteger.valueOf(dividend).mod(BigInteger.valueOf(divisor)).longValue();
-    }
-
     public static double sqrt(Number input)
     {
         double res = Math.sqrt(input.doubleValue());
