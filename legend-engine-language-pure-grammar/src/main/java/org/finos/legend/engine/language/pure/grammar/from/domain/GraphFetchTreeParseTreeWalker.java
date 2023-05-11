@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.grammar.from.domain;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.graphFetchTree.GraphFetchTreeParserGrammar;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
@@ -30,6 +31,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enu
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.GraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.PropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.SubTypeGraphFetchTree;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,14 +55,20 @@ public class GraphFetchTreeParseTreeWalker
     private ClassInstance visitRootGraphDefinition(GraphFetchTreeParserGrammar.GraphDefinitionContext graphDefinitionContext, GraphFetchTreeParserGrammar.DefinitionContext definitionContext)
     {
         List<GraphFetchTree> subTrees = new ArrayList<>();
+        List<SubTypeGraphFetchTree> subTypeTrees = new ArrayList<>();
         for (GraphFetchTreeParserGrammar.GraphPathContext graphPathContext : graphDefinitionContext.graphPaths().graphPath())
         {
             subTrees.add(this.visitGraphPathContext(graphPathContext));
+        }
+        for (GraphFetchTreeParserGrammar.SubTypeGraphPathContext subTypeGraphPathContext : graphDefinitionContext.graphPaths().subTypeGraphPath())
+        {
+            subTypeTrees.add(this.visitSubTypeGraphPathContext(subTypeGraphPathContext));
         }
         RootGraphFetchTree result = new RootGraphFetchTree();
         result._class = PureGrammarParserUtility.fromQualifiedName(definitionContext.qualifiedName().packagePath() == null ? Collections.emptyList() : definitionContext.qualifiedName().packagePath().identifier(), definitionContext.qualifiedName().identifier());
         result.sourceInformation = walkerSourceInformation.getSourceInformation(definitionContext.qualifiedName());
         result.subTrees = subTrees;
+        result.subTypeTrees = subTypeTrees;
         return DomainParseTreeWalker.wrapWithClassInstance(result, "rootGraphFetchTree");
     }
 
@@ -68,6 +77,7 @@ public class GraphFetchTreeParseTreeWalker
         List<GraphFetchTree> subTrees = new ArrayList<>();
         if (graphPathContext.graphDefinition() != null)
         {
+            validationForSubTypeTrees(graphPathContext.graphDefinition());
             for (GraphFetchTreeParserGrammar.GraphPathContext subGraphPathContext : graphPathContext.graphDefinition().graphPaths().graphPath())
             {
                 subTrees.add(this.visitGraphPathContext(subGraphPathContext));
@@ -97,6 +107,22 @@ public class GraphFetchTreeParseTreeWalker
         {
             result.subType = graphPathContext.subtype().qualifiedName().getText();
         }
+        return result;
+    }
+
+    private SubTypeGraphFetchTree visitSubTypeGraphPathContext(GraphFetchTreeParserGrammar.SubTypeGraphPathContext subTypeGraphPathContext)
+    {
+        List<GraphFetchTree> subTrees = new ArrayList<>();
+        validationForSubTypeTrees(subTypeGraphPathContext.graphDefinition());
+        for (GraphFetchTreeParserGrammar.GraphPathContext subGraphPathContext : subTypeGraphPathContext.graphDefinition().graphPaths().graphPath())
+        {
+            subTrees.add(this.visitGraphPathContext(subGraphPathContext));
+        }
+
+        SubTypeGraphFetchTree result = new SubTypeGraphFetchTree();
+        result.sourceInformation = walkerSourceInformation.getSourceInformation(subTypeGraphPathContext);
+        result.subTrees = subTrees;
+        result.subTypeClass = PureGrammarParserUtility.fromIdentifier(subTypeGraphPathContext.subtype().qualifiedName());
         return result;
     }
 
@@ -174,5 +200,13 @@ public class GraphFetchTreeParseTreeWalker
         }
         result.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         return result;
+    }
+
+    private void validationForSubTypeTrees(GraphFetchTreeParserGrammar.GraphDefinitionContext graphDefinitionContext)
+    {
+        if (graphDefinitionContext.graphPaths().subTypeGraphPath() != null && !graphDefinitionContext.graphPaths().subTypeGraphPath().isEmpty())
+        {
+            throw new EngineException("->subType() is supported only at root level", this.walkerSourceInformation.getSourceInformation(graphDefinitionContext), EngineErrorType.PARSER);
+        }
     }
 }
