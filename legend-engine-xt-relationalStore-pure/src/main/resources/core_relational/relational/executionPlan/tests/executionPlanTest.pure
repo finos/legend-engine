@@ -2046,6 +2046,34 @@ function <<test.Test>> meta::pure::executionPlan::tests::testModelConnectionAgg(
    assertEquals($expected, $res->planToString(meta::relational::extension::relationalExtensions()));
 }
 
+
+function <<test.Test>> meta::pure::executionPlan::tests::testModelConnectionMultipleAgg() : Boolean[1]
+{
+   let g = agg(x:meta::pure::mapping::modelToModel::test::shared::dest::Person[1] | $x.lastName,  y:String[*] | $y->count());
+   let res = executionPlan(|meta::pure::mapping::modelToModel::test::shared::dest::Person.all()->groupBy(
+                                    [x | $x.firstName],
+                                    [
+                                      agg(x:meta::pure::mapping::modelToModel::test::shared::dest::Person[1] | $x.lastName,  y:String[*] | $y->count()),
+                                      agg(x:meta::pure::mapping::modelToModel::test::shared::dest::Person[1] | $x.firstName, y:String[*] | $y->size())
+                                    ],
+                                   ['FirstName', 'PersonCount', 'PersonCountViaSize' ]),
+            meta::pure::mapping::modelToModel::test::simple::simpleModelMapping,
+            ^Runtime(connections = [^meta::pure::mapping::modelToModel::ModelChainConnection(element = ^meta::pure::mapping::modelToModel::ModelStore(),
+                                                                                             mappings = meta::pure::mapping::modelToModel::test::shared::relationalMapping),
+                                       meta::pure::mapping::modelToModel::test::shared::getConnection()
+                                   ]
+             ), meta::relational::extension::relationalExtensions());
+   let expected =
+      'Relational\n'+
+      '(\n'+
+      '  type = TDS[(FirstName, String, "", ""), (PersonCount, Integer, INT, ""), (PersonCountViaSize, Integer, INT, "")]\n'+
+      '  resultColumns = [("FirstName", ""), ("PersonCount", ""), ("PersonCountViaSize", "")]\n'+
+      '  sql = select substring("root".fullname, 0, LOCATE(\' \', "root".fullname)) as "FirstName", count(substring("root".fullname, (LOCATE(\' \', "root".fullname) + 1), char_length("root".fullname))) as "PersonCount", count(substring("root".fullname, 0, LOCATE(\' \', "root".fullname))) as "PersonCountViaSize" from SPerson as "root" group by "FirstName"\n'+
+      '  connection = TestDatabaseConnection(type = "H2")\n'+
+      ')\n';
+   assertEquals($expected, $res->planToString(meta::relational::extension::relationalExtensions()));
+}
+
 function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPLanGenerationForFrom() : Boolean[1]
 {
    let res = executionPlan(
