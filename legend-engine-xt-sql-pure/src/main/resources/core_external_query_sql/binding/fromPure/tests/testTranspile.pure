@@ -120,7 +120,6 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
 
-
 //DISTINCT
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDistinctAllColumns():Boolean[1]
 {
