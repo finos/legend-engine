@@ -344,7 +344,7 @@ public class GraphQLExecute extends GraphQL
         List<String> invalidParameters = providedQueryParameters.stream().filter(param -> !functionParameters.contains(param)).collect(Collectors.toList());
         if (!invalidParameters.isEmpty())
         {
-            throw  new IllegalArgumentException("Invalid parameter(s) provided: " + invalidParameters.toString());
+            throw  new IllegalArgumentException("Invalid external parameter(s) provided: " + invalidParameters.toString());
         }
     }
 

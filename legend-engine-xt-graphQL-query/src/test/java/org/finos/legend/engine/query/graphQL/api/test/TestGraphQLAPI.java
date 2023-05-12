@@ -378,7 +378,7 @@ public class TestGraphQLAPI
     public void testGraphQLExecuteDevAPI_RelationalWithInvalidParameter() throws Exception
     {
         expectedException.expect(RuntimeException.class);
-        expectedException.expectMessage("Invalid parameter(s) provided: [name]");
+        expectedException.expectMessage("Invalid external parameter(s) provided: [name]");
         ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
         PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
         MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
