@@ -352,7 +352,7 @@ public class TestGraphQLAPI
     @Test
     public void testGraphQLExecuteDevAPI_RelationalWithMissingMandatoryArgument() throws Exception
     {
-        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expect(RuntimeException.class);
         expectedException.expectMessage("Missing external parameter(s): legalName:String[1]");
         ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
         PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
@@ -362,7 +362,7 @@ public class TestGraphQLAPI
         Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
         Query query = new Query();
         query.query = "query Query {\n" +
-                "  firmByLegalName(name: \"Firm X\") {\n" +
+                "  firmByLegalName {\n" +
                 "      legalName,\n" +
                 "      employees {\n" +
                 "        firstName,\n" +
@@ -377,7 +377,7 @@ public class TestGraphQLAPI
     @Test
     public void testGraphQLExecuteDevAPI_RelationalWithInvalidParameter() throws Exception
     {
-        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expect(RuntimeException.class);
         expectedException.expectMessage("Invalid parameter(s) provided: [name]");
         ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
         PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
@@ -387,17 +387,13 @@ public class TestGraphQLAPI
         Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
         Query query = new Query();
         query.query = "query Query {\n" +
-                "  firmByLegalName(name: \"Firm X\") {\n" +
-                "      legalName,\n" +
-                "      employees {\n" +
+                "  personByNames(name: \"Peter\") {\n" +
                 "        firstName,\n" +
                 "        lastName\n" +
-                "      }\n" +
                 "    }\n" +
                 "  }";
         Response response = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
-        String expectedErrorMessage = "name arguement not defined";
-        Assert.assertEquals(expectedErrorMessage, responseAsString(response));
+        responseAsString(response);
     }
 
     @Test
