@@ -111,7 +111,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::math::
          fc1(exp_Number_1__Float_1_,                                   {ctx,num        | javaMath()->j_invoke('exp', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),
          fc1(sqrt_Number_1__Float_1_,                                  {ctx,num        | $library->j_invoke('sqrt', $num, javaDouble())}),
 
-         fc2(mod_Integer_1__Integer_1__Integer_1_,                     {ctx, int1, int2 | $int1->j_remainder($int2)}),
+         fc2(mod_Integer_1__Integer_1__Integer_1_,                     {ctx,int1,int2  | javaMath()->j_invoke('floorMod', [$int1, $int2], javaLong()}),
          
          fc2(stdDev_Number_$1_MANY$__Boolean_1__Number_1_,             {ctx,collection,biasCorrection | $library->j_invoke('stdDev', [$collection, $biasCorrection], javaNumber())})
       ]);
