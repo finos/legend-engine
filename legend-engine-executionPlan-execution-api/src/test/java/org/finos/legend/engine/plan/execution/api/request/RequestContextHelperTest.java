@@ -36,7 +36,7 @@ public class RequestContextHelperTest
         when(httpRequest.getSession()).thenReturn(httpSession);
         when(httpSession.getId()).thenReturn("SESSION_ID");
         when(httpRequest.getHeader(RequestContextHelper.REFERER)).thenReturn("REFERRER");
-        when(httpRequest.getHeader(RequestContextHelper.LEGEND_REQUEST_TOKEN)).thenReturn("REQUEST_TOKEN");
+        when(httpRequest.getHeader(RequestContextHelper.LEGEND_REQUEST_ID)).thenReturn("REQUEST_TOKEN");
 
         RequestContext requestContext = RequestContextHelper.RequestContext(httpRequest);
 

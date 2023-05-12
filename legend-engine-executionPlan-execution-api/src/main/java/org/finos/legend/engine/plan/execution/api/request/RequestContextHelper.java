@@ -21,11 +21,11 @@ import javax.servlet.http.HttpServletRequest;
 public class RequestContextHelper
 {
     public static String REFERER = "REFERER"; //spelling is correct
-    public static String LEGEND_REQUEST_TOKEN = "LEGEND_REQUEST_TOKEN";
+    public static String LEGEND_REQUEST_ID = "x-legend-request-id";
 
     public static RequestContext RequestContext(HttpServletRequest httpRequest)
     {
-        String clientRef = httpRequest.getHeader(LEGEND_REQUEST_TOKEN);
+        String clientRef = httpRequest.getHeader(LEGEND_REQUEST_ID);
         String sessionID = httpRequest.getSession().getId();
         return new RequestContext(sessionID, httpRequest.getHeader(REFERER),  clientRef == null ? sessionID : clientRef); //default to the sessionID if no ClientReference was provided
     }
