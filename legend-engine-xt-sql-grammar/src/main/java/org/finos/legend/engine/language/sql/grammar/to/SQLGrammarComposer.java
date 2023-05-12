@@ -387,7 +387,7 @@ public class SQLGrammarComposer
             public String visit(QuerySpecification val)
             {
                 return val.select.accept(this)
-                        + " from " + visit(val.from, "")
+                        + (val.from == null ? "" : " from " + visit(val.from, ""))
                         + (val.where == null ? "" : " where " + val.where.accept(this))
                         + (val.groupBy == null || val.groupBy.isEmpty() ? "" : " group by " + visit(val.groupBy, ", "))
                         + (val.having == null ? "" : " having " + visit(val.having))

@@ -1023,6 +1023,25 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testMultiLineQuery():Boolean[1]
+{
+  let sqlString = 'SELECT * FROM service."/service/service3"';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {| 
+        let const = 123;
+        FlatInput.all()->project(
+        [
+          x | $x.idIn, x | $x.integerIn, x | $x.enumVal, x | $x.type, x | $const
+        ],
+        [
+          'ID', 'Integer', 'The Enum Value', 'The Type', 'Const'
+        ]
+      );};
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+}
+
+
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSchemaService1():Boolean[1]
 {
   let sqlString = 'SELECT * FROM service."/service/service1"';
@@ -1065,9 +1084,10 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   let expectedCol2 = ^PrimitiveValueSchemaColumn(name='Integer',        type=meta::external::query::sql::PrimitiveType.Integer);
   let expectedCol3 = ^EnumValueSchemaColumn(name='The Enum Value',      type=MyEnum->elementToPath());
   let expectedCol4 = ^EnumValueSchemaColumn(name='The Type',            type=FieldType->elementToPath());
+  let expectedCol5 = ^PrimitiveValueSchemaColumn(name='Const',            type=meta::external::query::sql::PrimitiveType.Integer);
   let expectedEnum1 = ^meta::external::query::sql::Enum(type=MyEnum->elementToPath(), values=MyEnum->enumValues()->map(v:meta::pure::metamodel::type::Enum[1] | $v->id()));
   let expectedEnum2 = ^meta::external::query::sql::Enum(type=FieldType->elementToPath(), values=FieldType->enumValues()->map(v:meta::pure::metamodel::type::Enum[1] | $v->id()));
-  let expectedSchema = ^Schema(columns=[$expectedCol1, $expectedCol2, $expectedCol3, $expectedCol4], enums=[$expectedEnum1, $expectedEnum2]);
+  let expectedSchema = ^Schema(columns=[$expectedCol1, $expectedCol2, $expectedCol3, $expectedCol4,$expectedCol5], enums=[$expectedEnum1, $expectedEnum2]);
 
   assertEquals($expectedSchema, $actualSchema);
 }
