@@ -666,7 +666,7 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "\n" +
                 "function meta::pure::functions::math::sum(numbers: Float[*]): Float[1]\n" +
                 "{\n" +
-                "   $numbers->plus()\n" +
+                "  $numbers->plus()\n" +
                 "}\n" +
                 "\n" +
                 "\n" +
