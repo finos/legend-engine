@@ -320,7 +320,7 @@ public class TestJsonToGrammarApi
                 "\n" +
                 "function my::underscore_package::constraint_fn(value: String[1]): Boolean[1]\n" +
                 "{\n" +
-                "   $value->startsWith('A')\n" +
+                "  $value->startsWith('A')\n" +
                 "}\n";
         testModelFromProtocol(expected, "functionWithUnderscores.json");
 
@@ -332,7 +332,7 @@ public class TestJsonToGrammarApi
         String expected =
                 "function my::example::compareDate(): Boolean[1]\n" +
                         "{\n" +
-                        "   %2020-01-01 < %2020-01-02\n" +
+                        "  %2020-01-01 < %2020-01-02\n" +
                         "}\n";
         testModelFromProtocol(expected, "functionWithDate.json");
         testModelFromProtocol(expected, "functionWithDateContainingPercent.json");
@@ -344,7 +344,7 @@ public class TestJsonToGrammarApi
         String expected =
                 "function domainModel::migration::test::account::getRowsResult(): meta::pure::metamodel::type::Any[*]\n" +
                         "{\n" +
-                        "   1\n" +
+                        "  1\n" +
                         "}\n";
         testModelFromProtocol(expected, "simpleFunctionWithoutParameters.json");
     }
@@ -354,7 +354,7 @@ public class TestJsonToGrammarApi
     {
         String expected = "function domainModel::migration::test::account::getRowsResult(a: String[1]): meta::pure::metamodel::type::Any[*]\n" +
                 "{\n" +
-                "   1\n" +
+                "  1\n" +
                 "}\n";
         testModelFromProtocol(expected, "simpleFunctionWithParameters.json");
     }
