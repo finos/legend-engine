@@ -1,0 +1,67 @@
+{
+  "values":   {
+    "firstName": "Coralie",
+    "lastName": "Batie",
+    "firm":     {
+      "legalName": "Devpoint",
+      "industrySectors": [
+"Technology",
+"Consumer Durables",
+"Miscellaneous",
+"n\/a"
+      ],
+      "address":       {
+        "country":         {
+          "continent": "America",
+          "countryCode": "US"
+        },
+        "city": "Saint Paul",
+        "street": "974 Sunbrook Crossing",
+        "postalCode": "55103"
+      },
+      "dateFounded": "2018-01-14T00:36:08Z"
+    },
+    "phoneNumber": "+1 501 883 4607",
+    "address":     {
+      "country":       {
+        "continent": "America",
+        "countryCode": "US"
+      },
+      "city": "Little Rock",
+      "street": "99 Bonner Plaza",
+      "postalCode": "72215"
+    },
+    "car": [
+      {
+        "model": "Almera",
+        "manufacturer":         {
+          "country":           {
+            "continent": "Asia",
+            "countryCode": "JP"
+          },
+          "name": "Nissan"
+        }
+      },
+      {
+        "model": "Primera",
+        "manufacturer":         {
+          "country":           {
+            "continent": "Asia",
+            "countryCode": "JP"
+          },
+          "name": "Nissan"
+        }
+      }
+    ],
+    "otherPhoneNumbers": [
+"+1 571 689 6039",
+"+1 303 278 3547",
+"+1 414 760 1884"
+    ],
+    "age": 23,
+    "email": "cbatie2@amazon.co.jp"
+  },
+  "builder":   {
+    "_type": "json"
+  }
+}

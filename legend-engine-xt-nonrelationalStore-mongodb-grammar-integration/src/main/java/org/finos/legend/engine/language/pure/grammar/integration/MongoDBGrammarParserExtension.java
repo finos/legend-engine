@@ -17,20 +17,29 @@ package org.finos.legend.engine.language.pure.grammar.integration;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.finos.legend.engine.language.pure.grammar.from.ParserErrorListener;
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.SectionSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.SourceCodeParserInfo;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.MongoDBConnectionLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.MongoDBConnectionParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MongoDBMappingLexerGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MongoDBMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.schema.MongoDBSchemaLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.schema.MongoDBSchemaParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionValueSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.extension.ConnectionValueParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.MappingElementParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
+import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingElementSourceCode;
 import org.finos.legend.engine.language.pure.grammar.integration.connection.MongoDBConnectionParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.integration.extensions.IMongoDBGrammarParserExtension;
+import org.finos.legend.engine.language.pure.grammar.integration.mapping.MongoDBMappingParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.integration.util.MongoDBSchemaParseTreeWalker;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.RootMongoDBClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
 
 import java.util.Collections;
@@ -76,7 +85,7 @@ public class MongoDBGrammarParserExtension implements IMongoDBGrammarParserExten
             MongoDBConnectionParseTreeWalker walker = new MongoDBConnectionParseTreeWalker(parserInfo.walkerSourceInformation, extension);
             MongoDBConnection connectionValue = new MongoDBConnection();
             connectionValue.sourceInformation = connectionValueSourceCode.sourceInformation;
-            walker.visitServiceStoreConnectionValue((MongoDBConnectionParserGrammar.DefinitionContext) parserInfo.rootContext, connectionValue, connectionValueSourceCode.isEmbedded);
+            walker.visitMongoDBConnectionValue((MongoDBConnectionParserGrammar.DefinitionContext) parserInfo.rootContext, connectionValue, connectionValueSourceCode.isEmbedded);
             return connectionValue;
         }));
     }
@@ -94,5 +103,40 @@ public class MongoDBGrammarParserExtension implements IMongoDBGrammarParserExten
             walker.visit((MongoDBSchemaParserGrammar.DefinitionContext) parserInfo.rootContext);
             return section;
         }));
+    }
+
+    public static SourceCodeParserInfo getMongoDBMappingElementParserInfo(MappingElementSourceCode mappingElementSourceCode)
+    {
+        CharStream input = CharStreams.fromString(mappingElementSourceCode.code);
+        ParserErrorListener errorListener = new ParserErrorListener(mappingElementSourceCode.mappingParseTreeWalkerSourceInformation);
+        MongoDBMappingLexerGrammar lexer = new MongoDBMappingLexerGrammar(CharStreams.fromString(mappingElementSourceCode.code));
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(errorListener);
+        MongoDBMappingParserGrammar parser = new MongoDBMappingParserGrammar(new CommonTokenStream(lexer));
+        parser.removeErrorListeners();
+        parser.addErrorListener(errorListener);
+        MongoDBMappingParserGrammar.DefinitionContext definitionContext = parser.definition();
+        ParserRuleContext classMapppingCtx = definitionContext.classMapping();
+        return new SourceCodeParserInfo(mappingElementSourceCode.code, input, mappingElementSourceCode.mappingParseTreeWalkerSourceInformation.getSourceInformation(mappingElementSourceCode.mappingElementParserRuleContext), mappingElementSourceCode.mappingElementParseTreeWalkerSourceInformation, lexer, parser, classMapppingCtx);
+    }
+
+    @Override
+    public Iterable<? extends MappingElementParser> getExtraMappingElementParsers()
+    {
+        return Collections.singletonList(MappingElementParser.newParser(MONGO_DB_MAPPING_ELEMENT_TYPE,
+                (mappingElementSourceCode, parserContext) ->
+                {
+                    MappingParserGrammar.MappingElementContext ctx = mappingElementSourceCode.mappingElementParserRuleContext;
+                    SourceCodeParserInfo parserInfo = getMongoDBMappingElementParserInfo(mappingElementSourceCode);
+                    MongoDBMappingParseTreeWalker walker = new MongoDBMappingParseTreeWalker();
+
+                    RootMongoDBClassMapping mongoDBClassMapping = new RootMongoDBClassMapping();
+                    mongoDBClassMapping._class = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
+                    mongoDBClassMapping.root = ctx.STAR() != null;
+                    mongoDBClassMapping.id = ctx.mappingElementId() != null ? ctx.mappingElementId().getText() : null;
+                    walker.visitMongoDBClassMapping((MongoDBMappingParserGrammar.ClassMappingContext) parserInfo.rootContext, mongoDBClassMapping);
+                    return mongoDBClassMapping;
+                })
+        );
     }
 }

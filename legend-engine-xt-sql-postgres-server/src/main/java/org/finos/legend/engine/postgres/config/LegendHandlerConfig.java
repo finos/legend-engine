@@ -24,8 +24,6 @@ public class LegendHandlerConfig implements HandlerConfig
     private String protocol;
     private String host;
     private String port;
-    private String projectId;
-    private String sessionCookie;
 
     public LegendHandlerConfig()
     {
@@ -37,8 +35,6 @@ public class LegendHandlerConfig implements HandlerConfig
         this.protocol = protocol;
         this.host = host;
         this.port = port;
-        this.projectId = projectId;
-        this.sessionCookie = sessionCookie;
     }
 
     public String getProtocol()
@@ -56,16 +52,6 @@ public class LegendHandlerConfig implements HandlerConfig
         return port;
     }
 
-    public String getProjectId()
-    {
-        return projectId;
-    }
-
-    public String getSessionCookie()
-    {
-        return sessionCookie;
-    }
-
     @Override
     public HandlerType getType()
     {
@@ -79,8 +65,6 @@ public class LegendHandlerConfig implements HandlerConfig
                 "protocol='" + protocol + '\'' +
                 ", host='" + host + '\'' +
                 ", port='" + port + '\'' +
-                ", projectId='" + projectId + '\'' +
-                ", sessionCookie='" + sessionCookie + '\'' +
                 '}';
     }
 }

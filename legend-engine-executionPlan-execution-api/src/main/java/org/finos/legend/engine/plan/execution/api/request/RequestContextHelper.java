@@ -20,13 +20,14 @@ import javax.servlet.http.HttpServletRequest;
 
 public class RequestContextHelper
 {
+    public static String REFERER = "REFERER"; //spelling is correct
+    public static String LEGEND_REQUEST_TOKEN = "LEGEND_REQUEST_TOKEN";
+
     public static RequestContext RequestContext(HttpServletRequest httpRequest)
     {
-        return new RequestContext(httpRequest.getSession().getId(), httpRequest.getHeader("REFERER")); //spelling is correct
-
+        String clientRef = httpRequest.getHeader(LEGEND_REQUEST_TOKEN);
+        String sessionID = httpRequest.getSession().getId();
+        return new RequestContext(sessionID, httpRequest.getHeader(REFERER),  clientRef == null ? sessionID : clientRef); //default to the sessionID if no ClientReference was provided
     }
-
-
-
 
 }

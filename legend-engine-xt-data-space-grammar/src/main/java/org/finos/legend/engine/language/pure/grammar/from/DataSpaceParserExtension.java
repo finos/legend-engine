@@ -20,12 +20,17 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.DataSpaceLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.DataSpaceParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
+import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingIncludeParser;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.MappingIncludeDataSpace;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 
+import java.util.Collections;
 import java.util.function.Consumer;
 
 public class DataSpaceParserExtension implements PureGrammarParserExtension
@@ -60,5 +65,24 @@ public class DataSpaceParserExtension implements PureGrammarParserExtension
         parser.removeErrorListeners();
         parser.addErrorListener(errorListener);
         return new SourceCodeParserInfo(sectionSourceCode.code, input, sectionSourceCode.sourceInformation, sectionSourceCode.walkerSourceInformation, lexer, parser, parser.definition());
+    }
+
+    @Override
+    public Iterable<? extends MappingIncludeParser> getExtraMappingIncludeParsers()
+    {
+        return org.eclipse.collections.api.factory.Lists.immutable.with(
+                MappingIncludeParser.newParser("dataspace", DataSpaceParserExtension::parseMappingInclude)
+        );
+    }
+
+    private static MappingInclude parseMappingInclude(MappingParserGrammar.IncludeMappingContext ctx,
+                                                      ParseTreeWalkerSourceInformation walkerSourceInformation)
+    {
+        MappingIncludeDataSpace mappingIncludeDataSpace = new MappingIncludeDataSpace();
+        mappingIncludeDataSpace.includedDataSpace =
+                PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
+        mappingIncludeDataSpace.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        return mappingIncludeDataSpace;
     }
 }

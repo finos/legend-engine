@@ -37,4 +37,10 @@ public class TestVaultImplementation implements VaultImplementation
     {
         this.values.put(key, value);
     }
+
+    public TestVaultImplementation withValue(String key, String value)
+    {
+        this.setValue(key, value);
+        return this;
+    }
 }

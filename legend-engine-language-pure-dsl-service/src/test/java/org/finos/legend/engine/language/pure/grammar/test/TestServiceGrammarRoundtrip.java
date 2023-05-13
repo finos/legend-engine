@@ -1864,7 +1864,99 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  ];\n" +
                 "}\n";
         testComposedGrammarWithoutSectionIndex(expected, true);
+    }
 
+    @Test
+    public void testRenderingExecutionEnvironmentWithServiceAndModelsWithoutSectionIndex()
+    {
+        String expected = "###Service\n" +
+                "Service meta::pure::myServiceMulti\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/{env}';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'ownerName'\n" +
+                "  ];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Multi\n" +
+                "  {\n" +
+                "    query: env: String[1]|model::pure::mapping::modelToModel::test::shared::dest::Product.all()->from(test::executionEnvironment->get($env))->graphFetchChecked(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#)->serialize(#{model::pure::mapping::modelToModel::test::shared::dest::Product{name}}#);\n" +
+                "  }\n" +
+                "  test: Multi\n" +
+                "  {\n" +
+                "    tests['QA']:\n" +
+                "    {\n" +
+                "      data: 'moreData';\n" +
+                "      asserts:\n" +
+                "      [\n" +
+                "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },\n" +
+                "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "    tests['UAT']:\n" +
+                "    {\n" +
+                "      data: 'moreData';\n" +
+                "      asserts:\n" +
+                "      [\n" +
+                "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 },\n" +
+                "        { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n" +
+                "\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: false;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: meta::transform::tests::Address[1]|$src.a->from(meta::myMapping, meta::myRuntime);\n" +
+                "  }\n" +
+                "}\n" +
+                "\n" +
+                "ExecutionEnvironment test::executionEnvironment\n" +
+                "{\n" +
+                "  executions:\n" +
+                "  [\n" +
+                "    UAT:\n" +
+                "    {\n" +
+                "      mapping: test::myMapping1;\n" +
+                "      runtime: test::myRuntime1;\n" +
+                "    },\n" +
+                "    PROD:\n" +
+                "    {\n" +
+                "      mapping: test::myMapping2;\n" +
+                "      runtime: test::myRuntime2;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "ExecutionEnvironment test::executionEnvironment\n" +
+                "{\n" +
+                "  executions:\n" +
+                "  [\n" +
+                "    QA:\n" +
+                "    {\n" +
+                "      mapping: test::MyMapping;\n" +
+                "      runtime: test::MyRuntime;\n" +
+                "    },\n" +
+                "    PROD:\n" +
+                "    {\n" +
+                "      mapping: test::MyMapping;\n" +
+                "      runtime: test::MyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Pure\n" +
+                "Class anything::somethingElse\n" +
+                "{\n" +
+                "}\n";
+        testComposedGrammarWithoutSectionIndex(expected, true);
     }
 
     private void testComposedGrammarWithoutSectionIndex(String code, boolean omitSectionIndex)

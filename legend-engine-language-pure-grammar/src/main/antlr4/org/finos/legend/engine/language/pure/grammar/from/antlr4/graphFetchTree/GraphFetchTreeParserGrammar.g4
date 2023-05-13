@@ -22,9 +22,11 @@ graphDefinition:                    BRACE_OPEN
                                         graphPaths
                                     BRACE_CLOSE
 ;
-graphPaths:                         graphPath (COMMA graphPath)*
+graphPaths:                         (graphPath | subTypeGraphPath) (COMMA (graphPath | subTypeGraphPath))*
 ;
 graphPath:                          alias? identifier propertyParameters? subtype? graphDefinition?
+;
+subTypeGraphPath:                   subtype graphDefinition
 ;
 alias:                              STRING COLON
 ;

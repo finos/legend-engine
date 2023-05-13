@@ -480,6 +480,7 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                                     typeKeyName = $a.typeKeyName,
                                     includeType = $a.includeType,
                                     includeEnumType = $a.includeEnumType,
+                                    dateTimeFormat = $a.dateTimeFormat,
                                     removePropertiesWithNullValues = $a.removePropertiesWithNullValues,
                                     removePropertiesWithEmptySets = $a.removePropertiesWithEmptySets,
                                     fullyQualifiedTypePath = $a.fullyQualifiedTypePath,
@@ -563,6 +564,10 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpec
                                          alias      = $p.alias,
                                          subType    = $p.subType->map(st| $st->elementToPath())
                                       ),
+      s: SubTypeGraphFetchTree[1]   | ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::SubTypeGraphFetchTree(
+                                        _type = 'subTypeGraphFetchTree',
+                                        subTypeClass = $s.subTypeClass->elementToPath()
+                                      ),
       c: ClusteredGraphFetchTree[1] | meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree($c.tree, $inScope, $open, $extensions)
    ]);
 
@@ -571,7 +576,12 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpec
       g: GraphFetchTree[1]          | $g.subTrees->map(st|$st->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree($inScope, $open, $extensions))
    ]);
 
-   ^$base(subTrees=$subtrees);
+   let subTypeTrees = $tree->match([
+      c: ClusteredGraphFetchTree[1] | $c.tree.subTypeTrees->map(stt|$stt->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree($inScope, $open, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::SubTypeGraphFetchTree)),
+      g: GraphFetchTree[1] | $g.subTypeTrees->map(stt | $stt->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree($inScope, $open, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::SubTypeGraphFetchTree))
+   ]);
+
+   ^$base(subTrees=$subtrees, subTypeTrees=$subTypeTrees);
 }
 
 

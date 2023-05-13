@@ -83,7 +83,7 @@ public class HelperAuthenticationBuilder
         @Override
         public Root_meta_pure_runtime_connection_authentication_AuthenticationSpecification visit(AuthenticationSpecification catchAll)
         {
-            throw new UnsupportedOperationException("TODO - epsstan");
+            return null;
         }
     }
 

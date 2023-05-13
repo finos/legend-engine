@@ -473,6 +473,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GraphFe
 {
     _type : String[1];
     subTrees : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GraphFetchTree[*];
+    subTypeTrees : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::SubTypeGraphFetchTree[*];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RootGraphFetchTree extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GraphFetchTree
@@ -488,11 +489,17 @@ Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Propert
    subType    : String[0..1];
 }
 
+Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::SubTypeGraphFetchTree extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GraphFetchTree
+{
+   subTypeClass : String[1];
+}
+
 Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::AlloySerializationConfig
 {
     typeKeyName : String[1];
     includeType: Boolean[0..1];
     includeEnumType: Boolean[0..1];
+    dateTimeFormat: String[0..1];
     removePropertiesWithNullValues: Boolean[0..1];
     removePropertiesWithEmptySets: Boolean[0..1];
     fullyQualifiedTypePath: Boolean[0..1];

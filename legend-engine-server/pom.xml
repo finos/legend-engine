@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.11.1-SNAPSHOT</version>
+        <version>4.11.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-server</artifactId>
@@ -238,6 +238,10 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-protocol-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-language-pure-modelManager-sdlc</artifactId>
         </dependency>
         <dependency>
@@ -416,7 +420,11 @@
             <artifactId>legend-engine-xt-relationalStore-spanner-jdbc-shaded</artifactId>
             <scope>runtime</scope>
         </dependency>
-
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-memsql-pure</artifactId>
+            <scope>runtime</scope>
+        </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-trino-pure</artifactId>

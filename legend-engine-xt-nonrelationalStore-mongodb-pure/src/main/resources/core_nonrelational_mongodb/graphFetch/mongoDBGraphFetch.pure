@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::metamodel::path::*;
 import meta::external::shared::format::metamodel::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
 import meta::pure::graphFetch::*;
@@ -44,7 +45,7 @@ function meta::external::store::mongodb::graphFetch::executionPlan::planRootGrap
   let connection = $runtime->toOne()->connectionByElement($store)->cast(@MongoDBConnection);
 
   let binding = $mapping.classMappings->at(0)->cast(@MongoDBSetImplementation)->at(0).binding->toOne();
-  
+
   ^InMemoryRootGraphFetchExecutionNode(
     resultType = ^ClassResultType(type=$rootTree.class->toOne()),
     nodeIndex = 0,
@@ -52,12 +53,13 @@ function meta::external::store::mongodb::graphFetch::executionPlan::planRootGrap
     checked = $checked,
     children = $rootTree->generateInMemoryChildGraphNodes($rootTree->nodePathName(), $orderedPaths, $debug),
     executionNodes = [
-      ^ExternalFormatInternalizeExecutionNode(
+      //^ExternalFormatInternalizeExecutionNode(
+      ^MongoDBDocumentInternalizeExecutionNode(
         resultType = ^PartialClassResultType(
                             type = $rootTree.class->toOne(),
                             propertiesWithParameters = $rootTree.subTrees->cast(@PropertyGraphFetchTree)->map(x | $x->map(x | ^PropertyWithParameters(property = $x.property, parameters = $x.parameters)))
                           ),
-                          
+        //config = $internalizeConfig,
         checked = $checked,
         enableConstraints = false,
         tree = $rootTree,
