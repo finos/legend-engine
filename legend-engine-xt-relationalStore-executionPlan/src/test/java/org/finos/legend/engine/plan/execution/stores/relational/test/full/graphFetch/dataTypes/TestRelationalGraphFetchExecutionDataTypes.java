@@ -76,6 +76,29 @@ public class TestRelationalGraphFetchExecutionDataTypes extends AlloyTestServer
             "    )\n" +
             ")\n\n";
 
+    private static final String STORE_MODEL_WITH_ALL_COLUMNS_AS_PK = "###Relational\n" +
+            "Database test::DataTypesDB\n" +
+            "(\n" +
+            "    Table dataTable\n" +
+            "    (\n" +
+            "        pk INTEGER PRIMARY KEY,\n" +
+            "        ti TINYINT PRIMARY KEY,\n" +
+            "        si SMALLINT PRIMARY KEY,\n" +
+            "        int INTEGER PRIMARY KEY,\n" +
+            "        bi BIGINT PRIMARY KEY,\n" +
+            "        vc VARCHAR(200) PRIMARY KEY,\n" +
+            "        c CHAR(2) PRIMARY KEY,\n" +
+            "        date DATE PRIMARY KEY,\n" +
+            "        ts TIMESTAMP PRIMARY KEY,\n" +
+            "        f FLOAT PRIMARY KEY,\n" +
+            "        d DOUBLE PRIMARY KEY,\n" +
+            "        bit BIT PRIMARY KEY,\n" +
+            "        dec DECIMAL(38,15) PRIMARY KEY,\n" +
+            "        r REAL PRIMARY KEY,\n" +
+            "        n NUMERIC(38,15) PRIMARY KEY\n" +
+            "    )\n" +
+            ")\n\n";
+
     private static final String MAPPING = "###Mapping\n" +
             "Mapping test::Map\n" +
             "(\n" +
@@ -131,7 +154,21 @@ public class TestRelationalGraphFetchExecutionDataTypes extends AlloyTestServer
     @Test
     public void testGraphFetchDataTypes() throws Exception
     {
-        JsonStreamingResult res = getJsonStreamingResultForAllDataTypes();
+        JsonStreamingResult res = getJsonStreamingResultForAllDataTypes(STORE_MODEL);
+        String stringResult = res.flush(new JsonStreamToPureFormatSerializer(res));
+
+        String expected = "[" +
+                "{\"tinyInt\":1,\"smallInt\":2,\"integer\":3,\"bigInt\":1000,\"varchar\":\"Something\",\"char\":\"c\",\"date\":\"2003-07-19\",\"timestamp\":\"2003-07-19T00:00:00.000000000\",\"float\":1.1,\"double\":2.2,\"decimalAsFloat\":123456789.12345679,\"numericAsFloat\":987654321.0987654,\"bit\":true,\"decimal\":123456789.123456789012345,\"numeric\":987654321.098765432154321,\"floatAsDecimal\":1.1}," +
+                "{\"tinyInt\":null,\"smallInt\":null,\"integer\":null,\"bigInt\":null,\"varchar\":null,\"char\":null,\"date\":null,\"timestamp\":null,\"float\":null,\"double\":null,\"decimalAsFloat\":null,\"numericAsFloat\":null,\"bit\":null,\"decimal\":null,\"numeric\":null,\"floatAsDecimal\":null}" +
+                "]";
+
+        Assert.assertEquals(expected, new ObjectMapper().enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS).readTree(stringResult).toString());
+    }
+
+    @Test
+    public void testGraphFetchDataTypesAsPrimaryKeys() throws Exception
+    {
+        JsonStreamingResult res = getJsonStreamingResultForAllDataTypes(STORE_MODEL_WITH_ALL_COLUMNS_AS_PK);
         String stringResult = res.flush(new JsonStreamToPureFormatSerializer(res));
 
         String expected = "[" +
@@ -145,7 +182,7 @@ public class TestRelationalGraphFetchExecutionDataTypes extends AlloyTestServer
     @Test
     public void testGraphFetchDataTypesFromJavaStream() throws Exception
     {
-        Stream<ObjectNode> stream = getJsonStreamingResultForAllDataTypes().toStream();
+        Stream<ObjectNode> stream = getJsonStreamingResultForAllDataTypes(STORE_MODEL).toStream();
 
         String expected = "[" +
                     "{\"tinyInt\":1,\"smallInt\":2,\"integer\":3,\"bigInt\":1000,\"varchar\":\"Something\",\"char\":\"c\",\"date\":\"2003-07-19\",\"timestamp\":\"2003-07-19T00:00:00.000000000\",\"float\":1.1,\"double\":2.2,\"decimalAsFloat\":1.2345678912345679E8,\"numericAsFloat\":9.876543210987654E8,\"bit\":true,\"decimal\":123456789.123456789012345,\"numeric\":987654321.098765432154321,\"floatAsDecimal\":1.1}," +
@@ -155,7 +192,7 @@ public class TestRelationalGraphFetchExecutionDataTypes extends AlloyTestServer
         Assert.assertEquals(expected, new ObjectMapper().writeValueAsString(stream.iterator()));
     }
 
-    private JsonStreamingResult getJsonStreamingResultForAllDataTypes()
+    private JsonStreamingResult getJsonStreamingResultForAllDataTypes(String storeModel)
     {
         String fetchFunction = "###Pure\n" +
                 "function test::fetch(): Any[*]\n" +
@@ -205,7 +242,7 @@ public class TestRelationalGraphFetchExecutionDataTypes extends AlloyTestServer
                 "   }#)\n" +
                 "}";
 
-        SingleExecutionPlan plan = buildPlan(LOGICAL_MODEL + STORE_MODEL + MAPPING + RUNTIME + fetchFunction);
+        SingleExecutionPlan plan = buildPlan(LOGICAL_MODEL + storeModel + MAPPING + RUNTIME + fetchFunction);
         return (JsonStreamingResult) this.planExecutor.execute(plan, Maps.mutable.empty(), (String) null, null);
     }
 
@@ -213,8 +250,8 @@ public class TestRelationalGraphFetchExecutionDataTypes extends AlloyTestServer
     protected void insertTestData(Statement s) throws SQLException
     {
         s.execute("Drop table if exists dataTable;");
-        s.execute("Create Table dataTable(pk INT NOT NULL,ti TINYINT NULL,si SMALLINT NULL,int INT NULL,bi BIGINT NULL,vc VARCHAR(200) NULL,c CHAR(2) NULL,date DATE NULL,ts TIMESTAMP NULL,f FLOAT NULL,d DOUBLE NULL,bit BIT NULL,dec DECIMAL(38,15) NULL, n NUMERIC(38,15) NULL, PRIMARY KEY(pk));");
-        s.execute("insert into dataTable (pk, ti, si, int, bi, vc, c, date, ts, f, d, bit, dec, n) values (0, 1, 2, 3, 1000, 'Something', 'c', '2003-07-19', '2003-07-19 00:00:00', 1.1, 2.2, 1, 123456789.123456789012345, 987654321.098765432154321)");
-        s.execute("insert into dataTable (pk, ti, si, int, bi, vc, c, date, ts, f, d, bit, dec, n) values (1, null, null, null, null, null, null, null, null, null, null, null, null, null)");
+        s.execute("Create Table dataTable(pk INT NOT NULL,ti TINYINT NULL,si SMALLINT NULL,int INT NULL,bi BIGINT NULL,vc VARCHAR(200) NULL,c CHAR(2) NULL,date DATE NULL,ts TIMESTAMP NULL,f FLOAT NULL,d DOUBLE NULL,bit BIT NULL,dec DECIMAL(38,15) NULL, r REAL NULL, n NUMERIC(38,15) NULL, PRIMARY KEY(pk));");
+        s.execute("insert into dataTable (pk, ti, si, int, bi, vc, c, date, ts, f, d, bit, dec, r, n) values (0, 1, 2, 3, 1000, 'Something', 'c', '2003-07-19', '2003-07-19 00:00:00', 1.1, 2.2, 1, 123456789.123456789012345, 987654321.098765432154321, 987654321.098765432154321)");
+        s.execute("insert into dataTable (pk, ti, si, int, bi, vc, c, date, ts, f, d, bit, dec, r, n) values (1, null, null, null, null, null, null, null, null, null, null, null, null, null, null)");
     }
 }
