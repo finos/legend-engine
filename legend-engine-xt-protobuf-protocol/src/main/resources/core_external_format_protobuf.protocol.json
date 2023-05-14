@@ -1,0 +1,7 @@
+{
+  "purePackage": "meta::external::format::protobuf::metamodel",
+  "javaPackage": "org.finos.legend.engine.protocol.protobuf3.metamodel",
+  "elementsToBeExcluded": [
+    "meta::external::format::protobuf::metamodel::ProtobufSchema"
+  ]
+}

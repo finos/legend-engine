@@ -6,7 +6,6 @@
     "platform_functions",
     "platform_dsl_mapping",
     "core",
-    "core_authentication",
-    "core_external_language_java"
+    "core_authentication"
   ]
 }

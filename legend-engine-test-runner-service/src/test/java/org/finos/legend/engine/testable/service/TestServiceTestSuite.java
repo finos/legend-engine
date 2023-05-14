@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.testable.service;
 
+import net.javacrumbs.jsonunit.JsonAssert;
 import net.javacrumbs.jsonunit.JsonMatchers;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -35,6 +36,7 @@ import org.finos.legend.engine.testable.service.extension.ServiceTestableRunnerE
 import org.finos.legend.engine.testable.service.result.MultiExecutionServiceTestResult;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
@@ -494,7 +496,7 @@ public class TestServiceTestSuite
         Assert.assertTrue(((TestExecuted) serviceStoreTestResultsWithFailingTest.get(0)).assertStatuses.get(0) instanceof EqualToJsonAssertFail);
         Assert.assertEquals("assert1", ((EqualToJsonAssertFail) ((TestExecuted) serviceStoreTestResultsWithFailingTest.get(0)).assertStatuses.get(0)).id);
         Assert.assertEquals("Actual result does not match Expected result", ((EqualToJsonAssertFail) ((TestExecuted) serviceStoreTestResultsWithFailingTest.get(0)).assertStatuses.get(0)).message);
-        Assert.assertEquals("{\n" +
+        JsonAssert.assertJsonEquals("{\n" +
                 "  \"kerberos\" : \"dummy kerberos\",\n" +
                 "  \"employeeID\" : \"dummy id\",\n" +
                 "  \"title\" : \"dummy title\",\n" +
@@ -502,7 +504,7 @@ public class TestServiceTestSuite
                 "  \"lastName\" : \"dummy lastname\",\n" +
                 "  \"countryCode\" : \"dummy countryCode\"\n" +
                 "}", ((EqualToJsonAssertFail) ((TestExecuted) serviceStoreTestResultsWithFailingTest.get(0)).assertStatuses.get(0)).actual);
-        Assert.assertEquals("{\n" +
+        JsonAssert.assertJsonEquals("{\n" +
                 "  \"kerberos\" : \"dummy kerberos\",\n" +
                 "  \"employeeID\" : \"dummy id2\",\n" +
                 "  \"title\" : \"dummy title\",\n" +
@@ -667,7 +669,7 @@ public class TestServiceTestSuite
         Assert.assertTrue(((TestExecuted) serviceStoreTestResultsWithMultipleAsserts2.get(0)).assertStatuses.get(1) instanceof EqualToJsonAssertFail);
         Assert.assertEquals("assert2", ((EqualToJsonAssertFail) ((TestExecuted) serviceStoreTestResultsWithMultipleAsserts2.get(0)).assertStatuses.get(1)).id);
         Assert.assertEquals("Actual result does not match Expected result", ((EqualToJsonAssertFail) ((TestExecuted) serviceStoreTestResultsWithMultipleAsserts2.get(0)).assertStatuses.get(1)).message);
-        Assert.assertEquals("{\n" +
+        JsonAssert.assertJsonEquals("{\n" +
                 "  \"kerberos\" : \"dummy kerberos\",\n" +
                 "  \"employeeID\" : \"dummy id\",\n" +
                 "  \"title\" : \"dummy title\",\n" +
@@ -675,7 +677,7 @@ public class TestServiceTestSuite
                 "  \"lastName\" : \"dummy lastname\",\n" +
                 "  \"countryCode\" : \"dummy countryCode\"\n" +
                 "}", ((EqualToJsonAssertFail) ((TestExecuted) serviceStoreTestResultsWithMultipleAsserts2.get(0)).assertStatuses.get(1)).actual);
-        Assert.assertEquals("{\n" +
+        JsonAssert.assertJsonEquals("{\n" +
                 "  \"kerberos\" : \"dummy kerberos\",\n" +
                 "  \"employeeID\" : \"dummy id2\",\n" +
                 "  \"title\" : \"dummy title\",\n" +
@@ -1187,7 +1189,7 @@ public class TestServiceTestSuite
 
         Assert.assertEquals(1, serviceStoreTestResultsWithTestError.size());
         Assert.assertTrue(serviceStoreTestResultsWithTestError.get(0) instanceof TestError);
-        Assert.assertTrue(((TestError) serviceStoreTestResultsWithTestError.get(0)).error.contains(
+        MatcherAssert.assertThat(((TestError) serviceStoreTestResultsWithTestError.get(0)).error.replace("\r", ""), CoreMatchers.containsString((
                 "                                               Request was not matched\n" +
                         "                                               =======================\n" +
                         "\n" +
@@ -1204,7 +1206,7 @@ public class TestServiceTestSuite
                         "Query: floatParam = 1.123                                  | floatParam: 1.123\n" +
                         "                                                           |\n" +
                         "                                                           |\n" +
-                        "-----------------------------------------------------------------------------------------------------------------------\n"));
+                        "-----------------------------------------------------------------------------------------------------------------------\n")));
         Assert.assertEquals("testServiceStoreTestSuites::TestService", serviceStoreTestResultsWithTestError.get(0).testable);
         Assert.assertEquals("testSuite1", serviceStoreTestResultsWithTestError.get(0).testSuiteId);
         Assert.assertEquals("test1", serviceStoreTestResultsWithTestError.get(0).atomicTestId);
@@ -1930,8 +1932,8 @@ public class TestServiceTestSuite
         Assert.assertEquals(1, ((TestExecuted) resultsWithTestFailing.get(0)).assertStatuses.size());
         Assert.assertTrue(((TestExecuted) resultsWithTestFailing.get(0)).assertStatuses.get(0) instanceof EqualToJsonAssertFail);
         Assert.assertEquals("assert1", ((TestExecuted) resultsWithTestFailing.get(0)).assertStatuses.get(0).id);
-        Assert.assertEquals("{\n  \"builder\" : {\n    \"_type\" : \"json\"\n  },\n  \"values\" : {\n    \"name\" : \"Firm A\",\n    \"ranking\" : 1\n  }\n}", ((EqualToJsonAssertFail) ((TestExecuted) resultsWithTestFailing.get(0)).assertStatuses.get(0)).actual);
-        Assert.assertEquals("{\n  \"builder\" : {\n    \"_type\" : \"json\"\n  },\n  \"values\" : {\n    \"name\" : \"Firm A\",\n    \"ranking\" : 2\n  }\n}", ((EqualToJsonAssertFail) ((TestExecuted) resultsWithTestFailing.get(0)).assertStatuses.get(0)).expected);
+        JsonAssert.assertJsonEquals("{\n  \"builder\" : {\n    \"_type\" : \"json\"\n  },\n  \"values\" : {\n    \"name\" : \"Firm A\",\n    \"ranking\" : 1\n  }\n}", ((EqualToJsonAssertFail) ((TestExecuted) resultsWithTestFailing.get(0)).assertStatuses.get(0)).actual);
+        JsonAssert.assertJsonEquals("{\n  \"builder\" : {\n    \"_type\" : \"json\"\n  },\n  \"values\" : {\n    \"name\" : \"Firm A\",\n    \"ranking\" : 2\n  }\n}", ((EqualToJsonAssertFail) ((TestExecuted) resultsWithTestFailing.get(0)).assertStatuses.get(0)).expected);
         Assert.assertEquals("Actual result does not match Expected result", ((EqualToJsonAssertFail) ((TestExecuted) resultsWithTestFailing.get(0)).assertStatuses.get(0)).message);
     }
 
@@ -2678,7 +2680,7 @@ public class TestServiceTestSuite
         Assert.assertTrue(((TestExecuted) uatTestResultWithTestFailing).assertStatuses.get(0) instanceof EqualToJsonAssertFail);
         Assert.assertEquals("assert1", ((EqualToJsonAssertFail) ((TestExecuted) uatTestResultWithTestFailing).assertStatuses.get(0)).id);
         Assert.assertEquals("Actual result does not match Expected result", ((EqualToJsonAssertFail) ((TestExecuted) uatTestResultWithTestFailing).assertStatuses.get(0)).message);
-        Assert.assertEquals("{\n" +
+        JsonAssert.assertJsonEquals("{\n" +
                 "  \"defects\" : [ ],\n" +
                 "  \"source\" : {\n" +
                 "    \"defects\" : [ ],\n" +
@@ -2720,7 +2722,7 @@ public class TestServiceTestSuite
                 "    }\n" +
                 "  }\n" +
                 "}", ((EqualToJsonAssertFail) ((TestExecuted) uatTestResultWithTestFailing).assertStatuses.get(0)).actual);
-        Assert.assertEquals("{\n" +
+        JsonAssert.assertJsonEquals("{\n" +
                 "  \"defects\" : [ ],\n" +
                 "  \"source\" : {\n" +
                 "    \"defects\" : [ ],\n" +

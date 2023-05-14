@@ -1,0 +1,6 @@
+{
+  "purePackage": "meta::external::format::flatdata::metamodel",
+  "javaPackage": "org.finos.legend.engine.external.format.flatdata.metamodel",
+  "elementsToBeExcluded": [
+  ]
+}

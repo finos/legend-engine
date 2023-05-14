@@ -101,6 +101,10 @@
             <artifactId>junit</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-external-language-java</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

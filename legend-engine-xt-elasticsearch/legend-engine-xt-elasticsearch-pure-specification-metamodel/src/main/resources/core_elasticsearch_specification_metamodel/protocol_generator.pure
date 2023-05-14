@@ -12,56 +12,79 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::language::java::factory::project::*;
+import meta::protocols::generation::java::translation::*;
+import meta::protocols::generation::java::*;
 import meta::external::language::java::metamodel::project::*;
 import meta::external::store::elasticsearch::specification::metamodel::*;
 import meta::external::language::java::factory::*;
 import meta::external::language::java::metamodel::*;
 import meta::external::language::java::transform::*;
-import meta::protocols::generation::java::*;
-
-function meta::external::store::elasticsearch::specification::metamodel::elasticsearchGenerator(): JavaProtocolGenerator[1]
-{
-  ^JavaProtocolGenerator(
-    configureConventions = configureConventions_Package_1__String_1__JavaProtocolGenerator_1__Conventions_1_,
-
-    generateEnumEntry = generateEnumEntry_Enum_1__Conventions_1__JavaProtocolGenerator_1__EnumerationEntry_1_,
-    postProcessEnum = postProcessEnum_Enumeration_1__Enumeration_1__Conventions_1__JavaProtocolGenerator_1__Class_MANY_,
-
-    generateClassField = generateClassField_Property_1__Conventions_1__JavaProtocolGenerator_1__Field_1_,
-    generateClassFieldMethods = generateClassFieldMethods_Property_1__Field_1__Conventions_1__JavaProtocolGenerator_1__Function_1_,
-    postProcessClass = postProcessClass_Class_1__Class_1__Conventions_1__JavaProtocolGenerator_1__Class_MANY_,
-
-    finalizeProject = finalizeProject_Project_1__Conventions_1__JavaProtocolGenerator_1__Project_1_
-  );
-}
+import meta::external::store::elasticsearch::specification::metamodel::*;
 
 Class <<access.private>> meta::external::store::elasticsearch::specification::metamodel::ElasticsearchPurpose
 {
   profile: Profile[1];
 }
 
-function <<access.private>> meta::external::store::elasticsearch::specification::metamodel::esProfile(conventions: Conventions[1]): Profile[1]
+function meta::external::store::elasticsearch::specification::metamodel::generateElasticsearchSpecificationClasses(configJson: String[1]):Project[1]
 {
-  $conventions.defaultClassPurpose->cast(@ElasticsearchPurpose).profile;
+  let config = $configJson->meta::json::fromJSON(Configuration)->toOne();
+  let pack = $config.purePackage->pathToElement()->cast(@Package);
+  let basePackageStr = $pack->elementToPath('.');
+  let defaultConventions = conventions($config.purePackage, $config.javaPackage, $basePackageStr);
+  let profile = '%s::ESProfile'->format($config.purePackage)->pathToElement()->cast(@Profile);
+  let conventions = ^$defaultConventions(defaultClassPurpose = ^ElasticsearchPurpose(profile = $profile));
+  let taxonomies = $pack->findTaxonomies();
+  let package = javaPackage($config.javaPackage);
+
+  let visitorByTaxonomy = newMap($taxonomies->map(t|pair($t, $t->generateVisitor($package, $conventions))));
+
+  let context = ^Context(conventions=$conventions,
+                         rootPackage=$package,
+                         taxonomies = $taxonomies,
+                         visitorByTaxonomy=$visitorByTaxonomy);
+
+  let javaClasses = $pack->map(c|generateElasticsearchSpecificationClasses($c, $config.elementsToBeExcluded, $context));
+
+  newProject()
+    ->addClasses($javaClasses)
+    ->addClasses($visitorByTaxonomy->values())
+    ->finalizeProject($context, $config.javaPackage);
 }
 
-function meta::external::store::elasticsearch::specification::metamodel::configureConventions(purePackage: Package[1], javaPackage: String[1], ge: JavaProtocolGenerator[1]): Conventions[1]
+function <<access.private>> meta::external::store::elasticsearch::specification::metamodel::generateElasticsearchSpecificationClasses(
+                                      elem:PackageableElement[1],
+                                      elementsToBeExcluded:String[*],
+                                      context : Context[1]
+                            ):meta::external::language::java::metamodel::Class[*]
 {
-  let defaultConventions = defaultConfigureConventions($purePackage, $javaPackage, $ge);
-  let profile = '%s::ESProfile'->format($purePackage->elementToPath())->pathToElement()->cast(@Profile);
-  ^$defaultConventions(defaultClassPurpose = ^ElasticsearchPurpose(profile = $profile));
+  $elem->filter(c|!$c->elementToPath()->in($elementsToBeExcluded))->match(
+    [
+      p: Package[1]                                       | $p.children->map(c|generateElasticsearchSpecificationClasses($c, $elementsToBeExcluded, $context)),
+      c: meta::pure::metamodel::type::Class<Any>[1]       | generateSpecificationClass($c, $context),
+      e: meta::pure::metamodel::type::Enumeration<Any>[1] | generateSpecificationEnumeration($e, $context),
+      s: Any[0..1]                                        | []
+    ]
+  )
 }
 
-function meta::external::store::elasticsearch::specification::metamodel::generateEnumEntry(e: Enum[1], c: Conventions[1], ge: JavaProtocolGenerator[1]): EnumerationEntry[1]
+function <<access.private>> meta::external::store::elasticsearch::specification::metamodel::esProfile(context: Context[1]): Profile[1]
 {
-  let enumName = defaultIfEmpty(value4Tag($e, 'name', $c->esProfile())->first().value->cast(@String), $e.name)->toOne();
-  $c->identifier($e.name)->javaEnumEntry($enumName);
+  $context.conventions.defaultClassPurpose->cast(@ElasticsearchPurpose).profile;
 }
 
-function meta::external::store::elasticsearch::specification::metamodel::postProcessEnum(e: meta::pure::metamodel::type::Enumeration<Any>[1], javaE: meta::external::language::java::metamodel::Enumeration[1], c: Conventions[1], ge: JavaProtocolGenerator[1]): meta::external::language::java::metamodel::Class[*]
+function <<access.private>> meta::external::store::elasticsearch::specification::metamodel::generateSpecificationEnumeration(enum:meta::pure::metamodel::type::Enumeration<Any>[1], context : Context[1]):meta::external::language::java::metamodel::Class[*]
 {
+  let typeAndPackages = $context.conventions.typeAndPackageNameStrategy->toOne()->eval($enum, $context.conventions);
+  let enumE = javaEnum('public', $typeAndPackages.first->javaPackage(), $typeAndPackages.second)
+    ->addEntries($enum->cast(@meta::pure::metamodel::type::Enumeration<Any>)->enumValues()->cast(@Enum)->map(e |
+      let enumName = defaultIfEmpty(value4Tag($e, 'name', $context->esProfile())->first().value->cast(@String), $e.name)->toOne();
+      $context.conventions->identifier($e.name)->javaEnumEntry($enumName);
+    ));
+
   // add field for esName, constructor, and getter
-  let enumClass = $javaE
+  let enumClass = $enumE
     ->addField(javaField(['private', 'final'], javaString(), 'esName'))
     ->addConstructor({cls|
           let param = j_parameter(javaString(), 'esName');
@@ -72,39 +95,157 @@ function meta::external::store::elasticsearch::specification::metamodel::postPro
       });
 
   // create mixin to annotate name getter
-  let mixIn = createMixIn($enumClass, $c, $ge)
+  let mixIn = createMixIn($enumClass, $context)
     ->addMethod(
         javaMethod(['public', 'abstract'], javaString(), 'esName', [])
           ->addAnnotation(^meta::external::language::java::metamodel::annotations::json::JsonValue())
       );
 
-  [$enumClass, $mixIn];
+  [$enumClass, $mixIn];    
 }
 
-function meta::external::store::elasticsearch::specification::metamodel::generateClassField(p: Property<Nil, Any | *>[1], c: Conventions[1], ge: JavaProtocolGenerator[1]): Field[1]
+
+function <<access.private>> meta::external::store::elasticsearch::specification::metamodel::generateSpecificationClass(c:meta::pure::metamodel::type::Class<Any>[1], context : Context[1]):meta::external::language::java::metamodel::Class[*]
+{
+  let typeAndPackages = $context.conventions.typeAndPackageNameStrategy->toOne()->eval($c, $context.conventions);
+  let baseCls = javaClass('public', $c.typeParameters.name->map(t | $t->javaTypeVar()), $typeAndPackages.first->javaPackage(), $typeAndPackages.second);
+  let clsWithPropAndMethods = $c.properties->fold(
+                                {p, cls|
+                                  let field = generateClassField($p, $context);
+                                  $cls->addField($field)
+                                      ->addMethods(generateClassFieldMethods($p, $field, $context));
+
+                                }, $baseCls);
+
+  let baseClasses = postProcessClass($c, $clsWithPropAndMethods, $context);
+
+  let otherCls = $baseClasses->filter(c | $c.simpleName != $baseCls.simpleName);
+  let cls = $baseClasses->filter(c | $c.simpleName == $baseCls.simpleName)->toOne();
+
+  // tagged unions are javascript TypeAlias (union of multiple not necessarily related types) hence we need special logic to handle it
+  let withTaggedUnion = if($c->hasStereotype('TaggedUnion', $context->esProfile()),
+    | handleTaggedUnionProtocolCodeForClass($c, $cls),
+    | $cls
+  );
+
+  let mixIn = $c->createMixInForClass($withTaggedUnion, $context);
+
+  $withTaggedUnion->concatenate($otherCls)->concatenate($mixIn);
+}
+
+function <<access.private>> meta::external::store::elasticsearch::specification::metamodel::postProcessClass(c: meta::pure::metamodel::type::Class<Any>[1], cls: meta::external::language::java::metamodel::Class[1], context: Context[1]): meta::external::language::java::metamodel::Class[*]
+{
+  // todo fix protocols that expect these to be abstract but dont define as abstract
+  let rawType = $c.generalizations.general.rawType;
+  let isTopClass = $rawType->size() == 1 && $rawType == Any && $c.specializations->isNotEmpty();
+
+  let superType = $c.generalizations.general;
+  assert($superType->size() <= 1, |'More than one super type is not currently supported in this flow ['+$superType.rawType.name->joinStrings(',')+']');
+  let withExtend = if ($superType.rawType == Any, |$cls, |$cls->jextends(pureTypeToJavaType($context.conventions, $superType->toOne(), PureOne)));
+  let base = if ($c->hasStereotype('abstract', typemodifiers) || $isTopClass, |$withExtend->addModifiers('abstract'), |$withExtend);
+
+  let children = $c->findChildren()->sortBy(x | $x.name->toOne());
+
+  let withJackson = if ($isTopClass,
+    | $base->annotate(^meta::external::language::java::metamodel::annotations::json::JsonTypeInfo(
+                    use = ^meta::external::language::java::metamodel::annotations::json::EnumValue(value='JsonTypeInfo.Id.NAME'),
+                    property = '_pure_protocol_type'
+                )
+            )
+            ->annotate(^meta::external::language::java::metamodel::annotations::json::JsonSubTypes(
+                          subTypes=[
+                                $children->map(c|
+                                  let javaType = pureTypeToJavaType($context.conventions, $c, PureOne);
+                                    ^meta::external::language::java::metamodel::annotations::json::JsonSubType(
+                                      value=$javaType->cast(@meta::external::language::java::metamodel::Class)->meta::external::language::java::serialization::qualifiedClassName(),
+                                      name=$c.name->meta::pure::functions::string::toLowerFirstCharacter()->toOne()
+                                    );
+                                )
+                              ]
+                           )
+                     );,
+    | $base
+  );
+
+
+  let typeParam = javaTypeVar('T');
+
+  let taxonomy = $c->findTaxonomy($context.taxonomies);
+
+  let visitorClass = if ($isTopClass && $children->size() != 0,
+    |
+      $taxonomy->toOne()->buildVisitorClass($typeParam, $context.conventions)
+        ->addMethods(
+          $children->sortBy(a|$a.name->toOne())
+                   ->map(c| javaMethod($typeParam, 'visit', j_parameter(pureTypeToJavaType($context.conventions, $c, PureOne), 'val'))
+        )
+      );,
+    |
+      []
+  );
+
+  let fullCls = if ($taxonomy->isEmpty(),
+    |$withJackson,
+    |$withJackson->addMethod(buildAccept($withJackson, $c, $taxonomy->toOne(), $context));
+  );
+
+  $fullCls->concatenate($visitorClass);
+}
+
+
+function <<access.private>> meta::external::store::elasticsearch::specification::metamodel::handleTaggedUnionProtocolCodeForClass(
+    elem: meta::pure::metamodel::type::Class<Any>[1],
+    javaClass: meta::external::language::java::metamodel::Class[1]
+  ) : meta::external::language::java::metamodel::Class[1]
+{
+  // add a method to pick the 1st non-empty instance
+  let lambdaX = j_parameter(javaObject(), 'x');
+  let pickFirstNotNullCode = javaStream()
+    ->j_invoke(javaObject(), 'of', $javaClass.fields->map(f | j_this($javaClass)->j_field($f.name)), javaStream(javaObject()))
+    ->js_filter(javaClass('org.finos.legend.engine.protocol.store.elasticsearch.specification.utils.TaggedUnionUtils')->j_methodReference('nonEmpty', javaFunctionType(javaObject(), javaBoolean())))
+    ->js_resolve(javaObject())
+    ->j_return();
+  let method = javaMethod('public', javaObject(), 'unionValue', [], $pickFirstNotNullCode);
+  let unionClass = $javaClass->addMethod($method);
+}
+
+function <<access.private>> meta::external::store::elasticsearch::specification::metamodel::generateClassField(p: Property<Nil, Any | *>[1], context : Context[1]): Field[1]
 {
   if ($p.genericType.rawType == Map,
       |        
-        let keyType = pureTypeToJavaType($c, $p.genericType.typeArguments->at(0), PureOne);
+        let keyType = pureTypeToJavaType($context.conventions, $p.genericType.typeArguments->at(0), PureOne);
         let valueIsList = $p.genericType.typeArguments->at(1).rawType == List;
         let pureValueType = $valueIsList->if(|$p.genericType.typeArguments->at(1).typeArguments->at(0), |$p.genericType.typeArguments->at(1));
-        let valueType = pureTypeToJavaType($c, $pureValueType, $valueIsList->if(|ZeroMany, |PureOne));
+        let valueType = pureTypeToJavaType($context.conventions, $pureValueType, $valueIsList->if(|ZeroMany, |PureOne));
         let mapType = javaMap($keyType, $valueType);
         let defaultValueJava = if($p->functionReturnMultiplicity()->isToMany(), |j_emptyList(javaList($mapType)), |j_new(javaHashMap($keyType, $valueType), j_int(0)));
         javaField('public', if($p->functionReturnMultiplicity()->isToMany(), |javaList($mapType), |$mapType), $p.name->toOne()->sanitizeIdentifier(), $defaultValueJava)
           ->addAnnotation(^meta::external::language::java::metamodel::annotations::json::JsonInclude(value = ^meta::external::language::java::metamodel::annotations::json::EnumValue(value='JsonInclude.Include.NON_EMPTY')));
         ,
       |
+        let javaType = pureTypeToJavaType($context.conventions, $p);
+        let javaName = $p.name->toOne()->sanitizeJavaKeywords();
+        let field = if ($javaType->isJavaList(),
+          |javaField('public', $javaType, $javaName, j_emptyList($javaType)),
+          |if($p.defaultValue->isEmpty(),
+            |javaField('public', $javaType, $javaName),
+            |
+              let defaultValue = $p.defaultValue.functionDefinition->toOne()->cast(@Function<{->Any[1]}>)->eval();
+              let defaultValueJava = $context.conventions->meta::external::language::java::transform::typeConversion($p->functionReturnType().rawType->toOne()).literalCoder->eval($defaultValue);
+              javaField('public', $javaType, $javaName, $defaultValueJava);
+          )
+        );
+
         // ignore empty lists
-        defaultGenerateClassField($p, $c, $ge)->map(f | if($p->functionReturnMultiplicity()->isToMany(), |$f->addAnnotation(^meta::external::language::java::metamodel::annotations::json::JsonInclude(value = ^meta::external::language::java::metamodel::annotations::json::EnumValue(value='JsonInclude.Include.NON_EMPTY'))), |$f))
+        $field->map(f | if($p->functionReturnMultiplicity()->isToMany(), |$f->addAnnotation(^meta::external::language::java::metamodel::annotations::json::JsonInclude(value = ^meta::external::language::java::metamodel::annotations::json::EnumValue(value='JsonInclude.Include.NON_EMPTY'))), |$f));
     );
 }
 
-function meta::external::store::elasticsearch::specification::metamodel::generateClassFieldMethods(prop: Property<Nil, Any | *>[1], field: Field[1], c: Conventions[1], ge: JavaProtocolGenerator[1]): Function<{meta::external::language::java::metamodel::Class[1]->Method[*]}>[1]
+function <<access.private>> meta::external::store::elasticsearch::specification::metamodel::generateClassFieldMethods(prop: Property<Nil, Any | *>[1], field: Field[1], context: Context[1]): Function<{meta::external::language::java::metamodel::Class[1]->Method[*]}>[1]
 {
   {javaClass: meta::external::language::java::metamodel::Class[1] |
     // if the property is additional property, means that the object have unknown key names, and need to serialize as map
-    if($prop->hasStereotype('AdditionalProperty', $c->esProfile()),
+    if($prop->hasStereotype('AdditionalProperty', $context->esProfile()),
       |
         let entryValueType = if ($prop->functionReturnType().typeArguments->at(1).rawType == List,
                 |$prop->functionReturnType().typeArguments->at(1).typeArguments.rawType,
@@ -131,54 +272,30 @@ function meta::external::store::elasticsearch::specification::metamodel::generat
   }
 }
 
-function meta::external::store::elasticsearch::specification::metamodel::postProcessClass(c: meta::pure::metamodel::type::Class<Any>[1], clsTmp: meta::external::language::java::metamodel::Class[1], conventions: Conventions[1], ge: JavaProtocolGenerator[1]): meta::external::language::java::metamodel::Class[*]
-{
-  let baseClasses = jacksonPostProcessClass($c, $clsTmp, $conventions, $ge, '_pure_protocol_type');
 
-  let otherCls = $baseClasses->filter(c | $c.simpleName != $clsTmp.simpleName);
-  let cls = $baseClasses->filter(c | $c.simpleName == $clsTmp.simpleName)->toOne();
 
-  // tagged unions are javascript TypeAlias (union of multiple not necessarily related types) hence we need special logic to handle it
-  let withTaggedUnion = if($c->hasStereotype('TaggedUnion', $conventions->esProfile()),
-    | handleTaggedUnionProtocolCodeForClass($c, $cls),
-    | $cls
-  );
+// function meta::external::store::elasticsearch::specification::metamodel::configureConventions(purePackage: Package[1], javaPackage: String[1], ge: JavaProtocolGenerator[1]): Conventions[1]
+// {
+//   let defaultConventions = defaultConfigureConventions($purePackage, $javaPackage, $ge);
+//   let profile = '%s::ESProfile'->format($purePackage->elementToPath())->pathToElement()->cast(@Profile);
+//   ^$defaultConventions(defaultClassPurpose = ^ElasticsearchPurpose(profile = $profile));
+// }
 
-  let mixIn = $c->createMixInForClass($withTaggedUnion, $conventions, $ge);
 
-  $withTaggedUnion->concatenate($otherCls)->concatenate($mixIn);
-}
-
-function <<access.private>> meta::external::store::elasticsearch::specification::metamodel::handleTaggedUnionProtocolCodeForClass(
-    elem: meta::pure::metamodel::type::Class<Any>[1],
-    javaClass: meta::external::language::java::metamodel::Class[1]
-  ) : meta::external::language::java::metamodel::Class[1]
-{
-  // add a method to pick the 1st non-empty instance
-  let lambdaX = j_parameter(javaObject(), 'x');
-  let pickFirstNotNullCode = javaStream()
-    ->j_invoke(javaObject(), 'of', $javaClass.fields->map(f | j_this($javaClass)->j_field($f.name)), javaStream(javaObject()))
-    ->js_filter(javaClass('org.finos.legend.engine.protocol.store.elasticsearch.specification.utils.TaggedUnionUtils')->j_methodReference('nonEmpty', javaFunctionType(javaObject(), javaBoolean())))
-    ->js_resolve(javaObject())
-    ->j_return();
-  let method = javaMethod('public', javaObject(), 'unionValue', [], $pickFirstNotNullCode);
-  let unionClass = $javaClass->addMethod($method);
-}
-
-function <<access.private>>  meta::external::store::elasticsearch::specification::metamodel::createMixIn(cls: meta::external::language::java::metamodel::Class[1], c: Conventions[1], ge: JavaProtocolGenerator[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>>  meta::external::store::elasticsearch::specification::metamodel::createMixIn(cls: meta::external::language::java::metamodel::Class[1], context: Context[1]): meta::external::language::java::metamodel::Class[1]
 {
   let mixIn = javaClass(['public', 'abstract'], $cls.typeParameters, $cls.package, $cls.simpleName + '__protocolToEsMixIn')
                 ->addField(javaField(['public', 'static', 'final'], javaClassType($cls), 'MIX_IN', $cls->j_classField()))
 }
 
-function <<access.private>> meta::external::store::elasticsearch::specification::metamodel::createMixInForClass(elem: meta::pure::metamodel::type::Class<Any>[1], javaClass: meta::external::language::java::metamodel::Class[1], conventions: Conventions[1], ge: JavaProtocolGenerator[1]): meta::external::language::java::metamodel::Class[0..1]
+function <<access.private>> meta::external::store::elasticsearch::specification::metamodel::createMixInForClass(elem: meta::pure::metamodel::type::Class<Any>[1], javaClass: meta::external::language::java::metamodel::Class[1], context: Context[1]): meta::external::language::java::metamodel::Class[0..1]
 {
-  let mixInClass = createMixIn($javaClass, $conventions, $ge);
+  let mixInClass = createMixIn($javaClass, $context);
 
   // handle tagged unions mixin
-  let withTaggedUnion = if($elem->hasStereotype('TaggedUnion', $conventions->esProfile()),
+  let withTaggedUnion = if($elem->hasStereotype('TaggedUnion', $context->esProfile()),
     |
-      let externalTagged = $elem->hasStereotype('ExternalTagged', $conventions->esProfile());
+      let externalTagged = $elem->hasStereotype('ExternalTagged', $context->esProfile());
 
       let unionMixIn = if($externalTagged,
         |$mixInClass,
@@ -188,7 +305,7 @@ function <<access.private>> meta::external::store::elasticsearch::specification:
               javaMethod(['public', 'abstract'], javaObject(), 'unionValue', [])
                 ->addAnnotation(^meta::external::language::java::metamodel::annotations::json::JsonValue())
             );
-          let internalTagged = $elem->value4Tag('internalTag', $conventions->esProfile()).value;
+          let internalTagged = $elem->value4Tag('internalTag', $context->esProfile()).value;
           if ($internalTagged->isNotEmpty(),
             |
               // if union types are "internally" tagged, add JsonTypeName, and custom deserializer
@@ -213,14 +330,14 @@ function <<access.private>> meta::external::store::elasticsearch::specification:
     let nameDiff = $prop.name != $field.name;
 
     // additional properties need special handling for any getter and any setter annotations
-    if($prop->hasStereotype('AdditionalProperty', $conventions->esProfile()),
+    if($prop->hasStereotype('AdditionalProperty', $context->esProfile()),
       |
         let entryValueType = if ($prop->functionReturnType().typeArguments->at(1).rawType == List,
                 |$prop->functionReturnType().typeArguments->at(1).typeArguments.rawType,
                 |$prop->functionReturnType().typeArguments->at(1).rawType
               );
         
-        let isExternalTaggedValue = $entryValueType->isNotEmpty() && $entryValueType->toOne()->hasStereotype('ExternalTagged', $conventions->esProfile());
+        let isExternalTaggedValue = $entryValueType->isNotEmpty() && $entryValueType->toOne()->hasStereotype('ExternalTagged', $context->esProfile());
 
         let anyGetter = $javaClass.methods->filter(m | $m.name == 'additionalProperties' && $m.returnType != javaVoid())->toOne();
 
@@ -259,7 +376,7 @@ function <<access.private>> meta::external::store::elasticsearch::specification:
         $withAnySetterMixIn;,
       |
         //if property name != that ES expected name, Mix in JsonProperty
-        let name = $prop->value4Tag('name', $conventions->esProfile()).value;
+        let name = $prop->value4Tag('name', $context->esProfile()).value;
         let mixInWithPropName = if ($name->size() == 1,
           |
             $cls->addField(
@@ -281,7 +398,7 @@ function <<access.private>> meta::external::store::elasticsearch::specification:
                 |$prop->functionReturnType().typeArguments->at(1).rawType
               );
 
-            if ($entryValueType->isNotEmpty() && $entryValueType->toOne()->hasStereotype('ExternalTagged', $conventions->esProfile()),
+            if ($entryValueType->isNotEmpty() && $entryValueType->toOne()->hasStereotype('ExternalTagged', $context->esProfile()),
               |
                 // externally tagged required slightly different behavior
                 $mixInWithPropName->addField(
@@ -320,7 +437,7 @@ function <<access.private>> meta::external::store::elasticsearch::specification:
   if ($totalMixIns != 0, |$mixInWithAnnotations, |[]);
 }
 
-function meta::external::store::elasticsearch::specification::metamodel::finalizeProject(p: Project[1], c: Conventions[1], ge: JavaProtocolGenerator[1]): Project[1]
+function <<access.private>> meta::external::store::elasticsearch::specification::metamodel::finalizeProject(p: Project[1], context: Context[1], basePackageName: String[1]): Project[1]
 {
   // create utility class to configure object mapper to handle ES compatible JSON
   let objectMapperClass = javaClass('com.fasterxml.jackson.databind.ObjectMapper');
@@ -338,7 +455,7 @@ function meta::external::store::elasticsearch::specification::metamodel::finaliz
                   ->concatenate(j_return($mapper));
   
   // finish configuring the object mapper utility
-  let jsonHelper = javaClass('public', $c.basePackageName->javaPackage(), 'ElasticsearchObjectMapperProvider')
+  let jsonHelper = javaClass('public', $basePackageName->javaPackage(), 'ElasticsearchObjectMapperProvider')
     ->addField({cls|javaField(['public', 'static'],  $objectMapperClass, 'OBJECT_MAPPER', $cls->j_invoke('objectMapper',[], $objectMapperClass))})
     ->addMethod(javaMethod(['private', 'static'], $objectMapperClass, 'objectMapper', [], j_block($mixInInvocations)));
 
