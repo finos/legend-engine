@@ -995,6 +995,7 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '            {\n'+
       '                result = Boolean.valueOf(bool);\n'+
       '            }\n'+
+      '            break;\n'+
       '        }\n'+
       '        case Types.BINARY:\n'+
       '        case Types.VARBINARY:\n'+
