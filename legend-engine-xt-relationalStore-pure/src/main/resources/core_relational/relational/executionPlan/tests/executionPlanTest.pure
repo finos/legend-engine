@@ -2049,7 +2049,6 @@ function <<test.Test>> meta::pure::executionPlan::tests::testModelConnectionAgg(
 
 function <<test.Test>> meta::pure::executionPlan::tests::testModelConnectionMultipleAgg() : Boolean[1]
 {
-   let g = agg(x:meta::pure::mapping::modelToModel::test::shared::dest::Person[1] | $x.lastName,  y:String[*] | $y->count());
    let res = executionPlan(|meta::pure::mapping::modelToModel::test::shared::dest::Person.all()->groupBy(
                                     [x | $x.firstName],
                                     [
