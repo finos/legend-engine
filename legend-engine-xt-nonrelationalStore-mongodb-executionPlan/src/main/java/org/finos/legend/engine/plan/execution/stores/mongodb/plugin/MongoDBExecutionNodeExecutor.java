@@ -32,6 +32,7 @@ import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
+import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.StoreStreamReadingObjectsIterator;
 import org.finos.legend.engine.plan.execution.stores.mongodb.MongoDBExecutor;
 import org.finos.legend.engine.plan.execution.stores.mongodb.result.MongoDBResult;
@@ -114,7 +115,8 @@ public class MongoDBExecutionNodeExecutor implements ExecutionNodeVisitor<Result
 
     private Result executeDocumentInternalizeExecutionNode(MongoDBDocumentInternalizeExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
-        MongoDBResult resultCursor = getResultCursor(node.executionNodes().getFirst().accept(new ExecutionNodeExecutor(profiles, new ExecutionState(executionState))));
+
+        MongoDBResult resultCursor = getResultCursor(node.executionNodes().getFirst().accept(executionState.getStoreExecutionState(StoreType.NonRelational_MongoDB).getVisitor(profiles, executionState)));
         StreamingObjectResult<?> streamingObjectResult = executeInternalizeExecutionNode(node, resultCursor, profiles, executionState);
         return applyConstraints(streamingObjectResult, node.checked, node.enableConstraints);
     }

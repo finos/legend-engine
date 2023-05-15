@@ -23,6 +23,7 @@ import org.finos.legend.authentication.credentialprovider.CredentialProviderProv
 import org.finos.legend.connection.ConnectionProvider;
 import org.finos.legend.connection.ConnectionSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.KerberosAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.UserPasswordAuthenticationSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -49,17 +50,19 @@ public class MongoDBStoreConnectionProvider extends ConnectionProvider<MongoClie
         }
 
         MongoDBConnectionSpecification mongoDBConnectionSpec = (MongoDBConnectionSpecification) connectionSpec;
-        UserPasswordAuthenticationSpecification userPasswordAuthSpec = (UserPasswordAuthenticationSpecification) authenticationSpec;
+        //authenticationSpec.accept(new HelperAuthenticationBuilder.AuthenticationSpecificationBuilder())
+        //UserPasswordAuthenticationSpecification userPasswordAuthSpec = (UserPasswordAuthenticationSpecification) authenticationSpec;
 
-        Credential credential = super.makeCredential(userPasswordAuthSpec, identity);
+        Credential credential = super.makeCredential(authenticationSpec, identity);
 
-        if (!(credential instanceof PlaintextUserPasswordCredential))
+        if (!(credential instanceof PlaintextUserPasswordCredential) && !(credential instanceof KerberosAuthenticationSpecification))
         {
-            String message = String.format("Failed to create connected. Expected credential of type %s but found credential of type %s", PlaintextUserPasswordCredential.class, credential.getClass());
+            String message = String.format("Failed to create connected. Expected credential of type in [PlaintextUserPasswordCredential, KerberosAuthenticationSpecification] but found credential of type %s", credential.getClass());
             throw new UnsupportedOperationException(message);
         }
 
         PlaintextUserPasswordCredential plaintextCredential = (PlaintextUserPasswordCredential) credential;
+
         MongoCredential mongoCredential = MongoCredential.createCredential(plaintextCredential.getUser(), ADMIN_DB, plaintextCredential.getPassword().toCharArray());
         List<ServerAddress> serverAddresses = mongoDBConnectionSpec.getServerAddresses();
 

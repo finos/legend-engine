@@ -37,6 +37,7 @@ Class meta::external::store::mongodb::executionPlan::platformBinding::legendJava
   firstName:         String[0..1];
   lastName:          String[1];
   age:               Integer[0..1];
+  birthDate:         DateTime[1];
   phoneNumber:       String[1];
   otherPhoneNumbers: String[0..*];
   email:             String[1];

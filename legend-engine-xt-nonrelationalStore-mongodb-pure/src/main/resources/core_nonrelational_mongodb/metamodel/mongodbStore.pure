@@ -455,11 +455,6 @@ Class meta::external::store::mongodb::metamodel::aggregation::KeyValuePair
 }
 
 
-Enum meta::external::store::mongodb::metamodel::authentication::AuthenticationMechanism
-{
-  SCRAM_SHA_1, SCRAM_SHA_256, GSSAPI, MONGODB_X509
-}
-
 
 
 
