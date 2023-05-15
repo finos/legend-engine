@@ -25,6 +25,6 @@ public class Bitemporal extends Temporality
     @Override
     public <T> T accept(TemporalityVisitor<T> visitor)
     {
-        return visitor.visitBiitemporal(this);
+        return visitor.visitBitemporal(this);
     }
 }

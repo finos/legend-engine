@@ -142,7 +142,7 @@ public class HelperPersistenceComposer
                 renderDocumentation(persistence.documentation, indentLevel) +
                 renderTrigger(persistence.trigger, indentLevel, context) +
                 renderService(persistence.service, indentLevel) +
-                renderServiceOutputTargets(persistence.serviceOutputTargets, indentLevel) +
+                renderServiceOutputTargets(persistence.serviceOutputTargets, indentLevel, context) +
                 //TODO: ledav -- remove once v2 is rolled out | START
                 renderPersister(persistence.persister, indentLevel, context) +
                 //TODO: ledav -- remove once v2 is rolled out | END
@@ -169,7 +169,7 @@ public class HelperPersistenceComposer
         return getTabString(indentLevel) + "service: " + service + ";\n";
     }
 
-    private static String renderServiceOutputTargets(List<ServiceOutputTarget> serviceOutputTargets, int indentLevel)
+    private static String renderServiceOutputTargets(List<ServiceOutputTarget> serviceOutputTargets, int indentLevel, PureGrammarComposerContext context)
     {
         if (serviceOutputTargets.isEmpty())
         {
@@ -177,15 +177,15 @@ public class HelperPersistenceComposer
         }
         return getTabString(indentLevel) + "serviceOutputTargets:\n" +
                 getTabString(indentLevel) + "[\n" +
-                ListIterate.collect(serviceOutputTargets, s -> renderServiceOutputTarget(s, indentLevel + 1)).makeString(",\n") + "\n" +
+                ListIterate.collect(serviceOutputTargets, s -> renderServiceOutputTarget(s, indentLevel + 1, context)).makeString(",\n") + "\n" +
                 getTabString(indentLevel) + "];\n";
     }
 
-    private static String renderServiceOutputTarget(ServiceOutputTarget serviceOutputTarget, int indentLevel)
+    private static String renderServiceOutputTarget(ServiceOutputTarget serviceOutputTarget, int indentLevel, PureGrammarComposerContext context)
     {
         return renderServiceOutput(serviceOutputTarget.serviceOutput, indentLevel) +
                 getTabString(indentLevel) + "->\n" +
-                renderPersistenceTarget(serviceOutputTarget.persistenceTarget, indentLevel);
+                renderPersistenceTarget(serviceOutputTarget.persistenceTarget, indentLevel, context);
     }
 
     private static String renderServiceOutput(ServiceOutput serviceOutput, int indentLevel)
@@ -193,10 +193,16 @@ public class HelperPersistenceComposer
         return serviceOutput.accept(new ServiceOutputComposer(indentLevel));
     }
 
-    private static String renderPersistenceTarget(PersistenceTarget persistenceTarget, int indentLevel)
+    private static String renderPersistenceTarget(PersistenceTarget persistenceTarget, int indentLevel, PureGrammarComposerContext context)
     {
-        return getTabString(indentLevel) + "{\n" +
+        if (persistenceTarget == null)
+        {
+            return getTabString(indentLevel) + "{\n" +
                 getTabString(indentLevel) + "}";
+        }
+
+        List<IPersistenceComposerExtension> extensions = IPersistenceComposerExtension.getExtensions(context);
+        return IPersistenceComposerExtension.process(persistenceTarget, ListIterate.flatCollect(extensions, IPersistenceComposerExtension::getExtraPersistenceTargetComposers), indentLevel, context);
     }
 
     private static String renderNotifier(Notifier notifier, int indentLevel)
@@ -579,7 +585,7 @@ public class HelperPersistenceComposer
         @Override
         public String visitAnyVersion(AnyVersion val)
         {
-            return getTabString(indentLevel) + "deduplication: Any;\n";
+            return getTabString(indentLevel) + "deduplication: AnyVersion;\n";
         }
 
         @Override

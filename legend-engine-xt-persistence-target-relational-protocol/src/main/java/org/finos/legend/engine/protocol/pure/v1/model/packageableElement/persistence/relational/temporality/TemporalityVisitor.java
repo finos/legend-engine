@@ -20,5 +20,5 @@ public interface TemporalityVisitor<T>
 
     T visitUnitemporal(Unitemporal val);
 
-    T visitBiitemporal(Bitemporal val);
+    T visitBitemporal(Bitemporal val);
 }
