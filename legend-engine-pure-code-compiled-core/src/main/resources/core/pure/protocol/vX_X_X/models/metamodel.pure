@@ -473,7 +473,6 @@ Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GraphFe
 {
     _type : String[1];
     subTrees : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GraphFetchTree[*];
-    subTypeTrees : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::SubTypeGraphFetchTree[*];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RootGraphFetchTree extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GraphFetchTree
@@ -487,11 +486,6 @@ Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Propert
    parameters : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[*];
    alias      : String[0..1];
    subType    : String[0..1];
-}
-
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::SubTypeGraphFetchTree extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GraphFetchTree
-{
-   subTypeClass : String[1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::AlloySerializationConfig
