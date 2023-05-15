@@ -98,7 +98,7 @@ public class LegendExecute extends NativeFunction
         {
             return PrimitiveUtilities.getStringValue(coreInstance);
         }
-        if (Instance.instanceOf(coreInstance, M3Paths.InstanceValue, processorSupport) && "ByteStream".equals(((InstanceValue) coreInstance)._genericType()._rawType()._name()))
+        if (Instance.instanceOf(coreInstance, M3Paths.InstanceValue, processorSupport) && "Byte".equals(((InstanceValue) coreInstance)._genericType()._rawType()._name()))
         {
             return new ByteArrayInputStream(((InstanceValue) coreInstance)._values().getOnly().toString().getBytes(StandardCharsets.UTF_8));
         }

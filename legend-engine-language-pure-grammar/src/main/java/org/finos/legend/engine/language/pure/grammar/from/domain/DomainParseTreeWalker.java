@@ -62,7 +62,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variabl
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CByteStream;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CByteArray;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFloat;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CInteger;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CLatestDate;
@@ -75,6 +75,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lam
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -611,9 +612,9 @@ public class DomainParseTreeWalker
         {
             return this.instanceLiteral(ctx.instanceLiteral(), exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
         }
-        else if (ctx.byteStreamLiteral() != null)
+        else if (ctx.toBytesLiteral() != null)
         {
-            return byteStream(ctx.byteStreamLiteral());
+            return byteArray(ctx.toBytesLiteral());
         }
         else if (ctx.enumReference() != null)
         {
@@ -622,12 +623,13 @@ public class DomainParseTreeWalker
         return null;
     }
 
-    private CByteStream byteStream(DomainParserGrammar.ByteStreamLiteralContext ctx)
+    private CByteArray byteArray(DomainParserGrammar.ToBytesLiteralContext ctx)
     {
-        CByteStream byteStream = new CByteStream(PureGrammarParserUtility.fromGrammarString(ctx.STRING().getText(), true));
-        byteStream.multiplicity = getMultiplicityOneOne();
-        byteStream.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        return byteStream;
+        String data = PureGrammarParserUtility.fromGrammarString(ctx.STRING().getText(), true);
+
+        CByteArray byteArray = new CByteArray(data.getBytes(StandardCharsets.UTF_8));
+        byteArray.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        return byteArray;
     }
 
     private ValueSpecification enumReference(DomainParserGrammar.EnumReferenceContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
