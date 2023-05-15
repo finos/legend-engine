@@ -97,7 +97,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::graphFetch::com
 function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::generateGraphNodeImplementation(node: LocalGraphFetchExecutionNode[1], context: GenerationContext[1], path: String[1], storeSpecificGraphImplUpdates: Function<{meta::external::language::java::metamodel::Class[1] -> Project[1]}>[1], extensions:Extension[*], debug: DebugContext[1]):Project[1]
 {
    let resultClass       = $node->typeFromStoreLocalNode();
-   let implClass         = graphImplClass($node, $path, $context);
+   let implClass         = graphImplClass($node, $path, $context)->addEqualsMethodForClass($context.conventions);
    let implProject       = newProject()->addClasses($implClass);
    let propertiesProject = $implClass->updateImplementationClassWithProperties($node, $resultClass, $context, $extensions);
    let qualifiersProject = $implClass->updateImplementationClassWithQualifiedProperties($resultClass, $context);

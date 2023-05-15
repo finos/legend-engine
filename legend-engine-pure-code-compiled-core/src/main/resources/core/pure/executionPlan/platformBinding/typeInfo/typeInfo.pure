@@ -636,13 +636,16 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo
 
         let withSuperTypes      = $withSupertypes->addOrReplace($classInfo);
 
+        let classEqualityKeys = $class.properties->filter(f| $f->hasStereotype('Key',equality));
+        let plusEqualityProperties = $classEqualityKeys->fold({p, i| $i->addPropertyForClassIfMissing($class, $p)}, $withSuperTypes);
+
         $class->getSpecializations()->fold(
           {special, agg |
             pair(list($agg.first.values->concatenate($special)), $agg.second->addBasicTypeInfoIfMissing($agg.first.values, $special))
           },
-          pair(list($newSeenClasses->concatenate($supertypes)), $withSuperTypes)
+          pair(list($newSeenClasses->concatenate($supertypes)), $plusEqualityProperties)
         ).second;
-  )
+  );
 }
 
 function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addUnitTypeInfo(info:TypeInfoSet[1], unit:Unit[1]): TypeInfoSet[1]

@@ -416,6 +416,7 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::pla
 
    let baseClass = $conventions->dataClass($class, $path)->addModifiers('public')
       ->implements($conventions->className($class))
+      ->addEqualsMethodForClass($conventions)
       ->addFields([$stateNone, $stateBuilt, $stateTooLarge])
       ->addFields([$maxSize, $buildingSize, $builtSize])
       ->addConstructor(c| javaConstructor('public', $maxSizeParam, j_this($c)->j_field($maxSize)->j_assign($maxSizeParam)));   

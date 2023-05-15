@@ -26,6 +26,8 @@ import meta::pure::executionPlan::platformBinding::legendJava::shared::*;
 import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
 import meta::pure::executionPlan::platformBinding::legendJava::shared::units::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
+import meta::pure::functions::collection::*;
+import meta::pure::functions::meta::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::graphFetch::executionPlan::*;
 import meta::pure::graphFetch::routing::*;
@@ -203,6 +205,19 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::createA
    let newProject = newProject()->addClass($class->addAlloyStoreObjectReferenceMethodsForClass($context));
 }
 
+function meta::pure::executionPlan::platformBinding::legendJava::shared::addEqualsMethodForClass(class:meta::external::language::java::metamodel::Class[1], conventions:Conventions[1]) : meta::external::language::java::metamodel::Class[1]
+{
+   let method = javaMethod(
+    ['public'], 
+    $conventions->pureTypeToJavaType(Boolean, PureOne), 
+    'equals', 
+    javaParam($conventions->pureTypeToJavaType(Any, PureOne), 'o'), 
+    j_this($class)->j_invoke('pureDefaultEquals', j_parameter($conventions->pureTypeToJavaType(Any, PureOne), 'o'), $conventions->pureTypeToJavaType(Boolean, PureOne))->j_return()
+  )->addAnnotation(^meta::external::language::java::metamodel::annotations::override::Override());
+
+  $class->addMethod($method);
+}
+
 function meta::pure::executionPlan::platformBinding::legendJava::shared::addAlloyStoreObjectReferenceMethodsForClass(class:meta::external::language::java::metamodel::Class[1], context:GenerationContext[1]) : meta::external::language::java::metamodel::Class[1]
 {
    let iface      = $context.conventions->className(IReferencedObject);
@@ -247,11 +262,17 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::generat
       $withTypeNameAndPath
    );
 
+   let allPropsDistinct = $typeInfo.class()->meta::pure::functions::meta::hierarchicalProperties()->groupBy(p | $p.name->toOne())->values()->map(x|$x.values->first());
+   let allEqualityKeys = $allPropsDistinct->filter(f| $f->hasStereotype('Key',equality)); 
+   let withEquals = $withPropertyGetters
+      ->implements($conventions->className(IEquals))
+      ->addMethod($allEqualityKeys->generatePureDefaultEquals($conventions, $withPropertyGetters));
+
    let withQualifiedPropertyGetters = $typeInfo.qualifiedProperties->fold(
       {q, c|
          $c->addMethod($q->generateInterfaceQualifiedPropertyGetter($conventions))
       },
-      $withPropertyGetters
+      $withEquals
    );
    
    let dataRecordClass   = $conventions.extensions->extractLegendJavaAdhocExtensionsOfType(LegendJavaDataRecordClassesExtension).dataRecordClasses;
@@ -264,6 +285,41 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::generat
 function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::shared::generateInterfacePropertyGetter(p: AbstractProperty<Any>[1], conventions: Conventions[1]): meta::external::language::java::metamodel::Method[1]
 {
    javaMethod($conventions->pureTypeToJavaType($p), $conventions->getterName($p), []);
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::shared::generatePureDefaultEquals(equalityKeys: AbstractProperty<Any>[*], conventions: Conventions[1], class:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Method[1]
+{
+  let jThis = j_this($class);
+  let jThat = j_parameter($conventions->pureTypeToJavaType(Any, PureOne), 'that');    
+
+  let body = if($equalityKeys->size() == 0,
+      | 
+        $jThis->j_eq($jThat)->j_return();,
+      |
+        let jThatRef = j_variable($class, 'o');        
+        let block = j_if($jThis->j_eq($jThat), j_true()->j_return())
+          ->concatenate([
+            j_if($jThat->j_eq(j_null())->j_or($jThat->j_invoke('getClass',[])->j_ne($jThis->j_invoke('getClass',[]))), j_false()->j_return()),
+            j_declare($jThatRef, $jThat->j_cast($class))
+          ]);        
+
+        $equalityKeys
+          ->fold({p,c|
+                    let jThisGetProp = $jThis->j_invoke($conventions->getterName($p), [], $conventions->pureTypeToJavaType($p));
+                    let jThatGetProp = $jThatRef->j_invoke($conventions->getterName($p), [], $conventions->pureTypeToJavaType($p));
+                    let test = $conventions->className(Library)->j_invoke('equal', [$jThisGetProp, $jThatGetProp], javaBoolean())->j_not();
+                    $c->concatenate(j_if($test, j_false()->j_return()));
+                 }, $block)
+          ->concatenate([j_true()->j_return()]);
+  );
+
+  javaMethod(
+    ['default'], 
+    $conventions->pureTypeToJavaType(Boolean, PureOne), 
+    'pureDefaultEquals', 
+    javaParam($conventions->pureTypeToJavaType(Any, PureOne), 'that'), 
+    $body  
+  )->addAnnotation(^meta::external::language::java::metamodel::annotations::override::Override());
 }
 
 function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::shared::generateInterfaceQualifiedPropertyGetter(q: QualifiedProperty<Any>[1], conventions: Conventions[1]): meta::external::language::java::metamodel::Method[1]
