@@ -407,13 +407,15 @@ public class HelperPersistenceBuilder
         }
 
         @Override
-        public Root_meta_pure_persistence_metamodel_dataset_deduplication_MaxVersion visitMaxVersionForGraphFetch(MaxVersionForGraphFetch val) {
+        public Root_meta_pure_persistence_metamodel_dataset_deduplication_MaxVersion visitMaxVersionForGraphFetch(MaxVersionForGraphFetch val)
+        {
             return new Root_meta_pure_persistence_metamodel_dataset_deduplication_MaxVersionForGraphFetch_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::dataset::deduplication::MaxVersionForGraphFetch"))
                 ._versionFieldPath((Path<?, ?>) val.versionFieldPath); // todo: ??
         }
 
         @Override
-        public Root_meta_pure_persistence_metamodel_dataset_deduplication_MaxVersion visitMaxVersionForTds(MaxVersionForTds val) {
+        public Root_meta_pure_persistence_metamodel_dataset_deduplication_MaxVersion visitMaxVersionForTds(MaxVersionForTds val)
+        {
             return new Root_meta_pure_persistence_metamodel_dataset_deduplication_MaxVersionForTds_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::dataset::deduplication::MaxVersionForTds"))
                 ._versionField(val.versionField);
         }
