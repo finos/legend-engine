@@ -246,43 +246,6 @@ public class TestGraphQLAPI
     }
 
     @Test
-    @Ignore // TODO - Fails as date is not supported as an argument now
-    public void testGraphQLExecuteDevAPI_Milestoning() throws Exception
-    {
-        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
-        PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
-        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
-        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> generatorExtensions.flatCollect(g -> g.getExtraExtensions(pm)), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
-        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
-        Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
-        Query query = new Query();
-        query.query = "query Query {\n" +
-                "  allFirms {\n" +
-                "      legalName,\n" +
-                "      employees {\n" +
-                "        firstName,\n" +
-                "        lastName\n" +
-                "        address(businessDate: \"13-02-2023\", processingDate: \"13-02-2023\"){\n" +
-                "          line1\n" +
-                "        }\n" +
-                "      }\n" +
-                "    }\n" +
-                "  }";
-        Response response = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
-
-        String expected = "{" +
-                "\"data\":{" +
-                "\"allFirms\":[" +
-                "{\"legalName\":\"Firm X\",\"employees\":[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}]}," +
-                "{\"legalName\":\"Firm A\",\"employees\":[]}," +
-                "{\"legalName\":\"Firm B\",\"employees\":[]}" +
-                "]" +
-                "}" +
-                "}";
-        Assert.assertEquals(expected, responseAsString(response));
-    }
-
-    @Test
     public void testGraphQLExecuteDevAPI_Relational_WithDependencies() throws Exception
     {
         ModelManager modelManager = new ModelManager(DeploymentMode.TEST, new SDLCLoader(metaDataServerConfiguration, null));
