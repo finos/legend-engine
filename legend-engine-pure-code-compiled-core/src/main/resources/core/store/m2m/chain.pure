@@ -296,7 +296,7 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
                                                                      ]););
                             let values = $results->map(r|$r->match([v:Res[1]|$v.newExpression->match([i:InstanceValue[1]|$i.values,a:Any[1]|$a]),k:Any[1]|$k]));
 
-                            let genericTypeGenerator ={firstValue:Any[1] |
+                            let genericTypeGenerator = {firstValue:Any[1] |
                                                 let firstValueGenericType = $firstValue->genericType();
                                                 if($firstValueGenericType->isNotEmpty(),
                                                     |if($firstValue->instanceOf(ValueSpecification),
@@ -306,8 +306,10 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
                                                     |^GenericType(rawType=$firstValue->type())
                                                 );};
 
-                            let newGTs = $values->map(v|$genericTypeGenerator->eval($v)) 
-                                             -> removeDuplicates(meta::pure::mapping::modelToModel::chain::isSameGenericType_GenericType_1__GenericType_1__Boolean_1_)  ; 
+                            let newGTs = $values
+                                             ->map(v|$genericTypeGenerator->eval($v)) 
+                                             ->removeDuplicates(meta::pure::mapping::modelToModel::chain::isSameGenericType_GenericType_1__GenericType_1__Boolean_1_); 
+
                             let genericType = if($newGTs->size() == 1,
                                                | $newGTs->at(0);,                                                                                                                                                                                            
                                                |^GenericType(rawType=Any));
