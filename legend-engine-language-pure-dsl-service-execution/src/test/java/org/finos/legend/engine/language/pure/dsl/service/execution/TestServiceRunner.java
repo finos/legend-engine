@@ -376,6 +376,43 @@ public class TestServiceRunner
         Assert.assertEquals("{\"wheels\":55}", result);
     }
 
+    private static class SimpleM2MServiceRunnerForDateTimeSerialization extends AbstractServicePlanExecutor
+    {
+        SimpleM2MServiceRunnerForDateTimeSerialization(String function)
+        {
+            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleM2MService.pure", function), true);
+        }
+
+        @Override
+        public List<ServiceVariable> getServiceVariables()
+        {
+            return Collections.emptyList();
+        }
+    }
+
+    private void testServiceExecutionWithDateTimeSerialization(String fetchFunction, String expectedResult)
+    {
+        SimpleM2MServiceRunnerForDateTimeSerialization serviceRunner = new SimpleM2MServiceRunnerForDateTimeSerialization(fetchFunction);
+        ServiceRunnerInput serviceRunnerInputWithEnumParameter = ServiceRunnerInput
+                .newInstance()
+                .withSerializationFormat(SerializationFormat.PURE);
+        String result = serviceRunner.run(serviceRunnerInputWithEnumParameter);
+        Assert.assertEquals(expectedResult, result);
+    }
+
+    @Test
+    public void SimpleM2MServiceRunnerForDateTimeSerialization()
+    {
+        this.testServiceExecutionWithDateTimeSerialization("test::serializeDateTimeWithoutFormat__String_1_", "{\"birthDate\":\"2014-12-27T15:01:35.231\"}");
+        this.testServiceExecutionWithDateTimeSerialization("test::serializeDateTime__String_1_", "{\"birthDate\":\"2014-12-27T15:01:35.231+0000\"}");
+        this.testServiceExecutionWithDateTimeSerialization("test::serializeDateTimeTimeZone__String_1_", "{\"birthDate\":\"2014-12-27 18:01:35.231+03\"}");
+        this.testServiceExecutionWithDateTimeSerialization("test::serializeDateTimeStrictDatePattern__String_1_", "{\"birthDate\":\"2014-12-27\"}");
+        this.testServiceExecutionWithDateTimeSerialization("test::serializeDateTimeCustomPattern__String_1_", "{\"birthDate\":\"12/27/2014 at 03:01PM GMT\"}");
+
+        RuntimeException e1 = Assert.assertThrows(RuntimeException.class, () -> new SimpleM2MServiceRunnerForDateTimeSerialization("test::serializeInvalidDateTimeFormat__String_1_"));
+        Assert.assertEquals("Assert failure at (resource:/platform/pure/basics/tests/assert.pure line:26 column:5), \"yyyy-MM-dd\"T\"HH:mmm:ss.SSSZ is not a valid dateTime format in SerializationConfig\"", e1.getMessage());
+    }
+    
     private static class EnumParamServiceRunner extends AbstractServicePlanExecutor
     {
         private String argName;

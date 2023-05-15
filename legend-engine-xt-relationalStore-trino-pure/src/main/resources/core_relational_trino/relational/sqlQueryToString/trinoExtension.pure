@@ -198,27 +198,27 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::trino
 function <<access.private>> meta::relational::functions::sqlQueryToString::trino::getDDLCommandsTranslatorForTrino(): RelationalDDLCommandsTranslator[1]
 {
   ^RelationalDDLCommandsTranslator(
-                createSchema = translateCreateSchemaStatementForTrino_CreateSchemaSQL_1__String_MANY_,
-                dropSchema =  translateDropSchemaStatementForTrino_DropSchemaSQL_1__String_MANY_,
+                createSchema = translateCreateSchemaStatementForTrino_CreateSchemaSQL_1__DbConfig_1__String_MANY_,
+                dropSchema =  translateDropSchemaStatementForTrino_DropSchemaSQL_1__DbConfig_1__String_MANY_,
                 createTable =  translateCreateTableStatementForTrino_CreateTableSQL_1__DbConfig_1__String_MANY_,
-                dropTable = translateDropTableStatementForTrino_DropTableSQL_1__String_MANY_,
+                dropTable = translateDropTableStatementForTrino_DropTableSQL_1__DbConfig_1__String_MANY_,
                 loadTable =  loadValuesToDbTableForTrino_LoadTableSQL_1__DbConfig_1__String_MANY_
               );
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::trino::translateCreateSchemaStatementForTrino(createSchemaSQL:CreateSchemaSQL[1]) : String[*]
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::translateCreateSchemaStatementForTrino(createSchemaSQL:CreateSchemaSQL[1], dbConfig:DbConfig[1]) : String[*]
 {
    // sql is enclosed in [] to signify that its failure due to schema already existing should not stop us from running other DDL commands
    if($createSchemaSQL.schema.name == 'default', |[], |'[Create Schema ' + $createSchemaSQL.schema.name + ']');
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::trino::translateDropSchemaStatementForTrino(dropSchemaSQL:DropSchemaSQL[1]) : String[*]
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::translateDropSchemaStatementForTrino(dropSchemaSQL:DropSchemaSQL[1], dbConfig:DbConfig[1]) : String[*]
 {
    // dropping the schema is not needed for test setup
    [];
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::trino::translateDropTableStatementForTrino(dropTableSQL:DropTableSQL[1]) : String[*]
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::translateDropTableStatementForTrino(dropTableSQL:DropTableSQL[1], dbConfig:DbConfig[1]) : String[*]
 {
   let t = $dropTableSQL.table;
   'Drop table if exists '+if($t.schema.name == 'default',|'',|$t.schema.name+'.')+$t.name;

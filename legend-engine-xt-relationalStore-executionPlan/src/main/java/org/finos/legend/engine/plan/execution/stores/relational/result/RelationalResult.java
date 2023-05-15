@@ -138,7 +138,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
 
             if (requestContext != null)
             {
-                StoreExecutableManager.INSTANCE.addExecutable(RequestContext.getSessionID(requestContext), this);
+                StoreExecutableManager.INSTANCE.addExecutable(requestContext, this);
             }
 
             long start = System.currentTimeMillis();
@@ -201,7 +201,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             this.buildTransformersAndBuilder(node, sqlExecutionResult.getSQLExecutionNode().connection);
             if (this.requestContext != null)
             {
-                StoreExecutableManager.INSTANCE.addExecutable(RequestContext.getSessionID(this.requestContext), this);
+                StoreExecutableManager.INSTANCE.addExecutable(requestContext, this);
             }
         }
         catch (Throwable e)
@@ -367,7 +367,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
 
         if (requestContext != null)
         {
-            StoreExecutableManager.INSTANCE.removeExecutable(RequestContext.getSessionID(this.requestContext), this);
+            StoreExecutableManager.INSTANCE.removeExecutable(requestContext, this);
         }
 
         if (resultSet != null)

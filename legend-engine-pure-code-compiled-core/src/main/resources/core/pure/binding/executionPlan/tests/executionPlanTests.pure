@@ -86,10 +86,10 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
    assertEquals($expected, $planString);
 }
 
-function <<meta::pure::profiles::test.Test>> meta::external::shared::format::executionPlan::tests::planInternalizeFromRuntimeByteStream(): Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::external::shared::format::executionPlan::tests::planInternalizeFromRuntimeInputOfTypeByte(): Boolean[1]
 {
   let binding    = testBinding();
-  let planString = buildPlan({stream:ByteStream[1]| Person->internalize($binding, $stream)});
+  let planString = buildPlan({stream:Byte[*]| Person->internalize($binding, $stream)});
 
   let expected ='Sequence\n' +
                 '(\n' +
@@ -98,7 +98,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
                 '  (\n' +
                 '    FunctionParametersValidationNode\n' +
                 '    (\n' +
-                '      functionParameters = [stream:ByteStream[1]]\n' +
+                '      functionParameters = [stream:Byte[*]]\n' +
                 '    )\n' +
                 '    ExternalFormat_Internalize\n' +
                 '    (\n' +
@@ -111,7 +111,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
                 '      (\n' +
                 '        VariableResolution\n' +
                 '        (\n' +
-                '          type = ByteStream\n' +
+                '          type = Byte\n' +
                 '          varName = stream\n' +
                 '\n' +
                 '        )\n' +
@@ -175,7 +175,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
 function <<meta::pure::profiles::test.Test>> meta::external::shared::format::executionPlan::tests::planInternalizeCheck(): Boolean[1]
 {
   let binding    = testBinding();
-  let planString = buildPlan({data:ByteStream[1]| Person->internalize($binding, $data)->checked()});
+  let planString = buildPlan({data:Byte[*]| Person->internalize($binding, $data)->checked()});
 
   let expected =  'Sequence\n' +
                   '(\n' +
@@ -184,7 +184,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
                   '  (\n' +
                   '    FunctionParametersValidationNode\n' +
                   '    (\n' +
-                  '      functionParameters = [data:ByteStream[1]]\n' +
+                  '      functionParameters = [data:Byte[*]]\n' +
                   '    )\n' +
                   '    ExternalFormat_Internalize\n' +
                   '    (\n' +
@@ -197,7 +197,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
                   '      (\n' +
                   '        VariableResolution\n' +
                   '        (\n' +
-                  '          type = ByteStream\n' +
+                  '          type = Byte\n' +
                   '          varName = data\n' +
                   '\n' +
                   '        )\n' +
@@ -213,7 +213,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
 {
   let binding    = testBinding();
   let gft = #{Person{firstName}}#;
-  let planString = buildPlan({data:ByteStream[1]| Person->internalize($binding, $data)->graphFetch($gft)});
+  let planString = buildPlan({data:Byte[*]| Person->internalize($binding, $data)->graphFetch($gft)});
 
   let expected ='Sequence\n' +
                 '(\n' +
@@ -222,7 +222,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
                 '  (\n' +
                 '    FunctionParametersValidationNode\n' +
                 '    (\n' +
-                '      functionParameters = [data:ByteStream[1]]\n' +
+                '      functionParameters = [data:Byte[*]]\n' +
                 '    )\n' +
                 '    ExternalFormat_Internalize\n' +
                 '    (\n' +
@@ -236,7 +236,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
                 '      (\n' +
                 '        VariableResolution\n' +
                 '        (\n' +
-                '          type = ByteStream\n' +
+                '          type = Byte\n' +
                 '          varName = data\n' +
                 '\n' +
                 '        )\n' +
@@ -252,7 +252,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
 {
   let binding    = testBinding();
   let gft = #{Person{firstName}}#;
-  let planString = buildPlan({data:ByteStream[1]| Person->internalize($binding, $data)->graphFetchUnexpanded($gft)});
+  let planString = buildPlan({data:Byte[*]| Person->internalize($binding, $data)->graphFetchUnexpanded($gft)});
 
   let expected ='Sequence\n' +
                 '(\n' +
@@ -261,7 +261,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
                 '  (\n' +
                 '    FunctionParametersValidationNode\n' +
                 '    (\n' +
-                '      functionParameters = [data:ByteStream[1]]\n' +
+                '      functionParameters = [data:Byte[*]]\n' +
                 '    )\n' +
                 '    ExternalFormat_Internalize\n' +
                 '    (\n' +
@@ -275,7 +275,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
                 '      (\n' +
                 '        VariableResolution\n' +
                 '        (\n' +
-                '          type = ByteStream\n' +
+                '          type = Byte\n' +
                 '          varName = data\n' +
                 '\n' +
                 '        )\n' +
@@ -291,7 +291,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
 {
   let binding    = testBinding();
   let gft = #{Person{firstName}}#;
-  let planString = buildPlan({data:ByteStream[1]| Person->internalize($binding, $data)->graphFetchCheckedUnexpanded($gft)});
+  let planString = buildPlan({data:Byte[*]| Person->internalize($binding, $data)->graphFetchCheckedUnexpanded($gft)});
 
   let expected =  'Sequence\n' +
                   '(\n' +
@@ -300,7 +300,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
                   '  (\n' +
                   '    FunctionParametersValidationNode\n' +
                   '    (\n' +
-                  '      functionParameters = [data:ByteStream[1]]\n' +
+                  '      functionParameters = [data:Byte[*]]\n' +
                   '    )\n' +
                   '    ExternalFormat_Internalize\n' +
                   '    (\n' +
@@ -314,7 +314,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
                   '      (\n' +
                   '        VariableResolution\n' +
                   '        (\n' +
-                  '          type = ByteStream\n' +
+                  '          type = Byte\n' +
                   '          varName = data\n' +
                   '\n' +
                   '        )\n' +
@@ -330,7 +330,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
 {
   let binding    = testBinding();
   let gft = #{Person{firstName}}#;
-  let planString = buildPlan({data:ByteStream[1]| Person->internalize($binding, $data)->graphFetchChecked($gft)});
+  let planString = buildPlan({data:Byte[*]| Person->internalize($binding, $data)->graphFetchChecked($gft)});
 
   let expected ='Sequence\n' +
                 '(\n' +
@@ -339,7 +339,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
                 '  (\n' +
                 '    FunctionParametersValidationNode\n' +
                 '    (\n' +
-                '      functionParameters = [data:ByteStream[1]]\n' +
+                '      functionParameters = [data:Byte[*]]\n' +
                 '    )\n' +
                 '    ExternalFormat_Internalize\n' +
                 '    (\n' +
@@ -353,7 +353,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
                 '      (\n' +
                 '        VariableResolution\n' +
                 '        (\n' +
-                '          type = ByteStream\n' +
+                '          type = Byte\n' +
                 '          varName = data\n' +
                 '\n' +
                 '        )\n' +
@@ -369,7 +369,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
 {
   let binding    = testBinding();
   let tree       = #{TargetPerson{fullName}}#;
-  let planString = buildPlan({data:ByteStream[1]| TargetPerson.all()->graphFetch($tree)->from(M2MMapping, getRuntimeWithModelQueryConnection(Person, $binding, $data))->externalize($binding, $tree);});
+  let planString = buildPlan({data:Byte[*]| TargetPerson.all()->graphFetch($tree)->from(M2MMapping, getRuntimeWithModelQueryConnection(Person, $binding, $data))->externalize($binding, $tree);});
 
   let expected =
         'Sequence\n' +
@@ -379,7 +379,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
         '  (\n' +
         '    FunctionParametersValidationNode\n' +
         '    (\n' +
-        '      functionParameters = [data:ByteStream[1]]\n' +
+        '      functionParameters = [data:Byte[*]]\n' +
         '    )\n' +
         '    ExternalFormat_Externalize\n' +
         '    (\n' +
@@ -415,7 +415,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
         '                   (\n' +
         '                     VariableResolution\n' +
         '                     (\n' +
-        '                       type = ByteStream\n' +
+        '                       type = Byte\n' +
         '                       varName = data\n' +
         '\n' +
         '                     )\n' +
@@ -444,7 +444,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
 {
   let binding    = testBinding();
   let tree       = #{TargetPerson{fullName}}#;
-  let planString = buildPlan({data:ByteStream[1]| TargetPerson.all()->graphFetch($tree)->from(M2MMapping, mergeRuntimes([^Runtime(connections = ^ModelChainConnection(element=^ModelStore(), mappings = M2MMapping1)), getRuntimeWithModelQueryConnection(_Person, $binding, $data)]))->externalize($binding, $tree);});
+  let planString = buildPlan({data:Byte[*]| TargetPerson.all()->graphFetch($tree)->from(M2MMapping, mergeRuntimes([^Runtime(connections = ^ModelChainConnection(element=^ModelStore(), mappings = M2MMapping1)), getRuntimeWithModelQueryConnection(_Person, $binding, $data)]))->externalize($binding, $tree);});
 
   let expected =
         'Sequence\n' +
@@ -454,7 +454,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
         '  (\n' +
         '    FunctionParametersValidationNode\n' +
         '    (\n' +
-        '      functionParameters = [data:ByteStream[1]]\n' +
+        '      functionParameters = [data:Byte[*]]\n' +
         '    )\n' +
         '    ExternalFormat_Externalize\n' +
         '    (\n' +
@@ -504,7 +504,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
         '                            (\n' +
         '                              VariableResolution\n' +
         '                              (\n' +
-        '                                type = ByteStream\n' +
+        '                                type = Byte\n' +
         '                                varName = data\n' +
         '\n' +
         '                              )\n' +

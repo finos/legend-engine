@@ -45,16 +45,6 @@ function <<test.Test>> meta::relational::tests::tds::tdsWindow::testSingleWindow
    assertEquals('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", dense_rank() OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME DESC) as "testCol1" from personTable as "root"', $result);
 }
 
-function <<test.Test>> meta::relational::tests::tds::tdsWindow::testSingleWindowWithSortingRankInMemSQL():Boolean[1]
-{
-   let func = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
-                            ->olapGroupBy(['firstName'],desc('lastName'),y|$y->denseRank(),'rank')
-                             ->sort('rank')
-   };
-   let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.MemSQL, meta::relational::extension::relationalExtensions(),debug());
-   assertEquals('select `firstName` as `firstName`, `lastName` as `lastName`, `age` as `age`, `rank` as `rank` from (select `root`.FIRSTNAME as `firstName`, `root`.LASTNAME as `lastName`, `root`.AGE as `age`, dense_rank() OVER (Partition By `root`.FIRSTNAME Order By `root`.LASTNAME DESC) as `rank` from personTable as `root`) as `subselect` order by `rank`', $result);
-}
-
 function <<test.Test>> meta::relational::tests::tds::tdsWindow::testSingleWindowWithSortingRankInSQL():Boolean[1]
 {
    let func = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])

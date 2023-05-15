@@ -144,7 +144,7 @@ public abstract class AbstractTestSemiStructured
                 "    (\n" +
                 "      type = Void\n" +
                 "      resultColumns = []\n" +
-                "      sql = ALTER SESSION SET QUERY_TAG = '{\"executionTraceID\" : \"${execID}\", \"engineUser\" : \"${userId}\"}';\n" +
+                "      sql = ALTER SESSION SET QUERY_TAG = '{\"executionTraceID\" : \"${execID}\", \"engineUser\" : \"${userId}\", \"referer\" : \"${referer}\"}';\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n" +
                 expectedRelational +
