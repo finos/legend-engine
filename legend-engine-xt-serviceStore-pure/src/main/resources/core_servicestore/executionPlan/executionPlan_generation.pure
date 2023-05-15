@@ -12,9 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::external::shared::format::utils::*;
-import meta::external::shared::format::binding::*;
-import meta::external::shared::format::binding::validation::*;
 import meta::pure::executionPlan::*;
 import meta::pure::functions::collection::*;
 
@@ -41,8 +38,11 @@ import meta::pure::router::utils::*;
 
 import meta::pure::store::*;
 
+import meta::external::shared::format::binding::*;
+import meta::external::shared::format::binding::validation::*;
 import meta::external::shared::format::executionPlan::*;
 import meta::external::shared::format::router::extension::*;
+import meta::external::shared::format::utils::*;
 
 import meta::external::store::service::executionPlan::nodes::*;
 import meta::external::store::service::executionPlan::generation::*;
@@ -333,14 +333,12 @@ function meta::external::store::service::executionPlan::generation::getServiceRe
 function <<access.private>> meta::external::store::service::executionPlan::generation::generateRootTreeFromBinding(classIn:meta::pure::metamodel::type::Class<Any>[1], binding:Binding[1], extensions:Extension[*]): RootGraphFetchTree<Any>[1]
 {
   let externalFormatContract = $extensions.availableExternalFormats->getExternalFormatContractForContentType($binding.contentType);
-  let bindingDetail          = if($externalFormatContract.externalFormatBindingValidator->isNotEmpty(), 
-                                  | let bindingDetail = $externalFormatContract.externalFormatBindingValidator->toOne()->eval($binding);
-                                    assert($bindingDetail->instanceOf(SuccessfulBindingDetail), | 'Binding validation failed.\n' + $bindingDetail->cast(@FailedBindingDetail).errorMessages->joinStrings('\n'));
-                                    $bindingDetail->cast(@SuccessfulBindingDetail);,
-                                  | fail('External Format \'' + + '\' does not implement binding validator');@SuccessfulBindingDetail;);
+  let bindingDetail          = $externalFormatContract.validateBinding($binding);
+  
+  assert($bindingDetail->instanceOf(SuccessfulBindingDetail), | 'Binding validation failed.\n' + $bindingDetail->cast(@FailedBindingDetail).errorMessages->joinStrings('\n'));
 
-  let propertiesInScope      = $bindingDetail.mappedPropertiesForClass($classIn);
-  let subTrees               = $propertiesInScope->map(p | $p->generatePropertyTreeForProperty($bindingDetail));
+  let propertiesInScope      = $bindingDetail->cast(@SuccessfulBindingDetail).mappedPropertiesForClass($classIn);
+  let subTrees               = $propertiesInScope->map(p | $p->generatePropertyTreeForProperty($bindingDetail->cast(@SuccessfulBindingDetail)));
 
   ^RootGraphFetchTree<Any>(class=$classIn, subTrees = $subTrees);
 }
