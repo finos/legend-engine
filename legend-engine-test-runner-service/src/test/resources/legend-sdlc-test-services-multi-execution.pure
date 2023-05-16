@@ -1,0 +1,150 @@
+###Service
+Service my::Service
+{
+  pattern: '/exampleService/{env}';
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: |my::Person.all()->filter(
+  x|$x.name->in(
+    [
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'n',
+      'Hello'
+    ]
+  )
+)->project(
+  col(
+      x|$x.name,
+      'Name'
+    )
+);
+    key: 'env';
+    executions['Env1']:
+    {
+      mapping: my::Map;
+      runtime:
+      #{
+        mappings:
+        [
+          my::Map
+        ];
+        connections:
+        [
+          my::DB:
+          [
+            c1:
+            #{
+              RelationalDatabaseConnection
+              {
+                store: my::DB;
+                type: H2;
+                specification: LocalH2
+                {
+                  testDataSetupCSV: '';
+                };
+                auth: DefaultH2;
+              }
+            }#
+          ]
+        ];
+      }#;
+    }
+  }
+  test: Multi
+  {
+    tests['Env1']:
+    {
+      data: 'default\npersonTable\nname\nHello\n------';
+      asserts:
+      [
+        { [], res: meta::pure::mapping::Result[1]|
+          let expected = ['Hello'];
+          let actual = $res.values->cast(@TabularDataSet)->toOne().rows->map(r|$r.values->makeString(','));
+          assertEquals($expected->sort()->joinStrings('\n'), $actual->sort()->joinStrings('\n'));
+        }
+      ];
+    }
+  }
+}
+
+
+###Relational
+Database my::DB
+(
+  Table personTable
+  (
+    name VARCHAR(1000) PRIMARY KEY
+  )
+)
+
+
+###Pure
+Class my::Person
+{
+  name: String[1];
+}
+
+
+###Mapping
+Mapping my::Map
+(
+  *my::Person: Relational
+  {
+    ~primaryKey
+    (
+      [my::DB]personTable.name
+    )
+    ~mainTable [my::DB]personTable
+    name: [my::DB]personTable.name
+  }
+)

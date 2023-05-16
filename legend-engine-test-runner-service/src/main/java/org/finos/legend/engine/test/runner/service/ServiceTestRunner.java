@@ -63,8 +63,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestContainer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.PureList;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.operational.Assert;
@@ -80,6 +83,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElem
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -188,7 +192,6 @@ public class ServiceTestRunner
                     testData = test.data;
                     asserts = test.asserts;
                     noAssertMessage = "No test assert found !!";
-
                 }
                 return Collections.singletonList(executeSingleExecutionTest((PureSingleExecution) service.execution, testData, asserts, noAssertMessage, pureModelContextData, pureModel, scope));
             }
@@ -207,11 +210,28 @@ public class ServiceTestRunner
         }
     }
 
+    private boolean isAlwaysTrueAssertion(Lambda lambda)
+    {
+        if (lambda.body.size() != 1)
+        {
+            return false;
+        }
+        final ValueSpecification valueSpecification = lambda.body.get(0);
+
+        // if the CBoolean itself is false, then tests would fail always
+        return valueSpecification instanceof CBoolean;
+    }
+
     private RichServiceTestResult executeSingleExecutionTest(PureSingleExecution execution, String testData, List<TestContainer> asserts, String noAssertMessage, PureModelContextData pureModelContextData, PureModel pureModel, Scope scope) throws IOException, JavaCompileException
     {
         if (asserts == null || asserts.isEmpty())
         {
             scope.span().log(noAssertMessage);
+            return new RichServiceTestResult(service.getPath(), Collections.emptyMap(), Collections.emptyMap(), null, null, null);
+        }
+        else if (asserts.stream().allMatch(a -> isAlwaysTrueAssertion(a._assert)))
+        {
+            scope.span().log("Ignoring always true assertion");
             return new RichServiceTestResult(service.getPath(), Collections.emptyMap(), Collections.emptyMap(), null, null, null);
         }
         else
@@ -291,7 +311,7 @@ public class ServiceTestRunner
             String javaCode = ServiceTestGenerationHelper.generateJavaForAsserts(asserts, this.service, this.pureModel, packageName, className);
             Class<?> assertsClass;
             RichServiceTestResult testRun;
-            try (Scope s = GlobalTracer.get().buildSpan("compile test asserts").startActive(true))
+            try (Scope ignored = GlobalTracer.get().buildSpan("compile test asserts").startActive(true))
             {
                 assertsClass = compileJavaForAsserts(packageName, className, javaCode);
             }

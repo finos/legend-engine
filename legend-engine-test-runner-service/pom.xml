@@ -219,6 +219,16 @@
             <artifactId>legend-engine-xt-relationalStore-javaPlatformBinding-pure</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-protocol</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- TEST -->
     </dependencies>
 </project>

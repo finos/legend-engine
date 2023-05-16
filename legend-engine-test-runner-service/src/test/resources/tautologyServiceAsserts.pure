@@ -1,0 +1,75 @@
+###Pure
+import org::finos::legend::*;
+
+Class org::finos::legend::Person
+{
+  name: String[1];
+  age: Integer[1];
+}
+
+###Relational
+Database org::finos::legend::DB
+(
+  Table PEOPLE
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100),
+    AGE INTEGER
+  )
+)
+
+###Mapping
+import org::finos::legend::*;
+
+Mapping org::finos::legend::TestMapping
+(
+  Person : Relational
+  {
+    name: [DB]PEOPLE.NAME,
+    age:  [DB]PEOPLE.AGE
+  }
+)
+
+###Runtime
+Runtime org::finos::legend::TestRuntime
+{
+  mappings :
+  [
+    org::finos::legend::TestMapping
+  ];
+  connections :
+  [
+    org::finos::legend::DB :
+    [
+      connection_1 : #{
+        RelationalDatabaseConnection {
+          store: org::finos::legend::DB;
+          type: H2;
+          specification: LocalH2{
+            testDataSetupCSV: 'default\nPEOPLE\nID, NAME, AGE\n1, Peter, 22\n2, John, 25\n3, Simon, 27\n4, Matthew, 30\n---';
+          };
+          auth: DefaultH2;
+        }
+      }#
+    ]
+  ];
+}
+
+###Service
+Service org::finos::legend::TestService
+{
+  pattern: '/my/test/service';
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: | org::finos::legend::Person.all()->project([x|$x.name, x|$x.age], ['Name', 'Age']);
+    mapping: org::finos::legend::TestMapping;
+    runtime: org::finos::legend::TestRuntime;
+  }
+  test: Single
+  {
+    data: '';
+    asserts: [ { [], res: meta::pure::mapping::Result[1]|true } ];
+  }
+}
