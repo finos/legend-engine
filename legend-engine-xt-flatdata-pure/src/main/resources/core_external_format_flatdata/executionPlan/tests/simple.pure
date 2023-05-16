@@ -53,7 +53,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::testInternalizeExternalizeSimpleWithStringParameterUpdate(): Boolean[1]
 {
   let binding = getTestBinding();
-  let query   = {data:String[1] | 
+  let query   = {data:String[1] |
                   let updatedData = $data + '\nPeter,Doe';
                   meta::external::format::flatdata::executionPlan::test::Person->internalize($binding, $updatedData)->externalize($binding, #{meta::external::format::flatdata::executionPlan::test::Person{firstName, lastName}}#);};
   let vars    = pair('data', 'First Name,Last Name\nJohn,Doe\nOlive,Yew');
@@ -63,11 +63,11 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   assertEquals('First Name,Last Name\nJohn,Doe\nOlive,Yew\nPeter,Doe', $result);
 }
 
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::testInternalizeExternalizeSimpleWithByteStreamParameter(): Boolean[1]
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::flatdata::executionPlan::test::testInternalizeExternalizeSimpleWithByteParameter(): Boolean[1]
 {
   let binding = getTestBinding();
-  let query   = {data:ByteStream[1] | meta::external::format::flatdata::executionPlan::test::Person->internalize($binding, $data)->externalize($binding, #{meta::external::format::flatdata::executionPlan::test::Person{firstName, lastName}}#)};
-  let vars    = pair('data', ^InstanceValue(genericType=^GenericType(rawType=ByteStream), multiplicity=PureOne, values='First Name,Last Name\nJohn,Doe\nOlive,Yew'));
+  let query   = {data:Byte[*] | meta::external::format::flatdata::executionPlan::test::Person->internalize($binding, $data)->externalize($binding, #{meta::external::format::flatdata::executionPlan::test::Person{firstName, lastName}}#)};
+  let vars    = pair('data', convertStringToBytes('First Name,Last Name\nJohn,Doe\nOlive,Yew'));
 
   let result  = executeFlatdataBindingQuery($query, $vars);
 
@@ -253,11 +253,11 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 {
   let binding = getTestBinding();
   let tree    = #{meta::external::format::flatdata::executionPlan::test::TargetPerson{fullName}}#;
-  let query   = {data:String[1]| 
+  let query   = {data:String[1]|
                   let updatedData = $data + '\nOlive,Yew';
                   meta::external::format::flatdata::executionPlan::test::TargetPerson.all()->graphFetch($tree)->from(meta::external::format::flatdata::executionPlan::test::M2MMapping, getRuntimeWithModelQueryConnection(meta::external::format::flatdata::executionPlan::test::Person, $binding, $updatedData))->externalize(getTargetPersonTestBinding(), $tree);};
   let vars    = pair('data', 'First Name,Last Name\nJohn,Doe');
-  
+
   let result  = executeFlatdataBindingQuery($query, $vars);
 
   assertEquals('Full Name\nJohn Doe\nOlive Yew', $result);

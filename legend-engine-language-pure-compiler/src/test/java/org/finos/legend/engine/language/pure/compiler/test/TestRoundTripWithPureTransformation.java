@@ -38,13 +38,13 @@ public class TestRoundTripWithPureTransformation
     @Test
     public void testNewFunctionRoundtripWithPureProtocolTransformation() throws Exception
     {
-        testFunctionRoundtripWithPureProtocolTransformation("   ^meta::legend::test::model::model::ClassWithConstraint(a='testAssociation')\n");
+        testFunctionRoundtripWithPureProtocolTransformation("  ^meta::legend::test::model::model::ClassWithConstraint(a='testAssociation')\n");
     }
 
     @Test
     public void testFunctionWithHackedClassParameterRoundtripWithPureProtocolTransformation() throws Exception
     {
-        testFunctionRoundtripWithPureProtocolTransformation("   $c->subType(@meta::legend::test::model::model::ClassWithConstraint)\n");
+        testFunctionRoundtripWithPureProtocolTransformation("  $c->subType(@meta::legend::test::model::model::ClassWithConstraint)\n");
     }
 
     @Test

@@ -119,6 +119,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let left = wrapWithFrom(processRelation($union.left, $context));
   let right = wrapWithFrom(processRelation($union.right, $context));
 
+  assertNotMultiExpression($left, $right);
+
   //TODO handle distinct
 
   let newExp = appendTdsFunc($left.expression->toOne(), concatenate_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_, [list($right.expression->toOne())]);
@@ -509,10 +511,11 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processJoin(join: Join[1], context: SqlTransformContext[1]): SqlTransformContext[1]
 {
-
   debug('processJoin');
   let left = wrapWithFrom(processRelation($join.left, $context));
   let right = wrapWithFrom(processRelation($join.right, $context));
+
+  assertNotMultiExpression($left, $right);
 
   let leftName = $join.left->relationName();
   let rightName = $join.right->relationName();
@@ -671,9 +674,11 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let expressionSequence = if ($parameters->isNotEmpty(), | wrapWithEval($source.func, $parameters, $arguments), | $source.func.expressionSequence);
 
   //TODO handle multi expression
-  assert($expressionSequence->size() == 1, ' multi expressions currently not supported');
 
-  ^$context(expression = $expressionSequence->cast(@FunctionExpression)->toOne(), source = $source);
+ 
+  ^$context(
+    assignments = $expressionSequence->evaluateAndDeactivate()->init(),
+    expression = $expressionSequence->last()->cast(@FunctionExpression), source = $source);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::wrapWithEval(func:FunctionDefinition<Any>[1], parameters:VariableExpression[*], arguments:SQLSourceArgument[*]): FunctionExpression[1]
@@ -1621,6 +1626,7 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
 {
   sources: SQLSource[*];
   expression: FunctionExpression[0..1];
+  assignments: ValueSpecification[*];
   source: SQLSource[0..1];
   extensions: meta::pure::extension::Extension[*];
   aliases:Map<String, String>[1];
@@ -1647,7 +1653,9 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
 
     $column;
   }: TDSColumn[0..1];
-  lambda(){ ^LambdaFunction<{->TabularDataSet[1]}>(expressionSequence = $this.expression->toOne()) }: LambdaFunction<{->TabularDataSet[1]}>[1];
+  lambda(){ 
+    ^LambdaFunction<{->TabularDataSet[1]}>(expressionSequence = $this.assignments->concatenate($this.expression)->toOneMany()) 
+  }: LambdaFunction<{->TabularDataSet[1]}>[1];
   source(type:String[1], arguments:SQLSourceArgument[*]){
       let source = $this.sources->filter(s | $s.matches($type, $arguments));
 
@@ -1697,6 +1705,11 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 function meta::external::query::sql::transformation::queryToPure::simpleFunctionTransform(func:Function<Any>[1]):Function<{ValueSpecification[*]->SimpleFunctionExpression[1]}>[1]
 {
   {args:ValueSpecification[*] | sfe($func, $args)}
+}
+
+function meta::external::query::sql::transformation::queryToPure::assertNotMultiExpression(left:SqlTransformContext[1], right:SqlTransformContext[1]):Boolean[1] 
+{
+  assert($left.assignments->isEmpty() && $right.assignments->isEmpty(), | 'we do not currently support multi expressions in multi source queries');
 }
 
 //MISC

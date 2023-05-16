@@ -69,6 +69,8 @@ function meta::external::store::elasticsearch::v7::contract::elasticsearchV7Stor
       // Routing
       shouldStopRouting = [meta::external::store::elasticsearch::v7::tds::indexToTDS_Elasticsearch7Store_1__String_1__TabularDataSet_1_],
 
+      shouldStopPreeval = shouldStopPreeval(),
+
       routeFunctionExpressions = routeFunctionExpressionsPairs(),
       // Routing
 
@@ -122,6 +124,17 @@ function meta::external::store::elasticsearch::v7::contract::supports(): Functio
   let supportedFunctions = meta::external::store::elasticsearch::v7::pureToEs::supportedRoutingFunctions().first; 
 
   {f:FunctionExpression[1]| $supportedFunctions->exists(x | $x->eval($f.func))};
+}
+
+function meta::external::store::elasticsearch::v7::contract::shouldStopPreeval(): Function<{Any[*]->Boolean[1]}>[1]
+{
+    let matches = [
+        p: Elasticsearch7Store[1] | true,
+        f: SimpleFunctionExpression[1] | $f.func == meta::external::store::elasticsearch::v7::tds::indexToTDS_Elasticsearch7Store_1__String_1__TabularDataSet_1_,
+        a: Any[*] | false
+    ];
+
+    {a:Any[*] | $a->match($matches)};
 }
 
 function meta::external::store::elasticsearch::v7::contract::elasticsearchV7StoreSerializerExtension(version:String[1]):String[1]

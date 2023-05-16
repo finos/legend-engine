@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.plan.dependencies.util;
 
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.dependencies.domain.date.DayOfWeek;
 import org.finos.legend.engine.plan.dependencies.domain.date.DurationUnit;
 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
@@ -1528,5 +1530,85 @@ public class Library
         left = left.equals(-0.0d) ? 0.0d : left;
         right = right.equals(-0.0d) ? 0.0d : right;
         return left.equals(right) || left.toString().equals(right.toString());
+     
+    public static double sqrt(Number input)
+    {
+        double res = Math.sqrt(input.doubleValue());
+        if (Double.isNaN(res))
+        {
+            throw new RuntimeException("can't compute sqrt for input: " + input);
+        }
+        return res;
+    }
+
+    public static Number stdDev(List<Number> list, boolean isBiasCorrected)
+    {
+        if (list == null || list.isEmpty())
+        {
+            throw new RuntimeException("Unable to process empty list");
+        }
+        MutableList<Number> javaNumbers = Lists.mutable.withAll(list);
+        double[] values = new double[javaNumbers.size()];
+        for (int i = 0; i < javaNumbers.size(); i++)
+        {
+            values[i] = javaNumbers.get(i).doubleValue();
+        }
+        return standardDeviation(values, isBiasCorrected);
+    }
+
+    public static double standardDeviation(double[] values, boolean isBiasCorrected)
+    {
+        return Math.sqrt(variance(values, isBiasCorrected));
+    }
+
+    public static double variance(double[] values, boolean isBiasCorrected)
+    {
+        int length = values.length;
+        if (length == 1)
+        {
+            if (isBiasCorrected)
+            {
+                //calculating sample variance for only 1 number is not allowed
+                throw new IllegalArgumentException("calculating sample variance for only 1 number is not allowed");
+            }
+            else
+            {
+                //population variance for only 1 number
+                return 0.0;
+            }
+        }
+
+        double mean = mean(values);
+        double val = 0.0;
+        for (int i = 0; i < length; i++)
+        {
+            double value = values[i];
+            double diff = value - mean;
+            val += diff * diff;
+        }
+        if (isBiasCorrected)
+        {
+            return val / (length - 1);
+        }
+        else
+        {
+            return val / length;
+        }
+    }
+
+    private static double mean(double[] values)
+    {
+        int length = values.length;
+        if (length == 0)
+        {
+            throw new IllegalArgumentException("Cannot compute mean with no values");
+        }
+
+        double sum = values[0];
+        for (int i = 1; i < length; i++)
+        {
+            sum += values[i];
+        }
+        return sum / length;
     }
 }

@@ -1828,7 +1828,7 @@ public class TestServiceTestSuite
                 "  autoActivateUpdates: false;\n" +
                 "  execution: Single\n" +
                 "  {\n" +
-                "    query: data: ByteStream[1]|test::firm::model::Firm->internalize(test::firm::model::TestBinding1, $data)->externalize(test::firm::model::TestBinding1, #{test::firm::model::Firm{name, ranking}}#);\n" +
+                "    query: data: Byte[*]|test::firm::model::Firm->internalize(test::firm::model::TestBinding1, $data)->externalize(test::firm::model::TestBinding1, #{test::firm::model::Firm{name, ranking}}#);\n" +
                 "  }\n" +
                 "  testSuites:\n" +
                 "  [\n" +
@@ -1840,7 +1840,7 @@ public class TestServiceTestSuite
                 "        {\n" +
                 "          parameters:\n" +
                 "          [\n" +
-                "            data = byteStream('[{\"name\":\"Firm A\", \"ranking\":1, \"addresses\":{\"address\":{\"firstLine\":\"Address Line 1\", \"country\":\"Country A\"}, \"addressType\":\"Headquarters\"}}]')\n" +
+                "            data = toBytes('[{\"name\":\"Firm A\", \"ranking\":1, \"addresses\":{\"address\":{\"firstLine\":\"Address Line 1\", \"country\":\"Country A\"}, \"addressType\":\"Headquarters\"}}]')\n" +
                 "          ]\n" +
                 "          asserts:\n" +
                 "          [\n" +
