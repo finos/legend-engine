@@ -134,7 +134,7 @@ meta::pure::executionPlan::platformBinding::legendJava::library::math::tests::te
    javaExpressionTests(engineConventions([]))
       ->addTest('Sqrt (integer root)', {|sqrt(16.0d)}, 'org.finos.legend.engine.plan.dependencies.util.Library.sqrt(new java.math.BigDecimal("16.0"))', javaDouble())
          ->assert('%s == 4.0d')
-      ->addTest('Sqrt (real root)', {|sqrt(3.0)}, 'org.finos.legend.engine.plan.dependencies.util.Library.sqrt(3.0))', javaDouble())
+      ->addTest('Sqrt (real root)', {|sqrt(3.0)}, 'org.finos.legend.engine.plan.dependencies.util.Library.sqrt(3.0)', javaDouble())
          ->assert('%s > 1.732d')
          ->assert('%s < 1.7321d')
       ->runTests();
