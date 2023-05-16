@@ -125,3 +125,10 @@ function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting42():Bo
 
   assertRoundTrip($input, $expected, noDebug());
 }
+
+function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting_Store():Boolean[1]
+{
+  let input = {| meta::relational::tests::db};
+  let expected = {| meta::relational::tests::db};
+  assertRoundTrip($input, $expected);
+}

@@ -1499,7 +1499,7 @@ function meta::pure::router::preeval::tests::getTestRuntimeWithModelConnection(s
 
 function <<access.private>> meta::pure::router::preeval::tests::assertRoundTrip(input : FunctionDefinition<Any>[1], expectedOrig : FunctionDefinition<Any>[1]):Boolean[1]
 {
-  assertRoundTrip($input, $expectedOrig, debug())
+  assertRoundTrip($input, $expectedOrig, noDebug())
 }
 
 function <<access.private>> meta::pure::router::preeval::tests::assertRoundTrip(input : FunctionDefinition<Any>[1], expectedOrig : FunctionDefinition<Any>[1], debug:meta::pure::tools::DebugContext[1]):Boolean[1]
