@@ -43,7 +43,7 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
   ];
 }
 
-function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::tests::getFunctionsToExclude():FunctionDefinition<Any>[*]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::tests::getFunctionsToExclude():FunctionDefinition<{->Boolean[1]}>[*]
 {
   let genericsNotSupported = [
     meta::pure::functions::collection::tests::contains::testContainsWithFunction__Boolean_1_, // requires meta::pure::functions::collection::contains_Z_MANY__Z_1__Function_1__Boolean_1_ 
@@ -279,10 +279,30 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
     ->concatenate($wrongResults);
 }
 
-function <<test.TestCollection>> meta::pure::executionPlan::platformBinding::legendJava::library::tests::collectTestsForJavaGeneration():PureTestCollection[1]
+function <<access.private>>  meta::pure::executionPlan::platformBinding::legendJava::library::tests::rootPackage():Package[1]
 {
-  let root = meta::pure::functions;
+   meta::pure::functions;
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::library::tests::collectTestsForJavaGeneration():PureTestCollection[1]
+{
+  let root = rootPackage();
   let pkgsToExclude = getPackagesToExclude();
   let fnsToExclude = getFunctionsToExclude();
   $root->generateTestCollection($pkgsToExclude, $fnsToExclude);
+}
+
+function <<test.Test, meta::pure::profiles::test.AlloyOnly>> 
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::platformBinding::legendJava::library::tests::JavaGenerationTestSingle():Boolean[1]
+{
+  let root = rootPackage();
+  let pkgsToExclude = getPackagesToExclude();
+  let fnsToExclude = getFunctionsToExclude();
+
+  let suite = javaPureTests(engineConventions([]), [])
+    ->addTestsWithin($root)
+    ->excludeTestsWithin($pkgsToExclude)
+    ->excludeTests($fnsToExclude)
+    ->runTests();
 }
