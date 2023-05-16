@@ -184,7 +184,8 @@ public class HelperPersistenceRelationalComposer
         }
 
         @Override
-        public String visit(SourceTimeStart val) {
+        public String visit(SourceTimeStart val)
+        {
             return "Start\n" +
                 getTabString(indentLevel) + "{\n" +
                 getTabString(indentLevel + 1) + "startField: " + val.startField + ";\n" +
@@ -192,7 +193,8 @@ public class HelperPersistenceRelationalComposer
         }
 
         @Override
-        public String visit(SourceTimeStartAndEnd val) {
+        public String visit(SourceTimeStartAndEnd val)
+        {
             return "StartAndEnd\n" +
                 getTabString(indentLevel) + "{\n" +
                 getTabString(indentLevel + 1) + "startField: " + val.startField + ";\n" +
