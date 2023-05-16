@@ -16,6 +16,7 @@
       "enumerationMappings": [],
       "includedMappings": [
         {
+          "_type": "mappingIncludeMapping",
           "includedMapping": "mapping::M0"
         }
       ],

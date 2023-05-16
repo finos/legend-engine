@@ -23,6 +23,7 @@ public class SerializationConfig
     public boolean includeType;
     public String typeKeyName;
     public boolean includeEnumType;
+    public String dateTimeFormat;
     public boolean removePropertiesWithNullValues;
     public boolean removePropertiesWithEmptySets;
     public boolean fullyQualifiedTypePath;

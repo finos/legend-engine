@@ -19,20 +19,21 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
+import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.slf4j.Logger;
 
 
 /**
- * This is a singleton that maintains the relationship between  http sessions and store executions.
+ * This is a singleton that maintains the relationship between  http requests and store executions.
  * It can be used to operate on executions (for example to cancel running executions)
  * The manager must be initialized as well as added as a HttpSessionListener
  */
 public enum StoreExecutableManager
 {
     INSTANCE;
-    private final ConcurrentHashMap<String, List<StoreExecutable>> sessionExecutableMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, List<StoreExecutable>> requestExecutableMap = new ConcurrentHashMap<>();
     private boolean isRegistered = false;
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(StoreExecutableManager.class);
 
@@ -42,16 +43,23 @@ public enum StoreExecutableManager
     public void reset()
     {
         this.isRegistered = false;
-        this.sessionExecutableMap.clear();
+        this.requestExecutableMap.clear();
     }
 
-    public void addExecutable(String sessionID, StoreExecutable execution)
+    public void addExecutable(String requestID, StoreExecutable execution)
     {
-        if (isRegistered && sessionID != null)
+        if (isRegistered && requestID != null)
         {
-            sessionExecutableMap.computeIfAbsent(sessionID, x -> Collections.synchronizedList(new ArrayList<>())).add(execution);
+            requestExecutableMap.computeIfAbsent(requestID, x -> Collections.synchronizedList(new ArrayList<>())).add(execution);
         }
     }
+
+    public void addExecutable(RequestContext context, StoreExecutable execution)
+    {
+        String requestID = RequestContext.getRequestToken(context);
+        addExecutable(requestID, execution);
+    }
+
 
     public void removeExecutable(String sessionID, StoreExecutable executable)
     {
@@ -59,7 +67,7 @@ public enum StoreExecutableManager
         {
             try
             {
-                sessionExecutableMap.computeIfPresent(sessionID, (a, executableList) ->
+                requestExecutableMap.computeIfPresent(sessionID, (a, executableList) ->
                 {
                     executableList.remove(executable);
                     if (executableList.isEmpty())
@@ -80,9 +88,22 @@ public enum StoreExecutableManager
         }
     }
 
+    public void removeExecutable(RequestContext context, StoreExecutable executable)
+    {
+        String requestID = RequestContext.getRequestToken(context);
+        removeExecutable(requestID, executable);
+
+    }
+
     public List<StoreExecutable> getExecutables(String sessionID)
     {
-        return sessionExecutableMap.getOrDefault(sessionID, Collections.EMPTY_LIST);
+        return requestExecutableMap.getOrDefault(sessionID, Collections.EMPTY_LIST);
+    }
+
+    public List<StoreExecutable> getExecutables(RequestContext context)
+    {
+        String requestID = RequestContext.getRequestToken(context);
+        return getExecutables(requestID);
     }
 
     public void registerManager()
@@ -93,7 +114,7 @@ public enum StoreExecutableManager
     public Integer cancelExecutablesOnSession(String sessionID)
     {
         AtomicReference<Integer> numberOfCancelled = new AtomicReference<>(0);
-        sessionExecutableMap.remove(sessionID).forEach(
+        requestExecutableMap.remove(sessionID).forEach(
                 executable ->
                 {
                     try
@@ -103,16 +124,22 @@ public enum StoreExecutableManager
                     }
                     catch (Exception e)
                     {
-                        LOGGER.error(new LogInfo(null, LoggingEventType.EXECUTABLE_CANCELLATION_ERROR, "Unable to cancel executable for session " + sessionID + e.getMessage()).toString());
+                        LOGGER.error(new LogInfo(null, LoggingEventType.EXECUTABLE_CANCELLATION_ERROR, "Unable to cancel executable for ID " + sessionID + e.getMessage()).toString());
                     }
                 }
         );
         return numberOfCancelled.get();
     }
 
+    public Integer cancelExecutablesByID(String requestID)
+    {
+        return cancelExecutablesOnSession(requestID);
+
+    }
+
     public Integer getActiveSessionCount()
     {
-        return sessionExecutableMap.keySet().size();
+        return requestExecutableMap.keySet().size();
     }
 
 }

@@ -12,7 +12,7 @@ options
 
 identifier:                     VALID_STRING | STRING
                                 | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE
-                                | BYTE_STREAM_FUNCTION      // from M3Parser
+                                | TO_BYTES_FUNCTION      // from M3Parser
                                 | MAPPING | IMPORT
                                 | INCLUDE | TESTS | EXTENDS
                                 | TEST_QUERY | TEST_INPUT_DATA | TEST_ASSERT
@@ -36,7 +36,7 @@ mapping:                        MAPPING qualifiedName
                                         (tests|mappingTestSuites)?
                                     PAREN_CLOSE
 ;
-includeMapping:                 INCLUDE qualifiedName
+includeMapping:                 (INCLUDETYPE|INCLUDE) qualifiedName
                                     (BRACKET_OPEN (storeSubPath (COMMA storeSubPath)*)? BRACKET_CLOSE)?
 ;
 

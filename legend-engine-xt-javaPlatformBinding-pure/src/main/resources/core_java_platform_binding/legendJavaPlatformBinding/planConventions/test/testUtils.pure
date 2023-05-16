@@ -193,14 +193,19 @@ function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::j
 
 function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::addTestsWithin(set:JavaPureTestSet[1], pkg:Package[1]): JavaPureTestSet[1]
 {
-   let tests = $pkg->getAllConcreteFunctionDefinitionsInPackage(true)->filter(f| $f->isTest())->cast(@FunctionDefinition<{->Boolean[1]}>);
+   let tests = $pkg->getAllConcreteFunctionDefinitionsInPackage(true)->filter(f| $f->isTest() && $f.classifierGenericType.typeArguments.rawType->cast(@meta::pure::metamodel::type::FunctionType).returnType.rawType == Boolean && !$f->cast(@ElementWithTaggedValues)->value4Tag('excludePlatform',test).value->contains('Java compiled'))->cast(@FunctionDefinition<{->Boolean[1]}>);
    ^$set(pureTests=$set.pureTests->concatenate($tests)->removeDuplicates());
 }
 
 function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::excludeTestsWithin(set:JavaPureTestSet[1], pkg:Package[1]): JavaPureTestSet[1]
 {
-   let toRemove = $pkg->getAllConcreteFunctionDefinitionsInPackage(true)->filter(f| $f->isTest())->cast(@FunctionDefinition<{->Boolean[1]}>);
+   let toRemove = $pkg->getAllConcreteFunctionDefinitionsInPackage(true)->filter(f| $f->isTest()  && $f.classifierGenericType.typeArguments.rawType->cast(@meta::pure::metamodel::type::FunctionType).returnType.rawType == Boolean)->cast(@FunctionDefinition<{->Boolean[1]}>);
    ^$set(pureTests=$set.pureTests->removeAll($toRemove));
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::excludeTestsWithin(set:JavaPureTestSet[1], pkgs:Package[*]): JavaPureTestSet[1]
+{
+   $pkgs->fold({pkg, set | $set->excludeTestsWithin($pkg)}, $set);
 }
 
 function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::excludeTest(set:JavaPureTestSet[1], test:FunctionDefinition<{->Boolean[1]}>[1]): JavaPureTestSet[1]

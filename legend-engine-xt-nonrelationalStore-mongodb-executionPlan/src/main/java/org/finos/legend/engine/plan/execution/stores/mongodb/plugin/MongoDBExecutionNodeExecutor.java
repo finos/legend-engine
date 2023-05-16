@@ -19,36 +19,42 @@ import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
+import org.finos.legend.engine.external.shared.utils.ExternalFormatRuntime;
 import org.finos.legend.engine.language.pure.grammar.to.MongoDBQueryJsonComposer;
+import org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicChecked;
+import org.finos.legend.engine.plan.dependencies.domain.dataQuality.Constrained;
+import org.finos.legend.engine.plan.dependencies.domain.dataQuality.EnforcementLevel;
+import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
+import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IDefect;
+import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
+import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionNodeJavaPlatformHelper;
+import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
-import org.finos.legend.engine.plan.execution.stores.StoreType;
+import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
+import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.StoreStreamReadingObjectsIterator;
 import org.finos.legend.engine.plan.execution.stores.mongodb.MongoDBExecutor;
+import org.finos.legend.engine.plan.execution.stores.mongodb.result.MongoDBResult;
+import org.finos.legend.engine.plan.execution.stores.mongodb.specifics.IMongoDocumentDeserializeExecutionNodeSpecifics;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DatabaseCommand;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBDocumentInternalizeExecutionNode;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AggregationAwareExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AllocationExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ConstantExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ErrorExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.FreeMarkerConditionalExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.FunctionParametersValidationNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.GraphFetchM2MExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.MultiResultSequenceExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.PureExpressionPlatformExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SequenceExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GraphFetchExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.LocalGraphFetchExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.StoreMappingGlobalGraphFetchExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryCrossStoreGraphFetchExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryPropertyGraphFetchExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryRootGraphFetchExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.StoreStreamReadingExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPlatformImplementation;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionCategory;
 import org.pac4j.core.profile.CommonProfile;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class MongoDBExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 {
@@ -69,6 +75,13 @@ public class MongoDBExecutionNodeExecutor implements ExecutionNodeVisitor<Result
             try (Scope scope = GlobalTracer.get().buildSpan("MongoDB Store Execution").startActive(true))
             {
                 return executeMongoDBExecutionNode((MongoDBExecutionNode) executionNode);
+            }
+        }
+        if (executionNode instanceof MongoDBDocumentInternalizeExecutionNode)
+        {
+            try (Scope scope = GlobalTracer.get().buildSpan("MongoDB Document Internalize Execution").startActive(true))
+            {
+                return executeDocumentInternalizeExecutionNode((MongoDBDocumentInternalizeExecutionNode) executionNode, this.profiles, this.executionState);
             }
         }
         else
@@ -99,107 +112,84 @@ public class MongoDBExecutionNodeExecutor implements ExecutionNodeVisitor<Result
         }
     }
 
-    @Deprecated
-    @Override
-    public Result visit(GraphFetchM2MExecutionNode graphFetchM2MExecutionNode)
+    private Result executeDocumentInternalizeExecutionNode(MongoDBDocumentInternalizeExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
-        throw new RuntimeException("Not implemented!");
+        MongoDBResult resultCursor = getResultCursor(node.executionNodes().getFirst().accept(new ExecutionNodeExecutor(profiles, new ExecutionState(executionState))));
+        StreamingObjectResult<?> streamingObjectResult = executeInternalizeExecutionNode(node, resultCursor, profiles, executionState);
+        return applyConstraints(streamingObjectResult, node.checked, node.enableConstraints);
     }
 
-    @Override
-    public Result visit(StoreStreamReadingExecutionNode storeStreamReadingExecutionNode)
+    private MongoDBResult getResultCursor(Result mongoResult)
     {
-        throw new RuntimeException("Not implemented!");
+        if (mongoResult instanceof MongoDBResult)
+        {
+            return (MongoDBResult) mongoResult;
+        }
+        throw new EngineException(
+                String.format("MongoDBExecutionNode should return MongoDBResult, but instead got:%s", mongoResult.getClass().getName()),
+                ExceptionCategory.INTERNAL_SERVER_ERROR);
     }
 
-    @Override
-    public Result visit(InMemoryRootGraphFetchExecutionNode inMemoryRootGraphFetchExecutionNode)
+
+    private StreamingObjectResult<?> executeInternalizeExecutionNode(MongoDBDocumentInternalizeExecutionNode node, MongoDBResult mongoDBResult, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
-        throw new RuntimeException("Not implemented!");
+        try
+        {
+            String specificsClassName = JavaHelper.getExecutionClassFullName((JavaPlatformImplementation) node.implementation);
+            //We don't need specifics class for reader - as we know the object.
+            Class<?> specificsClass = ExecutionNodeJavaPlatformHelper.getClassToExecute(node, specificsClassName, executionState, profiles);
+            IMongoDocumentDeserializeExecutionNodeSpecifics specifics = (IMongoDocumentDeserializeExecutionNodeSpecifics) specificsClass.getConstructor().newInstance();
+
+            // checked made true and enableConstraints made false as these are incorporated in ExternalFormatRuntime centrally
+            StoreStreamReadingObjectsIterator<?> storeObjectsIterator = StoreStreamReadingObjectsIterator.newObjectsIterator(specifics.streamReader(mongoDBResult), false, true);
+
+            Stream<?> objectStream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(storeObjectsIterator, Spliterator.ORDERED), false);
+            return new StreamingObjectResult<>(objectStream, mongoDBResult.getResultBuilder(), mongoDBResult);
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
-    @Override
-    public Result visit(InMemoryCrossStoreGraphFetchExecutionNode inMemoryRootGraphFetchExecutionNode)
+    private Result applyConstraints(StreamingObjectResult<?> streamingObjectResult, boolean checked, boolean enableConstraints)
     {
-        throw new RuntimeException("Not implemented!");
+        Stream<IChecked<?>> checkedStream = (Stream<IChecked<?>>) streamingObjectResult.getObjectStream();
+        Stream<IChecked<?>> withConstraints = enableConstraints
+                ? checkedStream.map(this::applyConstraints)
+                : checkedStream;
+        if (checked)
+        {
+            return new StreamingObjectResult<>(withConstraints, streamingObjectResult.getResultBuilder(), streamingObjectResult);
+        }
+        else
+        {
+            Stream<?> objectStream = ExternalFormatRuntime.unwrapCheckedStream(withConstraints);
+            return new StreamingObjectResult<>(objectStream, streamingObjectResult.getResultBuilder(), streamingObjectResult);
+        }
     }
 
-    @Override
-    public Result visit(InMemoryPropertyGraphFetchExecutionNode inMemoryPropertyGraphFetchExecutionNode)
+    private IChecked<?> applyConstraints(IChecked<?> checked)
     {
-        throw new RuntimeException("Not implemented!");
+        Object value = checked.getValue();
+        List<IDefect> constraintFailures = Collections.emptyList();
+        if (value instanceof Constrained)
+        {
+            constraintFailures = ((Constrained) value).allConstraints();
+        }
+        if (constraintFailures.isEmpty())
+        {
+            return checked;
+        }
+        else
+        {
+            List<IDefect> allDefects = new ArrayList(checked.getDefects());
+            allDefects.addAll(constraintFailures);
+            return allDefects.stream().anyMatch(d -> d.getEnforcementLevel() == EnforcementLevel.Critical)
+                    ? BasicChecked.newChecked(null, checked.getSource(), allDefects)
+                    : BasicChecked.newChecked(checked.getValue(), checked.getSource(), allDefects);
+        }
     }
 
-    @Deprecated
-    @Override
-    public Result visit(GraphFetchExecutionNode graphFetchExecutionNode)
-    {
-        throw new RuntimeException("Not implemented!");
-    }
 
-    @Override
-    public Result visit(StoreMappingGlobalGraphFetchExecutionNode storeMappingGlobalGraphFetchExecutionNode)
-    {
-        throw new RuntimeException("Not implemented!");
-    }
-
-    @Override
-    public Result visit(ErrorExecutionNode errorExecutionNode)
-    {
-        throw new RuntimeException("Not implemented!");
-    }
-
-    @Override
-    public Result visit(AggregationAwareExecutionNode aggregationAwareExecutionNode)
-    {
-        throw new RuntimeException("Not implemented!");
-    }
-
-    @Override
-    public Result visit(MultiResultSequenceExecutionNode multiResultSequenceExecutionNode)
-    {
-        throw new RuntimeException("Not implemented!");
-    }
-
-    @Override
-    public Result visit(SequenceExecutionNode sequenceExecutionNode)
-    {
-        throw new RuntimeException("Not implemented!");
-    }
-
-    @Override
-    public Result visit(FunctionParametersValidationNode functionParametersValidationNode)
-    {
-        throw new RuntimeException("Not implemented!");
-    }
-
-    @Override
-    public Result visit(AllocationExecutionNode allocationExecutionNode)
-    {
-        throw new RuntimeException("Not implemented!");
-    }
-
-    @Override
-    public Result visit(PureExpressionPlatformExecutionNode pureExpressionPlatformExecutionNode)
-    {
-        throw new RuntimeException("Not implemented!");
-    }
-
-    @Override
-    public Result visit(ConstantExecutionNode constantExecutionNode)
-    {
-        throw new RuntimeException("Not implemented!");
-    }
-
-    @Override
-    public Result visit(LocalGraphFetchExecutionNode localGraphFetchExecutionNode)
-    {
-        throw new RuntimeException("Not implemented!");
-    }
-
-    @Override
-    public Result visit(FreeMarkerConditionalExecutionNode localGraphFetchExecutionNode)
-    {
-        throw new RuntimeException("Not implemented!");
-    }
 }

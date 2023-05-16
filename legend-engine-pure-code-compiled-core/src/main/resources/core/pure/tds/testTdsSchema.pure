@@ -28,6 +28,15 @@ function  <<test.Test>> meta::pure::tds::schema::tests::resolveSchemaTest() : Bo
                col(p|$p.firstName,'firstName')
             )
    });   
+
+   assertSchemaRoundTripEquality({|
+    let const = 1;
+      Person.all()
+         ->project([
+               col(p|$const, 'const'),
+               col(p|$p.firstName,'firstName')
+            ]);
+   });  
    
    assertSchemaRoundTripEquality({|
       Person.all()

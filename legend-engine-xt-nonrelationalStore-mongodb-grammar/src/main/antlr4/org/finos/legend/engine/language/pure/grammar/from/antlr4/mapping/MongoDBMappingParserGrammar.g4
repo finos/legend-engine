@@ -21,7 +21,7 @@ options { tokenVocab = MongoDBMappingLexerGrammar; }
 
 unquotedIdentifier:                         VALID_STRING
                                             | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE
-                                            | BYTE_STREAM_FUNCTION  // From M3Parser
+                                            | TO_BYTES_FUNCTION  // From M3Parser
                                             | FILTER_CMD | DISTINCT_CMD
                                             | MAIN_COLLECTION_CMD | PRIMARY_KEY_CMD
                                             | BINDING

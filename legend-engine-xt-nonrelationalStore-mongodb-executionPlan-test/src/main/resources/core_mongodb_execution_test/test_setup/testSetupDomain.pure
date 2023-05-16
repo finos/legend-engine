@@ -1,0 +1,69 @@
+import meta::external::store::mongodb::executionTest::domain::*;
+
+Class meta::external::store::mongodb::executionTest::domain::Person
+{
+  firstName:         String[0..1];
+  lastName:          String[1];
+  age:               Integer[0..1];
+  phoneNumber:       String[1];
+  otherPhoneNumbers: String[0..*];
+  email:             String[1];
+  address:           Address[0..1];
+}
+
+Class meta::external::store::mongodb::executionTest::domain::Firm
+{
+  legalName :      String[0..1];
+  dateFounded:     String[1];
+  industrySectors: String[0..*];
+  address:         Address[1];
+}
+
+
+Class meta::external::store::mongodb::executionTest::domain::Address
+{
+  street:     String[1];
+  city:       String[0..1];
+  postalCode: String[1];
+  country:    Country[0..1];
+}
+
+Class meta::external::store::mongodb::executionTest::domain::Country
+{
+  continent:   String[0..1];
+  countryCode: String[1];
+}
+
+Class meta::external::store::mongodb::executionTest::domain::Car
+{
+  model:        String[1];
+}
+
+Class meta::external::store::mongodb::executionTest::domain::Manufacturer
+{
+  name:    String[0..1];
+}
+
+Association meta::external::store::mongodb::executionTest::domain::Person_Car
+{
+  person:  meta::external::store::mongodb::executionTest::domain::Person[1];
+  car:     meta::external::store::mongodb::executionTest::domain::Car[1..*];
+}
+
+Association meta::external::store::mongodb::executionTest::domain::Car_Manufacturer
+{
+  manufacturer:  meta::external::store::mongodb::executionTest::domain::Manufacturer[1];
+  car:           meta::external::store::mongodb::executionTest::domain::Car[1];
+}
+
+Association meta::external::store::mongodb::executionTest::domain::Country_Manufacturer
+{
+  manufacturer:  meta::external::store::mongodb::executionTest::domain::Manufacturer[0..1];
+  country:       meta::external::store::mongodb::executionTest::domain::Country[1];
+}
+
+Association meta::external::store::mongodb::executionTest::domain::Person_Firm
+{
+  person:  meta::external::store::mongodb::executionTest::domain::Person[1];
+  firm:       meta::external::store::mongodb::executionTest::domain::Firm[0..1];
+}

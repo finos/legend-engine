@@ -63,7 +63,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applica
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedQualifiedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.UnknownAppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CByteStream;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CByteArray;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDecimal;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFloat;
@@ -97,6 +97,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.cla
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -392,7 +393,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
                 + "(" + LazyIterate.collect(function.parameters, p -> p.accept(Builder.newInstance(this).withVariableInFunctionSignature().build())).makeString(", ") + ")"
                 + ": " + function.returnType + "[" + HelperDomainGrammarComposer.renderMultiplicity(function.returnMultiplicity) + "]\n" +
                 "{\n" +
-                LazyIterate.collect(function.body, b -> "   " + b.accept(this)).makeString(";\n") + (function.body.size() > 1 ? ";" : "") +
+                LazyIterate.collect(function.body, b -> "  " + b.accept(Builder.newInstance(this).withIndentation(getTabSize(1)).build())).makeString(";\n") + (function.body.size() > 1 ? ";" : "") +
                 "\n}";
     }
 
@@ -406,10 +407,11 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         builder.append("Mapping").append(" ").append(PureGrammarComposerUtility.convertPath(mapping.getPath()));
         builder.append("\n(\n");
         boolean isMappingContentEmpty = true;
+        PureGrammarComposerContext context = this.toContext();
         if (!mapping.includedMappings.isEmpty())
         {
             isMappingContentEmpty = false;
-            builder.append(LazyIterate.collect(mapping.includedMappings, mappingInclude -> getTabString() + HelperMappingGrammarComposer.renderMappingInclude(mappingInclude)).makeString("\n"));
+            builder.append(LazyIterate.collect(mapping.includedMappings, mappingInclude -> getTabString() + HelperMappingGrammarComposer.renderMappingInclude(mappingInclude, context)).makeString("\n"));
             builder.append("\n");
         }
         if (mapping.classMappings != null && !mapping.classMappings.isEmpty())
@@ -426,7 +428,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         {
             builder.append(isMappingContentEmpty ? "" : "\n");
             isMappingContentEmpty = false;
-            builder.append(LazyIterate.collect(mapping.associationMappings, associationMapping -> getTabString() + HelperMappingGrammarComposer.renderAssociationMapping(associationMapping, this.toContext())).makeString("\n"));
+            builder.append(LazyIterate.collect(mapping.associationMappings, associationMapping -> getTabString() + HelperMappingGrammarComposer.renderAssociationMapping(associationMapping, context)).makeString("\n"));
             builder.append("\n");
         }
         if (!mapping.enumerationMappings.isEmpty())
@@ -881,9 +883,9 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     }
 
     @Override
-    public String visit(CByteStream cByteStream)
+    public String visit(CByteArray cByteArray)
     {
-        return "byteStream(" + HelperValueSpecificationGrammarComposer.renderString(cByteStream.value, this) + ")";
+        return "toBytes(" + HelperValueSpecificationGrammarComposer.renderString(new String(cByteArray.value, StandardCharsets.UTF_8), this) + ")";
     }
 
     @Override

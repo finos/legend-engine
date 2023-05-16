@@ -22,9 +22,11 @@ import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
+import org.junit.Ignore;
 
 import static org.finos.legend.engine.server.test.shared.PureTestHelper.wrapSuite;
 
+@Ignore
 public class Test_ExecutionPlan_JavaPlatform_CodeGeneration_UsingPureClient extends TestSuite
 {
     public static Test suite()

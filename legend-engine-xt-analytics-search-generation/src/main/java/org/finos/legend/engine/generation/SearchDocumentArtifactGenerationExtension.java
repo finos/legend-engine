@@ -28,6 +28,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.pure.generated.Root_meta_analytics_search_metamodel_BaseRootDocument;
 import org.finos.legend.pure.generated.Root_meta_analytics_search_metamodel_ProjectCoordinates;
 import org.finos.legend.pure.generated.Root_meta_analytics_search_metamodel_ProjectCoordinates_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.finos.legend.pure.generated.core_analytics_search_trans;
 import org.finos.legend.pure.generated.core_pure_protocol_protocol;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
@@ -49,7 +50,9 @@ public class SearchDocumentArtifactGenerationExtension implements ArtifactGenera
     @Override
     public boolean canGenerate(PackageableElement element)
     {
-        return true;
+        return !((element instanceof Root_meta_legend_service_metamodel_Service) && (element._stereotypes().anySatisfy(stereotype ->
+                stereotype._profile()._name().equals("devStatus") && stereotype._profile()._p_stereotypes().anySatisfy(s -> s._value().equals("inProgress"))))
+        );
     }
 
     @Override

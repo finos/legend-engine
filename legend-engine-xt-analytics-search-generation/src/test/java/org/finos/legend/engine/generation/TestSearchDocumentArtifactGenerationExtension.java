@@ -29,6 +29,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.junit.Assert;
 import org.junit.Test;
@@ -52,6 +53,18 @@ public class TestSearchDocumentArtifactGenerationExtension
         {
             throw new RuntimeException(e);
         }
+    }
+
+    @Test
+    public void testArtifactGenerationWithStereotypeInProgress()
+    {
+        String pureModelString = getResourceAsString("models/Model.pure");
+        PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModelString);
+        PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, null);
+        SearchDocumentArtifactGenerationExtension extension = new SearchDocumentArtifactGenerationExtension();
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = pureModel.getPackageableElement("test::Service");
+        Root_meta_legend_service_metamodel_Service metamodelClass = (Root_meta_legend_service_metamodel_Service) packageableElement;
+        Assert.assertFalse(extension.canGenerate(metamodelClass));
     }
 
     @Test

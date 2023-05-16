@@ -34,218 +34,218 @@ public class TestSQLRoundTrip
     @Test
     public void testSelectStar()
     {
-        check("SELECT * FROM table");
+        check("SELECT * FROM myTable");
     }
 
     @Test
-    public void testSelectStarFromNoParamTableFunc()
+    public void testSelectStarFromNoParammyTableFunc()
     {
-        check("SELECT * FROM table()");
+        check("SELECT * FROM myTable()");
     }
 
     @Test
-    public void testSelectStarFromTableFuncWithParams()
+    public void testSelectStarFrommyTableFuncWithParams()
     {
-        check("SELECT * FROM table(1, a => 1, b => [1, 2, 3])");
+        check("SELECT * FROM myTable(1, a => 1, b => [1, 2, 3])");
     }
 
     @Test
     public void testSelectColumns()
     {
-        check("SELECT col1, col2 FROM table");
+        check("SELECT col1, col2 FROM myTable");
     }
 
     @Test
     public void testSelectWithAliases()
     {
-        check("SELECT col1 AS COL FROM table AS table1");
+        check("SELECT col1 AS COL FROM myTable AS myTable1");
     }
 
     @Test
     public void testSelectQualified()
     {
-        check("SELECT col1, table.col2 FROM table");
+        check("SELECT col1, myTable.col2 FROM myTable");
     }
 
     @Test
     public void testSelectQualifiedWithAlias()
     {
-        check("SELECT col1, table1.col2 FROM table AS table1");
+        check("SELECT col1, myTable1.col2 FROM myTable AS myTable1");
     }
 
     @Test
     public void testDistinct()
     {
-        check("SELECT DISTINCT * FROM table");
+        check("SELECT DISTINCT * FROM myTable");
     }
 
     @Test
     public void testLimit()
     {
-        check("SELECT * FROM table LIMIT 1");
+        check("SELECT * FROM myTable LIMIT 1");
     }
 
     @Test
     public void testOrderBy()
     {
-        check("SELECT * FROM table ORDER BY col1 DESC, col2 ASC");
+        check("SELECT * FROM myTable ORDER BY col1 DESC, col2 ASC");
     }
 
     @Test
     public void testOrderByDefaultASC()
     {
-        check("SELECT * FROM table ORDER BY col1 DESC, col2", "SELECT * FROM table ORDER BY col1 DESC, col2 ASC");
+        check("SELECT * FROM myTable ORDER BY col1 DESC, col2", "SELECT * FROM myTable ORDER BY col1 DESC, col2 ASC");
     }
 
     @Test
     public void testOrderByAlias()
     {
-        check("SELECT * FROM table AS table1 ORDER BY table1.col1 DESC, col2 ASC");
+        check("SELECT * FROM myTable AS myTable1 ORDER BY myTable1.col1 DESC, col2 ASC");
     }
 
     @Test
     public void testOrderByQualified()
     {
-        check("SELECT * FROM table ORDER BY table.col1 DESC, col2 ASC");
+        check("SELECT * FROM myTable ORDER BY myTable.col1 DESC, col2 ASC");
     }
 
     @Test
     public void testOrderByQualifiedWithAlias()
     {
-        check("SELECT * FROM table AS table1 ORDER BY table1.col1 DESC, col2 ASC");
+        check("SELECT * FROM myTable AS myTable1 ORDER BY myTable1.col1 DESC, col2 ASC");
     }
 
     @Test
     public void testWhere()
     {
-        check("SELECT * FROM table WHERE col1 = 1");
+        check("SELECT * FROM myTable WHERE col1 = 1");
     }
 
     @Test
     public void testCompositeWhere()
     {
-        check("SELECT * FROM table WHERE col1 = 1 AND col2 = 1");
+        check("SELECT * FROM myTable WHERE col1 = 1 AND col2 = 1");
     }
 
     @Test
     public void testWhereQualified()
     {
-        check("SELECT * FROM table WHERE table.col1 = 1");
+        check("SELECT * FROM myTable WHERE myTable.col1 = 1");
     }
 
     @Test
     public void testCompositeWhereQualifiedWithAlias()
     {
-        check("SELECT * FROM table AS table1 WHERE col = 1 AND table1.col = 1");
+        check("SELECT * FROM myTable AS myTable1 WHERE col = 1 AND myTable1.col = 1");
     }
 
     @Test
     public void testCompositeWhereOperators()
     {
-        check("SELECT * FROM table WHERE col = 1 AND col > 1 AND col < 1 " +
+        check("SELECT * FROM myTable WHERE col = 1 AND col > 1 AND col < 1 " +
                 "AND col >= 1 AND col <= 1 AND col IN (1, 2, 3) AND col IS NULL AND col IS NOT NULL");
     }
 
     @Test
     public void testGroupBy()
     {
-        check("SELECT COUNT(col) FROM table GROUP BY col1");
+        check("SELECT COUNT(col) FROM myTable GROUP BY col1");
     }
 
     @Test
     public void testGroupByQualified()
     {
-        check("SELECT COUNT(col) FROM table GROUP BY table.col1");
+        check("SELECT COUNT(col) FROM myTable GROUP BY myTable.col1");
     }
 
     @Test
     public void testGroupByQualifiedWithAlias()
     {
-        check("SELECT COUNT(col) FROM table AS table1 GROUP BY table1.col1");
+        check("SELECT COUNT(col) FROM myTable AS myTable1 GROUP BY myTable1.col1");
     }
 
     @Test
     public void testHaving()
     {
-        check("SELECT COUNT(col) FROM table AS table1 GROUP BY col1 HAVING COUNT(col) > 1");
+        check("SELECT COUNT(col) FROM myTable AS myTable1 GROUP BY col1 HAVING COUNT(col) > 1");
     }
 
     @Test
     public void testJoinUsing()
     {
-        check("SELECT * FROM table LEFT OUTER JOIN table2 USING (col, col2)");
+        check("SELECT * FROM myTable LEFT OUTER JOIN myTable2 USING (col, col2)");
     }
 
     @Test
     public void testJoinUsingQualified()
     {
-        check("SELECT table.col, tableb.col FROM table LEFT OUTER JOIN tableb USING (col, col2)");
+        check("SELECT myTable.col, myTableb.col FROM myTable LEFT OUTER JOIN myTableb USING (col, col2)");
     }
 
     @Test
     public void testJoinUsingQualifiedAlias()
     {
-        check("SELECT table1.col, tableb.col FROM table AS table1 LEFT OUTER JOIN tableb USING (col, col2)");
+        check("SELECT myTable1.col, myTableb.col FROM myTable AS myTable1 LEFT OUTER JOIN myTableb USING (col, col2)");
     }
 
     @Test
     public void testJoinOn()
     {
-        check("SELECT * FROM table LEFT OUTER JOIN tableb ON (table.col = tableb.col)");
+        check("SELECT * FROM myTable LEFT OUTER JOIN myTableb ON (myTable.col = myTableb.col)");
     }
 
     @Test
     public void testJoinOnQualified()
     {
-        check("SELECT table.col, tableb.col FROM table LEFT OUTER JOIN tableb ON (table.col = tableb.col)");
+        check("SELECT myTable.col, myTableb.col FROM myTable LEFT OUTER JOIN myTableb ON (myTable.col = myTableb.col)");
     }
 
     @Test
     public void testJoinOnQualifiedAlias()
     {
-        check("SELECT table1.col, table2.col FROM table AS table1 LEFT OUTER JOIN tableb AS table2 ON (table1.col = table2.col)");
+        check("SELECT myTable1.col, myTable2.col FROM myTable AS myTable1 LEFT OUTER JOIN myTableb AS myTable2 ON (myTable1.col = myTable2.col)");
     }
 
     @Test
     public void testUnionAll()
     {
-        check("SELECT * FROM table UNION ALL SELECT * FROM table");
+        check("SELECT * FROM myTable UNION ALL SELECT * FROM myTable");
     }
 
     @Test
     public void testUnion()
     {
-        check("SELECT * FROM table UNION SELECT * FROM table");
+        check("SELECT * FROM myTable UNION SELECT * FROM myTable");
     }
 
     @Test
     public void testArithmetic()
     {
-        check("SELECT (1 + 1) AS plus, (1 - 1) AS minus, (1 / 1) AS divide, (1 * 1) AS multiple FROM table");
+        check("SELECT (1 + 1) AS plus, (1 - 1) AS minus, (1 / 1) AS divide, (1 * 1) AS multiple FROM myTable");
     }
 
     @Test
     public void testCurrentTIme()
     {
-        check("SELECT CURRENT_TIME, CURRENT_TIMESTAMP, CURRENT_DATE FROM table");
+        check("SELECT CURRENT_TIME, CURRENT_TIMESTAMP, CURRENT_DATE FROM myTable");
     }
 
     @Test
     public void testWindowFunc()
     {
-        check("SELECT *, ROW_NUMBER() OVER (PARTITION BY group ORDER BY price ASC) FROM table");
+        check("SELECT *, ROW_NUMBER() OVER (PARTITION BY abc ORDER BY price ASC) FROM myTable");
     }
 
     @Test
     public void testExtract()
     {
-        check("SELECT EXTRACT(DOW FROM Date) FROM table");
+        check("SELECT EXTRACT(DOW FROM Date) FROM myTable");
     }
 
     @Test
     public void testInterval()
     {
-        check("SELECT INTERVAL '1 YEAR 2 MONTHS 3 WEEKS 4 DAYS 5 HOURS 6 MINUTES 7 SECONDS' FROM table");
+        check("SELECT INTERVAL '1 YEAR 2 MONTHS 3 WEEKS 4 DAYS 5 HOURS 6 MINUTES 7 SECONDS' FROM myTable");
     }
 
     private void fail(String sql, int start, int end, String message)
@@ -267,6 +267,7 @@ public class TestSQLRoundTrip
     private void check(String sql)
     {
         check(sql, sql);
+        check(sql.toLowerCase(), sql);
     }
 
     private void check(String sql, String expected)

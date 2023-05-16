@@ -24,7 +24,7 @@ public class TestPrimitives extends TestGrammarRoundtrip.TestGrammarRoundtripTes
     {
         test("function a::a(): String[1]\n" +
                 "{\n" +
-                "   'ok'\n" +
+                "  'ok'\n" +
                 "}\n"
         );
     }
@@ -34,7 +34,7 @@ public class TestPrimitives extends TestGrammarRoundtrip.TestGrammarRoundtripTes
     {
         test("function a::a(): String[*]\n" +
                 "{\n" +
-                "   ['ok', 'bla']\n" +
+                "  ['ok', 'bla']\n" +
                 "}\n"
         );
     }
@@ -44,7 +44,7 @@ public class TestPrimitives extends TestGrammarRoundtrip.TestGrammarRoundtripTes
     {
         test("function a::a(): String[1]\n" +
                 "{\n" +
-                "   1\n" +
+                "  1\n" +
                 "}\n"
         );
     }
@@ -54,7 +54,7 @@ public class TestPrimitives extends TestGrammarRoundtrip.TestGrammarRoundtripTes
     {
         test("function a::a(): String[*]\n" +
                 "{\n" +
-                "   [1, 2]\n" +
+                "  [1, 2]\n" +
                 "}\n"
         );
     }
@@ -64,7 +64,7 @@ public class TestPrimitives extends TestGrammarRoundtrip.TestGrammarRoundtripTes
     {
         test("function a::a(): String[*]\n" +
                 "{\n" +
-                "   true\n" +
+                "  true\n" +
                 "}\n"
         );
     }
@@ -74,7 +74,7 @@ public class TestPrimitives extends TestGrammarRoundtrip.TestGrammarRoundtripTes
     {
         test("function a::a(): String[*]\n" +
                 "{\n" +
-                "   [true, false, true]\n" +
+                "  [true, false, true]\n" +
                 "}\n"
         );
     }
@@ -84,9 +84,8 @@ public class TestPrimitives extends TestGrammarRoundtrip.TestGrammarRoundtripTes
     {
         test("function a::a(): String[*]\n" +
                 "{\n" +
-                "   [1, 'a', true]\n" +
+                "  [1, 'a', true]\n" +
                 "}\n"
         );
     }
-
 }

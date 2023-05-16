@@ -25,6 +25,44 @@ import meta::pure::extension::*;
 function meta::external::store::elasticsearch::v7::protocol::vX_X_X::elasticsearchV7StoreExtension(type: String[1]): SerializerExtension[1]
 {
   ^SerializerExtension_vX_X_X(
+
+      transfers_valueSpecification_transformAny = {inScope:String[*], open:Map<String,List<Any>>[1], m:Multiplicity[1], fe:FunctionExpression[0..1],useAppliedFunction:Boolean[1], extensions:meta::pure::extension::Extension[*] |
+          [
+            s:meta::external::store::elasticsearch::v7::metamodel::store::Elasticsearch7Store[1] |
+                ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PackageableElementPtr
+                  (
+                     _type = 'packageableElementPtr',
+                     fullPath = $s->elementToPath()
+                  )
+          ]
+      },
+
+      transfers_store_transformStore2 = {extensions:meta::pure::extension::Extension[*] |
+           [
+              s:meta::external::store::elasticsearch::v7::metamodel::store::Elasticsearch7Store[1] | 
+                ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::store::Elasticsearch7Store(
+                  name    = $s.name->toOne(),
+                  package = $s.package->map(p | $p->elementToPath()),
+                  indices = $s.indices->map(i | 
+                    ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::store::Elasticsearch7StoreIndex(
+                      indexName = $i.indexName,
+                      properties = $i.properties->map(p | 
+                        ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::store::Elasticsearch7StoreIndexProperty(
+                          propertyName = $p.propertyName,
+                          property = $p.property
+                        )
+                      )
+                    )
+                  )  
+                )
+           ]
+      },
+
+      invocation_execution_transformContext = 
+      [
+        e: meta::external::store::elasticsearch::v7::metamodel::executionPlan::context::Elasticsearch7ExecutionContext[1] | ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::context::Elasticsearch7ExecutionContext()
+      ],
+
       transfers_store_transformConnection2 = extensions: Extension[*] | [
           conn: Elasticsearch7StoreConnection[1] | $conn->meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::transformConnection($extensions)
       ],
@@ -131,4 +169,27 @@ Class meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::Elast
 Class meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::Elasticsearch7StoreURLSourceSpecification
 {
    url: String[1];
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::context::Elasticsearch7ExecutionContext extends meta::protocols::pure::vX_X_X::metamodel::ExecutionContext
+{
+  _type: String[1] = 'elasticsearch7ExecutionContext';
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::vX_X_X::store::Elasticsearch7Store extends meta::protocols::pure::vX_X_X::metamodel::store::Store
+{
+  _type: String[1] = 'elasticsearch7Store';
+  indices: meta::external::store::elasticsearch::v7::protocol::vX_X_X::store::Elasticsearch7StoreIndex[*];
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::vX_X_X::store::Elasticsearch7StoreIndex
+{
+  indexName: String[1];
+  properties: meta::external::store::elasticsearch::v7::protocol::vX_X_X::store::Elasticsearch7StoreIndexProperty[*];
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::vX_X_X::store::Elasticsearch7StoreIndexProperty
+{
+  propertyName: String[1];
+  property: meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property[1];
 }

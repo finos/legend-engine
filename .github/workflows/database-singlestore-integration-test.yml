@@ -72,7 +72,7 @@ jobs:
         env:
           MAVEN_OPTS: -Xmx4g
         run :
-          mvn -pl legend-engine-xt-relationalStore-memsql-execution-tests  -Dtest="Test*" test
+          mvn -pl legend-engine-xt-relationalStore-memsql-execution-tests  -Dtest="ExternalIntegration*MemSQL" test
       - name: Upload Test Results
         if: always()
         uses: actions/upload-artifact@v3

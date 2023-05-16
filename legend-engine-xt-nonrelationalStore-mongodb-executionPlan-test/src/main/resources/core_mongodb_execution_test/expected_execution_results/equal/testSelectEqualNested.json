@@ -1,0 +1,63 @@
+{
+  "values":   {
+    "firstName": "Jefferey",
+    "lastName": "Raye",
+    "firm":     {
+      "legalName": "Yodoo",
+      "industrySectors": [
+"Technology"
+      ],
+      "address":       {
+        "country":         {
+          "continent": "America",
+          "countryCode": "US"
+        },
+        "city": "Pueblo",
+        "street": "382 Towne Plaza",
+        "postalCode": "81010"
+      },
+      "dateFounded": "1994-03-10T15:24:54Z"
+    },
+    "phoneNumber": "+1 301 842 7614",
+    "address":     {
+      "country":       {
+        "continent": "America",
+        "countryCode": "US"
+      },
+      "city": "Hyattsville",
+      "street": "338 Evergreen Place",
+      "postalCode": "20784"
+    },
+    "car": [
+      {
+        "model": "Auris",
+        "manufacturer":         {
+          "country":           {
+            "continent": "Asia",
+            "countryCode": "JP"
+          },
+          "name": "Toyota"
+        }
+      },
+      {
+        "model": "Polo",
+        "manufacturer":         {
+          "country":           {
+            "continent": "Europe",
+            "countryCode": "DE"
+          },
+          "name": "Volkswagen"
+        }
+      }
+    ],
+    "otherPhoneNumbers": [
+"+44 774 643 2334",
+"+1 515 165 0534"
+    ],
+    "age": 45,
+    "email": "jraye1@ted.com"
+  },
+  "builder":   {
+    "_type": "json"
+  }
+}

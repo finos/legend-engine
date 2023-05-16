@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.10.1-SNAPSHOT</version>
+        <version>4.12.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -139,11 +139,6 @@
                         <artifactId>legend-engine-xt-serviceStore-javaPlatformBinding-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
-<!--                    <dependency>-->
-<!--                        <groupId>org.finos.legend.engine</groupId>-->
-<!--                        <artifactId>legend-engine-xt-nonrelationalStore-mongodb-javaPlatformBinding-pure</artifactId>-->
-<!--                        <version>${project.version}</version>-->
-<!--                    </dependency>-->
                 </dependencies>
             </plugin>
             <plugin>
@@ -253,11 +248,6 @@
                         <artifactId>legend-engine-xt-serviceStore-javaPlatformBinding-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
-<!--                    <dependency>-->
-<!--                        <groupId>org.finos.legend.engine</groupId>-->
-<!--                        <artifactId>legend-engine-xt-nonrelationalStore-mongodb-javaPlatformBinding-pure</artifactId>-->
-<!--                        <version>${project.version}</version>-->
-<!--                    </dependency>-->
                 </dependencies>
             </plugin>
         </plugins>
@@ -349,14 +339,6 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-serviceStore-javaPlatformBinding-pure</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.engine</groupId>-->
-<!--            <artifactId>legend-engine-xt-nonrelationalStore-mongodb-pure</artifactId>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.engine</groupId>-->
-<!--            <artifactId>legend-engine-xt-nonrelationalStore-mongodb-javaPlatformBinding-pure</artifactId>-->
-<!--        </dependency>-->
         <!-- ENGINE -->
 
         <dependency>
