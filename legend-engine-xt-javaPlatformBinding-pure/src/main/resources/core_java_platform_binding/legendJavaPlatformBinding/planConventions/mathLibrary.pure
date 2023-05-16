@@ -46,7 +46,6 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::math::
          fc1(times_Number_MANY__Number_1_,                             {ctx,collection | maybeReduce($ctx, $collection, j_long(1),       $library->j_methodReference('numberMultiply',  reduceFT(javaNumber())))}),
          fc1(times_Decimal_MANY__Decimal_1_,                           {ctx,collection | maybeReduce($ctx, $collection, bigDecimalOne(), $library->j_methodReference('decimalMultiply', reduceFT(javaBigDecimal())))}),
              
-         fc2(mod_Integer_1__Integer_1__Integer_1_,                     {ctx,num1,num2  | $num1->j_remainder($num2)}),
          fc2(divide_Number_1__Number_1__Float_1_,                      {ctx,num1,num2  | $library->j_invoke('divide', [$num1, $num2], javaDouble())}),
          fc3(divide_Decimal_1__Decimal_1__Integer_1__Decimal_1_,       {ctx,num1,num2,num3 | $num1->j_invoke('divide', [$num2, $num3->j_box()->j_invoke('intValue', []), javaRoundingMode()->j_field('HALF_UP')], javaBigDecimal())}),         
          fc2(rem_Number_1__Number_1__Number_1_,                        {ctx,num1,num2  | $library->j_invoke('rem', [$num1, $num2], javaNumber())}),
@@ -56,6 +55,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::math::
 
          fc1(round_Number_1__Integer_1_,                               {ctx,num        | $library->j_invoke('round', $num, javaLong())}),
          fc2(round_Decimal_1__Integer_1__Decimal_1_,                   {ctx,num,scale  | $library->j_invoke('round', [$num, $scale], javaBigDecimal())}),
+         fc2(round_Float_1__Integer_1__Float_1_,                       {ctx,num,scale  | $library->j_invoke('round', [$num, $scale], javaDouble())}),
          fc1(ceiling_Number_1__Integer_1_,                             {ctx,num        | $library->j_invoke('ceiling', $num, javaLong())}),
          fc1(floor_Number_1__Integer_1_,                               {ctx,num        | $library->j_invoke('floor', $num, javaLong())}),
                           
@@ -98,10 +98,22 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::math::
          fc1(min_Float_MANY__Float_$0_1$_,                             {ctx,nums       | $nums->j_streamOf()->js_reduce(javaDoubleBoxed()->j_methodReference('min'))}),
          fc (min_Float_$1_MANY$__Float_1_,                             fcAlias(          min_Float_MANY__Float_$0_1$_)),
 
-         fc1(cos_Number_1__Float_1_,                                   {ctx,num        | javaMath()->j_invoke('cos', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),
          fc1(sin_Number_1__Float_1_,                                   {ctx,num        | javaMath()->j_invoke('sin', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),
+         fc1(asin_Number_1__Float_1_,                                  {ctx,num        | javaMath()->j_invoke('asin', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),
+         fc1(cos_Number_1__Float_1_,                                   {ctx,num        | javaMath()->j_invoke('cos', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),
+         fc1(acos_Number_1__Float_1_,                                  {ctx,num        | javaMath()->j_invoke('acos', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),
+         fc1(tan_Number_1__Float_1_,                                   {ctx,num        | javaMath()->j_invoke('tan', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),  
+         fc1(atan_Number_1__Float_1_,                                  {ctx,num        | javaMath()->j_invoke('atan', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),
+         fc2(atan2_Number_1__Number_1__Float_1_,                       {ctx,num1,num2  | javaMath()->j_invoke('atan2', [$num1->j_box()->j_invoke('doubleValue', []), $num2->j_box()->j_invoke('doubleValue', [])], javaDouble())}),
+                             
          fc2(pow_Number_1__Number_1__Number_1_,                        {ctx,num1,num2  | javaStrictMath()->j_invoke('pow', [$num1->j_box()->j_invoke('doubleValue', []), $num2->j_box()->j_invoke('doubleValue', [])], javaDouble())}),
-         fc1(sqrt_Number_1__Float_1_,                                  {ctx,num        | javaMath()->j_invoke('sqrt', $num->j_box()->j_invoke('doubleValue', []), javaDouble())})
+         fc1(log_Number_1__Float_1_,                                   {ctx,num        | javaMath()->j_invoke('log', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),
+         fc1(exp_Number_1__Float_1_,                                   {ctx,num        | javaMath()->j_invoke('exp', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),
+         fc1(sqrt_Number_1__Float_1_,                                  {ctx,num        | $library->j_invoke('sqrt', $num, javaDouble())}),
+
+         fc2(mod_Integer_1__Integer_1__Integer_1_,                     {ctx,int1,int2  | javaMath()->j_invoke('floorMod', [$int1, $int2], javaLong())}),
+         
+         fc2(stdDev_Number_$1_MANY$__Boolean_1__Number_1_,             {ctx,collection,biasCorrection | $library->j_invoke('stdDev', [$collection, $biasCorrection], javaNumber())})
       ]);
 
    $conventions->registerLibrary($lib);

@@ -24,7 +24,7 @@ public class TestExtendableEmbedded extends TestGrammarRoundtrip.TestGrammarRoun
     {
         test("function f(): Any[*]\n" +
                 "{\n" +
-                "   let x = #{a{a}}#\n" +
+                "  let x = #{a{a}}#\n" +
                 "}\n");
     }
 
@@ -33,7 +33,7 @@ public class TestExtendableEmbedded extends TestGrammarRoundtrip.TestGrammarRoun
     {
         test("function f(): Any[*]\n" +
                 "{\n" +
-                "   let x = #Test{My random Parser Yo}#\n" +
+                "  let x = #Test{My random Parser Yo}#\n" +
                 "}\n");
     }
 
@@ -42,7 +42,7 @@ public class TestExtendableEmbedded extends TestGrammarRoundtrip.TestGrammarRoun
     {
         test("function f(): Any[*]\n" +
                 "{\n" +
-                "   let x = #Test{My random Parser #Test{ OK OK } Yo}#\n" +
+                "  let x = #Test{My random Parser #Test{ OK OK } Yo}#\n" +
                 "}\n");
     }
 }

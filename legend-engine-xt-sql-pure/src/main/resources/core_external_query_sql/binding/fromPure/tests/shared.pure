@@ -198,14 +198,16 @@ function meta::external::query::sql::transformation::queryToPure::tests::Service
     autoActivateUpdates = true,
     execution = ^PureSingleExecution
     (
-      func = | FlatInput.all()->project(
+      func = {| 
+        let const = 123;
+        FlatInput.all()->project(
         [
-          x | $x.idIn, x | $x.integerIn, x | $x.enumVal, x | $x.type
+          x | $x.idIn, x | $x.integerIn, x | $x.enumVal, x | $x.type, x | $const
         ],
         [
-          'ID', 'Integer', 'The Enum Value', 'The Type'
+          'ID', 'Integer', 'The Enum Value', 'The Type', 'Const'
         ]
-      ),
+      );},
       mapping = dummyMapping,
       runtime = dummyRuntime()
     ),

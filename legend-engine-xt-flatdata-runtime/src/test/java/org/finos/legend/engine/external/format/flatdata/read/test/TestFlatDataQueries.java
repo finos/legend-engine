@@ -53,7 +53,7 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
         try
         {
             runTest(generated,
-                    "data:ByteStream[1]|test::firm::model::GeographicPosition->internalize(test::gen::TestBinding, $data)->graphFetch(" + positionTree + ")->serialize(" + positionTree + ")",
+                    "data:Byte[*]|test::firm::model::GeographicPosition->internalize(test::gen::TestBinding, $data)->graphFetch(" + positionTree + ")->serialize(" + positionTree + ")",
                     Maps.mutable.with("data", resource("queries/positionWithExactHeadings.csv")));
             Assert.fail("Expected exception to be raised. Not found any");
         }
@@ -76,7 +76,7 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
         try
         {
             runTest(generated,
-                    "data:ByteStream[1]|test::firm::model::GeographicPosition->internalize(test::gen::TestBinding, $data)->graphFetchUnexpanded(" + positionTree + ")->serialize(" + positionTree + ")",
+                    "data:Byte[*]|test::firm::model::GeographicPosition->internalize(test::gen::TestBinding, $data)->graphFetchUnexpanded(" + positionTree + ")->serialize(" + positionTree + ")",
                     Maps.mutable.with("data", resource("queries/positionWithExactHeadings.csv")));
             Assert.fail("Expected exception to be raised. Not found any");
         }
@@ -97,7 +97,7 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
         try
         {
             runTest(generated,
-                    "data:ByteStream[1]|test::firm::model::Person->internalize(test::gen::TestBinding, $data)->graphFetchChecked(" + personTree() + ")->externalize(test::gen::TestBinding, checked(" + personTree() + ", test::gen::TestBinding))",
+                    "data:Byte[*]|test::firm::model::Person->internalize(test::gen::TestBinding, $data)->graphFetchChecked(" + personTree() + ")->externalize(test::gen::TestBinding, checked(" + personTree() + ", test::gen::TestBinding))",
                     Maps.mutable.with("data", resource("queries/peopleWithExactHeadings.csv")));
             Assert.fail("Exception expected");
         }

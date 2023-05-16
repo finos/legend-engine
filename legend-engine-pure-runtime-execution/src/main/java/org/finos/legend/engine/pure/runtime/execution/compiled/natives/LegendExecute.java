@@ -96,7 +96,7 @@ public class LegendExecute extends AbstractNative
         {
             return pureValue;
         }
-        else if (pureValue instanceof InstanceValue && "ByteStream".equals(((InstanceValue) pureValue)._genericType()._rawType()._name()))
+        else if (pureValue instanceof InstanceValue && "Byte".equals(((InstanceValue) pureValue)._genericType()._rawType()._name()))
         {
             return new ByteArrayInputStream(((InstanceValue) pureValue)._values().getOnly().toString().getBytes(StandardCharsets.UTF_8));
         }
