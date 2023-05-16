@@ -16,7 +16,7 @@
         "street": "59 Leroy Parkway",
         "postalCode": "CB4"
       },
-      "dateFounded": "1993-10-07T04:40:27Z"
+      "dateFounded": "1993-10-07T04:40:27.000"
     },
     "phoneNumber": "+1 916 456 9969",
     "address":     {
@@ -44,6 +44,7 @@
 "+1 405 332 4537",
 "+1 814 987 3881"
     ],
+    "birthDate": "1985-04-04T17:18:23.000",
     "age": 68,
     "email": "fstiant3@europa.eu"
   },

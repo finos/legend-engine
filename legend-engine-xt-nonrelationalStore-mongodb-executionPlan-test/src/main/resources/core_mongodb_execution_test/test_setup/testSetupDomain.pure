@@ -5,6 +5,7 @@ Class meta::external::store::mongodb::executionTest::domain::Person
   firstName:         String[0..1];
   lastName:          String[1];
   age:               Integer[0..1];
+  birthDate:         DateTime[1];
   phoneNumber:       String[1];
   otherPhoneNumbers: String[0..*];
   email:             String[1];
@@ -14,7 +15,7 @@ Class meta::external::store::mongodb::executionTest::domain::Person
 Class meta::external::store::mongodb::executionTest::domain::Firm
 {
   legalName :      String[0..1];
-  dateFounded:     String[1];
+  dateFounded:     DateTime[1];
   industrySectors: String[0..*];
   address:         Address[1];
 }
