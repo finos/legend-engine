@@ -17,12 +17,18 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.driv
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.SnowflakePublicAuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.SnowflakeDataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeAccountType;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeDataSourceSpecificationKey;
 import org.finos.legend.engine.shared.core.operational.Assert;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 public class SnowflakeManager extends DatabaseManager
@@ -97,5 +103,51 @@ public class SnowflakeManager extends DatabaseManager
     public RelationalDatabaseCommands relationalDatabaseSupport()
     {
         return new SnowflakeCommands();
+    }
+
+    @Override
+    public DataSourceSpecification getLocalDataSourceSpecification()
+    {
+        return this.loadLocalDataSourceSpecification();
+    }
+
+    private static String SNOWFLAKE_LOCAL_DS_SPECFILEPATH = "snowflakeLocalDSSpecFilePath";
+
+    private SnowflakeDataSourceSpecification loadLocalDataSourceSpecification()
+    {
+        String snowflakeLocalDataSourceSpecFilePathAsString = System.getProperty(SNOWFLAKE_LOCAL_DS_SPECFILEPATH);
+        if (snowflakeLocalDataSourceSpecFilePathAsString == null || snowflakeLocalDataSourceSpecFilePathAsString.trim().isEmpty())
+        {
+            String message = String.format("Cannot create a local Snowflake datasource specification. System property %s has not been set.", SNOWFLAKE_LOCAL_DS_SPECFILEPATH);
+            throw new UnsupportedOperationException(message);
+        }
+        snowflakeLocalDataSourceSpecFilePathAsString = snowflakeLocalDataSourceSpecFilePathAsString.trim();
+        File snowflakeLocalDataSourceSpecFile = Paths.get(snowflakeLocalDataSourceSpecFilePathAsString).toFile();
+        try
+        {
+            Properties snowflakeLocalDataSourceSpecFileProperties = new Properties();
+            snowflakeLocalDataSourceSpecFileProperties.load(new FileInputStream(snowflakeLocalDataSourceSpecFile));
+
+            String accountName = snowflakeLocalDataSourceSpecFileProperties.getProperty("accountName");
+            String region = snowflakeLocalDataSourceSpecFileProperties.getProperty("region");
+            String warehouse = snowflakeLocalDataSourceSpecFileProperties.getProperty("warehouse");
+            String databaseName = snowflakeLocalDataSourceSpecFileProperties.getProperty("databaseName");
+            String cloudType = snowflakeLocalDataSourceSpecFileProperties.getProperty("cloudType");
+            String role = snowflakeLocalDataSourceSpecFileProperties.getProperty("role");
+            SnowflakeDataSourceSpecificationKey key = new SnowflakeDataSourceSpecificationKey(accountName, region, warehouse, databaseName, cloudType, false, role);
+
+            String privateKeyVaultReference = snowflakeLocalDataSourceSpecFileProperties.getProperty("privateKeyVaultReference");
+            String passphraseVaultReference = snowflakeLocalDataSourceSpecFileProperties.getProperty("passphraseVaultReference");
+            String userName = snowflakeLocalDataSourceSpecFileProperties.getProperty("publicUserName");;
+
+            SnowflakePublicAuthenticationStrategy authenticationStrategy = new SnowflakePublicAuthenticationStrategy(privateKeyVaultReference, passphraseVaultReference, userName);
+            SnowflakeDataSourceSpecification snowflakeDataSourceSpecification = new SnowflakeDataSourceSpecification(key, this, authenticationStrategy, new Properties());
+            return snowflakeDataSourceSpecification;
+        }
+        catch (Exception e)
+        {
+            String message = String.format("Cannot create a local Snowflake datasource specification. Failed to read file " + snowflakeLocalDataSourceSpecFilePathAsString + ". Exception = %s", e);
+            throw new UnsupportedOperationException(message);
+        }
     }
 }

@@ -26,6 +26,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.redshift.RedshiftManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.postgres.PostgresManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeManager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.util.Properties;
@@ -95,5 +96,10 @@ public abstract class DatabaseManager
     public boolean publishMetrics()
     {
         return true;
+    }
+
+    public DataSourceSpecification getLocalDataSourceSpecification()
+    {
+        throw new UnsupportedOperationException("Local datasource specification not supported");
     }
 }

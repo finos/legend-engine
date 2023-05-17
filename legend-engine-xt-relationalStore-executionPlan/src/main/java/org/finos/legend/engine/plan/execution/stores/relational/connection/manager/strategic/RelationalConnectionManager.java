@@ -26,6 +26,7 @@ import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.OAuthProfile;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManager;
@@ -202,9 +203,28 @@ public class RelationalConnectionManager implements ConnectionManager
         if (connection instanceof RelationalDatabaseConnection)
         {
             RelationalDatabaseConnection relationalDatabaseConnection = (RelationalDatabaseConnection) connection;
-            ConnectionKey connectionKey = this.generateKeyFromDatabaseConnection(connection);
-            return buildDataSourceTrans(relationalDatabaseConnection.datasourceSpecification, relationalDatabaseConnection, connectionKey);
+            boolean localMode = relationalDatabaseConnection.localMode;
+            if (localMode)
+            {
+                return getLocalModeDataSourceSpecification(relationalDatabaseConnection);
+            }
+            else
+            {
+                ConnectionKey connectionKey = this.generateKeyFromDatabaseConnection(connection);
+                return buildDataSourceTrans(relationalDatabaseConnection.datasourceSpecification, relationalDatabaseConnection, connectionKey);
+            }
         }
         return null;
+    }
+
+    public DataSourceSpecification getLocalModeDataSourceSpecification(RelationalDatabaseConnection relationalDatabaseConnection)
+    {
+        DatabaseType databaseType = relationalDatabaseConnection.databaseType;
+        if (databaseType == null)
+        {
+            databaseType = relationalDatabaseConnection.type;
+        }
+        DatabaseManager databaseManager = DatabaseManager.fromString(databaseType.name());
+        return databaseManager.getLocalDataSourceSpecification();
     }
 }

@@ -19,9 +19,15 @@ import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.ConnectionParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.RelationalDatabaseConnectionParserGrammar;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.junit.Test;
 
 import java.util.List;
+
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class TestRelationalConnectionGrammarParser extends TestGrammarParser.TestGrammarParserTestSuite
 {
@@ -232,6 +238,24 @@ public class TestRelationalConnectionGrammarParser extends TestGrammarParser.Tes
                 "       passPhraseVaultReference: 'name';\n" +
                 "  };\n" +
                 "}\n");
+    }
+
+    @Test
+    public void testSnowflakeLocalMode()
+    {
+        PureModelContextData pureModelContextData = test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: store::Store;\n" +
+                "  type: Snowflake;\n" +
+                "  mode: true;\n" +
+                "}\n");
+
+        PackageableConnection packageableConnection = pureModelContextData.getElementsOfType(PackageableConnection.class).get(0);
+        RelationalDatabaseConnection connectionValue = (RelationalDatabaseConnection) packageableConnection.connectionValue;
+        assertTrue(connectionValue.localMode);
+        assertNull(connectionValue.datasourceSpecification);
+        assertNull(connectionValue.authenticationStrategy);
     }
 
     @Test
