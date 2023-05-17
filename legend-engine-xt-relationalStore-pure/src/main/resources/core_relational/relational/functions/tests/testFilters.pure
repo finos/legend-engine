@@ -410,7 +410,7 @@ function <<test.Test>> meta::relational::tests::query::filter::combinations::tes
          ->project([p|$p.firstName], ['name'])
          ->filter(r|$r.getString('name') != 'Hello')
        , simpleRelationalMappingWithFilter, testRuntime(), meta::relational::extension::relationalExtensions());
-    assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_0".ADDRESSID) where ("root".FIRSTNAME <> \'Hello\' OR "root".FIRSTNAME is null) and "firmtable_0".LEGALNAME = \'Firm X\' and "addresstable_0".NAME = \'New York\'', $result->sqlRemoveFormatting());
+    assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_0".ADDRESSID) where "firmtable_0".LEGALNAME = \'Firm X\' and "addresstable_0".NAME = \'New York\' and ("root".FIRSTNAME <> \'Hello\' OR "root".FIRSTNAME is null)', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::query::filter::isolation::testIsolationOfCaseStmtTrueFalseFilters():Boolean[1]
@@ -433,6 +433,13 @@ function <<test.Test>> meta::relational::tests::query::filter::isolation::testLa
     let result = execute(|Person.all()->filter(p| $p.firm.ceo.address.name == 'Hoboken' && $p.firm.address.name == 'New York'), simpleRelationalMappingWithClassFilterAndEmbeddedProperty, testRuntime(), meta::relational::extension::relationalExtensions(), noDebug());
     assertEquals(['Peter Smith,John Johnson,John Hill,Anthony Allen,New York,Don New York'], $result.values->map(p|$p.name)->makeString(','));
     assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join personTable as "persontable_1" on ("firmtable_0".CEOID = "persontable_1".ID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "persontable_1".ADDRESSID) left outer join addressTable as "addresstable_1" on ("addresstable_1".ID = "firmtable_0".ADDRESSID) where "firmtable_0".LEGALNAME = \'Firm X\' and ("addresstable_0".NAME = \'Hoboken\' and "addresstable_1".NAME = \'New York\')', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::filter::multipleFilters::testMultipleFilters():Boolean[1]
+{
+    let result = execute(|Person.all()->filter(p | $p.firstName->startsWith('Peter'))->filter(p | $p.lastName->startsWith('Smith')), simpleRelationalMappingWithFilter, testRuntime(), meta::relational::extension::relationalExtensions());
+    assertEquals(['Peter Smith'], $result.values->map(p|$p.name)->makeString());
+    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME like \'Peter%\' and "root".LASTNAME like \'Smith%\'', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::query::filter::multipleFilters::testFilterAfterFilter():Boolean[1]

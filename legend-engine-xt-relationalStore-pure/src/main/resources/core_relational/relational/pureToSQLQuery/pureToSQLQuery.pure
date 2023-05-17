@@ -2544,18 +2544,18 @@ function meta::relational::functions::pureToSqlQuery::processTdsFilter(f:Functio
                                                   ));
         let queryRootMutated = !$mainSelect->rootIsSubQuery() && $select->rootIsSubQuery();
         let placeNestedFilters = {select:SelectSQLQuery[1]|let havingFilter=$select.data->toOne().alias.relationalElement->cast(@SelectSQLQuery).filteringOperation;
-                                                           let filter = $mainQuery.select.havingOperation->concatenate($havingFilter)->andFilters($extensions);
+                                                           let filter = $havingFilter->concatenate($mainQuery.select.havingOperation)->andFilters($extensions);
                                                            let newSelect = nestFilters($select,$mainQueryFilter,$filter);
                                                            ^$newSelect(columns=$finalColumns, filteringOperation=$select.filteringOperation);
                                  };
         let placeRootFilters = {select: SelectSQLQuery[1]|let havingFilter=$select.filteringOperation;
-                                                          let filter = $mainQuery.select.havingOperation->concatenate($havingFilter)->andFilters($extensions);
+                                                          let filter = $havingFilter->concatenate($mainQuery.select.havingOperation)->andFilters($extensions);
                                                            ^$select(columns=$finalColumns, filteringOperation=$mainQueryFilter, havingOperation=$filter);
                                 };
         let nestMainFilter = {select: SelectSQLQuery[1]|let newSelect = nestFilters($select,$mainQueryFilter,[]);
-                                                        ^$newSelect(columns=$finalColumns, filteringOperation=$newSelect.filteringOperation->concatenate($select.filteringOperation)->andFilters($extensions));
+                                                        ^$newSelect(columns=$finalColumns, filteringOperation=$select.filteringOperation->concatenate($newSelect.filteringOperation)->andFilters($extensions));
                               };
-        let placeMainFilterAtRoot ={select: SelectSQLQuery[1] | let filter = $mainQueryFilter->concatenate($select.filteringOperation)->andFilters($extensions);
+        let placeMainFilterAtRoot ={select: SelectSQLQuery[1] | let filter = $select.filteringOperation->concatenate($mainQueryFilter)->andFilters($extensions);
                                                                 ^$select(columns=$finalColumns, filteringOperation=$filter);
                                    };
 
