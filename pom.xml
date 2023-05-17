@@ -582,7 +582,7 @@
                     <reportsDirectory>
                         ${project.parent.basedir}/legend-engine-test-reports/surefire-reports-aggregate
                     </reportsDirectory>
-                    <argLine>${argLine} ${surefire.vm.params}</argLine>
+                    <argLine>${argLine} ${surefire.vm.params} -Dlegend.test.h2.properties=""</argLine>
                 </configuration>
             </plugin>
             <plugin>
