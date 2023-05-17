@@ -77,7 +77,8 @@ public class RelationalDatabaseConnectionParseTreeWalker
         connectionValue.postProcessors = postProcessorsContext != null ? this.visitRelationalPostProcessors(postProcessorsContext) : null;
 
         RelationalDatabaseConnectionParserGrammar.ConnectionModeContext connectionModeContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.connectionMode(), "mode", connectionValue.sourceInformation);
-        connectionValue.localMode = connectionModeContext != null ? Boolean.parseBoolean(connectionModeContext.BOOLEAN().getText()) : false;
+        String localMode = connectionModeContext != null ? connectionModeContext.getText() : null;
+        connectionValue.localMode = "local".equals(localMode);
         if (connectionValue.localMode)
         {
             // skip the datasource spec and authentication strategy if the connection mode is local

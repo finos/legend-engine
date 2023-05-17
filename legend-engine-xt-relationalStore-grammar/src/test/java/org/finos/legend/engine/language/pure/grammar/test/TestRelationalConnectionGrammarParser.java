@@ -248,7 +248,7 @@ public class TestRelationalConnectionGrammarParser extends TestGrammarParser.Tes
                 "{\n" +
                 "  store: store::Store;\n" +
                 "  type: Snowflake;\n" +
-                "  mode: true;\n" +
+                "  mode: local;\n" +
                 "}\n");
 
         PackageableConnection packageableConnection = pureModelContextData.getElementsOfType(PackageableConnection.class).get(0);

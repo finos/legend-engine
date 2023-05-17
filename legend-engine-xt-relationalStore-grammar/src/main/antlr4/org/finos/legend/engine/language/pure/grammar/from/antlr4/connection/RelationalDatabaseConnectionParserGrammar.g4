@@ -40,7 +40,7 @@ dbQuoteIdentifiers:                     QUOTE_IDENTIFIERS COLON BOOLEAN SEMI_COL
 dbType:                                 TYPE COLON identifier SEMI_COLON
 ;
 
-connectionMode:                         MODE COLON BOOLEAN SEMI_COLON
+connectionMode:                         MODE COLON identifier SEMI_COLON
 ;
 
 relationalPostProcessors:               RELATIONAL_POST_PROCESSORS COLON
