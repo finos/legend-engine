@@ -23,7 +23,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applica
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedQualifiedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.UnknownAppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CByteStream;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CByteArray;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDecimal;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFloat;
@@ -78,7 +78,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Wha
         @JsonSubTypes.Type(value = CStrictDate.class, name = "strictDate"),
         @JsonSubTypes.Type(value = CStrictTime.class, name = "strictTime"),
         @JsonSubTypes.Type(value = CLatestDate.class, name = "latestDate"),
-        @JsonSubTypes.Type(value = CByteStream.class, name = "byteStream"),
+        @JsonSubTypes.Type(value = CByteArray.class, name = "byteArray"),
         // Class Instance
         @JsonSubTypes.Type(value = ClassInstance.class, name = "classInstance"),
 

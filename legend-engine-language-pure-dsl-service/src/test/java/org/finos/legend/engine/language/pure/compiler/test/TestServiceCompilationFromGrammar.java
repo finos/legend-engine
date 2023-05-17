@@ -2926,7 +2926,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "  autoActivateUpdates: false;\n" +
                 "  execution: Single\n" +
                 "  {\n" +
-                "    query: data: ByteStream[1]|test::firm::model::Firm->internalize(test::firm::model::TestBinding1, $data)->externalize(test::firm::model::TestBinding1, #{test::firm::model::Firm{name, ranking}}#);\n" +
+                "    query: data: Byte[*]|test::firm::model::Firm->internalize(test::firm::model::TestBinding1, $data)->externalize(test::firm::model::TestBinding1, #{test::firm::model::Firm{name, ranking}}#);\n" +
                 "  }\n" +
                 "  testSuites:\n" +
                 "  [\n" +
@@ -3002,7 +3002,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "  autoActivateUpdates: false;\n" +
                 "  execution: Single\n" +
                 "  {\n" +
-                "    query: data: ByteStream[1]|test::firm::model::Firm->internalize(test::firm::model::TestBinding1, $data)->externalize(test::firm::model::TestBinding1, #{test::firm::model::Firm{name, ranking}}#);\n" +
+                "    query: data: Byte[*]|test::firm::model::Firm->internalize(test::firm::model::TestBinding1, $data)->externalize(test::firm::model::TestBinding1, #{test::firm::model::Firm{name, ranking}}#);\n" +
                 "  }\n" +
                 "  testSuites:\n" +
                 "  [\n" +
@@ -3014,7 +3014,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "        {\n" +
                 "          parameters:\n" +
                 "          [\n" +
-                "            data = byteStream('[{\"street\":\"street A\"}]')\n" +
+                "            data = toBytes('[{\"street\":\"street A\"}]')\n" +
                 "          ]\n" +
                 "          asserts:\n" +
                 "          [\n" +
@@ -3044,7 +3044,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "  autoActivateUpdates: false;\n" +
                 "  execution: Single\n" +
                 "  {\n" +
-                "    query: data: ByteStream[1]|test::firm::model::Firm->internalize(test::firm::model::TestBinding1, $data)->externalize(test::firm::model::TestBinding1, #{test::firm::model::Firm{name, ranking}}#);\n" +
+                "    query: data: Byte[*]|test::firm::model::Firm->internalize(test::firm::model::TestBinding1, $data)->externalize(test::firm::model::TestBinding1, #{test::firm::model::Firm{name, ranking}}#);\n" +
                 "  }\n" +
                 "  testSuites:\n" +
                 "  [\n" +

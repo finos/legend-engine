@@ -112,6 +112,64 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::search::transforma
   assert($json == '{"taggedValues":{},"package":"meta::analytics::search::transformation::test","name":"sampleRuntime","projectCoordinates":{"versionId":"0.0.1-SNAPSHOT","groupId":"org.finos.test","artifactId":"test-project"},"id":"meta::analytics::search::transformation::test::sampleRuntime","type":"Runtime"}');
 }
 
+function <<meta::pure::profiles::test.Test>> meta::analytics::search::transformation::test::testDataSpaceWithoutDescriptionDocumentGeneration(): Boolean[1]
+{
+  let result = meta::analytics::search::transformation::buildDocument(meta::analytics::search::transformation::test::getTestDataSpaceWithoutDescription(), meta::analytics::search::transformation::test::buildTestProjectCoordinates())->cast(@meta::analytics::search::metamodel::BaseRootDocument);
+  assert($result.type == meta::analytics::search::metamodel::DocumentType.DataSpace);
+  let json = $result->alloyToJSON();
+  assert($json == '{"taggedValues":{},"package":"meta::analytics::search::transformation::test","defaultExecutionContext":"testContext","name":"TestDataSpace","projectCoordinates":{"versionId":"0.0.1-SNAPSHOT","groupId":"org.finos.test","artifactId":"test-project"},"id":"meta::analytics::search::transformation::test::TestDataSpace","type":"DataSpace","executionContexts":[{"runtimePath":"meta::analytics::search::transformation::test::TestRuntime","name":"testContext","mappingPath":"meta::analytics::search::transformation::test::sampleMappingTest"}]}');
+}
+
+function <<meta::pure::profiles::test.Test>> meta::analytics::search::transformation::test::testDataSpaceWithDescriptionDocumentGeneration(): Boolean[1]
+{
+  let testDataspaceWithoutDescription = meta::analytics::search::transformation::test::getTestDataSpaceWithoutDescription();
+  let testDataspace = ^$testDataspaceWithoutDescription(
+    description = 'This is a test description'
+  );
+  let result = meta::analytics::search::transformation::buildDocument($testDataspace, meta::analytics::search::transformation::test::buildTestProjectCoordinates())->cast(@meta::analytics::search::metamodel::BaseRootDocument);
+  assert($result.type == meta::analytics::search::metamodel::DocumentType.DataSpace);
+  let json = $result->alloyToJSON();
+  assert($json == '{"taggedValues":{},"package":"meta::analytics::search::transformation::test","defaultExecutionContext":"testContext","name":"TestDataSpace","description":"This is a test description","projectCoordinates":{"versionId":"0.0.1-SNAPSHOT","groupId":"org.finos.test","artifactId":"test-project"},"id":"meta::analytics::search::transformation::test::TestDataSpace","type":"DataSpace","executionContexts":[{"runtimePath":"meta::analytics::search::transformation::test::TestRuntime","name":"testContext","mappingPath":"meta::analytics::search::transformation::test::sampleMappingTest"}]}');
+}
+
+function meta::analytics::search::transformation::test::getTestDataSpaceWithoutDescription(): meta::pure::metamodel::dataSpace::DataSpace[1]
+{
+  let executionContext = ^meta::pure::metamodel::dataSpace::DataSpaceExecutionContext(
+    name = 'testContext',
+    mapping = meta::analytics::search::transformation::test::sampleMappingTest,
+    defaultRuntime = ^meta::pure::runtime::PackageableRuntime(
+      name = 'meta::analytics::search::transformation::test::TestRuntime',
+      runtimeValue = ^meta::pure::runtime::EngineRuntime(
+        mappings = [meta::analytics::search::transformation::test::sampleMappingTest],
+        connections = []
+      )
+    )
+  );
+
+  ^meta::pure::metamodel::dataSpace::DataSpace(
+    name = 'TestDataSpace',
+    package = ^Package(
+      name = 'test',
+      package = ^Package(
+        name = 'transformation',
+        package = ^Package(
+          name = 'search',
+          package = ^Package(
+            name = 'analytics',
+            package = ^Package(
+              name = 'meta',
+              package = ^Package()
+            )
+          )
+        )
+      )
+    ),
+    defaultExecutionContext = $executionContext,
+    executionContexts = [$executionContext],
+    title = 'Test DataSpace'
+  );
+}
+
 function meta::analytics::search::transformation::test::testPackageableFunction(): PackageableElement[1]
 {
   ^PackageableFunction<Any>(

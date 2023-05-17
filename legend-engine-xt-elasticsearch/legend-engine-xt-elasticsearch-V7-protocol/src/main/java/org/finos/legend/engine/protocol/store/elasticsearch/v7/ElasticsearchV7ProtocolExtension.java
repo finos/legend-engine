@@ -25,7 +25,9 @@ import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.executionPlan.Elasticsearch7RequestExecutionNode;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.executionPlan.context.Elasticsearch7ExecutionContext;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.runtime.Elasticsearch7StoreConnection;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.store.Elasticsearch7Store;
 
@@ -46,6 +48,10 @@ public class ElasticsearchV7ProtocolExtension implements PureProtocolExtension
                 // Packageable element
                 ProtocolSubTypeInfo.newBuilder(PackageableElement.class)
                         .withSubtype(Elasticsearch7Store.class, "elasticsearch7Store")
+                        .build(),
+                // Execution Context
+                ProtocolSubTypeInfo.newBuilder(ExecutionContext.class)
+                        .withSubtype(Elasticsearch7ExecutionContext.class, "elasticsearch7ExecutionContext")
                         .build()
         ));
     }

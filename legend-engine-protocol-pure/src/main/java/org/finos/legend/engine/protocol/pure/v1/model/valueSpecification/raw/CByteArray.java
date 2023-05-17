@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,22 +16,17 @@ package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw;
 
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-
-public class CByteStream extends PrimitiveValueSpecification
+public class CByteArray extends PrimitiveValueSpecification
 {
-    public String value;
-    public Charset charset;
+    public byte[] value;
 
-    public CByteStream()
+    public CByteArray()
     {
     }
 
-    public CByteStream(String value)
+    public CByteArray(byte[] byteArray)
     {
-        this.value = value;
-        this.charset = StandardCharsets.UTF_8;
+        this.value = byteArray;
     }
 
     @Override

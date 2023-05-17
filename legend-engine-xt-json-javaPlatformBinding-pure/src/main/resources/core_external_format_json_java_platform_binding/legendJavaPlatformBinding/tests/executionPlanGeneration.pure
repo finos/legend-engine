@@ -245,7 +245,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
 {
    let binding = getTestBinding();
 
-   let plan = meta::external::format::json::executionPlan::platformBinding::legendJava::test::buildPlanWithJava({data:ByteStream[1]| meta::external::format::json::executionPlan::test::Person->internalize($binding, $data)->checked()});
+   let plan = meta::external::format::json::executionPlan::platformBinding::legendJava::test::buildPlanWithJava({data:Byte[*]| meta::external::format::json::executionPlan::test::Person->internalize($binding, $data)->checked()});
 
    let planString = $plan->planToString(false, getExtensions());
    let expectedPlan = 'Sequence\n' +
@@ -255,7 +255,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
         '  (\n' +
         '    FunctionParametersValidationNode\n' +
         '    (\n' +
-        '      functionParameters = [data:ByteStream[1]]\n' +
+        '      functionParameters = [data:Byte[*]]\n' +
         '    )\n' +
         '    ExternalFormat_Internalize\n' +
         '    (\n' +
@@ -268,7 +268,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
         '      (\n' +
         '        VariableResolution\n' +
         '        (\n' +
-        '          type = ByteStream\n' +
+        '          type = Byte\n' +
         '          varName = data\n' +
         '\n' +
         '        )\n' +
@@ -303,7 +303,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
    let binding = getTestBinding();
    let tree = #{meta::external::format::json::executionPlan::test::Person {lastName, firm {legalName}}}#;
 
-   let plan = meta::external::format::json::executionPlan::platformBinding::legendJava::test::buildPlanWithJava({data:ByteStream[1]| meta::external::format::json::executionPlan::test::Person->internalize($binding, $data)->graphFetch($tree)});
+   let plan = meta::external::format::json::executionPlan::platformBinding::legendJava::test::buildPlanWithJava({data:Byte[*]| meta::external::format::json::executionPlan::test::Person->internalize($binding, $data)->graphFetch($tree)});
 
    let planString = $plan->planToString(false, getExtensions());
    let expectedPlan = 'Sequence\n' +
@@ -313,7 +313,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
         '  (\n' +
         '    FunctionParametersValidationNode\n' +
         '    (\n' +
-        '      functionParameters = [data:ByteStream[1]]\n' +
+        '      functionParameters = [data:Byte[*]]\n' +
         '    )\n' +
         '    ExternalFormat_Internalize\n' +
         '    (\n' +
@@ -327,7 +327,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
         '      (\n' +
         '        VariableResolution\n' +
         '        (\n' +
-        '          type = ByteStream\n' +
+        '          type = Byte\n' +
         '          varName = data\n' +
         '\n' +
         '        )\n' +
@@ -366,7 +366,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
    let binding = getTestBinding();
    let tree = #{meta::external::format::json::executionPlan::test::Person {lastName, firm {legalName}}}#;
 
-   let plan = meta::external::format::json::executionPlan::platformBinding::legendJava::test::buildPlanWithJava({data:ByteStream[1]| meta::external::format::json::executionPlan::test::Person->internalize($binding, $data)->graphFetchUnexpanded($tree)});
+   let plan = meta::external::format::json::executionPlan::platformBinding::legendJava::test::buildPlanWithJava({data:Byte[*]| meta::external::format::json::executionPlan::test::Person->internalize($binding, $data)->graphFetchUnexpanded($tree)});
 
    let planString = $plan->planToString(false, getExtensions());
    let expectedPlan = 'Sequence\n' +
@@ -376,7 +376,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
         '  (\n' +
         '    FunctionParametersValidationNode\n' +
         '    (\n' +
-        '      functionParameters = [data:ByteStream[1]]\n' +
+        '      functionParameters = [data:Byte[*]]\n' +
         '    )\n' +
         '    ExternalFormat_Internalize\n' +
         '    (\n' +
@@ -390,7 +390,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
         '      (\n' +
         '        VariableResolution\n' +
         '        (\n' +
-        '          type = ByteStream\n' +
+        '          type = Byte\n' +
         '          varName = data\n' +
         '\n' +
         '        )\n' +
@@ -428,7 +428,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
    let binding = getTestBinding();
    let tree = #{meta::external::format::json::executionPlan::test::Person {lastName, firm {legalName}}}#;
 
-   let plan = meta::external::format::json::executionPlan::platformBinding::legendJava::test::buildPlanWithJava({data:ByteStream[1]| meta::external::format::json::executionPlan::test::Person->internalize($binding, $data)->graphFetchCheckedUnexpanded($tree)});
+   let plan = meta::external::format::json::executionPlan::platformBinding::legendJava::test::buildPlanWithJava({data:Byte[*]| meta::external::format::json::executionPlan::test::Person->internalize($binding, $data)->graphFetchCheckedUnexpanded($tree)});
 
    let planString = $plan->planToString(false, getExtensions());
    let expectedPlan = 'Sequence\n' +
@@ -438,7 +438,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
                 '  (\n' +
                 '    FunctionParametersValidationNode\n' +
                 '    (\n' +
-                '      functionParameters = [data:ByteStream[1]]\n' +
+                '      functionParameters = [data:Byte[*]]\n' +
                 '    )\n' +
                 '    ExternalFormat_Internalize\n' +
                 '    (\n' +
@@ -452,7 +452,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
                 '      (\n' +
                 '        VariableResolution\n' +
                 '        (\n' +
-                '          type = ByteStream\n' +
+                '          type = Byte\n' +
                 '          varName = data\n' +
                 '\n' +
                 '        )\n' +
@@ -490,7 +490,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
    let binding = getTestBinding();
    let tree = #{meta::external::format::json::executionPlan::test::Person {lastName, firm {legalName}}}#;
 
-   let plan = meta::external::format::json::executionPlan::platformBinding::legendJava::test::buildPlanWithJava({data:ByteStream[1]| meta::external::format::json::executionPlan::test::Person->internalize($binding, $data)->graphFetchChecked($tree)});
+   let plan = meta::external::format::json::executionPlan::platformBinding::legendJava::test::buildPlanWithJava({data:Byte[*]| meta::external::format::json::executionPlan::test::Person->internalize($binding, $data)->graphFetchChecked($tree)});
 
    let planString = $plan->planToString(false, getExtensions());
    let expectedPlan = 'Sequence\n' +
@@ -500,7 +500,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
                 '  (\n' +
                 '    FunctionParametersValidationNode\n' +
                 '    (\n' +
-                '      functionParameters = [data:ByteStream[1]]\n' +
+                '      functionParameters = [data:Byte[*]]\n' +
                 '    )\n' +
                 '    ExternalFormat_Internalize\n' +
                 '    (\n' +
@@ -514,7 +514,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
                 '      (\n' +
                 '        VariableResolution\n' +
                 '        (\n' +
-                '          type = ByteStream\n' +
+                '          type = Byte\n' +
                 '          varName = data\n' +
                 '\n' +
                 '        )\n' +
@@ -553,7 +553,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
    let binding = getTestBinding();
    let tree = #{meta::external::format::json::executionPlan::test::Person {lastName, firm {legalName}, addresses {street}}}#;
 
-   let plan = meta::external::format::json::executionPlan::platformBinding::legendJava::test::buildPlanWithJava({data:ByteStream[1]| meta::external::format::json::executionPlan::test::Person->internalize($binding, $data)->graphFetchChecked($tree)});
+   let plan = meta::external::format::json::executionPlan::platformBinding::legendJava::test::buildPlanWithJava({data:Byte[*]| meta::external::format::json::executionPlan::test::Person->internalize($binding, $data)->graphFetchChecked($tree)});
 
    let planString = $plan->planToString(false, getExtensions());
    let expectedPlan = 'Sequence\n' +
@@ -563,7 +563,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
                 '  (\n' +
                 '    FunctionParametersValidationNode\n' +
                 '    (\n' +
-                '      functionParameters = [data:ByteStream[1]]\n' +
+                '      functionParameters = [data:Byte[*]]\n' +
                 '    )\n' +
                 '    ExternalFormat_Internalize\n' +
                 '    (\n' +
@@ -577,7 +577,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
                 '      (\n' +
                 '        VariableResolution\n' +
                 '        (\n' +
-                '          type = ByteStream\n' +
+                '          type = Byte\n' +
                 '          varName = data\n' +
                 '\n' +
                 '        )\n' +

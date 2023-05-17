@@ -15,24 +15,16 @@
 
 package org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.plugin;
 
-import java.net.URI;
-import java.util.Optional;
-import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.HttpClientContext;
-import org.finos.legend.authentication.credentialprovider.CredentialBuilder;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
-import org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.http.ElasticsearchV7RequestToHttpRequestVisitor;
+import org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.connection.ElasticsearchHttpContextUtil;
 import org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.result.ExecutionRequestVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.executionPlan.Elasticsearch7RequestExecutionNode;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.runtime.Elasticsearch7StoreConnection;
-import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionCategory;
 
 public class ElasticsearchV7ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 {
@@ -55,24 +47,11 @@ public class ElasticsearchV7ExecutionNodeExecutor implements ExecutionNodeVisito
             Elasticsearch7RequestExecutionNode esNode = (Elasticsearch7RequestExecutionNode) executionNode;
             Elasticsearch7StoreConnection connection = esNode.connection;
 
-            HttpClientContext httpClientContext = this.authToHttpContext(connection.authSpec);
+            HttpClientContext httpClientContext = ElasticsearchHttpContextUtil.authToHttpContext(this.identity, this.executionState.getCredentialProviderProvider(), connection.authSpec, this.state.getProviders());
 
             return esNode.request.accept(new ExecutionRequestVisitor(this.state.getClient(), httpClientContext, connection.sourceSpec.url, esNode, this.executionState));
         }
 
         throw new IllegalStateException("should not get here");
-    }
-
-    private HttpClientContext authToHttpContext(AuthenticationSpecification authenticationSpecification)
-    {
-        Credential credential = CredentialBuilder.makeCredential(this.executionState.getCredentialProviderProvider(), authenticationSpecification, this.identity);
-
-        Optional<HttpClientContext> clientContext = this.state.getProviders().stream()
-                .map(x -> x.provide(credential))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .findAny();
-
-        return clientContext.orElseThrow(() -> new EngineException(String.format("Credential %s not supported to connect to ElasticSearch", credential.getClass().getCanonicalName()), ExceptionCategory.USER_CREDENTIALS_ERROR));
     }
 }

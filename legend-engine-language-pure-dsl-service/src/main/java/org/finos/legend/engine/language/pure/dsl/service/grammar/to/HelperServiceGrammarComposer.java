@@ -43,10 +43,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 
 import java.util.List;
 
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.appendTabString;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.unsupported;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
 
 public class HelperServiceGrammarComposer
 {
@@ -64,7 +61,7 @@ public class HelperServiceGrammarComposer
             }
             return "Single\n" +
                     getTabString(baseIndentation) + "{\n" +
-                    getTabString(baseIndentation + 1) + "query: " + pureSingleExecution.func.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build()) + ";\n" +
+                    getTabString(baseIndentation + 1) + "query: " + pureSingleExecution.func.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).withIndentation(getTabSize(baseIndentation + 1)).build()) + ";\n" +
                     explicitExecutionInfoString +
                     getTabString(baseIndentation) + "}\n";
         }
@@ -73,7 +70,7 @@ public class HelperServiceGrammarComposer
             PureMultiExecution pureMultiExecution = (PureMultiExecution) execution;
             StringBuilder builder = new StringBuilder().append("Multi\n");
             appendTabString(builder, baseIndentation).append("{\n");
-            appendTabString(builder, baseIndentation + 1).append("query: ").append(pureMultiExecution.func.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build())).append(";\n");
+            appendTabString(builder, baseIndentation + 1).append("query: ").append(pureMultiExecution.func.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).withIndentation(getTabSize(baseIndentation + 1)).build())).append(";\n");
             if (pureMultiExecution.executionKey != null)
             {
                 appendTabString(builder, baseIndentation + 1).append("key: ").append(convertString(pureMultiExecution.executionKey, true)).append(";\n");

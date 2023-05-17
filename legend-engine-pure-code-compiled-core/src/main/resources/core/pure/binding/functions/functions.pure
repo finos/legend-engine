@@ -47,7 +47,7 @@ function <<functionType.NotImplementedFunction>> meta::external::shared::format:
    [];
 }
 
-function <<functionType.NotImplementedFunction>> meta::external::shared::format::functions::internalize<T>(toClass:Class<T>[1], binding:Binding[1], stream:ByteStream[1]):T[*]
+function <<functionType.NotImplementedFunction>> meta::external::shared::format::functions::internalize<T>(toClass:Class<T>[1], binding:Binding[1], data:Byte[*]):T[*]
 {
    fail('Implemented by execution plans');
    [];
@@ -63,7 +63,7 @@ function meta::external::shared::format::functions::internalizeFunctions():Funct
 {
    [
       internalize_Class_1__Binding_1__String_1__T_MANY_,
-      internalize_Class_1__Binding_1__ByteStream_1__T_MANY_
+      internalize_Class_1__Binding_1__Byte_MANY__T_MANY_
    ]
 }
 

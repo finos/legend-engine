@@ -90,6 +90,7 @@ import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStore
 import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreExecutorBuilder;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
+import org.finos.legend.engine.protocol.pure.v1.model.PureProtocol;
 import org.finos.legend.engine.query.graphQL.api.debug.GraphQLDebug;
 import org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecute;
 import org.finos.legend.engine.query.graphQL.api.grammar.GraphQLGrammar;
@@ -274,6 +275,9 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new Memory());
         environment.jersey().register(new RelationalExecutorInformation());
         environment.jersey().register(new ConcurrentExecutionNodeExecutorPoolInfo(Collections.emptyList()));
+
+        // Protocol
+        environment.jersey().register(new PureProtocol());
 
         // Grammar
         environment.jersey().register(new GrammarToJson());

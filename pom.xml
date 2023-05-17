@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.11.2-SNAPSHOT</version>
+    <version>4.12.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -235,6 +235,7 @@
         <module>legend-engine-protocol</module>
         <module>legend-engine-protocol-generation</module>
         <module>legend-engine-protocol-pure</module>
+        <module>legend-engine-protocol-api</module>
         <module>legend-engine-application-query</module>
         <module>legend-engine-query-pure</module>
         <module>legend-engine-shared-core</module>
@@ -289,7 +290,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>4.5.1</legend.pure.version>
+        <legend.pure.version>4.5.2</legend.pure.version>
         <legend.shared.version>0.23.3</legend.shared.version>
 
         <!-- SONAR -->
@@ -1531,6 +1532,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-protocol-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-protocol-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

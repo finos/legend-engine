@@ -28,6 +28,7 @@ import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCre
 import org.slf4j.Logger;
 
 import javax.security.auth.Subject;
+import javax.security.auth.kerberos.KerberosPrincipal;
 import javax.security.auth.kerberos.KerberosTicket;
 
 import java.sql.Connection;
@@ -89,11 +90,24 @@ public class TrinoDelegatedKerberosAuthenticationStrategyRuntime extends org.fin
         Set<Object> credentialsWithSingleKerberosPrivateCredentials = kerberosCredential.getSubject().getPrivateCredentials().stream()
                 .filter(x -> !(x instanceof KerberosTicket))
                 .collect(Collectors.toSet());
-        KerberosTicket kerberosPrivateCredential = credentials.iterator().next();
+        KerberosTicket kerberosPrivateCredential = credentials.stream().filter(x -> isValidKerberosTGTPrincipal(x.getServer())).findFirst().get();
         credentialsWithSingleKerberosPrivateCredentials.add(kerberosPrivateCredential);
         return new Subject(kerberosCredential.getSubject().isReadOnly(), kerberosCredential.getSubject().getPrincipals(), kerberosCredential.getSubject().getPublicCredentials(),credentialsWithSingleKerberosPrivateCredentials);
     }
 
+    private boolean isValidKerberosTGTPrincipal(KerberosPrincipal principal) 
+    {
+        if (principal == null) 
+        {
+            return false;
+        }
+        if (principal.getName().equals("krbtgt/" + principal.getRealm() + "@" + principal.getRealm())) 
+        {
+            return true;
+        }
+        return false;
+    }
+    
     private static void logMultipleKerberosEntries(Set<KerberosTicket> credentials)
     {
         credentials.stream()
