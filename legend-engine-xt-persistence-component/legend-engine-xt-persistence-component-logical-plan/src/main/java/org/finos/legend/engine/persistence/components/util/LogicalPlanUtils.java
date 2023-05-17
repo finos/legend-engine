@@ -333,6 +333,12 @@ public class LogicalPlanUtils
         return Selection.builder().source(dataset.datasetReference()).condition(condition).addFields(countFunction).build();
     }
 
+    public static List<Field> findCommonPrimaryFieldsBetweenMainAndStaging(Dataset mainDataset, Dataset stagingDataset)
+    {
+        Set<String> primaryKeysFromMain = mainDataset.schema().fields().stream().filter(Field::primaryKey).map(Field::name).collect(Collectors.toSet());
+        return stagingDataset.schema().fields().stream().filter(field -> field.primaryKey() && primaryKeysFromMain.contains(field.name())).collect(Collectors.toList());
+    }
+
     public static Set<DataType> SUPPORTED_DATA_TYPES_FOR_OPTIMIZATION_COLUMNS =
             new HashSet<>(Arrays.asList(INT, INTEGER, INT64, BIGINT, FLOAT, DOUBLE, DECIMAL, DATE));
 
