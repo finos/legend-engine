@@ -77,7 +77,7 @@ public class RelationalDatabaseConnectionParseTreeWalker
         connectionValue.postProcessors = postProcessorsContext != null ? this.visitRelationalPostProcessors(postProcessorsContext) : null;
 
         RelationalDatabaseConnectionParserGrammar.ConnectionModeContext connectionModeContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.connectionMode(), "mode", connectionValue.sourceInformation);
-        String localMode = connectionModeContext != null ? connectionModeContext.getText() : null;
+        String localMode = connectionModeContext != null ? PureGrammarParserUtility.fromIdentifier(connectionModeContext.identifier()) : null;
         connectionValue.localMode = "local".equals(localMode);
         if (connectionValue.localMode)
         {
