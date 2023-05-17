@@ -93,7 +93,6 @@
       "includedMappings": [
         {
           "_type": "mappingIncludeMapping",
-          "createdFromExplicitType": true,
           "includedMapping": "test::mapping::DispatchMapping",
           "sourceInformation": {
             "endColumn": 48,
@@ -105,10 +104,9 @@
         },
         {
           "_type": "mappingIncludeMapping",
-          "createdFromExplicitType": false,
           "includedMapping": "test::mapping::Mapping",
           "sourceInformation": {
-            "endColumn": 32,
+            "endColumn": 40,
             "endLine": 5,
             "sourceId": "",
             "startColumn": 3,

@@ -414,7 +414,6 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
     {
         MappingIncludeMapping mappingIncludeMapping = new MappingIncludeMapping();
         mappingIncludeMapping.setIncludedMapping(PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier()));
-        mappingIncludeMapping.createdFromExplicitType = (ctx.INCLUDETYPE() != null);
         mappingIncludeMapping.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         List<MappingParserGrammar.StoreSubPathContext> storeSubPathContextList = ctx.storeSubPath();
 
