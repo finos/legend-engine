@@ -2218,6 +2218,11 @@ function meta::external::language::java::factory::js_max(stream:Code[1], func:Co
    $stream->prepareStreamForCallWithLambda($func)->j_invoke('max', $func, javaOptional($stream.type->elementTypeOfJavaStream()));
 }
 
+function meta::external::language::java::factory::js_min(stream:Code[1], func:Code[1]):Code[1]
+{
+   $stream->prepareStreamForCallWithLambda($func)->j_invoke('min', $func, javaOptional($stream.type->elementTypeOfJavaStream()));
+}
+
 function meta::external::language::java::factory::js_reduce(stream:Code[1], func:Code[1]):Code[1]
 {
    $stream->prepareStreamForCallWithLambda($func)->j_invoke('reduce', $func, javaOptional($stream.type->elementTypeOfJavaStream()));
