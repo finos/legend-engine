@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
@@ -34,6 +35,8 @@ public enum StoreExecutableManager
 {
     INSTANCE;
     private final ConcurrentHashMap<String, List<StoreExecutable>> requestExecutableMap = new ConcurrentHashMap<>();
+
+    private final ConcurrentHashMap<String, List<String>> sessionIDToProvidedID = new ConcurrentHashMap<>();  //sessionIDTOProvidedID
     private boolean isRegistered = false;
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(StoreExecutableManager.class);
 
@@ -56,18 +59,26 @@ public enum StoreExecutableManager
 
     public void addExecutable(RequestContext context, StoreExecutable execution)
     {
-        String requestID = RequestContext.getRequestToken(context);
+        String requestID = RequestContext.getRequestToken(context);  //header if its there else it's the session
+
+        if (isRegistered && requestID != null)
+        {
+            sessionIDToProvidedID.computeIfAbsent(RequestContext.getSessionID(context), x -> Collections.synchronizedList(new ArrayList<>())).add(requestID);
+        }
+
         addExecutable(requestID, execution);
     }
 
 
-    public void removeExecutable(String sessionID, StoreExecutable executable)
+    public void removeExecutable(String id, StoreExecutable executable)
     {
-        if (isRegistered && sessionID != null)
+        if (isRegistered && id != null)
         {
             try
             {
-                requestExecutableMap.computeIfPresent(sessionID, (a, executableList) ->
+                List<String> providedIds = sessionIDToProvidedID.remove(id);
+                providedIds.add(id);
+                providedIds.forEach( requestedID -> requestExecutableMap.computeIfPresent(id, (a, executableList) ->
                 {
                     executableList.remove(executable);
                     if (executableList.isEmpty())
@@ -78,12 +89,12 @@ public enum StoreExecutableManager
                     {
                         return executableList;
                     }
-                });
+                }));
 
             }
             catch (Exception ignore)
             {
-                LOGGER.info(new LogInfo(null, LoggingEventType.EXECUTABLE_REMOVE_ERROR, "Unable to remove executable for session " + sessionID).toString());
+                LOGGER.info(new LogInfo(null, LoggingEventType.EXECUTABLE_REMOVE_ERROR, "Unable to remove executable for id " + id).toString());
             }
         }
     }
@@ -95,10 +106,13 @@ public enum StoreExecutableManager
 
     }
 
-    public List<StoreExecutable> getExecutables(String sessionID)
+    public List<StoreExecutable> getExecutables(String id)
     {
-        return requestExecutableMap.getOrDefault(sessionID, Collections.EMPTY_LIST);
-    }
+        List<String> requestIDs = new ArrayList<>(sessionIDToProvidedID.getOrDefault(id, Collections.emptyList()));
+        requestIDs.add(id);
+        return requestIDs.stream()
+                .flatMap(reqID -> requestExecutableMap.getOrDefault(reqID, Collections.emptyList()).stream())
+                .collect(Collectors.toList());    }
 
     public List<StoreExecutable> getExecutables(RequestContext context)
     {
