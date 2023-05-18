@@ -32,14 +32,14 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section
 
 import java.util.function.Consumer;
 
-public class SnowflakeAppGrammarExtension implements PureGrammarParserExtension
+public class SnowflakeAppGrammarParserExtension implements PureGrammarParserExtension
 {
     public static final String NAME = "Snowflake";
 
     @Override
     public Iterable<? extends SectionParser> getExtraSectionParsers()
     {
-        return Lists.fixedSize.of(SectionParser.newParser(NAME, SnowflakeAppGrammarExtension::parseSection));
+        return Lists.fixedSize.of(SectionParser.newParser(NAME, SnowflakeAppGrammarParserExtension::parseSection));
     }
 
     private static Section parseSection(SectionSourceCode sectionSourceCode, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext context)
