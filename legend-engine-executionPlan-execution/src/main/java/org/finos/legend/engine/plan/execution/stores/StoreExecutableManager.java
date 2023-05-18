@@ -17,6 +17,7 @@ package org.finos.legend.engine.plan.execution.stores;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
@@ -70,34 +71,27 @@ public enum StoreExecutableManager
     }
 
 
-    public void removeExecutable(String id, StoreExecutable executable)
-    {
-        if (isRegistered && id != null)
-        {
-            try
-            {
-                List<String> providedIds = sessionIDToProvidedID.remove(id);
-                providedIds.add(id);
-                providedIds.forEach( requestedID -> requestExecutableMap.computeIfPresent(id, (a, executableList) ->
-                {
-                    executableList.remove(executable);
-                    if (executableList.isEmpty())
-                    {
-                        return null;
-                    }
-                    else
-                    {
-                        return executableList;
-                    }
-                }));
-
-            }
-            catch (Exception ignore)
-            {
+    public void removeExecutable(String id, StoreExecutable executable) {
+        if (isRegistered && id != null) {
+            try {
+                List<String> providedIds = sessionIDToProvidedID.get(id);
+                if (providedIds != null) {
+                    providedIds.forEach(providedId -> requestExecutableMap.computeIfPresent(providedId, (key, executableList) -> {
+                        executableList.remove(executable);
+                        if (executableList.isEmpty()) {
+                            return null;
+                        } else {
+                            return executableList;
+                        }
+                    }));
+                    sessionIDToProvidedID.remove(id);
+                }
+            } catch (Exception e) {
                 LOGGER.info(new LogInfo(null, LoggingEventType.EXECUTABLE_REMOVE_ERROR, "Unable to remove executable for id " + id).toString());
             }
         }
     }
+
 
     public void removeExecutable(RequestContext context, StoreExecutable executable)
     {
@@ -125,23 +119,19 @@ public enum StoreExecutableManager
         this.isRegistered = true;
     }
 
-    public Integer cancelExecutablesOnSession(String sessionID)
-    {
-        AtomicReference<Integer> numberOfCancelled = new AtomicReference<>(0);
-        requestExecutableMap.remove(sessionID).forEach(
-                executable ->
-                {
-                    try
-                    {
-                        executable.cancel();
-                        numberOfCancelled.updateAndGet(v -> v + 1);
-                    }
-                    catch (Exception e)
-                    {
-                        LOGGER.error(new LogInfo(null, LoggingEventType.EXECUTABLE_CANCELLATION_ERROR, "Unable to cancel executable for ID " + sessionID + e.getMessage()).toString());
-                    }
+    public int cancelExecutablesOnSession(String sessionID) {
+        AtomicInteger numberOfCancelled = new AtomicInteger(0);
+        List<StoreExecutable> executables = requestExecutableMap.remove(sessionID);
+        if (executables != null) {
+            executables.forEach(executable -> {
+                try {
+                    executable.cancel();
+                    numberOfCancelled.incrementAndGet();
+                } catch (Exception e) {
+                    LOGGER.error(new LogInfo(null, LoggingEventType.EXECUTABLE_CANCELLATION_ERROR, "Unable to cancel executable for ID " + sessionID + ": " + e.getMessage()).toString());
                 }
-        );
+            });
+        }
         return numberOfCancelled.get();
     }
 
