@@ -297,6 +297,10 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         else if (executionNode instanceof SQLExecutionNode)
         {
             SQLExecutionNode SQLExecutionNode = (SQLExecutionNode) executionNode;
+            if (SQLExecutionNode.sqlQuery.contains("ALTER SESSION") && SQLExecutionNode.sqlQuery.contains("QUERY_TAG") && !executionState.queryTagging)
+            {
+                return new ConstantResult(null);
+            }
             this.executionState.topSpan = GlobalTracer.get().activeSpan();
             try (Scope scope = GlobalTracer.get().buildSpan("Relational DB Execution").startActive(true))
             {

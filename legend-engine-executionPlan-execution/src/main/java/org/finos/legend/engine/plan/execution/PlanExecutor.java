@@ -71,8 +71,9 @@ public class PlanExecutor
     private long graphFetchBatchMemoryLimit;
     private BiFunction<MutableList<CommonProfile>, ExecutionState, ExecutionNodeExecutor> executionNodeExecutorBuilder;
     private final CredentialProviderProvider credentialProviderProvider;
+    private final boolean queryTagging;
 
-    private PlanExecutor(boolean isJavaCompilationAllowed, ImmutableList<StoreExecutor> extraExecutors, long graphFetchBatchMemoryLimit, CredentialProviderProvider credentialProviderProvider)
+    private PlanExecutor(boolean isJavaCompilationAllowed, ImmutableList<StoreExecutor> extraExecutors, long graphFetchBatchMemoryLimit, CredentialProviderProvider credentialProviderProvider, boolean queryTagging)
     {
         EngineUrlStreamHandlerFactory.initialize();
         this.isJavaCompilationAllowed = isJavaCompilationAllowed;
@@ -80,6 +81,7 @@ public class PlanExecutor
         this.planExecutorInfo = PlanExecutorInfo.fromStoreExecutors(this.extraExecutors);
         this.graphFetchBatchMemoryLimit = graphFetchBatchMemoryLimit;
         this.credentialProviderProvider = credentialProviderProvider;
+        this.queryTagging = queryTagging;
     }
 
     public PlanExecutorInfo getPlanExecutorInfo()
@@ -353,7 +355,7 @@ public class PlanExecutor
 
     private ExecutionState buildDefaultExecutionState(SingleExecutionPlan executionPlan, Map<String, Result> vars, PlanExecutionContext planExecutionContext)
     {
-        ExecutionState executionState = new ExecutionState(vars, executionPlan.templateFunctions, this.extraExecutors.collect(StoreExecutor::buildStoreExecutionState), this.isJavaCompilationAllowed, this.graphFetchBatchMemoryLimit, null, this.credentialProviderProvider);
+        ExecutionState executionState = new ExecutionState(vars, executionPlan.templateFunctions, this.extraExecutors.collect(StoreExecutor::buildStoreExecutionState), this.isJavaCompilationAllowed, this.graphFetchBatchMemoryLimit, null, this.credentialProviderProvider, this.queryTagging);
 
         if (planExecutionContext != null)
         {
@@ -411,6 +413,7 @@ public class PlanExecutor
         private final MutableList<StoreExecutor> storeExecutors = Lists.mutable.empty();
         private long graphFetchBatchMemoryLimit = DEFAULT_GRAPH_FETCH_BATCH_MEMORY_LIMIT;
         private CredentialProviderProvider credentialProviderProvider = CredentialProviderProvider.defaultProviderProvider();
+        private boolean queryTagging = true;
 
         private Builder()
         {
@@ -447,9 +450,15 @@ public class PlanExecutor
             return this;
         }
 
+        public Builder withQueryTaggingDisabled()
+        {
+            this.queryTagging = false;
+            return this;
+        }
+
         public PlanExecutor build()
         {
-            return new PlanExecutor(this.isJavaCompilationAllowed, this.storeExecutors.toImmutable(), this.graphFetchBatchMemoryLimit, this.credentialProviderProvider);
+            return new PlanExecutor(this.isJavaCompilationAllowed, this.storeExecutors.toImmutable(), this.graphFetchBatchMemoryLimit, this.credentialProviderProvider, this.queryTagging);
         }
     }
 
