@@ -310,6 +310,34 @@ function meta::pure::graphFetch::ensureConstraintsRequirements(treeRoot:RootGrap
    ensureFunctionRequirements($treeRoot, $treeRoot.class, $constraintsForClass, [], true)->cast(@RootGraphFetchTree<Any>);
 }
 
+function meta::pure::graphFetch::ensureFunctionRequirementsFromLambda(node:GraphFetchTree[1], class:Class<Any>[1], f:FunctionDefinition<Any>[1], processed:Class<Any>[*], ensureConstraintsForSubTrees:Boolean[1]): GraphFetchTree[1]
+{
+   let paths  =  meta::pure::graphFetch::pathsForConstraintFunctions($class, $f);
+   let qualifiedPropertyPaths    = $paths->filter(path| $path.values->exists(x| $x.property->instanceOf(QualifiedProperty)));    
+   let inlinedPropertyTree       = $paths->buildPropertyTree()->inlineQualifiedPropertyNodes();
+   let inlinedGraphTree          = $inlinedPropertyTree->propertyTreeToGraphFetchTree($class);
+   let inlinedPropertyGraphTrees = $inlinedGraphTree.subTrees->cast(@PropertyGraphFetchTree);
+   let withFoundProperties       = $node->addSubTrees($inlinedPropertyGraphTrees);
+   let updatedForClass           = $qualifiedPropertyPaths->fold({path, gt| $gt->recordQualifiedProperties($path)}, $withFoundProperties);
+ 
+   if($ensureConstraintsForSubTrees,
+      {| 
+         let updatedProcessed          = $processed->add($class);
+         let newSubTrees = $updatedForClass.subTrees->map({st| 
+            let returns = $st->cast(@PropertyGraphFetchTree).property->functionReturnType().rawType->toOne();
+            if($returns->instanceOf(Class) && !$updatedProcessed->contains($returns),
+               | $st->ensureFunctionRequirementsFromLambda($returns->cast(@Class<Any>), $f, $updatedProcessed, $ensureConstraintsForSubTrees),
+               | $st
+            );
+         });
+         ^$updatedForClass(subTrees=$newSubTrees);
+      },
+      | $updatedForClass
+   );
+
+}
+
+
 function meta::pure::graphFetch::ensureFunctionRequirements(node:GraphFetchTree[1], class:Class<Any>[1], f:Function<{Class<Any>[1]->FunctionDefinition<Any>[*]}>[1], processed:Class<Any>[*], ensureConstraintsForSubTrees:Boolean[1]): GraphFetchTree[1]
 {
    let constraintResult          = pathsForConstraintFunctions($class, $f->eval($class));
