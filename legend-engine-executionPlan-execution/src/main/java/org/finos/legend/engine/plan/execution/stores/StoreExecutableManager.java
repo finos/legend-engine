@@ -18,8 +18,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+
 import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
@@ -64,29 +64,50 @@ public enum StoreExecutableManager
 
         if (isRegistered && requestID != null)
         {
-            sessionIDToProvidedID.computeIfAbsent(RequestContext.getSessionID(context), x -> Collections.synchronizedList(new ArrayList<>())).add(requestID);
+            List<String> foo = sessionIDToProvidedID.computeIfAbsent(RequestContext.getSessionID(context), x -> Collections.synchronizedList(new ArrayList<>()));
+            if (!foo.contains(requestID))
+            {
+                foo.add(requestID);
+            }
         }
 
         addExecutable(requestID, execution);
     }
 
 
-    public void removeExecutable(String id, StoreExecutable executable) {
-        if (isRegistered && id != null) {
-            try {
-                List<String> providedIds = sessionIDToProvidedID.get(id);
-                if (providedIds != null) {
-                    providedIds.forEach(providedId -> requestExecutableMap.computeIfPresent(providedId, (key, executableList) -> {
+    public void removeExecutable(String id, StoreExecutable executable)
+    {
+        if (isRegistered && id != null)
+        {
+            try
+            {
+                ArrayList<String> providedIds;
+                providedIds = (ArrayList<String>) sessionIDToProvidedID.get(id);
+                if (providedIds == null)
+                {
+                    providedIds = new ArrayList<>();
+                    providedIds.add(id);
+                }
+
+                if (providedIds != null)
+                {
+                    providedIds.forEach(providedId -> requestExecutableMap.computeIfPresent(providedId, (key, executableList) ->
+                    {
                         executableList.remove(executable);
-                        if (executableList.isEmpty()) {
+                        if (executableList.isEmpty())
+                        {
                             return null;
-                        } else {
+                        }
+                        else
+                        {
                             return executableList;
                         }
                     }));
                     sessionIDToProvidedID.remove(id);
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
                 LOGGER.info(new LogInfo(null, LoggingEventType.EXECUTABLE_REMOVE_ERROR, "Unable to remove executable for id " + id).toString());
             }
         }
@@ -103,10 +124,15 @@ public enum StoreExecutableManager
     public List<StoreExecutable> getExecutables(String id)
     {
         List<String> requestIDs = new ArrayList<>(sessionIDToProvidedID.getOrDefault(id, Collections.emptyList()));
-        requestIDs.add(id);
+        if (requestIDs.isEmpty())
+        {
+            requestIDs.add(id);
+        }
+
         return requestIDs.stream()
                 .flatMap(reqID -> requestExecutableMap.getOrDefault(reqID, Collections.emptyList()).stream())
-                .collect(Collectors.toList());    }
+                .collect(Collectors.toList());
+    }
 
     public List<StoreExecutable> getExecutables(RequestContext context)
     {
@@ -119,15 +145,21 @@ public enum StoreExecutableManager
         this.isRegistered = true;
     }
 
-    public int cancelExecutablesOnSession(String sessionID) {
+    public int cancelExecutablesOnSession(String sessionID)
+    {
         AtomicInteger numberOfCancelled = new AtomicInteger(0);
         List<StoreExecutable> executables = requestExecutableMap.remove(sessionID);
-        if (executables != null) {
-            executables.forEach(executable -> {
-                try {
+        if (executables != null)
+        {
+            executables.forEach(executable ->
+            {
+                try
+                {
                     executable.cancel();
                     numberOfCancelled.incrementAndGet();
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     LOGGER.error(new LogInfo(null, LoggingEventType.EXECUTABLE_CANCELLATION_ERROR, "Unable to cancel executable for ID " + sessionID + ": " + e.getMessage()).toString());
                 }
             });
@@ -135,7 +167,7 @@ public enum StoreExecutableManager
         return numberOfCancelled.get();
     }
 
-    public Integer cancelExecutablesByID(String requestID)
+    public int cancelExecutablesByID(String requestID)
     {
         return cancelExecutablesOnSession(requestID);
 
