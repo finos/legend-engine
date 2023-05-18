@@ -39,6 +39,8 @@ public class PureIDELight extends PureIDEServer
         return Lists.mutable.<RepositoryCodeStorage>empty()
                 .with(this.buildCore("legend-engine-xt-persistence-pure", "persistence"))
                 .with(this.buildCore("legend-engine-xt-mastery-pure", "mastery"))
+                .with(this.buildCore("legend-engine-xt-functionActivator-pure", "function_activator"))
+                .with(this.buildCore("legend-engine-xt-snowflakeApp-pure", "snowflakeapp"))
                 .with(this.buildCore("legend-engine-xt-relationalStore-pure", "relational"))
                 .with(this.buildCore("legend-engine-xt-relationalStore-sqlserver-pure", "relational_sqlserver"))
                 .with(this.buildCore("legend-engine-xt-relationalStore-memsql-pure", "relational_memsql"))

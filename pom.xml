@@ -173,6 +173,16 @@
         <module>legend-engine-xt-data-space-generation</module>
         <module>legend-engine-xt-data-space-api</module>
 
+        <module>legend-engine-xt-functionActivator-api</module>
+        <module>legend-engine-xt-functionActivator-pure</module>
+        <module>legend-engine-xt-functionActivator-protocol</module>
+
+        <module>legend-engine-xt-snowflakeApp-compiler</module>
+        <module>legend-engine-xt-snowflakeApp-pure</module>
+        <module>legend-engine-xt-snowflakeApp-protocol</module>
+        <module>legend-engine-xt-snowflakeApp-grammar</module>
+        <module>legend-engine-xt-snowflakeApp-api</module>
+
         <module>legend-engine-xt-analytics-store-entitlement</module>
         <module>legend-engine-xt-analytics-store-entitlement-api</module>
         <module>legend-engine-xt-relationalStore-store-entitlement-analytics</module>
@@ -316,7 +326,7 @@
         <maven.compiler.release>8</maven.compiler.release>
         <maven.enforcer.requireJavaVersion>[11.0.10,12)</maven.enforcer.requireJavaVersion>
         <project.build.outputTimestamp>1680115922</project.build.outputTimestamp>
-        <surefire.vm.params>-XX:SoftRefLRUPolicyMSPerMB=1</surefire.vm.params>
+        <surefire.vm.params>-XX:SoftRefLRUPolicyMSPerMB=1 -Dlegend.test.h2.properties=""</surefire.vm.params>
 
         <!-- Databases -->
         <hikaricp.version>4.0.3</hikaricp.version>
@@ -734,7 +744,51 @@
                 <version>1.26</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-functionActivator-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-functionActivator-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-functionActivator-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+
+
             <!-- ENGINE -->
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-snowflakeApp-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-snowflakeApp-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-snowflakeApp-compiler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-snowflakeApp-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-snowflakeApp-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>

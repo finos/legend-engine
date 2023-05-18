@@ -284,7 +284,6 @@ public class TestCompilationFromGrammar
                         "   fteFactor: Float[1];\n" +
                         "   firmName : String[0..1];\n" +
                         "}\n" +
-
                         "function example::testYtd(): Any[*]\n" +
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
@@ -306,7 +305,6 @@ public class TestCompilationFromGrammar
                         "   fteFactor: Float[1];\n" +
                         "   firmName : String[0..1];\n" +
                         "}\n" +
-
                         "function example::testYtd(): Any[*]\n" +
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
@@ -328,7 +326,6 @@ public class TestCompilationFromGrammar
                         "   fteFactor: Float[1];\n" +
                         "   firmName : String[0..1];\n" +
                         "}\n" +
-
                         "function example::testYtd(): Any[*]\n" +
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
@@ -350,7 +347,6 @@ public class TestCompilationFromGrammar
                         "   fteFactor: Float[1];\n" +
                         "   firmName : String[0..1];\n" +
                         "}\n" +
-
                         "function example::testYtd(): Any[*]\n" +
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
@@ -372,7 +368,6 @@ public class TestCompilationFromGrammar
                         "   fteFactor: Float[1];\n" +
                         "   firmName : String[0..1];\n" +
                         "}\n" +
-
                         "function example::testYtd(): Any[*]\n" +
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
@@ -394,7 +389,6 @@ public class TestCompilationFromGrammar
                         "   fteFactor: Float[1];\n" +
                         "   firmName : String[0..1];\n" +
                         "}\n" +
-
                         "function example::testYtd(): Any[*]\n" +
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
@@ -416,7 +410,6 @@ public class TestCompilationFromGrammar
                         "   fteFactor: Float[1];\n" +
                         "   firmName : String[0..1];\n" +
                         "}\n" +
-
                         "function example::testYtd(): Any[*]\n" +
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
@@ -438,7 +431,6 @@ public class TestCompilationFromGrammar
                         "   fteFactor: Float[1];\n" +
                         "   firmName : String[0..1];\n" +
                         "}\n" +
-
                         "function example::testYtd(): Any[*]\n" +
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
@@ -460,7 +452,6 @@ public class TestCompilationFromGrammar
                         "   fteFactor: Float[1];\n" +
                         "   firmName : String[0..1];\n" +
                         "}\n" +
-
                         "function example::testYtd(): Any[*]\n" +
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
@@ -482,7 +473,6 @@ public class TestCompilationFromGrammar
                         "   fteFactor: Float[1];\n" +
                         "   firmName : String[0..1];\n" +
                         "}\n" +
-
                         "function example::testYtd(): Any[*]\n" +
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
@@ -504,7 +494,6 @@ public class TestCompilationFromGrammar
                         "   fteFactor: Float[1];\n" +
                         "   firmName : String[0..1];\n" +
                         "}\n" +
-
                         "function example::testYtd(): Any[*]\n" +
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
@@ -526,7 +515,6 @@ public class TestCompilationFromGrammar
                         "   fteFactor: Float[1];\n" +
                         "   firmName : String[0..1];\n" +
                         "}\n" +
-
                         "function example::testYtd(): Any[*]\n" +
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
@@ -548,11 +536,31 @@ public class TestCompilationFromGrammar
                         "   fteFactor: Float[1];\n" +
                         "   firmName : String[0..1];\n" +
                         "}\n" +
-
                         "function example::testYtd(): Any[*]\n" +
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
                         "[ agg(p | p52wa($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
+                        "['includedDate',  'calendarAgg'])" +
+                        "}");
+    }
+
+    @Test
+    public void testCompilationP12mtd()
+    {
+        TestCompilationFromGrammarTestSuite.test(
+                "###Pure\n" +
+                        "Class test::Employee\n" +
+                        "{\n" +
+                        "   id       : Integer[1];\n" +
+                        "   hireDate : Date[1];\n" +
+                        "   hireType : String[1];\n" +
+                        "   fteFactor: Float[1];\n" +
+                        "   firmName : String[0..1];\n" +
+                        "}\n" +
+                        "function example::testYtd(): Any[*]\n" +
+                        "{ test::Employee.all()->groupBy(" +
+                        "[p|$p.hireDate]," +
+                        "[ agg(p | p12mtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ]," +
                         "['includedDate',  'calendarAgg'])" +
                         "}");
     }
@@ -570,7 +578,6 @@ public class TestCompilationFromGrammar
                         "   fteFactor: Float[1];\n" +
                         "   firmName : String[0..1];\n" +
                         "}\n" +
-
                         "function example::testYtd(): Any[*]\n" +
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
@@ -592,7 +599,6 @@ public class TestCompilationFromGrammar
                         "   fteFactor: Float[1];\n" +
                         "   firmName : String[0..1];\n" +
                         "}\n" +
-
                         "function example::testYtd(): Any[*]\n" +
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
@@ -614,7 +620,6 @@ public class TestCompilationFromGrammar
                         "   fteFactor: Float[1];\n" +
                         "   firmName : String[0..1];\n" +
                         "}\n" +
-
                         "function example::testYtd(): Any[*]\n" +
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
@@ -636,7 +641,6 @@ public class TestCompilationFromGrammar
                         "   fteFactor: Float[1];\n" +
                         "   firmName : String[0..1];\n" +
                         "}\n" +
-
                         "function example::testYtd(): Any[*]\n" +
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
@@ -658,7 +662,6 @@ public class TestCompilationFromGrammar
                         "   fteFactor: Float[1];\n" +
                         "   firmName : String[0..1];\n" +
                         "}\n" +
-
                         "function example::testYtd(): Any[*]\n" +
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
@@ -680,7 +683,6 @@ public class TestCompilationFromGrammar
                         "   fteFactor: Float[1];\n" +
                         "   firmName : String[0..1];\n" +
                         "}\n" +
-
                         "function example::testYtd(): Any[*]\n" +
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
@@ -702,7 +704,6 @@ public class TestCompilationFromGrammar
                         "   fteFactor: Float[1];\n" +
                         "   firmName : String[0..1];\n" +
                         "}\n" +
-
                         "function example::testYtd(): Any[*]\n" +
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
@@ -724,7 +725,6 @@ public class TestCompilationFromGrammar
                         "   fteFactor: Float[1];\n" +
                         "   firmName : String[0..1];\n" +
                         "}\n" +
-
                         "function example::testYtd(): Any[*]\n" +
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
@@ -746,7 +746,6 @@ public class TestCompilationFromGrammar
                         "   fteFactor: Float[1];\n" +
                         "   firmName : String[0..1];\n" +
                         "}\n" +
-
                         "function example::testYtd(): Any[*]\n" +
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
@@ -768,7 +767,6 @@ public class TestCompilationFromGrammar
                         "   fteFactor: Float[1];\n" +
                         "   firmName : String[0..1];\n" +
                         "}\n" +
-
                         "function example::testYtd(): Any[*]\n" +
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
@@ -790,7 +788,6 @@ public class TestCompilationFromGrammar
                         "   fteFactor: Float[1];\n" +
                         "   firmName : String[0..1];\n" +
                         "}\n" +
-
                         "function example::testYtd(): Any[*]\n" +
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
@@ -812,7 +809,6 @@ public class TestCompilationFromGrammar
                         "   fteFactor: Float[1];\n" +
                         "   firmName : String[0..1];\n" +
                         "}\n" +
-
                         "function example::testYtd(): Any[*]\n" +
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
@@ -834,7 +830,6 @@ public class TestCompilationFromGrammar
                         "   fteFactor: Float[1];\n" +
                         "   firmName : String[0..1];\n" +
                         "}\n" +
-
                         "function example::testYtd(): Any[*]\n" +
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
@@ -856,7 +851,6 @@ public class TestCompilationFromGrammar
                         "   fteFactor: Float[1];\n" +
                         "   firmName : String[0..1];\n" +
                         "}\n" +
-
                         "function example::testYtd(): Any[*]\n" +
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
@@ -878,7 +872,6 @@ public class TestCompilationFromGrammar
                         "   fteFactor: Float[1];\n" +
                         "   firmName : String[0..1];\n" +
                         "}\n" +
-
                         "function example::testYtd(): Any[*]\n" +
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
@@ -900,7 +893,6 @@ public class TestCompilationFromGrammar
                         "   fteFactor: Float[1];\n" +
                         "   firmName : String[0..1];\n" +
                         "}\n" +
-
                         "function example::testYtd(): Any[*]\n" +
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
@@ -922,7 +914,6 @@ public class TestCompilationFromGrammar
                         "   fteFactor: Float[1];\n" +
                         "   firmName : String[0..1];\n" +
                         "}\n" +
-
                         "function example::testYtd(): Any[*]\n" +
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
@@ -944,7 +935,6 @@ public class TestCompilationFromGrammar
                         "   fteFactor: Float[1];\n" +
                         "   firmName : String[0..1];\n" +
                         "}\n" +
-
                         "function example::testYtd(): Any[*]\n" +
                         "{ test::Employee.all()->groupBy(" +
                         "[p|$p.hireDate]," +
