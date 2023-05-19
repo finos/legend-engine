@@ -137,6 +137,12 @@ public class GraphQLCachableVisitorHelper
             {
                 return val;
             }
+            
+            @Override
+            public Definition visit(InputObjectTypeDefinition val)
+            {
+                return val;
+            }
 
             @Override
             public Definition visit(OperationDefinition val)
