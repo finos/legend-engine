@@ -123,7 +123,7 @@ MongoDBConnection test::mongodb::testConnection
 {
     database: userDatabase;
     store: test::mongodb::mydatabase;
-    serverURLs: [localhost:49673];
+    serverURLs: [localhost:49829];
     authentication: # UserPassword {
         username: 'sa';
         password: SystemPropertiesSecret
@@ -131,4 +131,43 @@ MongoDBConnection test::mongodb::testConnection
             systemPropertyName: 'mongo_pwd';
         };
     }#;
+}
+
+###Service
+Service test::mongodb::service::PersonService
+{
+    pattern: '/api/allPersons';
+    documentation: '';
+    autoActivateUpdates: true;
+    execution: Single
+    {
+        query: |meta::external::store::mongodb::executionTest::domain::Person.all()->graphFetch(#{meta::external::store::mongodb::executionTest::domain::Person{firstName,lastName,firm{legalName}}}#)->serialize(#{meta::external::store::mongodb::executionTest::domain::Person{firstName,lastName,firm{legalName}}}#);
+        mapping: test::mongodb::TestPersonMapping;
+        runtime: test::mongodb::runtime::TestMongoDBRuntime;
+    }
+    testSuites:
+    [
+        testSuite_1:
+        {
+            tests:
+            [
+                test_1:
+                {
+                    asserts:
+                    [
+                        assertion_1:
+                        EqualToJson
+                        #{
+                            expected:
+                            ExternalFormat
+                            #{
+                                contentType: 'application/json';
+                                data: '[]';
+                            }#;
+                        }#
+                    ]
+                }
+            ]
+        }
+    ]
 }
