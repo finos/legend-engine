@@ -42,11 +42,8 @@ import java.util.stream.Stream;
 
 public class ExecutionNodeSerializerHelper
 {
-    private static IExecutionNodeContext context;
-
     public static <T> Result executeSerialize(IPlatformPureExpressionExecutionNodeSerializeSpecifics specifics, SerializationConfig config, Result childResult, IExecutionNodeContext context)
     {
-        ExecutionNodeSerializerHelper.context = context;
         Stream<T> stream;
         if (childResult instanceof ConstantResult)
         {
@@ -70,7 +67,7 @@ public class ExecutionNodeSerializerHelper
             throw new IllegalArgumentException("Unexpected result: " + childResult.getClass().getName());
         }
 
-        return new JsonStreamingResult(new Serializer<>(stream, specifics, config), childResult);
+        return new JsonStreamingResult(new Serializer<>(stream, specifics, config, context), childResult);
     }
 
     private static class Serializer<T> implements JsonStreamingResult.JsonStreamHandler
@@ -78,17 +75,19 @@ public class ExecutionNodeSerializerHelper
         private final Stream<T> stream;
         private final IPlatformPureExpressionExecutionNodeSerializeSpecifics specifics;
         private final SerializationConfig config;
+        private final IExecutionNodeContext context;
 
-        Serializer(Stream<T> stream, IPlatformPureExpressionExecutionNodeSerializeSpecifics specifics, SerializationConfig config)
+        Serializer(Stream<T> stream, IPlatformPureExpressionExecutionNodeSerializeSpecifics specifics, SerializationConfig config, IExecutionNodeContext context)
         {
             this.stream = stream;
             this.specifics = specifics;
             this.config = config;
+            this.context = context;
         }
 
         private IGraphSerializer<T> createSerializer(JsonGenerator generator)
         {
-            return (IGraphSerializer<T>) specifics.serializer(new Writer(generator, this.config), context);
+            return (IGraphSerializer<T>) specifics.serializer(new Writer(generator, this.config), this.context);
         }
 
         @Override

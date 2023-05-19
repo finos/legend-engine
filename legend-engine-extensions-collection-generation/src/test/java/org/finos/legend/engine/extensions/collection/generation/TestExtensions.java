@@ -28,22 +28,54 @@ import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtens
 import org.finos.legend.engine.generation.DataSpaceAnalyticsArtifactGenerationExtension;
 import org.finos.legend.engine.generation.OpenApiArtifactGenerationExtension;
 import org.finos.legend.engine.generation.SearchDocumentArtifactGenerationExtension;
+import org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLGrammarParserExtension;
+import org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLPureGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
+import org.finos.legend.engine.language.pure.dsl.authentication.grammar.from.AuthenticationGrammarParserExtension;
+import org.finos.legend.engine.language.pure.dsl.authentication.grammar.to.AuthenticationGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.ArtifactGenerationExtension;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.ArtifactGenerationExtensionLoader;
+import org.finos.legend.engine.language.pure.dsl.generation.grammar.from.GenerationParserExtension;
+import org.finos.legend.engine.language.pure.dsl.generation.grammar.to.GenerationGrammarComposerExtension;
+import org.finos.legend.engine.language.pure.dsl.mastery.grammar.from.MasteryParserExtension;
+import org.finos.legend.engine.language.pure.dsl.mastery.grammar.to.MasteryGrammarComposerExtension;
+import org.finos.legend.engine.language.pure.dsl.persistence.cloud.grammar.from.PersistenceCloudParserExtension;
+import org.finos.legend.engine.language.pure.dsl.persistence.cloud.grammar.to.PersistenceCloudComposerExtension;
+import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.PersistenceParserExtension;
+import org.finos.legend.engine.language.pure.dsl.persistence.grammar.to.PersistenceComposerExtension;
+import org.finos.legend.engine.language.pure.dsl.service.grammar.from.ServiceParserExtension;
+import org.finos.legend.engine.language.pure.dsl.service.grammar.to.ServiceGrammarComposerExtension;
+import org.finos.legend.engine.language.pure.grammar.from.CorePureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.DataSpaceParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.DiagramParserExtension;
+import org.finos.legend.engine.language.pure.grammar.from.ExternalFormatConnectionGrammarParserExtension;
+import org.finos.legend.engine.language.pure.grammar.from.ExternalFormatGrammarParserExtension;
+import org.finos.legend.engine.language.pure.grammar.from.RelationalGrammarParserExtension;
+import org.finos.legend.engine.language.pure.grammar.from.ServiceStoreGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.TextParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
+import org.finos.legend.engine.language.pure.grammar.to.BigQueryGrammarComposerExtension;
+import org.finos.legend.engine.language.pure.grammar.to.CorePureGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.DataSpaceGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.DiagramGrammarComposerExtension;
+import org.finos.legend.engine.language.pure.grammar.to.ExternalFormatGrammarComposerExtension;
+import org.finos.legend.engine.language.pure.grammar.to.RelationalGrammarComposerExtension;
+import org.finos.legend.engine.language.pure.grammar.to.ServiceStoreGrammarComposerExtension;
+import org.finos.legend.engine.language.pure.grammar.to.SpannerGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.TextGrammarComposerExtension;
+import org.finos.legend.engine.language.pure.grammar.to.TrinoGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
+import org.finos.legend.engine.language.snowflakeApp.compiler.toPureGraph.SnowflakeAppCompilerExtension;
+import org.finos.legend.engine.language.snowflakeApp.grammar.from.SnowflakeAppGrammarParserExtension;
+import org.finos.legend.engine.language.snowflakeApp.grammar.to.SnowflakeAppGrammarComposer;
+import org.finos.legend.engine.language.stores.elasticsearch.v7.from.ElasticsearchGrammarParserExtension;
+import org.finos.legend.engine.language.stores.elasticsearch.v7.to.ElasticsearchGrammarComposerExtension;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtensionLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeAppProtocolExtension;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
@@ -221,11 +253,11 @@ public class TestExtensions
         return Lists.mutable.<Class<? extends PureProtocolExtension>>empty()
                 .with(org.finos.legend.engine.protocol.pure.v1.CorePureProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.DataSpaceProtocolExtension.class)
+                .with(SnowflakeAppProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.DiagramProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.GenerationProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.PersistenceProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.PersistenceCloudProtocolExtension.class)
-                .with(org.finos.legend.engine.protocol.pure.v1.PersistenceRelationalProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.MasteryProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.RelationalProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.BigQueryProtocolExtension.class)
@@ -258,23 +290,23 @@ public class TestExtensions
     {
         // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
         return Lists.mutable.<Class<? extends PureGrammarParserExtension>>empty()
-                .with(org.finos.legend.engine.language.pure.grammar.from.CorePureGrammarParser.class)
+                .with(CorePureGrammarParser.class)
                 .with(DataSpaceParserExtension.class)
+                .with(SnowflakeAppGrammarParserExtension.class)
                 .with(DiagramParserExtension.class)
-                .with(org.finos.legend.engine.language.pure.grammar.from.ExternalFormatConnectionGrammarParserExtension.class)
-                .with(org.finos.legend.engine.language.pure.grammar.from.ExternalFormatGrammarParserExtension.class)
-                .with(org.finos.legend.engine.language.pure.dsl.generation.grammar.from.GenerationParserExtension.class)
-                .with(org.finos.legend.engine.language.pure.dsl.mastery.grammar.from.MasteryParserExtension.class)
-                .with(org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.PersistenceParserExtension.class)
-                .with(org.finos.legend.engine.language.pure.dsl.persistence.cloud.grammar.from.PersistenceCloudParserExtension.class)
-                .with(org.finos.legend.engine.language.pure.dsl.persistence.relational.grammar.from.PersistenceRelationalParserExtension.class)
-                .with(org.finos.legend.engine.language.pure.grammar.from.RelationalGrammarParserExtension.class)
-                .with(org.finos.legend.engine.language.pure.dsl.service.grammar.from.ServiceParserExtension.class)
-                .with(org.finos.legend.engine.language.pure.dsl.authentication.grammar.from.AuthenticationGrammarParserExtension.class)
-                .with(org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLGrammarParserExtension.class)
-                .with(org.finos.legend.engine.language.pure.grammar.from.ServiceStoreGrammarParserExtension.class)
+                .with(ExternalFormatConnectionGrammarParserExtension.class)
+                .with(ExternalFormatGrammarParserExtension.class)
+                .with(GenerationParserExtension.class)
+                .with(MasteryParserExtension.class)
+                .with(PersistenceParserExtension.class)
+                .with(PersistenceCloudParserExtension.class)
+                .with(RelationalGrammarParserExtension.class)
+                .with(ServiceParserExtension.class)
+                .with(AuthenticationGrammarParserExtension.class)
+                .with(GraphQLGrammarParserExtension.class)
+                .with(ServiceStoreGrammarParserExtension.class)
                 .with(TextParserExtension.class)
-                .with(org.finos.legend.engine.language.stores.elasticsearch.v7.from.ElasticsearchGrammarParserExtension.class)
+                .with(ElasticsearchGrammarParserExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.integration.MongoDBGrammarParserExtension.class)
                 ;
     }
@@ -283,24 +315,25 @@ public class TestExtensions
     {
         // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
         return Lists.mutable.<Class<? extends PureGrammarComposerExtension>>empty()
-                .with(org.finos.legend.engine.language.pure.grammar.to.CorePureGrammarComposer.class)
+                .with(CorePureGrammarComposer.class)
                 .with(DataSpaceGrammarComposerExtension.class)
+                .with(SnowflakeAppGrammarComposer.class)
                 .with(DiagramGrammarComposerExtension.class)
-                .with(org.finos.legend.engine.language.pure.grammar.to.ExternalFormatGrammarComposerExtension.class)
-                .with(org.finos.legend.engine.language.pure.dsl.generation.grammar.to.GenerationGrammarComposerExtension.class)
-                .with(org.finos.legend.engine.language.pure.dsl.mastery.grammar.to.MasteryGrammarComposerExtension.class)
-                .with(org.finos.legend.engine.language.pure.dsl.persistence.grammar.to.PersistenceComposerExtension.class)
-                .with(org.finos.legend.engine.language.pure.dsl.persistence.cloud.grammar.to.PersistenceCloudComposerExtension.class)
-                .with(org.finos.legend.engine.language.pure.grammar.to.RelationalGrammarComposerExtension.class)
-                .with(org.finos.legend.engine.language.pure.grammar.to.BigQueryGrammarComposerExtension.class)
-                .with(org.finos.legend.engine.language.pure.grammar.to.SpannerGrammarComposerExtension.class)
-                .with(org.finos.legend.engine.language.pure.grammar.to.TrinoGrammarComposerExtension.class)
-                .with(org.finos.legend.engine.language.pure.dsl.service.grammar.to.ServiceGrammarComposerExtension.class)
-                .with(org.finos.legend.engine.language.pure.grammar.to.ServiceStoreGrammarComposerExtension.class)
-                .with(org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLPureGrammarComposerExtension.class)
-                .with(org.finos.legend.engine.language.pure.dsl.authentication.grammar.to.AuthenticationGrammarComposerExtension.class)
+                .with(ExternalFormatGrammarComposerExtension.class)
+                .with(GenerationGrammarComposerExtension.class)
+                .with(MasteryGrammarComposerExtension.class)
+                .with(PersistenceComposerExtension.class)
+                .with(PersistenceCloudComposerExtension.class)
+                .with(RelationalGrammarComposerExtension.class)
+                .with(BigQueryGrammarComposerExtension.class)
+                .with(SpannerGrammarComposerExtension.class)
+                .with(TrinoGrammarComposerExtension.class)
+                .with(ServiceGrammarComposerExtension.class)
+                .with(ServiceStoreGrammarComposerExtension.class)
+                .with(GraphQLPureGrammarComposerExtension.class)
+                .with(AuthenticationGrammarComposerExtension.class)
                 .with(TextGrammarComposerExtension.class)
-                .with(org.finos.legend.engine.language.stores.elasticsearch.v7.to.ElasticsearchGrammarComposerExtension.class)
+                .with(ElasticsearchGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.integration.MongoDBGrammarComposerExtension.class)
                 ;
     }
@@ -310,6 +343,7 @@ public class TestExtensions
         // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
         return Lists.mutable.<Class<? extends CompilerExtension>>empty()
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.DiagramCompilerExtension.class)
+                .with(SnowflakeAppCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.DataSpaceCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.TextCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.CoreCompilerExtension.class)
@@ -407,13 +441,13 @@ public class TestExtensions
                 .with("core_external_format_xml")
                 .with("core_external_query_graphql")
                 .with("core_external_query_graphql_metamodel")
+                .with("core_function_activator")
                 .with("core_external_compiler")
+                .with("core_persistence")
+                .with("core_mastery")
                 .with("core_external_language_daml")
                 .with("core_external_language_haskell")
-                .with("core_mastery")
-                .with("core_persistence")
                 .with("core_persistence_cloud")
-                .with("core_persistence_relational")
                 .with("core_relational")
                 .with("core_relational_bigquery")
                 .with("core_relational_spanner")
@@ -421,6 +455,7 @@ public class TestExtensions
                 .with("core_relational_store_entitlement")
                 .with("core_servicestore")
                 .with("core_authentication")
+                .with("core_snowflakeapp")
                 .with("core_text_metamodel")
                 .with("core_external_language_java")
                 .with("core_java_platform_binding")

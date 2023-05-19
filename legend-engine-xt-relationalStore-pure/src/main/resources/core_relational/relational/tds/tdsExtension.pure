@@ -17,14 +17,14 @@ import meta::relational::metamodel::join::*;
 
 
 
-function meta::pure::tds::extensions::rowValueDifference(tds1 : TabularDataSet[1], tds2 : TabularDataSet[1], joinColumns : String[1..*], columnValueDifferenceColumns : String[1..*]) : TabularDataSet[1]
+function <<functionType.NormalizeRequiredFunction>> meta::pure::tds::extensions::rowValueDifference(tds1 : TabularDataSet[1], tds2 : TabularDataSet[1], joinColumns : String[1..*], columnValueDifferenceColumns : String[1..*]) : TabularDataSet[1]
 {
    rowValueDifference($tds1, $tds2, $joinColumns, $joinColumns, $columnValueDifferenceColumns);   
 }
 
 // Takes two TDSs that have some common key / join columns and computes the flags to identify if the values have changed
 
-function meta::pure::tds::extensions::rowValueDifference(tds1 : TabularDataSet[1], tds2 : TabularDataSet[1], tds1JoinColumns : String[1..*], tds2JoinColumns : String[1..*], columnsToCheck : String[1..*]) : TabularDataSet[1]
+function <<functionType.NormalizeRequiredFunction>> meta::pure::tds::extensions::rowValueDifference(tds1 : TabularDataSet[1], tds2 : TabularDataSet[1], tds1JoinColumns : String[1..*], tds2JoinColumns : String[1..*], columnsToCheck : String[1..*]) : TabularDataSet[1]
 {
    $tds1->restrict($tds1JoinColumns->concatenate($columnsToCheck)->removeDuplicates())->renameColumns($columnsToCheck->map(vc|pair($vc, $vc + '_1')))
       ->join(
@@ -91,13 +91,13 @@ function <<access.private>>
       ->extend(col({r:TDSRow[1]|and($diffCols.name->map(name|$r.getBoolean($name + '_matched')))}, 'row_matched'))
 }               
    
-function meta::pure::tds::extensions::columnValueDifference(tds1 : TabularDataSet[1], tds2 : TabularDataSet[1], joinColumns : String[1..*], columnValueDifferenceColumns : String[1..*]) : TabularDataSet[1]
+function <<functionType.NormalizeRequiredFunction>> meta::pure::tds::extensions::columnValueDifference(tds1 : TabularDataSet[1], tds2 : TabularDataSet[1], joinColumns : String[1..*], columnValueDifferenceColumns : String[1..*]) : TabularDataSet[1]
 {
    columnValueDifference($tds1, $tds2, $joinColumns, $joinColumns, $columnValueDifferenceColumns);
 }
 
 // Takes two TDSs that have some common key / join columns and computes the column value difference between a common numeric field
-function meta::pure::tds::extensions::columnValueDifference(tds1 : TabularDataSet[1], tds2 : TabularDataSet[1], tds1JoinColumns : String[1..*], tds2JoinColumns : String[1..*], columnValueDifferenceColumns : String[1..*]) : TabularDataSet[1]
+function <<functionType.NormalizeRequiredFunction>> meta::pure::tds::extensions::columnValueDifference(tds1 : TabularDataSet[1], tds2 : TabularDataSet[1], tds1JoinColumns : String[1..*], tds2JoinColumns : String[1..*], columnValueDifferenceColumns : String[1..*]) : TabularDataSet[1]
 {   
    $tds1
       ->renameColumns($columnValueDifferenceColumns->map(vc|pair($vc, $vc + '_1')))
@@ -145,7 +145,7 @@ function meta::pure::tds::extensions::columnValueDifference(tds1 : TabularDataSe
     )
 }
 
-function meta::pure::tds::extensions::zScore(input : TabularDataSet[1], window : String[*], cols : String[1..*], outputCols : String[1..*]) : TabularDataSet[1]
+function <<functionType.NormalizeRequiredFunction>> meta::pure::tds::extensions::zScore(input : TabularDataSet[1], window : String[*], cols : String[1..*], outputCols : String[1..*]) : TabularDataSet[1]
 {
    $input->joinWithOptionalColumns(
     $input
@@ -167,7 +167,7 @@ function meta::pure::tds::extensions::zScore(input : TabularDataSet[1], window :
       ->restrict($input.columns.name->concatenate($outputCols))
 }
 
-function meta::pure::tds::extensions::iqrClassify(input : TabularDataSet[1], window : String[*], cols : String[1..*], outputCols : String[1..*]) : TabularDataSet[1]
+function <<functionType.NormalizeRequiredFunction>> meta::pure::tds::extensions::iqrClassify(input : TabularDataSet[1], window : String[*], cols : String[1..*], outputCols : String[1..*]) : TabularDataSet[1]
 {
    $input
    ->joinWithOptionalColumns(

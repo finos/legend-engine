@@ -199,12 +199,6 @@ type:                                           (qualifiedName (LESS_THAN typeAr
                                                 |
                                                 unitName
 ;
-multiplicity:                                   BRACKET_OPEN multiplicityArgument BRACKET_CLOSE
-;
-fromMultiplicity:                               INTEGER
-;
-toMultiplicity:                                 INTEGER | STAR
-;
 functionTypePureType:                           type multiplicity
 ;
 typeAndMultiplicityParameters:                  LESS_THAN ((typeParameters multiplictyParameters?) | multiplictyParameters) GREATER_THAN
@@ -222,9 +216,24 @@ contravarianceTypeParameter:                    MINUS? identifier
 ;
 multiplicityArguments:                          multiplicityArgument (COMMA multiplicityArgument)*
 ;
-multiplicityArgument:                           identifier | ((fromMultiplicity DOT_DOT)? toMultiplicity)
-;
 typeArguments:                                  type (COMMA type)*
 ;
 multiplictyParameters:                          PIPE identifier (COMMA identifier)*
+;
+
+
+
+
+multiplicity:                                   BRACKET_OPEN multiplicityArgument BRACKET_CLOSE
+;
+multiplicityArgument:                           identifier | ((fromMultiplicity DOT_DOT)? toMultiplicity)
+;
+fromMultiplicity:                               INTEGER
+;
+toMultiplicity:                                 INTEGER | STAR
+;
+
+
+
+functionIdentifier:                         qualifiedName PAREN_OPEN (qualifiedName multiplicity (COMMA qualifiedName multiplicity)*)? PAREN_CLOSE COLON qualifiedName multiplicity
 ;
