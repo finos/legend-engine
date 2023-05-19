@@ -36,8 +36,6 @@ import org.junit.jupiter.api.Test;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
-import java.sql.Timestamp;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import static org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningComparator.GREATER_THAN;
@@ -108,10 +106,13 @@ public class LogicalPlanUtilsTest extends IngestModeTest
     @Test
     public void testJsonifyDatasetFilters() throws JsonProcessingException
     {
+        String ts1 = "2023-01-01 00:00:00.0";
+        String ts2 = "2023-01-02 00:00:00.0";
+
         DatasetFilter filter1 = DatasetFilter.of("id", FilterType.GREATER_THAN_EQUAL, 1);
         DatasetFilter filter2 = DatasetFilter.of("id", FilterType.LESS_THAN_EQUAL, 2);
-        DatasetFilter filter3 = DatasetFilter.of("start_time", FilterType.GREATER_THAN_EQUAL, new Timestamp(1669766400000L));
-        DatasetFilter filter4 = DatasetFilter.of("start_time", FilterType.LESS_THAN_EQUAL, new Timestamp(1669852800000L));
+        DatasetFilter filter3 = DatasetFilter.of("start_time", FilterType.GREATER_THAN_EQUAL, ts1);
+        DatasetFilter filter4 = DatasetFilter.of("start_time", FilterType.LESS_THAN_EQUAL, ts2);
 
         String stagingFilters1 = LogicalPlanUtils.jsonifyDatasetFilters(Arrays.asList(filter1));
         String stagingFilters2 = LogicalPlanUtils.jsonifyDatasetFilters(Arrays.asList(filter1, filter2));
@@ -124,8 +125,8 @@ public class LogicalPlanUtilsTest extends IngestModeTest
         Assertions.assertEquals(2, map.get("id").get("LTE"));
 
         map = mapper.readValue(stagingFilters3, typeRef);
-        Assertions.assertEquals("2022-11-30 08:00:00.0", map.get("start_time").get("GTE"));
-        Assertions.assertEquals("2022-12-01 08:00:00.0", map.get("start_time").get("LTE"));
+        Assertions.assertEquals(ts1, map.get("start_time").get("GTE"));
+        Assertions.assertEquals(ts2, map.get("start_time").get("LTE"));
     }
 
 

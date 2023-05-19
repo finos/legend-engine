@@ -80,7 +80,7 @@ public interface DatasetFilterAbstract
         Object val = value();
         if (!(value() instanceof Number))
         {
-            val = value().toString();
+            val = String.valueOf(value());
         }
         return val;
     }
