@@ -25,7 +25,11 @@ import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Pers
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceTest;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceTestBatch;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_dataset_DatasetType;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_dataset_Delta;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_dataset_Snapshot;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_dataset_actionindicator_ActionIndicatorFields;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_dataset_actionindicator_DeleteIndicatorForTds;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_dataset_deduplication_AnyVersion;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_dataset_deduplication_Deduplication;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_dataset_deduplication_MaxVersionForTds;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_dataset_partitioning_FieldBasedForTds;
@@ -260,6 +264,184 @@ public class TestPersistenceV2CompilationFromGrammar extends TestCompilationFrom
         assertTrue(partitioning instanceof Root_meta_pure_persistence_metamodel_dataset_partitioning_FieldBasedForTds);
         Root_meta_pure_persistence_metamodel_dataset_partitioning_FieldBasedForTds fieldBasedForTds = (Root_meta_pure_persistence_metamodel_dataset_partitioning_FieldBasedForTds) partitioning;
         assertArrayEquals(Lists.mutable.of("foo1", "bar2").toArray(), fieldBasedForTds._partitionFields().toArray());
+
+        // notifier
+        Root_meta_pure_persistence_metamodel_notifier_Notifier notifier = persistence._notifier();
+        assertNotNull(notifier);
+        List<? extends Root_meta_pure_persistence_metamodel_notifier_Notifyee> notifyees = notifier._notifyees().toList();
+        assertEquals(0, notifyees.size());
+
+        // tests
+        RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test> persistenceTests = persistence._tests();
+        assertNotNull(persistenceTests);
+        assertFalse(persistenceTests.isEmpty());
+        assertTrue(persistenceTests.getAny() instanceof Root_meta_pure_persistence_metamodel_PersistenceTest);
+        Root_meta_pure_persistence_metamodel_PersistenceTest test = (Root_meta_pure_persistence_metamodel_PersistenceTest) persistenceTests.getAny();
+        assertNotNull(test._isTestDataFromServiceOutput());
+        assertFalse(test._isTestDataFromServiceOutput());
+        assertFalse(test._testBatches().isEmpty());
+        assertTrue(test._testBatches().getAny() instanceof Root_meta_pure_persistence_metamodel_PersistenceTestBatch);
+        Root_meta_pure_persistence_metamodel_PersistenceTestBatch testBatch = test._testBatches().getAny();
+        assertNotNull(testBatch._testData());
+        assertNotNull(testBatch._assertions());
+        assertFalse(testBatch._assertions().isEmpty());
+    }
+
+    @Test
+    public void deltaTds()
+    {
+        Pair<PureModelContextData, PureModel> result = test(
+            "Class test::Person\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::Mapping ()\n" +
+                "\n" +
+                "###Service\n" +
+                "Service test::Service \n" +
+                "{\n" +
+                "  pattern : 'test';\n" +
+                "  documentation : 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: test::Person[1]|$src.name;\n" +
+                "    mapping: test::Mapping;\n" +
+                "    runtime:\n" +
+                "    #{\n" +
+                "      connections: [];\n" +
+                "    }#;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'test';\n" +
+                "    asserts: [];\n" +
+                "  }\n" +
+                "}\n" +
+                "\n" +
+                "###Persistence\n" +
+                "Persistence test::TestPersistence\n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  serviceOutputTargets:\n" +
+                "  [\n" +
+                "    ROOT\n" +
+                "    {\n" +
+                "      keys:\n" +
+                "      [\n" +
+                "        foo, bar\n" +
+                "      ]\n" +
+                "      datasetType: Delta\n" +
+                "      {\n" +
+                "        actionIndicator: DeleteIndicator\n" +
+                "        {\n" +
+                "          deleteField: toBeDeleted;\n" +
+                "          deleteValues: ['Yes', 'true'];\n" +
+                "        }\n" +
+                "      }\n" +
+                "      deduplication: AnyVersion;\n" +
+                "    }\n" +
+                "    ->\n" +
+                "    {\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  tests:\n" +
+                "  [\n" +
+                "    test1:\n" +
+                "    {\n" +
+                "      testBatches:\n" +
+                "      [\n" +
+                "        testBatch1:\n" +
+                "        {\n" +
+                "         data:\n" +
+                "         {\n" +
+                "           connection:\n" +
+                "           {\n" +
+                "              ExternalFormat\n" +
+                "              #{\n" +
+                "                contentType: 'application/x.flatdata';\n" +
+                "                data: 'FIRST_NAME,LAST_NAME\\nFred,Bloggs\\nJane,Doe';\n" +
+                "              }#\n" +
+                "           }\n" +
+                "         }\n" +
+                "         asserts:\n" +
+                "         [\n" +
+                "           assert1:\n" +
+                "             EqualToJson\n" +
+                "             #{\n" +
+                "               expected: \n" +
+                "                 ExternalFormat\n" +
+                "                 #{\n" +
+                "                   contentType: 'application/json';\n" +
+                "                   data: '{\"Age\":12, \"Name\":\"dummy\"}';\n" +
+                "                 }#;\n" +
+                "             }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "      isTestDataFromServiceOutput: false;\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n");
+
+        PureModel model = result.getTwo();
+
+        // persistence
+        PackageableElement packageableElement = model.getPackageableElement("test::TestPersistence");
+        assertNotNull(packageableElement);
+        assertTrue(packageableElement instanceof Root_meta_pure_persistence_metamodel_Persistence);
+
+        // documentation
+        Root_meta_pure_persistence_metamodel_Persistence persistence = (Root_meta_pure_persistence_metamodel_Persistence) packageableElement;
+        assertEquals("This is test documentation.", persistence._documentation());
+
+        // trigger
+        Root_meta_pure_persistence_metamodel_trigger_Trigger trigger = persistence._trigger();
+        assertNotNull(trigger);
+        assertTrue(trigger instanceof Root_meta_pure_persistence_metamodel_trigger_ManualTrigger);
+
+        // service
+        Root_meta_legend_service_metamodel_Service service = persistence._service();
+        assertNotNull(service);
+        assertEquals("Service", service._name());
+
+        // serviceOutputTarget
+        RichIterable<? extends Root_meta_pure_persistence_metamodel_service_ServiceOutputTarget> serviceServiceOutputTargets = persistence._serviceOutputTargets();
+        assertNotNull(serviceServiceOutputTargets);
+        assertFalse(serviceServiceOutputTargets.isEmpty());
+
+        // serviceOutput
+        Root_meta_pure_persistence_metamodel_service_ServiceOutputTarget serviceServiceOutputTarget = serviceServiceOutputTargets.getAny();
+        Root_meta_pure_persistence_metamodel_service_ServiceOutput serviceOutput = serviceServiceOutputTarget._serviceOutput();
+        assertTrue(serviceOutput instanceof Root_meta_pure_persistence_metamodel_service_TdsServiceOutput);
+        Root_meta_pure_persistence_metamodel_service_TdsServiceOutput tdsServiceOutput = (Root_meta_pure_persistence_metamodel_service_TdsServiceOutput) serviceOutput;
+
+        // target
+        Root_meta_pure_persistence_metamodel_target_PersistenceTarget target = serviceServiceOutputTarget._target();
+        assertNull(target);
+
+        // datasetKeys
+        assertArrayEquals(Lists.mutable.of("foo", "bar").toArray(), tdsServiceOutput._keys().toArray());
+
+        // deduplication
+        Root_meta_pure_persistence_metamodel_dataset_deduplication_Deduplication deduplication = tdsServiceOutput._deduplication();
+        assertTrue(deduplication instanceof Root_meta_pure_persistence_metamodel_dataset_deduplication_AnyVersion);
+
+        // datasetType
+        Root_meta_pure_persistence_metamodel_dataset_DatasetType datasetType = tdsServiceOutput._datasetType();
+        assertTrue(datasetType instanceof Root_meta_pure_persistence_metamodel_dataset_Delta);
+        Root_meta_pure_persistence_metamodel_dataset_Delta delta = (Root_meta_pure_persistence_metamodel_dataset_Delta) datasetType;
+
+        // action indicator
+        Root_meta_pure_persistence_metamodel_dataset_actionindicator_ActionIndicatorFields actionIndicator = delta._actionIndicator();
+        assertTrue(actionIndicator instanceof Root_meta_pure_persistence_metamodel_dataset_actionindicator_DeleteIndicatorForTds);
+        Root_meta_pure_persistence_metamodel_dataset_actionindicator_DeleteIndicatorForTds deleteIndicatorForTds = (Root_meta_pure_persistence_metamodel_dataset_actionindicator_DeleteIndicatorForTds) actionIndicator;
+        assertEquals("toBeDeleted", deleteIndicatorForTds._deleteField());
+        assertArrayEquals(Lists.mutable.of("Yes", "true").toArray(), deleteIndicatorForTds._deleteValues().toArray());
 
         // notifier
         Root_meta_pure_persistence_metamodel_notifier_Notifier notifier = persistence._notifier();
