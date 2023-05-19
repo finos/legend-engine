@@ -28,6 +28,7 @@ public class RelationalDatabaseConnection extends DatabaseConnection
     public AuthenticationStrategy authenticationStrategy;
     public DatabaseType databaseType;
     public List<PostProcessor> postProcessors = Collections.emptyList();
+    public Boolean localMode;
 
     public RelationalDatabaseConnection()
     {
