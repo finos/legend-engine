@@ -33,8 +33,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
       joinStringsProcessor = processJoinStringsOperationWithConcatCall_JoinStrings_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForMemSQL_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
-      tableNameToIdentifier = tableNameToIdentifierForMemSQL_String_1__DbConfig_1__String_1_,
-      schemaNameToIdentifier = schemaNameToIdentifierForMemSQL_String_1__DbConfig_1__String_1_,
       identifierProcessor = processIdentifierWithBackTicks_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
       ddlCommandsTranslator = getDDLCommandsTranslator()
@@ -256,17 +254,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
   + processLimit($s, $format, processTakeDefault_SelectSQLQuery_1__Format_1__String_1_, processSliceOrDropDefault_SelectSQLQuery_1__Format_1__Any_1__String_1_);
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::schemaNameToIdentifierForMemSQL(schemaName: String[1], dbConfig: DbConfig[1]): String[1]
-{
-  // Leave default un-processed, will be ignored in 'meta::relational::functions::sqlQueryToString::tableToString'
-  if($schemaName == 'default', |$schemaName, |$dbConfig.identifierProcessor($schemaName));
-}
-
-function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::tableNameToIdentifierForMemSQL(tableName: String[1], dbConfig: DbConfig[1]): String[1]
-{
-   $dbConfig.identifierProcessor($tableName);
-}
-
 function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::getDDLCommandsTranslator(): RelationalDDLCommandsTranslator[1]
 {
   ^RelationalDDLCommandsTranslator(
@@ -280,25 +267,25 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
 
 function meta::relational::functions::sqlQueryToString::memsql::translateCreateSchemaStatementMemSQL(createSchemaSQL:CreateSchemaSQL[1], dbConfig:DbConfig[1]) : String[*]
 {
-  if($createSchemaSQL.schema.name == 'default', |[], |'Create Schema ' + $createSchemaSQL.schema.name->schemaNameToIdentifierForMemSQL($dbConfig) + ';');
+  if($createSchemaSQL.schema.name == 'default', |[], |'Create Schema ' + $dbConfig.identifierProcessor($createSchemaSQL.schema.name) + ';');
 }
 
 function meta::relational::functions::sqlQueryToString::memsql::translateDropSchemaStatementMemSQL(dropSchemaSQL:DropSchemaSQL[1], dbConfig:DbConfig[1]) : String[*]
 {
-  if($dropSchemaSQL.schema.name == 'default', |[], |'Drop schema if exists ' + $dropSchemaSQL.schema.name->schemaNameToIdentifierForMemSQL($dbConfig) + ';');
+  if($dropSchemaSQL.schema.name == 'default', |[], |'Drop schema if exists ' + $dbConfig.identifierProcessor($dropSchemaSQL.schema.name) + ';');
 }
 
 function meta::relational::functions::sqlQueryToString::memsql::translateDropTableStatementMemSQL(dropTableSQL:DropTableSQL[1], dbConfig:DbConfig[1]) : String[1]
 {
   let t = $dropTableSQL.table;
-  'Drop table if exists '+ if($t.schema.name == 'default', |'', |$t.schema.name->schemaNameToIdentifierForMemSQL($dbConfig) + '.') + $t.name->tableNameToIdentifierForMemSQL($dbConfig) + ';';
+  'Drop table if exists '+ if($t.schema.name == 'default', |'', |$dbConfig.identifierProcessor($t.schema.name) + '.') + $dbConfig.identifierProcessor($t.name) + ';';
 }
 
 function meta::relational::functions::sqlQueryToString::memsql::translateCreateTableStatementMemSQL(createTableSQL:CreateTableSQL[1], dbConfig:DbConfig[1]) : String[1]
 {
   let t= $createTableSQL.table;
   let applyConstraints = $createTableSQL.applyConstraints;
-  'Create Table '+ if($t.schema.name == 'default', |'', |$t.schema.name->schemaNameToIdentifierForMemSQL($dbConfig) + '.') + $t.name->tableNameToIdentifierForMemSQL($dbConfig)+
+  'Create Table '+ if($t.schema.name == 'default', |'', |$dbConfig.identifierProcessor($t.schema.name) + '.') + $dbConfig.identifierProcessor($t.name) +
       + '('
       + $t.columns->cast(@meta::relational::metamodel::Column)
          ->map(c | $c.name->processColumnName($dbConfig) + ' ' +  getColumnTypeSqlTextMemSQL($c.type) + if($c.nullable->isEmpty() || $applyConstraints == false, | '', | if($c.nullable == true , | ' NULL', | ' NOT NULL' )))
@@ -317,7 +304,7 @@ function meta::relational::functions::sqlQueryToString::memsql::getColumnTypeSql
 
 function meta::relational::functions::sqlQueryToString::memsql::loadValuesToDbTableMemSQL(loadTableSQL:LoadTableSQL[1] , dbConfig: DbConfig[1]) : String[*]
 {
-    $loadTableSQL.parsedData.values->map(row |  let sql = 'insert into ' + if($loadTableSQL.table.schema.name == 'default', |'', |$loadTableSQL.table.schema.name->schemaNameToIdentifierForMemSQL($dbConfig) + '.') + $loadTableSQL.table.name->tableNameToIdentifierForMemSQL($dbConfig) + ' ('
+    $loadTableSQL.parsedData.values->map(row |  let sql = 'insert into ' + if($loadTableSQL.table.schema.name == 'default', |'', |$dbConfig.identifierProcessor($loadTableSQL.table.schema.name) + '.') + $dbConfig.identifierProcessor($loadTableSQL.table.name) + ' ('
             + $loadTableSQL.columnsToLoad.name->map(colName | $colName->processColumnName($dbConfig))->joinStrings(',')
             +') '
             + 'values ('
