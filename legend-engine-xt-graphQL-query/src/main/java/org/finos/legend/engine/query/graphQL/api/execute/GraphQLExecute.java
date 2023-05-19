@@ -51,6 +51,7 @@ import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.DirectiveDe
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.EnumTypeDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.InterfaceTypeDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.ObjectTypeDefinition;
+import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.InputObjectTypeDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.ScalarTypeDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.SchemaDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.Type;
@@ -453,6 +454,12 @@ public class GraphQLExecute extends GraphQL
 
                                                                                             @Override
                                                                                             public Boolean visit(ObjectTypeDefinition val)
+                                                                                            {
+                                                                                                return false;
+                                                                                            }
+                                                                                            
+                                                                                            @Override
+                                                                                            public Boolean visit(InputObjectTypeDefinition val)
                                                                                             {
                                                                                                 return false;
                                                                                             }
