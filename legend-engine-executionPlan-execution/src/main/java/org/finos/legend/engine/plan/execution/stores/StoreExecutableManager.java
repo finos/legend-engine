@@ -37,7 +37,7 @@ public enum StoreExecutableManager
     INSTANCE;
     private final ConcurrentHashMap<String, List<StoreExecutable>> requestExecutableMap = new ConcurrentHashMap<>();
 
-    private final ConcurrentHashMap<String, List<String>> sessionIDToProvidedID = new ConcurrentHashMap<>();  //sessionIDTOProvidedID
+    private final ConcurrentHashMap<String, List<String>> sessionIDToProvidedID = new ConcurrentHashMap<>();
     private boolean isRegistered = false;
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(StoreExecutableManager.class);
 
@@ -48,6 +48,7 @@ public enum StoreExecutableManager
     {
         this.isRegistered = false;
         this.requestExecutableMap.clear();
+        this.sessionIDToProvidedID.clear();
     }
 
     public void addExecutable(String requestID, StoreExecutable execution)
