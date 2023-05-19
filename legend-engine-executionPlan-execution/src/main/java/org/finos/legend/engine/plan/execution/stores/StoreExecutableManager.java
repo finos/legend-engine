@@ -81,8 +81,7 @@ public enum StoreExecutableManager
         {
             try
             {
-                ArrayList<String> providedIds;
-                providedIds = (ArrayList<String>) sessionIDToProvidedID.get(id);
+                List<String> providedIds = sessionIDToProvidedID.get(id);
                 if (providedIds == null)
                 {
                     providedIds = new ArrayList<>();
