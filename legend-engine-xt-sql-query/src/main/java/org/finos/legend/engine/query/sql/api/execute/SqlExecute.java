@@ -32,6 +32,7 @@ import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.eclipse.collections.impl.utility.internal.IterableIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
@@ -234,19 +235,20 @@ public class SqlExecute
 
         RichIterable<SQLSourceResolvedContext> resolved = grouped.keySet().collect(k -> resolve(grouped.get(k), context, providers.get(k), profiles));
 
-        boolean allCompatiblePointers = resolved.allSatisfy(p -> p.getPureModelContext() instanceof PureModelContextPointer && resolved.allSatisfy(p2 -> ((PureModelContextPointer) p.getPureModelContext()).safeEqual(p.getPureModelContext(), p2.getPureModelContext())));
+        MutableList<PureModelContext> allContexts = IterableIterate.flatCollect(resolved, SQLSourceResolvedContext::getPureModelContexts);
+        boolean allCompatiblePointers = allContexts.allSatisfy(p -> p instanceof PureModelContextPointer && allContexts.allSatisfy(p2 -> ((PureModelContextPointer) p).safeEqual(p, p2)));
 
         PureModelContext pureModelContext;
 
         //this means all pointers are from same source, so we can combine to utilise model cache.
         if (allCompatiblePointers)
         {
-            pureModelContext = resolved.collectIf(p -> p.getPureModelContext() instanceof PureModelContextPointer, p -> ((PureModelContextPointer) p.getPureModelContext()))
+            pureModelContext = allContexts.collectIf(p -> p instanceof PureModelContextPointer, p -> ((PureModelContextPointer) p))
                     .injectInto(null, (d, e) -> e.combine((PureModelContextPointer) d));
         }
         else
         {
-            pureModelContext = resolved.injectInto(PureModelContextData.newPureModelContextData(), (p, p2) -> p.combine(modelManager.loadData(p2.getPureModelContext(), PureClientVersions.production, profiles)));
+            pureModelContext = resolved.injectInto(PureModelContextData.newPureModelContextData(), (p, p2) -> PureModelContextData.combine(p, PureModelContextData.newPureModelContextData(), ListIterate.collect(p2.getPureModelContexts(), c -> modelManager.loadData(c, PureClientVersions.production, profiles)).toArray(new PureModelContextData[]{})));
         }
         RichIterable<SQLSource> sources = resolved.flatCollect(SQLSourceResolvedContext::getSources);
         return Tuples.pair(sources, pureModelContext);
