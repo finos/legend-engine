@@ -293,14 +293,14 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
         String updateSql = "UPDATE `mydb`.`main` as sink " +
             "INNER JOIN " +
             "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`version` FROM " +
-            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`version`,ROW_NUMBER() OVER (PARTITION BY stage.`id`,stage.`name` ORDER BY stage.`version` DESC) as `legend_persistence_row_num` FROM `mydb`.`staging` as stage WHERE `snapshot_id` > 18972) as stage WHERE stage.`legend_persistence_row_num` = 1) as stage " +
+            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`version`,ROW_NUMBER() OVER (PARTITION BY stage.`id`,stage.`name` ORDER BY stage.`version` DESC) as `legend_persistence_row_num` FROM `mydb`.`staging` as stage WHERE stage.`snapshot_id` > 18972) as stage WHERE stage.`legend_persistence_row_num` = 1) as stage " +
             "ON ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (stage.`version` > sink.`version`) " +
             "SET sink.`id` = stage.`id`,sink.`name` = stage.`name`,sink.`amount` = stage.`amount`,sink.`biz_date` = stage.`biz_date`,sink.`digest` = stage.`digest`,sink.`version` = stage.`version`";
 
         String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `biz_date`, `digest`, `version`) " +
             "(SELECT * FROM (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`version` FROM " +
             "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`version`,ROW_NUMBER() OVER (PARTITION BY stage.`id`,stage.`name` ORDER BY stage.`version` DESC) as `legend_persistence_row_num` FROM `mydb`.`staging` as stage " +
-            "WHERE `snapshot_id` > 18972) as stage " +
+            "WHERE stage.`snapshot_id` > 18972) as stage " +
             "WHERE stage.`legend_persistence_row_num` = 1) as stage " +
             "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink WHERE (sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`))))";
 
@@ -308,7 +308,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
         Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
 
-        String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage WHERE `snapshot_id` > 18972";
+        String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage WHERE stage.`snapshot_id` > 18972";
         // Stats
         Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
         Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
@@ -323,19 +323,19 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
 
         String updateSql = "UPDATE `mydb`.`main` as sink " +
             "INNER JOIN " +
-            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`version` FROM `mydb`.`staging` as stage WHERE `snapshot_id` > 18972) as stage " +
+            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`version` FROM `mydb`.`staging` as stage WHERE stage.`snapshot_id` > 18972) as stage " +
             "ON ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (stage.`version` > sink.`version`) " +
             "SET sink.`id` = stage.`id`,sink.`name` = stage.`name`,sink.`amount` = stage.`amount`,sink.`biz_date` = stage.`biz_date`,sink.`digest` = stage.`digest`,sink.`version` = stage.`version`";
 
         String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `biz_date`, `digest`, `version`) " +
-            "(SELECT * FROM (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`version` FROM `mydb`.`staging` as stage WHERE `snapshot_id` > 18972) as stage " +
+            "(SELECT * FROM (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`version` FROM `mydb`.`staging` as stage WHERE stage.`snapshot_id` > 18972) as stage " +
             "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink WHERE (sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`))))";
 
         Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTablePlusDigestPlusVersionCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
 
-        String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage WHERE `snapshot_id` > 18972";
+        String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage WHERE stage.`snapshot_id` > 18972";
         // Stats
         Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
         Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));

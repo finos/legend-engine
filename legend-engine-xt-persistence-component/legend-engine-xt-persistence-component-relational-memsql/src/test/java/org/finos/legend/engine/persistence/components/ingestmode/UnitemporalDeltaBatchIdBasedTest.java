@@ -296,7 +296,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
         String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink " +
                 "SET sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1 " +
                 "WHERE (sink.`batch_id_out` = 999999999) AND " +
-                "(EXISTS (SELECT * FROM (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest` FROM `mydb`.`staging` as stage WHERE `batch_id_in` > 5) as stage " +
+                "(EXISTS (SELECT * FROM (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest` FROM `mydb`.`staging` as stage WHERE stage.`batch_id_in` > 5) as stage " +
                 "WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND " +
                 "(sink.`digest` <> stage.`digest`)))";
 
@@ -305,7 +305,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`," +
                 "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')," +
                 "999999999 " +
-                "FROM (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest` FROM `mydb`.`staging` as stage WHERE `batch_id_in` > 5) as stage " +
+                "FROM (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest` FROM `mydb`.`staging` as stage WHERE stage.`batch_id_in` > 5) as stage " +
                 "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
                 "WHERE (sink.`batch_id_out` = 999999999) " +
                 "AND (sink.`digest` = stage.`digest`) AND ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)))))";
@@ -315,7 +315,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
-        Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithStagingFilters("{\"batch_id_in\":{\"GT\":5}}"), metadataIngestSql.get(0));
     }
 
     @Override
@@ -331,7 +331,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
                 "(SELECT * FROM (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`version` " +
                 "FROM (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`version`,ROW_NUMBER() " +
                 "OVER (PARTITION BY stage.`id`,stage.`name` ORDER BY stage.`version` DESC) as `legend_persistence_row_num` " +
-                "FROM `mydb`.`staging` as stage WHERE `batch_id_in` > 5) as stage " +
+                "FROM `mydb`.`staging` as stage WHERE stage.`batch_id_in` > 5) as stage " +
                 "WHERE stage.`legend_persistence_row_num` = 1) as stage " +
                 "WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (stage.`version` > sink.`version`)))";
 
@@ -343,7 +343,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
                 "FROM (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`version` " +
                 "FROM (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`version`," +
                 "ROW_NUMBER() OVER (PARTITION BY stage.`id`,stage.`name` ORDER BY stage.`version` DESC) " +
-                "as `legend_persistence_row_num` FROM `mydb`.`staging` as stage WHERE `batch_id_in` > 5) as stage " +
+                "as `legend_persistence_row_num` FROM `mydb`.`staging` as stage WHERE stage.`batch_id_in` > 5) as stage " +
                 "WHERE stage.`legend_persistence_row_num` = 1) as stage " +
                 "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
                 "WHERE (sink.`batch_id_out` = 999999999) AND (stage.`version` <= sink.`version`) " +
@@ -354,7 +354,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
-        Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithStagingFilters("{\"batch_id_in\":{\"GT\":5}}"), metadataIngestSql.get(0));
     }
 
     @Override
@@ -366,7 +366,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
         String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink " +
                 "SET sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1 " +
                 "WHERE (sink.`batch_id_out` = 999999999) AND " +
-                "(EXISTS (SELECT * FROM (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`version` FROM `mydb`.`staging` as stage WHERE `batch_id_in` > 5) as stage " +
+                "(EXISTS (SELECT * FROM (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`version` FROM `mydb`.`staging` as stage WHERE stage.`batch_id_in` > 5) as stage " +
                 "WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND " +
                 "(stage.`version` > sink.`version`)))";
 
@@ -375,7 +375,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`version`," +
                 "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')," +
                 "999999999 " +
-                "FROM (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`version` FROM `mydb`.`staging` as stage WHERE `batch_id_in` > 5) as stage " +
+                "FROM (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`version` FROM `mydb`.`staging` as stage WHERE stage.`batch_id_in` > 5) as stage " +
                 "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
                 "WHERE (sink.`batch_id_out` = 999999999) " +
                 "AND (stage.`version` <= sink.`version`) AND ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)))))";
@@ -385,9 +385,9 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
-        Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithStagingFilters("{\"batch_id_in\":{\"GT\":5}}"), metadataIngestSql.get(0));
 
-        String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage WHERE `batch_id_in` > 5";
+        String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage WHERE stage.`batch_id_in` > 5";
         String rowsUpdated = "SELECT COUNT(*) as `rowsUpdated` FROM `mydb`.`main` as sink WHERE sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1";
         String rowsDeleted = "SELECT 0 as `rowsDeleted`";
         String rowsInserted = "SELECT (SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_id_in` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'))-(SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1) as `rowsInserted`";
@@ -476,5 +476,15 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
     protected String getExpectedMetadataTableIngestQueryWithUpperCase()
     {
         return MemsqlTestArtifacts.expectedMetadataTableIngestQueryWithUpperCase;
+    }
+
+    protected String getExpectedMetadataTableIngestQueryWithStagingFilters(String stagingFilters)
+    {
+        return "INSERT INTO batch_metadata " +
+                "(`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`, `staging_filters`) " +
+                "(SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata " +
+                "WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')," +
+                "'2000-01-01 00:00:00',CURRENT_TIMESTAMP(),'DONE'," +
+                String.format("PARSE_JSON('%s'))", stagingFilters);
     }
 }

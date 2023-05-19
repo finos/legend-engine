@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.persistence.components;
 
+import org.finos.legend.engine.persistence.components.common.DatasetFilter;
+import org.finos.legend.engine.persistence.components.common.FilterType;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.DeriveMainDatasetSchemaFromStaging;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
@@ -21,19 +23,12 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
-import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
-import org.finos.legend.engine.persistence.components.logicalplan.values.NumericalValue;
-import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
-import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
 import org.finos.legend.engine.persistence.components.relational.api.GeneratorResult;
 import org.finos.legend.engine.persistence.components.scenarios.TestScenario;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
-import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
-import org.finos.legend.engine.persistence.components.logicalplan.conditions.LessThan;
-import org.finos.legend.engine.persistence.components.logicalplan.conditions.GreaterThan;
 import org.junit.jupiter.api.Assertions;
 
 import java.time.Clock;
@@ -610,15 +605,13 @@ public class BaseTest
     protected Dataset stagingTableWithFilter = DerivedDataset.builder()
             .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
             .schema(baseTableSchemaWithDigest)
-            .filter(GreaterThan.of(FieldValue.builder().fieldName(batchIdInField).build(),
-                    NumericalValue.of(5L)))
+            .addDatasetFilters(DatasetFilter.of(batchIdInField, FilterType.GREATER_THAN, 5L))
             .build();
 
     protected Dataset stagingTableWithFilterAndVersion = DerivedDataset.builder()
             .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
             .schema(baseTableSchemaWithDigestAndVersion)
-            .filter(GreaterThan.of(FieldValue.builder().fieldName(batchIdInField).build(),
-                    NumericalValue.of(5L)))
+            .addDatasetFilters(DatasetFilter.of(batchIdInField, FilterType.GREATER_THAN, 5L))
             .build();
 
     protected Dataset stagingTableWithVersion = DatasetDefinition.builder()
@@ -629,8 +622,7 @@ public class BaseTest
     protected Dataset stagingTableWithVersionAndSnapshotId = DerivedDataset.builder()
         .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
         .schema(baseTableSchemaWithDigestAndVersion)
-        .filter(GreaterThan.of(FieldValue.builder().fieldName(snapshotIdField).build(),
-            NumericalValue.of(18972L)))
+        .addDatasetFilters(DatasetFilter.of(snapshotIdField, FilterType.GREATER_THAN, 18972L))
         .build();
 
     protected Dataset mainTableWithVersion = DatasetDefinition.builder()
@@ -638,22 +630,11 @@ public class BaseTest
         .schema(baseTableSchemaWithDigestAndVersion)
         .build();
 
-    Condition filterCondition1 = GreaterThan
-            .builder()
-            .leftValue(FieldValue.builder().fieldName("biz_date").datasetRefAlias("stage").build())
-            .rightValue(StringValue.of("2020-01-01"))
-            .build();
-
-    Condition filterCondition2 = LessThan
-            .builder()
-            .leftValue(FieldValue.builder().fieldName("biz_date").datasetRefAlias("stage").build())
-            .rightValue(StringValue.of("2020-01-03"))
-            .build();
-
     protected Dataset stagingTableWithFilters = DerivedDataset.builder()
             .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
             .schema(baseTableSchemaWithDigest)
-            .filter(And.of(Arrays.asList(filterCondition1, filterCondition2)))
+            .addDatasetFilters(DatasetFilter.of("biz_date", FilterType.GREATER_THAN, "2020-01-01"))
+            .addDatasetFilters(DatasetFilter.of("biz_date", FilterType.LESS_THAN, "2020-01-03"))
             .build();
 
     protected Dataset stagingTableWithBaseSchemaAndDigestAndDeleteIndicator = DatasetDefinition.builder()

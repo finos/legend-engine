@@ -64,6 +64,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.ModuloB
 import org.finos.legend.engine.persistence.components.logicalplan.values.OrderedField;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.HashFunction;
+import org.finos.legend.engine.persistence.components.logicalplan.values.ParseJsonFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.InfiniteBatchIdValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.NumericalValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ObjectValue;
@@ -133,6 +134,7 @@ import org.finos.legend.engine.persistence.components.relational.ansi.sql.visito
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.TruncateVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.TableConstraintVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.WindowFunctionVisitor;
+import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.ParseJsonFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.util.Capability;
@@ -191,6 +193,7 @@ public class AnsiSqlSink extends RelationalSink
         logicalPlanVisitorByClass.put(FunctionImpl.class, new FunctionVisitor());
         logicalPlanVisitorByClass.put(HashFunction.class, new HashFunctionVisitor());
         logicalPlanVisitorByClass.put(WindowFunction.class, new WindowFunctionVisitor());
+        logicalPlanVisitorByClass.put(ParseJsonFunction.class, new ParseJsonFunctionVisitor());
         logicalPlanVisitorByClass.put(NumericalValue.class, new NumericalValueVisitor());
         logicalPlanVisitorByClass.put(ObjectValue.class, new ObjectValueVisitor());
         logicalPlanVisitorByClass.put(Case.class, new CaseVisitor());
