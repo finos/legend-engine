@@ -30,7 +30,6 @@ public class MappingIncludeMapping extends MappingInclude
     public String includedMappingPackage;
     public String sourceDatabasePath;
     public String targetDatabasePath;
-    public boolean createdFromExplicitType = false;
 
     /**
      * There are cases when the model is serialized and not processed, hence this method provides a backward compatible
