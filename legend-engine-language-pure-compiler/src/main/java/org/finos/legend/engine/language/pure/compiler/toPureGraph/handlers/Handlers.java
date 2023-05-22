@@ -1052,7 +1052,9 @@ public class Handlers
                 h("meta::pure::functions::math::times_Decimal_MANY__Decimal_1_", true, ps -> res("Decimal", "one"), ps -> typeMany(ps.get(0), "Decimal")));
 
 
-        register("meta::pure::functions::math::divide_Number_1__Number_1__Float_1_", true, ps -> res("Float", "one"));
+        register(m(m(h("meta::pure::functions::math::divide_Number_1__Number_1__Float_1_", true, ps -> res("Float", "one"), ps -> ps.size() == 2)),
+                   m(h("meta::pure::functions::math::divide_Decimal_1__Decimal_1__Integer_1__Decimal_1_", true, ps -> res("Decimal", "one"), ps -> ps.size() == 3))));
+
 
         register(h("meta::pure::functions::string::plus_String_MANY__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 1 && typeMany(ps.get(0), "String")),
                 h("meta::pure::functions::math::plus_Integer_MANY__Integer_1_", true, ps -> res("Integer", "one"), ps -> ps.size() == 1 && typeMany(ps.get(0), "Integer")),
