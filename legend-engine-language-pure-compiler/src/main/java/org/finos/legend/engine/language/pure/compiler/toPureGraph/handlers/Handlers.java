@@ -610,6 +610,7 @@ public class Handlers
                 m(h("meta::legend::service::get_ExecutionEnvironmentInstance_1__String_1__SingleExecutionParameters_1_", false, ps -> res("meta::legend::service::metamodel::SingleExecutionParameters", "one"), ps -> ps.size() == 2)),
                 m(h("meta::legend::service::get_ExecutionEnvironmentInstance_1__String_1__String_1__SingleExecutionParameters_1_", false, ps -> res("meta::legend::service::metamodel::SingleExecutionParameters", "one"), ps -> ps.size() == 3))));
 
+        register(m(h("meta::pure::mutation::save_T_MANY__RootGraphFetchTree_1__Mapping_1__Runtime_1__T_MANY_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> true)));
 
         // Extensions
         CompileContext context = this.pureModel.getContext();

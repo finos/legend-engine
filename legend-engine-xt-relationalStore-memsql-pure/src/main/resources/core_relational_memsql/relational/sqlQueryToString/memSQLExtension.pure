@@ -32,6 +32,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
       semiStructuredElementProcessor = processSemiStructuredElementForMemSQL_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       joinStringsProcessor = processJoinStringsOperationWithConcatCall_JoinStrings_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForMemSQL_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
+      upsertSQLQueryProcessor = processUpsertSQLQueryForMemSQL_UpsertSQLQuery_1__SqlGenerationContext_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
       identifierProcessor = processIdentifierWithBackTicks_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
@@ -230,6 +231,21 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
    if($type->isNotEmpty() && $type->toOne()->_subTypeOf(Number), | '::%', |
    if($type->isNotEmpty() && $type->toOne()->instanceOf(Enumeration), | '::$', |
    '::')))));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processUpsertSQLQueryForMemSQL(upsertQuery:UpsertSQLQuery[1], sgc:SqlGenerationContext[1]):String[1]
+{
+  // Map of Column to Literals of VarPlaceHolder
+  let keyValues = $upsertQuery.equalityStatements->keyValues()->sortBy(kv | $kv.first);
+  let columnNames = $keyValues->map(kv | $kv.first)->joinStrings(', ');
+  let literalValues = $keyValues->map(kv | meta::relational::functions::sqlQueryToString::processLiteralValue($kv.second.value, $sgc.dbConfig))->joinStrings(', ');
+
+  let primaryKeyColumnNames = $upsertQuery.data.primaryKey->map(pk | $pk.name);
+  let nonPrimaryKeyKeyValues = $keyValues->filter(kv | !$kv.first->in($primaryKeyColumnNames))
+                                          ->map(kv | $kv.first + ' = ' + meta::relational::functions::sqlQueryToString::processLiteralValue($kv.second.value, $sgc.dbConfig))
+                                          ->joinStrings(', ');
+
+  'insert into ' + $upsertQuery.data.name + ' (' + $columnNames + ') values (' + $literalValues + ') on duplicate key update ' + $nonPrimaryKeyKeyValues;
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processSelectSQLQueryForMemSQL(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
