@@ -35,6 +35,7 @@
         <module>legend-engine-xt-persistence-component-relational-h2</module>
         <module>legend-engine-xt-persistence-component-relational-memsql</module>
         <module>legend-engine-xt-persistence-component-relational-snowflake</module>
+        <module>legend-engine-xt-persistence-component-relational-bigquery</module>
     </modules>
 
     <properties>
