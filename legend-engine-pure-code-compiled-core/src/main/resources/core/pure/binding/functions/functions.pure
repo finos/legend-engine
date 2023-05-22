@@ -23,19 +23,7 @@ import meta::pure::graphFetch::*;
 
 import meta::pure::model::binding::*;
 
-function <<functionType.NotImplementedFunction>> meta::external::shared::format::functions::externalize<T>(collection: T[*], binding:Binding[1]):String[1]                // TODO: TO BE REMOVED
-{
-   fail('Implemented by execution plans');
-   'Not impemented!';
-}
-
 function <<functionType.NotImplementedFunction>> meta::external::shared::format::functions::externalize<T>(collection: T[*], binding:Binding[1], graphFetchTree: RootGraphFetchTree<T>[1]):String[1]
-{
-   fail('Implemented by execution plans');
-   'Not impemented!';
-}
-
-function <<functionType.NotImplementedFunction>> meta::external::shared::format::functions::externalize<T>(collection: Checked<T>[*], binding:Binding[1]):String[1]         // TODO: TO BE REMOVED
 {
    fail('Implemented by execution plans');
    'Not impemented!';
@@ -70,8 +58,6 @@ function meta::external::shared::format::functions::internalizeFunctions():Funct
 function meta::external::shared::format::functions::externalizeFunctions():Function<Any>[*]
 {
    [
-      externalize_T_MANY__Binding_1__String_1_,
-      externalize_Checked_MANY__Binding_1__String_1_,
       externalize_T_MANY__Binding_1__RootGraphFetchTree_1__String_1_
    ]
 }
