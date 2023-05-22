@@ -263,7 +263,7 @@ public class LogicalPlanUtils
 
     public static List<DatasetFilter> getDatasetFilters(Dataset dataSet)
     {
-        List<DatasetFilter> datasetFilters = null;
+        List<DatasetFilter> datasetFilters = new ArrayList();
         if (dataSet instanceof DerivedDataset)
         {
             DerivedDataset derivedDataset = (DerivedDataset) dataSet;
