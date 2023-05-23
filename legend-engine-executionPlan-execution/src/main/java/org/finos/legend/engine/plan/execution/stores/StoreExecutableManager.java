@@ -65,10 +65,10 @@ public enum StoreExecutableManager
 
         if (isRegistered && requestID != null)
         {
-            List<String> foo = sessionIDToProvidedID.computeIfAbsent(RequestContext.getSessionID(context), x -> Collections.synchronizedList(new ArrayList<>()));
-            if (!foo.contains(requestID))
+            List<String> requests = sessionIDToProvidedID.computeIfAbsent(RequestContext.getSessionID(context), x -> Collections.synchronizedList(new ArrayList<>()));
+            if (!requests.contains(requestID))
             {
-                foo.add(requestID);
+                requests.add(requestID);
             }
         }
 
