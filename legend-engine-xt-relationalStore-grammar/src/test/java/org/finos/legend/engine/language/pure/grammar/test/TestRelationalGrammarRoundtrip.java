@@ -624,7 +624,7 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
                 ")\n\n" +
                 "Mapping test::simpleRelationalMapping\n" +
                 "(\n" +
-                "  include mapping test::includedRelationalMapping[dbInc->db]\n\n" +
+                "  include test::includedRelationalMapping[dbInc->db]\n\n" +
                 "  simple::Firm[simple_Firm]: Relational\n" +
                 "  {\n" +
                 "    ~mainTable [db]firmTable\n" +

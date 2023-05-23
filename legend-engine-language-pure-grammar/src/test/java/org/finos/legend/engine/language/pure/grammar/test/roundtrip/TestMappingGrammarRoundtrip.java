@@ -45,28 +45,7 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
     @Test
     public void testIncludeDispatch()
     {
-        testFormat("###Mapping\n" +
-                "Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMapping\n" +
-                "(\n" +
-                "  include mapping meta::pure::mapping::includedMapping\n" +
-                "  include mapping meta::pure::mapping::DispatchMapping\n" +
-                "\n" +
-                "  *meta::pure::mapping::modelToModel::test::shared::dest::Person[meta_pure_mapping_modelToModel_test_shared_dest_Person]: Pure\n" +
-                "  {\n" +
-                "    ~src meta::pure::mapping::modelToModel::test::shared::src::_S_Person\n" +
-                "    firstName: $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
-                "    lastName: $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length()),\n" +
-                "    testing: if($src.fullName == 'johndoe', |if($src.lastName == 'good', |'true', |'maybe'), |'false')\n" +
-                "  }\n" +
-                "  *meta::pure::mapping::modelToModel::test::shared::dest::Product2Simple[meta_pure_mapping_modelToModel_test_shared_dest_Product2Simple]: Pure\n" +
-                "  {\n" +
-                "    ~src meta::pure::mapping::modelToModel::test::shared::src::_Product2\n" +
-                "    ~filter if($src.fullName == 'johndoe', |if($src.lastName == 'good', |true, |true), |false)\n" +
-                "    name: $src.name,\n" +
-                "    region: $src.region\n" +
-                "  }\n" +
-                ")\n",
-        "###Mapping\n" +
+        test("###Mapping\n" +
                 "Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMapping\n" +
                 "(\n" +
                 "  include meta::pure::mapping::includedMapping\n" +
