@@ -94,6 +94,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.cla
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.GraphFetchTreeVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.PropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.SubTypeGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 
@@ -910,19 +911,30 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             {
                 return processGraphFetchTree(valueSpecification);
             }
+
+            @Override
+            public String visit(SubTypeGraphFetchTree valueSpecification)
+            {
+                return processGraphFetchTree(valueSpecification);
+            }
         });
     }
 
     private String processGraphFetchTree(RootGraphFetchTree rootGraphFetchTree)
     {
         String subTreeString = "";
+        String subTypeTreeString = "";
         if (rootGraphFetchTree.subTrees != null && !rootGraphFetchTree.subTrees.isEmpty())
         {
             subTreeString = rootGraphFetchTree.subTrees.stream().map(x -> DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build().processGraphFetchTree(x, getTabSize(1))).collect(Collectors.joining("," + (this.isRenderingPretty() ? this.returnChar() : "")));
         }
+        if (rootGraphFetchTree.subTypeTrees != null && !rootGraphFetchTree.subTypeTrees.isEmpty())
+        {
+            subTypeTreeString = subTypeTreeString + rootGraphFetchTree.subTypeTrees.stream().map(x -> DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build().processGraphFetchTree(x, getTabSize(1))).collect(Collectors.joining("," + (this.isRenderingPretty() ? this.returnChar() : "")));
+        }
         return "#{" + (this.isRenderingPretty() ? this.returnChar() : "") +
                 DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) + HelperValueSpecificationGrammarComposer.printFullPath(rootGraphFetchTree._class, this) + "{" + (this.isRenderingPretty() ? this.returnChar() : "") +
-                subTreeString + (this.isRenderingPretty() ? this.returnChar() : "") +
+                subTreeString + (!subTreeString.isEmpty() && !subTypeTreeString.isEmpty() ? (this.isRenderingPretty() ? "," + this.returnChar() : ",") : "") + subTypeTreeString + (this.isRenderingPretty() ? this.returnChar() : "") +
                 DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) + "}" + (this.isRenderingPretty() ? this.returnChar() : "") +
                 this.indentationString + "}#";
     }
@@ -956,6 +968,20 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         }
 
         return DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) + aliasString + propertyGraphFetchTree.property + parametersString + subTypeString + subTreeString;
+    }
+
+    public String processGraphFetchTree(SubTypeGraphFetchTree subTypeGraphFetchTree)
+    {
+        String subTreeString = "";
+        if (subTypeGraphFetchTree.subTrees != null && !subTypeGraphFetchTree.subTrees.isEmpty())
+        {
+            subTreeString = "{" + (this.isRenderingPretty() ? this.returnChar() : "") +
+                    subTypeGraphFetchTree.subTrees.stream().map(x -> DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build().processGraphFetchTree(x, getTabSize(1))).collect(Collectors.joining("," + (this.isRenderingPretty() ? this.returnChar() : ""))) + (this.isRenderingPretty() ? this.returnChar() : "") +
+                    DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) + "}";
+        }
+        String subTypeString = "->subType(@" + HelperValueSpecificationGrammarComposer.printFullPath(subTypeGraphFetchTree.subTypeClass, this) + ")";
+
+        return DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) + subTypeString + subTreeString;
     }
 
     @Override

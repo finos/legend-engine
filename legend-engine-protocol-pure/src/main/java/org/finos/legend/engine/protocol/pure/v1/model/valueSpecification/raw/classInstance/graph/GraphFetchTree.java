@@ -32,7 +32,7 @@ public abstract class GraphFetchTree
 {
     public SourceInformation sourceInformation;
     public List<GraphFetchTree> subTrees = Collections.emptyList();
-    public List<SubTypeGraphFetchTree> subTypeTrees;
+    public List<SubTypeGraphFetchTree> subTypeTrees = Collections.emptyList();
 
     public abstract <T> T accept(GraphFetchTreeVisitor<T> visitor);
 }

@@ -58,6 +58,7 @@ import org.finos.legend.engine.external.shared.format.generations.loaders.Schema
 import org.finos.legend.engine.external.shared.format.imports.loaders.CodeImports;
 import org.finos.legend.engine.external.shared.format.imports.loaders.SchemaImports;
 import org.finos.legend.engine.external.shared.format.model.api.ExternalFormats;
+import org.finos.legend.engine.functionActivator.api.FunctionActivatorAPI;
 import org.finos.legend.engine.generation.artifact.api.ArtifactGenerationExtensionApi;
 import org.finos.legend.engine.language.pure.compiler.api.Compile;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -310,6 +311,9 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new Execute(modelManager, planExecutor, routerExtensions, generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers)));
         environment.jersey().register(new ExecutePlanStrategic(planExecutor));
         environment.jersey().register(new ExecutePlanLegacy(planExecutor));
+
+        // Function Activator
+        environment.jersey().register(new FunctionActivatorAPI(modelManager, routerExtensions));
 
         // GraphQL
         environment.jersey().register(new GraphQLGrammar());

@@ -576,3 +576,120 @@ function meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapp
 
    true;
 }
+
+###Mapping
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::store::*;
+
+Mapping meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::TestClassMappingsWithInnerFilterJoinedByChainOfJoins
+(
+  meta::relational::tests::milestoning::Product : Relational
+  {
+    id : [TestClassMappingsWithInnerFilterJoinedByChainOfJoinsStore]ProductTable.id,
+    name : [TestClassMappingsWithInnerFilterJoinedByChainOfJoinsStore]ProductTable.name,
+    classification : [TestClassMappingsWithInnerFilterJoinedByChainOfJoinsStore]@ProductTable_ProductTableView > (INNER) [TestClassMappingsWithInnerFilterJoinedByChainOfJoinsStore]@ProductTableView_ProductClassificationTable
+  }
+
+  meta::relational::tests::milestoning::ProductClassification : Relational
+  {
+    ~filter [TestClassMappingsWithInnerFilterJoinedByChainOfJoinsStore] (INNER) @ProductClassificationTable_ProductClassificationFilterTable | [TestClassMappingsWithInnerFilterJoinedByChainOfJoinsStore] NonNullFilter
+    type : [TestClassMappingsWithInnerFilterJoinedByChainOfJoinsStore]ProductClassificationTable.type,
+    description : [TestClassMappingsWithInnerFilterJoinedByChainOfJoinsStore]ProductClassificationTable.type_description
+  }
+
+  Account : Relational
+  {
+    name : [TestClassMappingsWithInnerFilterJoinedByChainOfJoinsStore]accountTable.name,
+    trades: [TestClassMappingsWithInnerFilterJoinedByChainOfJoinsStore]@Account_AccountView > (INNER)[TestClassMappingsWithInnerFilterJoinedByChainOfJoinsStore]@AccountView_Trade
+  }
+
+  Trade : Relational
+  {
+    ~filter [TestClassMappingsWithInnerFilterJoinedByChainOfJoinsStore] (INNER) @Trade_TradeFilter | [TestClassMappingsWithInnerFilterJoinedByChainOfJoinsStore] PositiveQuanityFilter
+    id : [TestClassMappingsWithInnerFilterJoinedByChainOfJoinsStore]tradeTable.ID,
+    quantity : [TestClassMappingsWithInnerFilterJoinedByChainOfJoinsStore]tradeTable.quantity
+  }
+)
+
+###Relational
+Database meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::store::TestClassMappingsWithInnerFilterJoinedByChainOfJoinsStore
+(
+  Table tradeTable(ID INT PRIMARY KEY, prodId INT, accountID INT, quantity FLOAT, tradeDate DATE, settlementDateTime TIMESTAMP)
+  Table accountTable(ID INT PRIMARY KEY, name VARCHAR(200), createDate DATE)
+
+  Table tradeFilterTable(ID INT PRIMARY KEY, prodId INT, accountID INT, quantity FLOAT, tradeDate DATE, settlementDateTime TIMESTAMP)
+
+  View accountView
+  (
+    accountId : accountTable.ID PRIMARY KEY,
+    name : case(isNull(accountTable.name), accountTable.ID , accountTable.name),
+    createDate : accountTable.createDate
+  )
+
+  Join Account_AccountView(accountTable.ID = accountView.accountId)
+  Join AccountView_Trade(accountView.accountId = tradeTable.accountID)
+  Join Trade_TradeFilter(tradeTable.ID = tradeFilterTable.ID)
+
+  Filter PositiveQuanityFilter(tradeFilterTable.quantity > 0)
+
+  Table ProductTable(
+          milestoning(
+              business(BUS_FROM=from_z, BUS_THRU=thru_z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+          )
+          id Integer PRIMARY KEY, 
+          name VARCHAR(200) PRIMARY KEY,
+          type VARCHAR(200),
+          exchange VARCHAR(200),
+          classificationSystemId Integer,
+          referenceSystemName VARCHAR(200),
+          externalReferenceSystemName VARCHAR(200),
+          from_z DATE,
+          thru_z DATE
+  )
+
+  View ProductTableView(
+    id : ProductTable.id PRIMARY KEY,
+    name : ProductTable.name PRIMARY KEY,
+    type : ProductTable.type
+  )
+
+  Table ProductClassificationTable(
+          milestoning(
+              business(BUS_FROM=from_z, BUS_THRU=thru_z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+          )
+          type VARCHAR(200) PRIMARY KEY,
+          type_description VARCHAR(400),
+          system VARCHAR(200),
+          exchange VARCHAR(200),
+          from_z DATE, 
+          thru_z DATE
+  )     
+
+  Table ProductClassificationFilterTable(
+          type VARCHAR(200) PRIMARY KEY,
+          type_description VARCHAR(400),
+          system VARCHAR(200),
+          exchange VARCHAR(200)
+  )
+
+  Join ProductTable_ProductTableView(ProductTable.id = ProductTableView.id and ProductTable.name = ProductTableView.name)
+  Join ProductTableView_ProductClassificationTable(ProductTableView.type = ProductClassificationTable.type)
+  Join ProductClassificationTable_ProductClassificationFilterTable(ProductClassificationTable.type = ProductClassificationFilterTable.type)
+
+  Filter NonNullFilter(ProductClassificationFilterTable.exchange is not null)
+)
+
+###Pure
+import meta::relational::metamodel::execute::*;
+import meta::relational::runtime::*;
+
+function meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::store::initDatabase():Boolean[1]
+{
+  let connection = meta::relational::tests::testRuntime(meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::store::TestClassMappingsWithInnerFilterJoinedByChainOfJoinsStore).connections->toOne()->cast(@TestDatabaseConnection);
+  
+  executeInDb('drop table if exists ProductClassificationFilterTable;',$connection);
+  executeInDb('create table ProductClassificationFilterTable (type VARCHAR(200),type_description VARCHAR(400),system VARCHAR(200), exchange VARCHAR(200), from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
+  executeInDb('insert into ProductClassificationFilterTable values(\'STOCK\',\'STOCK DESC-V1\',\'SYS1\', \'LNSE\', \'2015-8-15 00:00:00\', \'2015-8-17 00:00:00\');',$connection);
+
+  true;
+}

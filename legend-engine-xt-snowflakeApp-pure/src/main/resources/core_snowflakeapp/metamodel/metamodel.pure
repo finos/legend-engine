@@ -1,0 +1,16 @@
+import meta::external::functionActivator::*;
+
+Class meta::external::functionActivator::snowflakeApp::SnowflakeApp extends FunctionActivator
+{
+  applicationName : String[1];
+  description : String[0..1];
+  owner : String[0..1];
+}
+
+// This section needs to be code generated from the section above 
+Class meta::protocols::pure::vX_X_X::metamodel::functionActivator::snowflakeApp::SnowflakeApp extends meta::protocols::pure::vX_X_X::metamodel::functionActivator::FunctionActivator
+{
+  applicationName : String[1];
+  description : String[0..1];
+  owner : String[0..1];
+}
