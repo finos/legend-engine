@@ -64,6 +64,11 @@ function meta::relational::functions::sqlstring::toSQLString(f:FunctionDefinitio
    toSQLString($f, $mapping, $databaseType, [], [], ^Format(newLine='', indent=''), $extensions, noDebug())
 }
 
+function meta::relational::functions::sqlstring::toSQLString(f:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1], databaseType:DatabaseType[1], quoteIdentifier:Boolean[0..1], extensions:Extension[*]):String[1]
+{
+   toSQLString($f, $mapping, $databaseType, [], $quoteIdentifier, [], ^Format(newLine='', indent=''), $extensions, noDebug())
+}
+
 function meta::relational::functions::sqlstring::toSQLString(f:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1], databaseType:DatabaseType[1], extensions:Extension[*], debug:DebugContext[1]):String[1]
 {
    toSQLString($f, $mapping, $databaseType, [], [], ^Format(newLine='', indent=''), $extensions, $debug)

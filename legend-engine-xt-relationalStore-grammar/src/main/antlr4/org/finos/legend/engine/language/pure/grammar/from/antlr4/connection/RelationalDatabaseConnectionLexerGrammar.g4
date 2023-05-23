@@ -7,6 +7,7 @@ import CoreLexerGrammar;
 
 STORE:                                  'store';
 TYPE:                                   'type';
+MODE:                                   'mode';
 RELATIONAL_DATASOURCE_SPEC:             'specification';
 RELATIONAL_AUTH_STRATEGY:               'auth';
 RELATIONAL_POST_PROCESSORS:             'postProcessors';

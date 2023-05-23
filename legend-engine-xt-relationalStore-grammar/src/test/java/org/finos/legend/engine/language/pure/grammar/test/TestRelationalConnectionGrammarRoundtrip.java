@@ -474,4 +474,16 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
                 "  };\n" +
                 "}\n");
     }
+
+    @Test
+    public void testSnowflakeLocalConnectionSpecification()
+    {
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: store::Store;\n" +
+                "  type: Snowflake;\n" +
+                "  mode: local;\n" +
+                "}\n");
+    }
 }

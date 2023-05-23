@@ -341,6 +341,128 @@ public class TestLambdaPrettyRendering
 
     }
 
+    @Test
+    public void testLambdaWithoutSubTypeGraphFetchTree()
+    {
+        testLambda("|test::Address.all()->graphFetch(\n" +
+                "  #{\n" +
+                "    test::Address{\n" +
+                "      Id\n" +
+                "    }\n" +
+                "  }#\n" +
+                ")->serialize(\n" +
+                "  #{\n" +
+                "    test::Address{\n" +
+                "      Id\n" +
+                "    }\n" +
+                "  }#\n" +
+                ")", RenderStyle.PRETTY);
+    }
+
+    @Test
+    public void testLambdaWithOnlySubTypeGraphFetchTree()
+    {
+        testLambda("|test::Address.all()->graphFetch(\n" +
+                "  #{\n" +
+                "    test::Address{\n" +
+                "      ->subType(@test::Street){\n" +
+                "        street\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }#\n" +
+                ")->serialize(\n" +
+                "  #{\n" +
+                "    test::Address{\n" +
+                "      ->subType(@test::Street){\n" +
+                "        street\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }#\n" +
+                ")", RenderStyle.PRETTY);
+    }
+
+    @Test
+    public void testLambdaWithSubTypeAndPropertyGraphFetchTree()
+    {
+        testLambda("|test::Address.all()->graphFetch(\n" +
+                "  #{\n" +
+                "    test::Address{\n" +
+                "      Id,\n" +
+                "      ->subType(@test::Street){\n" +
+                "        street\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }#\n" +
+                ")->serialize(\n" +
+                "  #{\n" +
+                "    test::Address{\n" +
+                "      Id,\n" +
+                "      ->subType(@test::Street){\n" +
+                "        street\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }#\n" +
+                ")", RenderStyle.PRETTY);
+    }
+
+    @Test
+    public void testLambdaWithSubTypeGraphFetchTreeHavingMultipleProperties()
+    {
+        testLambda("|test::Address.all()->graphFetch(\n" +
+                "  #{\n" +
+                "    test::Address{\n" +
+                "      Id,\n" +
+                "      ->subType(@test::Street){\n" +
+                "        street,\n" +
+                "        Coordinates\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }#\n" +
+                ")->serialize(\n" +
+                "  #{\n" +
+                "    test::Address{\n" +
+                "      Id,\n" +
+                "      ->subType(@test::Street){\n" +
+                "        street,\n" +
+                "        Coordinates\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }#\n" +
+                ")", RenderStyle.PRETTY);
+    }
+
+    @Test
+    public void testLambdaWithMultipleSubTypeGraphFetchTree()
+    {
+        testLambda("|test::Address.all()->graphFetch(\n" +
+                "  #{\n" +
+                "    test::Address{\n" +
+                "      Id,\n" +
+                "      ->subType(@test::Street){\n" +
+                "        street,\n" +
+                "        Coordinates\n" +
+                "      },\n" +
+                "      ->subType(@test::City){\n" +
+                "        name\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }#\n" +
+                ")->serialize(\n" +
+                "  #{\n" +
+                "    test::Address{\n" +
+                "      Id,\n" +
+                "      ->subType(@test::Street){\n" +
+                "        street,\n" +
+                "        Coordinates\n" +
+                "      },\n" +
+                "      ->subType(@test::City){\n" +
+                "        name\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }#\n" +
+                ")", RenderStyle.PRETTY);
+    }
+
     private static void testLambda(String text, RenderStyle renderStyle)
     {
         testLambda(text, text, renderStyle);

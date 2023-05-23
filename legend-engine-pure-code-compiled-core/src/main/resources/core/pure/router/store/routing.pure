@@ -12,12 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::graphFetch::*;
 import meta::pure::mapping::*;
 import meta::pure::router::builder::*;
 import meta::pure::router::metamodel::*;
 import meta::pure::router::store::metamodel::*;
 import meta::pure::router::store::routing::*;
 import meta::pure::router::operations::*;
+import meta::pure::router::preeval::*;
 import meta::pure::router::printer::*;
 import meta::pure::router::routing::*;
 import meta::pure::runtime::*;
@@ -266,6 +268,67 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
                                                           vs: ValueSpecification[1]                | $processedFunction.routingStrategy.wrapValueSpec($vs, 'from wrapper', $executionContext, $extensions, $debug)
                                                         ]);
                 ^$processedFunction(value = $wrappedValueSpec);
+        }
+    ),
+    pair(fe:FunctionExpression[1] | $fe.func->in([meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_, meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__Integer_1__T_MANY_]),
+      {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
+
+            let processedFunction  = routeFunctionExpressionFunctionDefinition($f, $fe, $state, $executionContext, $vars, $inScopeVars, $extensions, $debug);
+            let valueSpec = $processedFunction.value->toOne();
+            
+            let x  = if($valueSpec->meta::pure::functions::meta::instanceOf(StoreMappingRoutedValueSpecification),
+            |
+              let funcExpression = $valueSpec->cast(@StoreMappingRoutedValueSpecification)->evaluateAndDeactivate().value;
+              let params = $funcExpression->cast(@SimpleFunctionExpression).parametersValues;
+              let rootGraphFetchTree = $params->at(1)->cast(@InstanceValue).values->cast(@RootGraphFetchTree<Any>);
+              let routingStrategy    = $processedFunction.routingStrategy->cast(@StoreMappingRoutingStrategy);
+              let mapping            = $routingStrategy.mapping;
+              let permSetsHavingRootClassImpl  = $routingStrategy.sets->filter(x | $x.sets->exists(setImpl | $setImpl.class == $rootGraphFetchTree.class));
+              let permSetsNotHavingRootClassImpl =  $routingStrategy.sets->filter(x | !$x->in($permSetsHavingRootClassImpl));
+              let subTypeSetImplementations = $rootGraphFetchTree.subTypeTrees->map(x | let setImpl = $mapping->rootClassMappingByClass($x.subTypeClass)->resolveOperation($mapping);
+                                                                                        assert($setImpl->isNotEmpty(),'Mapping for subtype ' + $x.subTypeClass.name->toOne() + ' not found.');
+                                                                                        $setImpl;
+                                                                                   );
+              let resolvedPermSetsHavingRootClassImpl = $permSetsHavingRootClassImpl->map(pSet | ^$pSet(sets = $pSet.sets->map(s | if($s->instanceOf(OperationSetImplementation) && $s->cast(@OperationSetImplementation).operation.name == 'inheritance_OperationSetImplementation_1__SetImplementation_MANY_',
+                                                                                                                                      | $s->resolveOperation($mapping),
+                                                                                                                                      | $s
+                                                                                                                                     );
+                                                                                                                              )->concatenate($subTypeSetImplementations)->removeDuplicates()
+                                                                                                       );
+                                                                                          );
+              ^$processedFunction(routingStrategy = ^$routingStrategy(sets = $resolvedPermSetsHavingRootClassImpl->concatenate($permSetsNotHavingRootClassImpl)));,
+            | $processedFunction);
+      }
+    ),
+    pair(fe:FunctionExpression[1] | $fe.func->in(meta::pure::mutation::mutationFunctions()),
+        {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
+                let prevalFunc = $fe->preval($inScopeVars, $extensions, $debug)->cast(@SimpleFunctionExpression);
+    
+                let mapping = $prevalFunc.parametersValues->at(2)->cast(@InstanceValue).values->toOne()->cast(@Mapping);
+                let runtime = $prevalFunc.parametersValues->at(3)->cast(@InstanceValue).values->toOne()->cast(@Runtime);
+    
+                let currentRoutingStrategy = $state.routingStrategy;
+                let newRoutingStrategy     = if($currentRoutingStrategy->instanceOf(StoreMappingRoutingStrategy),
+                                               | let storeMapStrategy = $currentRoutingStrategy->cast(@StoreMappingRoutingStrategy);
+                                                 ^$storeMapStrategy(mapping = $mapping, runtime = $runtime, classMappingsByClass = $mapping->buildClassMappingsByClassMap(), setsByDepth = ^Map<String, PermutationSet>());,
+                                               | getRoutingStrategyFromMappingAndRuntime($mapping, $runtime));
+    
+                let processedFirstParam  = processCollection($state, $fe.parametersValues->at(0), $executionContext, $vars, $inScopeVars, {x:Any[1] | true}, $extensions, $debug)->toOne();
+                let processedSave = ^$fe(parametersValues = $processedFirstParam.value->cast(@ValueSpecification)->concatenate($fe.parametersValues->tail()));
+                let routedSave = 
+                  ^StoreMappingRoutedValueSpecification(
+                    executionContext = $executionContext,
+                    routingStrategy = $newRoutingStrategy,
+                    id = $fe->id(),
+                    multiplicity = $fe.multiplicity,
+                    genericType = $fe.genericType,
+                    value = $processedSave,
+                    mapping = $mapping,
+                    runtime = $runtime
+                  );
+                ^$processedFirstParam(
+                  routingStrategy = $newRoutingStrategy,
+                  value           = $routedSave);
         }
     )
   ]
