@@ -65,7 +65,7 @@ public class LegendPreparedStatement implements PostgresPreparedStatement
     @Override
     public ParameterMetaData getParameterMetaData()
     {
-        return PostgresPreparedStatement.emptyParamaneterMetaData();
+        return PostgresPreparedStatement.emptyParameterMetaData();
     }
 
     @Override

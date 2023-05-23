@@ -15,7 +15,6 @@
 package org.finos.legend.engine.postgres.handler;
 
 import java.sql.ParameterMetaData;
-import java.sql.SQLException;
 
 public interface PostgresPreparedStatement
 {
@@ -34,7 +33,7 @@ public interface PostgresPreparedStatement
 
     PostgresResultSet getResultSet() throws Exception;
 
-    static ParameterMetaData emptyParamaneterMetaData() {
+    static ParameterMetaData emptyParameterMetaData() {
         return new ParameterMetaData()
         {
             @Override

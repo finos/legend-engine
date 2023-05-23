@@ -15,26 +15,27 @@
 package org.finos.legend.engine.postgres;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import org.apache.http.client.CookieStore;
+
 import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.finos.legend.engine.postgres.auth.AnonymousIdentityProvider;
 import org.finos.legend.engine.postgres.auth.NoPasswordAuthenticationMethod;
 import org.finos.legend.engine.postgres.config.ServerConfig;
 import org.finos.legend.engine.postgres.handler.legend.LegendSessionFactory;
 import org.finos.legend.engine.postgres.handler.legend.LegendTdsClient;
-import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
@@ -50,9 +51,7 @@ public class PostgresServerTest
     @BeforeClass
     public static void setUp()
     {
-        CookieStore cookieStore = new BasicCookieStore();
-        CloseableHttpClient httpClient = (CloseableHttpClient) HttpClientBuilder.getHttpClient(cookieStore);
-        LegendTdsClient client = new LegendTdsClient("http", "localhost", "" + wireMockRule.port(),  new BasicCookieStore());
+        LegendTdsClient client = new LegendTdsClient("http", "localhost", "" + wireMockRule.port(), new BasicCookieStore());
         LegendSessionFactory legendSessionFactory = new LegendSessionFactory(client);
         ServerConfig serverConfig = new ServerConfig();
         serverConfig.setPort(0);
@@ -96,6 +95,19 @@ public class PostgresServerTest
             Assert.assertEquals("int4", resultSetMetaData.getColumnTypeName(1));
             Assert.assertEquals("varchar", resultSetMetaData.getColumnTypeName(2));
             Assert.assertEquals("varchar", resultSetMetaData.getColumnTypeName(3));
+        }
+    }
+
+    @Test
+    public void testParameterMetadata() throws SQLException
+    {
+        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                "dummy", "dummy");
+             PreparedStatement statement = connection.prepareStatement("SELECT * FROM service.\"/personService\"")
+        )
+        {
+            ParameterMetaData parameterMetaData = statement.getParameterMetaData();
+            Assert.assertEquals(0, parameterMetaData.getParameterCount());
         }
     }
 
