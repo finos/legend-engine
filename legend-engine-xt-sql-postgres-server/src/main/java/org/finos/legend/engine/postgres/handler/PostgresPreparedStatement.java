@@ -15,6 +15,7 @@
 package org.finos.legend.engine.postgres.handler;
 
 import java.sql.ParameterMetaData;
+import java.sql.SQLException;
 
 public interface PostgresPreparedStatement
 {
@@ -32,4 +33,75 @@ public interface PostgresPreparedStatement
     boolean execute() throws Exception;
 
     PostgresResultSet getResultSet() throws Exception;
+
+    static ParameterMetaData emptyParamaneterMetaData() {
+        return new ParameterMetaData()
+        {
+            @Override
+            public int getParameterCount()
+            {
+                return 0;
+            }
+
+            @Override
+            public int isNullable(int param)
+            {
+                return ParameterMetaData.parameterNullableUnknown;
+            }
+
+            @Override
+            public boolean isSigned(int param)
+            {
+                return false;
+            }
+
+            @Override
+            public int getPrecision(int param)
+            {
+                return 0;
+            }
+
+            @Override
+            public int getScale(int param)
+            {
+                return 0;
+            }
+
+            @Override
+            public int getParameterType(int param)
+            {
+                return 0;
+            }
+
+            @Override
+            public String getParameterTypeName(int param)
+            {
+                return null;
+            }
+
+            @Override
+            public String getParameterClassName(int param)
+            {
+                return null;
+            }
+
+            @Override
+            public int getParameterMode(int param)
+            {
+                return ParameterMetaData.parameterModeUnknown;
+            }
+
+            @Override
+            public <T> T unwrap(Class<T> iface)
+            {
+                return null;
+            }
+
+            @Override
+            public boolean isWrapperFor(Class<?> iface)
+            {
+                return false;
+            }
+        };
+    }
 }

@@ -165,7 +165,7 @@ public class Session implements AutoCloseable
                 try
                 {
                     PostgresPreparedStatement preparedStatement = prepared.prep;
-                    if (portalOrStatement == null || preparedStatement == null)
+                    if (portalOrStatement == null)
                     {
                         return new DescribeResult(null, null);
                     }
