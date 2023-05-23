@@ -200,6 +200,16 @@ public abstract class RelationalIngestorAbstract
             resourcesBuilder.stagingDataSetEmpty(datasetEmpty(updatedDatasets.stagingDataset(), transformer, executor));
         }
 
+        boolean mainDatasetExists = executor.datasetExists(updatedDatasets.mainDataset());
+        if (mainDatasetExists)
+        {
+            updatedDatasets = updatedDatasets.withMainDataset(constructDatasetFromDatabase(executor, updatedDatasets.mainDataset()));
+        }
+        else
+        {
+            updatedDatasets = updatedDatasets.withMainDataset(ApiUtils.deriveMainDatasetFromStaging(updatedDatasets, enrichedIngestMode));
+        }
+
         // Add Optimization Columns if needed
         enrichedIngestMode = enrichedIngestMode.accept(new IngestModeOptimizationColumnHandler(updatedDatasets));
 
@@ -216,16 +226,6 @@ public abstract class RelationalIngestorAbstract
             .batchStartTimestampPattern(BATCH_START_TS_PATTERN)
             .batchIdPattern(BATCH_ID_PATTERN)
             .build();
-
-        boolean mainDatasetExists = executor.datasetExists(updatedDatasets.mainDataset());
-        if (mainDatasetExists)
-        {
-            updatedDatasets = updatedDatasets.withMainDataset(constructDatasetFromDatabase(executor, updatedDatasets.mainDataset()));
-        }
-        else
-        {
-            updatedDatasets = updatedDatasets.withMainDataset(ApiUtils.deriveMainDatasetFromStaging(updatedDatasets, enrichedIngestMode));
-        }
 
         Planner planner = Planners.get(updatedDatasets, enrichedIngestMode, plannerOptions());
         GeneratorResult generatorResult = generator.generateOperations(updatedDatasets, resourcesBuilder.build(), planner, enrichedIngestMode);
