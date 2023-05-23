@@ -22,6 +22,6 @@ public class SubTypeGraphFetchTree extends GraphFetchTree
     @Override
     public <T> T accept(GraphFetchTreeVisitor<T> visitor)
     {
-        return null;
+        return visitor.visit(this);
     }
 }

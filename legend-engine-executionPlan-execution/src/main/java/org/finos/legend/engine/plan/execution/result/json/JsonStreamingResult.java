@@ -17,6 +17,7 @@ package org.finos.legend.engine.plan.execution.result.json;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.eclipse.collections.impl.factory.Lists;
+import org.finos.legend.engine.plan.execution.result.ErrorResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.ResultVisitor;
 import org.finos.legend.engine.plan.execution.result.StreamingResult;
@@ -24,6 +25,7 @@ import org.finos.legend.engine.plan.execution.result.builder.Builder;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.execution.result.serialization.Serializer;
 
+import java.io.IOException;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -97,6 +99,19 @@ public class JsonStreamingResult extends StreamingResult
     public Stream<ObjectNode> toStream()
     {
         return this.jsonStream.toStream().onClose(this::close);
+    }
+
+    @Override
+    public Result realizeInMemory()
+    {
+        try
+        {
+            return new RealizedJsonResult(this);
+        }
+        catch (IOException e)
+        {
+            return new ErrorResult(-1, e);
+        }
     }
 
     public interface JsonStreamHandler

@@ -753,18 +753,22 @@ import meta::relational::metamodel::operation::*;
 import meta::pure::lineage::scanRelations::*;
 import meta::relational::functions::sqlQueryToString::*;
 
-function meta::relational::testDataGeneration::executionPlan::planSeedDataGeneration(func:FunctionDefinition<Any>[1], mapping:Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], parameters: Any[*], extensions:Extension[*]):ExecutionPlan[1]
+function meta::relational::testDataGeneration::executionPlan::planSeedDataGenerationWithParameterNameValuePairs(func:FunctionDefinition<Any>[1], mapping:Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], parameterNameValuePairs: Pair<String, List<Any>>[*], extensions:Extension[*]):ExecutionPlan[1]
 {
-   let newVars = $func->generateParametersNameValuePair($parameters);
-   
-   let relationTree = if($func->functionReturnType().rawType->toOne()->_subTypeOf(TabularDataSet), | scanRelations($func, $mapping, $runtime, $newVars, $extensions),| scanRelations($func, $mapping, $extensions));
+   let relationTree = if($func->functionReturnType().rawType->toOne()->_subTypeOf(TabularDataSet), | scanRelations($func, $mapping, $runtime, $parameterNameValuePairs, $extensions),| scanRelations($func, $mapping, $extensions));
    assert($relationTree.root == true, | 'Should start with a relation tree starting from a \'root\'');
    assert($relationTree.children->size() == 1, | 'Seed data generation currently supports queries with a single root table/view (unions are not supported)');
    let mainRelation = $relationTree.children->toOne().relation->toOne();
    let mainTable = $mainRelation->match([t: Table[1]|$t, v:View[1]|$v->mainTable()]);
 
-   let seedGenerationFunction = $func->generateSeedDataGenerationFunction($mainRelation, $newVars);
+   let seedGenerationFunction = $func->generateSeedDataGenerationFunction($mainRelation, $parameterNameValuePairs);
    executionPlan($seedGenerationFunction, $mapping, $runtime, $extensions);
+}
+
+
+function meta::relational::testDataGeneration::executionPlan::planSeedDataGeneration(func:FunctionDefinition<Any>[1], mapping:Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], parameters: Any[*], extensions:Extension[*]):ExecutionPlan[1]
+{
+   planSeedDataGenerationWithParameterNameValuePairs($func, $mapping, $runtime, $exeCtx, $func->generateParametersNameValuePair($parameters), $extensions );
 }
 
 function meta::relational::testDataGeneration::executionPlan::planTestDataGeneration(func:FunctionDefinition<Any>[1], mapping:Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], rowIdentifiers: TableRowIdentifiers[*], hashStrings: Boolean[1], extensions:Extension[*]):ExecutionPlan[1]
@@ -777,10 +781,9 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
    planTestDataGeneration($func, $mapping, $runtime, $exeCtx, $rowIdentifiers, $hashStrings, $temporalMilestoningDates, [], $extensions);
 }
 
-function meta::relational::testDataGeneration::executionPlan::planTestDataGeneration(func:FunctionDefinition<Any>[1], mapping:Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], rowIdentifiers: TableRowIdentifiers[*], hashStrings: Boolean[1], temporalMilestoningDates: TemporalMilestoningDates[0..1], parameters:Any[*], extensions:Extension[*]):ExecutionPlan[1]
+function meta::relational::testDataGeneration::executionPlan::planTestDataGenerationWithParameterValuePairs(func:FunctionDefinition<Any>[1], mapping:Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], rowIdentifiers: TableRowIdentifiers[*], hashStrings: Boolean[1], temporalMilestoningDates: TemporalMilestoningDates[0..1], parameterNameValuePairs: Pair<String, List<Any>>[*], extensions:Extension[*]):ExecutionPlan[1]
 {
-   let newVars = $func->generateParametersNameValuePair($parameters);
-   let relationTree = if($func->functionReturnType().rawType->toOne()->_subTypeOf(TabularDataSet), | scanRelations($func, $mapping, $runtime, $newVars, $extensions),| scanRelations($func, $mapping, $extensions));
+   let relationTree = if($func->functionReturnType().rawType->toOne()->_subTypeOf(TabularDataSet), | scanRelations($func, $mapping, $runtime, $parameterNameValuePairs, $extensions),| scanRelations($func, $mapping, $extensions));
    let dbConnection = $runtime.connections->filter(c|$c->instanceOf(DatabaseConnection))->toOne();
    let updatedDbConnection = $extensions.executionPlanExtensions().reprocessConnection->toOne()->eval($dbConnection)->cast(@DatabaseConnection);
 
@@ -797,6 +800,11 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
       kerberos = $node.childNodes().kerberos->first(),
       processingTemplateFunctions = $node.childNodes().supportFunctions
    );
+}
+
+function meta::relational::testDataGeneration::executionPlan::planTestDataGeneration(func:FunctionDefinition<Any>[1], mapping:Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], rowIdentifiers: TableRowIdentifiers[*], hashStrings: Boolean[1], temporalMilestoningDates: TemporalMilestoningDates[0..1], parameters:Any[*], extensions:Extension[*]):ExecutionPlan[1]
+{
+   planTestDataGenerationWithParameterValuePairs($func, $mapping, $runtime, $exeCtx, $rowIdentifiers, $hashStrings, $temporalMilestoningDates,$func->generateParametersNameValuePair($parameters) ,$extensions)
 }
 
 function meta::relational::testDataGeneration::executionPlan::planTestDataGeneration(relationTree: RelationTree[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], dbConnection: DatabaseConnection[1], relationColumnMap: Map<NamedRelation, List<Column>>[1], indices: String[*], config: TestDataGenerationConfig[1], extensions:Extension[*]):ExecutionNode[1]

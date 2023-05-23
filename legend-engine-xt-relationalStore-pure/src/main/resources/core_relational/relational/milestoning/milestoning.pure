@@ -159,7 +159,9 @@ function meta::relational::milestoning::applyMilestoningFilters(j:RelationalTree
                                            u:Union[1] | $join,
                                            s:SelectSQLQuery[1] | $join
                                      ]);
-                                     ^$jtn(join=$newJoin, alias=$j.alias->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@TableAlias), childrenData=$j.childrenData->map(c|$c->cast(@JoinTreeNode)->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)));,
+                                     let newAlias = $j.alias->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@TableAlias);
+                                     let joinWithAliasProcessed = reprocessJoin($newJoin, ^OldAliasToNewAlias(first=$j.alias.name, second=$newAlias), []);
+                                     ^$jtn(join=$joinWithAliasProcessed, alias=$newAlias, childrenData=$j.childrenData->map(c|$c->cast(@JoinTreeNode)->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)));,
                rtn:RelationalTreeNode[1] |^$rtn(alias=$j.alias->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@TableAlias), childrenData=$j.childrenData->map(c|$c->cast(@JoinTreeNode)->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)))
               ]);
 }
