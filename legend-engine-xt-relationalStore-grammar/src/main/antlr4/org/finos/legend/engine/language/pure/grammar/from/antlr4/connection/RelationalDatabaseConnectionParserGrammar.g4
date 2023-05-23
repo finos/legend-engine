@@ -22,6 +22,7 @@ identifier:                             VALID_STRING | STRING
 definition:                             (
                                             connectionStore
                                             | dbType
+                                            | connectionMode
                                             | dbConnectionTimezone
                                             | dbQuoteIdentifiers
                                             | relationalDBAuth
@@ -37,6 +38,9 @@ dbConnectionTimezone:                   DB_TIMEZONE COLON TIMEZONE SEMI_COLON
 dbQuoteIdentifiers:                     QUOTE_IDENTIFIERS COLON BOOLEAN SEMI_COLON
 ;
 dbType:                                 TYPE COLON identifier SEMI_COLON
+;
+
+connectionMode:                         MODE COLON identifier SEMI_COLON
 ;
 
 relationalPostProcessors:               RELATIONAL_POST_PROCESSORS COLON

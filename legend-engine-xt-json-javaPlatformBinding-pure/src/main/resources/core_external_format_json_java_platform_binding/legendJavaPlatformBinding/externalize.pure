@@ -88,9 +88,7 @@ function meta::external::format::json::executionPlan::platformBinding::legendJav
                          c:ClassResultType[1] | $c.type->cast(@meta::pure::metamodel::type::Class<Any>)
                       ]);
 
-   let tree         = if($node.tree->isEmpty(),
-                        | generateRootTreeFromBindingDetail($classIn, $bindingDetail->cast(@JsonSchemaBindingDetail)),
-                        | resolveTreeForSerialize($node.tree->toOne()));
+   let tree         = resolveTreeForSerialize($node.tree);
 
    $context.typeInfos->addForGraphFetchTree($tree);
 }
@@ -109,9 +107,7 @@ function meta::external::format::json::executionPlan::platformBinding::legendJav
    let classIn      = $node.executionNodes.resultType->match([
                          c:ClassResultType[1] | $c.type->cast(@meta::pure::metamodel::type::Class<Any>)
                       ]);
-   let tree         = if($node.tree->isEmpty(),
-                        | generateRootTreeFromBindingDetail($classIn, $bindingDetail->cast(@JsonSchemaBindingDetail)),
-                        | resolveTreeForSerialize($node.tree->toOne()));
+   let tree         = resolveTreeForSerialize($node.tree);
 
    let childInfo    = $context->childNodeInfosForPath($path);
 
@@ -139,23 +135,4 @@ function meta::external::format::json::executionPlan::platformBinding::legendJav
      |let propTree = $tree.subTrees->cast(@PropertyGraphFetchTree)->filter(p | $p.property.name == 'value')->toOne();
       $propTree->propertyGraphFetchTreeToRootGraphFetchTree();,
      |$tree)
-}
-
-function <<doc.deprecated>> meta::external::format::json::executionPlan::platformBinding::legendJava::externalize::helperFunctions::generateRootTreeFromBindingDetail(classIn:meta::pure::metamodel::type::Class<Any>[1], detail:JsonSchemaBindingDetail[1]): RootGraphFetchTree<Any>[1]
-{
-   let propertiesInScope = $detail.mappedPropertiesForClass($classIn);
-   let subTrees          = $propertiesInScope->map(p | $p->generatePropertyTreeForProperty($detail));
-
-   ^RootGraphFetchTree<Any>(class=$classIn, subTrees = $subTrees);
-}
-
-function <<access.private>> meta::external::format::json::executionPlan::platformBinding::legendJava::externalize::helperFunctions::generatePropertyTreeForProperty(property:AbstractProperty<Any>[1], detail:JsonSchemaBindingDetail[1]): PropertyGraphFetchTree[1]
-{
-   let returnType           = $property->functionReturnType().rawType->toOne();
-   let isPropertyPrimitive  = $returnType->instanceOf(meta::pure::metamodel::type::PrimitiveType) || $returnType->instanceOf(meta::pure::metamodel::type::Enumeration) ;
-
-   let subPropertiesInScope = if($isPropertyPrimitive, | [], | $detail.mappedPropertiesForClass($returnType->cast(@meta::pure::metamodel::type::Class<Any>)));
-   let subTrees             = $subPropertiesInScope->map(p | $p->generatePropertyTreeForProperty($detail));
-
-   ^PropertyGraphFetchTree(property=$property, subTrees = $subTrees);
 }

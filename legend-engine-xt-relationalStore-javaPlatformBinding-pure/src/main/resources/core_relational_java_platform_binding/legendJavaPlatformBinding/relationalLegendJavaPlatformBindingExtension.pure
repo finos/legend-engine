@@ -39,6 +39,7 @@ function meta::relational::executionPlan::platformBinding::legendJava::relationa
       // Node based extensions ------------------------------------------------------
 
       supportedExecutionNodes = [
+         RelationalSaveNode,
          RelationalGraphFetchExecutionNode,
          RelationalClassInstantiationExecutionNode,
          CreateAndPopulateTempTableExecutionNode
@@ -47,6 +48,7 @@ function meta::relational::executionPlan::platformBinding::legendJava::relationa
       extraChildNodesWithIndex = {node: ExecutionNode[1] |
          $node->match([
             r: RelationalGraphFetchExecutionNode[1] | $r.children->size()->range()->map(x | pair($r.children->at($x), 'localChild' + $x->toString())),
+            r: RelationalSaveNode[1]                | $r.columnValueGenerators->keyValues()->map(p | pair($p.second, 'columnValueGenerator' + $p.first)),
             n: ExecutionNode[1]                     | []
          ])
       },
@@ -92,6 +94,14 @@ function meta::relational::executionPlan::platformBinding::legendJava::relationa
                (
                   node    = ^$r(children = $transformedChildren.node->cast(@RelationalGraphFetchExecutionNode)),
                   project = $project->concatenate($transformedChildren.project)->mergeProjectsNullable()
+               );
+            },
+            {r: RelationalSaveNode[1] |
+               let transformedGenerators = $r.columnValueGenerators->keyValues()->map(p | pair($p.first, $p.second->generateLegendJavaPlatformBindingCode($path + '.columnValueGenerator' + $p.first, $context, $extensions, $debug)))->newMap();
+               ^GeneratedNode
+               (
+                  node    = ^$r(columnValueGenerators = $transformedGenerators->keyValues()->map(p | pair($p.first, $p.second.node))->newMap()),
+                  project = $project->concatenate($transformedGenerators->values().project)->mergeProjectsNullable()
                );
             },
             n: ExecutionNode[1] | ^GeneratedNode(node = $node, project = $project)

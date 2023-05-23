@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.12.2-SNAPSHOT</version>
+    <version>4.13.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -114,6 +114,7 @@
         <module>legend-engine-xt-relationalStore-grammar</module>
         <module>legend-engine-xt-relationalStore-protocol</module>
         <module>legend-engine-xt-relationalStore-test-server</module>
+        <module>legend-engine-xt-relationalStore-mutation-executionPlan-test</module>
 
         <module>legend-engine-xt-relationalStore-sqlserver-execution</module>
         <module>legend-engine-xt-relationalStore-sqlserver-execution-tests</module>
@@ -305,7 +306,7 @@
     <properties>
         <!-- Legend -->
         <legend.pure.version>4.5.2</legend.pure.version>
-        <legend.shared.version>0.23.3</legend.shared.version>
+        <legend.shared.version>0.23.5</legend.shared.version>
 
         <!-- SONAR -->
         <sonar.projectKey>legend-engine</sonar.projectKey>
@@ -1816,6 +1817,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-pure-ide-light-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-ide-light-metadata-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

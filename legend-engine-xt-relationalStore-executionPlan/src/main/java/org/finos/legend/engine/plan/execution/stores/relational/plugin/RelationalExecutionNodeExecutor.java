@@ -25,6 +25,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
+import org.eclipse.collections.impl.map.mutable.MapAdapter;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicChecked;
@@ -72,6 +73,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.result.ResultCol
 import org.finos.legend.engine.plan.execution.stores.relational.result.ResultInterpreterExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.result.ResultInterpreterExtensionLoader;
 import org.finos.legend.engine.plan.execution.stores.relational.result.SQLExecutionResult;
+import org.finos.legend.engine.plan.execution.stores.relational.result.SQLUpdateResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.TempTableStreamingResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.graphFetch.RelationalGraphObjectsBatch;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AggregationAwareExecutionNode;
@@ -92,6 +94,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Relati
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalDataTypeInstantiationExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalRelationDataInstantiationExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalSaveNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalTdsInstantiationExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SequenceExecutionNode;
@@ -306,6 +309,51 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                     scope.span().setTag("executedSql", ((SQLExecutionResult) result).getExecutedSql());
                 }
                 return result;
+            }
+        }
+        else if (executionNode instanceof RelationalSaveNode)
+        {
+            RelationalSaveNode relationalSaveNode = (RelationalSaveNode) executionNode;
+            Result sources = Iterate.getOnly(relationalSaveNode.childNodes()).accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+            if (!(sources instanceof StreamingObjectResult))
+            {
+                throw new RuntimeException("Only StreamingObjectResults can be save sources!");
+            }
+            StreamingObjectResult<?> streamingObjectResult = (StreamingObjectResult<?>) sources;
+            try (Scope scope = GlobalTracer.get().buildSpan("Relational DB Execution").startActive(true))
+            {
+                // TODO HSO: Handle many, need to handle other result types?
+                Iterator<?> sourcesIterator = streamingObjectResult.getObjectStream().iterator();
+                if (!sourcesIterator.hasNext())
+                {
+                    throw new RuntimeException("No sources to save found!");
+                }
+                Object source = sourcesIterator.next();
+                if (sourcesIterator.hasNext())
+                {
+                    throw new RuntimeException("Only a single save source is currently supported!");
+                }
+
+                // Process each object on stream using generated variable name
+                this.executionState.addResult(relationalSaveNode.getGeneratedVariableName(), new ConstantResult(source));
+                MapAdapter.adapt(relationalSaveNode.getColumnValueGenerators())
+                        .forEachKeyValue((columnName, node) ->
+                        {
+                            Result columnValue = node.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+                            Result realizedColumnValue = columnValue.realizeInMemory();
+                            this.executionState.addResult(columnName, realizedColumnValue);
+                        });
+
+                this.executionState.topSpan = GlobalTracer.get().activeSpan();
+                scope.span().setTag("databaseType", relationalSaveNode.getDatabaseTypeName());
+                scope.span().setTag("executionTraceID", this.executionState.execID);
+                scope.span().setTag("sql", relationalSaveNode.sqlQuery());
+                SQLUpdateResult sqlUpdateResult = ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().execute(relationalSaveNode, profiles, executionState);
+                return new ConstantResult(String.format("Success - %d rows updated!", sqlUpdateResult.getUpdateCount()));
+            }
+            finally
+            {
+                streamingObjectResult.getObjectStream().close();
             }
         }
         else if (executionNode instanceof RelationalTdsInstantiationExecutionNode)
