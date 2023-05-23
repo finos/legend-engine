@@ -33,7 +33,8 @@ public interface PostgresPreparedStatement
 
     PostgresResultSet getResultSet() throws Exception;
 
-    static ParameterMetaData emptyParameterMetaData() {
+    static ParameterMetaData emptyParameterMetaData()
+    {
         return new ParameterMetaData()
         {
             @Override
