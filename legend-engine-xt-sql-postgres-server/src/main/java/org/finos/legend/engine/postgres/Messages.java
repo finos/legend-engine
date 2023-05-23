@@ -178,7 +178,7 @@ public class Messages
     static void sendAuthenticationError(Channel channel, String message)
     {
         LOGGER.warn(message);
-        byte[] msg = message != null ? message.getBytes(StandardCharsets.UTF_8) : "Unknown Auth Error".getBytes(StandardCharsets.UTF_8);
+        byte[] msg = (message != null ? message : "Unknown Auth Error").getBytes(StandardCharsets.UTF_8);
         byte[] errorCode = PGErrorStatus.INVALID_AUTHORIZATION_SPECIFICATION.code()
                 .getBytes(StandardCharsets.UTF_8);
 
