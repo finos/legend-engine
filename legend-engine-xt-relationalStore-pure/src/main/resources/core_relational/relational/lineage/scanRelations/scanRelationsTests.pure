@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::tests::tds::tdsJoin::*;
 import meta::pure::lineage::scanRelations::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
@@ -41,9 +42,9 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
 
    let expected1 = 'root\n' +
                    '  ------> (t) Person [ID, name]\n' +
-                   '    ------> (t) Bicycle(equal_PersonID_Bicycleb_PersonID) [b_PersonID]\n' +
-                   '    ------> (t) Car(equal_PersonID_Carc_PersonID) [ID, c_PersonID]\n' +
-                   '      ------> (t) Owner(equal_CarID_OwnerVEHICLE_ID) [VEHICLE_ID, name]\n';
+                   '    ------> (t) Bicycle(equal_rootID_Bicycle_d#7_d_m3b_PersonID) [b_PersonID]\n' +
+                   '    ------> (t) Car(equal_rootID_Car_d#7_d_m2c_PersonID) [ID, c_PersonID]\n' +
+                   '      ------> (t) Owner(equal_Car_d#7_d_m2ID_Owner_d#4_f_d_d_m2_rVEHICLE_ID) [VEHICLE_ID, name]\n';
    assertEquals($expected1, $relationTreeFromPureToSQL-> relationTreeAsString());
 }
 
@@ -66,9 +67,9 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
    let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions());
    let expected1 = 'root\n' +
                    '  ------> (t) Person [ID, name]\n' +
-                   '    ------> (t) Bicycle(equal_PersonID_Bicycleb_PersonID) [b_PersonID]\n' +
-                   '      ------> (t) Person(equal_PersonID_Bicycleb_PersonID) [ID, name]\n' +
-                   '    ------> (t) Car(equal_PersonID_Carc_PersonID) [c_PersonID, engineType]\n';
+                   '    ------> (t) Bicycle(equal_rootID_Bicycle_d#7_d_m3b_PersonID) [b_PersonID]\n' +
+                   '      ------> (t) Person(equal_Person_d#4_f_d_d_m3_rID_Bicycle_d#7_d_m3b_PersonID) [ID, name]\n' +
+                   '    ------> (t) Car(equal_rootID_Car_d#5_d_m2c_PersonID) [c_PersonID, engineType]\n';
    assertEquals($expected1, $relationTreeFromPureToSQL-> relationTreeAsString());
 }
 
@@ -87,8 +88,8 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
    let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions())-> toOne();
    let expected1 =  'root\n' +
                     '  ------> (t) Person [ID, name]\n' +
-                    '    ------> (t) Bicycle(or_equal_PersonID_s(Bicycleb_PersonID_SQLNull_Bicycleb_Description,Bicycle,)s(SQLNull_Carc_PersonID_Carc_Description,Car,)b_PersonID_0_equal_PersonID_SQLNull) [b_Description, b_PersonID]\n' +
-                    '    ------> (t) Car(or_equal_PersonID_SQLNull_equal_PersonID_s(Bicycleb_PersonID_SQLNull_Bicycleb_Description,Bicycle,)s(SQLNull_Carc_PersonID_Carc_Description,Car,)c_PersonID_1) [c_Description, c_PersonID]\n';
+                    '    ------> (t) Bicycle(or_equal_rootID_unionAlias_d#4_d_m2b_PersonID_0_equal_rootID_SQLNull) [b_Description, b_PersonID]\n' +
+                    '    ------> (t) Car(or_equal_rootID_SQLNull_equal_rootID_unionAlias_d#4_d_m2c_PersonID_1) [c_Description, c_PersonID]\n';
    assertEquals($expected1, $relationTreeFromPureToSQL-> relationTreeAsString());
 }
 
@@ -124,8 +125,8 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
 
    let expected2 = 'root\n' +
                    '  ------> (t) Person [ID, name]\n' +
-                   '    ------> (t) Car(equal_PersonID_Carc_PersonID) [ID, c_PersonID]\n' +
-                   '      ------> (t) Owner(equal_CarID_OwnerVEHICLE_ID) [VEHICLE_ID, name]\n';
+                   '    ------> (t) Car(equal_rootID_Car_d#4_dy1_d#7_d#4_m1_d#3_m1c_PersonID) [ID, c_PersonID]\n' +
+                   '      ------> (t) Owner(equal_Car_d#4_dy1_d#7_d#4_m1_d#3_m1ID_Owner_d#4_dy1_d#4_f_d_d#4_m1_r_d#3_m1_rVEHICLE_ID) [VEHICLE_ID, name]\n';
    assertEquals($expected2, $relationTreeFromPureToSQL-> relationTreeAsString());
 }
 
@@ -150,9 +151,9 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
    let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions());
    let expected1 = 'root\n' +
                    '  ------> (t) Person [ID, name]\n' +
-                   '    ------> (t) Bicycle(equal_PersonID_Bicycleb_PersonID) [ID, b_PersonID]\n' +
-                   '    ------> (t) Car(equal_PersonID_Carc_PersonID) [ID, c_PersonID]\n' +
-                   '      ------> (t) Owner(equal_CarID_OwnerVEHICLE_ID) [VEHICLE_ID, name]\n';
+                   '    ------> (t) Bicycle(equal_rootID_Bicycle_d#7_d#2_m1b_PersonID) [ID, b_PersonID]\n' +
+                   '    ------> (t) Car(equal_rootID_Car_d#11_d#3_m1c_PersonID) [ID, c_PersonID]\n' +
+                   '      ------> (t) Owner(equal_Car_d#11_d#3_m1ID_Owner_d#8_f_d_d#3_m1_rVEHICLE_ID) [VEHICLE_ID, name]\n';
    assertEquals($expected1, $relationTreeFromPureToSQL-> relationTreeAsString());
 }
 
@@ -171,8 +172,8 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
    let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions());
    let expected1 = 'root\n' +
                    '  ------> (t) tradeTable [prodId]\n' +
-                   '    ------> (t) productTable(equal_tradeTableprodId_productTableID) [ID, NAME]\n' +
-                   '      ------> (t) synonymTable(equal_s(synonymTablePRODID_synonymTableNAME,synonymTable,equal_synonymTableTYPE_CUSIP)PRODID_productTableID) [NAME, PRODID, TYPE]\n';
+                   '    ------> (t) productTable(equal_rootprodId_productTable_d#4_d_m1ID) [ID, NAME]\n' +
+                   '      ------> (t) synonymTable(equal_synonymTable_d#6_d_m2_mdPRODID_productTable_d#4_d_m1ID) [NAME, PRODID, TYPE]\n';
    assertEquals($expected1, $relationTreeFromPureToSQL-> relationTreeAsString());
 }
 
@@ -191,7 +192,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
    let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions())-> toOne();
    let expected1 = 'root\n' +
                    '  ------> (t) personTable [FIRMID, FIRSTNAME]\n' +
-                   '    ------> (t) firmTable(equal_firmTableID_personTableFIRMID) [ID, LEGALNAME]\n';
+                   '    ------> (t) firmTable(equal_firmTable_d#2_d#2_m1ID_rootFIRMID) [ID, LEGALNAME]\n';
    assertEquals($expected1, $relationTreeFromPureToSQL-> relationTreeAsString());
 }
 
@@ -210,8 +211,8 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
    let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions());
    let expected1 = 'root\n' +
                    '  ------> (t) OrderTable [prodFk]\n' +
-                   '    ------> (t) BiTemporalProductTableWithLatest(equal_OrderTableprodFk_BiTemporalProductTableWithLatestid) [from_z, id, in_z, out_z, thru_z, type]\n' +
-                   '      ------> (t) BiTemporalProductClassificationTableWithLatest(equal_BiTemporalProductTableWithLatesttype_s(BiTemporalProductClassificationTableWithLatesttype,BiTemporalProductClassificationTableWithLatest,group_and_and_lessThanEqual_BiTemporalProductClassificationTableWithLatestin_z_2017-06-11_greaterThan_BiTemporalProductClassificationTableWithLatestout_z_2017-06-11_and_lessThanEqual_BiTemporalProductClassificationTableWithLatestfrom_z_2017-06-10_greaterThan_BiTemporalProductClassificationTableWithLatestthru_z_2017-06-10)type) [from_z, in_z, out_z, thru_z, type]\n';
+                   '    ------> (t) BiTemporalProductTableWithLatest(equal_rootprodFk_BiTemporalProductTableWithLatest_d#8_d_m1id) [from_z, id, in_z, out_z, thru_z, type]\n' +
+                   '      ------> (t) BiTemporalProductClassificationTableWithLatest(equal_BiTemporalProductTableWithLatest_d#8_d_m1type_BiTemporalProductClassificationTableWithLatest_d#4_f_d#4_d_m1_rtype) [from_z, in_z, out_z, thru_z, type]\n';
    assertEquals($expected1, $relationTreeFromPureToSQL-> relationTreeAsString());
 }
 
@@ -233,10 +234,10 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
    let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions());
    let expected1 = 'root\n' +
                    '  ------> (t) OrderTable [id, prodFk]\n' +
-                   '    ------> (t) BiTemporalProductTable(equal_OrderTableprodFk_BiTemporalProductTableid) [from_z, id, in_z, out_z, thru_z, type]\n' +
-                   '      ------> (t) BiTemporalProductClassificationTable(equal_BiTemporalProductTabletype_s(BiTemporalProductClassificationTabletype,BiTemporalProductClassificationTable,group_and_and_lessThanEqual_BiTemporalProductClassificationTablein_z_2017-06-11_greaterThan_BiTemporalProductClassificationTableout_z_2017-06-11_and_lessThanEqual_BiTemporalProductClassificationTablefrom_z_2017-06-10_greaterThan_BiTemporalProductClassificationTablethru_z_2017-06-10)type) [from_z, in_z, out_z, thru_z, type]\n' +
-                   '    ------> (t) OrderToSystemADescriptions(equal_OrderTableid_OrderToSystemADescriptionsorderId) [from_z, orderId, systemADescriptionId, thru_z]\n' +
-                   '      ------> (t) SystemAOrderDescriptionTable(equal_OrderToSystemADescriptionssystemADescriptionId_SystemAOrderDescriptionTabledescriptionId) [description, descriptionId]\n';
+                   '    ------> (t) BiTemporalProductTable(equal_rootprodFk_BiTemporalProductTable_d#8_d_m1id) [from_z, id, in_z, out_z, thru_z, type]\n' +
+                   '      ------> (t) BiTemporalProductClassificationTable(equal_BiTemporalProductTable_d#8_d_m1type_BiTemporalProductClassificationTable_d#4_f_d#4_d_m1_rtype) [from_z, in_z, out_z, thru_z, type]\n' +
+                   '    ------> (t) OrderToSystemADescriptions(equal_rootid_OrderToSystemADescriptions_d#6_d_m2orderId) [from_z, orderId, systemADescriptionId, thru_z]\n' +
+                   '      ------> (t) SystemAOrderDescriptionTable(equal_OrderToSystemADescriptions_d#6_d_m2systemADescriptionId_SystemAOrderDescriptionTable_d#6_l_d_m2_rdescriptionId) [description, descriptionId]\n';
    assertEquals($expected1, $relationTreeFromPureToSQL-> relationTreeAsString());
 }
 
@@ -257,8 +258,8 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
    let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions());
    let expected1 = 'root\n' +
                    '  ------> (t) OrderTable [prodFk]\n' +
-                   '    ------> (t) BiTemporalProductTableWithLatest(equal_OrderTableprodFk_BiTemporalProductTableWithLatestid) [from_z, id, in_z, out_z, thru_z, type]\n' +
-                   '      ------> (t) BiTemporalProductClassificationTableWithLatest(equal_BiTemporalProductTableWithLatesttype_s(BiTemporalProductClassificationTableWithLatesttype,BiTemporalProductClassificationTableWithLatest,group_and_and_lessThanEqual_BiTemporalProductClassificationTableWithLatestin_z_2017-06-11_greaterThan_BiTemporalProductClassificationTableWithLatestout_z_2017-06-11_and_lessThanEqual_BiTemporalProductClassificationTableWithLatestfrom_z_2017-06-10_greaterThan_BiTemporalProductClassificationTableWithLatestthru_z_2017-06-10)type) [from_z, in_z, out_z, thru_z, type]\n';
+                   '    ------> (t) BiTemporalProductTableWithLatest(equal_rootprodFk_BiTemporalProductTableWithLatest_d#8_d_m1id) [from_z, id, in_z, out_z, thru_z, type]\n' +
+                   '      ------> (t) BiTemporalProductClassificationTableWithLatest(equal_BiTemporalProductTableWithLatest_d#8_d_m1type_BiTemporalProductClassificationTableWithLatest_d#4_f_d#4_d_m1_rtype) [from_z, in_z, out_z, thru_z, type]\n';
    assertEquals($expected1, $relationTreeFromPureToSQL-> relationTreeAsString());
 }
 
@@ -417,8 +418,8 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
    let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions());
    let expected1 ='root\n' +
                   '  ------> (t) Firm [ID, name]\n' +
-                  '    ------> (t) PersonSet4(equal_s(PersonSet4FirmID_1_PersonSet4firstName_s1,PersonSet4,)s(PersonSet4FirmID_2_PersonSet4firstName_s1,PersonSet4,)firmId_FirmID) [FirmID_1, firstName_s1]\n' +
-                  '    ------> (t) PersonSet4(equal_s(PersonSet4FirmID_1_PersonSet4firstName_s1,PersonSet4,)s(PersonSet4FirmID_2_PersonSet4firstName_s1,PersonSet4,)firmId_FirmID) [FirmID_2, firstName_s1]\n';
+                  '    ------> (t) PersonSet4(equal_unionAlias_d#4_d_m2firmId_rootID) [FirmID_1, firstName_s1]\n' +
+                  '    ------> (t) PersonSet4(equal_unionAlias_d#4_d_m2firmId_rootID) [FirmID_2, firstName_s1]\n';
    assertEquals($expected1, $relationTreeFromPureToSQL-> relationTreeAsString(true));
 }
 
@@ -444,9 +445,9 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
                    '  ------> (v) orderPnlView [pnl]\n' +
                    '    root\n' +
                    '      ------> (t) orderPnlTable [ORDER_ID, pnl]\n' +
-                   '        ------> (t) orderTable(equal_orderPnlTableORDER_ID_orderTableID) [ID, accountID]\n' +
-                   '          ------> (t) accountTable(equal_orderTableaccountID_accountTableID) [ID]\n' +
-                   '          ------> (t) salesPersonTable(equal_orderTableaccountID_salesPersonTableACCOUNT_ID) [ACCOUNT_ID, NAME, PERSON_ID]\n';
+                   '        ------> (t) orderTable(equal_rootORDER_ID_orderTable_d#2_d#2_m3ID) [ID, accountID]\n' +
+                   '          ------> (t) accountTable(equal_orderTable_d#2_d#2_m3accountID_accountTable_d#2_l_d#2_m3_rID) [ID]\n' +
+                   '          ------> (t) salesPersonTable(equal_orderTable_d#2_d#2_m3accountID_salesPersonTable_d#2_l_d#2_m4_mdACCOUNT_ID) [ACCOUNT_ID, NAME, PERSON_ID]\n';
    assertEquals($expected1, $relationTreeFromPureToSQL-> relationTreeAsString());
 }
 
@@ -470,12 +471,12 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
    let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions());
    let expected1 = 'root\n' +
                    '  ------> (v) orderPnlView [ORDER_ID, pnl]\n' +
-                   '    ------> (t) orderTable(equal_orderPnlViewORDER_ID_orderTableID) [ID, settlementDateTime]\n' +
+                   '    ------> (t) orderTable(equal_rootORDER_ID_orderTable_d_1_d_m2ID) [ID, settlementDateTime]\n' +
                    '    root\n' +
                    '      ------> (t) orderPnlTable [ORDER_ID, pnl]\n' +
-                   '        ------> (t) orderTable(equal_orderPnlTableORDER_ID_orderTableID) [ID, accountID]\n' +
-                   '          ------> (t) accountTable(equal_orderTableaccountID_accountTableID) [ID]\n' +
-                   '          ------> (t) salesPersonTable(equal_orderTableaccountID_salesPersonTableACCOUNT_ID) [ACCOUNT_ID, NAME, PERSON_ID]\n';
+                   '        ------> (t) orderTable(equal_rootORDER_ID_orderTable_d#2_d#2_m3ID) [ID, accountID]\n' +
+                   '          ------> (t) accountTable(equal_orderTable_d#2_d#2_m3accountID_accountTable_d#2_l_d#2_m3_rID) [ID]\n' +
+                   '          ------> (t) salesPersonTable(equal_orderTable_d#2_d#2_m3accountID_salesPersonTable_d#2_l_d#2_m4_mdACCOUNT_ID) [ACCOUNT_ID, NAME, PERSON_ID]\n';
    assertEquals($expected1, $relationTreeFromPureToSQL-> relationTreeAsString());
 }
 
@@ -500,12 +501,12 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
    let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions());
    let expected1 ='root\n' +
                   '  ------> (t) orderTable [ID]\n' +
-                  '    ------> (v) orderPnlView(equal_orderPnlViewORDER_ID_orderTableID) [ORDER_ID, pnl]\n' +
+                  '    ------> (v) orderPnlView(equal_orderPnlView_d#2_d_m2ORDER_ID_rootID) [ORDER_ID, pnl]\n' +
                   '      root\n' +
                   '        ------> (t) orderPnlTable [ORDER_ID, pnl]\n' +
-                  '          ------> (t) orderTable(equal_orderPnlTableORDER_ID_orderTableID) [ID, accountID]\n' +
-                  '            ------> (t) accountTable(equal_orderTableaccountID_accountTableID) [ID]\n' +
-                  '            ------> (t) salesPersonTable(equal_orderTableaccountID_salesPersonTableACCOUNT_ID) [ACCOUNT_ID, NAME, PERSON_ID]\n';
+                  '          ------> (t) orderTable(equal_rootORDER_ID_orderTable_d#2_d#2_m3ID) [ID, accountID]\n' +
+                  '            ------> (t) accountTable(equal_orderTable_d#2_d#2_m3accountID_accountTable_d#2_l_d#2_m3_rID) [ID]\n' +
+                  '            ------> (t) salesPersonTable(equal_orderTable_d#2_d#2_m3accountID_salesPersonTable_d#2_l_d#2_m4_mdACCOUNT_ID) [ACCOUNT_ID, NAME, PERSON_ID]\n';
    assertEquals($expected1, $relationTreeFromPureToSQL-> relationTreeAsString());
 }
 
@@ -538,25 +539,25 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
    assertEquals($expected, $relationTree-> relationTreeAsString());
 
    let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions());
-   let expected1 ='root\n' +
-                  '  ------> (v) orderNegativePnlViewOnView [ORDER_ID, pnl]\n' +
-                  '    ------> (t) orderTable(or_equal_SQLNull_orderTableID_equal_s(orderPnlViewOnViewORDER_ID_SQLNull_orderPnlViewOnViewpnl,orderPnlViewOnView,)s(SQLNull_orderNegativePnlViewOnViewORDER_ID_orderNegativePnlViewOnViewpnl,orderNegativePnlViewOnView,)ORDER_ID_1_orderTableID) [ID, settlementDateTime]\n' +
-                  '    root\n' +
-                  '      ------> (v) orderNegativePnlView [ORDER_ID, pnl]\n' +
-                  '        root\n' +
-                  '          ------> (t) orderPnlTable [ORDER_ID, pnl]\n' +
-                  '            ------> (t) orderTable(equal_orderPnlTableORDER_ID_orderTableID) [ID, accountID]\n' +
-                  '              ------> (t) accountTable(equal_orderTableaccountID_accountTableID) [ID]\n' +
-                  '              ------> (t) salesPersonTable(equal_orderTableaccountID_salesPersonTableACCOUNT_ID) [ACCOUNT_ID, NAME, PERSON_ID]\n' +
-                  '  ------> (v) orderPnlViewOnView [ORDER_ID, pnl]\n' +
-                  '    ------> (t) orderTable(or_equal_s(orderPnlViewOnViewORDER_ID_SQLNull_orderPnlViewOnViewpnl,orderPnlViewOnView,)s(SQLNull_orderNegativePnlViewOnViewORDER_ID_orderNegativePnlViewOnViewpnl,orderNegativePnlViewOnView,)ORDER_ID_0_orderTableID_equal_SQLNull_orderTableID) [ID, settlementDateTime]\n' +
-                  '    root\n' +
-                  '      ------> (v) orderPnlView [ORDER_ID, pnl]\n' +
-                  '        root\n' +
-                  '          ------> (t) orderPnlTable [ORDER_ID, pnl]\n' +
-                  '            ------> (t) orderTable(equal_orderPnlTableORDER_ID_orderTableID) [ID, accountID]\n' +
-                  '              ------> (t) accountTable(equal_orderTableaccountID_accountTableID) [ID]\n' +
-                  '              ------> (t) salesPersonTable(equal_orderTableaccountID_salesPersonTableACCOUNT_ID) [ACCOUNT_ID, NAME, PERSON_ID]\n';
+   let expected1 ='root\n'+
+                  '  ------> (v) orderNegativePnlViewOnView [ORDER_ID, pnl]\n'+
+                  '    ------> (t) orderTable(or_equal_SQLNull_orderTable_d_1_d_m2ID_equal_unionBaseORDER_ID_1_orderTable_d_1_d_m2ID) [ID, settlementDateTime]\n'+
+                  '    root\n'+
+                  '      ------> (v) orderNegativePnlView [ORDER_ID, pnl]\n'+
+                  '        root\n'+
+                  '          ------> (t) orderPnlTable [ORDER_ID, pnl]\n'+
+                  '            ------> (t) orderTable(equal_rootORDER_ID_orderTable_d#2_d#2_m3ID) [ID, accountID]\n'+
+                  '              ------> (t) accountTable(equal_orderTable_d#2_d#2_m3accountID_accountTable_d#2_l_d#2_m3_rID) [ID]\n'+
+                  '              ------> (t) salesPersonTable(equal_orderTable_d#2_d#2_m3accountID_salesPersonTable_d#2_l_d#2_m4_mdACCOUNT_ID) [ACCOUNT_ID, NAME, PERSON_ID]\n'+
+                  '  ------> (v) orderPnlViewOnView [ORDER_ID, pnl]\n'+
+                  '    ------> (t) orderTable(or_equal_unionBaseORDER_ID_0_orderTable_d_1_d_m2ID_equal_SQLNull_orderTable_d_1_d_m2ID) [ID, settlementDateTime]\n'+
+                  '    root\n'+
+                  '      ------> (v) orderPnlView [ORDER_ID, pnl]\n'+
+                  '        root\n'+
+                  '          ------> (t) orderPnlTable [ORDER_ID, pnl]\n'+
+                  '            ------> (t) orderTable(equal_rootORDER_ID_orderTable_d#2_d#2_m3ID) [ID, accountID]\n'+
+                  '              ------> (t) accountTable(equal_orderTable_d#2_d#2_m3accountID_accountTable_d#2_l_d#2_m3_rID) [ID]\n'+
+                  '              ------> (t) salesPersonTable(equal_orderTable_d#2_d#2_m3accountID_salesPersonTable_d#2_l_d#2_m4_mdACCOUNT_ID) [ACCOUNT_ID, NAME, PERSON_ID]\n';
    assertEquals($expected1, $relationTreeFromPureToSQL-> relationTreeAsString());
 }
 
@@ -579,11 +580,11 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
    let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions());
    let expected1 ='root\n' +
                   '  ------> (t) orderTable [ID, accountID]\n' +
-                  '    ------> (t) salesPersonTable(equal_orderTableaccountID_s(salesPersonTableACCOUNT_ID_PersonFirmViewfirm_name,salesPersonTable_SalesPerson_PersonView,)ACCOUNT_ID) [ACCOUNT_ID, PERSON_ID]\n' +
-                  '      ------> (v) PersonFirmView(equal_salesPersonTablePERSON_ID_PersonFirmViewPERSON_ID) [PERSON_ID, firm_name]\n' +
+                  '    ------> (t) salesPersonTable(equal_rootaccountID_salesPersonTable_d#6_d_m2ACCOUNT_ID) [ACCOUNT_ID, PERSON_ID]\n' +
+                  '      ------> (v) PersonFirmView(equal_salesPersonTable_d#6PERSON_ID_PersonFirmView_d#6_lPERSON_ID) [PERSON_ID, firm_name]\n' +
                   '        root\n' +
                   '          ------> (t) personTable [FIRMID, ID, LASTNAME]\n' +
-                  '            ------> (t) firmTable(equal_firmTableID_personTableFIRMID) [ID, LEGALNAME]\n';
+                  '            ------> (t) firmTable(equal_firmTable_d#6_l_d#6_l_m3ID_rootFIRMID) [ID, LEGALNAME]\n';
    assertEquals($expected1, $relationTreeFromPureToSQL-> relationTreeAsString());
 }
 
@@ -595,21 +596,22 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
    let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::relational::tests::testRuntime(), relationalExtensions());
    let expected = 'root\n'+
                   '  ------> (t) aTable1 [fk, pk]\n'+
-                  '    ------> (t) bTable1(equal_aTable1fk_s(bTable1fk_cTable1c1,bTable1_B1C1_1,)fk) [fk]\n'+
-                  '      ------> (t) cTable1(and_equal_bTable1fk_cTable1fk_equal_cTable1fk_8) [c1, fk]\n'+
-                  '    ------> (t) bTable1(equal_aTable1fk_s(bTable1fk_cTable1c2,bTable1_B1C1_2,)fk) [fk]\n'+
-                  '      ------> (t) cTable1(and_equal_bTable1fk_cTable1fk_equal_cTable1fk_9) [c2, fk]\n'+
-                  '    ------> (t) bTable1(equal_aTable1fk_s(bTable1fk_dTable1pk,bTable1_B1C1_2_C1D1,)fk) [fk]\n'+
-                  '      ------> (t) cTable1(and_equal_bTable1fk_cTable1fk_equal_cTable1fk_9) [fk]\n'+
-                  '        ------> (t) dTable1(equal_cTable1fk_dTable1fk) [fk, pk]\n'+
+                  '    ------> (t) bTable1(equal_rootfk_bTable1_d#2_d_m2_m1fk) [fk]\n'+
+                  '      ------> (t) cTable1(and_equal_bTable1_d#2fk_cTable1_d#2_lfk_equal_cTable1_d#2_lfk_8) [c1, fk]\n'+
+                  '    ------> (t) bTable1(equal_rootfk_bTable1_d#2_d_m3_m1fk) [fk]\n'+
+                  '      ------> (t) cTable1(and_equal_bTable1_d#2fk_cTable1_d#2_lfk_equal_cTable1_d#2_lfk_9) [c2, fk]\n'+
+                  '    ------> (t) bTable1(equal_rootfk_bTable1_d#4_d#2_m1#2fk) [fk]\n'+
+                  '      ------> (t) cTable1(and_equal_bTable1_d#4fk_cTable1_d#4_lfk_equal_cTable1_d#4_lfk_9) [fk]\n'+
+                  '        ------> (t) dTable1(equal_cTable1_d#4_lfk_dTable1_d#4_l#2fk) [fk, pk]\n'+
                   '  ------> (t) aTable2 [fk, pk]\n'+
-                  '    ------> (t) bTable2(equal_aTable2fk_s(bTable2fk_cTable2c1,bTable2_B2C2_1,)fk) [fk]\n'+
-                  '      ------> (t) cTable2(and_equal_bTable2fk_cTable2fk_equal_cTable2fk_8) [c1, fk]\n'+
-                  '    ------> (t) bTable2(equal_aTable2fk_s(bTable2fk_cTable2c2,bTable2_B2C2_2,)fk) [fk]\n'+
-                  '      ------> (t) cTable2(and_equal_bTable2fk_cTable2fk_equal_cTable2fk_9) [c2, fk]\n'+
-                  '    ------> (t) bTable2(equal_aTable2fk_s(bTable2fk_dTable2pk,bTable2_B2C2_2_C2D2,)fk) [fk]\n'+
-                  '      ------> (t) cTable2(and_equal_bTable2fk_cTable2fk_equal_cTable2fk_9) [fk]\n'+
-                  '        ------> (t) dTable2(equal_cTable2fk_dTable2fk) [fk, pk]\n';
+                  '    ------> (t) bTable2(equal_rootfk_bTable2_d#2_d_m2_m1fk) [fk]\n'+
+                  '      ------> (t) cTable2(and_equal_bTable2_d#2fk_cTable2_d#2_lfk_equal_cTable2_d#2_lfk_8) [c1, fk]\n'+
+                  '    ------> (t) bTable2(equal_rootfk_bTable2_d#2_d_m3_m1fk) [fk]\n'+
+                  '      ------> (t) cTable2(and_equal_bTable2_d#2fk_cTable2_d#2_lfk_equal_cTable2_d#2_lfk_9) [c2, fk]\n'+
+                  '    ------> (t) bTable2(equal_rootfk_bTable2_d#4_d#2_m1#2fk) [fk]\n'+
+                  '      ------> (t) cTable2(and_equal_bTable2_d#4fk_cTable2_d#4_lfk_equal_cTable2_d#4_lfk_9) [fk]\n'+
+                  '        ------> (t) dTable2(equal_cTable2_d#4_lfk_dTable2_d#4_l#2fk) [fk, pk]\n';
+
    assertEquals($expected, $relationTreeFromPureToSQL-> relationTreeAsString());
 }
 
@@ -911,7 +913,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
 
    let expectedTree = 'root\n'+
                       '  ------> (t) personTable [ID]\n'+
-                      '    ------> (t) firmTable(equal_s(personTableID,personTable,)"eID"_s(firmTableID_firmTableLEGALNAME_firmTableADDRESSID_firmTableCEOID,firmTable,)"ID") [ADDRESSID, CEOID, ID, LEGALNAME]\n';
+                      '    ------> (t) firmTable(equal_"joinleft_"_d"eID"_"joinright_"_d"ID") [ADDRESSID, CEOID, ID, LEGALNAME]\n';
    assertEquals($expectedTree, $relationTree-> relationTreeAsString());
 }
 
@@ -967,7 +969,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
 
    let expectedTree = 'root\n'+
                       '  ------> (t) personTable [ID]\n'+
-                      '    ------> (t) personTable(equal_s(personTableID,personTable,)"personID"_s(personTableID_personTableFIRSTNAME_personTableLASTNAME_personTableAGE_personTableADDRESSID_personTableFIRMID_personTableMANAGERID,personTable,)"ID") [ADDRESSID, AGE, FIRMID, FIRSTNAME, ID, LASTNAME, MANAGERID]\n';
+                      '    ------> (t) personTable(equal_"joinleft_"_d"personID"_"joinright_"_d"ID") [ADDRESSID, AGE, FIRMID, FIRSTNAME, ID, LASTNAME, MANAGERID]\n';
    assertEquals($expectedTree, $relationTree-> relationTreeAsString());
 }
 
@@ -985,7 +987,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
 
    let expectedTree = 'root\n'+
                       '  ------> (t) personTable [ADDRESSID, AGE, FIRMID, FIRSTNAME, ID, LASTNAME, MANAGERID]\n' +
-                      '    ------> (t) firmTable(equal_s(personTableID_personTableFIRSTNAME_personTableLASTNAME_personTableAGE_personTableADDRESSID_personTableFIRMID_personTableMANAGERID,personTable,)"ID"_s(firmTableID_firmTableCEOID,firmTable,)"firmID") [CEOID, ID]\n';
+                      '    ------> (t) firmTable(equal_"joinleft_"_d#3"ID"_"joinright_"_d#3"firmID") [CEOID, ID]\n';
 
    assertEquals($expectedTree, $relationTree-> relationTreeAsString());
 }
@@ -1003,6 +1005,52 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
    let expectedTree = 'root\n'+
                       '  ------> (t) personTable [ADDRESSID, AGE, FIRMID, FIRSTNAME, ID, LASTNAME, MANAGERID]\n' +
                       '    ------> (t) firmTable(tdsJoin) [CEOID, ID]\n';
+
+   assertEquals($expectedTree, $relationTree-> relationTreeAsString());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations::test::testTdsJoinConcatenateAndJoin():Boolean[1]
+{
+  let query = {|testJoinTDS_Person.all()
+                ->project([col({p:testJoinTDS_Person[1]|$p.firstName}, 'First_1'),
+                          col({p:testJoinTDS_Person[1]|$p.age}, 'Age_1')])
+                ->join(
+                      testJoinTDS_Person.all()
+                      ->project([col({p:testJoinTDS_Person[1]|$p.firstName}, 'First_2'),
+                                col({p:testJoinTDS_Person[1]|$p.age}, 'Age_2')]), JoinType.LEFT_OUTER,  'First_1', 'First_2'
+                )
+                ->join(
+                      testJoinTDS_Person.all()
+                      ->project([col({p:testJoinTDS_Person[1]|$p.firstName}, 'First_3'),
+                                col({p:testJoinTDS_Person[1]|$p.age}, 'Age_3')]) , JoinType.LEFT_OUTER,  'First_2', 'First_3'
+                )
+                ->extend(^BasicColumnSpecification<meta::pure::tds::TDSRow>(name='Restated' , func=r: TDSRow[1]|false))
+              ->concatenate(
+                     testJoinTDS_Person.all()
+                      ->project([col({p:testJoinTDS_Person[1]|$p.firstName}, 'First_1'),
+                          col({p:testJoinTDS_Person[1]|$p.age}, 'Age_1')])
+                ->join(
+                      testJoinTDS_Person.all()
+                      ->project([col({p:testJoinTDS_Person[1]|$p.firstName}, 'First_2'),
+                                col({p:testJoinTDS_Person[1]|$p.age}, 'Age_2')]), JoinType.LEFT_OUTER,  'First_1', 'First_2'
+                )
+              )
+              ->join(
+                  testJoinTDS_Person.all()->filter(x|$x.firstName->in('Pierre'))->project([x|$x.firstName, x|$x.age], ['fName', 'age']),
+                  JoinType.LEFT_OUTER,  'First_1', 'fName' 
+              )};
+
+  let mapping =  testJoinTDSMapping;
+  let runtime =  meta::relational::tests::testRuntime();
+  let relationTree = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, $runtime, relationalExtensions());
+  let expectedTree = 'root\n'+
+                      '  ------> (t) personTable [AGE, FIRSTNAME]\n'+
+                      '    ------> (t) personTable(equal_"joinleft_"_d"First_1"_"joinright_"_d"fName") [AGE, FIRSTNAME]\n'+
+                      '    ------> (t) personTable(equal_"joinleft_"_d#4"First_2"_"joinright_"_d#4"First_3") [AGE, FIRSTNAME]\n'+
+                      '    ------> (t) personTable(equal_"joinleft_"_d#5"First_1"_"joinright_"_d#5"First_2") [AGE, FIRSTNAME]\n'+
+                      '  ------> (t) personTable [AGE, FIRSTNAME]\n'+
+                      '    ------> (t) personTable(equal_"joinleft_"_d"First_1"_"joinright_"_d"fName") [AGE, FIRSTNAME]\n'+
+                      '    ------> (t) personTable(equal_"joinleft_"_d#3"First_1"_"joinright_"_d#3"First_2") [AGE, FIRSTNAME]\n';
 
    assertEquals($expectedTree, $relationTree-> relationTreeAsString());
 }
