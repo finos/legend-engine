@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.authentication.credentialprovider.CredentialBuilder;
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
 import org.finos.legend.engine.external.shared.utils.ExternalFormatRuntime;
 import org.finos.legend.engine.language.pure.grammar.to.MongoDBQueryJsonComposer;
@@ -32,6 +33,7 @@ import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
+import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.StoreStreamReadingObjectsIterator;
 import org.finos.legend.engine.plan.execution.stores.mongodb.MongoDBExecutor;
 import org.finos.legend.engine.plan.execution.stores.mongodb.result.MongoDBResult;
@@ -43,6 +45,9 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBExe
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPlatformImplementation;
+import org.finos.legend.engine.shared.core.identity.Credential;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionCategory;
 import org.pac4j.core.profile.CommonProfile;
@@ -58,8 +63,8 @@ import java.util.stream.StreamSupport;
 
 public class MongoDBExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 {
-    MutableList<CommonProfile> profiles;
-    ExecutionState executionState;
+    private final MutableList<CommonProfile> profiles;
+    private ExecutionState executionState;
 
     public MongoDBExecutionNodeExecutor(MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
@@ -104,7 +109,9 @@ public class MongoDBExecutionNodeExecutor implements ExecutionNodeVisitor<Result
             String composedDbCommand = mongoDBQueryJsonComposer.parseDatabaseCommand(dbCommand);
 
             CredentialProviderProvider credentialProviderProvider = this.executionState.getCredentialProviderProvider();
-            return new MongoDBExecutor(credentialProviderProvider).executeMongoDBQuery(composedDbCommand, mongoDBConnection);
+            Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+
+            return new MongoDBExecutor(credentialProviderProvider).executeMongoDBQuery(composedDbCommand, mongoDBConnection, identity);
         }
         catch (IOException e)
         {
@@ -114,7 +121,8 @@ public class MongoDBExecutionNodeExecutor implements ExecutionNodeVisitor<Result
 
     private Result executeDocumentInternalizeExecutionNode(MongoDBDocumentInternalizeExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
-        MongoDBResult resultCursor = getResultCursor(node.executionNodes().getFirst().accept(new ExecutionNodeExecutor(profiles, new ExecutionState(executionState))));
+
+        MongoDBResult resultCursor = getResultCursor(node.executionNodes().getFirst().accept(executionState.getStoreExecutionState(StoreType.NonRelational_MongoDB).getVisitor(profiles, executionState)));
         StreamingObjectResult<?> streamingObjectResult = executeInternalizeExecutionNode(node, resultCursor, profiles, executionState);
         return applyConstraints(streamingObjectResult, node.checked, node.enableConstraints);
     }

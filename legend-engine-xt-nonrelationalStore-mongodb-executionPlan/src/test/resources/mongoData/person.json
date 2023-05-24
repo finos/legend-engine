@@ -5,6 +5,7 @@
       "firstName": "Gelya",
       "lastName": "Bowhay",
       "age": 25,
+      "birthDate": new ISODate("1983-05-05T12:12:12.000+1200"),
       "phoneNumber": "+1 202 704 9709",
       "email": "gbowhay0@1688.com",
       "car": [
@@ -43,7 +44,7 @@
       },
       "firm": {
         "legalName": "Babblestorm",
-        "dateFounded": "1998-07-05T18:09:35Z",
+        "dateFounded": new ISODate("1998-07-05T18:09:35.000Z"),
         "industrySectors": [
           "Finance",
           "Consumer Services",
@@ -64,6 +65,7 @@
       "firstName": "Jefferey",
       "lastName": "Raye",
       "age": 45,
+      "birthDate": new Date(1684154899000),
       "phoneNumber": "+1 301 842 7614",
       "email": "jraye1@ted.com",
       "car": [
@@ -103,7 +105,7 @@
       },
       "firm": {
         "legalName": "Yodoo",
-        "dateFounded": "1994-03-10T15:24:54Z",
+        "dateFounded": new ISODate("1994-03-10T15:24:54.000Z"),
         "industrySectors": [
           "Technology"
         ],
@@ -122,6 +124,7 @@
       "firstName": "Coralie",
       "lastName": "Batie",
       "age": 23,
+      "birthDate": new ISODate("1980-04-04T12:12:12.000+0500"),
       "phoneNumber": "+1 501 883 4607",
       "email": "cbatie2@amazon.co.jp",
       "car": [
@@ -162,7 +165,7 @@
       },
       "firm": {
         "legalName": "Devpoint",
-        "dateFounded": "2018-01-14T00:36:08Z",
+        "dateFounded": new ISODate("2018-01-14T00:36:08.000Z"),
         "industrySectors": [
           "Technology",
           "Consumer Durables",
@@ -184,6 +187,7 @@
       "firstName": "Franz",
       "lastName": "Stiant",
       "age": 68,
+      "birthDate": new ISODate("1985-04-04T17:18:23Z"),
       "phoneNumber": "+1 916 456 9969",
       "email": "fstiant3@europa.eu",
       "car": [
@@ -213,7 +217,7 @@
       },
       "firm": {
         "legalName": "Voolia",
-        "dateFounded": "1993-10-07T04:40:27Z",
+        "dateFounded": new ISODate("1993-10-07T04:40:27.000Z"),
         "industrySectors": [
           "Health Care"
         ],
@@ -232,6 +236,7 @@
       "firstName": "Chev",
       "lastName": "Gehrts",
       "age": 38,
+      "birthDate": new ISODate("1970-04-04T17:18:23Z"),
       "phoneNumber": "+1 602 898 8006",
       "email": "cgehrts4@github.com",
       "car": [
@@ -281,7 +286,7 @@
       },
       "firm": {
         "legalName": "Gabspot",
-        "dateFounded": "1974-02-14T05:55:00Z",
+        "dateFounded": new ISODate("1974-02-14T05:55:00.000Z"),
         "industrySectors": [
           "Consumer Services"
         ],
