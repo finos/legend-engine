@@ -100,7 +100,6 @@
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <scope>runtime</scope>
         </dependency>
         <!-- COMMONS CODEC -->
 
@@ -128,11 +127,6 @@
         <dependency>
             <groupId>org.openjdk.jol</groupId>
             <artifactId>jol-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>commons-codec</groupId>
-            <artifactId>commons-codec</artifactId>
-            <version>1.15</version>
         </dependency>
         <!-- OPEN JDK -->
         <!-- Dependencies needed to compile generaated code -->
