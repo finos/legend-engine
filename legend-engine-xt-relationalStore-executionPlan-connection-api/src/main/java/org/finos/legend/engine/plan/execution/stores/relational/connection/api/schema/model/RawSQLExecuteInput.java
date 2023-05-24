@@ -16,7 +16,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.api.
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 
-public class AdhocExecuteSQLInput
+public class RawSQLExecuteInput
 {
     public RelationalDatabaseConnection connection;
     public String sql;

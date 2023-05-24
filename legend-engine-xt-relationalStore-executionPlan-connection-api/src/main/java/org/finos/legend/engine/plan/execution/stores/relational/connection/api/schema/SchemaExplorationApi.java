@@ -18,7 +18,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.model.AdhocExecuteSQLInput;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.model.RawSQLExecuteInput;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.model.DatabaseBuilderInput;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
@@ -75,10 +75,10 @@ public class SchemaExplorationApi
         }
     }
 
-    @Path("adhocExecuteSQL")
+    @Path("executeRawSQL")
     @POST
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response adhocExecuteSQL(AdhocExecuteSQLInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response executeRawSQL(RawSQLExecuteInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try
