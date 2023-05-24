@@ -60,12 +60,3 @@ Enum meta::external::store::mongodb::metamodel::authentication::AuthenticationMe
 {
   SCRAM_SHA_1, SCRAM_SHA_256, GSSAPI, MONGODB_X509
 }
-
-
-//Class {doc.doc = 'Authentication using Delegated Kerberos for Mongo'} meta::external::store::mongodb::metamodel::authentication::MongoDBDelegatedKerberosAuthSpec extends AuthenticationSpecification
-//{
-//  serverPrincipal: String[0..1];
-//  kerberosRemoteServiceName: String[1];
-//  kerberosUseCanonicalHostname:  Boolean[0..1];
-//  authMechanism: AuthenticationMechanism[1];
-//}
