@@ -49,7 +49,12 @@ function <<access.private>> meta::external::store::elasticsearch::executionTest:
       pair('MPAA', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(keyword = ^KeywordProperty())),
       pair('ReleaseDate', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(date = ^DateProperty(format = 'yyyy-MM-dd hh:mm:ssa'))),
       pair('Budget', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(integer = ^IntegerNumberProperty())),
-      pair('Revenue', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(_float = ^FloatNumberProperty()))
+      pair('Revenue', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(_float = ^FloatNumberProperty())),
+      pair('MainActor', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(object =
+            ^ObjectProperty(properties = newMap([
+                pair('Name', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(keyword = ^KeywordProperty()))
+            ]))
+      ))
     ])
   );
 }
