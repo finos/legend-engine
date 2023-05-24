@@ -93,6 +93,7 @@
       "includedMappings": [
         {
           "_type": "mappingIncludeMapping",
+          "createdFromExplicitType": true,
           "includedMapping": "test::mapping::DispatchMapping",
           "sourceInformation": {
             "endColumn": 48,
