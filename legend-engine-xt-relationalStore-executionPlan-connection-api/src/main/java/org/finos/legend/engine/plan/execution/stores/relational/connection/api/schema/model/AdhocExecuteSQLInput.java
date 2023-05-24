@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,17 +16,8 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.api.
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 
-public class DatabaseBuilderInput
+public class AdhocExecuteSQLInput
 {
-    public DatabaseBuilderConfig config;
-
     public RelationalDatabaseConnection connection;
-
-    public TargetDatabase targetDatabase;
-
-    public DatabaseBuilderInput()
-    {
-        this.config = new DatabaseBuilderConfig();
-        this.targetDatabase = new TargetDatabase();
-    }
+    public String sql;
 }
