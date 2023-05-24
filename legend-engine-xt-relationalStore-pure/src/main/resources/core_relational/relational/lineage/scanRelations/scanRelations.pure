@@ -621,7 +621,7 @@ function <<access.private>> meta::pure::lineage::scanRelations::processJoinFromT
       let updatedOperation            = $orgJoin.operation->meta::relational::postProcessor::transform($transformFunc)
                                                           ->meta::relational::postProcessor::transform($removeGeneratedNullEquality);
 
-      ^$orgJoin(name      = $updatedOperation->buildUniqueName(false, $extensions),
+      ^$orgJoin(name      = $updatedOperation->buildUniqueName(true, $extensions),
                 aliases   = [pair($updatedAliases->at(0), $updatedAliases->at(1)), pair($updatedAliases->at(1), $updatedAliases->at(0))],
                 operation = $updatedOperation->reprocessTableAliasColumns($updatedNonNullPairs)->cast(@Operation));
    ));
