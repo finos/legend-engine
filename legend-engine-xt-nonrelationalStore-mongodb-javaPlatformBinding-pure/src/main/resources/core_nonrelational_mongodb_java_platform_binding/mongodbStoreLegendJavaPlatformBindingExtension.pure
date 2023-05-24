@@ -456,19 +456,3 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
    $conventions
       ->addProvidedType(meta::external::store::mongodb::executionPlan::platformBinding::legendJava::_IMongoDocumentDeserializeExecutionNodeSpecifics, $jIMongoDocumentDeserializeExecutionNodeSpecifics);
 }
-
-
-function <<LocalPlatformBinding.TestPlanBinder>> meta::external::store::mongodb::executionPlan::platformBinding::legendJava::bindMongoDBTestPlanToPlatform(): LocalPlatformBinder[1]
-{
-   ^LocalPlatformBinder
-   (
-      overrides = [],
-
-      bindingFunction = {plan: ExecutionPlan[1], extensions: Extension[*] |
-
-           let extensionsWithPlatformBindings = meta::external::store::mongodb::executionPlan::platformBinding::legendJava::mongoDBLegendJavaPlatformBindingExtensions();
-         // Using LegendJava as the default for local platform binding
-         generatePlatformCode($plan, legendJavaPlatformBindingId(), ^LegendJavaPlatformBindingConfig(), $extensionsWithPlatformBindings);
-      }
-   )
-}
