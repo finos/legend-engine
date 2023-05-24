@@ -54,7 +54,32 @@ Service demo::H2DemoService
     runtime: demo::H2DemoRuntime;
   }
 }
-
+Service demo::H2PersonService
+{
+  pattern: '/personService';
+  owners:
+  [
+    'anonymous1',
+    'anonymous2'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::employee.all()->project(
+  [
+    x|$x.id,
+    x|$x.name
+  ],
+  [
+    'Id',
+    'Name'
+  ]
+);
+    mapping: demo::DemoRelationalMapping;
+    runtime: demo::H2DemoRuntime;
+  }
+}
 ###Runtime
 Runtime demo::H2DemoRuntime
 {
@@ -101,11 +126,9 @@ RelationalDatabaseConnection demo::H2DemoConnection
 {
   store: demo::H2DemoDataBase;
   type: H2;
-  specification: Static
+  specification: LocalH2
   {
-    name: '~/testH2';
-    host: 'localhost';
-    port: 9092;
+    testDataSetupCSV: 'default\nEmployeeTable\nID,name\n101,Alice\n102,Bob\n103,Curtis\n104,Bob\n---';
   };
   auth: DefaultH2;
 }
