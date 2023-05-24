@@ -11,7 +11,7 @@ options
 
 identifier:                                 VALID_STRING | STRING
                                             | NONE | DATE_TIME
-                                            | TARGET_RELATIONAL | TARGET_RELATIONAL_TABLE | TARGET_RELATIONAL_TEMPORAL
+                                            | TARGET_RELATIONAL | TARGET_RELATIONAL_TABLE | TARGET_RELATIONAL_DATABASE | TARGET_RELATIONAL_TEMPORAL
                                             | TEMPORAL_UNI | TEMPORAL_BI | TEMPORAL_PROCESSING_DIMENSION | TEMPORAL_SOURCE_DERIVED_DIMENSION
                                             | PROCESSING_BATCH_ID | PROCESSING_BATCH_ID_AND_DATE_TIME
                                             | BATCH_ID_IN | BATCH_ID_OUT | DATE_TIME_IN | DATE_TIME_OUT
@@ -23,11 +23,14 @@ identifier:                                 VALID_STRING | STRING
 
 definition:                                 (
                                                 table
+                                                | database
                                                 | temporality
                                             )*
                                             EOF
 ;
 table:                                      TARGET_RELATIONAL_TABLE COLON identifier SEMI_COLON
+;
+database:                                   TARGET_RELATIONAL_DATABASE COLON qualifiedName SEMI_COLON
 ;
 temporality:                                TARGET_RELATIONAL_TEMPORAL COLON
                                                 (

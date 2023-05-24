@@ -36,6 +36,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.grammar.from.antlr4.PersistenceRelationalParserGrammar;
 
+import java.util.Collections;
+
 public class PersistenceRelationalParseTreeWalker
 {
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
@@ -58,11 +60,20 @@ public class PersistenceRelationalParseTreeWalker
         PersistenceRelationalParserGrammar.TableContext tableContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.table(), "table", persistenceTarget.sourceInformation);
         persistenceTarget.table = PureGrammarParserUtility.fromIdentifier(tableContext.identifier());
 
+        // database
+        PersistenceRelationalParserGrammar.DatabaseContext databaseContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.database(), "database", persistenceTarget.sourceInformation);
+        persistenceTarget.database = visitDatabasePointer(databaseContext, persistenceTarget.sourceInformation);
+
         // temporality
         PersistenceRelationalParserGrammar.TemporalityContext temporalityContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.temporality(), "temporality", persistenceTarget.sourceInformation);
         persistenceTarget.temporality = temporalityContext == null ? new Nontemporal() : visitTemporality(temporalityContext);
 
         return persistenceTarget;
+    }
+
+    private String visitDatabasePointer(PersistenceRelationalParserGrammar.DatabaseContext ctx, SourceInformation sourceInformation)
+    {
+        return PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
     }
 
     private Temporality visitTemporality(PersistenceRelationalParserGrammar.TemporalityContext ctx)

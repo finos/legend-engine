@@ -61,6 +61,7 @@ public class TestPersistenceRelationalGrammarParser extends TestGrammarParser.Te
                 "    Relational\n" +
                 "    #{\n" +
                 "      table: TableA;\n" +
+                "      database: test::Database;\n" +
                 "      temporality: Bitemporal\n" +
                 "      {\n" +
                 "        processingDimension: BatchIdAndDateTime\n" +
@@ -104,6 +105,7 @@ public class TestPersistenceRelationalGrammarParser extends TestGrammarParser.Te
                 "    Relational\n" +
                 "    #{\n" +
                 "      table: TableB;\n" +
+                "      database: test::Database;\n" +
                 "      temporality: None;\n" +
                 "    }#\n" +
                 "  ];\n" +

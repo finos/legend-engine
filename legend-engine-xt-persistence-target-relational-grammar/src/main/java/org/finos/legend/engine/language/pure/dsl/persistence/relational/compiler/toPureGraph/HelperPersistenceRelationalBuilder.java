@@ -14,6 +14,11 @@
 
 package org.finos.legend.engine.language.pure.dsl.persistence.relational.compiler.toPureGraph;
 
+import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.set.MutableSet;
+import org.eclipse.collections.api.set.SetIterable;
+import org.eclipse.collections.impl.factory.Sets;
+import org.eclipse.collections.impl.set.mutable.UnifiedSet;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
@@ -49,8 +54,11 @@ import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_met
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_SourceTimeStart_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_UnitemporalMilestoning_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Column;
+import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Table;
+import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 
 public class HelperPersistenceRelationalBuilder
 {
@@ -60,53 +68,101 @@ public class HelperPersistenceRelationalBuilder
 
     public static Root_meta_pure_persistence_metamodel_target_PersistenceTarget buildRelationalPersistenceTarget(RelationalPersistenceTarget persistenceTarget, CompileContext context)
     {
+        Database database = buildDatabase(persistenceTarget.database, persistenceTarget.sourceInformation, context);
+        Table table = buildTable(persistenceTarget.table, persistenceTarget.sourceInformation, database);
         return new Root_meta_pure_persistence_relational_metamodel_RelationalPersistenceTarget_Impl("", null, context.pureModel.getClass("meta::pure::persistence::relational::metamodel::RelationalPersistenceTarget"))
-            ._table(buildTable(persistenceTarget.table, persistenceTarget.sourceInformation, context))
-            ._milestoning(buildMilestoning(persistenceTarget.temporality, context));
+            ._table(table)
+            ._database(database)
+            ._milestoning(buildMilestoning(persistenceTarget.temporality, context, table));
+    }
+
+    public static Database buildDatabase(String database, SourceInformation sourceInformation, CompileContext context)
+    {
+        String databasePath = database.substring(0, database.lastIndexOf("::"));
+        String databaseName = database.substring(database.lastIndexOf("::") + 2);
+
+        PackageableElement packageableElement = context.pureModel.getOrCreatePackage(databasePath)._children().detect(c -> databaseName.equals(c._name()));
+        if (packageableElement instanceof Database)
+        {
+            return (Database) packageableElement;
+        }
+
+        throw new EngineException(String.format("Database '%s' is not defined", database), sourceInformation, EngineErrorType.COMPILATION);
     }
 
     // todo: ??
-    public static Table buildTable(String table, SourceInformation sourceInformation, CompileContext context)
+    public static Column buildColumn(String columnName, SourceInformation sourceInformation, Table table)
     {
-        String tablePath = table.substring(0, table.lastIndexOf("::"));
-        String tableName = table.substring(table.lastIndexOf("::") + 2);
-
-        PackageableElement packageableElement = context.pureModel.getOrCreatePackage(tablePath)._children().detect(c -> tableName.equals(c._name()));
-        if (packageableElement instanceof Table)
+        Column column = (Column) table._columns().detect(col -> columnName.equals(col.getName()));
+        if (column != null)
         {
-            return (Table) packageableElement;
+            return column;
         }
 
-        throw new EngineException(String.format("Table '%s' is not defined", table), sourceInformation, EngineErrorType.COMPILATION);
+        throw new EngineException(String.format("Column '%s' is not defined", columnName), sourceInformation, EngineErrorType.COMPILATION);
     }
 
     // todo: ??
-    public static Column buildColumn(String column, SourceInformation sourceInformation, CompileContext context)
+    public static Table buildTable(String tableName, SourceInformation sourceInformation, Database database)
     {
-        String columnPath = column.substring(0, column.lastIndexOf("::"));
-        String columnName = column.substring(column.lastIndexOf("::") + 2);
-
-        PackageableElement packageableElement = context.pureModel.getOrCreatePackage(columnPath)._children().detect(c -> columnName.equals(c._name()));
-        if (packageableElement instanceof Column)
+        SetIterable<Table> tables = getAllTables(database);
+        Table table = tables.detect(t -> tableName.equals(t._name()));
+        if (table != null)
         {
-            return (Column) packageableElement;
+            return table;
         }
 
-        throw new EngineException(String.format("Column '%s' is not defined", column), sourceInformation, EngineErrorType.COMPILATION);
+        throw new EngineException(String.format("Table '%s' is not defined", tableName), sourceInformation, EngineErrorType.COMPILATION);
     }
 
-    public static Root_meta_pure_persistence_relational_metamodel_Milestoning buildMilestoning(Temporality temporality, CompileContext context)
+    private static SetIterable<Table> getAllTables(Database db)
     {
-        return temporality.accept(new TemporalityBuilder(context));
+        MutableSet<Table> tables = Sets.mutable.empty();
+        for (Database _db : getAllIncludedDBs(db))
+        {
+            _db._schemas().asLazy().forEach(x -> x._tables().forEach(tables::add));
+        }
+        return tables;
+    }
+
+    private static SetIterable<Database> getAllIncludedDBs(Database database)
+    {
+        RichIterable<? extends Store> includes = database._includes();
+        if (includes.isEmpty())
+        {
+            return Sets.immutable.with(database);
+        }
+        MutableSet<Database> results = UnifiedSet.<Database>newSet(includes.size() + 1).with(database);
+        collectIncludedDBs(results, includes);
+        return results;
+    }
+
+    private static void collectIncludedDBs(MutableSet<Database> results, RichIterable<? extends CoreInstance> databases)
+    {
+        databases.forEach(db ->
+        {
+            Database database = (Database) db;
+            if (results.add(database))
+            {
+                collectIncludedDBs(results, database._includes());
+            }
+        });
+    }
+
+    public static Root_meta_pure_persistence_relational_metamodel_Milestoning buildMilestoning(Temporality temporality, CompileContext context, Table table)
+    {
+        return temporality.accept(new TemporalityBuilder(context, table));
     }
 
     private static class TemporalityBuilder implements TemporalityVisitor<Root_meta_pure_persistence_relational_metamodel_Milestoning>
     {
         private final CompileContext context;
+        private final Table table;
 
-        private TemporalityBuilder(CompileContext context)
+        private TemporalityBuilder(CompileContext context, Table table)
         {
             this.context = context;
+            this.table = table;
         }
 
         @Override
@@ -119,69 +175,73 @@ public class HelperPersistenceRelationalBuilder
         public Root_meta_pure_persistence_relational_metamodel_Milestoning visitUnitemporal(Unitemporal val)
         {
             return new Root_meta_pure_persistence_relational_metamodel_UnitemporalMilestoning_Impl("", null, context.pureModel.getClass("meta::pure::persistence::relational::metamodel::UnitemporalMilestoning"))
-                ._processingDimension(val.processingDimension.accept(new ProcessingDimensionBuilder(context)));
+                ._processingDimension(val.processingDimension.accept(new ProcessingDimensionBuilder(context, table)));
         }
 
         @Override
         public Root_meta_pure_persistence_relational_metamodel_Milestoning visitBitemporal(Bitemporal val)
         {
             return new Root_meta_pure_persistence_relational_metamodel_BitemporalMilestoning_Impl("", null, context.pureModel.getClass("meta::pure::persistence::relational::metamodel::BitemporalMilestoning"))
-                ._processingDimension(val.processingDimension.accept(new ProcessingDimensionBuilder(context)))
-                ._sourceDerivedDimension(val.sourceDerivedDimension.accept(new SourceDerivedDimensionBuilder(context)));
+                ._processingDimension(val.processingDimension.accept(new ProcessingDimensionBuilder(context, table)))
+                ._sourceDerivedDimension(val.sourceDerivedDimension.accept(new SourceDerivedDimensionBuilder(context, table)));
         }
     }
 
     private static class ProcessingDimensionBuilder implements ProcessingDimensionVisitor<Root_meta_pure_persistence_relational_metamodel_ProcessingDimension>
     {
         private final CompileContext context;
+        private final Table table;
 
-        private ProcessingDimensionBuilder(CompileContext context)
+        private ProcessingDimensionBuilder(CompileContext context, Table table)
         {
             this.context = context;
+            this.table = table;
         }
 
         @Override
         public Root_meta_pure_persistence_relational_metamodel_ProcessingDimension visitBatchId(BatchId val)
         {
             return new Root_meta_pure_persistence_relational_metamodel_BatchId_Impl("", null, context.pureModel.getClass("meta::pure::persistence::relational::metamodel::BatchId"))
-                ._batchIdIn(buildColumn(val.batchIdIn, val.sourceInformation, context))
-                ._batchIdOut(buildColumn(val.batchIdOut, val.sourceInformation, context));
+                ._batchIdIn(buildColumn(val.batchIdIn, val.sourceInformation, table))
+                ._batchIdOut(buildColumn(val.batchIdOut, val.sourceInformation, table));
         }
 
         @Override
         public Root_meta_pure_persistence_relational_metamodel_ProcessingDimension visitDateTime(ProcessingDateTime val)
         {
             return new Root_meta_pure_persistence_relational_metamodel_ProcessingTime_Impl("", null, context.pureModel.getClass("meta::pure::persistence::relational::metamodel::ProcessingTime"))
-                ._timeIn(buildColumn(val.timeIn, val.sourceInformation, context))
-                ._timeOut(buildColumn(val.timeOut, val.sourceInformation, context));
+                ._timeIn(buildColumn(val.timeIn, val.sourceInformation, table))
+                ._timeOut(buildColumn(val.timeOut, val.sourceInformation, table));
         }
 
         @Override
         public Root_meta_pure_persistence_relational_metamodel_ProcessingDimension visitBatchIdAndDateTime(BatchIdAndDateTime val)
         {
             return new Root_meta_pure_persistence_relational_metamodel_BatchIdAndTime_Impl("", null, context.pureModel.getClass("meta::pure::persistence::relational::metamodel::BatchIdAndTime"))
-                ._batchIdIn(buildColumn(val.batchIdIn, val.sourceInformation, context))
-                ._batchIdOut(buildColumn(val.batchIdOut, val.sourceInformation, context))
-                ._timeIn(buildColumn(val.timeIn, val.sourceInformation, context))
-                ._timeOut(buildColumn(val.timeOut, val.sourceInformation, context));
+                ._batchIdIn(buildColumn(val.batchIdIn, val.sourceInformation, table))
+                ._batchIdOut(buildColumn(val.batchIdOut, val.sourceInformation, table))
+                ._timeIn(buildColumn(val.timeIn, val.sourceInformation, table))
+                ._timeOut(buildColumn(val.timeOut, val.sourceInformation, table));
         }
     }
 
     private static class SourceDerivedDimensionBuilder implements SourceDerivedDimensionVisitor<Root_meta_pure_persistence_relational_metamodel_SourceDerivedDimension>
     {
         private final CompileContext context;
+        private final Table table;
 
-        private SourceDerivedDimensionBuilder(CompileContext context)
+        private SourceDerivedDimensionBuilder(CompileContext context, Table table)
         {
             this.context = context;
+            this.table = table;
         }
 
         @Override
         public Root_meta_pure_persistence_relational_metamodel_SourceDerivedDimension visitSourceDerivedTime(SourceDerivedTime val)
         {
             return new Root_meta_pure_persistence_relational_metamodel_SourceDerivedTime_Impl("", null, context.pureModel.getClass("meta::pure::persistence::relational::metamodel::SourceDerivedTime"))
-                ._timeStart(buildColumn(val.timeStart, val.sourceInformation, context))
-                ._timeEnd(buildColumn(val.timeEnd, val.sourceInformation, context))
+                ._timeStart(buildColumn(val.timeStart, val.sourceInformation, table))
+                ._timeEnd(buildColumn(val.timeEnd, val.sourceInformation, table))
                 ._sourceTimeFields(val.sourceTimeFields.accept(new SourceTimeFieldsBuilder(context)));
         }
     }

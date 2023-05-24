@@ -21,6 +21,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 public class RelationalPersistenceTarget extends PersistenceTarget
 {
     public String table;
+    public String database;
     public Temporality temporality;
 
     @Override

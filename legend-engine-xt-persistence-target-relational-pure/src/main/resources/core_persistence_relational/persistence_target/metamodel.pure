@@ -15,6 +15,8 @@
 import meta::pure::persistence::metamodel::target::*;
 import meta::pure::persistence::relational::metamodel::*;
 
+import meta::relational::metamodel::*;
+
 /**********
  * persistence target
  **********/
@@ -24,6 +26,7 @@ Class
 meta::pure::persistence::relational::metamodel::RelationalPersistenceTarget extends PersistenceTarget
 {
   table: meta::relational::metamodel::relation::Table[1];
+  database: Database[1];
   milestoning: Milestoning[1];
 }
 

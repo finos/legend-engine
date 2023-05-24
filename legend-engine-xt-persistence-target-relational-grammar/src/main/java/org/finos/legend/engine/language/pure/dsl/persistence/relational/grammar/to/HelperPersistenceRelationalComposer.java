@@ -47,6 +47,7 @@ public class HelperPersistenceRelationalComposer
         return getTabString(indentLevel) + "Relational\n" +
             getTabString(indentLevel) + "#{\n" +
             renderTable(persistenceTarget.table, indentLevel + 1) +
+            renderDatabasePointer(persistenceTarget.database, indentLevel + 1) +
             renderTemporality(persistenceTarget.temporality, indentLevel + 1) +
             getTabString(indentLevel) + "}#";
     }
@@ -54,6 +55,11 @@ public class HelperPersistenceRelationalComposer
     public static String renderTable(String table, int indentLevel)
     {
         return getTabString(indentLevel) + "table: " + table + ";\n";
+    }
+
+    public static String renderDatabasePointer(String databasePath, int indentLevel)
+    {
+        return getTabString(indentLevel) + "database: " + databasePath + ";\n";
     }
 
     public static String renderTemporality(Temporality temporality, int indentLevel)

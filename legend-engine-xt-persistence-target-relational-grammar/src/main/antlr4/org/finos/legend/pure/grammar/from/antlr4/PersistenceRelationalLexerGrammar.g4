@@ -14,6 +14,7 @@ DATE_TIME:                                  'DateTime';
 
 TARGET_RELATIONAL:                          'Relational';
 TARGET_RELATIONAL_TABLE:                    'table';
+TARGET_RELATIONAL_DATABASE:                 'database';
 TARGET_RELATIONAL_TEMPORAL:                 'temporality';
 
 // TEMPORALITY
