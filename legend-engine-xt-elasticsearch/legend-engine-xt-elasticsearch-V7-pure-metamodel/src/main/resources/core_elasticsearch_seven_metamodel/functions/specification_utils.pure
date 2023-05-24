@@ -101,9 +101,21 @@ function meta::external::store::elasticsearch::v7::specification::utils::propert
   ]
 }
 
+function meta::external::store::elasticsearch::v7::specification::utils::property::collectAllSelectablesAndFilterableProperties(properties: Elasticsearch7StoreIndexProperty[*]): Pair<List<String>, PropertyBase>[*]
+{
+  let primitiveProperties = $properties->collectPrimitiveTypeProperties();
+  let fieldProperties = $primitiveProperties->map(pp | $pp->collectFieldsFromProperties());
+  $primitiveProperties->concatenate($fieldProperties);
+}
+
 function meta::external::store::elasticsearch::v7::specification::utils::property::collectPrimitiveTypeProperties(properties: Elasticsearch7StoreIndexProperty[*]): Pair<List<String>, PropertyBase>[*]
 {
   $properties->map(p | $p.property->taggedUnionValue()->cast(@PropertyBase)->map(x | $x->collectPrimitiveTypeProperties($p.propertyName)));
+}
+
+function meta::external::store::elasticsearch::v7::specification::utils::property::collectFieldsFromProperties(property: Pair<List<String>, PropertyBase>[1]): Pair<List<String>, PropertyBase>[*]
+{
+  $property.second.fields->map(b | $b->keyValues()->map(p | $p.second->toOne()->taggedUnionValue()->cast(@PropertyBase)->map(x | $x->collectPrimitiveTypeProperties($property.first.values->concatenate($p.first)))));
 }
 
 function <<access.private>> meta::external::store::elasticsearch::v7::specification::utils::property::collectPrimitiveTypeProperties(property: PropertyBase[1], currentName: String[*]): Pair<List<String>, PropertyBase>[*]
@@ -113,7 +125,6 @@ function <<access.private>> meta::external::store::elasticsearch::v7::specificat
     | pair(list($currentName), $property),
     | $property.properties->map(b | $b->keyValues()->map(p | $p.second->toOne()->taggedUnionValue()->cast(@PropertyBase)->map(x | $x->collectPrimitiveTypeProperties($currentName->concatenate($p.first)))))
   );
-  $pairs->concatenate($property.fields->map(b | $b->keyValues()->map(p | $p.second->toOne()->taggedUnionValue()->cast(@PropertyBase)->map(x | $x->collectPrimitiveTypeProperties($currentName->concatenate($p.first))))));
 }
 
 function <<test.Test>> meta::external::store::elasticsearch::v7::specification::utils::property::testCollectPrimitiveTypeProperties(): Boolean[1]
@@ -122,12 +133,17 @@ function <<test.Test>> meta::external::store::elasticsearch::v7::specification::
       pair('Int', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(integer = ^IntegerNumberProperty()))
   ]);
 
+  let withFields = ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(text = ^TextProperty(
+        fields = newMap(pair('asKeyword', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(keyword = ^KeywordProperty()))
+  )));  
+
   let nested = newMap([
       pair('Float', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(_float = ^FloatNumberProperty())),
       pair('Nested2', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(nested = ^NestedProperty(properties = $nested2)))
   ]);
 
   let properties = [
+      ^Elasticsearch7StoreIndexProperty(propertyName = 'Text', property = $withFields),
       ^Elasticsearch7StoreIndexProperty(propertyName = 'Title', property = ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(keyword = ^KeywordProperty())),
       ^Elasticsearch7StoreIndexProperty(propertyName = 'Nested', property = ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(object = ^ObjectProperty(properties = $nested)))
     ];
@@ -138,6 +154,42 @@ function <<test.Test>> meta::external::store::elasticsearch::v7::specification::
   let expected = [
     pair(^List<String>(values = ['Nested', 'Float']), ^FloatNumberProperty()),
     pair(^List<String>(values = ['Nested', 'Nested2', 'Int']), ^IntegerNumberProperty()),
+    pair(^List<String>(values = ['Text']), $withFields.text->toOne()),
+    pair(^List<String>(values = ['Title']), ^KeywordProperty())
+  ];
+
+  assertJsonStringsEqual($expected->meta::json::toJSON(), $actual->meta::json::toJSON());
+}
+
+function <<test.Test>> meta::external::store::elasticsearch::v7::specification::utils::property::testCollectAllSelectablesAndFilterableProperties(): Boolean[1]
+{
+  let nested2 = newMap([
+      pair('Int', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(integer = ^IntegerNumberProperty()))
+  ]);
+
+  let withFields = ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(text = ^TextProperty(
+        fields = newMap(pair('asKeyword', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(keyword = ^KeywordProperty()))
+  )));  
+
+  let nested = newMap([
+      pair('Float', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(_float = ^FloatNumberProperty())),
+      pair('Nested2', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(nested = ^NestedProperty(properties = $nested2)))
+  ]);
+
+  let properties = [
+      ^Elasticsearch7StoreIndexProperty(propertyName = 'Text', property = $withFields),
+      ^Elasticsearch7StoreIndexProperty(propertyName = 'Title', property = ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(keyword = ^KeywordProperty())),
+      ^Elasticsearch7StoreIndexProperty(propertyName = 'Nested', property = ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(object = ^ObjectProperty(properties = $nested)))
+    ];
+
+  let actual = $properties->collectAllSelectablesAndFilterableProperties()
+      ->sortBy(x | $x.first.values->joinStrings('.'));
+
+  let expected = [
+    pair(^List<String>(values = ['Nested', 'Float']), ^FloatNumberProperty()),
+    pair(^List<String>(values = ['Nested', 'Nested2', 'Int']), ^IntegerNumberProperty()),
+    pair(^List<String>(values = ['Text']), $withFields.text->toOne()),
+    pair(^List<String>(values = ['Text', 'asKeyword']), ^KeywordProperty()),
     pair(^List<String>(values = ['Title']), ^KeywordProperty())
   ];
 

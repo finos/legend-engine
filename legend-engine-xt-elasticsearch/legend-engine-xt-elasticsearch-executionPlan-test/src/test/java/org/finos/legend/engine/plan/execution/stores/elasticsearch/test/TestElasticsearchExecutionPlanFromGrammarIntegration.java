@@ -104,7 +104,7 @@ public class TestElasticsearchExecutionPlanFromGrammarIntegration
             result.stream(outputStream, SerializationFormat.DEFAULT);
             String resultString = outputStream.toString(StandardCharsets.UTF_8.name());
             JsonAssert.assertJsonEquals(
-                    "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"prop1\",\"type\":\"String\"}]},\"result\":{\"columns\":[\"prop1\"],\"rows\":[]},\"activities\":[{\"uri\":\"http://localhost:64794//index1/_search?typed_keys=true\",\"esRequest\":\"{\\\"_source\\\":{\\\"includes\\\":[\\\"prop1\\\"]}}\"}]}",
+                    "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"prop1\",\"type\":\"String\"}, {\"name\":\"_id\",\"type\":\"String\"}]},\"result\":{\"columns\":[\"prop1\", \"_id\"],\"rows\":[]},\"activities\":[{\"uri\":\"http://localhost:64794//index1/_search?typed_keys=true\",\"esRequest\":\"{\\\"_source\\\":{\\\"includes\\\":[\\\"prop1\\\"]}}\"}]}",
                     resultString,
                     Configuration.empty().whenIgnoringPaths("activities"));
         }
