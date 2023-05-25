@@ -33,6 +33,6 @@ public class MongoDBPlanGeneratorExtension implements PlanGeneratorExtension
     @Override
     public RichIterable<? extends Root_meta_pure_extension_Extension> getExtraExtensions(PureModel pureModel)
     {
-        return core_nonrelational_mongodb_java_platform_binding_mongodbStoreLegendJavaPlatformBindingExtension.Root_meta_external_store_mongodb_executionPlan_platformBinding_legendJava_mongoDBLegendJavaPlatformBindingExtensions__Extension_MANY_(pureModel.getExecutionSupport());
+        return core_nonrelational_mongodb_java_platform_binding_mongodbStoreLegendJavaPlatformBindingExtension.Root_meta_external_store_mongodb_executionPlan_platformBinding_legendJava_mongoDBOnlyLegendJavaPlatformBindingExtensions__Extension_MANY_(pureModel.getExecutionSupport());
     }
 }
