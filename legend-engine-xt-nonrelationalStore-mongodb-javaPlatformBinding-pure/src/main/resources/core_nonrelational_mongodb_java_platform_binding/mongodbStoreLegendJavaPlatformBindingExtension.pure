@@ -425,7 +425,7 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
 //Pulls together store extension + PlatformBinding extension to a single method.
   [
   meta::external::store::mongodb::extension::mongoDBExtensions('mongoDB'),
-  meta::external::format::json::extension::jsonSchemaFormatExtension(),
+  // meta::external::format::json::extension::jsonSchemaFormatExtension(),
   meta::pure::executionPlan::platformBinding::platformBindingExtension([
     meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
       meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryLegendJavaPlatformBindingExtension(),
