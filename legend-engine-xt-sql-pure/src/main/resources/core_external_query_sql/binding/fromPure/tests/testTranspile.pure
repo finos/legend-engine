@@ -369,6 +369,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 {
   let sqlString = 'SELECT count(Integer) AS "count", count(DISTINCT Integer) AS "distinctCount", SUM(Integer) AS "sum", avg(Integer) AS "avg", ' +
                   'stddev_pop(Integer) AS "stdDevPop", stddev_samp(Integer) AS "stdDevSamp", stddev(Integer) AS "stdDev", ' +
+                  'min(Integer) AS "minInt", min(StrictDate) AS "minDate", min(String) AS "minString", ' +
+                  'max(Integer) AS "maxInt", max(StrictDate) AS "maxDate", max(String) AS "maxString", ' +
                   'string_agg(String) AS "stringAgg" FROM service."/service/service1" GROUP BY String';
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {| FlatInput.all()->project(
@@ -382,8 +384,14 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           agg('stdDevPop', row | $row.getInteger('Integer'), y | $y->stdDevPopulation()),
           agg('stdDevSamp', row | $row.getInteger('Integer'), y | $y->stdDevSample()),
           agg('stdDev', row | $row.getInteger('Integer'), y | $y->stdDevSample()),
+          agg('minInt', row | $row.getInteger('Integer'), y | $y->min()),
+          agg('minDate', row | $row.getStrictDate('StrictDate'), y | $y->min()),
+          agg('minString', row | $row.getString('String'), y | $y->min()),
+          agg('maxInt', row | $row.getInteger('Integer'), y | $y->max()),
+          agg('maxDate', row | $row.getStrictDate('StrictDate'), y | $y->max()),     
+          agg('maxString', row | $row.getString('String'), y | $y->max()),          
           agg('stringAgg', row | $row.getString('String'), y | $y->joinStrings())
-        ])->restrict(['count', 'distinctCount', 'sum', 'avg', 'stdDevPop', 'stdDevSamp', 'stdDev', 'stringAgg'])
+        ])->restrict(['count', 'distinctCount', 'sum', 'avg', 'stdDevPop', 'stdDevSamp', 'stdDev', 'minInt', 'minDate', 'minString', 'maxInt', 'maxDate', 'maxString', 'stringAgg'])
       };
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
@@ -462,7 +470,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testCasts():Boolean[1]
 {
   let sqlString = 'SELECT CAST(\'2023-01-01\' AS DATE) AS "constant", CAST(String AS VARCHAR) AS "string", CAST(String AS TEXT) AS "text", CAST(String AS DATE) AS "date",'
-                + ' CAST(String AS INTEGER) AS "integer", CAST(String AS BOOLEAN) AS "boolean", CAST(String AS DOUBLE) AS "double", CAST(String AS NUMERIC) AS "numeric", CAST(String AS TIMESTAMP) AS "timestamp" FROM service."/service/service1"';
+                + ' CAST(String AS INTEGER) AS "integer", CAST(String AS BOOLEAN) AS "boolean", CAST(String AS DOUBLE) AS "double", CAST(String AS NUMERIC) AS "numeric",'
+                + ' CAST(String AS TIMESTAMP) AS "timestamp", CAST(Integer AS Integer) AS "expression"  FROM service."/service/service1"';
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {| FlatInput.all()->project(
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
@@ -476,7 +485,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           col(row:TDSRow[1] | parseBoolean($row.getString('String')), 'boolean'),
           col(row:TDSRow[1] | parseFloat($row.getString('String')), 'double'),
           col(row:TDSRow[1] | parseDecimal($row.getString('String')), 'numeric'),
-          col(row:TDSRow[1] | parseDate($row.getString('String')), 'timestamp')
+          col(row:TDSRow[1] | parseDate($row.getString('String')), 'timestamp'),
+          col(row:TDSRow[1] | cast($row.getInteger('Integer'), @Integer), 'expression')
         ])
       };
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
@@ -798,7 +808,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 //STRING FUNCTIONS
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testStringFunctions():Boolean[1]
 {
-  let sqlString = 'SELECT regexp_like(String, \'test\') AS "MATCH", char_length(String) AS "LENGTH", upper(String) AS "UPPER", lower(String) AS "LOWER", replace(String, \'A\', \'a\') AS "REPLACE", ' +
+  let sqlString = 'SELECT regexp_like(String, \'test\') AS "MATCH", char_length(String) AS "CHAR_LENGTH", length(String) AS "LENGTH", upper(String) AS "UPPER", lower(String) AS "LOWER", replace(String, \'A\', \'a\') AS "REPLACE", ' +
                   'starts_with(String, \'a\') AS "STARTSWITH", strpos(String, \'abc\') AS "STRPOS", substring(String, 1) AS "SUBSTRING", substr(String, 1, 2) AS "SUBSTR", btrim(String) AS "TRIM", btrim(String, \' \') AS "TRIM2" FROM service."/service/service1"';
 
   let sqlTransformContext = $sqlString->processQuery();
@@ -809,6 +819,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
             ->project([
                 col(row:TDSRow[1] | matches($row.getString('String'), 'test'), 'MATCH'),
+                col(row:TDSRow[1] | length($row.getString('String')), 'CHAR_LENGTH'),
                 col(row:TDSRow[1] | length($row.getString('String')), 'LENGTH'),
                 col(row:TDSRow[1] | toUpper($row.getString('String')), 'UPPER'),
                 col(row:TDSRow[1] | toLower($row.getString('String')), 'LOWER'),

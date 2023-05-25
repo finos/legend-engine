@@ -187,6 +187,11 @@ function meta::pure::functions::collection::max<X>(values : X[*]):X[0..1]
    $values->sort()->last();
 }
 
+function meta::pure::functions::collection::min<X>(values : X[*]):X[0..1]
+{
+   $values->sort()->first();
+}
+
 function {doc.doc ='returns true only if exactly one of the values are true'} meta::pure::functions::collection::oneOf(values:Boolean[*]):Boolean[1]
 {
   $values ->filter(b | $b == true)->size() == 1;
