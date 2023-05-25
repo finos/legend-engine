@@ -970,7 +970,12 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   $c.expression->match([
     n:NullLiteral[1] | processCastAsCast($c, $expContext, $context),
-    e:meta::external::query::sql::metamodel::Expression[1] | processCastAsParse($c, $expContext, $context)
+    e:meta::external::query::sql::metamodel::Expression[1] | 
+      let type = getExpressionType($e, $context);
+      if ($type == String, 
+        | processCastAsParse($c, $expContext, $context), 
+        | processCastAsCast($c, $expContext, $context));
+      
   ]);
 }
 
@@ -1167,6 +1172,40 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
   [
       processor('count', count_Any_MANY__Integer_1_, true),
       processor('distinct', distinct_T_MANY__T_MANY_, true),
+      processor('min', true, {args |
+        let type = $args->match([
+          v:VariableExpression[1] | $v.genericType.rawType->toOne(),
+          a:Any[*] | fail('Unsupported arg type'); Any;
+        ]);
+
+        [
+          pair(Number, |sfe(min_Number_MANY__Number_$0_1$_, $args)),
+          pair(Float, |sfe(min_Float_MANY__Float_$0_1$_, $args)),
+          pair(Integer, |sfe(min_Integer_MANY__Integer_$0_1$_, $args)),
+          pair(Decimal, |sfe(min_Number_MANY__Number_$0_1$_, $args)),
+          pair(Date, |sfe(min_Date_MANY__Date_$0_1$_, $args)),
+          pair(StrictDate, |sfe(min_StrictDate_MANY__StrictDate_$0_1$_, $args)),
+          pair(DateTime, |sfe(min_DateTime_MANY__DateTime_$0_1$_, $args)),
+          pair(String, |sfe(min_DateTime_MANY__DateTime_$0_1$_, $args))
+        ]->getValue($type, | sfe(min_X_MANY__X_$0_1$_, ^GenericType(rawType = $type), ^GenericType(rawType = $type), $args))->eval();
+      }),
+      processor('max', true, {args |
+        let type = $args->match([
+          v:VariableExpression[1] | $v.genericType.rawType->toOne(),
+          a:Any[*] | fail('Unsupported arg type'); Any;
+        ]);
+
+        [
+          pair(Number, |sfe(max_Number_MANY__Number_$0_1$_, $args)),
+          pair(Float, |sfe(max_Float_MANY__Float_$0_1$_, $args)),
+          pair(Integer, |sfe(max_Integer_MANY__Integer_$0_1$_, $args)),
+          pair(Decimal, |sfe(max_Number_MANY__Number_$0_1$_, $args)),
+          pair(Date, |sfe(max_Date_MANY__Date_$0_1$_, $args)),
+          pair(StrictDate, |sfe(max_StrictDate_MANY__StrictDate_$0_1$_, $args)),
+          pair(DateTime, |sfe(max_DateTime_MANY__DateTime_$0_1$_, $args)),
+          pair(String, |sfe(max_DateTime_MANY__DateTime_$0_1$_, $args))
+        ]->getValue($type, | sfe(max_X_MANY__X_$0_1$_, ^GenericType(rawType = $type), ^GenericType(rawType = $type), $args))->eval();
+      }),      
 
       //MATH
       processor('abs', abs_Number_1__Number_1_, false),
@@ -1212,6 +1251,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
         sfe($func, $args);
       }),
       processor('char_length', length_String_1__Integer_1_, false),
+      processor('length', length_String_1__Integer_1_, false),
       processor('concat', plus_String_MANY__String_1_, false),
       processor('lower', toLower_String_1__String_1_, false),
       processor('regexp_like', matches_String_1__String_1__Boolean_1_, false),
