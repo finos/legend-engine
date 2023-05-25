@@ -45,6 +45,7 @@ public class StreamingTempTableResultCSVSerializer extends CsvSerializer
 {
     private TempTableStreamingResult tempTableStreamingResult;
     private boolean withHeader;
+    private CSVFormat csvFormat;
 
     private Class objectClass;
     private List<Pair<Method, Object[]>> methodWithParametersList = Lists.mutable.empty();
@@ -57,6 +58,14 @@ public class StreamingTempTableResultCSVSerializer extends CsvSerializer
     {
         this.tempTableStreamingResult = tempTableStreamingResult;
         this.withHeader = withHeader;
+        this.csvFormat = this.withHeader ? CSVFormat.DEFAULT.withFirstRecordAsHeader() : CSVFormat.DEFAULT;
+    }
+
+    public StreamingTempTableResultCSVSerializer(TempTableStreamingResult tempTableStreamingResult, boolean withHeader, CSVFormat csvFormat)
+    {
+        this.tempTableStreamingResult = tempTableStreamingResult;
+        this.withHeader = withHeader;
+        this.csvFormat = csvFormat;
     }
 
     @Override
@@ -66,7 +75,7 @@ public class StreamingTempTableResultCSVSerializer extends CsvSerializer
 
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
              Writer out = new BufferedWriter(new OutputStreamWriter(byteArrayOutputStream));
-             CSVPrinter csvPrinter = new CSVPrinter(out, this.withHeader ? CSVFormat.DEFAULT.withFirstRecordAsHeader() : CSVFormat.DEFAULT);)
+             CSVPrinter csvPrinter = new CSVPrinter(out, this.csvFormat);)
         {
             String connectionTimeZone = this.tempTableStreamingResult.getRelationalDatabaseTimeZone();
             timeZone = connectionTimeZone == null ? TimeZone.getTimeZone("GMT").toString() : connectionTimeZone;
