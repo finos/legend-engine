@@ -40,9 +40,14 @@ function <<access.private>> meta::external::store::elasticsearch::executionTest:
   ^TypeMapping(
     properties = newMap([
       pair('Title', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(keyword = ^KeywordProperty())),
+      pair('Description', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(text = ^TextProperty(
+                  fields = newMap(pair('asKeyword', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(keyword = ^KeywordProperty())))
+                )
+              )
+          ),
       pair('Director', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(keyword = ^KeywordProperty())),
       pair('MPAA', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(keyword = ^KeywordProperty())),
-      pair('ReleaseDate', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(date = ^DateProperty())),//format = 'yyyy-MM-dd'))),
+      pair('ReleaseDate', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(date = ^DateProperty(format = 'yyyy-MM-dd hh:mm:ssa'))),
       pair('Budget', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(integer = ^IntegerNumberProperty())),
       pair('Revenue', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(_float = ^FloatNumberProperty()))
     ])
@@ -53,6 +58,14 @@ function <<access.private>> meta::external::store::elasticsearch::executionTest:
 {
   $type->match([
     a: Class<OmdbRecord>[1] | omdbMapping()
+  ]);
+}
+
+function <<access.private>> meta::external::store::elasticsearch::executionTest::test::v7::_id(any: Any[1]): String[0..1]
+{
+  $any->match([
+    o: OmdbRecord[1] | $o._id,
+    a: Any[1] | []
   ]);
 }
 
@@ -73,7 +86,7 @@ function <<access.private>> meta::external::store::elasticsearch::executionTest:
   );
 
   let indexData = ^BulkRequest<Any, Any>(
-      operations = $records->map(r | [^IndexOperation(), $r])->toOneMany(),
+      operations = $records->map(r | [^IndexOperation(_id = $r->_id()), $r])->toOneMany(),
       index = $name,
       refresh = Refresh._true
   );
