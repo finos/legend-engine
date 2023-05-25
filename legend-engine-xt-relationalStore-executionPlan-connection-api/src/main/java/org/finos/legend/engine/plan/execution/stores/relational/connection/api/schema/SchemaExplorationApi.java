@@ -18,8 +18,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.model.RawSQLExecuteInput;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.model.DatabaseBuilderInput;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.model.RawSQLExecuteInput;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -42,8 +42,6 @@ import static org.finos.legend.engine.shared.core.operational.http.InflateInterc
 
 @Api(tags = "Utilities - Database")
 @Path("pure/v1/utilities/database")
-@Produces(MediaType.APPLICATION_JSON)
-
 public class SchemaExplorationApi
 {
     private final ModelManager modelManager;
@@ -59,6 +57,7 @@ public class SchemaExplorationApi
     @Path("schemaExploration")
     @POST
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Produces(MediaType.APPLICATION_JSON)
     public Response buildDatabase(DatabaseBuilderInput databaseBuilderInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
@@ -78,13 +77,14 @@ public class SchemaExplorationApi
     @Path("executeRawSQL")
     @POST
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Produces(MediaType.TEXT_PLAIN)
     public Response executeRawSQL(RawSQLExecuteInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try
         {
             String result = new AdhocSQLExecutor().executeRawSQL(this.connectionManager, input.connection, input.sql, profiles);
-            return Response.status(200).type(MediaType.TEXT_PLAIN).entity(result).build();
+            return Response.ok(result).build();
         }
         catch (Exception e)
         {
