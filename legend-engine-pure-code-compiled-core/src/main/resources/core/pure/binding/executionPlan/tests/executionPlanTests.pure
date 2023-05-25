@@ -398,7 +398,6 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
         '             InMemoryRootGraphFetch\n' +
         '             (\n' +
         '               type = PartialClass[impls=[(meta::external::shared::format::executionPlan::tests::TargetPerson | M2MMapping.meta_external_shared_format_executionPlan_tests_TargetPerson)], propertiesWithParameters = [fullName]]\n' +
-        '               requires = [data(Byte[*])]\n'+
         '               graphFetchTree = [meta_external_shared_format_executionPlan_tests_TargetPerson/meta::external::shared::format::executionPlan::tests::TargetPerson]{@(meta_external_shared_format_executionPlan_tests_TargetPerson->)@[/fullName]}\n' +
         '               nodeIndex = 0\n' +
         '               batchSize = 1\n' +
@@ -474,7 +473,6 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
         '             InMemoryRootGraphFetch\n' +
         '             (\n' +
         '               type = PartialClass[impls=[(meta::external::shared::format::executionPlan::tests::TargetPerson | M2MMapping.meta_external_shared_format_executionPlan_tests_TargetPerson)], propertiesWithParameters = [fullName]]\n' +
-        '               requires = [data(Byte[*])]\n'+
         '               graphFetchTree = [meta_external_shared_format_executionPlan_tests_TargetPerson/meta::external::shared::format::executionPlan::tests::TargetPerson]{@(meta_external_shared_format_executionPlan_tests_TargetPerson->)@[/fullName]}\n' +
         '               nodeIndex = 0\n' +
         '               batchSize = 1\n' +
@@ -489,7 +487,6 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
         '                      InMemoryRootGraphFetch\n' +
         '                      (\n' +
         '                        type = PartialClass[impls=[(meta::external::shared::format::executionPlan::tests::Person | M2MMapping1.meta_external_shared_format_executionPlan_tests_Person)], propertiesWithParameters = [firstName, lastName]]\n' +
-        '                        requires = [data(Byte[*])]\n'+
         '                        graphFetchTree = [meta_external_shared_format_executionPlan_tests_Person/meta::external::shared::format::executionPlan::tests::Person]{@(meta_external_shared_format_executionPlan_tests_Person->)@[/firstName],@(meta_external_shared_format_executionPlan_tests_Person->)@[/lastName]}\n' +
         '                        nodeIndex = 0\n' +
         '                        batchSize = 1\n' +

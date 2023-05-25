@@ -18,7 +18,9 @@ package org.finos.legend.engine.query.sql.api.execute;
 import io.dropwizard.testing.junit.ResourceTestRule;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
@@ -35,6 +37,7 @@ import org.finos.legend.pure.generated.Root_meta_external_query_sql_Schema;
 import org.finos.legend.pure.generated.Root_meta_external_query_sql_SchemaColumn;
 import org.finos.legend.pure.generated.Root_meta_external_query_sql_Schema_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Enum_Impl;
+import org.glassfish.jersey.test.grizzly.GrizzlyWebTestContainerFactory;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -51,18 +54,29 @@ public class SqlExecuteTest
 
     static
     {
+        Pair<PureModel, ResourceTestRule> pureModelAndResources = getPureModelResourceTestRulePair();
+
+        pureModel = pureModelAndResources.getOne();
+        resources =  pureModelAndResources.getTwo();
+    }
+
+    public static Pair<PureModel, ResourceTestRule> getPureModelResourceTestRulePair()
+    {
         DeploymentMode deploymentMode = DeploymentMode.TEST;
         ModelManager modelManager = new ModelManager(deploymentMode);
-        PlanExecutor executor = PlanExecutor.newPlanExecutorWithConfigurations();
+        PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
+
         MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
         TestSQLSourceProvider testSQLSourceProvider = new TestSQLSourceProvider();
         SqlExecute sqlExecute = new SqlExecute(modelManager, executor, (pm) -> generatorExtensions.flatCollect(g -> g.getExtraExtensions(pm)), FastList.newListWith(testSQLSourceProvider), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
 
-        pureModel = modelManager.loadModel(testSQLSourceProvider.getPureModelContextData(), PureClientVersions.production, null, "");
-        resources = ResourceTestRule.builder()
+        PureModel pureModel = modelManager.loadModel(testSQLSourceProvider.getPureModelContextData(), PureClientVersions.production, null, "");
+        ResourceTestRule resources = ResourceTestRule.builder()
+                .setTestContainerFactory(new GrizzlyWebTestContainerFactory())
                 .addResource(sqlExecute)
                 .addResource(new MockPac4jFeature())
                 .build();
+        return Tuples.pair(pureModel,resources);
     }
 
 

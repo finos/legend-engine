@@ -14,69 +14,52 @@
 
 package org.finos.legend.engine.postgres;
 
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import org.apache.http.client.CookieStore;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.CloseableHttpClient;
+
+import io.dropwizard.testing.junit.ResourceTestRule;
+import org.eclipse.collections.api.tuple.Pair;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.postgres.auth.AnonymousIdentityProvider;
 import org.finos.legend.engine.postgres.auth.NoPasswordAuthenticationMethod;
 import org.finos.legend.engine.postgres.config.ServerConfig;
 import org.finos.legend.engine.postgres.handler.legend.LegendSessionFactory;
-import org.finos.legend.engine.postgres.handler.legend.LegendTdsClient;
-import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
+import org.finos.legend.engine.postgres.handler.legend.LegendTdsTestClient;
+import org.finos.legend.engine.query.sql.api.execute.SqlExecuteTest;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 
 public class PostgresServerTest
 {
     @ClassRule
-    public static WireMockRule wireMockRule = new WireMockRule(options().dynamicPort(), false);
+    public static final ResourceTestRule resources;
     private static TestPostgresServer testPostgresServer;
+
+    static
+    {
+        Pair<PureModel, ResourceTestRule> pureModelResourceTestRulePair = SqlExecuteTest.getPureModelResourceTestRulePair();
+        resources = pureModelResourceTestRulePair.getTwo();
+    }
 
     @BeforeClass
     public static void setUp()
     {
-        CookieStore cookieStore = new BasicCookieStore();
-        CloseableHttpClient httpClient = (CloseableHttpClient) HttpClientBuilder.getHttpClient(cookieStore);
-        LegendTdsClient client = new LegendTdsClient("http", "localhost", "" + wireMockRule.port(),  new BasicCookieStore());
+        LegendTdsTestClient client = new LegendTdsTestClient(resources.target("sql/v1/execution/executeQueryString").request());
         LegendSessionFactory legendSessionFactory = new LegendSessionFactory(client);
+
         ServerConfig serverConfig = new ServerConfig();
         serverConfig.setPort(0);
 
         testPostgresServer = new TestPostgresServer(serverConfig, legendSessionFactory, (user, connectionProperties) -> new NoPasswordAuthenticationMethod(new AnonymousIdentityProvider()));
         testPostgresServer.startUp();
-        wireMockRule.stubFor(post(urlEqualTo("/api/sql/v1/execution/executeQueryString"))
-                .willReturn(aResponse()
-                        .withBody("{}"))
-        );
-
-        wireMockRule.stubFor(post(urlEqualTo("/api/sql/v1/execution/executeQueryString"))
-                .withRequestBody(equalTo("SELECT * FROM service.\"/personService\""))
-                .willReturn(aResponse()
-                        .withBody("{ \"builder\": { \"_type\": \"tdsBuilder\", \"columns\": [ { \"name\": \"Age\", \"type\": \"Integer\", \"relationalType\": \"INTEGER\" }, { \"name\": \"First Name\", \"type\": \"String\", \"relationalType\": \"VARCHAR(200)\" }, { \"name\": \"Last Name\", \"type\": \"String\", \"relationalType\": \"VARCHAR(200)\" } ] }, \"activities\": [ { \"_type\": \"relational\", \"sql\": \"select \\\"root\\\".AGE as \\\"Age\\\", \\\"root\\\".FIRSTNAME as \\\"First Name\\\", \\\"root\\\".LASTNAME as \\\"Last Name\\\" from personTable as \\\"root\\\"\" } ], \"result\": { \"columns\": [ \"Age\", \"First Name\", \"Last Name\" ], \"rows\": [ { \"values\": [ 23, \"Peter\", \"Smith\" ] }, { \"values\": [ 30, \"Leonid\", \"Shtivelman\" ] }, { \"values\": [ 25, \"Vignesh\", \"Manickavasagam\" ] }, { \"values\": [ 31, \"Andrew\", \"Ormerod\" ] }, { \"values\": [ 32, \"Pierre\", \"De Belen\" ] } ] } }")
-                )
-        );
-
-        wireMockRule.stubFor(post(urlEqualTo("/api/sql/v1/execution/getSchemaFromQueryString"))
-                .withRequestBody(equalTo("SELECT * FROM service.\"/personService\""))
-                .willReturn(aResponse()
-                        .withBody("{ \"_type\": \"tdsBuilder\", \"columns\": [ { \"name\": \"Age\", \"type\": \"Integer\", \"relationalType\": \"INTEGER\" }, { \"name\": \"First Name\", \"type\": \"String\", \"relationalType\": \"VARCHAR(200)\" }, { \"name\": \"Last Name\", \"type\": \"String\", \"relationalType\": \"VARCHAR(200)\" } ] } }")
-                )
-        );
     }
 
     @Test
@@ -89,13 +72,24 @@ public class PostgresServerTest
         )
         {
             ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-            Assert.assertEquals(3, resultSetMetaData.getColumnCount());
-            Assert.assertEquals("Age", resultSetMetaData.getColumnName(1));
-            Assert.assertEquals("First Name", resultSetMetaData.getColumnName(2));
-            Assert.assertEquals("Last Name", resultSetMetaData.getColumnName(3));
+            Assert.assertEquals(2, resultSetMetaData.getColumnCount());
+            Assert.assertEquals("Id", resultSetMetaData.getColumnName(1));
+            Assert.assertEquals("Name", resultSetMetaData.getColumnName(2));
             Assert.assertEquals("int4", resultSetMetaData.getColumnTypeName(1));
             Assert.assertEquals("varchar", resultSetMetaData.getColumnTypeName(2));
-            Assert.assertEquals("varchar", resultSetMetaData.getColumnTypeName(3));
+        }
+    }
+
+    @Test
+    public void testParameterMetadata() throws SQLException
+    {
+        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                "dummy", "dummy");
+             PreparedStatement statement = connection.prepareStatement("SELECT * FROM service.\"/personService\"")
+        )
+        {
+            ParameterMetaData parameterMetaData = statement.getParameterMetaData();
+            Assert.assertEquals(0, parameterMetaData.getParameterCount());
         }
     }
 
@@ -113,7 +107,7 @@ public class PostgresServerTest
             {
                 rows++;
             }
-            Assert.assertEquals(5, rows);
+            Assert.assertEquals(4, rows);
         }
     }
 

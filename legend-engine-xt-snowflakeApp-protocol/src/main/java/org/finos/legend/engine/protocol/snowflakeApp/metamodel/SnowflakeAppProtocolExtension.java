@@ -41,6 +41,6 @@ public class SnowflakeAppProtocolExtension implements PureProtocolExtension
     @Override
     public Map<Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathMap()
     {
-        return Maps.mutable.with(SnowflakeApp.class, "meta::external::funcWrapper::snowflakeApp::SnowflakeApp");
+        return Maps.mutable.with(SnowflakeApp.class, "meta::external::functionActivator::snowflakeApp::SnowflakeApp");
     }
 }

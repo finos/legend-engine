@@ -24,7 +24,7 @@ import java.util.List;
 //------------------------------------------------------------
 // Should be generated out of the Pure protocol specification
 //------------------------------------------------------------
-public class FunctionActivator extends PackageableElement
+public abstract class FunctionActivator extends PackageableElement
 {
     public List<StereotypePtr> stereotypes = Collections.emptyList();
     public List<TaggedValue> taggedValues = Collections.emptyList();

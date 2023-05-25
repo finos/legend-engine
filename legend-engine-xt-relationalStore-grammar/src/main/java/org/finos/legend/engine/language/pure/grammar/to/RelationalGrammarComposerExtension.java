@@ -51,9 +51,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import java.util.Collections;
 import java.util.List;
 
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.appendTabString;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
 
 public class RelationalGrammarComposerExtension implements IRelationalGrammarComposerExtension
 {
@@ -207,8 +205,12 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
                         context.getIndentationString() + getTabString(baseIndentation + 1) + "type: " + relationalDatabaseConnection.type.name() + ";\n" +
                         (relationalDatabaseConnection.timeZone != null ? (context.getIndentationString() + getTabString(baseIndentation + 1) + "timezone: " + relationalDatabaseConnection.timeZone + ";\n") : "") +
                         (relationalDatabaseConnection.quoteIdentifiers != null ? (context.getIndentationString() + getTabString(baseIndentation + 1) + "quoteIdentifiers: " + relationalDatabaseConnection.quoteIdentifiers + ";\n") : "") +
-                        context.getIndentationString() + getTabString(baseIndentation + 1) + "specification: " + specification + ";\n" +
-                        context.getIndentationString() + getTabString(baseIndentation + 1) + "auth: " + authenticationStrategy + ";\n" +
+                        // HACKY: this is a hack to make local mode works, we will need to rethink about this
+                        (relationalDatabaseConnection.localMode != null && relationalDatabaseConnection.localMode ? (context.getIndentationString() + getTabString(baseIndentation + 1) + "mode: local;\n") : "") +
+                        (relationalDatabaseConnection.localMode != null && relationalDatabaseConnection.localMode ? "" : (
+                                context.getIndentationString() + getTabString(baseIndentation + 1) + "specification: " + specification + ";\n" +
+                                        context.getIndentationString() + getTabString(baseIndentation + 1) + "auth: " + authenticationStrategy + ";\n"
+                        )) +
                         (postProcessors != null
                                 ? context.getIndentationString() + getTabString(baseIndentation + 1) + postProcessors
                                 : "") +

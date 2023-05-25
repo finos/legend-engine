@@ -96,6 +96,19 @@ function meta::protocols::pure::vX_X_X::extension::getRelationalExtension():meta
                            onConnectionCloseRollbackQuery = $rel.onConnectionCloseRollbackQuery,
                            connection = $rel.connection->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::transformDatabaseConnection($extensions)
                         ),
+                     rel:meta::relational::mapping::RelationalSaveNode[1]|
+                        ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalSaveNode(
+                           _type = 'relationalSave',
+                           resultType = $rel.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                           resultSizeRange = $rel.resultSizeRange->isEmpty()->if(|[],|$rel.resultSizeRange->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()),
+                           sqlComment = $rel.sqlComment,
+                           sqlQuery = $rel.sqlQuery,
+                           generatedVariableName = $rel.generatedVariableName,
+                           columnValueGenerators = $rel.columnValueGenerators->keyValues()->map(cvg | pair($cvg.first, $cvg.second->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformNode($mapping, $extensions)))->newMap(),
+                           onConnectionCloseCommitQuery = $rel.onConnectionCloseCommitQuery,
+                           onConnectionCloseRollbackQuery = $rel.onConnectionCloseRollbackQuery,
+                           connection = $rel.connection->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::transformDatabaseConnection($extensions)
+                        ),
                      rel:meta::relational::mapping::RelationalTdsInstantiationExecutionNode[1]|
                         ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalTdsInstantiationExecutionNode(
                            _type = 'relationalTdsInstantiation',

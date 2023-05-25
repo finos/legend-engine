@@ -19,13 +19,13 @@
     <parent>
         <artifactId>legend-engine</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.12.2-SNAPSHOT</version>
+        <version>4.13.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>legend-engine-xt-relationalStore-executionPlan-connection-api</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Engine - XT - Relational Store - Connection Api</name>
+    <name>Legend Engine - XT - Relational Store - Connection API</name>
 
     <dependencies>
         <dependency>
@@ -98,6 +98,11 @@
         </dependency>
         <!-- ENGINE -->
 
+        <dependency>
+            <groupId>com.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+        </dependency>
+
         <!-- TEST -->
         <dependency>
             <groupId>junit</groupId>
@@ -105,6 +110,5 @@
             <scope>test</scope>
         </dependency>
         <!-- TEST -->
-
     </dependencies>
 </project>

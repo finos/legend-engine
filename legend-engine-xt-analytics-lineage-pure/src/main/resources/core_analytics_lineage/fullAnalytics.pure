@@ -184,7 +184,7 @@ function meta::analytics::lineage::flowDatabase::toFlowDatabase(f:FunctionDefini
                           | []);
 
    $mappings->map(m|
-         let tables = $propertyTree->toFlowDatabase($m, [], false, [])->cast(@NamedRelation);
+         let tables = $propertyTree->toFlowDatabase($m, [], false, [])->cast(@NamedRelation)->removeDuplicates();
          let dbs = $tables->map(r|$r->schema()).database->removeDuplicates();
          let maturityTests = maturityTests();
          ^Flow(

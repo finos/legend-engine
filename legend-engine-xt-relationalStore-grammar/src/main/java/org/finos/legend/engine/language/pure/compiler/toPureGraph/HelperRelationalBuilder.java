@@ -71,8 +71,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.JoinPointer;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.core_pure_corefunctions_metaExtension;
-import org.finos.legend.pure.generated.core_pure_model_modelUnit;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_BindingTransformer_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_functions_collection_Pair_Impl;
@@ -97,8 +95,8 @@ import org.finos.legend.pure.generated.Root_meta_relational_metamodel_Filter_Imp
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_LiteralList_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_Literal_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_MultiGrainFilter_Impl;
-import org.finos.legend.pure.generated.Root_meta_relational_metamodel_RelationalOperationElement_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_RelationalOperationElementWithJoin_Impl;
+import org.finos.legend.pure.generated.Root_meta_relational_metamodel_RelationalOperationElement_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_SQLNull_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_Schema_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_TableAliasColumn_Impl;
@@ -124,6 +122,8 @@ import org.finos.legend.pure.generated.Root_meta_relational_metamodel_relation_B
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_relation_ProcessingMilestoning_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_relation_Table_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_relation_View_Impl;
+import org.finos.legend.pure.generated.core_pure_corefunctions_metaExtension;
+import org.finos.legend.pure.generated.core_pure_model_modelUnit;
 import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningFunctions;
 import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningStereotype;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.functions.collection.Pair;
@@ -482,7 +482,7 @@ public class HelperRelationalBuilder
             else
             {
                 validColumnNames.add(column.name);
-                columns.add(new Root_meta_relational_metamodel_Column_Impl(column.name, null, context.pureModel.getClass("meta::relational::metamodel::Column"))._name(column.name)._name(column.name)._nullable(column.nullable)._type(transformDatabaseDataType(column.type,context))._owner(table));
+                columns.add(new Root_meta_relational_metamodel_Column_Impl(column.name, null, context.pureModel.getClass("meta::relational::metamodel::Column"))._name(column.name)._name(column.name)._nullable(column.nullable)._type(transformDatabaseDataType(column.type, context))._owner(table));
             }
         }
 

@@ -213,7 +213,7 @@ function meta::pure::graphFetch::routing::byPassClusteringInfoDeep(r: GraphFetch
 function meta::pure::graphFetch::routing::routeRootGraphFetchTree(root: RootGraphFetchTree<Any>[1], set: SetImplementation[1], mapping: Mapping[1], exeCtx: ExecutionContext[1], extensions:meta::pure::extension::Extension[*]):RoutedRootGraphFetchTree<Any>[1]
 {
    let rootGetAllExpression = createGetAllApplicationForRootGraphFetchTree($root, $set);
-   
+
    let dummyLambda = {|'ok'};
    let routedFunction = ^$dummyLambda(expressionSequence = $rootGetAllExpression)->routeFunction($mapping, ^Runtime(), ^ExecutionContext(), $extensions, noDebug())->evaluateAndDeactivate()->toOne();
    let ext = $routedFunction.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@StoreMappingClusteredValueSpecification).val->cast(@StoreMappingRoutedValueSpecification);
@@ -225,7 +225,10 @@ function meta::pure::graphFetch::routing::routeRootGraphFetchTree(root: RootGrap
 
    let routedTree = ^RoutedRootGraphFetchTree<Any>
                      (
-                        subTrees = $extended.subTrees->map(x | $x->cast(@PropertyGraphFetchTree)->routePropertyGraphFetchTree($rootGetAllExpression, $mapping, $extensions)),
+                        subTrees = if( $set.class == $root.class,
+                                      |$extended.subTrees->map(x | $x->cast(@PropertyGraphFetchTree)->routePropertyGraphFetchTree($rootGetAllExpression, $mapping, $extensions)),
+                                      |$extended.subTrees->map(x | $x->cast(@PropertyGraphFetchTree)->routePropertyGraphFetchTree($rootGetAllExpression, $mapping, $extensions))->concatenate($root.subTypeTrees->filter(t | $t.subTypeClass == $set.class).subTrees->map(x | $x->cast(@PropertyGraphFetchTree)->routePropertyGraphFetchTree($rootGetAllExpression, $mapping, $extensions)))
+                                     ),
                         class = $extended.class,
                         sets = $ext.sets,
                         requiredQualifiedProperties = $extended->match([ergft:ExtendedRootGraphFetchTree<Any>[1]| $ergft.requiredQualifiedProperties, 
@@ -393,7 +396,7 @@ function <<access.private>> meta::pure::graphFetch::routing::requiredPropertiesA
 function meta::pure::graphFetch::routing::routePropertyGraphFetchTree(prop: PropertyGraphFetchTree[1], functionExpression: ValueSpecification[1], mapping: Mapping[1], extensions:meta::pure::extension::Extension[*]):RoutedPropertyGraphFetchTree[0..1]
 {
    let propertyApplicationExporession = createFunctionApplicationForPropertyGraphFetchTree($prop, $functionExpression);
-   
+
    let dummyLambda = {|'ok'};
    let cls = $functionExpression.genericType.rawType->toOne()->cast(@Class<Any>);
    // TODO Only allow no mapping routing for expanded (sub)trees
@@ -448,11 +451,11 @@ function meta::pure::graphFetch::routing::asString(r: GraphFetchTree[1], spaceSt
 
       rr: RoutedRootGraphFetchTree<Any>[1] |
          $space + $rr.sets.id->joinStrings('[', ', ', ' / ' + $rr.class->elementToPath() + ']') +
-         if($rr.subTrees->isEmpty(), | '', | $rr.subTrees->map(x | $x->asString($space + '    ', $multiLine))->joinStrings(' {'+$newLine, ', '+$newLine, $newLine + $space + '}')),
+         if($rr.subTrees->isEmpty() && $rr.subTypeTrees->isEmpty(), | '', | $rr.subTrees->map(x | $x->asString($space + '    ', $multiLine))->concatenate($rr.subTypeTrees->map(x | $x->asString($space + '    ', $multiLine)))->joinStrings(' {'+$newLine, ', '+$newLine, $newLine + $space + '}')),
 
       rr: RootGraphFetchTree<Any>[1] |
-         $space + '#{'+$rr.class->elementToPath() +
-         if($rr.subTrees->isEmpty(), | '}#', | $rr.subTrees->map(x | $x->asString($space + '    ', $multiLine))->joinStrings(' {'+$newLine, ', '+$newLine, $newLine + $space + '}}#')),
+         $space + '#{'+ $rr.class->elementToPath() +
+         if($rr.subTrees->isEmpty() && $rr.subTypeTrees->isEmpty(), | '}#', | $rr.subTrees->map(x | $x->asString($space + '    ', $multiLine))->concatenate($rr.subTypeTrees->map(x | $x->asString($space + '    ', $multiLine)))->joinStrings(' {'+$newLine, ', '+$newLine, $newLine + $space + '}}#')),
 
       rp: RoutedPropertyGraphFetchTree[1] |
          $space + if($rp.propertyMapping->isEmpty(), | '', | $rp.propertyMapping->map(p | '(' + $p.sourceSetImplementationId + '->' + $p.targetSetImplementationId + ')')->joinStrings('@', ', ', '@ ')) + $rp.sets.id->joinStrings('[', ', ', ' / ' + $rp.property.name->toOne() + ']') +
@@ -460,7 +463,11 @@ function meta::pure::graphFetch::routing::asString(r: GraphFetchTree[1], spaceSt
 
       rp: PropertyGraphFetchTree[1] |
          $space +  $rp.property.name->toOne() + if($rp.property->instanceOf(QualifiedProperty), |'('+$rp.parameters->evaluateAndDeactivate()->map(p|$p->asString())->joinStrings(', ')+')', |'') +
-         if($rp.subTrees->isEmpty(), | '', | $rp.subTrees->map(x | $x->asString($space + '    ', $multiLine))->joinStrings(' {'+$newLine, ', '+$newLine, $newLine + $space + '}'));
- ]); 
+         if($rp.subTrees->isEmpty(), | '', | $rp.subTrees->map(x | $x->asString($space + '    ', $multiLine))->joinStrings(' {'+$newLine, ', '+$newLine, $newLine + $space + '}')),
+
+      st: SubTypeGraphFetchTree[1]  | 
+         $space +  '->subType(@' + $st.subTypeClass->elementToPath() + ')' +
+         if($st.subTrees->isEmpty(), | '', | $st.subTrees->map(x | $x->asString($space + '    ', $multiLine))->joinStrings(' {'+$newLine, ', '+$newLine, $newLine + $space + '}'));
+ ]);
 }
 

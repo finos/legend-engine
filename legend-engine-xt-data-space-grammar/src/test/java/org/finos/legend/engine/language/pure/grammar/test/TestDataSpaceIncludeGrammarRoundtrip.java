@@ -24,7 +24,7 @@ public class TestDataSpaceIncludeGrammarRoundtrip extends TestGrammarRoundtrip.T
         test("###Mapping\n" +
                 "Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMapping\n" +
                 "(\n" +
-                "  include meta::pure::mapping::includedMapping\n" +
+                "  include mapping meta::pure::mapping::includedMapping\n" +
                 "  include mapping meta::pure::mapping::DispatchMapping\n" +
                 "  include dataspace meta::pure::dataspace::IncludedDataSpace\n" +
                 "\n" +

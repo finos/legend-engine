@@ -16,20 +16,34 @@ package org.finos.legend.engine.language.snowflakeApp.grammar.to;
 
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
-import org.finos.legend.engine.language.snowflakeApp.grammar.from.SnowflakeAppGrammarExtension;
+import org.finos.legend.engine.language.snowflakeApp.grammar.from.SnowflakeAppGrammarParserExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalFormatSchemaSet;
 import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeApp;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer.renderAnnotations;
 
 public class SnowflakeAppGrammarComposer implements PureGrammarComposerExtension
 {
-    public String renderSnowflakeApp(SnowflakeApp app, PureGrammarComposerContext context)
+    private static String renderElement(PackageableElement element)
+    {
+        if (element instanceof SnowflakeApp)
+        {
+            return renderSnowflakeApp((SnowflakeApp) element);
+        }
+        return "/* Can't transform element '" + element.getPath() + "' in this section */";
+    }
+
+    private static String renderSnowflakeApp(SnowflakeApp app)
     {
         String packageName = app._package == null || app._package.isEmpty() ? app.name : app._package + "::" + app.name;
 
@@ -47,7 +61,7 @@ public class SnowflakeAppGrammarComposer implements PureGrammarComposerExtension
     {
         return Lists.fixedSize.with((elements, context, sectionName) ->
         {
-            if (!SnowflakeAppGrammarExtension.NAME.equals(sectionName))
+            if (!SnowflakeAppGrammarParserExtension.NAME.equals(sectionName))
             {
                 return null;
             }
@@ -55,10 +69,22 @@ public class SnowflakeAppGrammarComposer implements PureGrammarComposerExtension
             {
                 if (element instanceof SnowflakeApp)
                 {
-                    return renderSnowflakeApp((SnowflakeApp) element, context);
+                    return renderSnowflakeApp((SnowflakeApp) element);
                 }
                 return "/* Can't transform element '" + element.getPath() + "' in this section */";
             }).makeString("\n\n");
+        });
+    }
+
+    @Override
+    public List<Function3<List<PackageableElement>, PureGrammarComposerContext, List<String>, PureGrammarComposerExtension.PureFreeSectionGrammarComposerResult>> getExtraFreeSectionComposers()
+    {
+        return Collections.singletonList((elements, context, composedSections) ->
+        {
+            MutableList<PackageableElement> composableElements = Iterate.select(elements, e -> (e instanceof SnowflakeApp), Lists.mutable.empty());
+            return composableElements.isEmpty()
+                    ? null
+                    : new PureFreeSectionGrammarComposerResult(composableElements.asLazy().collect(SnowflakeAppGrammarComposer::renderElement).makeString("###" + SnowflakeAppGrammarParserExtension.NAME + "\n", "\n\n", ""), composableElements);
         });
     }
 }

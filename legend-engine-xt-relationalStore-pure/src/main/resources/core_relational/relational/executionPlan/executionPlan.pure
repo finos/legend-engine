@@ -54,6 +54,18 @@ Class meta::relational::mapping::SQLExecutionNode extends ExecutionNode
    connection: DatabaseConnection[1];
 }
 
+Class meta::relational::mapping::RelationalSaveNode extends ExecutionNode
+{
+  sqlComment : String[0..1];
+  sqlQuery : String[1];
+  onConnectionCloseCommitQuery : String[0..1];
+  onConnectionCloseRollbackQuery : String[0..1];
+  connection: DatabaseConnection[1];
+  generatedVariableName: String[1];
+  // map of column names to value generators
+  columnValueGenerators: Map<String, ExecutionNode>[1];
+}
+
 Class meta::relational::mapping::RelationalInstantiationExecutionNode extends ExecutionNode
 {
 }

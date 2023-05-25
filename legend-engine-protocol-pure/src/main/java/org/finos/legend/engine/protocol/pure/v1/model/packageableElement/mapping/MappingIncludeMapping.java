@@ -15,8 +15,10 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonIgnoreProperties({"createdFromExplicitType"})
 public class MappingIncludeMapping extends MappingInclude
 {
     // NOTE: we have 2 ways of expressing includedMapping path, `includedMapping` is the fullPath and we also split it into package and name
@@ -30,7 +32,6 @@ public class MappingIncludeMapping extends MappingInclude
     public String includedMappingPackage;
     public String sourceDatabasePath;
     public String targetDatabasePath;
-    public boolean createdFromExplicitType = false;
 
     /**
      * There are cases when the model is serialized and not processed, hence this method provides a backward compatible

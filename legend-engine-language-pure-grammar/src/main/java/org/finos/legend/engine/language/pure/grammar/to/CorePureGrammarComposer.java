@@ -109,7 +109,7 @@ public class CorePureGrammarComposer implements PureGrammarComposerExtension
         if (mappingInclude.getClass() == MappingIncludeMapping.class)
         {
             MappingIncludeMapping mappingIncludeMapping = (MappingIncludeMapping) mappingInclude;
-            return "include " + (mappingIncludeMapping.createdFromExplicitType ? "mapping " : "") + mappingIncludeMapping.getIncludedMapping()
+            return "include mapping " + mappingIncludeMapping.getIncludedMapping()
                     + (mappingIncludeMapping.sourceDatabasePath != null && mappingIncludeMapping.targetDatabasePath != null ? "[" + PureGrammarComposerUtility.convertPath(mappingIncludeMapping.sourceDatabasePath) + "->" + PureGrammarComposerUtility.convertPath(mappingIncludeMapping.targetDatabasePath) + "]" : "");
         }
         return null;

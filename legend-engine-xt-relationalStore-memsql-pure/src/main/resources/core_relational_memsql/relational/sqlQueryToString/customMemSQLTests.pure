@@ -20,6 +20,18 @@ Class meta::relational::memsql::tests::db::A
   window : Integer[1];
 }
 
+function <<test.Test>> meta::relational::memsql::tests::db::testQuoteIdentifiers() : Boolean[1]
+{
+  let result = toSQLString(
+    | meta::relational::memsql::tests::db::A.all()->project([s | $s.window], ['WINDOW']),
+      meta::relational::memsql::tests::db::simpleRelationalMappingForMemSQLWindowKeyword,
+      meta::relational::runtime::DatabaseType.MemSQL,
+      true,
+      meta::relational::extension::relationalExtensions());
+
+  assertEquals('select `root`.`window` as `WINDOW` from `test table` as `root`', $result);
+}
+
 function <<test.Test>> meta::relational::memsql::tests::db::testReservedKeywords() : Boolean[1]
 {
   let result = toSQLString(
