@@ -25,6 +25,7 @@ import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -919,7 +920,7 @@ public class Library
 
     public static String encodeBase64(String text)
     {
-        return Base64.encodeBase64URLSafeString(text.getBytes());
+        return Base64.encodeBase64URLSafeString(text.getBytes(StandardCharsets.UTF_8));
     }
 
     public static <T> Predicate<T> distinctByKey(Function<T, ?> key)
