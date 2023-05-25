@@ -16,7 +16,9 @@ package org.finos.legend.engine.plan.execution.stores;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -25,7 +27,6 @@ import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.slf4j.Logger;
-
 
 /**
  * This is a singleton that maintains the relationship between  http requests and store executions.
@@ -37,7 +38,7 @@ public enum StoreExecutableManager
     INSTANCE;
     private final ConcurrentHashMap<String, List<StoreExecutable>> requestExecutableMap = new ConcurrentHashMap<>();
 
-    private final ConcurrentHashMap<String, List<String>> sessionIDToProvidedID = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Set<String>> sessionIDToProvidedID = new ConcurrentHashMap<>();
     private boolean isRegistered = false;
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(StoreExecutableManager.class);
 
@@ -65,11 +66,9 @@ public enum StoreExecutableManager
 
         if (isRegistered && requestID != null)
         {
-            List<String> requests = sessionIDToProvidedID.computeIfAbsent(RequestContext.getSessionID(context), x -> Collections.synchronizedList(new ArrayList<>()));
-            if (!requests.contains(requestID))
-            {
-                requests.add(requestID);
-            }
+            Set<String> sessionIDs = sessionIDToProvidedID.computeIfAbsent(RequestContext.getSessionID(context), x -> Collections.synchronizedSet(new HashSet<>()));
+            sessionIDs.add(requestID);
+
         }
 
         addExecutable(requestID, execution);
@@ -82,29 +81,22 @@ public enum StoreExecutableManager
         {
             try
             {
-                List<String> providedIds = sessionIDToProvidedID.get(id);
-                if (providedIds == null)
-                {
-                    providedIds = new ArrayList<>();
-                    providedIds.add(id);
-                }
 
-                if (providedIds != null)
+                Set<String> providedIds = new HashSet<>(sessionIDToProvidedID.getOrDefault(id, Collections.singleton(id)));
+                providedIds.forEach(providedId -> requestExecutableMap.computeIfPresent(providedId, (key, executableList) ->
                 {
-                    providedIds.forEach(providedId -> requestExecutableMap.computeIfPresent(providedId, (key, executableList) ->
+                    executableList.remove(executable);
+                    if (executableList.isEmpty())
                     {
-                        executableList.remove(executable);
-                        if (executableList.isEmpty())
-                        {
-                            return null;
-                        }
-                        else
-                        {
-                            return executableList;
-                        }
-                    }));
-                    sessionIDToProvidedID.remove(id);
-                }
+                        return null;
+                    }
+                    else
+                    {
+                        return executableList;
+                    }
+                }));
+                sessionIDToProvidedID.remove(id);
+
             }
             catch (Exception e)
             {
@@ -123,12 +115,7 @@ public enum StoreExecutableManager
 
     public List<StoreExecutable> getExecutables(String id)
     {
-        List<String> requestIDs = new ArrayList<>(sessionIDToProvidedID.getOrDefault(id, Collections.emptyList()));
-        if (requestIDs.isEmpty())
-        {
-            requestIDs.add(id);
-        }
-
+        Set<String> requestIDs = new HashSet<>(sessionIDToProvidedID.getOrDefault(id, Collections.singleton(id)));
         return requestIDs.stream()
                 .flatMap(reqID -> requestExecutableMap.getOrDefault(reqID, Collections.emptyList()).stream())
                 .collect(Collectors.toList());
