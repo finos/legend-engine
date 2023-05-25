@@ -429,8 +429,8 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
   meta::pure::executionPlan::platformBinding::platformBindingExtension([
     meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
       meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryLegendJavaPlatformBindingExtension(),
-      meta::external::store::mongodb::executionPlan::platformBinding::legendJava::mongoDBStoreLegendJavaPlatformBindingExtension(),
-      meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension(meta::external::format::json::executionPlan::platformBinding::legendJava::jsonSchemaJavaBindingDescriptor())
+      meta::external::store::mongodb::executionPlan::platformBinding::legendJava::mongoDBStoreLegendJavaPlatformBindingExtension()
+      //meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension(meta::external::format::json::executionPlan::platformBinding::legendJava::jsonSchemaJavaBindingDescriptor())
     ])
   ])
   ]
