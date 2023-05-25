@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::mapping::*;
 import meta::pure::executionPlan::engine::java::roadmap::*;
 import meta::json::*;
 import meta::pure::executionPlan::profiles::*;
@@ -421,6 +422,50 @@ meta::pure::mapping::modelToModel::test::alloy::chain::simple::testJsonModelConn
       $chainedQueryResult
    );
 }
+
+
+function <<meta::pure::profiles::test.ToFix, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_19_0'}
+meta::pure::mapping::modelToModel::test::alloy::chain::simple::chainWithFilter(): Boolean[1]
+{
+   let tree = #{
+      Firm {
+         name,
+         employees {
+            fullName
+         }
+      }
+   }#;
+
+   let sourceFirms = '[{"name":"Firm1", "employees":[{"fullName":"Person1"}, {"fullName":"Person2"}]},{"name":"Firm2", "employees":[{"fullName":"Person3"}]}]';
+   
+   let result = meta::legend::executeLegendQuery(
+      {|Firm.all()->filter(f|$f.name=='Firm1')->graphFetch($tree)->from(BridgeToDestMapping,
+      ^Runtime(
+         connections = [
+            ^ModelChainConnection(element = ^ModelStore(), mappings = [SrcToBridgeMapping]),
+            ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
+         ]
+      )) ->serialize($tree)},[], ^ExecutionContext(),
+      meta::pure::extension::defaultExtensions()
+);
+
+   let expected =
+   '[' +
+   '  {' +
+   '    "name": "|$Firm1$|",' +
+   '    "employees": [' +
+   '      {' +
+   '        "fullName": "|$Person1$|"' +
+   '      },' +
+   '      {' +
+   '        "fullName": "|$Person2$|"' +
+   '      }' +
+   '    ]' +
+   '  }' +
+   ']';
+   assert(jsonEquivalent($expected->parseJSON(), $result->toOne()->parseJSON()));
+}
+
 
 ###Pure
 import meta::pure::mapping::modelToModel::test::alloy::chain::simple::src::*;
