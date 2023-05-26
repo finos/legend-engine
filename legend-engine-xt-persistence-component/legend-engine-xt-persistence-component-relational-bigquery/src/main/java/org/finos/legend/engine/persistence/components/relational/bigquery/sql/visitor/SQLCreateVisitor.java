@@ -18,7 +18,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNod
 import org.finos.legend.engine.persistence.components.logicalplan.modifiers.IfNotExistsTableModifier;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.statements.CreateTable;
+import org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.schemaops.statements.CreateTable;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
 
@@ -43,6 +43,13 @@ public class SQLCreateVisitor implements LogicalPlanVisitor<Create>
             logicalPlanNodes.add(IfNotExistsTableModifier.INSTANCE);
         }
 
+        // Add Partition Keys
+        if (current.dataset().schema().partitionKeys() != null && !current.dataset().schema().partitionKeys().isEmpty())
+        {
+            logicalPlanNodes.addAll(current.dataset().schema().partitionKeys());
+        }
+
+        // Add Clustering Keys
         if (current.dataset().schema().clusterKeys() != null && !current.dataset().schema().clusterKeys().isEmpty())
         {
             logicalPlanNodes.addAll(current.dataset().schema().clusterKeys());

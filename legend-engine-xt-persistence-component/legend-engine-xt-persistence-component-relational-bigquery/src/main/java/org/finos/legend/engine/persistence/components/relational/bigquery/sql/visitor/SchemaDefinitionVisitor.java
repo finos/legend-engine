@@ -19,10 +19,9 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Schem
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.BigQueryDataTypeMapping;
+import org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.constraints.columns.PKColumnConstraint;
 import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.column.ColumnConstraint;
 import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.column.NotNullColumnConstraint;
-import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.column.PKColumnConstraint;
-import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.column.UniqueColumnConstraint;
 import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.table.PrimaryKeyTableConstraint;
 import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.table.TableConstraint;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.DataType;
@@ -36,6 +35,12 @@ import java.util.stream.Collectors;
 
 public class SchemaDefinitionVisitor implements LogicalPlanVisitor<SchemaDefinition>
 {
+    /*
+    IN BigQuery World
+    Project => Database
+    Dataset => Schema
+    Table Name => Table
+     */
 
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, SchemaDefinition current, VisitorContext context)
@@ -56,10 +61,6 @@ public class SchemaDefinitionVisitor implements LogicalPlanVisitor<SchemaDefinit
             {
                 columnConstraints.add(new PKColumnConstraint());
             }
-            if (f.unique())
-            {
-                columnConstraints.add(new UniqueColumnConstraint());
-            }
             Column column = new Column(f.name(), dataType, columnConstraints, context.quoteIdentifier());
             for (Optimizer optimizer : context.optimizers())
             {
@@ -70,7 +71,7 @@ public class SchemaDefinitionVisitor implements LogicalPlanVisitor<SchemaDefinit
 
         if (pkNum > 1)
         {
-            TableConstraint constraint = new PrimaryKeyTableConstraint(pkFields.stream().map(Field::name).collect(Collectors.toList()), context.quoteIdentifier());
+            TableConstraint constraint = new PrimaryKeyTableConstraint(pkFields.stream().map(Field::name).collect(Collectors.toList()), context.quoteIdentifier(), true);
             for (Optimizer optimizer : context.optimizers())
             {
                 constraint = (TableConstraint) optimizer.optimize(constraint);

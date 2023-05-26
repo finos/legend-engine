@@ -15,8 +15,9 @@
 package org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor;
 
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Truncate;
+import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.statements.DeleteStatement;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.statements.TruncateTable;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
 
@@ -28,9 +29,19 @@ public class TruncateVisitor implements LogicalPlanVisitor<Truncate>
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, Truncate current, VisitorContext context)
     {
-        DeleteStatement deleteStatement = new DeleteStatement();
-        prev.push(deleteStatement);
+        // TODO For partitioned Tables, if the table requires a partition filter, Truncate will fail.
+        // This should be the approach in that case:
+        // 1. UPDATE the table to remove the partition filter requirement
+        // 2. Truncate table
+        // 3. UPDATE the table to add the partition filter requirement
 
-        return new VisitorResult(deleteStatement, Collections.singletonList(current.dataset()));
+        TruncateTable truncateTable = new TruncateTable();
+        for (Optimizer optimizer : context.optimizers())
+        {
+            truncateTable = (TruncateTable) optimizer.optimize(truncateTable);
+        }
+        prev.push(truncateTable);
+
+        return new VisitorResult(truncateTable, Collections.singletonList(current.dataset()));
     }
 }

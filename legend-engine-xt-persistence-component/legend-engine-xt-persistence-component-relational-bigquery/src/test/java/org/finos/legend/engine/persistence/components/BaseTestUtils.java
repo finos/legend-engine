@@ -17,12 +17,12 @@ package org.finos.legend.engine.persistence.components;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.ClusterKey;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.PartitionKey;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
-import org.finos.legend.engine.persistence.components.logicalplan.values.ModuloBinaryValueOperator;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ObjectValue;
 
 import java.util.Optional;
@@ -39,7 +39,7 @@ public class BaseTestUtils
     public static Field colString = Field.builder().name("col_string").type(FieldType.of(DataType.STRING, Optional.empty(), Optional.empty())).build();
     public static Field colTimestamp = Field.builder().name("col_timestamp").type(FieldType.of(DataType.TIMESTAMP, Optional.empty(), Optional.empty())).build();
     public static Field colDatetime = Field.builder().name("col_datetime").type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).build();
-    public static Field colDate = Field.builder().name("col_date").type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).build();
+    public static Field colDate = Field.builder().name("col_date").type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).primaryKey(true).build();
     public static Field colReal = Field.builder().name("col_real").type(FieldType.of(DataType.REAL, Optional.empty(), Optional.empty())).build();
     public static Field colFloat = Field.builder().name("col_float").type(FieldType.of(DataType.FLOAT, Optional.empty(), Optional.empty())).build();
     public static Field colDecimal = Field.builder().name("col_decimal").type(FieldType.of(DataType.DECIMAL, 10, 4)).build();
@@ -49,21 +49,13 @@ public class BaseTestUtils
     public static Field colNumeric = Field.builder().name("col_numeric").type(FieldType.of(DataType.NUMERIC, Optional.empty(), Optional.empty())).build();
     public static Field colBoolean = Field.builder().name("col_boolean").type(FieldType.of(DataType.BOOLEAN, Optional.empty(), Optional.empty())).build();
     public static Field colVarBinary = Field.builder().name("col_varbinary").type(FieldType.of(DataType.VARBINARY, 10, null)).build();
-    public static Field colVariant = Field.builder().name("col_variant").type(FieldType.of(DataType.VARIANT, Optional.empty(), Optional.empty())).build();
-    public static Field colArray = Field.builder().name("col_array").type(FieldType.of(DataType.ARRAY, Optional.empty(), Optional.empty())).build();
-    public static Field colMap = Field.builder().name("col_map").type(FieldType.of(DataType.MAP, Optional.empty(), Optional.empty())).build();
 
     public static ClusterKey clusterKey1 = ClusterKey.builder().key(FieldValue.builder().fieldName("col_timestamp").build()).build();
-    public static ClusterKey clusterKey2 = ClusterKey.builder()
-        .key(FunctionImpl.builder()
-            .functionName(FunctionName.SUBSTRING)
-            .addValue(FieldValue.builder().fieldName("col_int").build(), ObjectValue.of(1), ObjectValue.of(4))
-            .build())
-        .build();
+    public static ClusterKey clusterKey2 = ClusterKey.builder().key(FieldValue.builder().fieldName("col_int").build()).build();
 
-    public static ClusterKey clusterKey3 = ClusterKey.builder()
-        .key(ModuloBinaryValueOperator.of(FieldValue.builder().fieldName("col_integer").build(), ObjectValue.of(7)))
-        .build();
+    public static PartitionKey partitionKey1 = PartitionKey.of(FieldValue.builder().fieldName("col_date").build());
+
+    public static PartitionKey partitionKey2 = PartitionKey.of(ObjectValue.of(FunctionName._PARTITIONDATE));
 
     public static SchemaDefinition schemaWithAllColumns = SchemaDefinition.builder()
         .addFields(colInt)
@@ -94,6 +86,27 @@ public class BaseTestUtils
         .addFields(colString)
         .addFields(colTimestamp)
         .addFields(colDouble)
-        .addClusterKeys(clusterKey1, clusterKey2, clusterKey3)
+        .addClusterKeys(clusterKey1, clusterKey2)
         .build();
+
+    public static SchemaDefinition schemaWithClusteringAndPartitionKey = SchemaDefinition.builder()
+            .addFields(colInt)
+            .addFields(colDate)
+            .addFields(colInteger)
+            .addFields(colString)
+            .addFields(colTimestamp)
+            .addFields(colDouble)
+            .addClusterKeys(clusterKey1, clusterKey2)
+            .addPartitionKeys(partitionKey1)
+            .build();
+
+    public static SchemaDefinition schemaWithPartitionKey = SchemaDefinition.builder()
+            .addFields(colInt)
+            .addFields(colDate)
+            .addFields(colInteger)
+            .addFields(colString)
+            .addFields(colTimestamp)
+            .addFields(colDouble)
+            .addPartitionKeys(partitionKey2)
+            .build();
 }

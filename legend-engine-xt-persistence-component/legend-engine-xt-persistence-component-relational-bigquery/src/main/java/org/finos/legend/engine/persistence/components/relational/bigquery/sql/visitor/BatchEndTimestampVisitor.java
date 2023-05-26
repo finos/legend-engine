@@ -37,7 +37,7 @@ public class BatchEndTimestampVisitor implements LogicalPlanVisitor<BatchEndTime
         }
         else
         {
-            prev.push(new Function(FunctionName.SYSDATE, null, context.quoteIdentifier()));
+            prev.push(new Function(FunctionName.CURRENT_DATETIME, null, context.quoteIdentifier()));
         }
         return new VisitorResult();
     }

@@ -18,10 +18,12 @@ import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.ClusterKey;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.PartitionKey;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Alter;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
-import org.finos.legend.engine.persistence.components.logicalplan.operations.Show;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Delete;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Truncate;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchEndTimestamp;
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
@@ -35,8 +37,11 @@ import org.finos.legend.engine.persistence.components.relational.bigquery.sql.Bi
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.AlterVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.BatchEndTimestampVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.ClusterKeyVisitor;
+import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.PartitionKeyVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.SQLCreateVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.SchemaDefinitionVisitor;
+import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.DeleteVisitor;
+import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.TruncateVisitor;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
@@ -68,20 +73,26 @@ public class BigQuerySink extends AnsiSqlSink
     static
     {
         Set<Capability> capabilities = new HashSet<>();
+        // TODO #1: To review the capabilities
         capabilities.add(Capability.MERGE);
         capabilities.add(Capability.ADD_COLUMN);
         capabilities.add(Capability.IMPLICIT_DATA_TYPE_CONVERSION);
         capabilities.add(Capability.DATA_TYPE_LENGTH_CHANGE);
         CAPABILITIES = Collections.unmodifiableSet(capabilities);
 
+        // TODO #2: To review the visitors - Support for Clustering,Partition BY, table creation , Schema Definition, Alter table
         Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass = new HashMap<>();
         logicalPlanVisitorByClass.put(SchemaDefinition.class, new SchemaDefinitionVisitor());
         logicalPlanVisitorByClass.put(Create.class, new SQLCreateVisitor());
         logicalPlanVisitorByClass.put(ClusterKey.class, new ClusterKeyVisitor());
+        logicalPlanVisitorByClass.put(PartitionKey.class, new PartitionKeyVisitor());
         logicalPlanVisitorByClass.put(Alter.class, new AlterVisitor());
+        logicalPlanVisitorByClass.put(Delete.class, new DeleteVisitor());
+        logicalPlanVisitorByClass.put(Truncate.class, new TruncateVisitor());
         logicalPlanVisitorByClass.put(BatchEndTimestamp.class, new BatchEndTimestampVisitor());
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);
 
+        // TODO #3: To review the Schema Evolution Support - Implicit & Explicit Types
         Map<DataType, Set<DataType>> implicitDataTypeMapping = new HashMap<>();
         implicitDataTypeMapping.put(DataType.DECIMAL, new HashSet<>(Arrays.asList(DataType.TINYINT, DataType.SMALLINT, DataType.INTEGER, DataType.INT, DataType.BIGINT, DataType.FLOAT, DataType.DOUBLE, DataType.REAL, DataType.NUMERIC, DataType.NUMBER)));
         implicitDataTypeMapping.put(DataType.DOUBLE, new HashSet<>(Arrays.asList(DataType.TINYINT, DataType.SMALLINT, DataType.INTEGER, DataType.INT, DataType.FLOAT, DataType.REAL)));
@@ -100,6 +111,7 @@ public class BigQuerySink extends AnsiSqlSink
         return INSTANCE;
     }
 
+    // TODO #4: Review how can this be done with Simba Driver
     public static Connection createConnection(String user,
                                               String pwd,
                                               String jdbcUrl,
@@ -124,14 +136,18 @@ public class BigQuerySink extends AnsiSqlSink
         }
     }
 
+    // TODO #5: Another entry point for API invocation via authentication ?
+
+
     private BigQuerySink()
     {
         super(
             CAPABILITIES,
             IMPLICIT_DATA_TYPE_MAPPING,
             EXPLICIT_DATA_TYPE_MAPPING,
-            SqlGenUtils.QUOTE_IDENTIFIER,
+            SqlGenUtils.BACK_QUOTE_IDENTIFIER,
             LOGICAL_PLAN_VISITOR_BY_CLASS,
+            // TODO  # 6: Verify implementation of DatasetExists datasetExists,
             (executor, sink, dataset) ->
             {
                 //TODO: pass transformer as an argument
@@ -141,7 +157,9 @@ public class BigQuerySink extends AnsiSqlSink
                 List<TabularData> results = executor.executePhysicalPlanAndGetResults(physicalPlanForDoesDatasetExist);
                 return results.size() > 0;
             },
+            // TODO # 7: Verify implementation of ValidateMainDatasetSchema validateMainDatasetSchema,
             (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new BigQueryDataTypeMapping()),
+            //  TODO # 8: Verify implementation of ConstructDatasetFromDatabase constructDatasetFromDatabase)
             (executor, sink, tableName, schemaName, databaseName) -> sink.constructDatasetFromDatabase(tableName, schemaName, databaseName, new BigQueryJdbcPropertiesToLogicalDataTypeMapping()));
     }
 
