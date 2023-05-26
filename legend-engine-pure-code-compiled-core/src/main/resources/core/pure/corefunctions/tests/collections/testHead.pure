@@ -18,6 +18,7 @@ import meta::pure::profiles::*;
 function <<test.Test>> meta::pure::functions::collection::tests::head::testHead():Boolean[1]
 {
     assertEquals('a', ['a', 'b', 'c']->head());
+    assertEquals('a', 'a'->head());
 }
 
 function <<test.Test>> meta::pure::functions::collection::tests::head::testHeadFromEmpty():Boolean[1]

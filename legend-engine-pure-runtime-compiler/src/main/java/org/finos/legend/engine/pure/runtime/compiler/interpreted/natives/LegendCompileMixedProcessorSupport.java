@@ -95,9 +95,9 @@ public class LegendCompileMixedProcessorSupport extends M3ProcessorSupport
         else if (value instanceof PureMap)
         {
             PureMap map = (PureMap) value;
-            MapCoreInstance mapCoreInstance = new MapCoreInstance(Lists.immutable.<CoreInstance>empty(), "", null, _Package.getByUserPath(M3Paths.Map, this), -1, modelRepository, false, this);
+            MapCoreInstance mapCoreInstance = new MapCoreInstance(Lists.immutable.empty(), "", null, _Package.getByUserPath(M3Paths.Map, this), -1, modelRepository, false, this);
             MutableMap<CoreInstance, CoreInstance> target = mapCoreInstance.getMap();
-            map.getMap().forEachKeyValue((k, v) -> target.put(this.convertCompileToInterpretedCoreInstance(k), this.convertCompileToInterpretedCoreInstance(v)));
+            map.getMap().forEachKeyValue((k, v) -> target.put(this.convertCompileToInterpretedCoreInstance(ValCoreInstance.toCoreInstance(k)), this.convertCompileToInterpretedCoreInstance(ValCoreInstance.toCoreInstance(v))));
             return mapCoreInstance;
         }
         else

@@ -52,6 +52,7 @@ public class TestStoreExecutableManager
         StoreExecutableManager.INSTANCE.registerManager();
 
         RequestContext context = new RequestContext(session, "referral", token);
+        RequestContext context2 = new RequestContext("Context2", "referral");
 
 
         TestExecutable test1 = new TestExecutable();
@@ -74,6 +75,32 @@ public class TestStoreExecutableManager
 
         StoreExecutableManager.INSTANCE.removeExecutable(context, test2);
         assert (StoreExecutableManager.INSTANCE.getExecutables(token).size() == 0);
+
+        StoreExecutableManager.INSTANCE.addExecutable(context, test1);
+        assert (StoreExecutableManager.INSTANCE.getExecutables(context).size() == 1);
+        assert (StoreExecutableManager.INSTANCE.getExecutables(token).size() == 1);
+        assert (StoreExecutableManager.INSTANCE.getExecutables(session).size() == 1);
+
+        StoreExecutableManager.INSTANCE.addExecutable(context, test2);
+        assert (StoreExecutableManager.INSTANCE.getExecutables(context).size() == 2);
+        assert (StoreExecutableManager.INSTANCE.getExecutables(token).size() == 2);
+        assert (StoreExecutableManager.INSTANCE.getExecutables(session).size() == 2);
+
+        StoreExecutableManager.INSTANCE.removeExecutable(context, test2);
+        assert (StoreExecutableManager.INSTANCE.getExecutables(context).size() == 1);
+        assert (StoreExecutableManager.INSTANCE.getExecutables(token).size() == 1);
+        assert (StoreExecutableManager.INSTANCE.getExecutables(session).size() == 1);
+        StoreExecutableManager.INSTANCE.removeExecutable(context, test1);
+        assert (StoreExecutableManager.INSTANCE.getExecutables(context).size() == 0);
+        assert (StoreExecutableManager.INSTANCE.getExecutables(token).size() == 0);
+        assert (StoreExecutableManager.INSTANCE.getExecutables(session).size() == 0);
+
+        StoreExecutableManager.INSTANCE.addExecutable(context2, test1);
+        assert (StoreExecutableManager.INSTANCE.getExecutables(context2).size() == 1);
+        assert (StoreExecutableManager.INSTANCE.getExecutables(context).size() == 0);
+
+        assert (StoreExecutableManager.INSTANCE.getExecutables("Context2").size() == 1);
+
         StoreExecutableManager.INSTANCE.reset(); //clean up state of singleton
 
     }

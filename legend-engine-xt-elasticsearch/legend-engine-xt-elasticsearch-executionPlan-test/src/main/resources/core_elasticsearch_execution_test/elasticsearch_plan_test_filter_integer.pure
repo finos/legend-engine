@@ -98,3 +98,11 @@ meta::external::store::elasticsearch::executionTest::testCase::tds::filter::inte
 {
   $config->testTdsExpression(x | $x->filter(x | 55 <= $x.getInteger('Budget')));
 }
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test in filter on Elasticsearch Integer property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::integer::testInFilter(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getInteger('Budget')->in([170, 100])));
+}

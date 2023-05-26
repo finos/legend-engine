@@ -16,8 +16,11 @@ import meta::pure::functions::collection::tests::removeAll::*;
 
 function <<test.Test>> meta::pure::functions::collection::tests::removeAll::testRemoveAllPrimitiveStandardFunction():Boolean[1]
 {
-    assertEquals([3, 3, 3], [1, 2, 1, 3, 1, 3, 3, 2]->removeAll([1,2]));
+    assertEquals([3, 3, 3], [1, 2, 1, 3, 1, 3, 3, 2]->removeAll([1,2,4]));
+    assertEquals([2, 3, 3, 3, 2], [1, 2, 1, 3, 1, 3, 3, 2]->removeAll(1));
+    assertEquals([2, 3, 3, 3, 2], [1, 2, 1, 3, 1, 3, 3, 2]->removeAll([1]));
     assertEquals(['c'], ['a', 'a', 'b', 'b', 'c']->removeAll(['a','b']));
+    assertEmpty([1,2]->removeAll([1,2]));
 }
 
 function <<test.Test>> meta::pure::functions::collection::tests::removeAll::testRemoveAllOptimizedPrimitiveStandardFunction():Boolean[1]
@@ -30,6 +33,7 @@ function <<test.Test>> meta::pure::functions::collection::tests::removeAll::test
 {
     assertEquals([3, 3, 3], [1, 2, 1, 3, 1, 3, 3, 2]->removeAll([1,2],{a,b|$a == $b}));
     assertEquals(['c'], ['a', 'a', 'b', 'b', 'c']->removeAll(['a','b'],{a,b|$a == $b}));
+    assertEquals([2, 3, 3, 3, 2], [1, 2, 1, 3, 1, 3, 3, 2]->removeAll(1, {a,b|$a == $b}));
 }
 
 Class meta::pure::functions::collection::tests::removeAll::TestClass

@@ -80,20 +80,7 @@ function meta::external::store::elasticsearch::v7::protocol::vX_X_X::elasticsear
                     columnResultPaths = $tds.columnResultPaths
                         ->map(c | ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::tds::TDSColumnResultPath(
                             index = $c.index, 
-                            resultPath = $c.resultPath->match([
-                              src: SourceFieldResultPath[1] | ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::SourceFieldResultPath(
-                                _type = 'sourceFieldResultPath',
-                                fieldPath = $src.fieldPath
-                              ),
-                              docvalue: DocValueResultPath[1] | ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::DocValueResultPath(
-                                _type = 'docValueResultPath',
-                                fieldPath = $docvalue.fieldPath
-                              ),
-                              agg: AggregateResultPath[1] | ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::AggregateResultPath(
-                                _type = 'aggregateResultPath',
-                                fieldPath = $agg.fieldPath
-                              )                                                         
-                            ])
+                            resultPath = $c.resultPath->meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::tds::transformResultPath($extensions)
                           )
                         )
                     )                   
@@ -102,6 +89,33 @@ function meta::external::store::elasticsearch::v7::protocol::vX_X_X::elasticsear
           ]
       }
   );
+}
+
+function meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::tds::transformResultPath(path: ResultPath[1], extensions:Extension[*]): meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::ResultPath[1]
+{
+  $path->match([
+    src: SourceFieldResultPath[1] | ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::SourceFieldResultPath(
+      _type = 'sourceFieldResultPath',
+      fieldPath = $src.fieldPath
+    ),
+    field: FieldResultPath[1] | ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::FieldResultPath(
+      _type = 'fieldResultPath',
+      fieldPath = $field.fieldPath,
+      readFrom = $field.readFrom->map(x | $x->meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::tds::transformResultPath($extensions))
+    ),
+    docvalue: DocValueResultPath[1] | ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::DocValueResultPath(
+      _type = 'docValueResultPath',
+      fieldPath = $docvalue.fieldPath
+    ),
+    agg: AggregateResultPath[1] | ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::AggregateResultPath(
+      _type = 'aggregateResultPath',
+      fieldPath = $agg.fieldPath
+    ),
+    id: _IDResultPath[1] | ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::_IDResultPath(
+      _type = '_IDResultPath',
+      fieldPath = $id.fieldPath
+    )                                                   
+  ]);
 }
 
 function meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::transformConnection(conn: Elasticsearch7StoreConnection[1],extensions:Extension[*]): meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::Elasticsearch7StoreConnection[1]
@@ -148,6 +162,16 @@ Class <<typemodifiers.abstract>> meta::external::store::elasticsearch::v7::proto
 Class meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::SourceFieldResultPath extends meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::ResultPath
 {
 
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::_IDResultPath extends meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::ResultPath
+{
+
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::FieldResultPath extends meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::ResultPath
+{
+  readFrom: meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::ResultPath[1];
 }
 
 Class meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::DocValueResultPath extends meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::ResultPath

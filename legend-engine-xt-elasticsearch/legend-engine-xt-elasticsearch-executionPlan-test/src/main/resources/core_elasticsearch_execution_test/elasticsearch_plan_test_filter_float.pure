@@ -98,3 +98,11 @@ meta::external::store::elasticsearch::executionTest::testCase::tds::filter::floa
 {
   $config->testTdsExpression(x | $x->filter(x | 266.5 <= $x.getFloat('Revenue')));
 }
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test in filter on Elasticsearch float property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::float::testInFilter(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getFloat('Revenue')->in([543.8, 214.0])));
+}
