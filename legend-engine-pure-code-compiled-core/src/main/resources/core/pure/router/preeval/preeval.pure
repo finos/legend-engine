@@ -133,8 +133,14 @@ function <<access.private>> meta::pure::router::preeval::prevalInternal(item : A
 
   let newItem = $item->evaluateAndDeactivate()
                      ->match([
+                        {lambda : LambdaFunction<Any>[1]|
+                            let fnArgNames      = $lambda->functionType().parameters.name;
+                            let fnOpenVariables = $lambda->openVariableValues()->putAll($state.inScopeVars->keyValues()->filter(kv | !$kv.first->in($fnArgNames))->newMap());
+
+                            $lambda->prevalFunctionDefinition(^$state(inScopeVars = $fnOpenVariables), $extensions);
+                        },
                         {fd : FunctionDefinition<Any>[1]|
-                            $fd->prevalFunctionDefinition($state, $extensions);
+                            $fd->prevalFunctionDefinition(^$state(inScopeVars = newMap([])), $extensions);    // Assigning empty map to inScopeVars as function definition can't have openVars
                         },
                         {sfe : SimpleFunctionExpression[1]|
                             let handlers = [
@@ -239,8 +245,8 @@ function <<access.private>> meta::pure::router::preeval::prevalInternal(item : A
                               let mapFn = $av.mapFn->evaluateAndDeactivate();
                               let aggFn = $av.aggregateFn->evaluateAndDeactivate();
 
-                              let newFuncWrapper_map = prevalNestedFunctionDefinition($mapFn, $state, $extensions);
-                              let newFuncWrapper_agg = prevalNestedFunctionDefinition($aggFn, $state, $extensions);
+                              let newFuncWrapper_map = prevalInternal($mapFn, $state, $extensions);
+                              let newFuncWrapper_agg = prevalInternal($aggFn, $state, $extensions);
 
                             if(![$newFuncWrapper_map, $newFuncWrapper_agg]->anyModified(),
                               | ^PrevalWrapper<Any>(value = $av, canPreval = true, modified = false),
@@ -251,8 +257,8 @@ function <<access.private>> meta::pure::router::preeval::prevalInternal(item : A
                               let mapFn = $av.mapFn->evaluateAndDeactivate();
                               let aggFn = $av.aggregateFn->evaluateAndDeactivate();
                               
-                              let newFuncWrapper_map = prevalNestedFunctionDefinition($mapFn, $state, $extensions);
-                              let newFuncWrapper_agg = prevalNestedFunctionDefinition($aggFn, $state, $extensions);
+                              let newFuncWrapper_map = prevalInternal($mapFn, $state, $extensions);
+                              let newFuncWrapper_agg = prevalInternal($aggFn, $state, $extensions);
 
                               if(![$newFuncWrapper_map, $newFuncWrapper_agg]->anyModified(),
                                   | ^PrevalWrapper<Any>(value = $av, canPreval = true, modified = false),
@@ -270,22 +276,6 @@ function <<access.private>> meta::pure::router::preeval::prevalInternal(item : A
 
   $state->printDebugWithDepth(|'Returning ' + $newItem.value->type()->makeString() + ' ' + $newItem.value->match([iv:InstanceValue[1]|$iv.values->map(x|$x->type())->makeString(), sfe:SimpleFunctionExpression[1]|'(' + $sfe.func->elementToPath() + ')', ve : VariableExpression[1]|'(' + $ve.name + ')', a:Any[*]|'']) + ' ' + $newItem.toString());
   $newItem;
-}
-
-function <<access.private>> meta::pure::router::preeval::prevalNestedFunctionDefinition(f:FunctionDefinition<Any>[1], state : meta::pure::router::preeval::State[1], extensions:Extension[*]):PrevalWrapper<Any>[1]
-{
-  $f->match([
-    l:LambdaFunction<Any>[1] | prevalNestedLambda($l, $state, $extensions),
-    fn:FunctionDefinition<Any>[1] | prevalInternal($fn, ^$state(inScopeTypeParams = ^Map<String, GenericType>(), inScopeVars = $fn->openVariableValues()), $extensions);
-  ]);
-}
-
-function <<access.private>> meta::pure::router::preeval::prevalNestedLambda(lambda:LambdaFunction<Any>[1], state : meta::pure::router::preeval::State[1], extensions:Extension[*]):PrevalWrapper<Any>[1]
-{
-  let fnArgNames = $lambda->functionType().parameters.name;
-  let fnOpenVariables = $lambda->openVariableValues()->putAll($state.inScopeVars->keyValues()->filter(kv | !$kv.first->in($fnArgNames))->newMap());
-
-  prevalInternal($lambda, ^$state(inScopeTypeParams = ^Map<String, GenericType>(), inScopeVars = $fnOpenVariables), $extensions);
 }
 
 function <<access.private>> meta::pure::router::preeval::prevalFunctionDefinition(fd : FunctionDefinition<Any>[1], origState : meta::pure::router::preeval::State[1], extensions:Extension[*]):PrevalWrapper<Any>[1]
