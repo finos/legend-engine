@@ -42,10 +42,12 @@ public class Session implements AutoCloseable
     private final Map<String, Portal> portals = new HashMap<>();
 
     private final SessionHandler dataSessionHandler;
+    private final SessionHandler metaDataSessionHandler;
 
-    public Session(SessionHandler dataSessionHandler)
+    public Session(SessionHandler dataSessionHandler, SessionHandler metaDataSessionHandler)
     {
         this.dataSessionHandler = dataSessionHandler;
+        this.metaDataSessionHandler = metaDataSessionHandler;
     }
 
     public CompletableFuture<?> sync()

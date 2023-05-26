@@ -15,6 +15,7 @@
 package org.finos.legend.engine.postgres.handler.legend;
 
 import java.sql.SQLException;
+
 import org.finos.legend.engine.postgres.Session;
 import org.finos.legend.engine.postgres.SessionsFactory;
 import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
@@ -34,7 +35,6 @@ public class LegendSessionFactory implements SessionsFactory
 
     @Override
     public Session createSession(String defaultSchema, Identity identity)
-            throws Exception
     {
         return new Session(new SessionHandler()
         {
@@ -49,6 +49,6 @@ public class LegendSessionFactory implements SessionsFactory
             {
                 return new LegendStatement(legendExecutionClient, identity);
             }
-        });
+        }, null);
     }
 }

@@ -25,6 +25,7 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Date;
+
 import org.finos.legend.engine.postgres.Session;
 import org.finos.legend.engine.postgres.SessionsFactory;
 import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
@@ -51,7 +52,6 @@ public class JDBCSessionFactory implements SessionsFactory
 
     @Override
     public Session createSession(String defaultSchema, Identity identity)
-            throws Exception
     {
         return new Session(new SessionHandler()
         {
@@ -66,7 +66,7 @@ public class JDBCSessionFactory implements SessionsFactory
             {
                 return new JDBCPostgresStatement(getConnection().createStatement());
             }
-        });
+        }, null);
     }
 
 
