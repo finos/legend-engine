@@ -14,8 +14,6 @@
 
 package org.finos.legend.engine.postgres.handler.legend;
 
-import java.sql.SQLException;
-
 import org.finos.legend.engine.postgres.Session;
 import org.finos.legend.engine.postgres.SessionsFactory;
 import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
@@ -26,7 +24,7 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 public class LegendSessionFactory implements SessionsFactory
 {
 
-    private LegendExecutionClient legendExecutionClient;
+    private final LegendExecutionClient legendExecutionClient;
 
     public LegendSessionFactory(LegendExecutionClient legendExecutionClient)
     {
@@ -36,19 +34,30 @@ public class LegendSessionFactory implements SessionsFactory
     @Override
     public Session createSession(String defaultSchema, Identity identity)
     {
-        return new Session(new SessionHandler()
-        {
-            @Override
-            public PostgresPreparedStatement prepareStatement(String query) throws SQLException
-            {
-                return new LegendPreparedStatement(query, legendExecutionClient, identity);
-            }
+        return new Session(new LegendSessionHandler(legendExecutionClient, identity), null);
+    }
 
-            @Override
-            public PostgresStatement createStatement() throws SQLException
-            {
-                return new LegendStatement(legendExecutionClient, identity);
-            }
-        }, null);
+    private static class LegendSessionHandler implements SessionHandler
+    {
+        private final LegendExecutionClient legendExecutionClient;
+        private final Identity identity;
+
+        public LegendSessionHandler(LegendExecutionClient legendExecutionClient, Identity identity)
+        {
+            this.legendExecutionClient = legendExecutionClient;
+            this.identity = identity;
+        }
+
+        @Override
+        public PostgresPreparedStatement prepareStatement(String query)
+        {
+            return new LegendPreparedStatement(query, legendExecutionClient, identity);
+        }
+
+        @Override
+        public PostgresStatement createStatement()
+        {
+            return new LegendStatement(legendExecutionClient, identity);
+        }
     }
 }
