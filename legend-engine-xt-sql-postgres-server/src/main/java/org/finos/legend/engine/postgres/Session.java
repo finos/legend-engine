@@ -33,6 +33,7 @@ import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
 import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresStatement;
 import org.finos.legend.engine.postgres.handler.SessionHandler;
+import org.finos.legend.engine.protocol.sql.metamodel.QualifiedName;
 import org.slf4j.Logger;
 
 public class Session implements AutoCloseable
@@ -102,7 +103,16 @@ public class Session implements AutoCloseable
     private SessionHandler getSessionHandler(String query)
     {
         SqlBaseParser parser = SQLGrammarParser.getSqlBaseParser(query, "query");
-        return dataSessionHandler;
+        List<QualifiedName> qualifiedNames = EXTRACTOR.visitSingleStatement(parser.singleStatement());
+        boolean isMetadataQuery = qualifiedNames.stream().flatMap(i -> i.parts.stream()).anyMatch(i -> (i.equalsIgnoreCase("information_schema") || i.equalsIgnoreCase("pg_catalog")));
+        if (isMetadataQuery)
+        {
+            return metaDataSessionHandler;
+        }
+        else
+        {
+            return dataSessionHandler;
+        }
     }
 
 
