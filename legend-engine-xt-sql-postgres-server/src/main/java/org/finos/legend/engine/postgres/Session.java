@@ -41,11 +41,11 @@ public class Session implements AutoCloseable
     private final Map<String, Prepared> parsed = new HashMap<>();
     private final Map<String, Portal> portals = new HashMap<>();
 
-    private final SessionHandler sessionHandler;
+    private final SessionHandler dataSessionHandler;
 
-    public Session(SessionHandler sessionHandler)
+    public Session(SessionHandler dataSessionHandler)
     {
-        this.sessionHandler = sessionHandler;
+        this.dataSessionHandler = dataSessionHandler;
     }
 
     public CompletableFuture<?> sync()
@@ -75,7 +75,7 @@ public class Session implements AutoCloseable
         {
             try
             {
-                p.prep = sessionHandler.prepareStatement(query);
+                p.prep = dataSessionHandler.prepareStatement(query);
             }
             catch (Exception e)
             {
@@ -310,7 +310,7 @@ public class Session implements AutoCloseable
         }
         try
         {
-            PostgresStatement statement = sessionHandler.createStatement();
+            PostgresStatement statement = dataSessionHandler.createStatement();
             boolean results = statement.execute(query);
             if (!results)
             {
