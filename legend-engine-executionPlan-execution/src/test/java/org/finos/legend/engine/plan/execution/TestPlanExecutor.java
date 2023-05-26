@@ -40,17 +40,17 @@ public class TestPlanExecutor
         res.put("userId", new ConstantResult("anumam"));
         MutableList<CommonProfile> profile =  Lists.mutable.empty();
 
-        ExecutionState state1 = new ExecutionState(res, Lists.mutable.empty(), Lists.mutable.empty(), false, 52_428_800L, new RequestContext(session, "https://allo'y'.site.gs.com/"), null);
+        ExecutionState state1 = new ExecutionState(res, Lists.mutable.empty(), Lists.mutable.empty(), false, 52_428_800L, new RequestContext(session, "https://allo'y'.site.gs.com/"), null, false);
         PlanExecutor.setUpState(new SingleExecutionPlan(), state1, profile, "anumam");
         String sqlQuery1 = FreeMarkerExecutor.process("ALTER SESSION SET QUERY_TAG = '{\"executionTraceID\" : \"${execID}\", \"engineUser\" : \"${userId}\", \"referer\" : \"${referer}\"}';", state1, "snowflake", null);
         Assert.assertEquals("ALTER SESSION SET QUERY_TAG = '{\"executionTraceID\" : \"b26973f8-8857-4ece-bfdc-107176c9da8b\", \"engineUser\" : \"anumam\", \"referer\" : \"https://allo''y''.site.gs.com/\"}';", sqlQuery1);
 
-        ExecutionState state2 = new ExecutionState(res, Lists.mutable.empty(), Lists.mutable.empty(), false, 52_428_800L, new RequestContext(session, null), null);
+        ExecutionState state2 = new ExecutionState(res, Lists.mutable.empty(), Lists.mutable.empty(), false, 52_428_800L, new RequestContext(session, null), null, false);
         PlanExecutor.setUpState(new SingleExecutionPlan(), state2, profile, "anumam");
         String sqlQuery2 = FreeMarkerExecutor.process("ALTER SESSION SET QUERY_TAG = '{\"executionTraceID\" : \"${execID}\", \"engineUser\" : \"${userId}\", \"referer\" : \"${referer}\"}';", state2, "snowflake", null);
         Assert.assertEquals("ALTER SESSION SET QUERY_TAG = '{\"executionTraceID\" : \"b26973f8-8857-4ece-bfdc-107176c9da8b\", \"engineUser\" : \"anumam\", \"referer\" : \"null\"}';", sqlQuery2);
 
-        ExecutionState state3 = new ExecutionState(res, Lists.mutable.empty(), Lists.mutable.empty(), false, 52_428_800L, null, null);
+        ExecutionState state3 = new ExecutionState(res, Lists.mutable.empty(), Lists.mutable.empty(), false, 52_428_800L, null, null, false);
         PlanExecutor.setUpState(new SingleExecutionPlan(), state3, profile, "anumam");
         String sqlQuery3 = FreeMarkerExecutor.process("ALTER SESSION SET QUERY_TAG = '{\"executionTraceID\" : \"${execID}\", \"engineUser\" : \"${userId}\", \"referer\" : \"${referer}\"}';", state3, "snowflake", null);
         Assert.assertEquals("ALTER SESSION SET QUERY_TAG = '{\"executionTraceID\" : \"b26973f8-8857-4ece-bfdc-107176c9da8b\", \"engineUser\" : \"anumam\", \"referer\" : \"null\"}';", sqlQuery3);
