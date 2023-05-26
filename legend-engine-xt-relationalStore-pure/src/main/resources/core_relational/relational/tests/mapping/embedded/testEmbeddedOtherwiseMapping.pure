@@ -191,7 +191,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::oth
                                  , testMappingEmbeddedOtherwise, testRuntime(), meta::relational::extension::relationalExtensions());
 
   assertEquals('name,type\n' + 'Product 3,5 years\n', $result.values->toOne()->toCSV());
-  assertSameSQL('select "root".PRODUCT_NAME as "name", "bond_detail_0".TYPE as "type" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) where case when "bond_detail_0".TYPE like \'5%\' then \'true\' else \'false\' end', $result);
+  assertSameSQL('select "root".PRODUCT_NAME as "name", "bond_detail_0".TYPE as "type" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) where case when "bond_detail_0".TYPE like \'5%\' then true else false end', $result);
 
 }
 

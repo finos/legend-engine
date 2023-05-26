@@ -52,7 +52,7 @@ function <<test.Test>> meta::relational::tests::query::function::isempty::testDe
 function <<test.Test>> meta::relational::tests::query::function::isempty::testDerivedWithIsEmptyNestedInIf():Boolean[1]
 {
    let result = execute(|TestClass.all()->project(t|$t.isValuedNested() ,'col'), TestMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-   assertEquals('select case when "root".value is null then \'true\' else \'false\' end as "col" from testTable as "root"', $result->sqlRemoveFormatting());
+   assertEquals('select case when "root".value is null then true else false end as "col" from testTable as "root"', $result->sqlRemoveFormatting());
    assertEquals('select case when ("root".value is null) then \'true\' else \'false\' end as "col" from testTable as "root"', meta::relational::functions::sqlstring::toSQLString(|TestClass.all()->project(t|$t.isValued() ,'col'), TestMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions()));
 }
 
@@ -66,7 +66,7 @@ function <<test.Test>> meta::relational::tests::query::function::isempty::testDe
 function <<test.Test>> meta::relational::tests::query::function::isempty::testDerivedCountWithIsEmptyNestedInIf():Boolean[1]
 {
    let result = execute(|TestClass.all()->groupBy([],[agg(x|$x.isValuedNested(), y | $y->count())],['count']), TestMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-   assertEquals('select count(case when "root".value is null then \'true\' else \'false\' end) as "count" from testTable as "root"', $result->sqlRemoveFormatting());
+   assertEquals('select count(case when "root".value is null then true else false end) as "count" from testTable as "root"', $result->sqlRemoveFormatting());
    assertEquals('select count(case when ("root".value is null) then \'true\' else \'false\' end) as "count" from testTable as "root"', meta::relational::functions::sqlstring::toSQLString(|TestClass.all()->groupBy([],[agg(x|$x.isValued(), y | $y->count())],['count']), TestMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions()));
 }
 
