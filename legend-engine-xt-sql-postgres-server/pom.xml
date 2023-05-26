@@ -64,6 +64,7 @@
                         </executions>
                         <configuration>
                             <to>
+                                <tag>${project.version}</tag>
                                 <image>registry.hub.docker.com/${env.DOCKER_USERNAME}/${project.artifactId}</image>
                                 <auth>
                                     <username>${env.DOCKER_USERNAME}</username>
