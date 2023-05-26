@@ -9,7 +9,12 @@ Elasticsearch7Cluster test::Store
                 MPAA: Keyword,
                 ReleaseDate: Date,
                 Budget: Integer,
-                Revenue: Float
+                Revenue: Float,
+                Description: Text {
+                  fields: [
+                    asKeyword: Keyword
+                  ];
+                }
             ];
         }
     ];

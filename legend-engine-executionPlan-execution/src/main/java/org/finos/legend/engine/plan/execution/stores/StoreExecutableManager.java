@@ -16,14 +16,17 @@ package org.finos.legend.engine.plan.execution.stores;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
 import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.slf4j.Logger;
-
 
 /**
  * This is a singleton that maintains the relationship between  http requests and store executions.
@@ -34,6 +37,8 @@ public enum StoreExecutableManager
 {
     INSTANCE;
     private final ConcurrentHashMap<String, List<StoreExecutable>> requestExecutableMap = new ConcurrentHashMap<>();
+
+    private final ConcurrentHashMap<String, Set<String>> sessionIDToProvidedID = new ConcurrentHashMap<>();
     private boolean isRegistered = false;
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(StoreExecutableManager.class);
 
@@ -44,6 +49,7 @@ public enum StoreExecutableManager
     {
         this.isRegistered = false;
         this.requestExecutableMap.clear();
+        this.sessionIDToProvidedID.clear();
     }
 
     public void addExecutable(String requestID, StoreExecutable execution)
@@ -56,18 +62,28 @@ public enum StoreExecutableManager
 
     public void addExecutable(RequestContext context, StoreExecutable execution)
     {
-        String requestID = RequestContext.getRequestToken(context);
+        String requestID = RequestContext.getRequestToken(context);  //header if its there else it's the session
+
+        if (isRegistered && requestID != null)
+        {
+            Set<String> sessionIDs = sessionIDToProvidedID.computeIfAbsent(RequestContext.getSessionID(context), x -> Collections.synchronizedSet(new HashSet<>()));
+            sessionIDs.add(requestID);
+
+        }
+
         addExecutable(requestID, execution);
     }
 
 
-    public void removeExecutable(String sessionID, StoreExecutable executable)
+    public void removeExecutable(String id, StoreExecutable executable)
     {
-        if (isRegistered && sessionID != null)
+        if (isRegistered && id != null)
         {
             try
             {
-                requestExecutableMap.computeIfPresent(sessionID, (a, executableList) ->
+
+                Set<String> providedIds = new HashSet<>(sessionIDToProvidedID.getOrDefault(id, Collections.singleton(id)));
+                providedIds.forEach(providedId -> requestExecutableMap.computeIfPresent(providedId, (key, executableList) ->
                 {
                     executableList.remove(executable);
                     if (executableList.isEmpty())
@@ -78,15 +94,17 @@ public enum StoreExecutableManager
                     {
                         return executableList;
                     }
-                });
+                }));
+                sessionIDToProvidedID.remove(id);
 
             }
-            catch (Exception ignore)
+            catch (Exception e)
             {
-                LOGGER.info(new LogInfo(null, LoggingEventType.EXECUTABLE_REMOVE_ERROR, "Unable to remove executable for session " + sessionID).toString());
+                LOGGER.info(new LogInfo(null, LoggingEventType.EXECUTABLE_REMOVE_ERROR, "Unable to remove executable for id " + id).toString());
             }
         }
     }
+
 
     public void removeExecutable(RequestContext context, StoreExecutable executable)
     {
@@ -95,9 +113,12 @@ public enum StoreExecutableManager
 
     }
 
-    public List<StoreExecutable> getExecutables(String sessionID)
+    public List<StoreExecutable> getExecutables(String id)
     {
-        return requestExecutableMap.getOrDefault(sessionID, Collections.EMPTY_LIST);
+        Set<String> requestIDs = new HashSet<>(sessionIDToProvidedID.getOrDefault(id, Collections.singleton(id)));
+        return requestIDs.stream()
+                .flatMap(reqID -> requestExecutableMap.getOrDefault(reqID, Collections.emptyList()).stream())
+                .collect(Collectors.toList());
     }
 
     public List<StoreExecutable> getExecutables(RequestContext context)
@@ -111,27 +132,29 @@ public enum StoreExecutableManager
         this.isRegistered = true;
     }
 
-    public Integer cancelExecutablesOnSession(String sessionID)
+    public int cancelExecutablesOnSession(String sessionID)
     {
-        AtomicReference<Integer> numberOfCancelled = new AtomicReference<>(0);
-        requestExecutableMap.remove(sessionID).forEach(
-                executable ->
+        AtomicInteger numberOfCancelled = new AtomicInteger(0);
+        List<StoreExecutable> executables = requestExecutableMap.remove(sessionID);
+        if (executables != null)
+        {
+            executables.forEach(executable ->
+            {
+                try
                 {
-                    try
-                    {
-                        executable.cancel();
-                        numberOfCancelled.updateAndGet(v -> v + 1);
-                    }
-                    catch (Exception e)
-                    {
-                        LOGGER.error(new LogInfo(null, LoggingEventType.EXECUTABLE_CANCELLATION_ERROR, "Unable to cancel executable for ID " + sessionID + e.getMessage()).toString());
-                    }
+                    executable.cancel();
+                    numberOfCancelled.incrementAndGet();
                 }
-        );
+                catch (Exception e)
+                {
+                    LOGGER.error(new LogInfo(null, LoggingEventType.EXECUTABLE_CANCELLATION_ERROR, "Unable to cancel executable for ID " + sessionID + ": " + e.getMessage()).toString());
+                }
+            });
+        }
         return numberOfCancelled.get();
     }
 
-    public Integer cancelExecutablesByID(String requestID)
+    public int cancelExecutablesByID(String requestID)
     {
         return cancelExecutablesOnSession(requestID);
 

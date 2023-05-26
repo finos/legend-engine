@@ -14,7 +14,16 @@
 
 package org.finos.legend.engine.plan.dependencies.store.inMemory.graphFetch;
 
+import org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;
+
+
 public interface IInMemoryRootGraphFetchExecutionNodeSpecifics
 {
     Object transform(Object source);
+
+    default boolean filter(Object target, IExecutionNodeContext context)
+    {
+        return true;
+    }
+
 }

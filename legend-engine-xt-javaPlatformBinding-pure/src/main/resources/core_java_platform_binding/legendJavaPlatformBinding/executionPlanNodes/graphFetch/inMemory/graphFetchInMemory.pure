@@ -110,10 +110,10 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
    );
 }
 
-function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::generateInMemoryStoreGraphFetchProject(node: InMemoryGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]):Project[1]
+function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::generateInMemoryStoreGraphFetchProject(node: InMemoryGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1],extensions: Extension[*], debug: DebugContext[1]):Project[1]
 {
    $node->match([
-      c : InMemoryCrossStoreGraphFetchExecutionNode[1]  | $c->generateInMemoryStoreRootNodeProject($path, $context, $extensions, $debug)->addInMemoryCrossStoreMethods($c, $path, $context, $extensions, $debug),
+      c : InMemoryCrossStoreGraphFetchExecutionNode[1]  | $c->generateInMemoryStoreRootNodeProject($path, $context, $extensions,  $debug)->addInMemoryCrossStoreMethods($c, $path, $context, $extensions, $debug),
       r : InMemoryRootGraphFetchExecutionNode[1]        | $r->generateInMemoryStoreRootNodeProject($path, $context, $extensions, $debug),
       p : InMemoryPropertyGraphFetchExecutionNode[1]    | $p->generateInMemoryStorePropertyNodeProject($path, $context, $extensions, $debug)
    ])
@@ -205,13 +205,19 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
         let executeClassWithImports = $context.conventions->planNodeClass('public', $path, 'Execute')
                                                           ->implements($conventions->className(IInMemoryRootGraphFetchExecutionNodeSpecifics))
                                                           ->addField($globalObject);
-
         let transformMethodCodes = $input->setTransformerCodes($path,$currentSet, $graphFetchTree, $graphImpl, true, true, $context, $extensions, $debug);
         let transformMethod      = javaMethod(['public'], javaObject(), 'transform', [$input], $transformMethodCodes);
-   
-        let executeClass   = $executeClassWithImports->addMethod($transformMethod);
+        let parameterMapVariable   = j_parameter(javaMap(javaString(), javaObject()), 'parameterMap');
+        let contextParam = j_parameter($conventions->className(IExecutionNodeContext), 'executionNodeContext');
+
+        let filterMethodCode = $input->setFilterCodes($node.filter,  $node.requiredVariableInputs, $contextParam,$currentSet, $graphFetchTree, $graphImpl, true, true, $context, $extensions, $debug);
+        let filterMethod      = javaMethod(['public'], javaBoolean(), 'filter', [$input,$contextParam], $filterMethodCode);
+
+        let executeClass   = $executeClassWithImports->addMethod($transformMethod)->addMethod($filterMethod);
         let executeProject = newProject()->addClasses($executeClass);
-        let allProjects    = $executeProject->concatenate($transformMethodCodes->dependencies()->resolveAndGetProjects())->toOneMany();
+        let allProjects    = $executeProject->concatenate($transformMethodCodes->dependencies()->resolveAndGetProjects())
+        ->concatenate($filterMethodCode->dependencies()->resolveAndGetProjects())
+        ->toOneMany();
         $allProjects->mergeProjects();
      );
 }
@@ -557,6 +563,30 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
          javaMethod(['public'], javaVoid(), $conventions->setterName($propertyName), [$setterParameter], $propertyField->j_assign($setterParameter))
       );
 }
+
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::setFilterCodes(input: Code[1], filter:LambdaFunction<Any>[0..1], parameters:VariableInput[*] , parameterContext: Code[1], set: InstanceSetImplementation[1], graphFetchTree: RoutedGraphFetchTree[1], graphImplClass: meta::external::language::java::metamodel::Class[1], wrapAsGraphInstance: Boolean[1], resolveToList: Boolean[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]): Code[*]
+{    
+  let checkedType = $context.conventions->pureTypeToJavaType(meta::pure::dataQuality::Checked,PureOne);
+  let targetInstance =   j_conditional( $input ->j_instanceof( $checkedType), j_cast($input,$checkedType)->j_invoke('getValue',[],javaObject())->j_cast($graphImplClass), j_cast($input,$graphImplClass) ) ;
+
+
+   if($filter->isEmpty() ,
+        |  j_return(j_true()),
+        |    let filterFn = $filter->toOne()->evaluateAndDeactivate();
+           let parameterGetters = $parameters
+                              ->map(s | let javaType = pureTypeToJavaType($context.conventions, $s.type, $s.multiplicity);
+                                        let typeArg  = if($javaType->isJavaList(), |$parameterContext->j_invoke('listType', $javaType->elementType()->toBoxed()->j_classField()), |$javaType->toBoxed()->j_classField());
+                                        j_variable($javaType, $s.name)->j_declare($parameterContext->j_invoke('getResult', [j_string($s.name), $typeArg], javaObject())););
+          let lambdaParam = $filterFn->functionType().parameters;
+          let filtercodeExp = $filterFn.expressionSequence->at(0)->generateJava($context.conventions); 
+          let filterExpression =  j_return($filtercodeExp);
+          let inputCast =  j_declare( [],$graphImplClass, $lambdaParam.name->toOne(),j_cast($targetInstance,$graphImplClass ));
+          let result =  $parameterGetters ->concatenate($inputCast)->concatenate($filterExpression);
+     
+          $result;
+   );
+  }
+
 
 function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::setTransformerCodes(input: Code[1],path: String[1], set: InstanceSetImplementation[1], graphFetchTree: RoutedGraphFetchTree[1], graphImplClass: meta::external::language::java::metamodel::Class[1], wrapAsGraphInstance: Boolean[1], resolveToList: Boolean[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]): Code[1..*]
 {

@@ -77,10 +77,10 @@ public class HelperElasticsearchPropertyBuilder extends AbstractPropertyBaseVisi
     {
         this.getPropertyBase()
                 ._meta(new PureMap(val.meta))
-                ._properties(new PureMap(MapIterate.collectValues(val.properties, (k, v) -> ((PropertyBase) v.unionValue()).accept(this))))
+                ._properties(new PureMap(MapIterate.collectValues(val.properties, (k, v) -> ((PropertyBase) v.unionValue()).accept(new HelperElasticsearchPropertyBuilder(this.context)))))
                 ._ignore_above(val.ignore_above)
                 ._dynamic(Optional.ofNullable(val.dynamic).map(x -> this.context.pureModel.getEnumValue("meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::DynamicMapping", x.name())).orElse(null))
-                ._fields(new PureMap(MapIterate.collectValues(val.fields, (k, v) -> ((PropertyBase) v.unionValue()).accept(this))));
+                ._fields(new PureMap(MapIterate.collectValues(val.fields, (k, v) -> ((PropertyBase) v.unionValue()).accept(new HelperElasticsearchPropertyBuilder(this.context)))));
 
         return this.property;
     }

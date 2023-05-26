@@ -2025,7 +2025,7 @@ function meta::external::language::java::factory::j_invoke(class:meta::external:
 
 function meta::external::language::java::factory::j_invoke(class:meta::external::language::java::metamodel::Type[1], typeArguments:meta::external::language::java::metamodel::Type[*], methodName:String[1], args:Code[*], type:meta::external::language::java::metamodel::Type[1]):Code[1]
 {
-   assert($class->instanceOf(meta::external::language::java::metamodel::Class) || $class->instanceOf(meta::external::language::java::metamodel::Array), |'Cannot use static method on type: ' + $class->typeToString());
+   assert($class->instanceOf(meta::external::language::java::metamodel::Class) || $class->instanceOf(meta::external::language::java::metamodel::Array), |'Cannot use static method '+$methodName +' on type: ' + $class->typeToString());
    ^StaticMethodCall(class=$class, typeArguments=$typeArguments, methodName=$methodName, arguments=$args, type=$type);
 }
 
@@ -2216,6 +2216,11 @@ function meta::external::language::java::factory::js_limit(stream:Code[1], limit
 function meta::external::language::java::factory::js_max(stream:Code[1], func:Code[1]):Code[1]
 {
    $stream->prepareStreamForCallWithLambda($func)->j_invoke('max', $func, javaOptional($stream.type->elementTypeOfJavaStream()));
+}
+
+function meta::external::language::java::factory::js_min(stream:Code[1], func:Code[1]):Code[1]
+{
+   $stream->prepareStreamForCallWithLambda($func)->j_invoke('min', $func, javaOptional($stream.type->elementTypeOfJavaStream()));
 }
 
 function meta::external::language::java::factory::js_reduce(stream:Code[1], func:Code[1]):Code[1]

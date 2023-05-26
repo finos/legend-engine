@@ -76,6 +76,7 @@ Class meta::pure::tds::TDSRow
    values : Any[*];
 
    getString(colName:String[1]){$this.get($colName)->cast(@String)}:String[1];
+   getNullableString(colName:String[1]){ if($this.isNull($colName), | [] , | $this.getString($colName))}:String[0..1];
    getNumber(colName:String[1]){$this.get($colName)->cast(@Number)}:Number[1];
    getInteger(colName:String[1]){$this.get($colName)->cast(@Integer)}:Integer[1];
    getFloat(colName:String[1]){$this.get($colName)->cast(@Number)->toFloat()}:Float[1];
