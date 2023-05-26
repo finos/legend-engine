@@ -48,6 +48,7 @@ public class TableNameExtractor extends SqlBaseParserBaseVisitor<List<QualifiedN
         }
         return result;
     }
+
     private List<String> visitIdentifier(ParseTree tree)
     {
         if (tree instanceof SqlBaseParser.UnquotedIdentifierContext)
@@ -69,7 +70,6 @@ public class TableNameExtractor extends SqlBaseParserBaseVisitor<List<QualifiedN
             return Lists.fixedSize.empty();
         }
     }
-
 
 
     private List<String> visitIdentifier(SqlBaseParser.IdentContext node)

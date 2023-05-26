@@ -19,22 +19,44 @@ import org.finos.legend.engine.postgres.SessionsFactory;
 import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
 import org.finos.legend.engine.postgres.handler.PostgresStatement;
 import org.finos.legend.engine.postgres.handler.SessionHandler;
+import org.finos.legend.engine.postgres.handler.jdbc.JDBCSessionFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.h2.tools.Server;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.sql.SQLException;
 
 public class LegendSessionFactory implements SessionsFactory
 {
 
     private final LegendExecutionClient legendExecutionClient;
+    private final JDBCSessionFactory.JDBCSessionHandler metadataSessionHandler;
 
     public LegendSessionFactory(LegendExecutionClient legendExecutionClient)
     {
         this.legendExecutionClient = legendExecutionClient;
+        try
+        {
+            File h2ServerTempDir = Files.createTempDirectory("legendSqlH2Server").toFile();
+            h2ServerTempDir.deleteOnExit();
+            String h2ServerTempDirPath = h2ServerTempDir.getAbsolutePath();
+            Server h2PgServer = Server.createPgServer("-baseDir", h2ServerTempDirPath, "-ifNotExists");
+            h2PgServer.start();
+            String url = "jdbc:postgresql://localhost:" + h2PgServer.getPort() + "/legendSQLMetadata";
+            this.metadataSessionHandler = new JDBCSessionFactory.JDBCSessionHandler(url, "sa", "");
+        }
+        catch (IOException | SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public Session createSession(String defaultSchema, Identity identity)
     {
-        return new Session(new LegendSessionHandler(legendExecutionClient, identity), null);
+        return new Session(new LegendSessionHandler(legendExecutionClient, identity), metadataSessionHandler);
     }
 
     private static class LegendSessionHandler implements SessionHandler
