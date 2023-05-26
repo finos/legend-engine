@@ -34,6 +34,7 @@ import org.finos.legend.engine.plan.execution.api.request.RequestContextHelper;
 import org.finos.legend.engine.plan.execution.authorization.PlanExecutionAuthorizer;
 import org.finos.legend.engine.plan.execution.authorization.PlanExecutionAuthorizerInput;
 import org.finos.legend.engine.plan.execution.authorization.PlanExecutionAuthorizerOutput;
+import org.finos.legend.engine.plan.execution.planCaching.CachableValueSpecification;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
@@ -47,6 +48,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPla
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
 import org.finos.legend.engine.shared.core.api.model.ExecuteInput;
 import org.finos.legend.engine.shared.core.api.request.RequestContext;
@@ -130,6 +132,12 @@ public class Execute
         {
             String clientVersion = executeInput.clientVersion == null ? PureClientVersions.production : executeInput.clientVersion;
             Map<String, Object> parameters = Maps.mutable.empty();
+
+
+            CachableValueSpecification cachableValueSpec = new CachableValueSpecification(executeInput.function, "GENERATED_");
+
+            parameters.putAll(cachableValueSpec.getParameterMap());
+
             if (executeInput.parameterValues != null)
             {
                 for (ParameterValue parameterValue : executeInput.parameterValues)
@@ -137,7 +145,8 @@ public class Execute
                     parameters.put(parameterValue.name, parameterValue.value.accept(new PrimitiveValueSpecificationToObjectVisitor()));
                 }
             }
-            Response response = exec(pureModel -> HelperValueSpecificationBuilder.buildLambda(executeInput.function.body, executeInput.function.parameters, pureModel.getContext()),
+
+            Response response = exec(pureModel -> HelperValueSpecificationBuilder.buildLambda(((Lambda) cachableValueSpec.getValueSpecification()).body, executeInput.function.parameters, pureModel.getContext()),
                     () -> modelManager.loadModel(executeInput.model, clientVersion, profiles, null),
                     this.planExecutor,
                     executeInput.mapping,
