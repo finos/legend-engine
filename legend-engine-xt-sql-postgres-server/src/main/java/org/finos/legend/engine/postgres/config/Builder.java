@@ -36,7 +36,6 @@ public class Builder
     {
         if (serverConfig.getHandler().getType() == HandlerType.JDBC)
         {
-
             JDBCHandlerConfig config = (JDBCHandlerConfig) serverConfig.getHandler();
             return new JDBCSessionFactory(config.getConnectionString(), config.getUser(), config.getPassword());
         }

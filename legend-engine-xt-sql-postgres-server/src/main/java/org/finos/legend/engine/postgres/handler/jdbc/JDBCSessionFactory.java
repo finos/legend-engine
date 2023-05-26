@@ -37,8 +37,6 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 
 public class JDBCSessionFactory implements SessionsFactory
 {
-
-    private Connection connection;
     private final String connectionString;
     private final String user;
     private final String password;
@@ -54,16 +52,6 @@ public class JDBCSessionFactory implements SessionsFactory
     public Session createSession(String defaultSchema, Identity identity)
     {
         return new Session(new JDBCSessionHandler(connectionString, user, password), null);
-    }
-
-
-    private Connection getConnection() throws SQLException
-    {
-        if (connection == null)
-        {
-            this.connection = DriverManager.getConnection(connectionString, user, password);
-        }
-        return connection;
     }
 
     private static class JDBCPostgresStatement implements PostgresStatement
@@ -216,8 +204,9 @@ public class JDBCSessionFactory implements SessionsFactory
         }
     }
 
-    public class JDBCSessionHandler implements SessionHandler
+    public static class JDBCSessionHandler implements SessionHandler
     {
+        private Connection connection;
         private final String connectionString;
         private final String user;
         private final String password;
@@ -239,6 +228,15 @@ public class JDBCSessionFactory implements SessionsFactory
         public PostgresStatement createStatement() throws SQLException
         {
             return new JDBCPostgresStatement(getConnection().createStatement());
+        }
+
+        private Connection getConnection() throws SQLException
+        {
+            if (connection == null)
+            {
+                this.connection = DriverManager.getConnection(connectionString, user, password);
+            }
+            return connection;
         }
     }
 
