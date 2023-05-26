@@ -12,17 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.ingestmode;
+package org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.constraints.columns;
 
-import org.finos.legend.engine.persistence.components.relational.RelationalSink;
-import org.finos.legend.engine.persistence.components.relational.bigquery.BigQuerySink;
+import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.column.ColumnConstraint;
 
-public class AppendOnlyTest extends org.finos.legend.engine.persistence.components.ingestmode.nontemporal.AppendOnlyTest
+public class PKColumnConstraint extends ColumnConstraint
 {
-
     @Override
-    public RelationalSink getRelationalSink()
+    public void genSql(StringBuilder builder)
     {
-        return BigQuerySink.get();
+        builder.append("PRIMARY KEY NOT ENFORCED");
     }
 }

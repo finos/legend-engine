@@ -26,8 +26,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.finos.legend.engine.persistence.components.BaseTestUtils.schemaWithAllColumns;
-import static org.finos.legend.engine.persistence.components.BaseTestUtils.schemaWithClusteringKey;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.*;
 
 public class CreateTableTest
 {
@@ -47,13 +46,28 @@ public class CreateTableTest
         RelationalTransformer transformer = new RelationalTransformer(BigQuerySink.get());
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
-        String expected = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_schema\".\"my_table\"" +
-            "(\"col_int\" INTEGER NOT NULL PRIMARY KEY,\"col_integer\" INTEGER NOT NULL UNIQUE,\"col_bigint\" BIGINT," +
-            "\"col_tinyint\" TINYINT,\"col_smallint\" SMALLINT,\"col_char\" CHAR,\"col_varchar\" VARCHAR," +
-            "\"col_string\" VARCHAR,\"col_timestamp\" TIMESTAMP,\"col_datetime\" DATETIME,\"col_date\" DATE," +
-            "\"col_real\" DOUBLE,\"col_float\" DOUBLE,\"col_decimal\" NUMBER(10,4),\"col_double\" DOUBLE," +
-            "\"col_binary\" BINARY,\"col_time\" TIME,\"col_numeric\" NUMBER(38,0),\"col_boolean\" BOOLEAN," +
-            "\"col_varbinary\" BINARY(10))";
+        String expected = "CREATE TABLE IF NOT EXISTS `my_db`.`my_schema`.`my_table`(" +
+                "`col_int` INTEGER NOT NULL," +
+                "`col_integer` INTEGER NOT NULL," +
+                "`col_bigint` BIGINT," +
+                "`col_tinyint` TINYINT," +
+                "`col_smallint` SMALLINT," +
+                "`col_char` CHAR," +
+                "`col_varchar` VARCHAR," +
+                "`col_string` VARCHAR," +
+                "`col_timestamp` TIMESTAMP," +
+                "`col_datetime` DATETIME," +
+                "`col_date` DATE NOT NULL," +
+                "`col_real` DOUBLE," +
+                "`col_float` DOUBLE," +
+                "`col_decimal` NUMBER(10,4)," +
+                "`col_double` DOUBLE," +
+                "`col_binary` BINARY," +
+                "`col_time` TIME," +
+                "`col_numeric` NUMBER(38,0)," +
+                "`col_boolean` BOOLEAN," +
+                "`col_varbinary` BINARY(10)," +
+                "PRIMARY KEY (`col_int`, `col_date`) NOT ENFORCED)";
 
         Assertions.assertEquals(expected, list.get(0));
     }
@@ -73,13 +87,28 @@ public class CreateTableTest
         RelationalTransformer transformer = new RelationalTransformer(BigQuerySink.get(), TransformOptions.builder().addOptimizers(new UpperCaseOptimizer()).build());
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
-        String expected = "CREATE TABLE IF NOT EXISTS \"MY_DB\".\"MY_SCHEMA\".\"MY_TABLE\"" +
-            "(\"COL_INT\" INTEGER NOT NULL PRIMARY KEY,\"COL_INTEGER\" INTEGER NOT NULL UNIQUE,\"COL_BIGINT\" BIGINT," +
-            "\"COL_TINYINT\" TINYINT,\"COL_SMALLINT\" SMALLINT,\"COL_CHAR\" CHAR,\"COL_VARCHAR\" VARCHAR," +
-            "\"COL_STRING\" VARCHAR,\"COL_TIMESTAMP\" TIMESTAMP,\"COL_DATETIME\" DATETIME,\"COL_DATE\" DATE," +
-            "\"COL_REAL\" DOUBLE,\"COL_FLOAT\" DOUBLE,\"COL_DECIMAL\" NUMBER(10,4),\"COL_DOUBLE\" DOUBLE," +
-            "\"COL_BINARY\" BINARY,\"COL_TIME\" TIME,\"COL_NUMERIC\" NUMBER(38,0),\"COL_BOOLEAN\" BOOLEAN," +
-            "\"COL_VARBINARY\" BINARY(10))";
+        String expected = "CREATE TABLE IF NOT EXISTS `MY_DB`.`MY_SCHEMA`.`MY_TABLE`(" +
+                "`COL_INT` INTEGER NOT NULL," +
+                "`COL_INTEGER` INTEGER NOT NULL," +
+                "`COL_BIGINT` BIGINT," +
+                "`COL_TINYINT` TINYINT," +
+                "`COL_SMALLINT` SMALLINT," +
+                "`COL_CHAR` CHAR," +
+                "`COL_VARCHAR` VARCHAR," +
+                "`COL_STRING` VARCHAR," +
+                "`COL_TIMESTAMP` TIMESTAMP," +
+                "`COL_DATETIME` DATETIME," +
+                "`COL_DATE` DATE NOT NULL," +
+                "`COL_REAL` DOUBLE," +
+                "`COL_FLOAT` DOUBLE," +
+                "`COL_DECIMAL` NUMBER(10,4)," +
+                "`COL_DOUBLE` DOUBLE," +
+                "`COL_BINARY` BINARY," +
+                "`COL_TIME` TIME," +
+                "`COL_NUMERIC` NUMBER(38,0)," +
+                "`COL_BOOLEAN` BOOLEAN," +
+                "`COL_VARBINARY` BINARY(10)," +
+                "PRIMARY KEY (`COL_INT`, `COL_DATE`))";
 
         Assertions.assertEquals(expected, list.get(0));
     }
@@ -99,13 +128,13 @@ public class CreateTableTest
         RelationalTransformer transformer = new RelationalTransformer(BigQuerySink.get());
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
-        String expected = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_schema\".\"my_table\"" +
-            "(\"col_int\" INTEGER NOT NULL PRIMARY KEY," +
-            "\"col_integer\" INTEGER NOT NULL UNIQUE," +
-            "\"col_string\" VARCHAR," +
-            "\"col_timestamp\" TIMESTAMP," +
-            "\"col_double\" DOUBLE)" +
-            " CLUSTER BY (\"col_timestamp\",SUBSTRING(\"col_int\",1,4),\"col_integer\"%7)";
+        String expected = "CREATE TABLE IF NOT EXISTS `my_db`.`my_schema`.`my_table`(" +
+                "`col_int` INTEGER NOT NULL PRIMARY KEY NOT ENFORCED," +
+                "`col_integer` INTEGER NOT NULL," +
+                "`col_string` VARCHAR," +
+                "`col_timestamp` TIMESTAMP," +
+                "`col_double` DOUBLE) " +
+                "CLUSTER BY `col_timestamp`,`col_int`";
 
         Assertions.assertEquals(expected, list.get(0));
     }
@@ -125,14 +154,71 @@ public class CreateTableTest
         RelationalTransformer transformer = new RelationalTransformer(BigQuerySink.get(), TransformOptions.builder().addOptimizers(new UpperCaseOptimizer()).build());
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
-        String expected = "CREATE TABLE IF NOT EXISTS \"MY_DB\".\"MY_SCHEMA\".\"MY_TABLE\"" +
-            "(\"COL_INT\" INTEGER NOT NULL PRIMARY KEY," +
-            "\"COL_INTEGER\" INTEGER NOT NULL UNIQUE," +
-            "\"COL_STRING\" VARCHAR" +
-            ",\"COL_TIMESTAMP\" TIMESTAMP," +
-            "\"COL_DOUBLE\" DOUBLE) " +
-            "CLUSTER BY (\"COL_TIMESTAMP\",SUBSTRING(\"COL_INT\",1,4),\"COL_INTEGER\"%7)";
+        String expected = "CREATE TABLE IF NOT EXISTS `MY_DB`.`MY_SCHEMA`.`MY_TABLE`(" +
+                "`COL_INT` INTEGER NOT NULL PRIMARY KEY NOT ENFORCED," +
+                "`COL_INTEGER` INTEGER NOT NULL," +
+                "`COL_STRING` VARCHAR," +
+                "`COL_TIMESTAMP` TIMESTAMP," +
+                "`COL_DOUBLE` DOUBLE) " +
+                "CLUSTER BY `COL_TIMESTAMP`,`COL_INT`";
 
         Assertions.assertEquals(expected, list.get(0));
     }
+
+    @Test
+    public void testCreateTableWithPartitionKeyAndClusteringKey()
+    {
+        DatasetDefinition dataset = DatasetDefinition.builder()
+                .database("my_db")
+                .group("my_schema")
+                .name("my_table")
+                .alias("my_alias")
+                .schema(schemaWithClusteringAndPartitionKey)
+                .build();
+        Operation create = Create.of(true, dataset);
+        LogicalPlan logicalPlan = LogicalPlan.builder().addOps(create).build();
+        RelationalTransformer transformer = new RelationalTransformer(BigQuerySink.get());
+        SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
+        List<String> list = physicalPlan.getSqlList();
+        String expected = "CREATE TABLE IF NOT EXISTS `my_db`.`my_schema`.`my_table`(" +
+                "`col_int` INTEGER NOT NULL," +
+                "`col_date` DATE NOT NULL," +
+                "`col_integer` INTEGER NOT NULL," +
+                "`col_string` VARCHAR," +
+                "`col_timestamp` TIMESTAMP," +
+                "`col_double` DOUBLE," +
+                "PRIMARY KEY (`col_int`, `col_date`) NOT ENFORCED) " +
+                "PARTITION BY `col_date` " +
+                "CLUSTER BY `col_timestamp`,`col_int`";
+        Assertions.assertEquals(expected, list.get(0));
+    }
+
+    @Test
+    public void testCreateTableWithPartitionKey()
+    {
+        DatasetDefinition dataset = DatasetDefinition.builder()
+                .database("my_db")
+                .group("my_schema")
+                .name("my_table")
+                .alias("my_alias")
+                .schema(schemaWithPartitionKey)
+                .build();
+        Operation create = Create.of(true, dataset);
+        LogicalPlan logicalPlan = LogicalPlan.builder().addOps(create).build();
+        RelationalTransformer transformer = new RelationalTransformer(BigQuerySink.get());
+        SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
+        List<String> list = physicalPlan.getSqlList();
+        String expected = "CREATE TABLE IF NOT EXISTS `my_db`.`my_schema`.`my_table`(" +
+                "`col_int` INTEGER NOT NULL," +
+                "`col_date` DATE NOT NULL," +
+                "`col_integer` INTEGER NOT NULL," +
+                "`col_string` VARCHAR," +
+                "`col_timestamp` TIMESTAMP," +
+                "`col_double` DOUBLE," +
+                "PRIMARY KEY (`col_int`, `col_date`) NOT ENFORCED) " +
+                "PARTITION BY _PARTITIONDATE";
+        Assertions.assertEquals(expected, list.get(0));
+    }
+
+
 }
