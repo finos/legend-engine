@@ -225,6 +225,10 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-sql-grammar</artifactId>
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>

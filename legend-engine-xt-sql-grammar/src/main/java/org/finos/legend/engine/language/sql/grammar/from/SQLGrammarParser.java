@@ -53,6 +53,12 @@ public class SQLGrammarParser
 
     private Statement parse(String query, String name)
     {
+        SqlBaseParser parser = getSqlBaseParser(query, name);
+        return visitStatement(parser.singleStatement());
+    }
+
+    public static SqlBaseParser getSqlBaseParser(String query, String name)
+    {
         ANTLRErrorListener errorListener = new BaseErrorListener()
         {
             @Override
@@ -127,7 +133,7 @@ public class SQLGrammarParser
         SqlBaseParser parser = new SqlBaseParser(new CommonTokenStream(lexer));
         parser.removeErrorListeners();
         parser.addErrorListener(errorListener);
-        return visitStatement(parser.singleStatement());
+        return parser;
     }
 
     private Statement visitStatement(SqlBaseParser.SingleStatementContext statement)
