@@ -16,98 +16,77 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.driv
 
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.SnowflakeDataSourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
+import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
+import org.finos.legend.engine.shared.core.vault.Vault;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Properties;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class TestSnowflakeManager
 {
     @Test
-    public void testCreateLocalDataSourceSpecification_systemPropertyNotConfigured()
-    {
-        try
-        {
-            SnowflakeManager snowflakeManager = new SnowflakeManager();
-            snowflakeManager.getLocalDataSourceSpecification();
-            fail("Failed to throw exception");
-        }
-        catch (UnsupportedOperationException e)
-        {
-            assertEquals("Cannot create a local Snowflake datasource specification. System property snowflakeLocalDSSpecFilePath has not been set.", e.getMessage());
-        }
-    }
-
-    @Test
-    public void testCreateLocalDataSourceSpecification_localFileDoesNotExist()
-    {
-        System.setProperty("snowflakeLocalDSSpecFilePath", "/doesnotexist");
-        try
-        {
-            this.testCreateLocalDataSourceSpecification_localFileDoesNotExistImpl();
-        }
-        finally
-        {
-            System.clearProperty("snowflakeLocalDSSpecFilePath");
-        }
-    }
-
-    private void testCreateLocalDataSourceSpecification_localFileDoesNotExistImpl()
-    {
-        try
-        {
-            SnowflakeManager snowflakeManager = new SnowflakeManager();
-            snowflakeManager.getLocalDataSourceSpecification();
-            fail("Failed to throw exception");
-        }
-        catch (UnsupportedOperationException e)
-        {
-            String message = e.getMessage();
-            assertTrue(message.startsWith("Cannot create a local Snowflake datasource specification. Failed to read file /doesnotexist"));
-        }
-    }
-
-    @Test
-    public void testCreateLocalDataSourceSpecification_localFileDoesExist() throws IOException
+    public void testCreateLocalDataSourceSpecificationFromVault_PropertyNotFound() throws IOException
     {
         Properties snowflakeLocalDataSourceSpecFileProperties = new Properties();
-        snowflakeLocalDataSourceSpecFileProperties.setProperty("accountName", "accountNameValue");
-        snowflakeLocalDataSourceSpecFileProperties.setProperty("region", "us-east-2");
-        snowflakeLocalDataSourceSpecFileProperties.setProperty("warehouse", "warehouse1");
-        snowflakeLocalDataSourceSpecFileProperties.setProperty("databaseName", "database1");
-        snowflakeLocalDataSourceSpecFileProperties.setProperty("cloudType", "aws");
-        snowflakeLocalDataSourceSpecFileProperties.setProperty("role", "role1");
+        Vault.INSTANCE.registerImplementation(new PropertiesVaultImplementation(snowflakeLocalDataSourceSpecFileProperties));
 
-        snowflakeLocalDataSourceSpecFileProperties.setProperty("privateKeyVaultReference", "ref1");
-        snowflakeLocalDataSourceSpecFileProperties.setProperty("passphraseVaultReference", "phrase1");
-        snowflakeLocalDataSourceSpecFileProperties.setProperty("publicUserName", "user1");
-        ;
-
-        Path tempDirectory = Files.createTempDirectory("temp");
-        Path localProperties = tempDirectory.resolve("local.properties");
-        snowflakeLocalDataSourceSpecFileProperties.store(new FileOutputStream(new File(localProperties.toAbsolutePath().toString())), "");
-
-        System.setProperty("snowflakeLocalDSSpecFilePath", localProperties.toAbsolutePath().toString());
         try
         {
-            this.testCreateLocalDataSourceSpecification_localFileDoesExistImpl();
+            this.testCreateLocalDataSourceSpecificationFromVault_Impl();
+            fail("Failed to throw exception");
         }
-        finally
+        catch (Exception e)
         {
-            System.clearProperty("snowflakeLocalDSSpecFilePath");
+            String message = "Cannot create a local Snowflake datasource specification. Exception = java.lang.NullPointerException: Failed to find property 'legend-local-snowflake-accountName' in vault";
+            assertEquals(message, e.getMessage());
         }
     }
 
-    private void testCreateLocalDataSourceSpecification_localFileDoesExistImpl()
+    @Test
+    public void testCreateLocalDataSourceSpecificationFromVault() throws IOException
+    {
+        Properties snowflakeLocalDataSourceSpecFileProperties = new Properties();
+        snowflakeLocalDataSourceSpecFileProperties.setProperty("legend-local-snowflake-accountName", "accountNameValue");
+        snowflakeLocalDataSourceSpecFileProperties.setProperty("legend-local-snowflake-region", "us-east-2");
+        snowflakeLocalDataSourceSpecFileProperties.setProperty("legend-local-snowflake-warehouseName", "warehouse1");
+        snowflakeLocalDataSourceSpecFileProperties.setProperty("legend-local-snowflake-databaseName", "database1");
+        snowflakeLocalDataSourceSpecFileProperties.setProperty("legend-local-snowflake-cloudType", "aws");
+        snowflakeLocalDataSourceSpecFileProperties.setProperty("legend-local-snowflake-role", "role1");
+
+        snowflakeLocalDataSourceSpecFileProperties.setProperty("legend-local-snowflake-privateKeyVaultReference", "ref1");
+        snowflakeLocalDataSourceSpecFileProperties.setProperty("legend-local-snowflake-passphraseVaultReference", "phrase1");
+        snowflakeLocalDataSourceSpecFileProperties.setProperty("legend-local-snowflake-publicuserName", "user1");
+
+        Vault.INSTANCE.registerImplementation(new PropertiesVaultImplementation(snowflakeLocalDataSourceSpecFileProperties));
+
+        this.testCreateLocalDataSourceSpecificationFromVault_Impl();
+    }
+
+    private void testCreateLocalDataSourceSpecificationFromVault_Impl()
     {
         SnowflakeManager snowflakeManager = new SnowflakeManager();
-        DataSourceSpecification localDataSourceSpecification = snowflakeManager.getLocalDataSourceSpecification();
+
+        SnowflakeDatasourceSpecification snowflakeDatasourceSpecification = new SnowflakeDatasourceSpecification();
+        snowflakeDatasourceSpecification.accountName = "legend-local-snowflake-accountName";
+        snowflakeDatasourceSpecification.databaseName = "legend-local-snowflake-databaseName";
+        snowflakeDatasourceSpecification.role = "legend-local-snowflake-role";
+        snowflakeDatasourceSpecification.warehouseName = "legend-local-snowflake-warehouseName";
+        snowflakeDatasourceSpecification.region = "legend-local-snowflake-region";
+        snowflakeDatasourceSpecification.cloudType = "legend-local-snowflake-cloudType";
+
+        SnowflakePublicAuthenticationStrategy authenticationStrategy = new SnowflakePublicAuthenticationStrategy();
+        authenticationStrategy.privateKeyVaultReference = "legend-local-snowflake-privateKeyVaultReference";
+        authenticationStrategy.passPhraseVaultReference = "legend-local-snowflake-passphraseVaultReference";
+        authenticationStrategy.publicUserName = "legend-local-snowflake-publicuserName";
+
+        DataSourceSpecification localDataSourceSpecification = snowflakeManager.getLocalDataSourceSpecification(snowflakeDatasourceSpecification, authenticationStrategy);
         assertTrue(localDataSourceSpecification instanceof SnowflakeDataSourceSpecification);
     }
 }
