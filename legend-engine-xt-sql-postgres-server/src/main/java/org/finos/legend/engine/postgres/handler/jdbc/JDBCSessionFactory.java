@@ -53,20 +53,7 @@ public class JDBCSessionFactory implements SessionsFactory
     @Override
     public Session createSession(String defaultSchema, Identity identity)
     {
-        return new Session(new SessionHandler()
-        {
-            @Override
-            public PostgresPreparedStatement prepareStatement(String query) throws SQLException
-            {
-                return new JDBCPostgresPreparedStatement(getConnection().prepareStatement(query));
-            }
-
-            @Override
-            public PostgresStatement createStatement() throws SQLException
-            {
-                return new JDBCPostgresStatement(getConnection().createStatement());
-            }
-        }, null);
+        return new Session(new JDBCSessionHandler(connectionString, user, password), null);
     }
 
 
@@ -229,6 +216,32 @@ public class JDBCSessionFactory implements SessionsFactory
         }
     }
 
+    public class JDBCSessionHandler implements SessionHandler
+    {
+        private final String connectionString;
+        private final String user;
+        private final String password;
+
+        public JDBCSessionHandler(String connectionString, String user, String password)
+        {
+            this.connectionString = connectionString;
+            this.user = user;
+            this.password = password;
+        }
+
+        @Override
+        public PostgresPreparedStatement prepareStatement(String query) throws SQLException
+        {
+            return new JDBCPostgresPreparedStatement(getConnection().prepareStatement(query));
+        }
+
+        @Override
+        public PostgresStatement createStatement() throws SQLException
+        {
+            return new JDBCPostgresStatement(getConnection().createStatement());
+        }
+    }
+
 
     public static void main(String[] args) throws Exception
     {
@@ -237,4 +250,4 @@ public class JDBCSessionFactory implements SessionsFactory
         Session session = sessionFactory.createSession(null, null);
         session.executeSimple("select * from public.demo");
     }
-}   
+}
