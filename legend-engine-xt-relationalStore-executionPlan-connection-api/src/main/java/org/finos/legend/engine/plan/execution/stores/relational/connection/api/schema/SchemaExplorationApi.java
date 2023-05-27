@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
@@ -54,8 +55,9 @@ public class SchemaExplorationApi
         this.connectionManager = relationalStoreExecutor.getStoreState().getRelationalExecutor().getConnectionManager();
     }
 
-    @Path("schemaExploration")
     @POST
+    @Path("schemaExploration")
+    @ApiOperation(value = "Use JDBC connection to survey database metadata (schemas, tables, columns, etc.) and build database Pure model")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
     public Response buildDatabase(DatabaseBuilderInput databaseBuilderInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
@@ -74,8 +76,9 @@ public class SchemaExplorationApi
         }
     }
 
-    @Path("executeRawSQL")
     @POST
+    @Path("executeRawSQL")
+    @ApiOperation(value = "Use JDBC connection to execute SQL (this API is meant for non-production use case such exploring/previewing data, its result set is capped)")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.TEXT_PLAIN)
     public Response executeRawSQL(RawSQLExecuteInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
