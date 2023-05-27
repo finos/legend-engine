@@ -71,7 +71,7 @@ public class TestSectionRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundt
     public void testSectionIndexKeepingSectionAndElementsInOrder()
     {
         // the ordering of sections is preserved
-        test("###Runtime\n" +
+        testWithSectionInfoPreserved("###Runtime\n" +
                 "import a::b::*;\n" +
                 "import runtime::a::d::*;\n" +
                 "import runtime::a::e::*;\n" +
@@ -133,7 +133,16 @@ public class TestSectionRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundt
     @Test
     public void testSectionWithDuplicatedImports()
     {
-        String unformatted = "###Runtime\n" +
+        testFormatWithSectionInfoPreserved("###Runtime\n" +
+                "import a::b::*;\n" +
+                "import runtime::a1::*;\n" +
+                "import runtime::a::e::*;\n" +
+                "Runtime meta::mySimpleRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "  ];\n" +
+                "}\n", "###Runtime\n" +
                 "import a::b::*;\n" +
                 "import runtime::a1::*;\n" +
                 "import runtime::a::e::*;\n" +
@@ -146,17 +155,7 @@ public class TestSectionRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundt
                 "  [\n" +
                 "  ];\n" +
                 "}\n" +
-                "\n\n";
-        testFormat("###Runtime\n" +
-                "import a::b::*;\n" +
-                "import runtime::a1::*;\n" +
-                "import runtime::a::e::*;\n" +
-                "Runtime meta::mySimpleRuntime\n" +
-                "{\n" +
-                "  mappings:\n" +
-                "  [\n" +
-                "  ];\n" +
-                "}\n", unformatted);
+                "\n\n");
     }
 
     @Test
@@ -300,7 +299,7 @@ public class TestSectionRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundt
                 "Class A\n" +
                 "{\n" +
                 "}\n";
-        testFormatWithoutSectionIndex("Class A\n" +
+        testFormat("Class A\n" +
                 "{\n" +
                 "}\n" +
                 "\n" +

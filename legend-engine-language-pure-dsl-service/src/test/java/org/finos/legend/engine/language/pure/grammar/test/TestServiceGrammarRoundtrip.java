@@ -273,7 +273,7 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
     @Test
     public void testServiceWithImport()
     {
-        test("###Service\n" +
+        testWithSectionInfoPreserved("###Service\n" +
                 "import meta::*;\n" +
                 "Service meta::pure::myServiceSingle\n" +
                 "{\n" +

@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.grammar.integration;
 
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.tuple.Tuples;
@@ -60,6 +61,16 @@ public class MongoDBGrammarComposerExtension implements IMongoDBGrammarComposerE
         });
     }
 
+    @Override
+    public List<Function3<List<PackageableElement>, PureGrammarComposerContext, List<String>, PureFreeSectionGrammarComposerResult>> getExtraFreeSectionComposers()
+    {
+        return Lists.fixedSize.with((elements, context, composedSections) ->
+        {
+            MutableList<MongoDatabase> composableElements = ListIterate.selectInstancesOf(elements, MongoDatabase.class);
+            return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(composableElements.collect(MongoDBSchemaComposer::renderMongoDBStore).makeString("###" + MongoDBGrammarParserExtension.NAME + "\n", "\n\n", ""), composableElements);
+        });
+    }
+
 
     public List<Function2<Connection, PureGrammarComposerContext, Pair<String, String>>> getExtraConnectionValueComposers()
     {
@@ -73,7 +84,7 @@ public class MongoDBGrammarComposerExtension implements IMongoDBGrammarComposerE
                         context.getIndentationString() + "{\n" +
                                 context.getIndentationString() + getTabString() + "database: " + mongoDBConnection.dataSourceSpecification.databaseName + ";\n" +
                                 context.getIndentationString() + getTabString() + "store: " + mongoDBConnection.element + ";\n" +
-                                context.getIndentationString() + getTabString() + "serverURLs: [" + this.getMongoDBURLs(mongoDBConnection.dataSourceSpecification.serverURLs)  + "];\n" +
+                                context.getIndentationString() + getTabString() + "serverURLs: [" + this.getMongoDBURLs(mongoDBConnection.dataSourceSpecification.serverURLs) + "];\n" +
                                 context.getIndentationString() + getTabString() + "authentication: " + IAuthenticationGrammarComposerExtension.renderAuthentication(mongoDBConnection.authenticationSpecification, 1, context) + ";\n" +
                                 context.getIndentationString() + "}");
             }

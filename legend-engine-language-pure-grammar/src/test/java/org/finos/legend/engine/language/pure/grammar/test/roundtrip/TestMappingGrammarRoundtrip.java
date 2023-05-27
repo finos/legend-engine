@@ -499,7 +499,7 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
     @Test
     public void testMappingWithImport()
     {
-        test("Class anything::goes\n" +
+        testWithSectionInfoPreserved("Class anything::goes\n" +
                 "{\n" +
                 "  name: String[*];\n" +
                 "}\n" +
@@ -660,8 +660,7 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
     @Test
     public void testAggregationAware()
     {
-        test("###Pure\n" +
-                "Class test::Product\n" +
+        test("Class test::Product\n" +
                 "{\n" +
                 "  id: Integer[1];\n" +
                 "  producer: test::Person[1];\n" +

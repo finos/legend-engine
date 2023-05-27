@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.language.pure.grammar.test;
 
-import org.finos.legend.engine.language.pure.grammar.test.TestGrammarRoundtrip;
 import org.junit.Test;
 
 public class TestFileGenerationGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
@@ -77,7 +76,7 @@ public class TestFileGenerationGrammarRoundtrip extends TestGrammarRoundtrip.Tes
     @Test
     public void testFileGenerationWithImport()
     {
-        test("###FileGeneration\n" +
+        testWithSectionInfoPreserved("###FileGeneration\n" +
                 "import anything::*;\n" +
                 "Avro model::AvroConfig\n" +
                 "{\n" +

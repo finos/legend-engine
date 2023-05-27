@@ -26,7 +26,7 @@ import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarCompos
 public class MongoDBSchemaComposer
 {
 
-    public static Object renderMongoDBStore(MongoDatabase monogDBStore)
+    public static String renderMongoDBStore(MongoDatabase monogDBStore)
     {
         StringBuilder builder = new StringBuilder();
         int baseIndent = 1;

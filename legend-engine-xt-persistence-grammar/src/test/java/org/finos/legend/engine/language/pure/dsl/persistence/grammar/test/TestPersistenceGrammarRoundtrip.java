@@ -23,7 +23,6 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
     public void persistencePermitOptionalFieldsToBeEmptyFlat()
     {
         test("###Persistence\n" +
-                "import test::*;\n" +
                 "Persistence test::TestPersistence\n" +
                 "{\n" +
                 "  doc: 'test doc';\n" +
@@ -67,7 +66,6 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
     public void persistencePermitOptionalFieldsToBeEmptyMultiFlat()
     {
         test("###Persistence\n" +
-                "import test::*;\n" +
                 "Persistence test::TestPersistence\n" +
                 "{\n" +
                 "  doc: 'test doc';\n" +
@@ -137,7 +135,6 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
     public void persistenceFlat()
     {
         test("###Persistence\n" +
-                "import test::*;\n" +
                 "Persistence test::TestPersistence\n" +
                 "{\n" +
                 "  doc: 'test doc';\n" +
@@ -211,7 +208,6 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "}\n");
 
         test("###Persistence\n" +
-                "import test::*;\n" +
                 "Persistence test::TestPersistence\n" +
                 "{\n" +
                 "  doc: 'test doc';\n" +
@@ -260,7 +256,6 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
     public void persistenceFlatWithTest()
     {
         String persistenceCodeBlock = "###Persistence\n" +
-                "import test::*;\n" +
                 "PersistenceContext test::TestPersistenceContext\n" +
                 "{\n" +
                 "  persistence: test::TestPersistence;\n" +
@@ -514,7 +509,7 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "  ]\n";
 
         String persistenceCodeWithTest = String.format(persistenceCodeBlock, persistenceTestCodeBlock, testMockUp);
-        test(persistenceCodeWithTest);
+        testWithSectionInfoPreserved(persistenceCodeWithTest);
     }
 
 
@@ -522,7 +517,6 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
     public void persistenceMultiFlat()
     {
         test("###Persistence\n" +
-                "import test::*;\n" +
                 "Persistence test::TestPersistence\n" +
                 "{\n" +
                 "  doc: 'test doc';\n" +
