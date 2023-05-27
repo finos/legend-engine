@@ -95,7 +95,7 @@ public class PureProtocol
                 }));
         result.storeSubtypes = storeSubtypes.toList();
 
-        MutableSet<String> functionActivatorsSubtypes = Sets.mutable.empty();
+        MutableSet<String> functionActivatorSubtypes = Sets.mutable.empty();
         PureProtocolExtensionLoader.extensions().forEach(extension ->
                 LazyIterate.flatCollect(extension.getExtraProtocolSubTypeInfoCollectors(), Function0::value).forEach(info ->
                 {
@@ -103,23 +103,23 @@ public class PureProtocol
                     {
                         if (FunctionActivator.class.isAssignableFrom(subType.getOne()))
                         {
-                            if (functionActivatorsSubtypes.contains(subType.getTwo()))
+                            if (functionActivatorSubtypes.contains(subType.getTwo()))
                             {
                                 // ignore duplications
                                 return;
                             }
-                            functionActivatorsSubtypes.add(subType.getTwo());
+                            functionActivatorSubtypes.add(subType.getTwo());
                         }
                     });
                 }));
-        result.functionActivatorsSubtypes = functionActivatorsSubtypes.toList();
+        result.functionActivatorSubtypes = functionActivatorSubtypes.toList();
         return Response.status(200).type(MediaType.APPLICATION_JSON).entity(result).build();
     }
 
     public static class SubtypeInfoResult
     {
         public List<String> storeSubtypes;
-        public List<String> functionActivatorsSubtypes;
+        public List<String> functionActivatorSubtypes;
     }
 }
 
