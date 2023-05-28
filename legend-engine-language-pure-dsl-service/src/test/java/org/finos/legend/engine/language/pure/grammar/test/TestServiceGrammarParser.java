@@ -976,7 +976,7 @@ public class TestServiceGrammarParser extends TestGrammarParser.TestGrammarParse
                         "            assert1:\n" +
                         "              EqualToJson\n" +
                         "              #{\n" +
-                        "                expected : \n" +
+                        "                expected:\n" +
                         "                  ExternalFormat\n" +
                         "                  #{\n" +
                         "                    contentType: 'application/json';\n" +
@@ -1058,7 +1058,7 @@ public class TestServiceGrammarParser extends TestGrammarParser.TestGrammarParse
                 "            assert1:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
@@ -1168,7 +1168,7 @@ public class TestServiceGrammarParser extends TestGrammarParser.TestGrammarParse
                         "            assert1:\n" +
                         "              EqualToJson\n" +
                         "              #{\n" +
-                        "                expected : \n" +
+                        "                expected:\n" +
                         "                  ExternalFormat\n" +
                         "                  #{\n" +
                         "                    contentType: 'application/json';\n" +

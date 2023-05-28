@@ -787,7 +787,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::executableMapping::Test
 
 Class meta::protocols::pure::vX_X_X::metamodel::executableMapping::TestAssert
 {
-   expected : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[*];
+   expected:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[*];
    inputs : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[*];
    comparisonKey : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[0..1];
    comparisonType : ComparisonType[0..1];
