@@ -64,7 +64,7 @@ public class TestAssertionEvaluator implements org.finos.legend.engine.protocol.
             else
             {
                 AssertFail assertFail = new AssertFail();
-                assertFail.message = "Expected : " + expected + ", Found : " + actual.toString();
+                assertFail.message = "expected:" + expected + ", Found : " + actual.toString();
 
                 assertionStatus = assertFail;
             }

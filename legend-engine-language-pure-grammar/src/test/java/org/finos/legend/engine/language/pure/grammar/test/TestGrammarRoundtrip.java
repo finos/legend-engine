@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.grammar.test;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.impl.utility.LazyIterate;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
@@ -68,10 +69,15 @@ public class TestGrammarRoundtrip
          */
         public static void test(String code)
         {
-            test(code, null);
+            test(code, null, false);
         }
 
-        private static void test(String code, String message)
+        public static void testWithSectionInfoPreserved(String code)
+        {
+            test(code, null, true);
+        }
+
+        private static void test(String code, String message, boolean keepSectionIndex)
         {
             PureModelContextData modelData = null;
             try
@@ -87,16 +93,28 @@ public class TestGrammarRoundtrip
             }
             PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());
             Assert.assertEquals(message, code, grammarTransformer.renderPureModelContextData(modelData));
+
+            if (keepSectionIndex)
+            {
+                return;
+            }
+
+            // check for rendering with no section index
+            PureModelContextData modelDataWithoutSectionIndex = PureModelContextData.newBuilder()
+                    .withOrigin(modelData.origin)
+                    .withSerializer(modelData.serializer)
+                    .withElements(ListIterate.reject(modelData.getElements(), el -> el instanceof SectionIndex)).build();
+            Assert.assertEquals(message, code, grammarTransformer.renderPureModelContextData(modelDataWithoutSectionIndex));
         }
 
-        public static void testFormatWithoutSectionIndex(String code, String unformattedCode)
+        public static void testFormatWithSectionInfoPreserved(String code, String unformattedCode)
         {
-            testFormat(code, unformattedCode, true);
+            testFormat(code, unformattedCode, false);
         }
 
         public static void testFormat(String code, String unformattedCode)
         {
-            testFormat(code, unformattedCode, false);
+            testFormat(code, unformattedCode, true);
         }
 
         /**
@@ -126,7 +144,7 @@ public class TestGrammarRoundtrip
             String formatted = grammarTransformer.renderPureModelContextData(parsedModel);
             Assert.assertEquals(code, formatted);
             // NOTE: do not remove the round-trip test for formatted code as this is a very good way to ensure that grammar <-> >protocol is bijective
-            test(formatted, "Expected formatted code to pass round-trip test");
+            test(formatted, "Expected formatted code to pass round-trip test", !omitSectionIndex);
         }
     }
 }

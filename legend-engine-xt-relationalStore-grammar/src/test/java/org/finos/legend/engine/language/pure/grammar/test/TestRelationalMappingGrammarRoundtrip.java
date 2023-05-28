@@ -133,7 +133,7 @@ public class TestRelationalMappingGrammarRoundtrip extends TestGrammarRoundtrip.
                 "            shouldPass:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +

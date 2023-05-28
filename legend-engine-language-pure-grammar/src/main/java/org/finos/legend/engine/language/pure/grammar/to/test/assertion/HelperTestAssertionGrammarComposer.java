@@ -60,7 +60,7 @@ public class HelperTestAssertionGrammarComposer
         if (testAssertion instanceof EqualTo)
         {
             EqualTo equalTo = (EqualTo) testAssertion;
-            String content = context.getIndentationString() + "expected : \n"
+            String content = context.getIndentationString() + "expected:\n"
                     + indentedString + equalTo.expected.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(updatedContext).build()) + ";";
 
             return new ContentWithType(EqualToGrammarParser.TYPE, content);
@@ -68,7 +68,7 @@ public class HelperTestAssertionGrammarComposer
         else if (testAssertion instanceof EqualToJson)
         {
             EqualToJson equalToJson = (EqualToJson) testAssertion;
-            String content = context.getIndentationString() + "expected : \n"
+            String content = context.getIndentationString() + "expected:\n"
                     + HelperEmbeddedDataGrammarComposer.composeEmbeddedData(equalToJson.expected, updatedContext) + ";";
 
             return new ContentWithType(EqualToJsonGrammarParser.TYPE, content);

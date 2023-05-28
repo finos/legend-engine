@@ -44,7 +44,7 @@ Service testServiceStoreTestSuites::TestService
             assert1:
               EqualToJson
               #{
-                expected : 
+                expected:
                   ExternalFormat
                   #{
                     contentType: 'application/json';
