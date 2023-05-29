@@ -37,7 +37,6 @@ import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_data
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_dataset_deduplication_MaxVersionForTds;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_dataset_deduplication_NoDeduplication;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_dataset_emptyhandling_DeleteTargetData;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_dataset_partitioning_FieldBasedForGraphFetch;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_dataset_partitioning_FieldBasedForTds;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_dataset_partitioning_NoPartitioning;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_dataset_partitioning_Partitioning;
@@ -109,6 +108,45 @@ public class TestPersistenceV2CompilationFromGrammar extends TestCompilationFrom
     protected String getDuplicatedElementTestExpectedErrorMessage()
     {
         return "COMPILATION error at [4:1-36:1]: Duplicated element 'test::MyPersistence'";
+    }
+
+    @Test
+    public void serviceUndefined()
+    {
+        test("###Persistence\n" +
+            "Persistence test::TestPersistence\n" +
+            "{\n" +
+            "  doc: 'This is test documentation.';\n" +
+            "  trigger: Manual;\n" +
+            "  service: test::Service;\n" +
+            "  serviceOutputTargets:\n" +
+            "  [\n" +
+            "    ROOT\n" +
+            "    {\n" +
+            "      keys:\n" +
+            "      [\n" +
+            "        foo, bar\n" +
+            "      ]\n" +
+            "      datasetType: Snapshot\n" +
+            "      {\n" +
+            "        partitioning: FieldBased\n" +
+            "        {\n" +
+            "          partitionFields:\n" +
+            "          [\n" +
+            "            foo1, bar2\n" +
+            "          ];\n" +
+            "        }\n" +
+            "      }\n" +
+            "      deduplication: MaxVersion\n" +
+            "      {\n" +
+            "        versionField: version;\n" +
+            "      }\n" +
+            "    }\n" +
+            "    ->\n" +
+            "    {\n" +
+            "    }\n" +
+            "  ];" +
+            "}\n", "COMPILATION error at [2:1-33:5]: Service 'test::Service' is not defined");
     }
 
     @Test
