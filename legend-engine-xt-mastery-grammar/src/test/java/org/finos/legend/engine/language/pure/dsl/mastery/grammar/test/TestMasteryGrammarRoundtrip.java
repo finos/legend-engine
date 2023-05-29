@@ -24,12 +24,12 @@ public class TestMasteryGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
     @Test
     public void masteryRoundTripFull()
     {
-        test(TestMasteryCompilationFromGrammar.COMPLETE_CORRECT_MASTERY_MODEL);
+        testWithSectionInfoPreserved(TestMasteryCompilationFromGrammar.COMPLETE_CORRECT_MASTERY_MODEL);
     }
 
     @Test
     public void masteryRoundTripMinimum()
     {
-        test(TestMasteryCompilationFromGrammar.MINIMUM_CORRECT_MASTERY_MODEL);
+        testWithSectionInfoPreserved(TestMasteryCompilationFromGrammar.MINIMUM_CORRECT_MASTERY_MODEL);
     }
 }

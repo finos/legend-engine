@@ -278,19 +278,19 @@ function meta::pure::tds::schema::tests::assertSchemaRoundTripEquality(query : F
    assertSchemaRoundTripEquality($expected, $query, $extensions);
 }
    
-function meta::pure::tds::schema::tests::assertSchemaRoundTripEquality(expected : TDSColumn[*], query : FunctionDefinition<{->TabularDataSet[1]}>[1]) : Boolean[1]
+function meta::pure::tds::schema::tests::assertSchemaRoundTripEquality(expected:TDSColumn[*], query : FunctionDefinition<{->TabularDataSet[1]}>[1]) : Boolean[1]
 {   
    assertSchemaRoundTripEquality($expected, $query, defaultExtensions());
 }  
 
-function meta::pure::tds::schema::tests::assertSchemaRoundTripEquality(expected : TDSColumn[*], query : FunctionDefinition<{->TabularDataSet[1]}>[1], extensions:Extension[*]) : Boolean[1]
+function meta::pure::tds::schema::tests::assertSchemaRoundTripEquality(expected:TDSColumn[*], query : FunctionDefinition<{->TabularDataSet[1]}>[1], extensions:Extension[*]) : Boolean[1]
 {
    let actual = $query->meta::pure::tds::schema::resolveSchema($extensions);
    
    assertSchemaEquality($expected, $actual);     
 }  
 
-function meta::pure::tds::schema::tests::assertSchemaEquality(expected : TDSColumn[*], actual : TDSColumn[*]) : Boolean[1]
+function meta::pure::tds::schema::tests::assertSchemaEquality(expected:TDSColumn[*], actual : TDSColumn[*]) : Boolean[1]
 {   
    let areEqual = ($expected->size() == $actual->size())
       && ($expected->zip($actual)->forAll(p|

@@ -1283,7 +1283,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "            assert1:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
@@ -1341,7 +1341,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "            assert1:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
@@ -1405,7 +1405,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "            assert1:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
@@ -1463,7 +1463,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "            assert1:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
@@ -1479,7 +1479,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "            assert1:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
@@ -1541,7 +1541,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "            assert1:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
@@ -1619,7 +1619,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "            assert1:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
@@ -1677,7 +1677,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "            assert1:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
@@ -1687,7 +1687,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "            assert2:\n" +
                 "              EqualTo\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  'expected result content';\n" +
                 "              }#\n" +
                 "          ]\n" +
@@ -1751,7 +1751,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "            assert1:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
@@ -1771,7 +1771,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "            assert1:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
@@ -1781,7 +1781,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "            assert2:\n" +
                 "              EqualTo\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  'expected result content';\n" +
                 "              }#\n" +
                 "          ]\n" +
@@ -1845,7 +1845,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "            assert1:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
@@ -1865,7 +1865,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "            assert1:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
@@ -1875,7 +1875,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "            assert2:\n" +
                 "              EqualTo\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  'expected result content';\n" +
                 "              }#\n" +
                 "          ]\n" +
@@ -1915,7 +1915,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "            assert1:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
@@ -1936,7 +1936,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "            assert1:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
@@ -1946,7 +1946,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "            assert2:\n" +
                 "              EqualTo\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  'expected result content';\n" +
                 "              }#\n" +
                 "          ]\n" +
@@ -2171,7 +2171,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "            assert1:\n" +
                         "              EqualToJson\n" +
                         "              #{\n" +
-                        "                expected : \n" +
+                        "                expected:\n" +
                         "                  ExternalFormat\n" +
                         "                  #{\n" +
                         "                    contentType: 'application/json';\n" +
@@ -2193,7 +2193,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "            assert1:\n" +
                         "              EqualToJson\n" +
                         "              #{\n" +
-                        "                expected : \n" +
+                        "                expected:\n" +
                         "                  ExternalFormat\n" +
                         "                  #{\n" +
                         "                    contentType: 'application/json';\n" +
@@ -2240,7 +2240,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "            assert1:\n" +
                         "              EqualToJson\n" +
                         "              #{\n" +
-                        "                expected : \n" +
+                        "                expected:\n" +
                         "                  ExternalFormat\n" +
                         "                  #{\n" +
                         "                    contentType: 'application/json';\n" +
@@ -2256,7 +2256,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "            assert1:\n" +
                         "              EqualToJson\n" +
                         "              #{\n" +
-                        "                expected : \n" +
+                        "                expected:\n" +
                         "                  ExternalFormat\n" +
                         "                  #{\n" +
                         "                    contentType: 'application/json';\n" +
@@ -2303,7 +2303,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "            assert1:\n" +
                         "              EqualToJson\n" +
                         "              #{\n" +
-                        "                expected : \n" +
+                        "                expected:\n" +
                         "                  ExternalFormat\n" +
                         "                  #{\n" +
                         "                    contentType: 'application/json';\n" +
@@ -2313,7 +2313,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "            assert1:\n" +
                         "              EqualToJson\n" +
                         "              #{\n" +
-                        "                expected : \n" +
+                        "                expected:\n" +
                         "                  ExternalFormat\n" +
                         "                  #{\n" +
                         "                    contentType: 'application/json';\n" +
@@ -2378,7 +2378,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "            assert1:\n" +
                         "              EqualToJson\n" +
                         "              #{\n" +
-                        "                expected : \n" +
+                        "                expected:\n" +
                         "                  ExternalFormat\n" +
                         "                  #{\n" +
                         "                    contentType: 'application/json';\n" +
@@ -2441,7 +2441,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "            assert1:\n" +
                         "              EqualToJson\n" +
                         "              #{\n" +
-                        "                expected : \n" +
+                        "                expected:\n" +
                         "                  ExternalFormat\n" +
                         "                  #{\n" +
                         "                    contentType: 'application/json';\n" +
@@ -2502,7 +2502,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "            assert1:\n" +
                         "              EqualToJson\n" +
                         "              #{\n" +
-                        "                expected : \n" +
+                        "                expected:\n" +
                         "                  ExternalFormat\n" +
                         "                  #{\n" +
                         "                    contentType: 'application/json';\n" +
@@ -2564,7 +2564,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "            assert1:\n" +
                         "              EqualToJson\n" +
                         "              #{\n" +
-                        "                expected : \n" +
+                        "                expected:\n" +
                         "                  ExternalFormat\n" +
                         "                  #{\n" +
                         "                    contentType: 'application/json';\n" +
@@ -2626,7 +2626,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "            assert1:\n" +
                         "              EqualToJson\n" +
                         "              #{\n" +
-                        "                expected : \n" +
+                        "                expected:\n" +
                         "                  ExternalFormat\n" +
                         "                  #{\n" +
                         "                    contentType: 'application/json';\n" +
@@ -2688,7 +2688,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "            assert1:\n" +
                         "              EqualToJson\n" +
                         "              #{\n" +
-                        "                expected : \n" +
+                        "                expected:\n" +
                         "                  ExternalFormat\n" +
                         "                  #{\n" +
                         "                    contentType: 'application/json';\n" +
@@ -2750,7 +2750,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "            assert1:\n" +
                         "              EqualToJson\n" +
                         "              #{\n" +
-                        "                expected : \n" +
+                        "                expected:\n" +
                         "                  ExternalFormat\n" +
                         "                  #{\n" +
                         "                    contentType: 'application/json';\n" +
@@ -2809,7 +2809,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
         //                "            assert1:\n" +
         //                "              EqualToJson\n" +
         //                "              #{\n" +
-        //                "                expected : \n" +
+        //                "                expected:\n" +
         //                "                  ExternalFormat\n" +
         //                "                  #{\n" +
         //                "                    contentType: 'application/json';\n" +
@@ -2979,7 +2979,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "            assert1:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
@@ -3021,7 +3021,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "            assert1:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
@@ -3063,7 +3063,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "            assert1:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +

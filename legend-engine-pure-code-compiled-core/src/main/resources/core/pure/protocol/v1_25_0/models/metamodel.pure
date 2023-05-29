@@ -789,7 +789,7 @@ Class meta::protocols::pure::v1_25_0::metamodel::executableMapping::Test
 
 Class meta::protocols::pure::v1_25_0::metamodel::executableMapping::TestAssert
 {
-   expected : meta::protocols::pure::v1_25_0::metamodel::valueSpecification::ValueSpecification[*];
+   expected:meta::protocols::pure::v1_25_0::metamodel::valueSpecification::ValueSpecification[*];
    inputs : meta::protocols::pure::v1_25_0::metamodel::valueSpecification::ValueSpecification[*];
    comparisonKey : meta::protocols::pure::v1_25_0::metamodel::valueSpecification::raw::Lambda[0..1];
    comparisonType : ComparisonType[0..1];

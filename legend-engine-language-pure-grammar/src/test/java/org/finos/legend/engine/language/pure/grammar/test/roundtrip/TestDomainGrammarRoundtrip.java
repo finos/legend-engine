@@ -477,15 +477,11 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "  println('ok');\n" +
                 "  'a';\n" +
                 "}\n");
-
-        test("###Pure\n" +
-                "function test::getDateTime(): DateTime[1]\n" +
+        test("function test::getDateTime(): DateTime[1]\n" +
                 "{\n" +
                 "  %1970-01-01T00:00:00.000\n" +
                 "}\n");
-
-        test("###Pure\n" +
-                "function test::getStrictDate(): StrictDate[1]\n" +
+        test("function test::getStrictDate(): StrictDate[1]\n" +
                 "{\n" +
                 "  %1970-01-01\n" +
                 "}\n");
@@ -711,7 +707,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     @Test
     public void testClassWithImport()
     {
-        test("import anything::*;\n" +
+        testWithSectionInfoPreserved("import anything::*;\n" +
                 "Class <<goes.businesstemporal>> {goes.doc = 'bla'} anything::A extends B, B\n" +
                 "[\n" +
                 "  $this.ok->toOne() == 1,\n" +
@@ -746,7 +742,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     @Test
     public void testEnumerationWithImport()
     {
-        test("import anything::*;\n" +
+        testWithSectionInfoPreserved("import anything::*;\n" +
                 "Profile anything::goes\n" +
                 "{\n" +
                 "  stereotypes: [test];\n" +
@@ -764,7 +760,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     @Test
     public void testAssociationWithImport()
     {
-        test("import anything::*;\n" +
+        testWithSectionInfoPreserved("import anything::*;\n" +
                 "Class anything::goes2\n" +
                 "{\n" +
                 "}\n" +
@@ -785,7 +781,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     @Test
     public void testFunctionWithImport()
     {
-        test("import anything::*;\n" +
+        testWithSectionInfoPreserved("import anything::*;\n" +
                 "Class anything::goes2\n" +
                 "{\n" +
                 "}\n" +
@@ -805,21 +801,17 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     @Test
     public void testDefaultValue()
     {
-        test("import test::*;\n" +
-                "Class my::exampleRootType\n" +
+        test("Class my::exampleRootType\n" +
                 "{\n" +
                 "}\n\n" +
-
                 "Class my::exampleSubType extends my::exampleRootType\n" +
                 "{\n" +
                 "}\n\n" +
-
                 "Enum test::EnumWithDefault\n" +
                 "{\n" +
                 "  DefaultValue,\n" +
                 "  AnotherValue\n" +
                 "}\n\n" +
-
                 "Class test::A\n" +
                 "{\n" +
                 "  stringProperty: String[1] = 'default';\n" +
@@ -881,8 +873,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     @Test
     public void testLambdaWithBiTemporalClass()
     {
-        test("###Pure\n" +
-                "Class <<temporal.bitemporal>> main::Person\n" +
+        test("Class <<temporal.bitemporal>> main::Person\n" +
                 "{\n" +
                 "  name: String[1];\n" +
                 "  firm: main::Firm[1];\n" +

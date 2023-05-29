@@ -113,7 +113,7 @@ function meta::relational::tds::schema::tests::assertSchemaRoundTripEquality(que
    meta::pure::tds::schema::tests::assertSchemaRoundTripEquality($query, extensions());
 }
    
-function meta::relational::tds::schema::tests::assertSchemaRoundTripEquality(expected : TDSColumn[*], query : FunctionDefinition<{->TabularDataSet[1]}>[1]) : Boolean[1]
+function meta::relational::tds::schema::tests::assertSchemaRoundTripEquality(expected:TDSColumn[*], query : FunctionDefinition<{->TabularDataSet[1]}>[1]) : Boolean[1]
 {   
    meta::pure::tds::schema::tests::assertSchemaRoundTripEquality($expected, $query, extensions());
 }  

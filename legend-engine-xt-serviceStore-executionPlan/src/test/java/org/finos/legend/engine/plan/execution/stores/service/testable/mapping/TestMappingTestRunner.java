@@ -169,7 +169,7 @@ public class TestMappingTestRunner
                 "            assert1:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
-                "                expected : \n" +
+                "                expected:\n" +
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
