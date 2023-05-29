@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::functions::hash::*;
 import meta::external::language::java::factory::*;
 import meta::external::language::java::metamodel::*;
 import meta::external::language::java::metamodel::project::*;
@@ -76,7 +77,12 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::string
          fc1(toString_Any_1__String_1_,                                          {ctx,a                       | $library->j_invoke('pureToString', [$a], javaString())}),
          fc1(toRepresentation_Any_1__String_1_,                                  {ctx,a                       | $library->j_invoke('toRepresentation', [$a], javaString())}),
          fc2(format_String_1__Any_MANY__String_1_,                               {ctx,format,args             | $library->j_invoke('format', [$format, $args->j_listOf(javaList(javaObject()))], javaString())}),
-         fc2(matches_String_1__String_1__Boolean_1_,                             {ctx,s,regex                 | $s->j_invoke('matches', [$regex])})
+         fc2(matches_String_1__String_1__Boolean_1_,                             {ctx,s,regex                 | $s->j_invoke('matches', [$regex])}),
+
+         fc1(decodeBase64_String_1__String_1_,                                   {ctx,str                    | $library->j_invoke('decodeBase64', [$str], javaString())}),         
+         fc1(encodeBase64_String_1__String_1_,                                   {ctx,str                    | $library->j_invoke('encodeBase64', [$str], javaString())}),
+
+         fc2(hash_String_1__HashType_1__String_1_,                               {ctx,text,hashType          | $library->j_invoke('hash', [$text, $hashType], javaString())})
 
       ]);
 

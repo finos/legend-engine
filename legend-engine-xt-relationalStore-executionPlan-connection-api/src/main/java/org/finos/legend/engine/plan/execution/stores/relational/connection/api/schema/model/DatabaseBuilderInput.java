@@ -18,7 +18,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 
 public class DatabaseBuilderInput
 {
-
     public DatabaseBuilderConfig config;
 
     public RelationalDatabaseConnection connection;
@@ -30,5 +29,4 @@ public class DatabaseBuilderInput
         this.config = new DatabaseBuilderConfig();
         this.targetDatabase = new TargetDatabase();
     }
-
 }

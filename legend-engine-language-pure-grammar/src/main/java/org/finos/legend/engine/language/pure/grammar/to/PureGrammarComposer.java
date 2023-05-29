@@ -87,7 +87,6 @@ public class PureGrammarComposer
             }
         }
 
-        // FIXME: the following logic should be removed completely when we move to use extensions
         Predicate<PackageableElement> isDomainElement = e ->
                 (e instanceof Class) ||
                         (e instanceof Association) ||

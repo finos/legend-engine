@@ -21,28 +21,7 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
     @Test
     public void testRelationalSimpleFull()
     {
-        test("Class simple::Person\n" +
-                "{\n" +
-                "  firstName: String[1];\n" +
-                "  lastName: String[1];\n" +
-                "  otherNames: String[*];\n" +
-                "}\n" +
-                "\n" +
-                "Class simple::Firm\n" +
-                "{\n" +
-                "  employees: simple::Person[*];\n" +
-                "  legalName: String[1];\n" +
-                "}\n" +
-                "\n" +
-                "Enum simple::GeographicEntityType\n" +
-                "{\n" +
-                "  CITY,\n" +
-                "  COUNTRY,\n" +
-                "  REGION\n" +
-                "}\n" +
-                "\n" +
-                "\n" +
-                "###Relational\n" +
+        test("###Relational\n" +
                 "Database simple::dbInc\n" +
                 "(\n" +
                 "  Schema productSchema\n" +
@@ -119,6 +98,28 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
                 ")\n" +
                 "\n" +
                 "\n" +
+                "###Pure\n" +
+                "Class simple::Person\n" +
+                "{\n" +
+                "  firstName: String[1];\n" +
+                "  lastName: String[1];\n" +
+                "  otherNames: String[*];\n" +
+                "}\n" +
+                "\n" +
+                "Class simple::Firm\n" +
+                "{\n" +
+                "  employees: simple::Person[*];\n" +
+                "  legalName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Enum simple::GeographicEntityType\n" +
+                "{\n" +
+                "  CITY,\n" +
+                "  COUNTRY,\n" +
+                "  REGION\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
                 "###Mapping\n" +
                 "Mapping simple::simpleRelationalMappingInc\n" +
                 "(\n" +
@@ -146,7 +147,8 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
                 "      location: [dbInc]@location_PlaceOfInterest,\n" +
                 "      placeOfInterest: [dbInc]@location_PlaceOfInterest\n" +
                 "    )\n" +
-                "  }\n\n" +
+                "  }\n" +
+                "\n" +
                 "  simple::GeographicEntityType: EnumerationMapping GE\n" +
                 "  {\n" +
                 "    CITY: [1]\n" +
@@ -624,7 +626,7 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
                 ")\n\n" +
                 "Mapping test::simpleRelationalMapping\n" +
                 "(\n" +
-                "  include test::includedRelationalMapping[dbInc->db]\n\n" +
+                "  include mapping test::includedRelationalMapping[dbInc->db]\n\n" +
                 "  simple::Firm[simple_Firm]: Relational\n" +
                 "  {\n" +
                 "    ~mainTable [db]firmTable\n" +

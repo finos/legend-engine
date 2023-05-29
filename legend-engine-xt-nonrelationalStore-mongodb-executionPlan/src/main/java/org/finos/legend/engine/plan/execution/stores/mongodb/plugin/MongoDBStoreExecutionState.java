@@ -27,7 +27,6 @@ public class MongoDBStoreExecutionState implements StoreExecutionState
 
     private final MongoDBStoreState state;
     private RuntimeContext runtimeContext;
-    //private CredentialProviderProvider credentialProviderProvider;
 
 
     public MongoDBStoreExecutionState(MongoDBStoreState state, RuntimeContext runtimeContext)

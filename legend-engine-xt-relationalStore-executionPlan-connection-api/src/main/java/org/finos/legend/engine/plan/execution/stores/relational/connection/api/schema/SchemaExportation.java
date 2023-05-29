@@ -54,8 +54,7 @@ import java.util.function.Predicate;
 
 public class SchemaExportation
 {
-
-    private DatabaseBuilderInput databaseBuilderInput;
+    private final DatabaseBuilderInput databaseBuilderInput;
     private static final String ESCAPE_CHARS = " :";
     private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -96,9 +95,8 @@ public class SchemaExportation
             Tuples.pair(Types.CHAR, size -> createDataType("Char", size,
                     org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Char.class))
     );
-    private static final String[] TABLES_TYPES = new String[] {"TABLE", "VIEW"};
+    private static final String[] TABLES_TYPES = new String[]{"TABLE", "VIEW"};
     private static final String DEFAULT_SCHEMA = "default";
-
 
     SchemaExportation(DatabaseBuilderInput storeBuilderInput)
     {

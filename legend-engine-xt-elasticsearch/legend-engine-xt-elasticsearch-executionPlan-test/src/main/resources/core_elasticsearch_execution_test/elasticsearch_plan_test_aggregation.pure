@@ -59,21 +59,18 @@ meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::tes
   $config->testTdsExpression(x|$x->groupBy('Director', agg('count', r | $r.getString('Director'), agg | $agg->count())));
 }
 
-// todo fail on understading pamater types... cast does not work on compile
-// need to figoure out how to define a simple group by
-// function 
-//   <<paramTest.Test>>
-//   {doc.doc = 'Test group by with no aggregations on Elasticsearch'} 
-// meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::testGroupByWithoutAggregations(config:TestConfig[1]):Boolean[1]
-// {
-//   $config->testTdsExpression(x|$x->groupBy('Director', []));
-// }
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test group by with no aggregations on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::testGroupByWithoutAggregations(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->groupBy('Director', []->cast(@meta::pure::tds::AggregateValue<Any, Any>)), 'groupBy(\'Director\', [])');
+}
 
-// todo TDS does not have much support on TDSNull and nullable column
-// function 
-//   <<paramTest.Test>>
-//   {doc.doc = 'Test group by on nullable field on Elasticsearch'} 
-// meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::testGroupByOnNullableField(config:TestConfig[1]):Boolean[1]
-// {
-//   $config->testTdsExpression(x|$x->groupBy('MPAA', agg('count', r | $r.getString('MPAA'), agg | $agg->count())));
-// }
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test group by on nullable field on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::testGroupByOnNullableField(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->groupBy('MPAA', agg('count', r | $r.getNullableString('MPAA'), agg | $agg->count())));
+}

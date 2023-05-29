@@ -19,7 +19,7 @@
         "street": "974 Sunbrook Crossing",
         "postalCode": "55103"
       },
-      "dateFounded": "2018-01-14T00:36:08Z"
+      "dateFounded": "2018-01-14T00:36:08.000"
     },
     "phoneNumber": "+1 501 883 4607",
     "address":     {
@@ -58,6 +58,7 @@
 "+1 303 278 3547",
 "+1 414 760 1884"
     ],
+    "birthDate": "1980-04-04T07:12:12.000",
     "age": 23,
     "email": "cbatie2@amazon.co.jp"
   },

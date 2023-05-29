@@ -31,7 +31,7 @@ public class LegendPreparedStatement implements PostgresPreparedStatement
     private final LegendExecutionClient client;
     private Iterable<TDSRow> tdsRows;
     private List<LegendColumn> columns;
-    private Identity identity;
+    private final Identity identity;
 
     public LegendPreparedStatement(String query, LegendExecutionClient client, Identity identity)
     {
@@ -41,7 +41,7 @@ public class LegendPreparedStatement implements PostgresPreparedStatement
     }
 
     @Override
-    public void setObject(int i, Object o) throws Exception
+    public void setObject(int i, Object o)
     {
         throw new UnsupportedOperationException("not implemented");
     }
@@ -54,10 +54,7 @@ public class LegendPreparedStatement implements PostgresPreparedStatement
         {
             LegendKerberosCredential credential = (LegendKerberosCredential) identity.getFirstCredential();
             return Subject.doAs(credential.getSubject(), (PrivilegedAction<LegendResultSetMetaData>) () ->
-            {
-                return new LegendResultSetMetaData(client.getSchema(query));
-
-            });
+                    new LegendResultSetMetaData(client.getSchema(query)));
         }
         else
         {
@@ -66,9 +63,9 @@ public class LegendPreparedStatement implements PostgresPreparedStatement
     }
 
     @Override
-    public ParameterMetaData getParameterMetaData() throws Exception
+    public ParameterMetaData getParameterMetaData()
     {
-        return null;
+        return PostgresPreparedStatement.emptyParameterMetaData();
     }
 
     @Override
@@ -78,22 +75,19 @@ public class LegendPreparedStatement implements PostgresPreparedStatement
     }
 
     @Override
-    public void setMaxRows(int maxRows) throws Exception
+    public void setMaxRows(int maxRows)
     {
 
     }
 
     @Override
-    public boolean execute() throws Exception
+    public boolean execute()
     {
         if (identity.getFirstCredential() instanceof LegendKerberosCredential)
 
         {
             LegendKerberosCredential credential = (LegendKerberosCredential) identity.getFirstCredential();
-            return Subject.doAs(credential.getSubject(), (PrivilegedAction<Boolean>) () ->
-            {
-                return executePrivate();
-            });
+            return Subject.doAs(credential.getSubject(), (PrivilegedAction<Boolean>) this::executePrivate);
         }
         else
         {
@@ -110,7 +104,7 @@ public class LegendPreparedStatement implements PostgresPreparedStatement
     }
 
     @Override
-    public PostgresResultSet getResultSet() throws Exception
+    public PostgresResultSet getResultSet()
     {
         return new LegendResultSet(tdsRows, columns);
     }

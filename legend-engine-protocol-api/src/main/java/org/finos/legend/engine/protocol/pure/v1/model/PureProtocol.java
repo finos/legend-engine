@@ -18,10 +18,14 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.utility.LazyIterate;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.FunctionActivator;
 import org.finos.legend.engine.protocol.pure.v1.ProtocolToClassifierPathLoader;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtensionLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -29,6 +33,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -62,6 +67,59 @@ public class PureProtocol
                     });
                 }));
         return Response.status(200).type(MediaType.APPLICATION_JSON).entity("[" + result.entrySet().stream().map(entry -> "{\"type\":\"" + entry.getKey() + "\",\"classifierPath\":\"" + entry.getValue() + "\"}").collect(Collectors.joining(",")) + "]").build();
+    }
+
+    @GET
+    @Path("getSubtypeInfo")
+    @ApiOperation(value = "Get the protocol serialization subtype information")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response getSubtypeInfo()
+    {
+        SubtypeInfoResult result = new SubtypeInfoResult();
+        MutableSet<String> storeSubtypes = Sets.mutable.empty();
+        PureProtocolExtensionLoader.extensions().forEach(extension ->
+                LazyIterate.flatCollect(extension.getExtraProtocolSubTypeInfoCollectors(), Function0::value).forEach(info ->
+                {
+                    info.getSubTypes().forEach(subType ->
+                    {
+                        if (Store.class.isAssignableFrom(subType.getOne()))
+                        {
+                            if (storeSubtypes.contains(subType.getTwo()))
+                            {
+                                // ignore duplications
+                                return;
+                            }
+                            storeSubtypes.add(subType.getTwo());
+                        }
+                    });
+                }));
+        result.storeSubtypes = storeSubtypes.toList();
+
+        MutableSet<String> functionActivatorSubtypes = Sets.mutable.empty();
+        PureProtocolExtensionLoader.extensions().forEach(extension ->
+                LazyIterate.flatCollect(extension.getExtraProtocolSubTypeInfoCollectors(), Function0::value).forEach(info ->
+                {
+                    info.getSubTypes().forEach(subType ->
+                    {
+                        if (FunctionActivator.class.isAssignableFrom(subType.getOne()))
+                        {
+                            if (functionActivatorSubtypes.contains(subType.getTwo()))
+                            {
+                                // ignore duplications
+                                return;
+                            }
+                            functionActivatorSubtypes.add(subType.getTwo());
+                        }
+                    });
+                }));
+        result.functionActivatorSubtypes = functionActivatorSubtypes.toList();
+        return Response.status(200).type(MediaType.APPLICATION_JSON).entity(result).build();
+    }
+
+    public static class SubtypeInfoResult
+    {
+        public List<String> storeSubtypes;
+        public List<String> functionActivatorSubtypes;
     }
 }
 

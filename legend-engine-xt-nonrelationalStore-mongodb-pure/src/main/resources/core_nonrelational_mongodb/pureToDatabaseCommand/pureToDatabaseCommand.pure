@@ -164,8 +164,10 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::processInstanceValue(i: InstanceValue[1], databaseCommand: DatabaseCommand[1], mapping: Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]): MongoDBOperationElement[1]
 {
   $i.values->match([
-    s: String[1] | ^LiteralValue(value=^StringTypeValue(value=$s)),
-    s: Integer[1] | ^LiteralValue(value=^IntTypeValue(value=$s)),
+    s: String[1]      | ^LiteralValue(value=^StringTypeValue(value=$s)),
+    i: Integer[1]     | ^LiteralValue(value=^IntTypeValue(value=$i)),
+    sd :StrictDate[1] | ^LiteralValue(value=^DateTypeValue(value=meta::pure::functions::date::date(year($sd), monthNumber($sd), dayOfMonth($sd), 0, 0 ,0)->toString()));,                 // type cast StrictDate to dateTime,(as strictdates in expected value are converted to datetime,to retain timezone info)
+    dt: DateTime[1]   | ^LiteralValue(value=^DateTypeValue(value=$dt->toString()));,
     l: LambdaFunction<Any>[1] |
       let fe = $i.values->cast(@LambdaFunction<Any>).expressionSequence->cast(@SimpleFunctionExpression);
       processFunctionExpression($fe->toOne(), $databaseCommand, $mapping, $inScopeVars, $debug);
@@ -269,15 +271,19 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::getSu
 
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::greaterThan_Number_1__Number_1__Boolean_1_,second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processComparisonExpression_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__ComparisonOperatorExpression_1_),
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::greaterThan_String_1__String_1__Boolean_1_,second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processComparisonExpression_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__ComparisonOperatorExpression_1_),
+      ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::greaterThan_Date_1__Date_1__Boolean_1_,second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processComparisonExpression_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__ComparisonOperatorExpression_1_),
 
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::greaterThanEqual_Number_1__Number_1__Boolean_1_,second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processComparisonExpression_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__ComparisonOperatorExpression_1_),
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::greaterThanEqual_String_1__String_1__Boolean_1_,second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processComparisonExpression_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__ComparisonOperatorExpression_1_),
+      ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::greaterThanEqual_Date_1__Date_1__Boolean_1_,second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processComparisonExpression_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__ComparisonOperatorExpression_1_),
 
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::lessThan_Number_1__Number_1__Boolean_1_,second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processComparisonExpression_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__ComparisonOperatorExpression_1_),
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::lessThan_String_1__String_1__Boolean_1_,second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processComparisonExpression_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__ComparisonOperatorExpression_1_),
+      ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::lessThan_Date_1__Date_1__Boolean_1_,second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processComparisonExpression_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__ComparisonOperatorExpression_1_),
 
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::lessThanEqual_Number_1__Number_1__Boolean_1_,second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processComparisonExpression_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__ComparisonOperatorExpression_1_),
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::lessThanEqual_String_1__String_1__Boolean_1_,second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processComparisonExpression_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__ComparisonOperatorExpression_1_),
+      ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::lessThanEqual_Date_1__Date_1__Boolean_1_,second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processComparisonExpression_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__ComparisonOperatorExpression_1_),
 
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::boolean::not_Boolean_1__Boolean_1_, second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processNot_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__NotOperatorExpression_1_),
       ^PureFunctionToMongoDBFunctionPair(first=meta::pure::functions::collection::filter_T_MANY__Function_1__T_MANY_, second=meta::external::store::mongodb::functions::pureToDatabaseCommand::processFilter_FunctionExpression_1__DatabaseCommand_1__Mapping_1__Map_1__DebugContext_1__DatabaseCommand_1_),
@@ -296,14 +302,18 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::getSu
    newMap([
       ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::greaterThan_Number_1__Number_1__Boolean_1_,second={leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^GTOperatorExpression(expressions=[$leftSide, $rightSide])}),
       ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::greaterThan_String_1__String_1__Boolean_1_,second={ leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^GTOperatorExpression(expressions=[$leftSide, $rightSide])}),
+      ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::greaterThan_Date_1__Date_1__Boolean_1_,second={ leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^GTOperatorExpression(expressions=[$leftSide, $rightSide])}),
 
       ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::greaterThanEqual_Number_1__Number_1__Boolean_1_,second= { leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^GTEOperatorExpression(expressions=[$leftSide, $rightSide])}),
       ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::greaterThanEqual_String_1__String_1__Boolean_1_,second= { leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^GTEOperatorExpression(expressions=[$leftSide, $rightSide])}),
+      ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::greaterThanEqual_Date_1__Date_1__Boolean_1_,second= { leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^GTEOperatorExpression(expressions=[$leftSide, $rightSide])}),
 
       ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::lessThan_Number_1__Number_1__Boolean_1_,second= { leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^LTOperatorExpression(expressions=[$leftSide, $rightSide])}),
       ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::lessThan_String_1__String_1__Boolean_1_,second= { leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^LTOperatorExpression(expressions=[$leftSide, $rightSide])}),
+      ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::lessThan_Date_1__Date_1__Boolean_1_,second= { leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^LTOperatorExpression(expressions=[$leftSide, $rightSide])}),
 
       ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::lessThanEqual_Number_1__Number_1__Boolean_1_,second= { leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^LTEOperatorExpression(expressions=[$leftSide, $rightSide])}),
-      ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::lessThanEqual_String_1__String_1__Boolean_1_,second= { leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^LTEOperatorExpression(expressions=[$leftSide, $rightSide])})
+      ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::lessThanEqual_String_1__String_1__Boolean_1_,second= { leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^LTEOperatorExpression(expressions=[$leftSide, $rightSide])}),
+      ^PureFunctionToLambdaComparisonOperatorPair(first=meta::pure::functions::boolean::lessThanEqual_Date_1__Date_1__Boolean_1_,second= { leftSide:ArgumentExpression[1], rightSide:ArgumentExpression[1]| ^LTEOperatorExpression(expressions=[$leftSide, $rightSide])})
       ]);
 }

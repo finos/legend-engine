@@ -46,6 +46,14 @@ function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterTwoExp
    assertEquals('select "root".FIRSTNAME as "first", "root".LASTNAME as "last" from personTable as "root" where ("root".FIRSTNAME = \'John\' and "root".LASTNAME = \'Johnson\')', $result->sqlRemoveFormatting());
 }
 
+function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterTwoExpressions_chain():Boolean[1]
+{
+   let result = execute(|Person.all()->project([p | $p.firstName, p | $p.lastName], ['first', 'last'])->filter({r | $r.getString('first') == 'John'})->filter({r|$r.getString('last') == 'Johnson'}), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSize($result.values.rows, 1);
+   assertEquals(['John','Johnson'], $result.values.rows->map(r|$r.values));
+   assertEquals('select "root".FIRSTNAME as "first", "root".LASTNAME as "last" from personTable as "root" where "root".FIRSTNAME = \'John\' and "root".LASTNAME = \'Johnson\'', $result->sqlRemoveFormatting());
+}
+
 function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterMultipleExpressions1():Boolean[1]
 {
    let result = execute(|Person.all()->project([p | $p.firstName, p | $p.lastName], ['first', 'last'])->filter({r | 
@@ -58,6 +66,18 @@ function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterMultip
    assertSize($result.values.rows, 1);
    assertEquals(['John','Johnson'], $result.values.rows->map(r|$r.values));
    assertEquals('select "root".FIRSTNAME as "first", "root".LASTNAME as "last" from personTable as "root" where ("root".FIRSTNAME is not null and "root".FIRSTNAME = \'John\' and "root".LASTNAME = \'Johnson\')', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterMultipleExpressions1_chain():Boolean[1]
+{
+   let result = execute(|Person.all()->project([p | $p.firstName, p | $p.lastName], ['first', 'last'])
+              ->filter(r |$r.isNotNull('first')) 
+              ->filter(r|eq($r.getString('first'), 'John'))
+              ->filter(r|eq($r.getString('last'), 'Johnson'))
+       , simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSize($result.values.rows, 1);
+   assertEquals(['John','Johnson'], $result.values.rows->map(r|$r.values));
+   assertEquals('select "root".FIRSTNAME as "first", "root".LASTNAME as "last" from personTable as "root" where "root".FIRSTNAME is not null and "root".FIRSTNAME = \'John\' and "root".LASTNAME = \'Johnson\'', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterMultipleExpressions2():Boolean[1]
@@ -80,7 +100,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterBefore
    let result = execute(|Person.all()->filter(p | $p.lastName == 'Johnson')->project([p | $p.firstName, p | $p.lastName], ['first', 'last'])->filter({r | $r.getString('first') == 'John'}), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 1);
    assertEquals(['John','Johnson'], $result.values.rows->map(r|$r.values));
-   assertEquals('select "root".FIRSTNAME as "first", "root".LASTNAME as "last" from personTable as "root" where "root".FIRSTNAME = \'John\' and "root".LASTNAME = \'Johnson\'', $result->sqlRemoveFormatting());
+   assertEquals('select "root".FIRSTNAME as "first", "root".LASTNAME as "last" from personTable as "root" where "root".LASTNAME = \'Johnson\' and "root".FIRSTNAME = \'John\'', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterBeforeWithOrAndFilterAfter():Boolean[1]
@@ -88,7 +108,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterBefore
    let result = execute(|Person.all()->filter(p | $p.lastName == 'Johnson' || $p.lastName == 'Hill')->project([p | $p.firstName, p | $p.lastName], ['first', 'last'])->filter({r | $r.getString('first') == 'John'}), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 2);
    assertEquals(['John','Johnson', 'John', 'Hill'], $result.values.rows->map(r|$r.values));
-   assertEquals('select "root".FIRSTNAME as "first", "root".LASTNAME as "last" from personTable as "root" where "root".FIRSTNAME = \'John\' and ("root".LASTNAME = \'Johnson\' or "root".LASTNAME = \'Hill\')', $result->sqlRemoveFormatting());
+   assertEquals('select "root".FIRSTNAME as "first", "root".LASTNAME as "last" from personTable as "root" where ("root".LASTNAME = \'Johnson\' or "root".LASTNAME = \'Hill\') and "root".FIRSTNAME = \'John\'', $result->sqlRemoveFormatting());
 }
 
 
@@ -184,10 +204,10 @@ function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterOnDate
 function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterOnRootClassAggValueAfterGroupByWithHavingMultipleFilters():Boolean[1]
 {
    
-   let result = execute(|Person.all()->groupBy([p|$p.age],agg(x|$x.firstName,y|$y->joinStrings(',')),['age', 'firstNamesWithSameAge'])->filter(l| $l.getInteger('age') >20  )->filter({l|$l.getString('firstNamesWithSameAge')->contains('John')}), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|Person.all()->groupBy([p|$p.age],agg(x|$x.firstName,y|$y->joinStrings(',')),['age', 'firstNamesWithSameAge'])->filter(l| $l.getInteger('age') >20 )->filter({l|$l.getString('firstNamesWithSameAge')->contains('John')}), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 1);
    assertEquals(['22,John,Anthony'],$result.values.rows->map(r|$r.values->makeString(',')));
-   assertEquals('select "root".AGE as "age", group_concat("root".FIRSTNAME separator \',\') as "firstNamesWithSameAge" from personTable as "root" group by "age" having group_concat("root".FIRSTNAME separator \',\') like \'%John%\' and "root".AGE > 20', $result->sqlRemoveFormatting());
+   assertEquals('select "root".AGE as "age", group_concat("root".FIRSTNAME separator \',\') as "firstNamesWithSameAge" from personTable as "root" group by "age" having "root".AGE > 20 and group_concat("root".FIRSTNAME separator \',\') like \'%John%\'', $result->sqlRemoveFormatting());
    true;
 }
 
