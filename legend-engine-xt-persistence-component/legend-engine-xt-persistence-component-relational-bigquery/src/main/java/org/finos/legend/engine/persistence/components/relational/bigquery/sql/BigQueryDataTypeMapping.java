@@ -15,26 +15,14 @@
 package org.finos.legend.engine.persistence.components.relational.bigquery.sql;
 
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
+import org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.schema.Bytes;
+import org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.schema.Float;
+import org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.schema.Json;
+import org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.schema.String;
 import org.finos.legend.engine.persistence.components.relational.sql.DataTypeMapping;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schema.BigInt;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Binary;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schema.*;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Boolean;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Char;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schema.DataType;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Date;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schema.DateTime;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Double;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Integer;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Number;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schema.SmallInt;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Time;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Timestamp;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schema.TimestampWithLocalTimezone;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schema.TimestampWithNoTimeZone;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schema.TimestampWithTimezone;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schema.TinyInt;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schema.VarChar;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schema.VariableSizeDataType;
 
 public class BigQueryDataTypeMapping implements DataTypeMapping
 {
@@ -48,77 +36,77 @@ public class BigQueryDataTypeMapping implements DataTypeMapping
             // Numeric Data Types
             case INT:
             case INTEGER:
+            case BIGINT:
+            case TINYINT:
+            case SMALLINT:
+            case INT64:
                 dataType = new Integer();
                 break;
-            case BIGINT:
-                dataType = new BigInt();
-                break;
-            case TINYINT:
-                dataType = new TinyInt();
-                break;
-            case SMALLINT:
-                dataType = new SmallInt();
-                break;
             case NUMERIC:
-            case NUMBER:
             case DECIMAL:
-                dataType = new Number(38, 0);
+                dataType = new Numeric();
                 type.length().ifPresent(dataType::setLength);
                 type.scale().ifPresent(dataType::setScale);
                 break;
-            case REAL:
-            case FLOAT:
-            case DOUBLE:
-                dataType = new Double();
+            case FLOAT64:
+                dataType = new Float();
                 break;
             // String & Binary types
-            case CHAR:
-            case CHARACTER:
-                dataType = new Char();
-                type.length().ifPresent(dataType::setLength);
-                break;
-            case VARCHAR:
             case STRING:
-            case TEXT:
-                dataType = new VarChar();
+                dataType = new String();
                 type.length().ifPresent(dataType::setLength);
                 break;
-            case BINARY:
-            case VARBINARY:
-                dataType = new Binary();
+            case BYTES:
+                dataType = new Bytes();
                 type.length().ifPresent(dataType::setLength);
                 break;
-            // Other types
-            case BOOLEAN:
-                dataType = new Boolean();
-                break;
+            // Date & Time types
             case DATE:
                 dataType = new Date();
                 break;
             case TIME:
                 dataType = new Time();
-                type.scale().ifPresent(dataType::setScale);
                 break;
             case DATETIME:
                 dataType = new DateTime();
-                type.scale().ifPresent(dataType::setScale);
                 break;
             case TIMESTAMP:
                 dataType = new Timestamp();
-                type.scale().ifPresent(dataType::setScale);
                 break;
+            // Other types
+            case BOOLEAN:
+            case BOOL:
+                dataType = new Boolean();
+                break;
+            case JSON:
+                dataType = new Json();
+                break;
+            case NUMBER:
+            case REAL:
+            case FLOAT:
+            case DOUBLE:
+            case CHAR:
+            case CHARACTER:
+            case VARCHAR:
+            case LONGTEXT:
+            case TEXT:
+            case LONGVARCHAR:
+            case NCHAR:
+            case NVARCHAR:
+            case LONGNVARCHAR:
+            case BIT:
+            case BINARY:
+            case VARBINARY:
+            case LONGVARBINARY:
             case TIMESTAMP_NTZ:
-                dataType = new TimestampWithNoTimeZone();
-                type.scale().ifPresent(dataType::setScale);
-                break;
             case TIMESTAMP_TZ:
-                dataType = new TimestampWithTimezone();
-                type.scale().ifPresent(dataType::setScale);
-                break;
             case TIMESTAMP_LTZ:
-                dataType = new TimestampWithLocalTimezone();
-                type.scale().ifPresent(dataType::setScale);
-                break;
+            case TIMESTAMPTZ:
+            case VARIANT:
+            case MAP:
+            case ARRAY:
+            case NULL:
+            case UNDEFINED:
             default:
                 throw new IllegalArgumentException("Unexpected value: " + type.dataType());
         }
