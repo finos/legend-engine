@@ -41,7 +41,7 @@ public class TestPersistenceV2GrammarParser extends TestGrammarParser.TestGramma
                 "  service: test::Service;\n" +
                 "  serviceOutputTargets:\n" +
                 "  [\n" +
-                "    ROOT\n" +
+                "    TDS\n" +
                 "    {\n" +
                 "      keys:\n" +
                 "      [\n" +

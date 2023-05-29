@@ -286,7 +286,7 @@ public class PersistenceParseTreeWalker
         {
             return visitTdsServiceOutput(ctx.tdsServiceOutput(), sourceInformation);
         }
-        throw new EngineException("Ambiguous service output: expected reference to service output root or a graph fetch path", sourceInformation, EngineErrorType.PARSER);
+        throw new EngineException("Ambiguous service output: expected reference to a TDS service output or a graph fetch path", sourceInformation, EngineErrorType.PARSER);
     }
 
     private GraphFetchServiceOutput visitGraphFetchServiceOutput(PersistenceParserGrammar.GraphFetchServiceOutputContext ctx, SourceInformation sourceInformation)

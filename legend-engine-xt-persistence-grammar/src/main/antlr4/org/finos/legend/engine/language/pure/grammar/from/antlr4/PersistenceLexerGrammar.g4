@@ -58,7 +58,7 @@ PERSISTENCE_TEST_ASSERTS:                   'asserts';
 //**********
 
 // DATASET
-SERVICE_OUTPUT_ROOT:                        'ROOT';
+SERVICE_OUTPUT_TDS:                         'TDS';
 DATASET_KEYS:                               'keys';
 DATASET_DEDUPLICATION:                      'deduplication';
 DATASET_TYPE:                               'datasetType';

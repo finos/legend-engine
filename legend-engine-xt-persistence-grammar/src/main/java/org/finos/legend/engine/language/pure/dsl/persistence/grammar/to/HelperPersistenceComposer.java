@@ -350,7 +350,7 @@ public class HelperPersistenceComposer
         @Override
         public String visitTdsServiceOutput(TdsServiceOutput val)
         {
-            return getTabString(indentLevel) + "ROOT\n" +
+            return getTabString(indentLevel) + "TDS\n" +
                     getTabString(indentLevel) + "{\n" +
                     renderTdsDatasetKeys(val.keys, indentLevel + 1) +
                     renderDatasetType(val.datasetType, indentLevel + 1) +

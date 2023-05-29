@@ -30,7 +30,7 @@ public class TestPersistenceGrammarV2Roundtrip extends TestGrammarRoundtrip.Test
                 "  service: test::Service;\n" +
                 "  serviceOutputTargets:\n" +
                 "  [\n" +
-                "    ROOT\n" +
+                "    TDS\n" +
                 "    {\n" +
                 "      keys:\n" +
                 "      [\n" +
@@ -71,7 +71,7 @@ public class TestPersistenceGrammarV2Roundtrip extends TestGrammarRoundtrip.Test
                 "  service: test::Service;\n" +
                 "  serviceOutputTargets:\n" +
                 "  [\n" +
-                "    ROOT\n" +
+                "    TDS\n" +
                 "    {\n" +
                 "      keys:\n" +
                 "      [\n" +
@@ -86,7 +86,7 @@ public class TestPersistenceGrammarV2Roundtrip extends TestGrammarRoundtrip.Test
                 "    ->\n" +
                 "    {\n" +
                 "    },\n" +
-                "    ROOT\n" +
+                "    TDS\n" +
                 "    {\n" +
                 "      keys:\n" +
                 "      [\n" +
@@ -241,7 +241,7 @@ public class TestPersistenceGrammarV2Roundtrip extends TestGrammarRoundtrip.Test
                 "  service: test::Service;\n" +
                 "  serviceOutputTargets:\n" +
                 "  [\n" +
-                "    ROOT\n" +
+                "    TDS\n" +
                 "    {\n" +
                 "      keys:\n" +
                 "      [\n" +
@@ -304,7 +304,7 @@ public class TestPersistenceGrammarV2Roundtrip extends TestGrammarRoundtrip.Test
             "  service: test::Service;\n" +
             "  serviceOutputTargets:\n" +
             "  [\n" +
-            "    ROOT\n" +
+            "    TDS\n" +
             "    {\n" +
             "      keys:\n" +
             "      [\n" +

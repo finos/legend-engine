@@ -76,7 +76,7 @@ public class TestPersistenceV2CompilationFromGrammar extends TestCompilationFrom
             "  service: test::Service;\n" +
             "  serviceOutputTargets:\n" +
             "  [\n" +
-            "    ROOT\n" +
+            "    TDS\n" +
             "    {\n" +
             "      keys:\n" +
             "      [\n" +
@@ -121,7 +121,7 @@ public class TestPersistenceV2CompilationFromGrammar extends TestCompilationFrom
             "  service: test::Service;\n" +
             "  serviceOutputTargets:\n" +
             "  [\n" +
-            "    ROOT\n" +
+            "    TDS\n" +
             "    {\n" +
             "      keys:\n" +
             "      [\n" +
@@ -191,7 +191,7 @@ public class TestPersistenceV2CompilationFromGrammar extends TestCompilationFrom
             "  service: test::Service;\n" +
             "  serviceOutputTargets:\n" +
             "  [\n" +
-            "    ROOT\n" +
+            "    TDS\n" +
             "    {\n" +
             "      keys:\n" +
             "      [\n" +
@@ -375,7 +375,7 @@ public class TestPersistenceV2CompilationFromGrammar extends TestCompilationFrom
                 "  service: test::Service;\n" +
                 "  serviceOutputTargets:\n" +
                 "  [\n" +
-                "    ROOT\n" +
+                "    TDS\n" +
                 "    {\n" +
                 "      keys:\n" +
                 "      [\n" +

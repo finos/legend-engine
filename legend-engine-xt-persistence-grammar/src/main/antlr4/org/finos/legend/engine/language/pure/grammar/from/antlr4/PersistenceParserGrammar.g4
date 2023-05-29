@@ -19,7 +19,7 @@ identifier:                                 VALID_STRING | STRING
                                             | NOTIFIER | NOTIFIER_NOTIFYEES | NOTIFYEE_EMAIL | NOTIFYEE_EMAIL_ADDRESS | NOTIFYEE_PAGER_DUTY| NOTIFYEE_PAGER_DUTY_URL
                                             | PERSISTENCE_TESTS | PERSISTENCE_TEST_DATA | PERSISTENCE_TEST_CONNECTION_DATA | PERSISTENCE_TEST_BATCHES | PERSISTENCE_TEST_ASSERTS | PERSISTENCE_TEST_DATA_FROM_SERVICE_OUTPUT
                                             | SERVICE_OUTPUT_TARGET_SERVICE_OUTPUT | SERVICE_OUTPUT_TARGET_TARGET
-                                            | SERVICE_OUTPUT_ROOT | DATASET_KEYS | DATASET_DEDUPLICATION | DATASET_TYPE
+                                            | SERVICE_OUTPUT_TDS | DATASET_KEYS | DATASET_DEDUPLICATION | DATASET_TYPE
                                             | DEDUPLICATION_ANY | DEDUPLICATION_MAX | DEDUPLICATION_MAX_VERSION_FIELD
                                             | DATASET_SNAPSHOT | DATASET_SNAPSHOT_PARTITIONING | DATASET_DELTA | DATASET_DELTA_ACTION_INDICATOR
                                             | PARTITIONING_FIELD_BASED | PARTITIONING_FIELD_BASED_FIELDS | PARTITIONING_NONE_EMPTY_DATASET_HANDLING
@@ -200,7 +200,7 @@ graphFetchServiceOutput:                    dslNavigationPath
                                                     )*
                                                 BRACE_CLOSE
 ;
-tdsServiceOutput:                           SERVICE_OUTPUT_ROOT
+tdsServiceOutput:                           SERVICE_OUTPUT_TDS
                                                 BRACE_OPEN
                                                     (
                                                         datasetKeys
