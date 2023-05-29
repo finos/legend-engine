@@ -56,6 +56,8 @@ public enum DataType
     LONGNVARCHAR,
     UNDEFINED,
     INT64,
+    FLOAT64,
+    BYTES,
     STRING,
     BOOL,
     LONGTEXT,
@@ -73,7 +75,7 @@ public enum DataType
 
     public static Set<DataType> getComparableDataTypes()
     {
-        return new HashSet<>(Arrays.asList(INT, INTEGER, BIGINT, TINYINT, SMALLINT, INT64, REAL, DECIMAL, FLOAT, DOUBLE, NUMBER, NUMERIC,
+        return new HashSet<>(Arrays.asList(INT, INTEGER, BIGINT, TINYINT, SMALLINT, INT64, FLOAT64, REAL, DECIMAL, FLOAT, DOUBLE, NUMBER, NUMERIC,
             TIME, TIMESTAMP, TIMESTAMP_NTZ, TIMESTAMP_TZ, TIMESTAMP_LTZ, DATETIME, TIMESTAMPTZ, DATE));
     }
 }
