@@ -20,10 +20,6 @@ import meta::pure::extension::*;
 function meta::protocols::pure::v1_22_0::external::shared::format::serializerExtension(type:String[1]): meta::pure::extension::SerializerExtension[1]
 {
    ^meta::protocols::pure::v1_22_0::extension::SerializerExtension_v1_22_0(
-      transfers_store_transformConnection =
-         [
-            extConnection:meta::external::shared::format::executionPlan::ExternalFormatConnection[1] | $extConnection->transformExternalFormatConnection()
-         ],
       transfers_executionPlan_transformNode =
          {mapping:Mapping[1], extensions:Extension[*] |
             [
