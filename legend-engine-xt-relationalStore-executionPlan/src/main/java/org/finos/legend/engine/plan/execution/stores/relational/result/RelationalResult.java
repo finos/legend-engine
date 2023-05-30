@@ -114,12 +114,12 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
 
     public Builder builder;
 
-    public RelationalResult(MutableList<ExecutionActivity> activities, RelationalExecutionNode node, List<SQLResultColumn> sqlResultColumns, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan)
+    public RelationalResult(MutableList<ExecutionActivity> activities, RelationalExecutionNode node, List<SQLResultColumn> sqlResultColumns, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan, boolean logSQLWithParamValues)
     {
-        this(activities, node, sqlResultColumns, databaseType, databaseTimeZone, connection, profiles, temporaryTables, topSpan, new RequestContext());
+        this(activities, node, sqlResultColumns, databaseType, databaseTimeZone, connection, profiles, temporaryTables, topSpan, new RequestContext(), logSQLWithParamValues);
     }
 
-    public RelationalResult(MutableList<ExecutionActivity> activities, RelationalExecutionNode node, List<SQLResultColumn> sqlResultColumns, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan, RequestContext requestContext)
+    public RelationalResult(MutableList<ExecutionActivity> activities, RelationalExecutionNode node, List<SQLResultColumn> sqlResultColumns, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan, RequestContext requestContext, boolean logSQLWithParamValues)
     {
         super(activities);
         this.databaseType = databaseType;
@@ -144,7 +144,8 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             long start = System.currentTimeMillis();
             RelationalExecutionActivity activity = ((RelationalExecutionActivity) activities.getLast());
             String sql = activity.comment != null ? activity.comment.concat("\n").concat(activity.sql) : activity.sql;
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, sql).toString());
+            String logMessage = logSQLWithParamValues ? sql : node.sqlQuery();
+            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, logMessage).toString());
             this.resultSet = this.statement.executeQuery(sql);
             this.executedSQl = sql;
             LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_STOP, (double) System.currentTimeMillis() - start).toString());

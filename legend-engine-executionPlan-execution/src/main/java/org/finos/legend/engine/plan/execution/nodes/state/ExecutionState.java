@@ -66,6 +66,7 @@ public class ExecutionState
     private final List<? extends String> templateFunctions;
     private final boolean isJavaCompilationAllowed;
     private final Map<StoreType, StoreExecutionState> states = new EnumMap<>(StoreType.class);
+    private final Boolean logSQLWithParamValues;
 
     public final List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> extraNodeExecutors;
     public final List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> extraSequenceNodeExecutors;
@@ -97,14 +98,20 @@ public class ExecutionState
         this.extraSequenceNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraSequenceNodeExecutors);
         this.requestContext = state.requestContext;
         this.credentialProviderProvider = state.credentialProviderProvider;
+        this.logSQLWithParamValues = state.logSQLWithParamValues;
     }
 
     public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed, long graphFetchBatchMemoryLimit)
     {
-        this(res, templateFunctions, extraStates, isJavaCompilationAllowed, graphFetchBatchMemoryLimit, new RequestContext(), null);
+        this(res, templateFunctions, extraStates, isJavaCompilationAllowed, graphFetchBatchMemoryLimit, new RequestContext(), null, true);
     }
 
-    public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed, long graphFetchBatchMemoryLimit, RequestContext requestContext, CredentialProviderProvider credentialProviderProvider)
+    public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed, long graphFetchBatchMemoryLimit, RequestContext requestContext,  CredentialProviderProvider credentialProviderProvider)
+    {
+        this(res, templateFunctions, extraStates, isJavaCompilationAllowed, graphFetchBatchMemoryLimit, requestContext, credentialProviderProvider, true);
+    }
+
+    public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed, long graphFetchBatchMemoryLimit, RequestContext requestContext, CredentialProviderProvider credentialProviderProvider, Boolean logSQLWithParamValues)
     {
         this.inAllocation = false;
         this.inLake = false;
@@ -120,6 +127,7 @@ public class ExecutionState
         this.extraSequenceNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraSequenceNodeExecutors);
         this.requestContext = requestContext;
         this.credentialProviderProvider = credentialProviderProvider;
+        this.logSQLWithParamValues = logSQLWithParamValues;
     }
 
     public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed)
@@ -137,7 +145,7 @@ public class ExecutionState
         Map<String, Result> resCopy = Maps.mutable.ofMap(this.res);
         List<? extends String> templateFunctionsCopy = Lists.mutable.ofAll(this.templateFunctions);
         List<? extends StoreExecutionState> extraStatesCopy = this.states.values().stream().map(StoreExecutionState::copy).collect(Collectors.toList());
-        ExecutionState copy = new ExecutionState(resCopy, templateFunctionsCopy, extraStatesCopy, this.isJavaCompilationAllowed, this.graphFetchBatchMemoryLimit, this.requestContext, this.credentialProviderProvider);
+        ExecutionState copy = new ExecutionState(resCopy, templateFunctionsCopy, extraStatesCopy, this.isJavaCompilationAllowed, this.graphFetchBatchMemoryLimit, this.requestContext, this.credentialProviderProvider, this.logSQLWithParamValues);
 
         copy.activities = Lists.mutable.withAll(this.activities);
         copy.allocationNodeName = this.allocationNodeName;
@@ -302,5 +310,10 @@ public class ExecutionState
     public CredentialProviderProvider getCredentialProviderProvider()
     {
         return this.credentialProviderProvider;
+    }
+
+    public boolean logSQLWithParamValues()
+    {
+        return this.logSQLWithParamValues != null && this.logSQLWithParamValues;
     }
 }
