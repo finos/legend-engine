@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.language.pure.grammar.test;
 
-import org.finos.legend.engine.language.pure.grammar.test.TestGrammarRoundtrip;
 import org.junit.Test;
 
 public class TestDiagramGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
@@ -166,7 +165,7 @@ public class TestDiagramGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
     @Test
     public void testDiagramWithImport()
     {
-        test("###Diagram\n" +
+        testWithSectionInfoPreserved("###Diagram\n" +
                 "import anything::*;\n" +
                 "Diagram meta::pure::MyDiagram\n" +
                 "{\n" +

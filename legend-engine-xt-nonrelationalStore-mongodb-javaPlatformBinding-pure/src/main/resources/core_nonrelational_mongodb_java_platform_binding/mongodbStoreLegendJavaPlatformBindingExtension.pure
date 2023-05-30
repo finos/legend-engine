@@ -420,9 +420,10 @@ function <<access.private>> meta::external::store::mongodb::executionPlan::platf
    ^$proto(methods = $proto.methods->filter({m| $m.name != 'readCheckedObjects'})->concatenate($newReadChecked));
 }
 
+// Used for tests
 function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::mongoDBLegendJavaPlatformBindingExtensions(): Extension[*]
 {
-//Pulls together store extension + PlatformBinding extension to a single method.
+//Pulls together store extension + "all" PlatformBinding extension to a single method
   [
   meta::external::store::mongodb::extension::mongoDBExtensions('mongoDB'),
   meta::external::format::json::extension::jsonSchemaFormatExtension(),
@@ -431,6 +432,20 @@ function meta::external::store::mongodb::executionPlan::platformBinding::legendJ
       meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryLegendJavaPlatformBindingExtension(),
       meta::external::store::mongodb::executionPlan::platformBinding::legendJava::mongoDBStoreLegendJavaPlatformBindingExtension(),
       meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension(meta::external::format::json::executionPlan::platformBinding::legendJava::jsonSchemaJavaBindingDescriptor())
+    ])
+  ])
+  ]
+}
+
+function meta::external::store::mongodb::executionPlan::platformBinding::legendJava::mongoDBOnlyLegendJavaPlatformBindingExtensions(): Extension[*]
+{
+// Pulls together store extension + PlatformBinding extensions required for MongoDB, excludes
+// stuff already loaded by core..
+  [
+  meta::external::store::mongodb::extension::mongoDBExtensions('mongoDB'),
+  meta::pure::executionPlan::platformBinding::platformBindingExtension([
+    meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
+      meta::external::store::mongodb::executionPlan::platformBinding::legendJava::mongoDBStoreLegendJavaPlatformBindingExtension()
     ])
   ])
   ]

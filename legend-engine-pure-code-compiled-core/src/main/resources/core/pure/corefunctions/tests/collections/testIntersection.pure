@@ -17,6 +17,8 @@ import meta::pure::functions::collection::tests::intersection::*;
 function <<test.Test>> meta::pure::functions::collection::tests::intersection::testPrimitives():Boolean[1]
 {
     assertEquals([1,2,5], [1,2,3,4,5]->intersection([8,9,5,6,1,2]));
+    assertEquals(1, [1,2,3,4,5]->intersection(1));
+    assertEquals(1, 1->intersection([1,2,3,4,5]));
 }
 
 Class meta::pure::functions::collection::tests::intersection::T
@@ -27,4 +29,5 @@ Class meta::pure::functions::collection::tests::intersection::T
 function <<test.Test>> meta::pure::functions::collection::tests::intersection::testTypes():Boolean[1]
 {
     assertEquals('b', [^T(v='a'), ^T(v='b') ,^T(v='c')]->intersection(^T(v='b')).v);
+    assertEquals(['b', 'c'], [^T(v='a'), ^T(v='b') ,^T(v='c')]->intersection([^T(v='c'), ^T(v='b')]).v);
 }

@@ -33,7 +33,6 @@ function <<access.private>> meta::external::shared::format::externalFormatExtens
       availableFeatures          = ^FeatureExtension
                                    (
                                      id = 'ExternalFormat',
-                                     printConnectionToString = meta::external::shared::format::printConnection_Extension_MANY__Function_MANY_,
                                      printPlanNodeToString = {space:String[1], extensions:Extension[*] | printPlanNodeToString($space, $extensions)}
                                   ),
       serializerExtension      = meta::external::shared::format::serializerExtensionName_String_1__String_1_
@@ -44,16 +43,3 @@ function <<access.private>> meta::external::shared::format::serializerExtensionN
 {
    'meta::protocols::pure::' + $version + '::external::shared::format::serializerExtension_String_1__SerializerExtension_1_'
 }
-
-function meta::external::shared::format::printConnection(extensions:Extension[*]): Function<{Nil[1]->String[1]}>[*]         // TODO: TO BE REMOVED
-{
-   [
-      {ext:ExternalFormatConnection[1] |
-         let source = $ext.externalSource->match([
-            u:UrlStreamExternalSource[1] | 'url="'+$u.url+'"'
-         ]);
-         'binding="'+$ext.element->cast(@Binding)->elementToPath()+'", source=('+$source+')';
-      }
-   ];
-}
-

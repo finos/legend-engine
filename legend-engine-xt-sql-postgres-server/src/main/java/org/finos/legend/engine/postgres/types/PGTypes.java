@@ -44,7 +44,7 @@ public class PGTypes
             //.put(RowType.EMPTY, RecordType.EMPTY_RECORD)
             .put(Types.SMALLINT, SmallIntType.INSTANCE)
             .put(Types.INTEGER, IntegerType.INSTANCE)
-/*            .put(Types.BIGINT, BigIntType.INSTANCE)*/
+            .put(Types.BIGINT, BigIntType.INSTANCE)
             .put(Types.FLOAT, RealType.INSTANCE)
             .put(Types.DOUBLE, DoubleType.INSTANCE)
             .put(Types.NUMERIC, NumericType.INSTANCE)
@@ -52,7 +52,7 @@ public class PGTypes
             //.put(Types.TIMESTAMP, TimestampZType.INSTANCE)
             .put(Types.TIMESTAMP, TimestampType.INSTANCE)
             .put(Types.DATE, DateType.INSTANCE)
-
+            .put(Types.ARRAY, PGArray.CHAR_ARRAY) // TODO: identify other types of array and use accordingly
             .build();
      /*   .put(DataTypes.IP, VarCharType.INSTANCE) // postgres has no IP type, so map it to varchar - it matches the client representation
         .put(DataTypes.UNDEFINED, VarCharType.INSTANCE)

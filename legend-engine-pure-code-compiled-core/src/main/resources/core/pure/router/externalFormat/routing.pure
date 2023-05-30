@@ -73,11 +73,10 @@ function meta::pure::router::externalFormat::routing::specializedFunctionExpress
         {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
             let processedFirstParam  = processCollection($state, $fe.parametersValues->at(0), $executionContext, $vars, $inScopeVars, {x:Any[1] | true}, $extensions, $debug)->toOne();
             let processedExternalize = ^$fe(parametersValues = $processedFirstParam.value->cast(@ValueSpecification)->concatenate($fe.parametersValues->tail()));
-            let binding              = $fe.parametersValues->at(1)->match([
-                                                                      f:SimpleFunctionExpression[1] | $f->reactivate($inScopeVars)->toOne(),
-                                                                      i:InstanceValue[1] | $i.values->at(0),
-                                                                      v:VariableExpression[1] | $inScopeVars->get($v.name).values->toOne()
-                                                                    ])->cast(@meta::external::shared::format::binding::Binding);
+            let binding              = $fe.parametersValues->at(1)->cast(@InstanceValue).values->at(0)->match([
+                                                                      b:meta::external::shared::format::binding::Binding[1] | $b,
+                                                                      s:String[1] | ^meta::external::shared::format::binding::Binding(name = 'generatedBinding', package = meta::pure::router::externalFormat::routing, contentType = $s, modelUnit = ^meta::pure::model::unit::ModelUnit(packageableElementIncludes = $fe.parametersValues->at(0).genericType.rawType->cast(@Class<Any>)))
+                                                                    ]);
             let routedExternalize    = ^ExternalFormatRoutedValueSpecification
                                         (
                                           multiplicity    = $f->functionReturnMultiplicity(),
@@ -88,21 +87,21 @@ function meta::pure::router::externalFormat::routing::specializedFunctionExpress
                                           binding         = $binding,
                                           value           = $processedExternalize
                                         );
+            print(if($debug.debug,|$debug.space+'~>Externalize Routing Done',|''));          
             ^$processedFirstParam(routingStrategy = getExternalFormatRoutingStrategy($binding),
                                   value           = $routedExternalize);
         }
     ),
     pair(fe:FunctionExpression[1] | $fe.func->in(meta::external::shared::format::functions::internalizeFunctions()),
         {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
-            let binding              = $fe.parametersValues->at(1)->match([
-                                                                      f:SimpleFunctionExpression[1] | $f->reactivate($inScopeVars)->toOne(),
-                                                                      i:InstanceValue[1] | $i.values->at(0),
-                                                                      v:VariableExpression[1] | $inScopeVars->get($v.name).values->toOne()
-                                                                    ])->cast(@meta::external::shared::format::binding::Binding);
+            let binding              = $fe.parametersValues->at(1)->cast(@InstanceValue).values->at(0)->match([
+                                                                      b:meta::external::shared::format::binding::Binding[1] | $b,
+                                                                      s:String[1] | ^meta::external::shared::format::binding::Binding(name = 'generatedBinding', package = meta::pure::router::externalFormat::routing, contentType = $s, modelUnit = ^meta::pure::model::unit::ModelUnit(packageableElementIncludes = $fe.parametersValues->at(0).genericType.rawType->cast(@Class<Any>)))
+                                                                    ]);
             let routingStrategy      = getExternalFormatRoutingStrategy($binding);
             let processedFirstParam  = processCollection(^$state(routingStrategy = $routingStrategy), $fe.parametersValues->at(0), $executionContext, $vars, $inScopeVars, {x:Any[1] | true}, $extensions, $debug)->toOne();
-            let processedExternalize = ^$fe(parametersValues = $processedFirstParam.value->cast(@ValueSpecification)->concatenate($fe.parametersValues->tail()));
-            let routedExternalize    = ^ExternalFormatRoutedValueSpecification
+            let processedInternalize = ^$fe(parametersValues = $processedFirstParam.value->cast(@ValueSpecification)->concatenate($fe.parametersValues->tail()));
+            let routedInternalize    = ^ExternalFormatRoutedValueSpecification
                                         (
                                           multiplicity    = $f->functionReturnMultiplicity(),
                                           genericType     = $f->functionReturnType(),
@@ -110,10 +109,11 @@ function meta::pure::router::externalFormat::routing::specializedFunctionExpress
                                           id              = $fe->id(),
                                           routingStrategy = $routingStrategy,
                                           binding         = $binding,
-                                          value           = $processedExternalize
+                                          value           = $processedInternalize
                                         );
+            print(if($debug.debug,|$debug.space+'~>Internalize Routing Done',|''));          
             ^$processedFirstParam(routingStrategy = $routingStrategy,
-                                  value           = $routedExternalize);
+                                  value           = $routedInternalize);
         }
     )
   ]

@@ -29,11 +29,14 @@ import java.sql.Statement;
 
 public class AdhocSQLExecutor
 {
+    private static final int PREVIEW_LIMIT = 1000;
+
     public String executeRawSQL(ConnectionManagerSelector connectionManager, RelationalDatabaseConnection conn, String sqlQuery, MutableList<CommonProfile> profiles) throws SQLException, IOException
     {
         try (Connection connection = connectionManager.getDatabaseConnection(profiles, conn))
         {
             Statement stmt = connection.createStatement();
+            stmt.setMaxRows(PREVIEW_LIMIT);
             ResultSet resultSet = stmt.executeQuery(sqlQuery);
             StringWriter stringWriter = new StringWriter();
             CSVWriter csvWriter = new CSVWriter(stringWriter);

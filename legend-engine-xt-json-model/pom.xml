@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.13.4-SNAPSHOT</version>
+        <version>4.14.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -41,9 +41,6 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-protocol-pure</artifactId>
         </dependency>
-        <!-- ENGINE -->
-
-        <!-- PURE -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-code-compiled-core</artifactId>
@@ -52,12 +49,18 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-json-pure</artifactId>
         </dependency>
+        <!-- ENGINE -->
+
+        <!-- PURE -->
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m3-core</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-extension-functions-json</artifactId>
             <scope>runtime</scope>
         </dependency>
-
         <!-- PURE -->
 
         <!-- ECLIPSE COLLECTIONS -->

@@ -17,7 +17,6 @@ package org.finos.legend.engine.language.pure.grammar.integration;
 import org.finos.legend.engine.language.pure.grammar.test.TestGrammarRoundtrip;
 import org.junit.Test;
 
-//TODO : Convert to round trip after getting composer setup.
 public class TestMongoDBGrammarRoundTrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
 

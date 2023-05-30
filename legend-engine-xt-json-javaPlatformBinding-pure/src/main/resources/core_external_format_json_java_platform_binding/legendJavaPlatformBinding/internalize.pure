@@ -79,7 +79,6 @@ function meta::external::format::json::executionPlan::platformBinding::legendJav
    let readableClasses    = $pureClass->concatenate($dependentClass);
    let readableEnums      = $context.typeInfos->enumDependenciesViaProperties($pureClass);
    
-   let bindingDetail      = $context->nodeInfosForPath($path).data->toOne()->cast(@SuccessfulBindingDetail);
    let mainClassProject   = $pureClass->createStreamReadingDataClass($path, $context, ^ConstraintCheckingGenerationContext(enableConstraints=$node.enableConstraints, topLevelOnly=$node.tree->isEmpty(), graphFetchTree=$node.tree), $debug->indent());
    let dataClassesProject = if($dependentClass->isEmpty(),
                               | $mainClassProject,

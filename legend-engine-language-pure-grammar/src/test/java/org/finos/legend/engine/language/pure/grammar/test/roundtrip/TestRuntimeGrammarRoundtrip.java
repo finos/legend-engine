@@ -79,7 +79,7 @@ public class TestRuntimeGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
     @Test
     public void testRuntimeWithImport()
     {
-        test("Class meta::mySimpleClass\n" +
+        testWithSectionInfoPreserved("Class meta::mySimpleClass\n" +
                 "{\n" +
                 "  name: String[1];\n" +
                 "}\n" +
@@ -175,7 +175,6 @@ public class TestRuntimeGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "\n" +
                 "\n" +
                 "###Runtime\n" +
-                "import meta::*;\n" +
                 "Runtime meta::mySimpleRuntime\n" +
                 "{\n" +
                 "  mappings:\n" +
