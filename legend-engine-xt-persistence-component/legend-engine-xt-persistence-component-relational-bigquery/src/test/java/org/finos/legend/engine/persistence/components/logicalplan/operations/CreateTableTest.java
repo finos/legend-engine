@@ -49,24 +49,24 @@ public class CreateTableTest
         String expected = "CREATE TABLE IF NOT EXISTS `my_db`.`my_schema`.`my_table`(" +
                 "`col_int` INTEGER NOT NULL," +
                 "`col_integer` INTEGER NOT NULL," +
-                "`col_bigint` BIGINT," +
-                "`col_tinyint` TINYINT," +
-                "`col_smallint` SMALLINT," +
-                "`col_char` CHAR," +
-                "`col_varchar` VARCHAR," +
-                "`col_string` VARCHAR," +
+                "`col_bigint` INTEGER," +
+                "`col_tinyint` INTEGER," +
+                "`col_smallint` INTEGER," +
+                "`col_char` STRING," +
+                "`col_varchar` STRING," +
+                "`col_string` STRING," +
                 "`col_timestamp` TIMESTAMP," +
                 "`col_datetime` DATETIME," +
                 "`col_date` DATE NOT NULL," +
-                "`col_real` DOUBLE," +
-                "`col_float` DOUBLE," +
-                "`col_decimal` NUMBER(10,4)," +
-                "`col_double` DOUBLE," +
-                "`col_binary` BINARY," +
+                "`col_real` FLOAT," +
+                "`col_float` FLOAT," +
+                "`col_decimal` NUMERIC(10,4)," +
+                "`col_double` FLOAT," +
+                "`col_binary` BYTES," +
                 "`col_time` TIME," +
-                "`col_numeric` NUMBER(38,0)," +
+                "`col_numeric` NUMERIC," +
                 "`col_boolean` BOOLEAN," +
-                "`col_varbinary` BINARY(10)," +
+                "`col_varbinary` BYTES(10)," +
                 "PRIMARY KEY (`col_int`, `col_date`) NOT ENFORCED)";
 
         Assertions.assertEquals(expected, list.get(0));
@@ -90,25 +90,25 @@ public class CreateTableTest
         String expected = "CREATE TABLE IF NOT EXISTS `MY_DB`.`MY_SCHEMA`.`MY_TABLE`(" +
                 "`COL_INT` INTEGER NOT NULL," +
                 "`COL_INTEGER` INTEGER NOT NULL," +
-                "`COL_BIGINT` BIGINT," +
-                "`COL_TINYINT` TINYINT," +
-                "`COL_SMALLINT` SMALLINT," +
-                "`COL_CHAR` CHAR," +
-                "`COL_VARCHAR` VARCHAR," +
-                "`COL_STRING` VARCHAR," +
+                "`COL_BIGINT` INTEGER," +
+                "`COL_TINYINT` INTEGER," +
+                "`COL_SMALLINT` INTEGER," +
+                "`COL_CHAR` STRING," +
+                "`COL_VARCHAR` STRING," +
+                "`COL_STRING` STRING," +
                 "`COL_TIMESTAMP` TIMESTAMP," +
                 "`COL_DATETIME` DATETIME," +
                 "`COL_DATE` DATE NOT NULL," +
-                "`COL_REAL` DOUBLE," +
-                "`COL_FLOAT` DOUBLE," +
-                "`COL_DECIMAL` NUMBER(10,4)," +
-                "`COL_DOUBLE` DOUBLE," +
-                "`COL_BINARY` BINARY," +
+                "`COL_REAL` FLOAT," +
+                "`COL_FLOAT` FLOAT," +
+                "`COL_DECIMAL` NUMERIC(10,4)," +
+                "`COL_DOUBLE` FLOAT," +
+                "`COL_BINARY` BYTES," +
                 "`COL_TIME` TIME," +
-                "`COL_NUMERIC` NUMBER(38,0)," +
+                "`COL_NUMERIC` NUMERIC," +
                 "`COL_BOOLEAN` BOOLEAN," +
-                "`COL_VARBINARY` BINARY(10)," +
-                "PRIMARY KEY (`COL_INT`, `COL_DATE`))";
+                "`COL_VARBINARY` BYTES(10)," +
+                "PRIMARY KEY (`COL_INT`, `COL_DATE`) NOT ENFORCED)";
 
         Assertions.assertEquals(expected, list.get(0));
     }
@@ -131,9 +131,9 @@ public class CreateTableTest
         String expected = "CREATE TABLE IF NOT EXISTS `my_db`.`my_schema`.`my_table`(" +
                 "`col_int` INTEGER NOT NULL PRIMARY KEY NOT ENFORCED," +
                 "`col_integer` INTEGER NOT NULL," +
-                "`col_string` VARCHAR," +
+                "`col_string` STRING," +
                 "`col_timestamp` TIMESTAMP," +
-                "`col_double` DOUBLE) " +
+                "`col_double` FLOAT) " +
                 "CLUSTER BY `col_timestamp`,`col_int`";
 
         Assertions.assertEquals(expected, list.get(0));
@@ -157,9 +157,9 @@ public class CreateTableTest
         String expected = "CREATE TABLE IF NOT EXISTS `MY_DB`.`MY_SCHEMA`.`MY_TABLE`(" +
                 "`COL_INT` INTEGER NOT NULL PRIMARY KEY NOT ENFORCED," +
                 "`COL_INTEGER` INTEGER NOT NULL," +
-                "`COL_STRING` VARCHAR," +
+                "`COL_STRING` STRING," +
                 "`COL_TIMESTAMP` TIMESTAMP," +
-                "`COL_DOUBLE` DOUBLE) " +
+                "`COL_DOUBLE` FLOAT) " +
                 "CLUSTER BY `COL_TIMESTAMP`,`COL_INT`";
 
         Assertions.assertEquals(expected, list.get(0));
@@ -184,9 +184,9 @@ public class CreateTableTest
                 "`col_int` INTEGER NOT NULL," +
                 "`col_date` DATE NOT NULL," +
                 "`col_integer` INTEGER NOT NULL," +
-                "`col_string` VARCHAR," +
+                "`col_string` STRING," +
                 "`col_timestamp` TIMESTAMP," +
-                "`col_double` DOUBLE," +
+                "`col_double` FLOAT," +
                 "PRIMARY KEY (`col_int`, `col_date`) NOT ENFORCED) " +
                 "PARTITION BY `col_date` " +
                 "CLUSTER BY `col_timestamp`,`col_int`";
@@ -212,9 +212,9 @@ public class CreateTableTest
                 "`col_int` INTEGER NOT NULL," +
                 "`col_date` DATE NOT NULL," +
                 "`col_integer` INTEGER NOT NULL," +
-                "`col_string` VARCHAR," +
+                "`col_string` STRING," +
                 "`col_timestamp` TIMESTAMP," +
-                "`col_double` DOUBLE," +
+                "`col_double` FLOAT," +
                 "PRIMARY KEY (`col_int`, `col_date`) NOT ENFORCED) " +
                 "PARTITION BY _PARTITIONDATE";
         Assertions.assertEquals(expected, list.get(0));
