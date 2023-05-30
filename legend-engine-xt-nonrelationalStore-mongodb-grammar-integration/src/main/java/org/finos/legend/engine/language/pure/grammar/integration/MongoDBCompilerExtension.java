@@ -136,7 +136,7 @@ public class MongoDBCompilerExtension implements IMongoDBStoreCompilerExtension
     {
         return Collections.singletonList(registerElementForPathToElement ->
         {
-            ImmutableList<String> versions = PureClientVersions.versionsSince("v1_31_0");
+            ImmutableList<String> versions = PureClientVersions.versionsSinceExclusive("v1_31_0");
             versions.forEach(v -> registerElementForPathToElement.value(
                             "meta::protocols::pure::" + v + "::extension::store::mongodb",
                             Collections.singletonList("getMongoDBStoreExtension_String_1__SerializerExtension_1_")
