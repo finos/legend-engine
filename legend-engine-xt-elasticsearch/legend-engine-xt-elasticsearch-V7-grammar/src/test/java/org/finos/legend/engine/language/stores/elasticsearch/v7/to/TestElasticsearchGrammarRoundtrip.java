@@ -21,10 +21,26 @@ import org.junit.Test;
 public class TestElasticsearchGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
     @Test
+    public void testWithImport()
+    {
+        testWithSectionInfoPreserved("###Elasticsearch\n" +
+                "import abc::*;\n" +
+                "Elasticsearch7Cluster abc::abc::Store\n" +
+                "{\n" +
+                "  indices: [\n" +
+                "    index1: {\n" +
+                "      properties: [\n" +
+                "        prop1: Keyword\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n\n");
+    }
+
+    @Test
     public void testStoreRoundtripSingleIndexSingleProperty()
     {
         test("###Elasticsearch\n" +
-                "import abc::abc::*;\n" +
                 "Elasticsearch7Cluster abc::abc::Store\n" +
                 "{\n" +
                 "  indices: [\n" +
@@ -41,7 +57,6 @@ public class TestElasticsearchGrammarRoundtrip extends TestGrammarRoundtrip.Test
     public void testStoreRoundtripSingleIndexMultipleProperties()
     {
         test("###Elasticsearch\n" +
-                "import abc::abc::*;\n" +
                 "Elasticsearch7Cluster abc::abc::Store\n" +
                 "{\n" +
                 "  indices: [\n" +
@@ -68,7 +83,6 @@ public class TestElasticsearchGrammarRoundtrip extends TestGrammarRoundtrip.Test
     public void testStoreRoundtripSingleIndexPropertyWithFieldsNested()
     {
         test("###Elasticsearch\n" +
-                "import abc::abc::*;\n" +
                 "Elasticsearch7Cluster abc::abc::Store\n" +
                 "{\n" +
                 "  indices: [\n" +
@@ -93,7 +107,6 @@ public class TestElasticsearchGrammarRoundtrip extends TestGrammarRoundtrip.Test
     public void testStoreRoundtripSingleIndexWithWrappedNames()
     {
         test("###Elasticsearch\n" +
-                "import abc::abc::*;\n" +
                 "Elasticsearch7Cluster abc::abc::Store\n" +
                 "{\n" +
                 "  indices: [\n" +
@@ -118,7 +131,6 @@ public class TestElasticsearchGrammarRoundtrip extends TestGrammarRoundtrip.Test
     public void testStoreRoundtripMultipleIndexProperty()
     {
         test("###Elasticsearch\n" +
-                "import abc::abc::*;\n" +
                 "Elasticsearch7Cluster abc::abc::Store\n" +
                 "{\n" +
                 "  indices: [\n" +

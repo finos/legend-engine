@@ -20,10 +20,26 @@ import org.junit.Test;
 public class TestAuthenticationGrammarRoundtrip_AuthenticationTypes extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
     @Test
+    public void userPasswordAuthenticationWithImport()
+    {
+        testWithSectionInfoPreserved("###AuthenticationDemo\n" +
+                "import test::*;\n" +
+                "AuthenticationDemo demo::demo1\n" +
+                "{\n" +
+                "  authentication: # UserPassword {\n" +
+                "    username: 'alice';\n" +
+                "    password: PropertiesFileSecret\n" +
+                "    {\n" +
+                "      propertyName: 'property1';\n" +
+                "    };\n" +
+                "  }#;\n" +
+                "}\n");
+    }
+
+    @Test
     public void userPasswordAuthentication()
     {
         test("###AuthenticationDemo\n" +
-                "import test::*;\n" +
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
                 "  authentication: # UserPassword {\n" +
@@ -40,7 +56,6 @@ public class TestAuthenticationGrammarRoundtrip_AuthenticationTypes extends Test
     public void apiTokenAuthentication()
     {
         test("###AuthenticationDemo\n" +
-                "import test::*;\n" +
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
                 "  authentication: # ApiKey {\n" +
@@ -58,7 +73,6 @@ public class TestAuthenticationGrammarRoundtrip_AuthenticationTypes extends Test
     public void encryptedKeyPairAuthentication()
     {
         test("###AuthenticationDemo\n" +
-                "import test::*;\n" +
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
                 "  authentication: # EncryptedPrivateKey {\n" +
@@ -79,7 +93,6 @@ public class TestAuthenticationGrammarRoundtrip_AuthenticationTypes extends Test
     public void gcpWIFWithAWSIdP()
     {
         test("###AuthenticationDemo\n" +
-                "import test::*;\n" +
                 "AuthenticationDemo demo::demo1\n" +
                 "{\n" +
                 "  authentication: # GCPWIFWithAWSIdP {\n" +

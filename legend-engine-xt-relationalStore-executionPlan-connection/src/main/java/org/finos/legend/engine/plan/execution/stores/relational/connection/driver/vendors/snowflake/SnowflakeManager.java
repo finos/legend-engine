@@ -24,15 +24,19 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.Da
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.SnowflakeDataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeAccountType;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeDataSourceSpecificationKey;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
 import org.finos.legend.engine.shared.core.operational.Assert;
+import org.finos.legend.engine.shared.core.vault.Vault;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.nio.file.Paths;
 import java.util.Properties;
 
 public class SnowflakeManager extends DatabaseManager
 {
+
+    public static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeManager.class);
 
     public static final String PRIVATELINK_SNOWFLAKECOMPUTING_COM = ".privatelink.snowflakecomputing.com";
     public static final String SNOWFLAKECOMPUTING_COM = ".snowflakecomputing.com";
@@ -106,49 +110,48 @@ public class SnowflakeManager extends DatabaseManager
     }
 
     @Override
-    public DataSourceSpecification getLocalDataSourceSpecification()
+    public DataSourceSpecification getLocalDataSourceSpecification(DatasourceSpecification protocolDataSourceSpecification, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy protocolAuthenticationStrategy)
     {
-        return this.loadLocalDataSourceSpecification();
+        return this.loadLocalDataSourceSpecification(protocolDataSourceSpecification, protocolAuthenticationStrategy);
     }
 
-    private static String SNOWFLAKE_LOCAL_DS_SPECFILEPATH = "snowflakeLocalDSSpecFilePath";
-
-    private SnowflakeDataSourceSpecification loadLocalDataSourceSpecification()
+    private SnowflakeDataSourceSpecification loadLocalDataSourceSpecification(DatasourceSpecification protocolDataSourceSpecification, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy protocolAuthenticationStrategy)
     {
-        String snowflakeLocalDataSourceSpecFilePathAsString = System.getProperty(SNOWFLAKE_LOCAL_DS_SPECFILEPATH);
-        if (snowflakeLocalDataSourceSpecFilePathAsString == null || snowflakeLocalDataSourceSpecFilePathAsString.trim().isEmpty())
-        {
-            String message = String.format("Cannot create a local Snowflake datasource specification. System property %s has not been set.", SNOWFLAKE_LOCAL_DS_SPECFILEPATH);
-            throw new UnsupportedOperationException(message);
-        }
-        snowflakeLocalDataSourceSpecFilePathAsString = snowflakeLocalDataSourceSpecFilePathAsString.trim();
-        File snowflakeLocalDataSourceSpecFile = Paths.get(snowflakeLocalDataSourceSpecFilePathAsString).toFile();
         try
         {
-            Properties snowflakeLocalDataSourceSpecFileProperties = new Properties();
-            snowflakeLocalDataSourceSpecFileProperties.load(new FileInputStream(snowflakeLocalDataSourceSpecFile));
+            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy
+                    templateAuthStrategy = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy) protocolAuthenticationStrategy;
 
-            String accountName = snowflakeLocalDataSourceSpecFileProperties.getProperty("accountName");
-            String region = snowflakeLocalDataSourceSpecFileProperties.getProperty("region");
-            String warehouse = snowflakeLocalDataSourceSpecFileProperties.getProperty("warehouse");
-            String databaseName = snowflakeLocalDataSourceSpecFileProperties.getProperty("databaseName");
-            String cloudType = snowflakeLocalDataSourceSpecFileProperties.getProperty("cloudType");
-            String role = snowflakeLocalDataSourceSpecFileProperties.getProperty("role");
+            SnowflakeDatasourceSpecification templateDataSource = (SnowflakeDatasourceSpecification) protocolDataSourceSpecification;
+            
+            String accountName = this.lookupRequiredPropertyInVault(templateDataSource.accountName);
+            String region = this.lookupRequiredPropertyInVault(templateDataSource.region);
+            String warehouse = this.lookupRequiredPropertyInVault(templateDataSource.warehouseName);
+            String databaseName = this.lookupRequiredPropertyInVault(templateDataSource.databaseName);
+            String cloudType = this.lookupRequiredPropertyInVault(templateDataSource.cloudType);
+            String role = this.lookupRequiredPropertyInVault(templateDataSource.role);
             SnowflakeDataSourceSpecificationKey key = new SnowflakeDataSourceSpecificationKey(accountName, region, warehouse, databaseName, cloudType, false, role);
 
-            String privateKeyVaultReference = snowflakeLocalDataSourceSpecFileProperties.getProperty("privateKeyVaultReference");
-            String passphraseVaultReference = snowflakeLocalDataSourceSpecFileProperties.getProperty("passphraseVaultReference");
-            String userName = snowflakeLocalDataSourceSpecFileProperties.getProperty("publicUserName");
-            ;
+            String userName = this.lookupRequiredPropertyInVault(templateAuthStrategy.publicUserName);
 
-            SnowflakePublicAuthenticationStrategy authenticationStrategy = new SnowflakePublicAuthenticationStrategy(privateKeyVaultReference, passphraseVaultReference, userName);
+            SnowflakePublicAuthenticationStrategy authenticationStrategy = new SnowflakePublicAuthenticationStrategy(templateAuthStrategy.privateKeyVaultReference, templateAuthStrategy.passPhraseVaultReference, userName);
             SnowflakeDataSourceSpecification snowflakeDataSourceSpecification = new SnowflakeDataSourceSpecification(key, this, authenticationStrategy, new Properties());
             return snowflakeDataSourceSpecification;
         }
         catch (Exception e)
         {
-            String message = String.format("Cannot create a local Snowflake datasource specification. Failed to read file " + snowflakeLocalDataSourceSpecFilePathAsString + ". Exception = %s", e);
-            throw new UnsupportedOperationException(message);
+            String message = String.format("Cannot create a local Snowflake datasource specification. Exception = %s", e);
+            throw new UnsupportedOperationException(message, e);
         }
+    }
+
+    private String lookupRequiredPropertyInVault(String property)
+    {
+        Vault instance = Vault.INSTANCE;
+        if (!instance.hasValue(property))
+        {
+            throw new NullPointerException("Failed to find property '" + property + "' in vault");
+        }
+        return instance.getValue(property).trim();
     }
 }

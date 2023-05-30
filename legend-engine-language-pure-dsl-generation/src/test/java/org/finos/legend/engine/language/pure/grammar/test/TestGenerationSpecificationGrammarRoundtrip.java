@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.language.pure.grammar.test;
 
-import org.finos.legend.engine.language.pure.grammar.test.TestGrammarRoundtrip;
 import org.junit.Test;
 
 public class TestGenerationSpecificationGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
@@ -47,7 +46,7 @@ public class TestGenerationSpecificationGrammarRoundtrip extends TestGrammarRoun
     @Test
     public void testGenerationSpecificationWithImport()
     {
-        test("###GenerationSpecification\n" +
+        testWithSectionInfoPreserved("###GenerationSpecification\n" +
                 "import anything::*;\n" +
                 "GenerationSpecification test::x\n" +
                 "{\n" +

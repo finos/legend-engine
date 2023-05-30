@@ -76,7 +76,7 @@ public class TestTestAssertionEvaluator
         AssertionStatus assertionStatus = equalTo.accept(new TestAssertionEvaluator(constantResult));
 
         Assert.assertTrue(assertionStatus instanceof AssertFail);
-        Assert.assertEquals("Expected : [1, 2], Found : [1, 5]", ((AssertFail) assertionStatus).message);
+        Assert.assertEquals("expected:[1, 2], Found : [1, 5]", ((AssertFail) assertionStatus).message);
     }
 
     @Test

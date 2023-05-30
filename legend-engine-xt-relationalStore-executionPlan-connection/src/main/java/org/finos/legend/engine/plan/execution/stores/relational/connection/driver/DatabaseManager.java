@@ -27,6 +27,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.redshift.RedshiftManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.util.Properties;
@@ -98,7 +99,7 @@ public abstract class DatabaseManager
         return true;
     }
 
-    public DataSourceSpecification getLocalDataSourceSpecification()
+    public DataSourceSpecification getLocalDataSourceSpecification(DatasourceSpecification datasourceSpecification, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy authenticationStrategy)
     {
         throw new UnsupportedOperationException("Local datasource specification not supported");
     }
