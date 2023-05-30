@@ -50,7 +50,7 @@ public class PrimaryKeyTableConstraint extends TableConstraint
 
     public PrimaryKeyTableConstraint withColumnNames(List<String> columnNames)
     {
-        return new PrimaryKeyTableConstraint(columnNames, quoteIdentifier);
+        return new PrimaryKeyTableConstraint(columnNames, quoteIdentifier, notEnforced);
     }
 
     @Override

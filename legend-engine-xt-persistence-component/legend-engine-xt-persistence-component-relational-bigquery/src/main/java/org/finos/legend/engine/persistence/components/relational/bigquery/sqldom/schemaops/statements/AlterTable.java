@@ -42,21 +42,82 @@ public class AlterTable implements DDLStatement
         return table;
     }
 
+    /*
+        ALTER TABLE [TABLE_NAME] ADD COLUMN [NEW_COLUMN_NAME] [COLUMN_DATATYPE]
 
+        ALTER TABLE [TABLE_NAME] ALTER COLUMN [COLUMN_NAME]
+        [columnDefinition]
+        | DROP [NOT NULL]
+         */
     @Override
     public void genSql(StringBuilder builder) throws SqlDomException
     {
-        // TODO
+        validate();
+        builder.append(Clause.ALTER.get());
+
+        builder.append(WHITE_SPACE + Clause.TABLE.get());
+
+        // Table name
+        builder.append(WHITE_SPACE);
+        table.genSqlWithoutAlias(builder);
+
+        // Operation
+        builder.append(WHITE_SPACE);
+        if (operation.getParent() == null)
+        {
+            builder.append(operation.name());
+        }
+        else
+        {
+            builder.append(operation.getParent().name());
+        }
+        builder.append(WHITE_SPACE);
+        builder.append(COLUMN);
+        builder.append(WHITE_SPACE);
+
+        switch (operation)
+        {
+            case ADD:
+                columnToAlter.genSql(builder);
+                break;
+            case CHANGE_DATATYPE:
+                columnToAlter.genSqlWithNameAndTypeOnly(builder);
+                break;
+            case NULLABLE_COLUMN:
+                columnToAlter.genSqlWithNameOnly(builder);
+                builder.append(WHITE_SPACE);
+                builder.append(DROP);
+                builder.append(WHITE_SPACE);
+                NotNullColumnConstraint notNullColumnConstraint = new NotNullColumnConstraint();
+                notNullColumnConstraint.genSql(builder);
+                break;
+            default:
+                throw new SqlDomException("Alter operation " + operation.name() + " not supported");
+        }
     }
 
     @Override
     public void push(Object node)
     {
-        // TODO
+        if (node instanceof Table)
+        {
+            table = (Table) node;
+        }
+        else if (node instanceof Column)
+        {
+            columnToAlter = (Column) node;
+        }
     }
 
     void validate() throws SqlDomException
     {
-        // TODO
+        if (table == null)
+        {
+            throw new SqlDomException("Table is mandatory for Alter Table Command");
+        }
+        if (columnToAlter == null)
+        {
+            throw new SqlDomException("Columns details is mandatory for Alter Table Command");
+        }
     }
 }

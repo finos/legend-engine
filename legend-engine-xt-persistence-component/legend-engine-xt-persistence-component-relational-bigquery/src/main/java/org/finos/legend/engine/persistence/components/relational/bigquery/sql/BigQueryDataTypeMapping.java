@@ -26,8 +26,6 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.schema.I
 
 public class BigQueryDataTypeMapping implements DataTypeMapping
 {
-    // TODO: Copied from Snowflake , to adapt as per BigQuery
-
     public DataType getDataType(FieldType type)
     {
         VariableSizeDataType dataType;
@@ -42,20 +40,30 @@ public class BigQueryDataTypeMapping implements DataTypeMapping
             case INT64:
                 dataType = new Integer();
                 break;
+            case NUMBER:
             case NUMERIC:
             case DECIMAL:
                 dataType = new Numeric();
                 type.length().ifPresent(dataType::setLength);
                 type.scale().ifPresent(dataType::setScale);
                 break;
+            case REAL:
+            case FLOAT:
+            case DOUBLE:
             case FLOAT64:
                 dataType = new Float();
                 break;
             // String & Binary types
+            case CHAR:
+            case CHARACTER:
+            case VARCHAR:
             case STRING:
                 dataType = new String();
                 type.length().ifPresent(dataType::setLength);
                 break;
+            case BINARY:
+            case VARBINARY:
+            case LONGVARBINARY:
             case BYTES:
                 dataType = new Bytes();
                 type.length().ifPresent(dataType::setLength);
@@ -81,13 +89,6 @@ public class BigQueryDataTypeMapping implements DataTypeMapping
             case JSON:
                 dataType = new Json();
                 break;
-            case NUMBER:
-            case REAL:
-            case FLOAT:
-            case DOUBLE:
-            case CHAR:
-            case CHARACTER:
-            case VARCHAR:
             case LONGTEXT:
             case TEXT:
             case LONGVARCHAR:
@@ -95,9 +96,6 @@ public class BigQueryDataTypeMapping implements DataTypeMapping
             case NVARCHAR:
             case LONGNVARCHAR:
             case BIT:
-            case BINARY:
-            case VARBINARY:
-            case LONGVARBINARY:
             case TIMESTAMP_NTZ:
             case TIMESTAMP_TZ:
             case TIMESTAMP_LTZ:
