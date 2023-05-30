@@ -17,6 +17,11 @@ import meta::legend::*;
 import meta::pure::extension::*;
 import meta::pure::runtime::*;
 
+function meta::external::format::json::executionPlan::test::convertStringToBytes(data:String[1]): InstanceValue[1]
+{
+  ^InstanceValue(genericType=^GenericType(rawType=Byte), multiplicity=ZeroMany, values=$data)
+}
+
 function meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery(f: FunctionDefinition<Any>[1], vars: Pair<String, Any>[*]): String[1]
 {
   executeLegendQuery($f, $vars, ^ExecutionContext(), meta::external::format::json::executionPlan::test::jsonExtensions());

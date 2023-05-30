@@ -564,12 +564,6 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
         result.setSourceInformation(SourceInformationHelper.toM3SourceInformation(appliedFunction.sourceInformation));
         MilestoningDatePropagationHelper.updateMilestoningContextFromValidSources(result, processingContext);
 
-        if (result instanceof FunctionExpression)
-        {
-            FunctionExpression exp = result;
-            exp._resolvedTypeParameters(result._genericType()._typeArguments());
-        }
-
         return result;
     }
 

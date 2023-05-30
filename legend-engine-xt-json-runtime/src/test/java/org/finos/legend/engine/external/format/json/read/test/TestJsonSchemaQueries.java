@@ -279,6 +279,25 @@ public class TestJsonSchemaQueries extends TestExternalFormatQueries
     }
 
     @Test
+    public void testToAndFromJson()
+    {
+        String grammar = serializedFirmModel();
+        PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(grammar);
+
+        String resultWithByte = runTest(modelData,
+                "data:Byte[*]|test::firm::model::Firm->fromJson($data)->graphFetch(" + fullTree() + ")->toJson(" + fullTree() + ")",
+                Maps.mutable.with("data", resource("queries/firmTreeTestData.json")));
+
+        MatcherAssert.assertThat(resultWithByte, JsonMatchers.jsonEquals(resourceReader("queries/firmTreeResult.json")));
+
+        String resultWithString = runTest(modelData,
+                "data:String[1]|test::firm::model::Firm->fromJson($data)->graphFetch(" + fullTree() + ")->toJson(" + fullTree() + ")",
+                Maps.mutable.with("data", resourceAsString("queries/firmTreeTestData.json")));
+
+        MatcherAssert.assertThat(resultWithString, JsonMatchers.jsonEquals(resourceReader("queries/firmTreeResult.json")));
+    }
+
+    @Test
     public void testM2MChaining()
     {
         String modelGrammar = firmModel();
@@ -304,6 +323,36 @@ public class TestJsonSchemaQueries extends TestExternalFormatQueries
         String targetPersonTree = "#{test::firm::model::TargetPerson {fullName}}#";
         String result = runTest(generated.combine(PureGrammarParser.newInstance().parseModel(targetStuff)),
                 "{data:Byte[*]|test::firm::model::TargetPerson.all()->graphFetch(" + targetPersonTree + ")->from(test::firm::model::M2MMapping, getRuntimeWithModelQueryConnection(test::firm::model::Person, test::gen::TestBinding, $data))->externalize(test::gen::TestBinding, " + targetPersonTree + ");}",
+                Maps.mutable.with("data", resource("queries/peopleTestData.json")));
+        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/targetPersonResult.json")));
+    }
+
+    @Test
+    public void testM2MChainingWithContentType()
+    {
+        String modelGrammar = firmModel();
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Lists.mutable.with("test::firm::model::Person", "test::firm::model::Address", "test::firm::model::AddressUse", "test::firm::model::GeographicPosition");
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, modelUnit, toJsonSchemaConfig(), true, "test::gen::TestBinding");
+
+        String targetStuff = "\n\n###Pure\n" +
+                "Class test::firm::model::TargetPerson\n" +
+                "{\n" +
+                "  fullName : String[1];\n" +
+                "}" +
+                "\n\n" +
+                "###Mapping\n" +
+                "Mapping test::firm::model::M2MMapping\n" +
+                "(\n" +
+                "  test::firm::model::TargetPerson: Pure\n" +
+                "  {\n" +
+                "    ~src test::firm::model::Person\n" +
+                "    fullName : $src.firstName + ' ' + $src.lastName\n" +
+                "  }\n" +
+                ")";
+        String targetPersonTree = "#{test::firm::model::TargetPerson {fullName}}#";
+        String result = runTest(generated.combine(PureGrammarParser.newInstance().parseModel(targetStuff)),
+                "{data:Byte[*]|test::firm::model::TargetPerson.all()->graphFetch(" + targetPersonTree + ")->from(test::firm::model::M2MMapping, getRuntimeWithModelQueryConnection(test::firm::model::Person, 'application/json', $data))->externalize(test::gen::TestBinding, " + targetPersonTree + ");}",
                 Maps.mutable.with("data", resource("queries/peopleTestData.json")));
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/targetPersonResult.json")));
     }

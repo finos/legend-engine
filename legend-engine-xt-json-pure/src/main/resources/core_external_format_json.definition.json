@@ -5,6 +5,7 @@
     "platform",
     "platform_functions",
     "platform_dsl_path",
+    "platform_dsl_graph",
     "core"
   ]
 }
