@@ -38,7 +38,7 @@
                                 </auth>
                             </to>
                             <container>
-                                <mainClass>org.finos.legend.engine.postgres.PostgresServer</mainClass>
+                                <mainClass>org.finos.legend.engine.postgres.PostgresServerLauncher</mainClass>
                             </container>
                         </configuration>
                     </plugin>
@@ -72,7 +72,7 @@
                                 </auth>
                             </to>
                             <container>
-                                <mainClass>org.finos.legend.engine.postgres.PostgresServer</mainClass>
+                                <mainClass>org.finos.legend.engine.postgres.PostgresServerLauncher</mainClass>
                             </container>
                         </configuration>
                     </plugin>
@@ -101,7 +101,7 @@
                                 <image>legend-engine-xt-sql-postgres-server</image>
                             </to>
                             <container>
-                                <mainClass>org.finos.legend.engine.postgres.PostgresServer</mainClass>
+                                <mainClass>org.finos.legend.engine.postgres.PostgresServerLauncher</mainClass>
                             </container>
                         </configuration>
                     </plugin>
@@ -195,15 +195,16 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
             <scope>runtime</scope>
         </dependency>
+
         <dependency>
             <groupId>javax.ws.rs</groupId>
             <artifactId>javax.ws.rs-api</artifactId>
