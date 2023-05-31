@@ -132,7 +132,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                                     throw new EngineException("Service Test cannot have keys for SingleExecution Tests", service.sourceInformation, EngineErrorType.COMPILATION);
                                 }
 
-                                HelperServiceBuilder.validateServiceTestParameterValues((List<Root_meta_legend_service_metamodel_ParameterValue>) pureServiceTest._parameters().toList(), parameters, ListIterate.detect(suite.tests, t -> t.id.equals(pureServiceTest._id())).sourceInformation);
+                                HelperServiceBuilder.validateServiceTestParameterValues(context, (List<Root_meta_legend_service_metamodel_ParameterValue>) pureServiceTest._parameters().toList(), parameters, ListIterate.detect(suite.tests, t -> t.id.equals(pureServiceTest._id())).sourceInformation);
                                 pureServiceTest._testable(pureService);
                             }
                             return pureServiceTestSuite;
