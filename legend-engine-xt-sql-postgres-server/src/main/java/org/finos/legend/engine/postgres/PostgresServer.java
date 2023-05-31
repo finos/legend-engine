@@ -21,7 +21,6 @@
 
 package org.finos.legend.engine.postgres;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -30,14 +29,9 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import org.finos.legend.engine.postgres.auth.AuthenticationMethod;
 import org.finos.legend.engine.postgres.auth.AuthenticationProvider;
-import org.finos.legend.engine.postgres.config.Builder;
 import org.finos.legend.engine.postgres.config.GSSConfig;
 import org.finos.legend.engine.postgres.config.ServerConfig;
 import org.finos.legend.engine.postgres.transport.Netty4OpenChannelsHandler;
@@ -120,23 +114,6 @@ public class PostgresServer
         return workerGroup;
     }
 
-    public static void main(String[] args) throws Exception
-    {
-        //TODO ADD CLI
-        String configPath = args[0];
-        InputStream configStream = new FileInputStream(new File(configPath));
-        ObjectMapper objectMapper = new ObjectMapper();
-        ServerConfig serverConfig = objectMapper.readValue(configStream, ServerConfig.class);
-        SessionsFactory sessionFactory = Builder.buildSessionFactory(serverConfig);
-        AuthenticationMethod authenticationMethod = Builder.buildAuthenticationMethod(serverConfig);
-        if (serverConfig.getGss() != null)
-        {
-            System.setProperty("java.security.krb5.conf", serverConfig.getGss().getKerberosConfigFile());
-        }
-
-        logger.info("Starting server in port: " + serverConfig.getPort());
-        new PostgresServer(serverConfig, sessionFactory, (user, connectionProperties) -> authenticationMethod).run();
-    }
 }
 
 

@@ -7,5 +7,6 @@
     "host": "localhost",
     "port": "6300",
     "type": "LEGEND"
-  }
+  },
+  "logConfigFile": "legend-engine-xt-sql-postgres-server/src/test/resources/logback-test.xml"
 }
