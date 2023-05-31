@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state;
 
+import io.prometheus.client.CollectorRegistry;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
 import org.finos.legend.engine.shared.core.identity.Credential;
@@ -237,6 +238,47 @@ public class TestConnectionStateManager extends TestConnectionManagement
         assertPoolExists(false, user2.getName(), ds2.getConnectionKey());
         assertPoolExists(true, user3.getName(), ds1.getConnectionKey());
         assertPoolStateExists(pool3);
+    }
+
+    @Test
+    public void testConnectionMetrics() throws IOException
+    {
+        CollectorRegistry collectorRegistry = CollectorRegistry.defaultRegistry;
+
+        Identity user1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user1");
+        Identity user2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user2");
+
+
+        DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Collections.emptyList());
+
+        requestConnection(user1, ds1);
+        Assert.assertEquals(1, connectionStateManager.size());
+        assertPoolExists(true, user1.getName(), ds1.getConnectionKey());
+        String pool1 = connectionStateManager.poolNameFor(user1, ds1.getConnectionKey());
+        assertPoolStateExists(pool1);
+        Assert.assertEquals(collectorRegistry.getSampleValue("active_connections", new String[] {"poolName"}, new String[]{pool1}), 1.00, 0d);
+        Assert.assertEquals(collectorRegistry.getSampleValue("built_connections", new String[] {"poolName"}, new String[]{pool1}), 1.00, 0d);
+        //add another connection for user 1
+        requestConnection(user1, ds1);
+        Assert.assertEquals(collectorRegistry.getSampleValue("active_connections", new String[] {"poolName"}, new String[]{pool1}), 2.00, 0d);
+        Assert.assertEquals(collectorRegistry.getSampleValue("built_connections", new String[] {"poolName"}, new String[]{pool1}), 2.00, 0d);
+        //now another user requests connection to ds1
+        requestConnection(user2, ds1);
+        Assert.assertEquals(2, connectionStateManager.size());
+        assertPoolExists(true, user2.getName(), ds1.getConnectionKey());
+        String pool2 = connectionStateManager.poolNameFor(user2, ds1.getConnectionKey());
+        Assert.assertEquals(collectorRegistry.getSampleValue("active_connections", new String[] {"poolName"}, new String[]{pool2}), 1.00, 0d);
+        Assert.assertEquals(collectorRegistry.getSampleValue("built_connections", new String[] {"poolName"}, new String[]{pool2}), 1.00, 0d);
+        //close off this instance of ConnectionStateManager
+        connectionStateManager.close();
+        Assert.assertEquals(collectorRegistry.getSampleValue("active_connections", new String[] {"poolName"}, new String[]{pool1}), 0.00, 0d);
+        Assert.assertEquals(collectorRegistry.getSampleValue("built_connections", new String[] {"poolName"}, new String[]{pool1}), 2.00, 0d);
+        Assert.assertEquals(collectorRegistry.getSampleValue("active_connections", new String[] {"poolName"}, new String[]{pool2}), 0.00, 0d);
+        Assert.assertEquals(collectorRegistry.getSampleValue("built_connections", new String[] {"poolName"}, new String[]{pool2}), 1.00, 0d);
+
+        assertPoolExists(false, user1.getName(), ds1.getConnectionKey());
+        assertPoolExists(false, user2.getName(), ds1.getConnectionKey());
+
     }
 
     @Test
