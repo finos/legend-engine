@@ -55,55 +55,50 @@ public class MongoDBStoreConnectionProvider extends ConnectionProvider<Supplier<
         }
 
         MongoDBConnectionSpecification mongoDBConnectionSpec = (MongoDBConnectionSpecification) connectionSpec;
-        Supplier<MongoClient> mongoClientSupplier;
 
+        List<ServerAddress> serverAddresses = mongoDBConnectionSpec.getServerAddresses();
+        MongoClientSettings.Builder clientSettingsBuilder = MongoClientSettings.builder().applyToClusterSettings(builder -> builder.hosts(serverAddresses)).applicationName("Legend Execution Server");
+
+        Supplier<MongoClient> mongoClientSupplier;
         if (authenticationSpec instanceof KerberosAuthenticationSpecification)
         {
             LegendKerberosCredential kerberosCredential = (LegendKerberosCredential) identity.getFirstCredential();
-            if (kerberosCredential.getSubject().getPrincipals().size() != 1)
+            if (kerberosCredential.getSubject().getPrincipals().size() != 1 &&
+                    kerberosCredential.getSubject().getPrincipals().stream().findFirst().isPresent() &&
+                    kerberosCredential.getSubject().getPrincipals().stream().findFirst().get() instanceof KerberosPrincipal)
             {
-                throw new IllegalStateException("Invalid Subject, expected 1 Principal, please reach out to dev team");
+                String errMesg = String.format("Invalid Subject: Expected 1 Principal, but got %d.  Expected Kerberos Principal, but got: %s",
+                        kerberosCredential.getSubject().getPrincipals().size(),
+                        kerberosCredential.getSubject().getPrincipals().stream().findFirst().isPresent() ?
+                                kerberosCredential.getSubject().getPrincipals().stream().findFirst().get().getClass().getName() : "None");
+                throw new IllegalStateException(errMesg);
             }
-            if (!kerberosCredential.getSubject().getPrincipals().stream().findFirst().isPresent() || !(kerberosCredential.getSubject().getPrincipals().stream().findFirst().get() instanceof KerberosPrincipal))
-            {
-                throw new IllegalStateException("Invalid Principal, expected KerberosPrincipal, please reach out to dev team");
-            }
+
             KerberosPrincipal kerberosPrincipal = (KerberosPrincipal) kerberosCredential.getSubject().getPrincipals().stream().findFirst().get();
 
             MongoCredential mongoCredential = MongoCredential.createGSSAPICredential(kerberosPrincipal.getName());
-
-            List<ServerAddress> serverAddresses = mongoDBConnectionSpec.getServerAddresses();
-
-            MongoClientSettings clientSettings = MongoClientSettings.builder()
-                    .applyToClusterSettings(builder -> builder.hosts(serverAddresses))
-                    .credential(mongoCredential)
-                    .applicationName("Legend Execution Server").build();
-            mongoClientSupplier = () ->
-                    KerberosUtils.doAs(identity, (PrivilegedAction<MongoClient>) () -> MongoClients.create(clientSettings));
-            return mongoClientSupplier;
+            MongoClientSettings clientSettings = clientSettingsBuilder.credential(mongoCredential).build();
+            mongoClientSupplier = () -> KerberosUtils.doAs(identity, (PrivilegedAction<MongoClient>) () -> MongoClients.create(clientSettings));
         }
-
-        Credential credential = makeCredential(authenticationSpec, identity);
-
-        if (credential instanceof PlaintextUserPasswordCredential)
+        else
         {
-            PlaintextUserPasswordCredential plaintextCredential = (PlaintextUserPasswordCredential) credential;
-            MongoCredential mongoCredential = MongoCredential.createCredential(plaintextCredential.getUser(), ADMIN_DB, plaintextCredential.getPassword().toCharArray());
-            List<ServerAddress> serverAddresses = mongoDBConnectionSpec.getServerAddresses();
+            // authenticationSpec instanceof UserPasswordAuthenticationSpecification
+            Credential credential = makeCredential(authenticationSpec, identity);
 
-            MongoClientSettings clientSettings = MongoClientSettings.builder()
-                    .applyToClusterSettings(builder -> builder.hosts(serverAddresses))
-                    .credential(mongoCredential)
-                    .applicationName("Legend Execution Server").build();
-            mongoClientSupplier = () -> MongoClients.create(clientSettings);
-            return mongoClientSupplier;
+            if (credential instanceof PlaintextUserPasswordCredential)
+            {
+                PlaintextUserPasswordCredential plaintextCredential = (PlaintextUserPasswordCredential) credential;
+                MongoCredential mongoCredential = MongoCredential.createCredential(plaintextCredential.getUser(), ADMIN_DB, plaintextCredential.getPassword().toCharArray());
+                MongoClientSettings clientSettings = clientSettingsBuilder.credential(mongoCredential).build();
+                mongoClientSupplier = () -> MongoClients.create(clientSettings);
+            }
+            else
+            {
+                String errMesg = String.format("Within UserPasswordAuthenticationSpecification only PlaintextUserPasswordCredential is supported, but got: %s", credential.getClass().getName());
+                throw new IllegalStateException(errMesg);
+            }
+
         }
-
-
-        String message = String.format("Failed to create MongoClient. Expected credential of type %s but found credential of type %s", PlaintextUserPasswordCredential.class, credential.getClass());
-        throw new UnsupportedOperationException(message);
-
+        return mongoClientSupplier;
     }
-
-
 }
