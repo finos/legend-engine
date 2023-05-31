@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::mapping::*;
 import meta::pure::runtime::*;
 import meta::external::query::sql::metamodel::*;
 import meta::external::query::sql::transformation::queryToPure::*;
@@ -53,7 +54,21 @@ function meta::external::query::sql::transformation::queryToPure::getPlansFromSQ
                                                                       ): meta::pure::executionPlan::ExecutionPlan[1]
 {
   let sqlTransformContext = processQuery($sources, $query, $extensions);
-  meta::pure::executionPlan::executionPlan($sqlTransformContext.lambda()->meta::pure::router::preeval::preval($extensions), $extensions);
+  getPlan($sqlTransformContext, $sources, $extensions);
+}
+
+function meta::external::query::sql::transformation::queryToPure::getPlan(
+                                                                        context:SqlTransformContext[1],
+                                                                        sources: SQLSource[*],
+                                                                        extensions: meta::pure::extension::Extension[*]
+                                                                  ):meta::pure::executionPlan::ExecutionPlan[1]
+{
+  //NOTE: we should remove this once issues with enum mappings in plan transformation are fixed.
+  let mapping = if ($sources.mapping->isNotEmpty(), | $sources.mapping->removeDuplicates()->toOneMany()->mergeMappings(), | ^Mapping(package = meta::external::query::sql::transformation::queryToPure, name = 'sqlDummy'));
+  let runtime = if ($sources.runtime->isNotEmpty(), | $sources.runtime->removeDuplicates({t, t2 | meta::pure::runtime::runtimeEquality($t, $t2, $extensions)})->toOneMany()->mergeRuntimes(), | ^Runtime());
+  let lambda = $context.lambda()->meta::pure::router::preeval::preval($extensions);
+
+  meta::pure::executionPlan::executionPlan($lambda, $mapping, $runtime, $extensions);
 }
 
 function meta::external::query::sql::transformation::queryToPure::getSchemaFromSQL(
@@ -78,17 +93,22 @@ function meta::external::query::sql::transformation::queryToPure::processQuery(
     aliases = ^Map<String, String>(),
     contexts = ^Map<String, SqlTransformContext>());
 
-  $query->cast(@Query)->processQuery($context);
+  $query->cast(@Query)->processRootQuery($context);
 }
 
-function meta::external::query::sql::transformation::queryToPure::processQuery(query: Query[1], context: SqlTransformContext[1]): SqlTransformContext[1]
+function meta::external::query::sql::transformation::queryToPure::processRootQuery(query: Query[1], context: SqlTransformContext[1]): SqlTransformContext[1]
+{
+  wrapWithFrom($query->cast(@Query)->processQuery($context));
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processQuery(query: Query[1], context: SqlTransformContext[1]): SqlTransformContext[1]
 {
   debug('processQuery');
 
-  wrapWithFrom($query.limit->processLimit(
+  $query.limit->processLimit(
     $query.orderBy->processOrderBy([],
       $query.queryBody->processQueryBody($context))
-  ));
+  );
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processQueryBody(queryBody: QueryBody[1], context: SqlTransformContext[1]): SqlTransformContext[1]
@@ -494,6 +514,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::relationName(relation: Relation[1]): String[1]
 {
+
   $relation->match([
         table: Table[1] | $table.name.parts->joinStrings('.'),
         aliased:AliasedRelation[1] | $aliased.alias,
@@ -672,9 +693,6 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let parameters = $source.func->getParameters()->evaluateAndDeactivate();
 
   let expressionSequence = if ($parameters->isNotEmpty(), | wrapWithEval($source.func, $parameters, $arguments), | $source.func.expressionSequence);
-
-  //TODO handle multi expression
-
  
   ^$context(
     assignments = $expressionSequence->evaluateAndDeactivate()->init(),
@@ -724,13 +742,28 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   processTableFunction(^TableFunction(functionCall = ^FunctionCall(name = ^QualifiedName(parts = $type),
                                                                   distinct = false,
-                                                                  arguments = ^StringLiteral(value=$id, quoted = false))), $context);
+                                                                  arguments = ^StringLiteral(value= $id, quoted = false))), $context);
+}
+
+function meta::external::query::sql::transformation::queryToPure::requiresWrapWithFrom(v:ValueSpecification[0..1]):Boolean[1]
+{
+
+  $v->evaluateAndDeactivate()->match([
+    f:FunctionExpression[1] | 
+      !$f.func->in([
+        meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_,
+        meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_])
+      && $f.parametersValues->first()->requiresWrapWithFrom(),
+    v:ValueSpecification[0..1] | true
+  ]);
 }
 
 //TODO we can be much smarter by understanding whether x-store is in play and not wrap if true.
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::wrapWithFrom(context:SqlTransformContext[1]):SqlTransformContext[1]
 {
-  if ($context.source->isNotEmpty(), | wrapWithFrom($context.expression->toOne(), $context.source->toOne(), $context), | $context)
+  let requiresFrom = requiresWrapWithFrom($context.expression->toOne());
+
+  if ($requiresFrom && $context.source->isNotEmpty(), | wrapWithFrom($context.expression->toOne(), $context.source->toOne(), $context), | $context);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::wrapWithFrom(expression:FunctionExpression[1], source:SQLSource[1], context:SqlTransformContext[1]):SqlTransformContext[1]
@@ -970,7 +1003,12 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   $c.expression->match([
     n:NullLiteral[1] | processCastAsCast($c, $expContext, $context),
-    e:meta::external::query::sql::metamodel::Expression[1] | processCastAsParse($c, $expContext, $context)
+    e:meta::external::query::sql::metamodel::Expression[1] | 
+      let type = getExpressionType($e, $context);
+      if ($type == String, 
+        | processCastAsParse($c, $expContext, $context), 
+        | processCastAsCast($c, $expContext, $context));
+      
   ]);
 }
 
@@ -1167,6 +1205,40 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
   [
       processor('count', count_Any_MANY__Integer_1_, true),
       processor('distinct', distinct_T_MANY__T_MANY_, true),
+      processor('min', true, {args |
+        let type = $args->match([
+          v:VariableExpression[1] | $v.genericType.rawType->toOne(),
+          a:Any[*] | fail('Unsupported arg type'); Any;
+        ]);
+
+        [
+          pair(Number, |sfe(min_Number_MANY__Number_$0_1$_, $args)),
+          pair(Float, |sfe(min_Float_MANY__Float_$0_1$_, $args)),
+          pair(Integer, |sfe(min_Integer_MANY__Integer_$0_1$_, $args)),
+          pair(Decimal, |sfe(min_Number_MANY__Number_$0_1$_, $args)),
+          pair(Date, |sfe(min_Date_MANY__Date_$0_1$_, $args)),
+          pair(StrictDate, |sfe(min_StrictDate_MANY__StrictDate_$0_1$_, $args)),
+          pair(DateTime, |sfe(min_DateTime_MANY__DateTime_$0_1$_, $args)),
+          pair(String, |sfe(min_DateTime_MANY__DateTime_$0_1$_, $args))
+        ]->getValue($type, | sfe(min_X_MANY__X_$0_1$_, ^GenericType(rawType = $type), ^GenericType(rawType = $type), $args))->eval();
+      }),
+      processor('max', true, {args |
+        let type = $args->match([
+          v:VariableExpression[1] | $v.genericType.rawType->toOne(),
+          a:Any[*] | fail('Unsupported arg type'); Any;
+        ]);
+
+        [
+          pair(Number, |sfe(max_Number_MANY__Number_$0_1$_, $args)),
+          pair(Float, |sfe(max_Float_MANY__Float_$0_1$_, $args)),
+          pair(Integer, |sfe(max_Integer_MANY__Integer_$0_1$_, $args)),
+          pair(Decimal, |sfe(max_Number_MANY__Number_$0_1$_, $args)),
+          pair(Date, |sfe(max_Date_MANY__Date_$0_1$_, $args)),
+          pair(StrictDate, |sfe(max_StrictDate_MANY__StrictDate_$0_1$_, $args)),
+          pair(DateTime, |sfe(max_DateTime_MANY__DateTime_$0_1$_, $args)),
+          pair(String, |sfe(max_DateTime_MANY__DateTime_$0_1$_, $args))
+        ]->getValue($type, | sfe(max_X_MANY__X_$0_1$_, ^GenericType(rawType = $type), ^GenericType(rawType = $type), $args))->eval();
+      }),      
 
       //MATH
       processor('abs', abs_Number_1__Number_1_, false),
@@ -1212,6 +1284,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
         sfe($func, $args);
       }),
       processor('char_length', length_String_1__Integer_1_, false),
+      processor('length', length_String_1__Integer_1_, false),
       processor('concat', plus_String_MANY__String_1_, false),
       processor('lower', toLower_String_1__String_1_, false),
       processor('regexp_like', matches_String_1__String_1__Boolean_1_, false),
