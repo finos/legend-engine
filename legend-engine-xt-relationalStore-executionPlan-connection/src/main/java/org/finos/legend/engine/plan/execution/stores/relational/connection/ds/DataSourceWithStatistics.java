@@ -146,6 +146,11 @@ public class DataSourceWithStatistics
         return this.dataSource != null && ((HikariDataSource) dataSource).getHikariPoolMXBean().getActiveConnections() > 0;
     }
 
+    public long getActiveConnections()
+    {
+        return hasActiveConnections() ? ((HikariDataSource) dataSource).getHikariPoolMXBean().getActiveConnections() : (long) 0.00;
+    }
+
     public Properties getProperties()
     {
         return ((HikariDataSource) this.dataSource).getDataSourceProperties();

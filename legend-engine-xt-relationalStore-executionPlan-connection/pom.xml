@@ -259,6 +259,13 @@
         </dependency>
         <!-- Authentication -->
 
+        <!-- PROMETHEUS -->
+        <dependency>
+            <groupId>io.prometheus</groupId>
+            <artifactId>simpleclient</artifactId>
+        </dependency>
+        <!-- PROMETHEUS -->
+
         <!-- Test -->
         <dependency>
             <groupId>junit</groupId>
