@@ -1,3 +1,4 @@
+import meta::pure::alloy::connections::*;
 import meta::relational::functions::sqlQueryToString::snowflake::*;
 import meta::relational::functions::sqlQueryToString::default::*;
 import meta::relational::functions::sqlQueryToString::*;
@@ -7,6 +8,7 @@ import meta::relational::metamodel::*;
 import meta::relational::runtime::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
+import meta::pure::alloy::connections::alloy::specification::*;
 
 function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::snowflake::dbExtensionLoaderForSnowflake():DbExtensionLoader[1]
 {
@@ -34,7 +36,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
       columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
-      preAndFinallyExecutionSQLQuery = preAndFinallyExecutionSQLQueryForSnowflake_DbConfig_1__PreAndFinallyExecutionSQLQuery_MANY_
+      preAndFinallyExecutionSQLQuery = preAndFinallyExecutionSQLQueryForSnowflake_DbConfig_1__DatasourceSpecification_1__PreAndFinallyExecutionSQLQuery_MANY_
+      // preAndFinallyExecutionSQLQueryForSnowflake_DbConfig_1__RelationalDatabaseConnection_1__PreAndFinallyExecutionSQLQuery_MANY_
    );
 }
 
@@ -255,17 +258,20 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
        | '%s limit %s'->format($size));
 }
 
-function meta::relational::functions::sqlQueryToString::snowflake::preAndFinallyExecutionSQLQueryForSnowflake(dbConfig:DbConfig[1]): meta::relational::mapping::PreAndFinallyExecutionSQLQuery[*]
+function meta::relational::functions::sqlQueryToString::snowflake::preAndFinallyExecutionSQLQueryForSnowflake(dbConfig:DbConfig[1], ds: DatasourceSpecification[1]): meta::relational::mapping::PreAndFinallyExecutionSQLQuery[*]
 {
-  let set = ^AlterSQL(object = ^Session(), operation = [^SetOperation(propertyName = 'QUERY_TAG', propertyValue = ^Literal(value = '{"executionTraceID" : "${execID}", "engineUser" : "${userId}", "referer" : "${referer}"}'))]);
-  let setSQL =  $set.object->match([
-                        s:Session[1] | 'ALTER SESSION SET ' + $set.operation->map(o | $o->cast(@SetOperation).propertyName + ' = ' + $o->cast(@SetOperation).propertyValue.value->processLiteralValue($dbConfig))->makeString('',', ', ';')
-	                   ]);
-                     
-  let unset = ^AlterSQL(object = ^Session(), operation = [^UnSetOperation(propertyName = 'QUERY_TAG')]);
-  let unsetSQL =  $unset.object->match([
-                        s:Session[1] | 'ALTER SESSION UNSET ' + $unset.operation->map(o | $o->cast(@UnSetOperation).propertyName)->makeString('',', ', ';')
-	                   ]);
+  if($ds->instanceOf(SnowflakeDatasourceSpecification) && $ds->cast(@SnowflakeDatasourceSpecification).queryTagging->isNotEmpty() && $ds->cast(@SnowflakeDatasourceSpecification).queryTagging == true,
+    | let set = ^AlterSQL(object = ^Session(), operation = [^SetOperation(propertyName = 'QUERY_TAG', propertyValue = ^Literal(value = '{"executionTraceID" : "${execID}", "engineUser" : "${userId}", "referer" : "${referer}"}'))]);
+      let setSQL =  $set.object->match([
+                          s:Session[1] | 'ALTER SESSION SET ' + $set.operation->map(o | $o->cast(@SetOperation).propertyName + ' = ' + $o->cast(@SetOperation).propertyValue.value->processLiteralValue($dbConfig))->makeString('',', ', ';')
+                      ]);
+                      
+      let unset = ^AlterSQL(object = ^Session(), operation = [^UnSetOperation(propertyName = 'QUERY_TAG')]);
+      let unsetSQL =  $unset.object->match([
+                          s:Session[1] | 'ALTER SESSION UNSET ' + $unset.operation->map(o | $o->cast(@UnSetOperation).propertyName)->makeString('',', ', ';')
+                      ]);
 
-  ^meta::relational::mapping::PreAndFinallyExecutionSQLQuery(preQueryExecutionSQLQuery = $setSQL, finallyQueryExecutionSQLQuery = $unsetSQL);
+      ^meta::relational::mapping::PreAndFinallyExecutionSQLQuery(preQueryExecutionSQLQuery = $setSQL, finallyQueryExecutionSQLQuery = $unsetSQL);,
+    | []
+  );
 }
