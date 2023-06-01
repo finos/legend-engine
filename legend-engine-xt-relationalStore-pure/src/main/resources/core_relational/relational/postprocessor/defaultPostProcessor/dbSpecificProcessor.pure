@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::alloy::connections::*;
 import meta::relational::mapping::*;
 import meta::pure::mapping::*;
 import meta::relational::metamodel::relation::*;
@@ -38,10 +39,14 @@ function meta::relational::mapping::dbSpecificProcessor(query:SQLQuery[1], runti
 
    let dbConfig = createDbConfig($conn.type->toOne());
    if($dbConfig.dbExtension.preAndFinallyExecutionSQLQuery->isNotEmpty(),
-                | let sqlPairs = $dbConfig.preAndFinallyExecutionSQLQuery();
-                  let executionNodes = $sqlPairs->map(p | $p->cast(@PreAndFinallyExecutionSQLQuery).preQueryExecutionSQLQuery->toOne()->generateSQLExecNode($conn->toOne()));
-                  let finallyExecutionNodes = $sqlPairs->map(p | $p->cast(@PreAndFinallyExecutionSQLQuery).finallyQueryExecutionSQLQuery->toOne()->generateSQLExecNode($conn->toOne()));
-                  ^$postProcessorOutput(executionNodes = $executionNodes, finallyExecutionNodes = $finallyExecutionNodes);,
+                | let sqlPairs = if($conn->isNotEmpty() && $conn->toOne()->instanceOf(RelationalDatabaseConnection),
+                                      |$dbConfig.preAndFinallyExecutionSQLQuery($conn->toOne()->cast(@RelationalDatabaseConnection).datasourceSpecification),
+                                      |[]);
+                  if($sqlPairs->isNotEmpty(),
+                    | let executionNodes = $sqlPairs->map(p | $p->cast(@PreAndFinallyExecutionSQLQuery).preQueryExecutionSQLQuery->toOne()->generateSQLExecNode($conn->toOne()));
+                      let finallyExecutionNodes = $sqlPairs->map(p | $p->cast(@PreAndFinallyExecutionSQLQuery).finallyQueryExecutionSQLQuery->toOne()->generateSQLExecNode($conn->toOne()));
+                      ^$postProcessorOutput(executionNodes = $executionNodes, finallyExecutionNodes = $finallyExecutionNodes);,
+                    | $postProcessorOutput);,
                 | $postProcessorOutput);
 }
 
