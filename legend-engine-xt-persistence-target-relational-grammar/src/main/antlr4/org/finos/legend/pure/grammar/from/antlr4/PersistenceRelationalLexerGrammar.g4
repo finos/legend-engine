@@ -23,6 +23,15 @@ TEMPORAL_BI:                                'Bitemporal';
 TEMPORAL_PROCESSING_DIMENSION:              'processingDimension';
 TEMPORAL_SOURCE_DERIVED_DIMENSION:          'sourceDerivedDimension';
 
+// AUDITING
+AUDIT:                                      'auditing';
+AUDIT_DATE_TIME_NAME:                       'dateTimeName';
+
+// UPDATES HANDLING
+UPDATES_HANDLING:                           'updatesHandling';
+UPDATES_HANDLING_APPEND_ONLY:               'appendOnly';
+UPDATES_HANDLING_OVERWRITE:                 'overwrite';
+
 // PROCESSING DIMENSION
 PROCESSING_BATCH_ID:                        'BatchId';
 PROCESSING_BATCH_ID_AND_DATE_TIME:          'BatchIdAndDateTime';

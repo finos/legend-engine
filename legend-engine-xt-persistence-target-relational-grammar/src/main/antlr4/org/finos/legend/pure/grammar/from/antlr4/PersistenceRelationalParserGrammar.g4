@@ -40,10 +40,12 @@ temporality:                                TARGET_RELATIONAL_TEMPORAL COLON
                                                 )
 ;
 nontemporal:                                NONE
-                                                (
-                                                    SEMI_COLON
-                                                    | (BRACE_OPEN BRACE_CLOSE)
-                                                )
+                                                BRACE_OPEN
+                                                    (
+                                                        auditing
+                                                        | updatesHandling
+                                                    )*
+                                                BRACE_CLOSE
 ;
 unitemporal:                                TEMPORAL_UNI
                                                 BRACE_OPEN
@@ -57,6 +59,38 @@ bitemporal:                                 TEMPORAL_BI
                                                         | sourceDerivedDimension
                                                     )*
                                                 BRACE_CLOSE
+;
+auditing:                                   AUDIT COLON
+                                                (
+                                                    auditingDateTime
+                                                )
+;
+auditingDateTime:                           DATE_TIME
+                                                BRACE_OPEN
+                                                    (
+                                                        auditingDateTimeName
+                                                    )
+                                                BRACE_CLOSE
+;
+auditingDateTimeName:                       AUDIT_DATE_TIME_NAME COLON identifier SEMI_COLON
+;
+updatesHandling:                            UPDATES_HANDLING COLON
+                                                (
+                                                    updatesHandlingAppendOnly
+                                                    | updatesHandlingOverwrite
+                                                )
+;
+updatesHandlingAppendOnly:                  UPDATES_HANDLING_APPEND_ONLY
+                                                (
+                                                    SEMI_COLON
+                                                    | (BRACE_OPEN BRACE_CLOSE)
+                                                )
+;
+updatesHandlingOverwrite:                   UPDATES_HANDLING_OVERWRITE
+                                                (
+                                                    SEMI_COLON
+                                                    | (BRACE_OPEN BRACE_CLOSE)
+                                                )
 ;
 processingDimension:                        TEMPORAL_PROCESSING_DIMENSION COLON
                                                 (

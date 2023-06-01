@@ -63,6 +63,47 @@ meta::pure::persistence::relational::metamodel::BitemporalMilestoning extends Mi
 }
 
 /**********
+ * auditing
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::Audit
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::AuditDateTime extends Audit
+{
+  dateTimeName: meta::relational::metamodel::Column[1];
+}
+
+/**********
+ * auditing
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::UpdatesHandling
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::AppendOnly extends UpdatesHandling
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::Overwrite extends UpdatesHandling
+{
+}
+
+/**********
  * dimensions
  **********/
 
