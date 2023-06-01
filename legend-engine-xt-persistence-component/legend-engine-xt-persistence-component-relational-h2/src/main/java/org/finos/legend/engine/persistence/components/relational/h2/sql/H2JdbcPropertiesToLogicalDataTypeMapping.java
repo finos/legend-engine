@@ -20,7 +20,7 @@ import org.finos.legend.engine.persistence.components.relational.sql.JdbcPropert
 
 public class H2JdbcPropertiesToLogicalDataTypeMapping implements JdbcPropertiesToLogicalDataTypeMapping
 {
-    public FieldType getDataType(String typeName, String dataType, int columnSize, int decimalDigits)
+    public FieldType getDataType(String typeName, String dataType, Integer columnSize, Integer decimalDigits)
     {
         switch (typeName)
         {

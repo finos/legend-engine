@@ -23,7 +23,7 @@ public class SnowflakeJdbcPropertiesToLogicalDataTypeMapping implements JdbcProp
 
     // Reference: https://docs.snowflake.com/en/sql-reference/data-types.html
 
-    public FieldType getDataType(String typeName, String dataType, int columnSize, int decimalDigits)
+    public FieldType getDataType(String typeName, String dataType, Integer columnSize, Integer decimalDigits)
     {
         switch (typeName)
         {

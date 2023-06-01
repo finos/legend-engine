@@ -20,6 +20,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Index;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
+import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutionHelper;
 import org.finos.legend.engine.persistence.components.relational.sql.DataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.sql.JdbcPropertiesToLogicalDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause;
@@ -46,8 +47,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-public class JdbcHelper
-{
+public class JdbcHelper implements RelationalExecutionHelper {
     private static final Logger LOGGER = LoggerFactory.getLogger(JdbcHelper.class);
 
     private final Connection connection;
@@ -79,6 +79,7 @@ public class JdbcHelper
         return connection;
     }
 
+    @Override
     public void beginTransaction()
     {
         try
@@ -92,6 +93,7 @@ public class JdbcHelper
         }
     }
 
+    @Override
     public void commitTransaction()
     {
         if (this.transactionManager != null)
@@ -107,6 +109,7 @@ public class JdbcHelper
         }
     }
 
+    @Override
     public void revertTransaction()
     {
         if (this.transactionManager != null)
@@ -122,6 +125,7 @@ public class JdbcHelper
         }
     }
 
+    @Override
     public void closeTransactionManager()
     {
         try
@@ -138,6 +142,7 @@ public class JdbcHelper
         }
     }
 
+    @Override
     public boolean doesTableExist(Dataset dataset)
     {
         try
@@ -154,6 +159,7 @@ public class JdbcHelper
         }
     }
 
+    @Override
     public void validateDatasetSchema(Dataset dataset, DataTypeMapping datatypeMapping)
     {
         try
@@ -243,6 +249,7 @@ public class JdbcHelper
         }
     }
 
+    @Override
     public Dataset constructDatasetFromDatabase(String tableName, String schemaName, String databaseName, JdbcPropertiesToLogicalDataTypeMapping mapping)
     {
         try
@@ -379,12 +386,14 @@ public class JdbcHelper
     }
 
 
+    @Override
     public void executeStatement(String sql)
     {
         List<String> sqls = Collections.singletonList(sql);
         executeStatements(sqls);
     }
 
+    @Override
     public void executeStatements(List<String> sqls)
     {
         if (this.transactionManager != null)
@@ -447,6 +456,7 @@ public class JdbcHelper
         }
     }
 
+    @Override
     public List<Map<String, Object>> executeQuery(String sql)
     {
         if (this.transactionManager != null)
@@ -482,6 +492,7 @@ public class JdbcHelper
         }
     }
 
+    @Override
     public void close()
     {
         try

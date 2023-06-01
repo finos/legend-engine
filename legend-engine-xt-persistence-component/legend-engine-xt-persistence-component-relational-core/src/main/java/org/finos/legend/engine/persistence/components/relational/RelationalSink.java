@@ -19,7 +19,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNod
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
-import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
+import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutionHelper;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.sink.Sink;
@@ -116,16 +116,16 @@ public abstract class RelationalSink implements Sink
 
     public interface DatasetExists
     {
-        boolean apply(Executor<SqlGen, TabularData, SqlPlan> executor, JdbcHelper sink, Dataset dataset);
+        boolean apply(Executor<SqlGen, TabularData, SqlPlan> executor, RelationalExecutionHelper sink, Dataset dataset);
     }
 
     public interface ValidateMainDatasetSchema
     {
-        void execute(Executor<SqlGen, TabularData, SqlPlan> executor, JdbcHelper sink, Dataset dataset);
+        void execute(Executor<SqlGen, TabularData, SqlPlan> executor, RelationalExecutionHelper sink, Dataset dataset);
     }
 
     public interface ConstructDatasetFromDatabase
     {
-        Dataset execute(Executor<SqlGen, TabularData, SqlPlan> executor, JdbcHelper sink, String tableName, String schemaName, String databaseName);
+        Dataset execute(Executor<SqlGen, TabularData, SqlPlan> executor, RelationalExecutionHelper sink, String tableName, String schemaName, String databaseName);
     }
 }

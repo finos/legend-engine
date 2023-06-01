@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.relational.jdbc;
 
+import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutionHelper;
 import org.finos.legend.engine.persistence.components.relational.h2.H2Sink;
 import org.junit.jupiter.api.Test;
 
@@ -35,7 +36,7 @@ public class JdbcHelperTest
     @Test
     void prepare() throws Exception
     {
-        JdbcHelper sink = JdbcHelper.of(H2Sink.createConnection(H2_USER_NAME, H2_PASSWORD, H2_JDBC_URL));
+        RelationalExecutionHelper sink = JdbcHelper.of(H2Sink.createConnection(H2_USER_NAME, H2_PASSWORD, H2_JDBC_URL));
 
         // Create table example
         List<String> list2 = new ArrayList<>();

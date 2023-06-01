@@ -33,6 +33,7 @@ import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.LowerCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer;
+import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutionHelper;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
 import org.finos.legend.engine.persistence.components.relational.memsql.sql.MemSqlDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.memsql.sql.visitor.AlterVisitor;
@@ -53,9 +54,6 @@ import org.finos.legend.engine.persistence.components.relational.transformer.Rel
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.util.Capability;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -128,18 +126,6 @@ public class MemSqlSink extends AnsiSqlSink
         return INSTANCE;
     }
 
-    public static Connection createConnection(String user, String pwd, String jdbcUrl)
-    {
-        try
-        {
-            return DriverManager.getConnection(jdbcUrl, user, pwd);
-        }
-        catch (SQLException e)
-        {
-            throw new IllegalArgumentException(e);
-        }
-    }
-
     private MemSqlSink()
     {
         super(
@@ -176,7 +162,7 @@ public class MemSqlSink extends AnsiSqlSink
     static final ValidateMainDatasetSchema VALIDATE_MAIN_DATASET_SCHEMA = new ValidateMainDatasetSchema()
     {
         @Override
-        public void execute(Executor<SqlGen, TabularData, SqlPlan> executor, JdbcHelper sink, Dataset dataset)
+        public void execute(Executor<SqlGen, TabularData, SqlPlan> executor, RelationalExecutionHelper sink, Dataset dataset)
         {
             RelationalTransformer transformer = new RelationalTransformer(MemSqlSink.get());
             LogicalPlan validateDatasetSchemaLogicalPlan = LogicalPlanFactory.getLogicalPlanForValidateDatasetSchema(dataset);

@@ -43,5 +43,5 @@ public interface JdbcPropertiesToLogicalDataTypeMapping
     public static String OBJECT = "OBJECT";
     public static String ARRAY = "ARRAY";
 
-    FieldType getDataType(String typeName, String dataType, int columnSize, int decimalDigits);
+    FieldType getDataType(String typeName, String dataType, Integer columnSize, Integer decimalDigits);
 }
