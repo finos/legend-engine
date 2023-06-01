@@ -19,26 +19,7 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static org.finos.legend.engine.persistence.components.BaseTestUtils.colBigint;
-import static org.finos.legend.engine.persistence.components.BaseTestUtils.colBinary;
-import static org.finos.legend.engine.persistence.components.BaseTestUtils.colBoolean;
-import static org.finos.legend.engine.persistence.components.BaseTestUtils.colChar;
-import static org.finos.legend.engine.persistence.components.BaseTestUtils.colDate;
-import static org.finos.legend.engine.persistence.components.BaseTestUtils.colDatetime;
-import static org.finos.legend.engine.persistence.components.BaseTestUtils.colDecimal;
-import static org.finos.legend.engine.persistence.components.BaseTestUtils.colDouble;
-import static org.finos.legend.engine.persistence.components.BaseTestUtils.colFloat;
-import static org.finos.legend.engine.persistence.components.BaseTestUtils.colInt;
-import static org.finos.legend.engine.persistence.components.BaseTestUtils.colInteger;
-import static org.finos.legend.engine.persistence.components.BaseTestUtils.colNumeric;
-import static org.finos.legend.engine.persistence.components.BaseTestUtils.colReal;
-import static org.finos.legend.engine.persistence.components.BaseTestUtils.colSmallint;
-import static org.finos.legend.engine.persistence.components.BaseTestUtils.colString;
-import static org.finos.legend.engine.persistence.components.BaseTestUtils.colTime;
-import static org.finos.legend.engine.persistence.components.BaseTestUtils.colTimestamp;
-import static org.finos.legend.engine.persistence.components.BaseTestUtils.colTinyint;
-import static org.finos.legend.engine.persistence.components.BaseTestUtils.colVarBinary;
-import static org.finos.legend.engine.persistence.components.BaseTestUtils.colVarchar;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.*;
 
 public class DataTypeMappingTest
 {
@@ -46,26 +27,41 @@ public class DataTypeMappingTest
     @Test
     void testDataType() throws SqlDomException
     {
-        Assertions.assertEquals("INTEGER", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colInt.type())));
-        Assertions.assertEquals("INTEGER", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colInteger.type())));
-        Assertions.assertEquals("INTEGER", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colBigint.type())));
-        Assertions.assertEquals("INTEGER", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colTinyint.type())));
-        Assertions.assertEquals("INTEGER", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colSmallint.type())));
-        Assertions.assertEquals("STRING", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colChar.type())));
-        Assertions.assertEquals("STRING", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colVarchar.type())));
-        Assertions.assertEquals("STRING", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colString.type())));
-        Assertions.assertEquals("TIMESTAMP", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colTimestamp.type())));
-        Assertions.assertEquals("DATETIME", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colDatetime.type())));
-        Assertions.assertEquals("DATE", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colDate.type())));
-        Assertions.assertEquals("FLOAT", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colReal.type())));
-        Assertions.assertEquals("FLOAT", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colFloat.type())));
-        Assertions.assertEquals("NUMERIC(10,4)", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colDecimal.type())));
-        Assertions.assertEquals("FLOAT", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colDouble.type())));
-        Assertions.assertEquals("BYTES", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colBinary.type())));
-        Assertions.assertEquals("TIME", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colTime.type())));
+        Assertions.assertEquals("INT64", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colInt.type())));
+        Assertions.assertEquals("INT64", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colInteger.type())));
+        Assertions.assertEquals("INT64", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colBigint.type())));
+        Assertions.assertEquals("INT64", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colTinyint.type())));
+        Assertions.assertEquals("INT64", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colSmallint.type())));
+        Assertions.assertEquals("INT64", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colInt64.type())));
+        Assertions.assertEquals("NUMERIC", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colNumber.type())));
         Assertions.assertEquals("NUMERIC", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colNumeric.type())));
-        Assertions.assertEquals("BOOLEAN", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colBoolean.type())));
-        Assertions.assertEquals("BYTES(10)", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colVarBinary.type())));
+        Assertions.assertEquals("NUMERIC", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colDecimal.type())));
+        Assertions.assertEquals("NUMERIC(10)", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colDecimalWithPrecision.type())));
+        Assertions.assertEquals("NUMERIC(10,4)", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colDecimalWithScale.type())));
+        Assertions.assertEquals("FLOAT64", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colReal.type())));
+        Assertions.assertEquals("FLOAT64", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colFloat.type())));
+        Assertions.assertEquals("FLOAT64", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colDouble.type())));
+        Assertions.assertEquals("FLOAT64", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colFloat64.type())));
+        Assertions.assertEquals("STRING", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colChar.type())));
+        Assertions.assertEquals("STRING", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colCharacter.type())));
+        Assertions.assertEquals("STRING", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colVarchar.type())));
+        Assertions.assertEquals("STRING", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colLongVarchar.type())));
+        Assertions.assertEquals("STRING", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colLongtext.type())));
+        Assertions.assertEquals("STRING", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colText.type())));
+        Assertions.assertEquals("STRING", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colString.type())));
+        Assertions.assertEquals("STRING(16)", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colStringWithLength.type())));
+        Assertions.assertEquals("BYTES", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colBinary.type())));
+        Assertions.assertEquals("BYTES", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colVarBinary.type())));
+        Assertions.assertEquals("BYTES", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colLongVarBinary.type())));
+        Assertions.assertEquals("BYTES", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colBytes.type())));
+        Assertions.assertEquals("BYTES(10)", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colBytesWithLength.type())));
+        Assertions.assertEquals("DATE", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colDate.type())));
+        Assertions.assertEquals("TIME", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colTime.type())));
+        Assertions.assertEquals("DATETIME", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colDatetime.type())));
+        Assertions.assertEquals("TIMESTAMP", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colTimestamp.type())));
+        Assertions.assertEquals("BOOL", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colBoolean.type())));
+        Assertions.assertEquals("BOOL", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colBool.type())));
+        Assertions.assertEquals("JSON", getGeneratedSql(new BigQueryDataTypeMapping().getDataType(colJson.type())));
     }
 
     private String getGeneratedSql(SqlGen sqlGen) throws SqlDomException

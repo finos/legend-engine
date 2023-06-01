@@ -309,26 +309,26 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         String tempWithDeleteIndicatorName = operations.get(0).preActionsSql().get(3).split("CREATE TABLE IF NOT EXISTS ")[1].split("\\(")[0];
 
         String expectedBitemporalFromOnlyDefaultTempTableCreateQuery = "CREATE TABLE IF NOT EXISTS " + tempName +
-                "(`id` INTEGER NOT NULL," +
+                "(`id` INT64 NOT NULL," +
                 "`name` STRING NOT NULL," +
-                "`amount` FLOAT," +
+                "`amount` FLOAT64," +
                 "`digest` STRING," +
-                "`batch_id_in` INTEGER NOT NULL," +
-                "`batch_id_out` INTEGER," +
+                "`batch_id_in` INT64 NOT NULL," +
+                "`batch_id_out` INT64," +
                 "`validity_from_target` DATETIME NOT NULL," +
                 "`validity_through_target` DATETIME," +
                 "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`) NOT ENFORCED)";
 
         String expectedBitemporalFromOnlyDefaultTempTableWithDeleteIndicatorCreateQuery = "CREATE TABLE IF NOT EXISTS " + tempWithDeleteIndicatorName +
-                "(`id` INTEGER NOT NULL," +
+                "(`id` INT64 NOT NULL," +
                 "`name` STRING NOT NULL," +
-                "`amount` FLOAT," +
+                "`amount` FLOAT64," +
                 "`digest` STRING," +
-                "`batch_id_in` INTEGER NOT NULL," +
-                "`batch_id_out` INTEGER," +
+                "`batch_id_in` INT64 NOT NULL," +
+                "`batch_id_out` INT64," +
                 "`validity_from_target` DATETIME NOT NULL," +
                 "`validity_through_target` DATETIME," +
-                "`delete_indicator` BOOLEAN," +
+                "`delete_indicator` BOOL," +
                 "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`) NOT ENFORCED)";
 
         String expectedStageToTemp = "INSERT INTO " + tempName + " " +
@@ -758,36 +758,36 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         String stageWithoutDuplicatesName = operations.get(0).preActionsSql().get(4).split("CREATE TABLE IF NOT EXISTS ")[1].split("\\(")[0];
 
         String expectedBitemporalFromOnlyDefaultTempTableCreateQuery = "CREATE TABLE IF NOT EXISTS " + tempName +
-                "(`id` INTEGER NOT NULL," +
+                "(`id` INT64 NOT NULL," +
                 "`name` STRING NOT NULL," +
-                "`amount` FLOAT," +
+                "`amount` FLOAT64," +
                 "`digest` STRING," +
-                "`batch_id_in` INTEGER NOT NULL," +
-                "`batch_id_out` INTEGER," +
+                "`batch_id_in` INT64 NOT NULL," +
+                "`batch_id_out` INT64," +
                 "`validity_from_target` DATETIME NOT NULL," +
                 "`validity_through_target` DATETIME," +
                 "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`) NOT ENFORCED)";
 
         String expectedBitemporalFromOnlyDefaultTempTableWithDeleteIndicatorCreateQuery = "CREATE TABLE IF NOT EXISTS " + tempWithDeleteIndicatorName +
-                "(`id` INTEGER NOT NULL," +
+                "(`id` INT64 NOT NULL," +
                 "`name` STRING NOT NULL," +
-                "`amount` FLOAT," +
+                "`amount` FLOAT64," +
                 "`digest` STRING," +
-                "`batch_id_in` INTEGER NOT NULL," +
-                "`batch_id_out` INTEGER," +
+                "`batch_id_in` INT64 NOT NULL," +
+                "`batch_id_out` INT64," +
                 "`validity_from_target` DATETIME NOT NULL," +
                 "`validity_through_target` DATETIME," +
-                "`delete_indicator` BOOLEAN," +
+                "`delete_indicator` BOOL," +
                 "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`) NOT ENFORCED)";
 
         String expectedBitemporalFromOnlyStageWithDeleteIndicatorWithDataSplitWithoutDuplicatesTableCreateQuery = "CREATE TABLE IF NOT EXISTS " + stageWithoutDuplicatesName +
-                "(`id` INTEGER NOT NULL," +
+                "(`id` INT64 NOT NULL," +
                 "`name` STRING NOT NULL," +
-                "`amount` FLOAT," +
+                "`amount` FLOAT64," +
                 "`validity_from_reference` DATETIME NOT NULL," +
                 "`digest` STRING," +
                 "`delete_indicator` STRING," +
-                "`data_split` INTEGER NOT NULL," +
+                "`data_split` INT64 NOT NULL," +
                 "PRIMARY KEY (`id`, `name`, `validity_from_reference`, `data_split`) NOT ENFORCED)";
 
         String expectedStageToStageWithoutDuplicates = "INSERT INTO " + stageWithoutDuplicatesName + " " +

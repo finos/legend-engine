@@ -62,7 +62,7 @@ public class JdbcTransactionManager
         this.setAutoCommitToPreviousState();
     }
 
-    public void setAutoCommitToPreviousState() throws SQLException
+    private void setAutoCommitToPreviousState() throws SQLException
     {
         this.connection.setAutoCommit(this.previousAutoCommit);
     }
@@ -70,18 +70,6 @@ public class JdbcTransactionManager
     public boolean executeInCurrentTransaction(String sql) throws SQLException
     {
         return this.statement.execute(sql);
-    }
-
-    public void addToCurrentBatchForExecution(String sql) throws SQLException
-    {
-        this.statement.addBatch(sql);
-    }
-
-    public int[] executeCurrentBatchInTransaction() throws SQLException
-    {
-        int[] batchResults = this.statement.executeBatch();
-        this.statement.clearBatch();
-        return batchResults;
     }
 
     // todo: find a better way to return both the data and schema

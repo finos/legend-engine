@@ -12,36 +12,45 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.relational.executor;
+package org.finos.legend.engine.persistence.components.relational.bigquery.executor;
 
+import com.google.cloud.bigquery.*;
+import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
-import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
+import org.finos.legend.engine.persistence.components.relational.bigquery.BigQuerySink;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.statements.DDLStatement;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
-public class RelationalExecutor implements Executor<SqlGen, TabularData, SqlPlan>
+public class BigQueryExecutor implements Executor<SqlGen, TabularData, SqlPlan>
 {
-    private final RelationalSink relationalSink;
-    private final RelationalExecutionHelper relationalExecutionHelper;
+    private final BigQuerySink bigQuerySink;
+    private final BigQueryHelper bigQueryHelper;
 
-    public RelationalExecutor(RelationalSink relationalSink, RelationalExecutionHelper relationalExecutionHelper)
+    public BigQueryExecutor(BigQuerySink bigQuerySink, BigQueryHelper bigQueryHelper)
     {
-        this.relationalSink = relationalSink;
-        this.relationalExecutionHelper = relationalExecutionHelper;
+        this.bigQuerySink = bigQuerySink;
+        this.bigQueryHelper = bigQueryHelper;
     }
 
     @Override
     public void executePhysicalPlan(SqlPlan physicalPlan)
     {
+        boolean containsDDLStatements = physicalPlan.ops().stream().anyMatch(DDLStatement.class::isInstance);
         List<String> sqlList = physicalPlan.getSqlList();
-        relationalExecutionHelper.executeStatements(sqlList);
+        if(containsDDLStatements) {
+            for (String sql : sqlList) {
+                bigQueryHelper.executeQuery(sql);
+            }
+        }
     }
 
     @Override
@@ -51,7 +60,7 @@ public class RelationalExecutor implements Executor<SqlGen, TabularData, SqlPlan
         for (String sql : sqlList)
         {
             String enrichedSql = getEnrichedSql(placeholderKeyValues, sql);
-            relationalExecutionHelper.executeStatement(enrichedSql);
+            bigQueryHelper.executeStatement(enrichedSql);
         }
     }
 
@@ -61,7 +70,7 @@ public class RelationalExecutor implements Executor<SqlGen, TabularData, SqlPlan
         List<TabularData> resultSetList = new ArrayList<>();
         for (String sql : physicalPlan.getSqlList())
         {
-            List<Map<String, Object>> queryResult = relationalExecutionHelper.executeQuery(sql);
+            List<Map<String, Object>> queryResult = bigQueryHelper.executeQuery(sql);
             if (!queryResult.isEmpty())
             {
                 resultSetList.add(new TabularData(queryResult));
@@ -77,7 +86,7 @@ public class RelationalExecutor implements Executor<SqlGen, TabularData, SqlPlan
         for (String sql : physicalPlan.getSqlList())
         {
             String enrichedSql = getEnrichedSql(placeholderKeyValues, sql);
-            List<Map<String, Object>> queryResult = relationalExecutionHelper.executeQuery(enrichedSql);
+            List<Map<String, Object>> queryResult = bigQueryHelper.executeQuery(enrichedSql);
             if (!queryResult.isEmpty())
             {
                 resultSetList.add(new TabularData(queryResult));
@@ -89,43 +98,43 @@ public class RelationalExecutor implements Executor<SqlGen, TabularData, SqlPlan
     @Override
     public boolean datasetExists(Dataset dataset)
     {
-        return relationalSink.datasetExistsFn().apply(this, relationalExecutionHelper, dataset);
+        return bigQuerySink.datasetExistsFn().apply(this, bigQueryHelper, dataset);
     }
 
     @Override
     public void validateMainDatasetSchema(Dataset dataset)
     {
-        relationalSink.validateMainDatasetSchemaFn().execute(this, relationalExecutionHelper, dataset);
+        bigQuerySink.validateMainDatasetSchemaFn().execute(this, bigQueryHelper, dataset);
     }
 
     @Override
     public Dataset constructDatasetFromDatabase(String tableName, String schemaName, String databaseName)
     {
-        return relationalSink.constructDatasetFromDatabaseFn().execute(this, relationalExecutionHelper, tableName, schemaName, databaseName);
+        return bigQuerySink.constructDatasetFromDatabaseFn().execute(this, bigQueryHelper, tableName, schemaName, databaseName);
     }
 
     @Override
     public void begin()
     {
-        relationalExecutionHelper.beginTransaction();
+        bigQueryHelper.beginTransaction();
     }
 
     @Override
     public void commit()
     {
-        relationalExecutionHelper.commitTransaction();
+        bigQueryHelper.commitTransaction();
     }
 
     @Override
     public void revert()
     {
-        relationalExecutionHelper.revertTransaction();
+        bigQueryHelper.revertTransaction();
     }
 
     @Override
     public void close()
     {
-        relationalExecutionHelper.closeTransactionManager();
+        bigQueryHelper.closeTransactionManager();
     }
 
     private String getEnrichedSql(Map<String, String> placeholderKeyValues, String sql)
@@ -137,4 +146,5 @@ public class RelationalExecutor implements Executor<SqlGen, TabularData, SqlPlan
         }
         return enrichedSql;
     }
+
 }

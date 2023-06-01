@@ -102,30 +102,6 @@ public class SnowflakeSink extends AnsiSqlSink
         return INSTANCE;
     }
 
-    public static Connection createConnection(String user,
-                                              String pwd,
-                                              String jdbcUrl,
-                                              String account,
-                                              String db,
-                                              String schema)
-    {
-        Properties properties = new Properties();
-        properties.put("user", user);
-        properties.put("password", pwd);
-        properties.put("account", account);
-        properties.put("db", db);
-        properties.put("schema", schema);
-
-        try
-        {
-            return DriverManager.getConnection(jdbcUrl, properties);
-        }
-        catch (SQLException e)
-        {
-            throw new IllegalArgumentException(e);
-        }
-    }
-
     private SnowflakeSink()
     {
         super(

@@ -16,12 +16,12 @@ package org.finos.legend.engine.persistence.components.relational.bigquery.sqldo
 
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.VariableSizeDataType;
 
-public class Float extends VariableSizeDataType
+public class Float64 extends VariableSizeDataType
 {
 
-    public Float()
+    public Float64()
     {
-        super("FLOAT");
+        super("FLOAT64");
     }
 
 }

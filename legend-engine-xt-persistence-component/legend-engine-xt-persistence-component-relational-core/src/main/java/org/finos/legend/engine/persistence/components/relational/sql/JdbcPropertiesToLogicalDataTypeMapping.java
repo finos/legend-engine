@@ -44,5 +44,5 @@ public interface JdbcPropertiesToLogicalDataTypeMapping
     String ARRAY = "ARRAY";
     String CHARACTER_VARYING = "CHARACTER VARYING";
 
-    FieldType getDataType(String typeName, String dataType, int columnSize, int decimalDigits);
+    FieldType getDataType(String typeName, String dataType, Integer columnSize, Integer decimalDigits);
 }

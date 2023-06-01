@@ -47,27 +47,41 @@ public class CreateTableTest
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
         String expected = "CREATE TABLE IF NOT EXISTS `my_db`.`my_schema`.`my_table`(" +
-                "`col_int` INTEGER NOT NULL," +
-                "`col_integer` INTEGER NOT NULL," +
-                "`col_bigint` INTEGER," +
-                "`col_tinyint` INTEGER," +
-                "`col_smallint` INTEGER," +
-                "`col_char` STRING," +
-                "`col_varchar` STRING," +
-                "`col_string` STRING," +
-                "`col_timestamp` TIMESTAMP," +
-                "`col_datetime` DATETIME," +
-                "`col_date` DATE NOT NULL," +
-                "`col_real` FLOAT," +
-                "`col_float` FLOAT," +
-                "`col_decimal` NUMERIC(10,4)," +
-                "`col_double` FLOAT," +
-                "`col_binary` BYTES," +
-                "`col_time` TIME," +
+                "`col_int` INT64 NOT NULL," +
+                "`col_integer` INT64 NOT NULL," +
+                "`col_bigint` INT64," +
+                "`col_tinyint` INT64," +
+                "`col_smallint` INT64," +
+                "`col_int64` INT64," +
+                "`col_number` NUMERIC," +
                 "`col_numeric` NUMERIC," +
-                "`col_boolean` BOOLEAN," +
-                "`col_varbinary` BYTES(10)," +
-                "PRIMARY KEY (`col_int`, `col_date`) NOT ENFORCED)";
+                "`col_decimal` NUMERIC," +
+                "`col_decimal_with_precision` NUMERIC(10)," +
+                "`col_decimal_with_scale` NUMERIC(10,4)," +
+                "`col_real` FLOAT64," +
+                "`col_float` FLOAT64," +
+                "`col_double` FLOAT64," +
+                "`col_float64` FLOAT64," +
+                "`col_char` STRING," +
+                "`col_character` STRING," +
+                "`col_varchar` STRING," +
+                "`col_longvarchar` STRING," +
+                "`col_longtext` STRING," +
+                "`col_text` STRING," +
+                "`col_string` STRING," +
+                "`col_string_with_length` STRING(16)," +
+                "`col_binary` BYTES," +
+                "`col_varbinary` BYTES," +
+                "`col_longvarbinary` BYTES," +
+                "`col_bytes` BYTES," +
+                "`col_bytes_with_length` BYTES(10)," +
+                "`col_date` DATE NOT NULL," +
+                "`col_time` TIME," +
+                "`col_datetime` DATETIME," +
+                "`col_timestamp` TIMESTAMP," +
+                "`col_boolean` BOOL," +
+                "`col_bool` BOOL," +
+                "`col_json` JSON,PRIMARY KEY (`col_int`, `col_date`) NOT ENFORCED)";
 
         Assertions.assertEquals(expected, list.get(0));
     }
@@ -88,26 +102,41 @@ public class CreateTableTest
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
         String expected = "CREATE TABLE IF NOT EXISTS `MY_DB`.`MY_SCHEMA`.`MY_TABLE`(" +
-                "`COL_INT` INTEGER NOT NULL," +
-                "`COL_INTEGER` INTEGER NOT NULL," +
-                "`COL_BIGINT` INTEGER," +
-                "`COL_TINYINT` INTEGER," +
-                "`COL_SMALLINT` INTEGER," +
-                "`COL_CHAR` STRING," +
-                "`COL_VARCHAR` STRING," +
-                "`COL_STRING` STRING," +
-                "`COL_TIMESTAMP` TIMESTAMP," +
-                "`COL_DATETIME` DATETIME," +
-                "`COL_DATE` DATE NOT NULL," +
-                "`COL_REAL` FLOAT," +
-                "`COL_FLOAT` FLOAT," +
-                "`COL_DECIMAL` NUMERIC(10,4)," +
-                "`COL_DOUBLE` FLOAT," +
-                "`COL_BINARY` BYTES," +
-                "`COL_TIME` TIME," +
+                "`COL_INT` INT64 NOT NULL," +
+                "`COL_INTEGER` INT64 NOT NULL," +
+                "`COL_BIGINT` INT64," +
+                "`COL_TINYINT` INT64," +
+                "`COL_SMALLINT` INT64," +
+                "`COL_INT64` INT64," +
+                "`COL_NUMBER` NUMERIC," +
                 "`COL_NUMERIC` NUMERIC," +
-                "`COL_BOOLEAN` BOOLEAN," +
-                "`COL_VARBINARY` BYTES(10)," +
+                "`COL_DECIMAL` NUMERIC," +
+                "`COL_DECIMAL_WITH_PRECISION` NUMERIC(10)," +
+                "`COL_DECIMAL_WITH_SCALE` NUMERIC(10,4)," +
+                "`COL_REAL` FLOAT64," +
+                "`COL_FLOAT` FLOAT64," +
+                "`COL_DOUBLE` FLOAT64," +
+                "`COL_FLOAT64` FLOAT64," +
+                "`COL_CHAR` STRING," +
+                "`COL_CHARACTER` STRING," +
+                "`COL_VARCHAR` STRING," +
+                "`COL_LONGVARCHAR` STRING," +
+                "`COL_LONGTEXT` STRING," +
+                "`COL_TEXT` STRING," +
+                "`COL_STRING` STRING," +
+                "`COL_STRING_WITH_LENGTH` STRING(16)," +
+                "`COL_BINARY` BYTES," +
+                "`COL_VARBINARY` BYTES," +
+                "`COL_LONGVARBINARY` BYTES," +
+                "`COL_BYTES` BYTES," +
+                "`COL_BYTES_WITH_LENGTH` BYTES(10)," +
+                "`COL_DATE` DATE NOT NULL," +
+                "`COL_TIME` TIME," +
+                "`COL_DATETIME` DATETIME," +
+                "`COL_TIMESTAMP` TIMESTAMP," +
+                "`COL_BOOLEAN` BOOL," +
+                "`COL_BOOL` BOOL," +
+                "`COL_JSON` JSON," +
                 "PRIMARY KEY (`COL_INT`, `COL_DATE`) NOT ENFORCED)";
 
         Assertions.assertEquals(expected, list.get(0));
@@ -129,11 +158,11 @@ public class CreateTableTest
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
         String expected = "CREATE TABLE IF NOT EXISTS `my_db`.`my_schema`.`my_table`(" +
-                "`col_int` INTEGER NOT NULL PRIMARY KEY NOT ENFORCED," +
-                "`col_integer` INTEGER NOT NULL," +
+                "`col_int` INT64 NOT NULL PRIMARY KEY NOT ENFORCED," +
+                "`col_integer` INT64 NOT NULL," +
                 "`col_string` STRING," +
                 "`col_timestamp` TIMESTAMP," +
-                "`col_double` FLOAT) " +
+                "`col_double` FLOAT64) " +
                 "CLUSTER BY `col_timestamp`,`col_int`";
 
         Assertions.assertEquals(expected, list.get(0));
@@ -155,11 +184,11 @@ public class CreateTableTest
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
         String expected = "CREATE TABLE IF NOT EXISTS `MY_DB`.`MY_SCHEMA`.`MY_TABLE`(" +
-                "`COL_INT` INTEGER NOT NULL PRIMARY KEY NOT ENFORCED," +
-                "`COL_INTEGER` INTEGER NOT NULL," +
+                "`COL_INT` INT64 NOT NULL PRIMARY KEY NOT ENFORCED," +
+                "`COL_INTEGER` INT64 NOT NULL," +
                 "`COL_STRING` STRING," +
                 "`COL_TIMESTAMP` TIMESTAMP," +
-                "`COL_DOUBLE` FLOAT) " +
+                "`COL_DOUBLE` FLOAT64) " +
                 "CLUSTER BY `COL_TIMESTAMP`,`COL_INT`";
 
         Assertions.assertEquals(expected, list.get(0));
@@ -181,12 +210,12 @@ public class CreateTableTest
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
         String expected = "CREATE TABLE IF NOT EXISTS `my_db`.`my_schema`.`my_table`(" +
-                "`col_int` INTEGER NOT NULL," +
+                "`col_int` INT64 NOT NULL," +
                 "`col_date` DATE NOT NULL," +
-                "`col_integer` INTEGER NOT NULL," +
+                "`col_integer` INT64 NOT NULL," +
                 "`col_string` STRING," +
                 "`col_timestamp` TIMESTAMP," +
-                "`col_double` FLOAT," +
+                "`col_double` FLOAT64," +
                 "PRIMARY KEY (`col_int`, `col_date`) NOT ENFORCED) " +
                 "PARTITION BY `col_date` " +
                 "CLUSTER BY `col_timestamp`,`col_int`";
@@ -209,12 +238,12 @@ public class CreateTableTest
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
         String expected = "CREATE TABLE IF NOT EXISTS `my_db`.`my_schema`.`my_table`(" +
-                "`col_int` INTEGER NOT NULL," +
+                "`col_int` INT64 NOT NULL," +
                 "`col_date` DATE NOT NULL," +
-                "`col_integer` INTEGER NOT NULL," +
+                "`col_integer` INT64 NOT NULL," +
                 "`col_string` STRING," +
                 "`col_timestamp` TIMESTAMP," +
-                "`col_double` FLOAT," +
+                "`col_double` FLOAT64," +
                 "PRIMARY KEY (`col_int`, `col_date`) NOT ENFORCED) " +
                 "PARTITION BY _PARTITIONDATE";
         Assertions.assertEquals(expected, list.get(0));

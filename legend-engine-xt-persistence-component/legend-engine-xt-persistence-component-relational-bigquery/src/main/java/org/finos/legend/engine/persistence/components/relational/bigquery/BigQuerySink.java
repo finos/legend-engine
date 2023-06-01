@@ -33,7 +33,7 @@ import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSin
 import org.finos.legend.engine.persistence.components.relational.bigquery.optmizer.LowerCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.bigquery.optmizer.UpperCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.BigQueryDataTypeMapping;
-import org.finos.legend.engine.persistence.components.relational.bigquery.sql.BigQueryJdbcPropertiesToLogicalDataTypeMapping;
+import org.finos.legend.engine.persistence.components.relational.bigquery.sql.BigQueryDataTypeToLogicalDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.AlterVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.BatchEndTimestampVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.ClusterKeyVisitor;
@@ -111,34 +111,7 @@ public class BigQuerySink extends AnsiSqlSink
         return INSTANCE;
     }
 
-    // TODO #4: Review how can this be done with Simba Driver
-    public static Connection createConnection(String user,
-                                              String pwd,
-                                              String jdbcUrl,
-                                              String account,
-                                              String db,
-                                              String schema)
-    {
-        Properties properties = new Properties();
-        properties.put("user", user);
-        properties.put("password", pwd);
-        properties.put("account", account);
-        properties.put("db", db);
-        properties.put("schema", schema);
-
-        try
-        {
-            return DriverManager.getConnection(jdbcUrl, properties);
-        }
-        catch (SQLException e)
-        {
-            throw new IllegalArgumentException(e);
-        }
-    }
-
     // TODO #5: Another entry point for API invocation via authentication ?
-
-
     private BigQuerySink()
     {
         super(
@@ -148,19 +121,11 @@ public class BigQuerySink extends AnsiSqlSink
             SqlGenUtils.BACK_QUOTE_IDENTIFIER,
             LOGICAL_PLAN_VISITOR_BY_CLASS,
             // TODO  # 6: Verify implementation of DatasetExists datasetExists,
-            (executor, sink, dataset) ->
-            {
-                //TODO: pass transformer as an argument
-                RelationalTransformer transformer = new RelationalTransformer(BigQuerySink.get());
-                LogicalPlan datasetExistLogicalPlan = LogicalPlanFactory.getLogicalPlanForDoesDatasetExist(dataset);
-                SqlPlan physicalPlanForDoesDatasetExist = transformer.generatePhysicalPlan(datasetExistLogicalPlan);
-                List<TabularData> results = executor.executePhysicalPlanAndGetResults(physicalPlanForDoesDatasetExist);
-                return results.size() > 0;
-            },
+            (executor, sink, dataset) -> sink.doesTableExist(dataset),
             // TODO # 7: Verify implementation of ValidateMainDatasetSchema validateMainDatasetSchema,
             (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new BigQueryDataTypeMapping()),
             //  TODO # 8: Verify implementation of ConstructDatasetFromDatabase constructDatasetFromDatabase)
-            (executor, sink, tableName, schemaName, databaseName) -> sink.constructDatasetFromDatabase(tableName, schemaName, databaseName, new BigQueryJdbcPropertiesToLogicalDataTypeMapping()));
+            (executor, sink, tableName, schemaName, databaseName) -> sink.constructDatasetFromDatabase(tableName, schemaName, databaseName, new BigQueryDataTypeToLogicalDataTypeMapping()));
     }
 
     @Override

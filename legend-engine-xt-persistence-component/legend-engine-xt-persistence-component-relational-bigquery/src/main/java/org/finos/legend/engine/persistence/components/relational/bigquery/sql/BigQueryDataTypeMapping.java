@@ -15,9 +15,7 @@
 package org.finos.legend.engine.persistence.components.relational.bigquery.sql;
 
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
-import org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.schema.Bytes;
-import org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.schema.Float;
-import org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.schema.Json;
+import org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.schema.*;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.schema.String;
 import org.finos.legend.engine.persistence.components.relational.sql.DataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.*;
@@ -38,7 +36,7 @@ public class BigQueryDataTypeMapping implements DataTypeMapping
             case TINYINT:
             case SMALLINT:
             case INT64:
-                dataType = new Integer();
+                dataType = new Int64();
                 break;
             case NUMBER:
             case NUMERIC:
@@ -51,12 +49,15 @@ public class BigQueryDataTypeMapping implements DataTypeMapping
             case FLOAT:
             case DOUBLE:
             case FLOAT64:
-                dataType = new Float();
+                dataType = new Float64();
                 break;
             // String & Binary types
             case CHAR:
             case CHARACTER:
             case VARCHAR:
+            case LONGVARCHAR:
+            case LONGTEXT:
+            case TEXT:
             case STRING:
                 dataType = new String();
                 type.length().ifPresent(dataType::setLength);
@@ -84,14 +85,11 @@ public class BigQueryDataTypeMapping implements DataTypeMapping
             // Other types
             case BOOLEAN:
             case BOOL:
-                dataType = new Boolean();
+                dataType = new Bool();
                 break;
             case JSON:
                 dataType = new Json();
                 break;
-            case LONGTEXT:
-            case TEXT:
-            case LONGVARCHAR:
             case NCHAR:
             case NVARCHAR:
             case LONGNVARCHAR:
