@@ -72,13 +72,16 @@ function <<access.private>> meta::external::shared::format::executionPlan::graph
                       if($fe.func == meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Checked_MANY_,
                           |^$state(checked = true, graphContext = ^GraphFetchContext(graphFetchTree = getFunctionParameterValue($fe, $state.inScopeVars, 1)->cast(@meta::pure::graphFetch::RootGraphFetchTree<Any>)->toOne()->meta::pure::graphFetch::ensureConstraintsRequirements())),
                           | 
+                      if($fe.func == meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Integer_1__Checked_MANY_,
+                          | ^$state(checked = false, graphContext = ^GraphFetchContext(graphFetchTree = getFunctionParameterValue($fe, $state.inScopeVars, 1)->cast(@meta::pure::graphFetch::RootGraphFetchTree<Any>)->toOne()->meta::pure::graphFetch::ensureConstraintsRequirements(), batchSize = getFunctionParameterValue($fe, $state.inScopeVars, 2)->cast(@Integer)->toOne())),
+                          | 
                       if($fe.func == meta::pure::graphFetch::execution::graphFetchUnexpanded_T_MANY__RootGraphFetchTree_1__T_MANY_,
                           | ^$state(checked = false, graphContext = ^GraphFetchContext(graphFetchTree = getFunctionParameterValue($fe, $state.inScopeVars, 1)->cast(@meta::pure::graphFetch::RootGraphFetchTree<Any>)->toOne())),
                           | 
                       if($fe.func == meta::pure::graphFetch::execution::graphFetchCheckedUnexpanded_T_MANY__RootGraphFetchTree_1__Checked_MANY_,
                           | ^$state(checked = true, graphContext = ^GraphFetchContext(graphFetchTree = getFunctionParameterValue($fe, $state.inScopeVars, 1)->cast(@meta::pure::graphFetch::RootGraphFetchTree<Any>)->toOne())),
                           | fail('Unknown graphFetch function - ' + $fe.func.name->orElse('')); $state;
-                      )))));
+                      ))))));
 
    $fe.parametersValues->at(0)->meta::external::shared::format::executionPlan::processValueSpecification($updatedState, $extensions, $debug)->toOne();
 }
@@ -208,6 +211,7 @@ function <<access.private>> meta::external::shared::format::executionPlan::getFu
         ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_, second = graphFetchFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
         ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__Integer_1__T_MANY_, second = graphFetchFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
         ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Checked_MANY_, second = graphFetchFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
+        ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Integer_1__Checked_MANY_, second = graphFetchFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
         ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::graphFetchUnexpanded_T_MANY__RootGraphFetchTree_1__T_MANY_, second = graphFetchFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
         ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::graphFetchCheckedUnexpanded_T_MANY__RootGraphFetchTree_1__Checked_MANY_, second = graphFetchFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
         ^PureFunctionToProcessFunctionPair(first = meta::external::shared::format::functions::internalize_Class_1__Binding_1__String_1__T_MANY_, second = internalizeFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
