@@ -34,7 +34,9 @@ import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPass
 import javax.security.auth.kerberos.KerberosPrincipal;
 import java.security.PrivilegedAction;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class MongoDBStoreConnectionProvider extends ConnectionProvider<Supplier<MongoClient>>
 {
@@ -62,19 +64,21 @@ public class MongoDBStoreConnectionProvider extends ConnectionProvider<Supplier<
         Supplier<MongoClient> mongoClientSupplier;
         if (authenticationSpec instanceof KerberosAuthenticationSpecification)
         {
-            LegendKerberosCredential kerberosCredential = (LegendKerberosCredential) identity.getFirstCredential();
-            if (kerberosCredential.getSubject().getPrincipals().size() != 1 &&
-                    kerberosCredential.getSubject().getPrincipals().stream().findFirst().isPresent() &&
-                    kerberosCredential.getSubject().getPrincipals().stream().findFirst().get() instanceof KerberosPrincipal)
+            Optional<LegendKerberosCredential> kerberosHolder = identity.getCredential(LegendKerberosCredential.class);
+            if (!kerberosHolder.isPresent())
             {
-                String errMesg = String.format("Invalid Subject: Expected 1 Principal, but got %d.  Expected Kerberos Principal, but got: %s",
-                        kerberosCredential.getSubject().getPrincipals().size(),
-                        kerberosCredential.getSubject().getPrincipals().stream().findFirst().isPresent() ?
-                                kerberosCredential.getSubject().getPrincipals().stream().findFirst().get().getClass().getName() : "None");
+                throw new UnsupportedOperationException("Expected Kerberos credential was not found, for KerberosAuthenticationSpecification");
+            }
+            LegendKerberosCredential kerberosCredential = kerberosHolder.get();
+
+            if (kerberosCredential.getSubject().getPrincipals().stream().noneMatch(KerberosPrincipal.class::isInstance))
+            {
+                String errMesg = String.format("Invalid Subject: Expected at least 1 KerberosPrincipal but got [%s]",
+                        kerberosCredential.getSubject().getPrincipals().stream().map(k -> k.getClass().getName()).collect(Collectors.joining(", ")));
                 throw new IllegalStateException(errMesg);
             }
 
-            KerberosPrincipal kerberosPrincipal = (KerberosPrincipal) kerberosCredential.getSubject().getPrincipals().stream().findFirst().get();
+            KerberosPrincipal kerberosPrincipal = kerberosCredential.getSubject().getPrincipals(KerberosPrincipal.class).stream().findFirst().get();
 
             MongoCredential mongoCredential = MongoCredential.createGSSAPICredential(kerberosPrincipal.getName());
             MongoClientSettings clientSettings = clientSettingsBuilder.credential(mongoCredential).build();

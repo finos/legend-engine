@@ -12,19 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.mongodb;
+package org.finos.legend.engine.plan.execution.stores.mongodb.test;
 
 import java.time.Duration;
 
-public class MongoTestServerInvoker
+public class MongoTestContainerInvoker
 {
 
     public static void main(String[] args) throws InterruptedException
     {
-        MongoTestServer testServer = new MongoTestServer();
-        testServer.run();
-        System.out.println("Running Port: " + testServer.getRunningPort());
-        while (testServer.isRunning())
+        MongoTestContainer container = new MongoTestContainer();
+        int runningPort = container.run();
+        container.insertPersonData();
+        System.out.println("Running Port: " + runningPort);
+        while (container.isRunning())
         {
             Thread.sleep(Duration.ofMinutes(1).toMillis());
         }

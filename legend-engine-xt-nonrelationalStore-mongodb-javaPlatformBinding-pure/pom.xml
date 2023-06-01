@@ -257,10 +257,6 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-json-pure</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-platform-dsl-mapping-java</artifactId>
-        </dependency>
         <!-- Required for test -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
