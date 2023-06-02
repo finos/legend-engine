@@ -15,8 +15,9 @@ identifier:                     VALID_STRING | STRING
                                 | TO_BYTES_FUNCTION      // from M3Parser
                                 | MAPPING | IMPORT
                                 | INCLUDE | TESTS | EXTENDS
-                                | TEST_QUERY | TEST_INPUT_DATA | TEST_ASSERT
-                                | MAPPING_TEST_SUITES | MAPPING_TEST_ASSERTS | MAPPING_TESTS
+                                | MAPPING_TESTABLE_FUNCTION | MAPPING_TESTABLE_DATA | MAPPING_TESTABLE_ASSERT
+                                | MAPPING_TESTABLE_SUITES | MAPPING_TEST_ASSERTS | MAPPING_TESTS
+                                | MAPPING_TESTABLE_DOC | MAPPING_TESTABLE_TYPE | MAPPING_TESTS_QUERY
 ;
 
 // -------------------------------------- DEFINITION -------------------------------------
@@ -33,7 +34,8 @@ mapping:                        MAPPING qualifiedName
                                     PAREN_OPEN
                                         (includeMapping)*
                                         (mappingElement)*
-                                        (tests|mappingTestSuites)?
+                                        (tests)?
+                                        (mappingTestableDefinition)?
                                     PAREN_CLOSE
 ;
 includeMapping:                 (INCLUDETYPE|INCLUDE) qualifiedName
@@ -71,18 +73,48 @@ superClassMappingId:            mappingElementId
 mappingElementId:               word
 ;
 
-// ------------------------------------- TEST ---------------------------------------------
-mappingTestSuites:              MAPPING_TEST_SUITES COLON BRACKET_OPEN (mappingTestSuite (COMMA mappingTestSuite)*)? BRACKET_CLOSE
+// ------------------------------------- TESTABLE ---------------------------------------------
+mappingTestableDefinition:     MAPPING_TESTABLE_SUITES COLON BRACKET_OPEN (mappingTestSuite (COMMA mappingTestSuite)*)? BRACKET_CLOSE
 ;
-mappingTestSuite:               identifier COLON BRACE_OPEN TEST_INPUT_DATA COLON BRACKET_OPEN (mappingTestData (COMMA mappingTestData)*)? BRACKET_CLOSE SEMI_COLON MAPPING_TESTS COLON BRACKET_OPEN (mappingTest (COMMA mappingTest)*)? BRACKET_CLOSE SEMI_COLON BRACE_CLOSE
+mappingTestSuite:               identifier COLON
+                                  BRACE_OPEN
+                                  (
+                                      mappingTestableDoc
+                                    | mappingTestableData
+                                    | mappingTestableFunc
+                                    | mappingTests
+                                  )*
+                                  BRACE_CLOSE
 ;
-mappingTestData:                qualifiedName COLON embeddedData
+mappingTestableDoc:             MAPPING_TESTABLE_DOC COLON STRING SEMI_COLON
+;
+mappingTestableData:            MAPPING_TESTABLE_DATA COLON BRACKET_OPEN (mappingTestDataContent (COMMA mappingTestDataContent)*)? BRACKET_CLOSE SEMI_COLON
+;
+mappingTestDataContent:         qualifiedName COLON embeddedData
 ;
 embeddedData:                   identifier ISLAND_OPEN (embeddedDataContent)*
 ;
 embeddedDataContent:            ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
 ;
-mappingTest:                    identifier COLON BRACE_OPEN TEST_QUERY COLON combinedExpression SEMI_COLON MAPPING_TEST_ASSERTS COLON BRACKET_OPEN (mappingTestAssert (COMMA mappingTestAssert)*)? BRACKET_CLOSE SEMI_COLON BRACE_CLOSE
+mappingTests:                   MAPPING_TESTS COLON
+                                  BRACKET_OPEN
+                                    (mappingTestContent (COMMA mappingTestContent)*)?
+                                  BRACKET_CLOSE
+                                SEMI_COLON
+;
+mappingTestContent:             identifier COLON
+                                  BRACE_OPEN
+                                    (
+                                      mappingTestableFunc
+                                      | mappingTestableDoc
+                                      | mappingTestAsserts
+                                      | mappingTestableData
+                                    )*
+                                  BRACE_CLOSE
+;
+mappingTestableFunc:           MAPPING_TESTABLE_FUNCTION COLON combinedExpression SEMI_COLON
+;
+mappingTestAsserts:             MAPPING_TEST_ASSERTS COLON BRACKET_OPEN (mappingTestAssert (COMMA mappingTestAssert)*)? BRACKET_CLOSE SEMI_COLON
 ;
 mappingTestAssert:              identifier COLON testAssertion
 ;
@@ -107,12 +139,12 @@ test:                           testName
                                         )*
                                     PAREN_CLOSE
 ;
-testQuery:                      TEST_QUERY COLON combinedExpression SEMI_COLON
+testQuery:                     MAPPING_TESTS_QUERY COLON combinedExpression SEMI_COLON
 ;
-testInputData:                  TEST_INPUT_DATA COLON testInput SEMI_COLON
+testInputData:                  MAPPING_TESTABLE_DATA COLON testInput SEMI_COLON
 ;
 // NOTE: it's important to have `STRING` before `combinedExpression` since the latter also matches the former
-testAssert:                     TEST_ASSERT COLON (STRING | combinedExpression) SEMI_COLON
+testAssert:                     MAPPING_TESTABLE_ASSERT COLON (STRING | combinedExpression) SEMI_COLON
 ;
 testName:                       identifier
 ;

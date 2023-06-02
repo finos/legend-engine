@@ -20,5 +20,6 @@ import java.util.List;
 
 public abstract class AtomicTest extends Test
 {
+    public String doc;
     public List<TestAssertion> assertions;
 }

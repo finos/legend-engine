@@ -19,6 +19,7 @@ import java.util.Optional;
 import org.finos.legend.engine.test.runner.shared.ComparisonError;
 import org.finos.legend.engine.test.runner.shared.TestResult;
 
+@Deprecated
 public class RichMappingTestResult
 {
     private String mappingPath;

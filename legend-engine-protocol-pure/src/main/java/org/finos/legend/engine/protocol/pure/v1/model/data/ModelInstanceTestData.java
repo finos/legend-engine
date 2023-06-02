@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.test;
+package org.finos.legend.engine.protocol.pure.v1.model.data;
 
-import java.util.List;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 
-public abstract class TestSuite extends Test
+public class ModelInstanceTestData extends ModelTestData
 {
-    public String doc;
-    public List<AtomicTest> tests;
+
+    public ValueSpecification instances;
+
 }

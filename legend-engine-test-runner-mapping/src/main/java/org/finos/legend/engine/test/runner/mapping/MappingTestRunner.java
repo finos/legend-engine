@@ -70,6 +70,7 @@ import java.util.ServiceLoader;
 import java.util.function.Consumer;
 import javax.ws.rs.core.MediaType;
 
+@Deprecated
 public class MappingTestRunner
 {
     private static final ObjectMapper objectMapper = new ObjectMapper().configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);

@@ -200,7 +200,7 @@ public class TestServiceStoreMappingGrammarRoundtrip extends TestGrammarRoundtri
             "      [\n" +
             "        test1:\n" +
             "        {\n" +
-            "          query: |testServiceStoreTestSuites::Employee.all()->graphFetch(#{testServiceStoreTestSuites::Employee{kerberos,employeeID,title,firstName,lastName,countryCode}}#)->serialize(#{testServiceStoreTestSuites::Employee{kerberos,employeeID,title,firstName,lastName,countryCode}}#);\n" +
+            "          function: |testServiceStoreTestSuites::Employee.all()->graphFetch(#{testServiceStoreTestSuites::Employee{kerberos,employeeID,title,firstName,lastName,countryCode}}#)->serialize(#{testServiceStoreTestSuites::Employee{kerberos,employeeID,title,firstName,lastName,countryCode}}#);\n" +
             "          asserts:\n" +
             "          [\n" +
             "            assert1:\n" +

@@ -14,23 +14,43 @@
 
 package org.finos.legend.engine.language.pure.grammar.to;
 
+import java.util.List;
+import java.util.Optional;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.data.HelperEmbeddedDataGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.test.assertion.HelperTestAssertionGrammarComposer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumValueMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumValueMappingEnumSourceValue;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumValueMappingIntegerSourceValue;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumValueMappingStringSourceValue;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumerationMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregateSetImplementationContainer;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.ExpectedOutputMappingTestAssert;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingDataTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingDataTestSuite;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingFunctionTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingFunctionTestSuite;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTestAssert;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTestSuite;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest_Legacy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.StoreTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStoreAssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStorePropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ObjectInputData;
-import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Objects;
-import java.util.Optional;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.unsupported;
 
 public class HelperMappingGrammarComposer
 {
@@ -184,19 +204,20 @@ public class HelperMappingGrammarComposer
 
         str.append(getTabString(1)).append(mappingTestSuite.id).append(":\n");
         str.append(getTabString(baseIndentation)).append("{\n");
-
-        if (mappingTestSuite.mappingStoreTestDatas != null)
+        if (mappingTestSuite.doc != null)
         {
-            str.append(getTabString(baseIndentation + 1)).append("data").append(":\n");
-            str.append(getTabString(baseIndentation + 1)).append("[\n");
-
-            if (!mappingTestSuite.mappingStoreTestDatas.isEmpty())
-            {
-                str.append(String.join(",\n", ListIterate.collect(mappingTestSuite.mappingStoreTestDatas, data -> renderStoreElementTestData(data, transformer)))).append("\n");
-            }
-            str.append(getTabString(baseIndentation + 1)).append("];\n");
+            str.append(getTabString(baseIndentation + 1)).append("doc: ").append(convertString(mappingTestSuite.doc, true)  + ";\n");
         }
-
+        if (mappingTestSuite instanceof MappingDataTestSuite && ((MappingDataTestSuite)mappingTestSuite).storeTestData != null)
+        {
+            MappingDataTestSuite mappingDataTestSuite = (MappingDataTestSuite) mappingTestSuite;
+            str.append(renderStoreTestData(mappingDataTestSuite.storeTestData, transformer, 2));
+        }
+        if (mappingTestSuite instanceof MappingFunctionTestSuite && ((MappingFunctionTestSuite)mappingTestSuite).func != null)
+        {
+            MappingFunctionTestSuite mappingDataTestSuite = (MappingFunctionTestSuite) mappingTestSuite;
+            str.append(getTabString(baseIndentation + 1)).append("function: ").append(mappingDataTestSuite.func.accept(transformer)).append(";\n");
+        }
         if (mappingTestSuite.tests != null && !mappingTestSuite.tests.isEmpty())
         {
             str.append(getTabString(baseIndentation + 1)).append("tests:\n");
@@ -214,7 +235,20 @@ public class HelperMappingGrammarComposer
         StringBuilder str = new StringBuilder();
         str.append(getTabString(baseIndentation)).append(test.id).append(":\n");
         str.append(getTabString(baseIndentation)).append("{\n");
-        str.append(getTabString(baseIndentation + 1)).append("query: ").append(test.query.accept(transformer)).append(";\n");
+        if (test.doc != null)
+        {
+            str.append(getTabString(baseIndentation + 1)).append("doc: ").append(convertString(test.doc, true)  + ";\n");
+        }
+        if (test instanceof MappingFunctionTest)
+        {
+            MappingFunctionTest mappingFunctionTest = (MappingFunctionTest) test;
+            str.append(getTabString(baseIndentation + 1)).append("function: ").append(mappingFunctionTest.func.accept(transformer)).append(";\n");
+        }
+        if (test instanceof MappingDataTest)
+        {
+            MappingDataTest mappingQueryTest = (MappingDataTest) test;
+            str.append(renderStoreTestData(mappingQueryTest.storeTestData, transformer, 4));
+        }
         str.append(getTabString(baseIndentation + 1)).append("asserts:\n").append(getTabString(baseIndentation + 1)).append("[\n");
         if (test.assertions != null || test.assertions.isEmpty())
         {
@@ -224,9 +258,21 @@ public class HelperMappingGrammarComposer
         return str.toString();
     }
 
-    public static String renderStoreElementTestData(MappingStoreTestData mappingStoreTestData, DEPRECATED_PureGrammarComposerCore transformer)
+    public static String renderStoreTestData(List<StoreTestData> storeTestData, DEPRECATED_PureGrammarComposerCore transformer, int baseIndentation)
     {
-        int baseIndentation = 4;
+        StringBuilder str = new StringBuilder();
+        str.append(getTabString(baseIndentation + 1)).append("data").append(":\n");
+        str.append(getTabString(baseIndentation + 1)).append("[\n");
+        if (!storeTestData.isEmpty())
+        {
+            str.append(String.join(",\n", ListIterate.collect(storeTestData, data -> renderStoreElementTestData(data, transformer, baseIndentation + 2)))).append("\n");
+        }
+        str.append(getTabString(baseIndentation + 1)).append("];\n");
+        return str.toString();
+    }
+
+    public static String renderStoreElementTestData(StoreTestData mappingStoreTestData, DEPRECATED_PureGrammarComposerCore transformer, int baseIndentation)
+    {
         StringBuilder str = new StringBuilder();
         str.append(getTabString(baseIndentation)).append(mappingStoreTestData.store).append(":\n");
         str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(mappingStoreTestData.data, PureGrammarComposerContext.Builder.newInstance(transformer.toContext()).withIndentationString(getTabString(baseIndentation + 1)).build()));
