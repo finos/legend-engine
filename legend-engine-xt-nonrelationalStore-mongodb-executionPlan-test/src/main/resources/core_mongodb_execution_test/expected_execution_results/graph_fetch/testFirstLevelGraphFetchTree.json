@@ -2,14 +2,12 @@
   "values":   {
     "firstName": "Coralie",
     "lastName": "Batie",
-    "phoneNumber": "+1 501 883 4607",
     "otherPhoneNumbers": [
 "+1 571 689 6039",
 "+1 303 278 3547",
 "+1 414 760 1884"
     ],
-    "age": 23,
-    "email": "cbatie2@amazon.co.jp"
+    "age": 23
   },
   "builder":   {
     "_type": "json"

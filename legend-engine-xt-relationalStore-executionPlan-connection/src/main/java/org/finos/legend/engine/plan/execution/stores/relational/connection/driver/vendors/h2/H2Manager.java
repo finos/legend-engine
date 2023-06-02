@@ -18,7 +18,6 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.EmbeddedH2DataSourceSpecification;
 
 import java.util.Properties;
@@ -56,7 +55,7 @@ public class H2Manager extends DatabaseManager
     }
 
     @Override
-    public RelationalDatabaseCommands relationalDatabaseSupport()
+    public H2Commands relationalDatabaseSupport()
     {
         return new H2Commands();
     }

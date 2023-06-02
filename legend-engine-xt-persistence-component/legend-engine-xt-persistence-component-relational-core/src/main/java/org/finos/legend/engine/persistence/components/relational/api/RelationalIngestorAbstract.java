@@ -26,6 +26,7 @@ import org.finos.legend.engine.persistence.components.importer.Importer;
 import org.finos.legend.engine.persistence.components.importer.Importers;
 import org.finos.legend.engine.persistence.components.ingestmode.DeriveMainDatasetSchemaFromStaging;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
+import org.finos.legend.engine.persistence.components.ingestmode.IngestModeOptimizationColumnHandler;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestModeVisitors;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
@@ -176,19 +177,20 @@ public abstract class RelationalIngestorAbstract
 
     private List<IngestorResult> ingest(Connection connection, Datasets datasets, List<DataSplitRange> dataSplitRanges)
     {
-        IngestMode ingestModeWithCaseConversion = ApiUtils.applyCase(ingestMode(), caseConversion());
-        Datasets datasetsWithCaseConversion = ApiUtils.applyCase(datasets, caseConversion());
+        IngestMode enrichedIngestMode = ApiUtils.applyCase(ingestMode(), caseConversion());
+        Datasets enrichedDatasets = ApiUtils.applyCase(datasets, caseConversion());
+
         Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(relationalSink(), transformOptions());
         Executor<SqlGen, TabularData, SqlPlan> executor = new RelationalExecutor(relationalSink(), JdbcHelper.of(connection));
 
         Resources.Builder resourcesBuilder = Resources.builder();
-        Datasets updatedDatasets = datasetsWithCaseConversion;
+        Datasets updatedDatasets = enrichedDatasets;
 
         // import external dataset reference
         if (updatedDatasets.stagingDataset() instanceof ExternalDatasetReference)
         {
             // update staging dataset reference to imported dataset
-            updatedDatasets = importExternalDataset(ingestModeWithCaseConversion, updatedDatasets, transformer, executor);
+            updatedDatasets = importExternalDataset(enrichedIngestMode, updatedDatasets, transformer, executor);
             resourcesBuilder.externalDatasetImported(true);
         }
 
@@ -198,9 +200,22 @@ public abstract class RelationalIngestorAbstract
             resourcesBuilder.stagingDataSetEmpty(datasetEmpty(updatedDatasets.stagingDataset(), transformer, executor));
         }
 
+        boolean mainDatasetExists = executor.datasetExists(updatedDatasets.mainDataset());
+        if (mainDatasetExists)
+        {
+            updatedDatasets = updatedDatasets.withMainDataset(constructDatasetFromDatabase(executor, updatedDatasets.mainDataset()));
+        }
+        else
+        {
+            updatedDatasets = updatedDatasets.withMainDataset(ApiUtils.deriveMainDatasetFromStaging(updatedDatasets, enrichedIngestMode));
+        }
+
+        // Add Optimization Columns if needed
+        enrichedIngestMode = enrichedIngestMode.accept(new IngestModeOptimizationColumnHandler(updatedDatasets));
+
         // generate sql plans
         RelationalGenerator generator = RelationalGenerator.builder()
-            .ingestMode(ingestModeWithCaseConversion)
+            .ingestMode(enrichedIngestMode)
             .relationalSink(relationalSink())
             .cleanupStagingData(cleanupStagingData())
             .collectStatistics(collectStatistics())
@@ -212,18 +227,8 @@ public abstract class RelationalIngestorAbstract
             .batchIdPattern(BATCH_ID_PATTERN)
             .build();
 
-        boolean mainDatasetExists = executor.datasetExists(updatedDatasets.mainDataset());
-        if (mainDatasetExists)
-        {
-            updatedDatasets = updatedDatasets.withMainDataset(constructDatasetFromDatabase(executor, updatedDatasets.mainDataset()));
-        }
-        else
-        {
-            updatedDatasets = updatedDatasets.withMainDataset(ApiUtils.deriveMainDatasetFromStaging(updatedDatasets, ingestModeWithCaseConversion));
-        }
-
-        Planner planner = Planners.get(updatedDatasets, ingestModeWithCaseConversion, plannerOptions());
-        GeneratorResult generatorResult = generator.generateOperations(updatedDatasets, resourcesBuilder.build(), planner, ingestModeWithCaseConversion);
+        Planner planner = Planners.get(updatedDatasets, enrichedIngestMode, plannerOptions());
+        GeneratorResult generatorResult = generator.generateOperations(updatedDatasets, resourcesBuilder.build(), planner, enrichedIngestMode);
 
         // Create tables
         executor.executePhysicalPlan(generatorResult.preActionsSqlPlan());
@@ -238,7 +243,7 @@ public abstract class RelationalIngestorAbstract
             }
         }
         // Perform Ingestion
-        List<IngestorResult> result = performIngestion(updatedDatasets, transformer, planner, executor, generatorResult, dataSplitRanges, ingestModeWithCaseConversion);
+        List<IngestorResult> result = performIngestion(updatedDatasets, transformer, planner, executor, generatorResult, dataSplitRanges, enrichedIngestMode);
         return result;
     }
 

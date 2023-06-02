@@ -123,6 +123,7 @@ public class SnowflakeDataTypeMapping implements DataTypeMapping
                 dataType = new TimestampWithLocalTimezone();
                 type.scale().ifPresent(dataType::setScale);
                 break;
+            case JSON:
             case VARIANT:
                 dataType = new Variant();
                 break;

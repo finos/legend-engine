@@ -166,7 +166,10 @@ public abstract class DataSourceSpecification
                 scope.span().setTag("Pool", poolName);
                 int requests = dataSourceWithStatistics.requestConnection();
                 LOGGER.info("Principal [{}] has requested [{}] connections for pool [{}]", principal, requests, poolName);
-                return authenticationStrategy.getConnection(dataSourceWithStatistics, identityState.getIdentity());
+                Connection connection =  authenticationStrategy.getConnection(dataSourceWithStatistics, identityState.getIdentity());
+                MetricsHandler.setActiveConnections(poolName, dataSourceWithStatistics.getActiveConnections());
+                MetricsHandler.setBuiltConnections(poolName, dataSourceWithStatistics.getStatistics().getBuiltConnections());
+                return connection;
             }
             catch (ConnectionException ce)
             {

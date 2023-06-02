@@ -38,7 +38,41 @@
                                 </auth>
                             </to>
                             <container>
-                                <mainClass>org.finos.legend.engine.postgres.PostgresServer</mainClass>
+                                <mainClass>org.finos.legend.engine.postgres.PostgresServerLauncher</mainClass>
+                            </container>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>docker</id>
+            <build>
+
+                <plugins>
+                    <plugin>
+                        <groupId>com.google.cloud.tools</groupId>
+                        <artifactId>jib-maven-plugin</artifactId>
+                        <version>3.3.1</version>
+                        <executions>
+                            <execution>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <to>
+                                <tag>${project.version}</tag>
+                                <image>registry.hub.docker.com/${env.DOCKER_USERNAME}/${project.artifactId}</image>
+                                <auth>
+                                    <username>${env.DOCKER_USERNAME}</username>
+                                    <password>${env.DOCKER_PASSWORD}</password>
+                                </auth>
+                            </to>
+                            <container>
+                                <mainClass>org.finos.legend.engine.postgres.PostgresServerLauncher</mainClass>
                             </container>
                         </configuration>
                     </plugin>
@@ -67,7 +101,7 @@
                                 <image>legend-engine-xt-sql-postgres-server</image>
                             </to>
                             <container>
-                                <mainClass>org.finos.legend.engine.postgres.PostgresServer</mainClass>
+                                <mainClass>org.finos.legend.engine.postgres.PostgresServerLauncher</mainClass>
                             </container>
                         </configuration>
                     </plugin>
@@ -161,10 +195,16 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
         <dependency>
             <groupId>javax.ws.rs</groupId>
             <artifactId>javax.ws.rs-api</artifactId>

@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,22 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.mongodb;
+package org.finos.legend.engine.persistence.components.common;
 
-import java.time.Duration;
-
-public class MongoTestServerInvoker
+public enum FilterType
 {
+    GREATER_THAN("GT"),
+    GREATER_THAN_EQUAL("GTE"),
+    LESS_THAN("LT"),
+    LESS_THAN_EQUAL("LTE"),
+    EQUAL_TO("EQ");
 
-    public static void main(String[] args) throws InterruptedException
+    private String type;
+
+    FilterType(String type)
     {
-        MongoTestServer testServer = new MongoTestServer();
-        testServer.run();
-        System.out.println("Running Port: " + testServer.getRunningPort());
-        while (testServer.isRunning())
-        {
-            Thread.sleep(Duration.ofMinutes(1).toMillis());
-        }
+        this.type = type;
+    }
 
+    public String getType()
+    {
+        return type;
     }
 }

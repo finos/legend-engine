@@ -14,8 +14,10 @@
 
 package org.finos.legend.engine.persistence.components.logicalplan.datasets;
 
-import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
+import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 import org.immutables.value.Value;
+
+import java.util.List;
 
 @Value.Immutable
 @Value.Style(
@@ -27,5 +29,5 @@ import org.immutables.value.Value;
 )
 public interface DerivedDatasetAbstract extends DatasetDefinitionAbstract
 {
-    Condition filter();
+    List<DatasetFilter> datasetFilters();
 }

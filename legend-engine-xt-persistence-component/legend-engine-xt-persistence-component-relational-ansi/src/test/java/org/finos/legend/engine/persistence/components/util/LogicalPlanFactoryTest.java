@@ -14,9 +14,12 @@
 
 package org.finos.legend.engine.persistence.components.util;
 
+import org.finos.legend.engine.persistence.components.common.DatasetFilter;
+import org.finos.legend.engine.persistence.components.common.FilterType;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
@@ -47,6 +50,49 @@ public class LogicalPlanFactoryTest
         List<String> list = physicalPlan.getSqlList();
 
         String expectedQuery = "SELECT COUNT(*) as \"isTableNonEmpty\" FROM (SELECT * FROM \"my_db\".\"my_schema\".\"my_table\" as my_alias LIMIT 1) as X";
+        Assertions.assertEquals(expectedQuery, list.get(0));
+    }
+
+    @Test
+    public void testLogicalPlanForMinAndMaxForField()
+    {
+        DatasetDefinition dataset = DatasetDefinition.builder()
+                .database("my_db")
+                .group("my_schema")
+                .name("my_table")
+                .alias("my_alias")
+                .schema(schemaWithAllColumns)
+                .build();
+
+        RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get());
+        LogicalPlan logicalPlan = LogicalPlanFactory.getLogicalPlanForMinAndMaxForField(dataset, "col_int");
+        SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
+        List<String> list = physicalPlan.getSqlList();
+
+        String expectedQuery = "SELECT MIN(my_alias.\"col_int\") as \"MIN\",MAX(my_alias.\"col_int\") as \"MAX\" FROM \"my_db\".\"my_schema\".\"my_table\" as my_alias";
+        Assertions.assertEquals(expectedQuery, list.get(0));
+    }
+
+    @Test
+    public void testLogicalPlanForMinAndMaxForFieldWithFilters()
+    {
+        DerivedDataset dataset = DerivedDataset.builder()
+                .database("my_db")
+                .group("my_schema")
+                .name("my_table")
+                .alias("my_alias")
+                .schema(schemaWithAllColumns)
+                .addDatasetFilters(DatasetFilter.of("col_int", FilterType.GREATER_THAN_EQUAL, 1))
+                .addDatasetFilters(DatasetFilter.of("col_int", FilterType.LESS_THAN_EQUAL, 3))
+                .build();
+
+        RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get());
+        LogicalPlan logicalPlan = LogicalPlanFactory.getLogicalPlanForMinAndMaxForField(dataset, "col_int");
+        SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
+        List<String> list = physicalPlan.getSqlList();
+
+        String expectedQuery = "SELECT MIN(my_alias.\"col_int\") as \"MIN\",MAX(my_alias.\"col_int\") as \"MAX\" FROM \"my_db\".\"my_schema\".\"my_table\" as my_alias WHERE " +
+                "(my_alias.\"col_int\" >= 1) AND (my_alias.\"col_int\" <= 3)";
         Assertions.assertEquals(expectedQuery, list.get(0));
     }
 

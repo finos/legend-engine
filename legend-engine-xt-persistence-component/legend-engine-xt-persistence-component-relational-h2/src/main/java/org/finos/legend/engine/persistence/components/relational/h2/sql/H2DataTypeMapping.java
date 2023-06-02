@@ -34,6 +34,7 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.schema.T
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.TimestampWithTimezone;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.TinyInt;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.VarChar;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Json;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.VariableSizeDataType;
 
 public class H2DataTypeMapping implements DataTypeMapping
@@ -109,6 +110,9 @@ public class H2DataTypeMapping implements DataTypeMapping
             case BOOLEAN:
             case BOOL:
                 dataType = new Boolean();
+                break;
+            case JSON:
+                dataType = new Json();
                 break;
             case VARBINARY:
             case LONGVARCHAR:

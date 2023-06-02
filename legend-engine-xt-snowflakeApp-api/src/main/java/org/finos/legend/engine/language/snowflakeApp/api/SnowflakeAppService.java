@@ -70,7 +70,10 @@ public class SnowflakeAppService implements FunctionActivatorService<Root_meta_e
         PackageableFunction<?> function = activator._function();
         Root_meta_pure_executionPlan_ExecutionPlan executionPlan = PlanGenerator.generateExecutionPlanAsPure((FunctionDefinition<?>) function, null, null, null, pureModel, PlanPlatform.JAVA, null, routerExtensions.apply(pureModel));
         Root_meta_pure_executionPlan_ExecutionNode node = executionPlan._rootExecutionNode();
-        return collectAllNodes(node).selectInstancesOf(Root_meta_relational_mapping_SQLExecutionNode.class).collect(Root_meta_relational_mapping_SQLExecutionNode::_sqlQuery);
+        return collectAllNodes(node)
+                .selectInstancesOf(Root_meta_relational_mapping_SQLExecutionNode.class)
+                .collect(Root_meta_relational_mapping_SQLExecutionNode::_sqlQuery)
+                .select(x -> !x.toLowerCase().startsWith("alter"));
     }
 
     private RichIterable<Root_meta_pure_executionPlan_ExecutionNode> collectAllNodes(Root_meta_pure_executionPlan_ExecutionNode node)

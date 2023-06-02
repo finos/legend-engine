@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.logicalplan;
 
 import org.finos.legend.engine.persistence.components.common.Datasets;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.CsvExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
@@ -36,6 +37,7 @@ import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataUtils;
 
 import java.util.List;
+import java.util.Optional;
 
 public class LogicalPlanFactory
 {
@@ -103,11 +105,17 @@ public class LogicalPlanFactory
     public static LogicalPlan getLogicalPlanForMinAndMaxForField(Dataset dataset, String fieldName)
     {
         FieldValue field = FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(fieldName).build();
-        Selection selection = Selection.builder()
+        Selection.Builder selectionBuilder = Selection.builder()
             .addFields(FunctionImpl.builder().functionName(FunctionName.MIN).addValue(field).alias(MIN_OF_FIELD).build())
             .addFields(FunctionImpl.builder().functionName(FunctionName.MAX).addValue(field).alias(MAX_OF_FIELD).build())
-            .source(dataset)
-            .build();
-        return LogicalPlan.builder().addOps(selection).build();
+            .source(dataset);
+
+        Optional<Condition> filterCondition = LogicalPlanUtils.getDatasetFilterCondition(dataset);
+        if (filterCondition.isPresent())
+        {
+            selectionBuilder = selectionBuilder.condition(filterCondition);
+        }
+
+        return LogicalPlan.builder().addOps(selectionBuilder.build()).build();
     }
 }

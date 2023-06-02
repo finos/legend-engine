@@ -392,6 +392,7 @@
         <io.netty.version>4.1.52.Final</io.netty.version>
         <amazon.awssdk.version>2.17.129</amazon.awssdk.version>
         <opencsv.version>4.6</opencsv.version>
+        <logback.version>1.2.3</logback.version>
 
         <!-- Plugin versions -->
         <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
@@ -407,7 +408,7 @@
         <maven.checkstyle.plugin.version>3.1.1</maven.checkstyle.plugin.version>
         <versions.maven.plugin.version>2.7</versions.maven.plugin.version>
         <nexus.staging.maven.plugin.version>1.6.8</nexus.staging.maven.plugin.version>
-        <jacoco.maven.plugin.version>0.8.5</jacoco.maven.plugin.version>
+        <jacoco.maven.plugin.version>0.8.10</jacoco.maven.plugin.version>
         <exec.maven.plugin.version>3.0.0</exec.maven.plugin.version>
         <build-helper.maven.plugin.version>3.2.0</build-helper.maven.plugin.version>
         <dockerfile.maven.plugin.version>1.4.13</dockerfile.maven.plugin.version>
@@ -2313,6 +2314,16 @@
                 <groupId>log4j</groupId>
                 <artifactId>log4j</artifactId>
                 <version>${log4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-core</artifactId>
+                <version>${logback.version}</version>
             </dependency>
             <!-- LOGGING -->
 

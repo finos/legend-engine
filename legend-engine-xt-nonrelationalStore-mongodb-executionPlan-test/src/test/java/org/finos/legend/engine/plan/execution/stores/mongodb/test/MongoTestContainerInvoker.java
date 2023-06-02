@@ -12,15 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.relational.memsql.sqldom.schema;
+package org.finos.legend.engine.plan.execution.stores.mongodb.test;
 
-import org.finos.legend.engine.persistence.components.relational.sqldom.schema.VariableSizeDataType;
+import java.time.Duration;
 
-public class Json extends VariableSizeDataType
+public class MongoTestContainerInvoker
 {
 
-    public Json()
+    public static void main(String[] args) throws InterruptedException
     {
-        super("JSON");
+        MongoTestContainer container = new MongoTestContainer();
+        int runningPort = container.run();
+        container.insertPersonData();
+        System.out.println("Running Port: " + runningPort);
+        while (container.isRunning())
+        {
+            Thread.sleep(Duration.ofMinutes(1).toMillis());
+        }
+
     }
 }
