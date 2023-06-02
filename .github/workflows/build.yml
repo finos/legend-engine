@@ -17,7 +17,6 @@ name: Build CI
 env:
   CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
   CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
 on: [push, pull_request]
@@ -40,7 +39,7 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Cache Maven dependencies
         uses: actions/cache@v2
@@ -74,6 +73,11 @@ jobs:
 
       - name: Download deps and plugins
         run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
+
+      - name: Collect Workflow Telemetry
+        uses: runforesight/workflow-telemetry-action@v1
+        with:
+          theme: dark
 
       - name: Build + Test
         if: github.ref != 'refs/heads/master'
