@@ -12,14 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest;
+package org.finos.legend.engine.protocol.pure.v1.model.data;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 
-public class MappingStoreTestData
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
+public abstract class ModelTestData
 {
-    public String store;
-    public EmbeddedData data;
+
     public SourceInformation sourceInformation;
+
+    public String model;
+
 }
