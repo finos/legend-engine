@@ -15,9 +15,9 @@
 package org.finos.legend.engine.plan.generation.transformers;
 
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.list.ListIterable;
 
 public class LegendPlanTransformers
 {
-    public static MutableList<PlanTransformer> transformers = Lists.mutable.with(new DevPlanTransformer());
+    public static ListIterable<PlanTransformer> transformers = Lists.immutable.with(new DevPlanTransformer());
 }

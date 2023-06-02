@@ -16,22 +16,14 @@
 package org.finos.legend.engine.language.stores.elasticsearch.v7.plan.generation;
 
 import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
-import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.core_elasticsearch_seven_metamodel_extensions_store_contract;
 
 public class ElasticsearchPlanGeneratorExtension implements PlanGeneratorExtension
 {
-    @Override
-    public MutableList<PlanTransformer> getExtraPlanTransformers()
-    {
-        return PlanGeneratorExtension.super.getExtraPlanTransformers();
-    }
-
     @Override
     public RichIterable<? extends Root_meta_pure_extension_Extension> getExtraExtensions(PureModel pureModel)
     {
