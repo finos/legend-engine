@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.mongodb;
+package org.finos.legend.engine.plan.execution.stores.mongodb.test;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
@@ -22,6 +22,7 @@ import org.junit.Assume;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.DockerClientFactory;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -36,10 +37,10 @@ import java.util.List;
 
 import static org.junit.Assume.assumeTrue;
 
-public class MongoTestServer
+public class MongoTestContainer
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(MongoTestServer.class);
-    public MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.4.1"));
+    private static final Logger LOGGER = LoggerFactory.getLogger(MongoTestContainer.class);
+    private GenericContainer<MongoDBContainer> mongoDBContainer;
 
     public static final String DB_ROOT_USERNAME = "sa";
     public static final String DB_ROOT_PASSWORD = "sa";
@@ -51,20 +52,34 @@ public class MongoTestServer
     private static final String DB_USER_DATABASE = "userDatabase";
     private static final String DB_USER_DB_PERSON_COLLECTION = "person";
 
-    public void run()
+
+    public int run()
+    {
+        return this.run("4.4.1");
+    }
+
+    public int run(String mongoImageVersion)
     {
         Assume.assumeTrue("A Docker client must be running for this integration test.", DockerClientFactory.instance().isDockerAvailable());
-        this.startMongoDbContainer();
+        return this.startMongoDbContainer(mongoImageVersion);
+    }
 
-        MongoClient client = this.mongoClientForRootAdminWithStaticUserNamePassword();
+    public void insertPersonData()
+    {
+        this.insertPersonData("/core_mongodb_execution_test/test_setup/person.json");
+    }
 
-        MongoDatabase userDatabase = client.getDatabase(DB_USER_DATABASE);
-        userDatabase.createCollection(DB_USER_DB_PERSON_COLLECTION);
+    public void insertPersonData(String personCollectionInputDataFile)
+    {
+        try (MongoClient client = this.mongoClientForRootAdminWithStaticUserNamePassword())
+        {
+            MongoDatabase userDatabase = client.getDatabase(DB_USER_DATABASE);
 
-        String createPersonCollectionDocumentsCommand = loadFromFile("/mongoData/person.json");
+            String createPersonCollectionDocumentsCommand = loadFromFile(personCollectionInputDataFile);
 
-        Document bsonCmd = Document.parse(createPersonCollectionDocumentsCommand);
-        userDatabase.runCommand(bsonCmd);
+            Document bsonCmd = Document.parse(createPersonCollectionDocumentsCommand);
+            userDatabase.runCommand(bsonCmd);
+        }
     }
 
     public Integer getRunningPort()
@@ -72,15 +87,21 @@ public class MongoTestServer
         return this.mongoDBContainer.getMappedPort(MONGO_PORT);
     }
 
+    public GenericContainer<MongoDBContainer> getContainer()
+    {
+        return this.mongoDBContainer;
+    }
+
     public boolean isRunning()
     {
         return this.mongoDBContainer.isRunning();
     }
 
-    private void startMongoDbContainer()
+    private int startMongoDbContainer(String mongoImageVersion)
     {
         try
         {
+            this.mongoDBContainer = new GenericContainer<>(DockerImageName.parse("mongo:" + mongoImageVersion));
             List<String> list = new ArrayList<>();
             list.add("MONGO_INITDB_ROOT_USERNAME=" + DB_ROOT_USERNAME);
             list.add("MONGO_INITDB_ROOT_PASSWORD=" + DB_ROOT_PASSWORD);
@@ -89,27 +110,34 @@ public class MongoTestServer
             mongoDBContainer.withExposedPorts(MONGO_PORT);
             mongoDBContainer.start();
 
+            try (MongoClient client = this.mongoClientForRootAdminWithStaticUserNamePassword())
+            {
+                MongoDatabase userDatabase = client.getDatabase(DB_USER_DATABASE);
+                userDatabase.createCollection(DB_USER_DB_PERSON_COLLECTION);
+            }
+
             LOGGER.info("Started MongoDB with port: " + this.mongoDBContainer.getMappedPort(MONGO_PORT));
+
 
         }
         catch (Throwable ex)
         {
             assumeTrue("Cannot start MongoDBContainer", false);
         }
+        return this.mongoDBContainer.getMappedPort(MONGO_PORT);
     }
 
     private MongoClient mongoClientForRootAdminWithStaticUserNamePassword()
     {
         String connectionURL = "mongodb://" + DB_ROOT_USERNAME + ":" +
                 DB_ROOT_PASSWORD + "@localhost:" + this.getRunningPort() + "/admin";
-        MongoClient mongoClient = MongoClients.create(connectionURL);
 
-        return mongoClient;
+        return MongoClients.create(connectionURL);
     }
 
     private String loadFromFile(String resourceName)
     {
-        URL resource = MongoTestServer.class.getResource(resourceName);
+        URL resource = MongoTestContainer.class.getResource(resourceName);
         try
         {
             return new String(Files.readAllBytes(Paths.get(resource.toURI())), StandardCharsets.UTF_8).trim();
