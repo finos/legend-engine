@@ -98,6 +98,24 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupBySum()
    assertEquals('select "producttable_0".NAME as "prodName", sum("root".quantity) as "sum" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
+function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupConstantAggregates():Boolean[1]
+{
+   let result = execute(|Trade.all()
+                         ->project([#/Trade/quantity!quantity#, #/Trade/product/name!prodName#])
+                         ->groupBy('prodName', [
+                          agg('sum', x|1, y| $y->sum()),
+                          agg('count', x|$x, y| $y->count())
+                         ])
+                         ->sort(desc('prodName')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(4, $tds.rows->size());
+   assertEquals(['Firm X', 2, 2], $tds.rows->at(0).values);
+   assertEquals(['Firm C', 5, 5], $tds.rows->at(1).values);
+   assertEquals(['Firm A', 3, 3], $tds.rows->at(2).values);
+   assertEquals([^TDSNull(), 1, 1], $tds.rows->at(3).values);
+   assertEquals('select "producttable_0".NAME as "prodName", sum(1) as "sum", count(*) as "count" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
+}
+
 // Alloy exclusion reason: 10. Tricky usage of variables
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::tds::groupBy::simpleGroupByAggFuncAsVariable():Boolean[1]
 {

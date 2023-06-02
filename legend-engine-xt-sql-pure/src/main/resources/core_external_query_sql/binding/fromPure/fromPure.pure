@@ -291,11 +291,14 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
                                 let typeParameters = [^GenericType(rawType = $mapReturnType), $aggReturnType];
 
-                                sfe(agg_String_1__FunctionDefinition_1__FunctionDefinition_1__AggregateValue_1_, $typeParameters, [
+                                let genericType = ^GenericType(rawType = meta::pure::tds::AggregateValue, typeArguments = $typeParameters);
+                                
+                                sfe(agg_String_1__FunctionDefinition_1__FunctionDefinition_1__AggregateValue_1_, $genericType, $typeParameters, [
                                   iv($name), iv($mapLambda), iv($aggLambda)
                                 ]);
                               );
 
+                              let aggregationInstanceValues = iv($aggregations, ^GenericType(rawType = meta::pure::tds::AggregateValue, typeArguments = [^GenericType(rawType = Any), ^GenericType(rawType = Any)]));
 
   if ($allGroupByColumns->isEmpty() && $aggregations->isEmpty(),
                             | $rename,
@@ -304,7 +307,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
                                   //group by with no aggregates is not compilable pure, so we simplify to restrict, distinct
                                   let restrict = processRestrict($allGroupByColumns, ^$context(expression = $rename));
                                   appendTdsFunc($restrict, distinct_TabularDataSet_1__TabularDataSet_1_, []);,
-                                | appendTdsFunc($rename, groupBy_TabularDataSet_1__String_MANY__AggregateValue_MANY__TabularDataSet_1_, [list($allGroupByColumns), list($aggregations)])));
+                                | appendTdsFunc($rename, groupBy_TabularDataSet_1__String_MANY__AggregateValue_MANY__TabularDataSet_1_, [list($allGroupByColumns), list($aggregationInstanceValues)])));
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processAggregationLambda(functionCall:FunctionCall[1], type:Type[1], context:SqlTransformContext[1]):LambdaFunction<Any>[1]
@@ -347,7 +350,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let expression = $functionCall.arguments->match([
     q:QualifiedNameReference[1] | processFunctionCall(^$functionCall(arguments = ^QualifiedNameReference(name=^QualifiedName())), $expContext, $context),
-    l:Literal[1] | processFunctionCall($functionCall, $expContext, $context),
+    l:Literal[1] | processFunctionCall(^$functionCall(arguments = ^QualifiedNameReference(name=^QualifiedName())), $expContext, $context),
     e:meta::external::query::sql::metamodel::Expression[1] | processFunctionCall(^$functionCall(arguments = ^QualifiedNameReference(name=^QualifiedName())), $expContext, $context),
     //NOTE * params come through as empty, investigate whether parser should handle this better
     a:Any[0] | processFunctionCall(^$functionCall(arguments = ^QualifiedNameReference(name=^QualifiedName())), $expContext, $context),
@@ -359,7 +362,6 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   $functionCall.arguments->match([
     q:QualifiedNameReference[1] | processExpression($q, rowExpressionContext(), $context),
-    l:Literal[1] | rowExpressionContext().var(),
     e:meta::external::query::sql::metamodel::Expression[1] | processExpression($e, rowExpressionContext(), $context),
     //NOTE * params come through as empty, investigate whether parser should handle this better
     a:Any[0] | rowExpressionContext().var(),
@@ -1676,23 +1678,26 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   ^$lambda(expressionSequence = $expressionSequence->toOneMany());
 }
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::iv(res: Any[*]): ValueSpecification[1]
+function meta::external::query::sql::transformation::queryToPure::iv(value: Any[*]): ValueSpecification[1]
 {
-  $res->match([
+  $value->match([
     v:ValueSpecification[1] | $v,
-    a:Any[*] |   // check preeval for mult func, move to metaextension if required
-  if($res->isEmpty(),
-    |let multVal = ^MultiplicityValue(value=0);
-      ^InstanceValue(multiplicity=PureZero, genericType=^GenericType(rawType=Nil), values=[]);,
-    |let size = $res->size();
-      let mult = if($size == 1,
-                  |PureOne,
-                  |let multVal = ^MultiplicityValue(value=$size);
-                    ^Multiplicity(lowerBound=$multVal, upperBound=$multVal);
-                );
-      ^InstanceValue(multiplicity=$mult, genericType=$res->genericType(), values=$res);
-  );
-  ])
+    a:Any[0] | iv([], ^GenericType(rawType=Nil)),
+    a:Any[*] | iv($a, $a->genericType());
+  ]);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::iv(value: Any[*], genericType:GenericType[1]): ValueSpecification[1]
+{
+  let multiplicity = $value->match([
+    a:Any[0] | PureZero,
+    a:Any[1] | PureOne,
+    a:Any[*] | 
+      let mv = ^MultiplicityValue(value = $a->size());
+      ^Multiplicity(lowerBound = $mv, upperBound = $mv);
+  ]);
+  
+  ^InstanceValue(multiplicity = $multiplicity, genericType = $genericType, values = $value);
 }
 
 Class meta::external::query::sql::transformation::queryToPure::SqlTransformContext
