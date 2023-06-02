@@ -22,14 +22,16 @@ public class AnsiTestArtifacts
             "\"batch_start_ts_utc\" DATETIME," +
             "\"batch_end_ts_utc\" DATETIME," +
             "\"batch_status\" VARCHAR(32)," +
-            "\"table_batch_id\" INTEGER)";
+            "\"table_batch_id\" INTEGER," +
+            "\"staging_filters\" JSON)";
 
     public static String expectedMetadataTableCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS BATCH_METADATA" +
             "(\"TABLE_NAME\" VARCHAR(255)," +
             "\"BATCH_START_TS_UTC\" DATETIME," +
             "\"BATCH_END_TS_UTC\" DATETIME," +
             "\"BATCH_STATUS\" VARCHAR(32)," +
-            "\"TABLE_BATCH_ID\" INTEGER)";
+            "\"TABLE_BATCH_ID\" INTEGER," +
+            "\"STAGING_FILTERS\" JSON)";
 
     public static String expectedMainTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
             "(\"id\" INTEGER NOT NULL," +

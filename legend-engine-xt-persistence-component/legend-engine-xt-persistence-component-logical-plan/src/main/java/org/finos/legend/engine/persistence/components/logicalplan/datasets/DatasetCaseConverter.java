@@ -103,7 +103,7 @@ public class DatasetCaseConverter
                     .group(newSchemaName)
                     .database(newDatabaseName)
                     .schema(schemaDefinition)
-                    .filter(((DerivedDataset) dataset).filter())
+                    .addAllDatasetFilters(((DerivedDataset) dataset).datasetFilters())
                     .build();
 
             if (dataset.datasetReference().alias().isPresent())

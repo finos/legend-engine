@@ -42,6 +42,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.SelectV
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.common.OptimizationFilter;
+import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -50,8 +51,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.HashSet;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Set;
 import java.util.stream.Collectors;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.INT;
 import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.INTEGER;
@@ -246,9 +250,49 @@ public class LogicalPlanUtils
         if (dataSet instanceof DerivedDataset)
         {
             DerivedDataset derivedDataset = (DerivedDataset) dataSet;
-            filter = Optional.of(derivedDataset.filter());
+            List<DatasetFilter> datasetFilters = derivedDataset.datasetFilters();
+            List<Condition> conditions = new ArrayList<>();
+            for (DatasetFilter datasetFilter: datasetFilters)
+            {
+                conditions.add(datasetFilter.mapFilterToCondition(dataSet.datasetReference()));
+            }
+            filter = Optional.of(And.of(conditions));
         }
         return filter;
+    }
+
+    public static List<DatasetFilter> getDatasetFilters(Dataset dataSet)
+    {
+        List<DatasetFilter> datasetFilters = new ArrayList();
+        if (dataSet instanceof DerivedDataset)
+        {
+            DerivedDataset derivedDataset = (DerivedDataset) dataSet;
+            datasetFilters = derivedDataset.datasetFilters();
+        }
+        return datasetFilters;
+    }
+
+    public static String jsonifyDatasetFilters(List<DatasetFilter> filters)
+    {
+        Map<String, Map<String, Object>> map = new HashMap<>();
+        for (DatasetFilter filter : filters)
+        {
+            String key = filter.fieldName();
+            Object value = filter.getValue();
+            String filterType = filter.filterType().getType();
+            Map<String, Object> mapValue = map.getOrDefault(key, new HashMap<>());
+            mapValue.put(filterType, value);
+            map.put(key, mapValue);
+        }
+        ObjectMapper objectMapper = new ObjectMapper();
+        try
+        {
+            return objectMapper.writeValueAsString(map);
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     public static Condition getBatchIdEqualsInfiniteCondition(Dataset mainDataSet, String batchIdOutField)
@@ -331,6 +375,12 @@ public class LogicalPlanUtils
         FunctionImpl countFunction = FunctionImpl.builder().functionName(FunctionName.COUNT).addValue(All.INSTANCE).alias(alias).build();
 
         return Selection.builder().source(dataset.datasetReference()).condition(condition).addFields(countFunction).build();
+    }
+
+    public static List<Field> findCommonPrimaryFieldsBetweenMainAndStaging(Dataset mainDataset, Dataset stagingDataset)
+    {
+        Set<String> primaryKeysFromMain = mainDataset.schema().fields().stream().filter(Field::primaryKey).map(Field::name).collect(Collectors.toSet());
+        return stagingDataset.schema().fields().stream().filter(field -> field.primaryKey() && primaryKeysFromMain.contains(field.name())).collect(Collectors.toList());
     }
 
     public static Set<DataType> SUPPORTED_DATA_TYPES_FOR_OPTIMIZATION_COLUMNS =

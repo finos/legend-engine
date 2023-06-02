@@ -15,7 +15,7 @@
 package org.finos.legend.engine.persistence.components.relational.memsql.sql;
 
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
-import org.finos.legend.engine.persistence.components.relational.memsql.sqldom.schema.Json;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Json;
 import org.finos.legend.engine.persistence.components.relational.sql.DataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.BigInt;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Char;

@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,15 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.relational.memsql.sqldom.schema;
+package org.finos.legend.engine.persistence.components.common;
 
-import org.finos.legend.engine.persistence.components.relational.sqldom.schema.VariableSizeDataType;
-
-public class Json extends VariableSizeDataType
+public enum FilterType
 {
+    GREATER_THAN("GT"),
+    GREATER_THAN_EQUAL("GTE"),
+    LESS_THAN("LT"),
+    LESS_THAN_EQUAL("LTE"),
+    EQUAL_TO("EQ");
 
-    public Json()
+    private String type;
+
+    FilterType(String type)
     {
-        super("JSON");
+        this.type = type;
+    }
+
+    public String getType()
+    {
+        return type;
     }
 }

@@ -37,4 +37,14 @@ public class UnitemporalSnapshotDateTimeBasedTest extends org.finos.legend.engin
     {
         return SnowflakeTestArtifacts.expectedMetadataTableIngestQueryWithUpperCase;
     }
+
+    protected String getExpectedMetadataTableCreateQuery()
+    {
+        return SnowflakeTestArtifacts.expectedMetadataTableCreateQuery;
+    }
+
+    protected String getExpectedMetadataTableCreateQueryWithUpperCase()
+    {
+        return SnowflakeTestArtifacts.expectedMetadataTableCreateQueryWithUpperCase;
+    }
 }
