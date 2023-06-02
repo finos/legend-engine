@@ -21,12 +21,6 @@
 
 package org.finos.legend.engine.postgres;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-
 import org.finos.legend.engine.language.sql.grammar.from.SQLGrammarParser;
 import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseParser;
 import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
@@ -35,6 +29,12 @@ import org.finos.legend.engine.postgres.handler.PostgresStatement;
 import org.finos.legend.engine.postgres.handler.SessionHandler;
 import org.finos.legend.engine.protocol.sql.metamodel.QualifiedName;
 import org.slf4j.Logger;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 public class Session implements AutoCloseable
 {
@@ -104,7 +104,8 @@ public class Session implements AutoCloseable
     {
         SqlBaseParser parser = SQLGrammarParser.getSqlBaseParser(query, "query");
         List<QualifiedName> qualifiedNames = EXTRACTOR.visitSingleStatement(parser.singleStatement());
-        boolean isMetadataQuery = qualifiedNames.stream().flatMap(i -> i.parts.stream()).anyMatch(i -> (i.equalsIgnoreCase("information_schema") || i.equalsIgnoreCase("pg_catalog")));
+
+        boolean isMetadataQuery = qualifiedNames.stream().flatMap(i -> i.parts.stream()).anyMatch(SystemSchemas::contains);
         if (isMetadataQuery)
         {
             return metaDataSessionHandler;
