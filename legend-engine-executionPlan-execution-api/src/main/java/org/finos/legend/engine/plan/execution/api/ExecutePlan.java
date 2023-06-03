@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.api;
 
 import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.list.MutableList;
@@ -51,6 +52,9 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import java.util.Collections;
+import java.util.List;
+
 import static org.finos.legend.engine.plan.execution.api.result.ResultManager.manageResult;
 import static org.finos.legend.engine.plan.execution.authorization.PlanExecutionAuthorizerInput.ExecutionMode.INTERACTIVE_EXECUTION;
 
@@ -60,6 +64,11 @@ public class ExecutePlan
     private final PlanExecutor planExecutor;
     private IdentityFactory identityFactory;
     private final PlanExecutionAuthorizer planExecutionAuthorizer;
+
+    private static final Response UNSUPPORTED_PLAN_ERROR_RESPONSE = Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+            .type(MediaType.TEXT_PLAIN)
+            .entity(new ResultManager.ErrorMessage(20, "Only SingleExecutionPlan is supported"))
+            .build();
 
     public ExecutePlan(PlanExecutor planExecutor)
     {
@@ -93,28 +102,17 @@ public class ExecutePlan
     public Response doExecutePlanLegacy(HttpServletRequest request, ExecutionPlan execPlan, SerializationFormat format, ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-
-        try
-        {
-            if (execPlan instanceof SingleExecutionPlan)
-            {
-                LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_PLAN_EXEC_START, "").toString());
-                // Assume that the input exec plan has no variables
-                Result result = planExecutor.execute((SingleExecutionPlan) execPlan, Maps.mutable.empty(), null, profiles, null, RequestContextHelper.RequestContext(request));
-                try (Scope scope = GlobalTracer.get().buildSpan("Manage Results").startActive(true))
-                {
-                    LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_PLAN_EXEC_STOP, "").toString());
-                    return ResultManager.manageResult(profiles, result, format, LoggingEventType.EXECUTION_PLAN_EXEC_ERROR);
-                }
+         try {
+            if (execPlan instanceof SingleExecutionPlan) {
+                logExecutionStart(profiles);
+                Result result = executeSinglePlan((SingleExecutionPlan) execPlan, profiles, request);
+                logExecutionStop(profiles);
+                return manageResult(profiles, result, format, LoggingEventType.EXECUTION_PLAN_EXEC_ERROR);
+            } else {
+                return UNSUPPORTED_PLAN_ERROR_RESPONSE;
             }
-            else
-            {
-                return Response.status(500).type(MediaType.TEXT_PLAIN).entity(new ResultManager.ErrorMessage(20, "Only SingleExecutionPlan is supported")).build();
-            }
-        }
-        catch (Exception ex)
-        {
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTION_PLAN_EXEC_ERROR, profiles);
+        } catch (Exception ex) {
+            return handleException(ex, profiles);
         }
     }
 
@@ -225,5 +223,27 @@ public class ExecutePlan
         {
             return manageResult(pm, result, format, LoggingEventType.EXECUTE_INTERACTIVE_ERROR);
         }
+    }
+
+    private void logExecutionStart(MutableList<CommonProfile> profiles) {
+        LOGGER.info("Execution plan execution started for profiles {}", profiles);
+    }
+    private Result executeSinglePlan(SingleExecutionPlan execPlan, MutableList<CommonProfile> profiles, HttpServletRequest request)
+    {
+        return planExecutor.execute(execPlan, Collections.emptyMap(), null, profiles, null, RequestContextHelper.RequestContext(request));
+    }
+    private void logExecutionStop(List<CommonProfile> profiles)
+    {
+        LOGGER.info("Execution plan execution stopped for profiles {}", profiles);
+    }
+    private Response manageResult(MutableList<CommonProfile> profiles, Result result, SerializationFormat format, LoggingEventType eventType)
+    {
+        Span span = GlobalTracer.get().buildSpan("Manage Results").start();
+        try (Scope ignored = GlobalTracer.get().activateSpan(span)) {
+            return ResultManager.manageResult(profiles, result, format, eventType);
+        }
+    }
+    private Response handleException(Exception ex, List<CommonProfile> profiles) {
+        return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTION_PLAN_EXEC_ERROR, profiles);
     }
 }
