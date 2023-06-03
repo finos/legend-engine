@@ -1,0 +1,16 @@
+import meta::relational::transform::toPure::*;
+import meta::relational::transform::toPure::tests::*;
+
+
+function <<test.Test>> meta::relational::transform::toPure::tests::testClassesAndMappingFromSchema():Boolean[1]
+{
+   let file = PersonTable->sourceInformation().source->toOne();
+   let fileContents = readFile($file)->toOne();
+   let lines = $fileContents->split('\n');
+   
+   let expected = $lines->slice(PersonTable->sourceInformation().startLine->toOne()-27,SimpleDb1Mapping->sourceInformation().endLine->toOne())->joinStrings('\n')->trim()->replace('\r', '');
+
+   let actual = meta::relational::transform::toPure::classesAndMappingFromSchema(SimpleDb1.schemas->toOne(), meta::relational::transform::toPure::tests->elementToPath()+'::')->trim()->replace('\n\n','\n');
+
+   assertEquals($expected, $actual);
+}

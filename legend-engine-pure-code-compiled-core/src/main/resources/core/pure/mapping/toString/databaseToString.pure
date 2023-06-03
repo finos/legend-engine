@@ -1,0 +1,114 @@
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::mapping::serialization::*;
+import meta::pure::store::*;
+import meta::relational::runtime::*;
+import meta::relational::metamodel::datatype::*;
+import meta::relational::functions::database::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::metamodel::*;
+import meta::pure::extension::*;
+
+function meta::relational::functions::database::databaseToString(db:Database[1], extensions:Extension[*]):String[1]
+{
+   $db->databaseToString('', true, $extensions);
+}
+
+function meta::relational::functions::database::databaseToString(db:Database[1], printIncludes: Boolean[1], extensions:Extension[*]):String[1]
+{
+   $db->databaseToString('', $printIncludes, $extensions);
+}
+
+function meta::relational::functions::database::databaseToString(db:Database[1], pathPrefix:String[1], extensions:Extension[*]):String[1]
+{
+   $db->databaseToString($pathPrefix, true, $extensions);
+}
+
+function meta::relational::functions::database::databaseToString(db:Database[1], pathPrefix:String[1], printIncludes: Boolean[1], extensions:Extension[*]):String[1]
+{
+   'Database ' + $pathPrefix + $db->elementToPath() + '\n' +
+   '(\n' +
+       $db.includes->printIncludes() + 
+       $db.schemas->filter(f| !$f.tables->isEmpty())->map(m | '   ' + $m->schemaToString())->joinStrings('', '\n', '') +
+       if($db.joins->isEmpty(), | '', |'\n') + 
+       $db.joins->map(j | $j->joinToString($extensions))->joinStrings('', '\n', '') +
+       if($db.filters->isEmpty(), | '', |'\n\n') + 
+       $db.filters->map(f | $f->filterToString($extensions))->joinStrings('', '\n', '') +
+   '\n'+
+   ')'
+   + if($db.includes->isNotEmpty() && $printIncludes->equal(true), | '\n\n' 
+        + $db.includes->cast(@Database)->map(m| $m->databaseToString($extensions))
+                 ->joinStrings(), |'');
+}
+
+function meta::relational::functions::database::printIncludes(includes:Store[*]):String[1]
+{
+   if ($includes->isEmpty(), | '', | $includes->map(i | 'include ' + $i->elementToPath())->joinStrings('   ', '\n   ', '\n\n');)
+}
+
+function meta::relational::functions::database::schemaToString(schema:Schema[1]):String[1]
+{
+   'Schema' + ' ' + $schema.name +'\n' +
+   '   (\n' +
+          $schema.tables->filter(f| !$f.columns->isEmpty())->map(m | '   ' + $m->tableToString())->joinStrings('\n\n') + '\n' +
+          if ($schema.views->isEmpty(), | '', | $schema.views->map(view | $view->viewToString())->joinStrings('      ', '\n      ', '')) + 
+   '   )';
+}
+
+function meta::relational::functions::database::viewToString(view:View[1]):String[1]
+{
+   'View ' + $view.name + '\n' +
+   '      (\n' + 
+   '   ' + $view->cast(@RelationalMappingSpecification)->meta::relational::mapping::serialization::printRelationalMappingSpecification() + '\n' +
+   '   ' + $view.columnMappings->map(cm | $cm.columnName + ' : ' + $cm.relationalOperationElement->relationalOperationElementToString())->joinStrings('      ', ',\n         ', '') + '\n' + 
+   '      )\n';
+}
+
+function meta::relational::functions::database::tableToString(table:Table[1]):String[1]
+{
+   '   Table' + ' ' + $table.name +
+         ' (' + if($table.milestoning->isEmpty(), 
+                   | '', 
+                   | $table.milestoning->map(m|$m->milestoningString())->joinStrings('\n         milestoning(\n            ', ',\n            ', '\n         )')
+                   ) + $table.columns->filter(f| $f->instanceOf(Column))
+                                                          ->cast(@Column)
+                                                          ->map(m | $m->columnToString($table.primaryKey))
+                                                          ->joinStrings('\n         ', ',\n         ', '\n         ') + ')';
+}
+
+function meta::relational::functions::database::milestoningString(m:Milestoning[1]):String[1]
+{
+   $m->match([
+      l:DataLakeBatchMilestoning[1]| 'dlBatch(BATCH_IN=' + $l.in.name + ', BATCH_OUT=' + $l.out.name + ')', 
+      p:ProcessingMilestoning[1]| 'processing(PROCESSING_IN=' + $p.in.name + ', PROCESSING_OUT=' + $p.out.name + ')', 
+      b:BusinessMilestoning[1]|'business(BUS_FROM=' + $b.from.name + ', BUS_THRU=' + $b.thru.name + ')'
+   ])
+}
+
+function meta::relational::functions::database::columnToString(column:Column[1], primaryKey:Column[*]):String[1]
+{
+
+   $column.name +
+   ' ' +
+   $column.type->dataTypeToSqlText() +
+   if (contains($primaryKey, $column),
+         | ' PRIMARY KEY',
+         | if ($column.nullable == false,
+               | ' NOT NULL',
+               | ''););
+}
+
+function meta::relational::functions::database::joinToString(join:Join[1], extensions:Extension[*]):String[1]
+{
+   let isSelf = $join.aliases->isNotEmpty() && $join.aliases->at(0).first.relationalElement == $join.aliases->at(0).second.relationalElement;
+   '   Join ' + $join.name + '(' +
+      meta::relational::functions::sqlQueryToString::processOperation($join.operation, DatabaseType.H2, ^Config(useQuotesForTableAliasColumn = false, generateJoin=true, generateJoinTarget=if($isSelf,|$join.target,|[])), $extensions)
+   + ')';
+}
+
+function meta::relational::functions::database::filterToString(filter: Filter[1], extensions:Extension[*]): String[1]
+{
+   '   Filter ' + $filter.name + '(' +
+   meta::relational::functions::sqlQueryToString::processOperation($filter.operation, DatabaseType.H2, ^Config(useQuotesForTableAliasColumn = false, callingFromFilter=true, generateJoin=true), $extensions)
+   + ')';
+}

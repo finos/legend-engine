@@ -1,0 +1,47 @@
+import meta::relational::functions::database::*;
+import meta::relational::functions::database::tests::*;
+
+function <<test.Test>> meta::relational::functions::database::tests::testDbToString():Boolean[1]
+{
+   let extensions = meta::relational::extension::relationalExtensions();
+   let dbStr = 'Database meta::pure::mapping::modelToModel::test::shared::relationalDB\n'+
+        '(\n'+
+        '   Schema default\n'+
+        '   (\n'+
+        '      Table SPerson (\n'+
+        '         fullname VARCHAR(200) PRIMARY KEY\n'+
+        '         )\n'+
+        '\n'+
+        '      Table Person (\n'+
+        '         fullname VARCHAR(1000) PRIMARY KEY,\n'+
+        '         firm VARCHAR(200)\n'+
+        '         )\n'+
+        '\n'+
+        '      Table Firm (\n'+
+        '         name VARCHAR(200) PRIMARY KEY\n'+
+        '         )\n'+
+        '\n'+
+        '      Table Trade (\n'+
+        '         id INT PRIMARY KEY,\n'+
+        '         side INT,\n'+
+        '         productID INT\n'+
+        '         )\n'+
+        '\n'+
+        '      Table Product (\n'+
+        '         id INT PRIMARY KEY,\n'+
+        '         name VARCHAR(200),\n'+
+        '         region VARCHAR(20)\n'+
+        '         )\n'+
+        '\n'+
+        '      Table Address (\n'+
+        '         id INT PRIMARY KEY,\n'+
+        '         street VARCHAR(200),\n'+
+        '         personFK VARCHAR(1000)\n'+
+        '         )\n'+
+        '   )\n'+
+        '   Join FirmPerson(Person.firm = Firm.name)\n'+
+        '   Join TradeProduct(Product.id = Trade.productID)\n'+
+        '   Join PersonAddresses(Address.personFK = Person.fullname)\n'+
+        ')';
+   assertEquals($dbStr, meta::pure::mapping::modelToModel::test::shared::relationalDB->databaseToString($extensions));
+}

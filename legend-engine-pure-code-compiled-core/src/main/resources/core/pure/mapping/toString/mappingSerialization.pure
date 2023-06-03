@@ -1,0 +1,147 @@
+import meta::pure::mapping::*;
+import meta::pure::mapping::serialization::grammar::*;
+
+Class meta::pure::mapping::serialization::grammar::PrintConfig
+{
+   relationalPrintConfig: meta::relational::mapping::serialization::RelationalPrintConfig[1];
+}
+
+function meta::pure::mapping::serialization::grammar::printMapping(m : meta::pure::mapping::Mapping[1]):String[1]
+{
+   $m->meta::pure::mapping::serialization::grammar::printMapping(^PrintConfig(relationalPrintConfig = ^meta::relational::mapping::serialization::RelationalPrintConfig(printMainTable=false)));
+}
+
+function meta::pure::mapping::serialization::grammar::printMapping(m : meta::pure::mapping::Mapping[1], config: PrintConfig[1]):String[1]
+{
+   'Mapping '+$m->elementToPath()+'\n'+
+   '(\n'+
+      $m.includes->mappingIncludeToString() + if($m.includes->isEmpty(),|'',|'\n') + if($m.includes->isNotEmpty() && ($m.classMappings->isNotEmpty() || $m.associationMappings->isNotEmpty() || $m.enumerationMappings->isNotEmpty()),|'\n',|'') + 
+      $m.classMappings->sortBy(c|$c.id)->filter(c|!$c->instanceOf(meta::relational::mapping::EmbeddedRelationalInstanceSetImplementation))->map(c|'   '+if($c.root,|'*',|'') + $c.class->elementToPath() + if($c.id == $c.class->elementToPath('_'),|'',|'['+$c.id+']')+' : ' + $c->printClassMapping($config))->joinStrings('\n\n') + if($m.classMappings->isEmpty(),|'',|'\n') + if($m.classMappings->isNotEmpty() && ($m.associationMappings->isNotEmpty() || $m.enumerationMappings->isNotEmpty()),|'\n',|'') +
+      $m.associationMappings->sortBy(c|$c.association->elementToPath())->map(a|'   '+$a.association->elementToPath() + ' : '+$a->printAssociationMapping())->joinStrings('\n\n') + if($m.associationMappings->isEmpty(),|'',|'\n') + if($m.associationMappings->isNotEmpty() && $m.enumerationMappings->isNotEmpty(),|'\n',|'') +
+      $m.enumerationMappings->sortBy(c|$c.name)->map(e|'   '+$e.enumeration->elementToPath()+' : EnumerationMapping '+$e.name+'\n'+
+                                  '   {\n'+
+                                     $e.enumValueMappings
+                                                     ->sortBy(e|$e.enum)
+                                                     ->map(e|'     '+$e.enum->toString()+' : '+if($e.sourceValues->isEmpty(),
+                                                                                                  |'',
+                                                                                                  |'[')+
+                                                                                                     $e.sourceValues->map(e|$e->match([e:Enum[1]| $e->genericType().rawType->toOne()->elementToPath()+'.'+$e->id(), a:String[1]|'\''+$a+'\'',i:Integer[1]|$i->toString()]))
+                                                                                                                    ->joinStrings(', ')+if($e.sourceValues->isEmpty(),|'',|']'))->joinStrings(',\n') + '\n' +
+                                  '   }')->joinStrings('\n\n')+if($m.enumerationMappings->isEmpty(),|'',|'\n')+
+   ')\n'
+   ;
+}
+
+
+function <<access.private>> meta::pure::mapping::serialization::grammar::mappingIncludeToString(element:MappingInclude[*]):String[1]
+{
+   $element->map( i|  '   include ' + $i.included->elementToPath()+     
+                     if($i.storeSubstitutions->isNotEmpty(),| '[' + $i.storeSubstitutions->first().original->toOne()->elementToPath() + ' -> '+$i.storeSubstitutions.substitute->toOne()->elementToPath() +']' ,|''  )
+             )->joinStrings('\n');
+
+}
+
+function <<access.private>> meta::pure::mapping::serialization::grammar::printClassMapping(classMapping : meta::pure::mapping::SetImplementation[1], config: PrintConfig[1]):String[1]
+{
+   $classMapping->match(
+     [ 
+      p : meta::pure::mapping::modelToModel::PureInstanceSetImplementation[1]| $p->printPure(),
+      o : meta::pure::mapping::OperationSetImplementation[1]|$o->printOperation(),
+      r : meta::relational::mapping::RootRelationalInstanceSetImplementation[1]| meta::relational::mapping::serialization::printRelational($r, $config.relationalPrintConfig)
+     ]
+   )
+}
+
+function <<access.private>> meta::pure::mapping::serialization::grammar::printAssociationMapping(associationMapping : meta::pure::mapping::AssociationImplementation[1]):String[1]
+{
+   $associationMapping->match(
+     [ 
+      r : meta::relational::mapping::RelationalAssociationImplementation[1]| meta::relational::mapping::serialization::printRelationalAssociation($r) 
+     ]
+   )
+}
+
+function meta::pure::mapping::serialization::grammar::printPropertyMapping(propertyMapping:PropertyMapping[1]):String[1]
+{
+   $propertyMapping->meta::pure::mapping::serialization::grammar::printPropertyMapping('   ')
+}
+
+function <<access.private>> meta::pure::mapping::serialization::grammar::printPropertyMapping(propertyMapping:PropertyMapping[1], indent:String[1]):String[1]
+{
+   let target = if($propertyMapping.targetSetImplementationId == '' || $propertyMapping.targetSetImplementationId == 'todo' || $propertyMapping->instanceOf(meta::relational::mapping::EmbeddedRelationalInstanceSetImplementation),
+                   | [],
+                   | $propertyMapping.targetSetImplementationId
+                );
+   
+   let source = if ($propertyMapping.owner->isNotEmpty() && $propertyMapping.owner->toOne()->instanceOf(meta::relational::mapping::RelationalAssociationImplementation), 
+                    | $propertyMapping.sourceSetImplementationId, 
+                    | []
+                );
+
+   let sourceTarget = $source->concatenate($target);
+   let sourceTargetString = if ($sourceTarget->isEmpty(), | '', | $sourceTarget->joinStrings('[', ',', ']'));
+   
+   if ($propertyMapping.property->meta::pure::milestoning::hasGeneratedMilestoningDatePropertyStereotype(), | '', |
+
+      if($propertyMapping.localMappingProperty->equal(true), | $propertyMapping->manageLocalPropertyMapping(), | '     ' + $propertyMapping.property->meta::pure::milestoning::originalPropertyNameForEdgePointProperty()->toOne() + $sourceTargetString) +
+
+      +  $propertyMapping->match([r:meta::relational::mapping::RelationalPropertyMapping[1] | ' : ' + $r->manageEnumPropertyMapping() + $r->meta::relational::mapping::serialization::printRelationalProperty(),
+                                  e:meta::relational::mapping::EmbeddedRelationalInstanceSetImplementation[1] | '\n' + $indent + '  (\n' + $indent + $e.propertyMappings->map(pm | $pm->printPropertyMapping($indent + '   '))->joinStrings(',\n' + $indent) + '\n' + $indent + '  )';,
+                                  p:meta::pure::mapping::modelToModel::PurePropertyMapping[1] | ' : ' + $p->manageEnumPropertyMapping() + $p.transform.expressionSequence->toOne()->evaluateAndDeactivate()->meta::pure::metamodel::serialization::grammar::printValueSpecification(' '); ])
+      +  $propertyMapping->match([e:meta::relational::mapping::InlineEmbeddedRelationalInstanceSetImplementation[1]| ' Inline[' + $e.inlineSetImplementationId + ']', x:PropertyMapping[1]|'']);
+   );
+} 
+
+function <<access.private>> meta::pure::mapping::serialization::grammar::manageLocalPropertyMapping(p:PropertyMapping[1]):String[1]
+{
+   '     +' + $p.property->meta::pure::milestoning::originalPropertyNameForEdgePointProperty()->toOne() + ': ' + $p.localMappingPropertyType->toOne()->elementToPath()
+   + $p.localMappingPropertyMultiplicity->toOne()->manageMultiplicity();
+}
+
+function <<access.private>> meta::pure::mapping::serialization::grammar::manageMultiplicity(m:Multiplicity[1]):String[1]
+{
+ let multiplicity = if($m.lowerBound->isNotEmpty() && $m.lowerBound->toOne().value->isNotEmpty() && ($m.upperBound->isEmpty() || $m.upperBound->toOne().value->isEmpty()), | $m->getLowerBound()->toString() + '..*', 
+                       | if ($m->hasUpperBound() && $m.lowerBound->isNotEmpty() && $m.lowerBound->toOne().value->isNotEmpty(),
+                          | if($m->getLowerBound() == $m->getUpperBound(), | $m->getLowerBound()->toString(), | $m->getLowerBound()->toString() + '..' + $m->getUpperBound()->toString()),
+                          | if($m->hasLowerBound(),
+                               | $m->getLowerBound()->toString(),
+                               | if($m->hasUpperBound(),
+                                    | $m->getUpperBound()->toString(),
+                                    | '*';
+                      )))); 
+   
+   '[' + $multiplicity + ']';  
+}
+
+function <<access.private>> meta::pure::mapping::serialization::grammar::manageEnumPropertyMapping(p:PropertyMapping[1]):String[1]
+{
+   let transformer = $p->match(
+      [
+         r:meta::relational::mapping::RelationalPropertyMapping[1]|$r.transformer,
+         p:meta::pure::mapping::modelToModel::PurePropertyMapping[1] |$p.transformer
+      ]
+   );
+   if($transformer->isEmpty(),
+      |'',
+      |'EnumerationMapping '+$transformer->cast(@EnumerationMapping<Any>).name -> toOne()+' : '
+   );
+}
+
+function <<access.private>> meta::pure::mapping::serialization::grammar::printPure(p:meta::pure::mapping::modelToModel::PureInstanceSetImplementation[1]):String[1]
+{
+   'Pure\n'+
+   '   {\n'+
+        if($p.srcClass->isEmpty(),|'', |'     ~src '+$p.srcClass->toOne()->elementToPath()+'\n')+
+         $p.propertyMappings->map(pm|$pm->printPropertyMapping())->joinStrings(',\n')+'\n' +
+   '   }'   
+}
+
+
+function <<access.private>> meta::pure::mapping::serialization::grammar::printOperation(o:meta::pure::mapping::OperationSetImplementation[1]):String[1]
+{
+   'Operation\n'+
+   '   {\n'+
+   '     ' + $o.operation->elementToPath()+'('+$o.parameters.id->joinStrings(', ')+')\n'+
+   '   }'
+}
+
