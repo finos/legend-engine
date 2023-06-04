@@ -59,7 +59,7 @@ public class PostgresServerTypeMappingTest
     {
         CookieStore cookieStore = new BasicCookieStore();
         CloseableHttpClient httpClient = (CloseableHttpClient) HttpClientBuilder.getHttpClient(cookieStore);
-        LegendTdsClient client = new LegendTdsClient("http", "localhost", "" + wireMockRule.port(), new BasicCookieStore());
+        LegendTdsClient client = new LegendTdsClient("http", "localhost", "" + wireMockRule.port());
         LegendSessionFactory legendSessionFactory = new LegendSessionFactory(client);
         ServerConfig serverConfig = new ServerConfig();
         serverConfig.setPort(0);

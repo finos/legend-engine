@@ -52,7 +52,7 @@ public class PostgresServerTest
     @BeforeClass
     public static void setUp()
     {
-        LegendTdsTestClient client = new LegendTdsTestClient(resources.target("sql/v1/execution/executeQueryString").request());
+        LegendTdsTestClient client = new LegendTdsTestClient(resources);
         LegendSessionFactory legendSessionFactory = new LegendSessionFactory(client);
 
         ServerConfig serverConfig = new ServerConfig();
@@ -72,11 +72,13 @@ public class PostgresServerTest
         )
         {
             ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-            Assert.assertEquals(2, resultSetMetaData.getColumnCount());
+            Assert.assertEquals(3, resultSetMetaData.getColumnCount());
             Assert.assertEquals("Id", resultSetMetaData.getColumnName(1));
             Assert.assertEquals("Name", resultSetMetaData.getColumnName(2));
+            Assert.assertEquals("Employee Type", resultSetMetaData.getColumnName(3));
             Assert.assertEquals("int4", resultSetMetaData.getColumnTypeName(1));
             Assert.assertEquals("varchar", resultSetMetaData.getColumnTypeName(2));
+            Assert.assertEquals("varchar", resultSetMetaData.getColumnTypeName(3));
         }
     }
 
