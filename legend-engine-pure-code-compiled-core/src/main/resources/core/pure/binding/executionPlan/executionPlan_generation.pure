@@ -73,7 +73,7 @@ function <<access.private>> meta::external::shared::format::executionPlan::graph
                           |^$state(checked = true, graphContext = ^GraphFetchContext(graphFetchTree = getFunctionParameterValue($fe, $state.inScopeVars, 1)->cast(@meta::pure::graphFetch::RootGraphFetchTree<Any>)->toOne()->meta::pure::graphFetch::ensureConstraintsRequirements())),
                           | 
                       if($fe.func == meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Integer_1__Checked_MANY_,
-                          | ^$state(checked = false, graphContext = ^GraphFetchContext(graphFetchTree = getFunctionParameterValue($fe, $state.inScopeVars, 1)->cast(@meta::pure::graphFetch::RootGraphFetchTree<Any>)->toOne()->meta::pure::graphFetch::ensureConstraintsRequirements(), batchSize = getFunctionParameterValue($fe, $state.inScopeVars, 2)->cast(@Integer)->toOne())),
+                          | ^$state(checked = true, graphContext = ^GraphFetchContext(graphFetchTree = getFunctionParameterValue($fe, $state.inScopeVars, 1)->cast(@meta::pure::graphFetch::RootGraphFetchTree<Any>)->toOne()->meta::pure::graphFetch::ensureConstraintsRequirements(), batchSize = getFunctionParameterValue($fe, $state.inScopeVars, 2)->cast(@Integer)->toOne())),
                           | 
                       if($fe.func == meta::pure::graphFetch::execution::graphFetchUnexpanded_T_MANY__RootGraphFetchTree_1__T_MANY_,
                           | ^$state(checked = false, graphContext = ^GraphFetchContext(graphFetchTree = getFunctionParameterValue($fe, $state.inScopeVars, 1)->cast(@meta::pure::graphFetch::RootGraphFetchTree<Any>)->toOne())),
