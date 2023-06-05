@@ -15,12 +15,21 @@
 package org.finos.legend.engine.persistence.components.relational.bigquery.sql;
 
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
-import org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.schema.*;
+import org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.schema.Bool;
+import org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.schema.Bytes;
+import org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.schema.Float64;
+import org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.schema.Json;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.schema.String;
 import org.finos.legend.engine.persistence.components.relational.sql.DataTypeMapping;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schema.*;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Boolean;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Integer;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schema.DataType;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Date;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schema.DateTime;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Int64;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Numeric;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Time;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schema.Timestamp;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schema.VariableSizeDataType;
+
 
 public class BigQueryDataTypeMapping implements DataTypeMapping
 {
