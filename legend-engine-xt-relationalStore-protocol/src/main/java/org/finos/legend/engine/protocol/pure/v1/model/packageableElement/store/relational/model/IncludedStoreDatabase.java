@@ -12,20 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.IncludedStore;
 
-public class MappingIncludeDataSpace extends MappingInclude
+public class IncludedStoreDatabase extends IncludedStore
 {
-    public String includedDataSpace;
-    public String sourceDatabasePath;
-    public String targetDatabasePath;
 
-    @JsonIgnore
-    public String getFullName()
-    {
-        return includedDataSpace;
-    }
 }

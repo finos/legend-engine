@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
@@ -28,18 +30,21 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.diagram.Diagram;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.IncludedStore;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
+import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database;
 
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-public class DataSpaceCompilerExtension implements CompilerExtension
+public class DataSpaceCompilerExtension implements CompilerExtension, IRelationalCompilerExtension
 {
     static final MutableMap<String, Root_meta_pure_metamodel_dataSpace_DataSpace> dataSpacesIndex = Maps.mutable.empty();
 
@@ -199,4 +204,25 @@ public class DataSpaceCompilerExtension implements CompilerExtension
                 MappingIncludeDataSpace.class.getName(), new DataSpaceIncludedMappingHandler()
         );
     }
+
+    @Override
+    public Map<String, Function2<IncludedStore, CompileContext, RichIterable<? extends Store>>> getExtraIncludedStoreHandlers()
+    {
+        return org.eclipse.collections.impl.factory.Maps.mutable.of(
+                IncludeStoreDataSpace.class.getName(), (IncludedStore includedStore, CompileContext context) ->
+                {
+                    Root_meta_pure_metamodel_dataSpace_DataSpace dataspace =
+                            DataSpaceCompilerExtension.dataSpacesIndex.get(includedStore.name);
+                    return getDatabasesUnderDataSpace(dataspace, context);
+                }
+        );
+    }
+
+    public static RichIterable<Database> getDatabasesUnderDataSpace(Root_meta_pure_metamodel_dataSpace_DataSpace dataspace, CompileContext context)
+    {
+        return dataspace._defaultExecutionContext()._defaultRuntime()._runtimeValue()._connections()
+                .collect(e -> e._element())
+                .selectInstancesOf(Database.class);
+    }
+
 }

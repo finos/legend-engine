@@ -47,6 +47,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.IncludedStore;
 import org.finos.legend.engine.protocol.pure.v1.model.test.Test;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
@@ -60,6 +61,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -114,6 +116,7 @@ public class CompilerExtensions
     private final ImmutableList<BiConsumer<PureModel, MappingValidatorContext>> extraMappingPostValidators;
 
     private final Map<String, IncludedMappingHandler> extraIncludedMappingHandlers;
+    private final Map<String, Function2<IncludedStore, CompileContext, RichIterable<? extends Store>>> extraIncludedStoreHandlers;
 
     private CompilerExtensions(Iterable<? extends CompilerExtension> extensions)
     {
@@ -146,6 +149,8 @@ public class CompilerExtensions
         this.extraMappingPostValidators = this.extensions.flatCollect(CompilerExtension::getExtraMappingPostValidators);
         this.extraIncludedMappingHandlers = Maps.mutable.empty();
         this.extensions.forEach(e -> extraIncludedMappingHandlers.putAll(e.getExtraIncludedMappingHandlers()));
+        this.extraIncludedStoreHandlers = Maps.mutable.empty();
+        this.extensions.forEach(e -> this.extraIncludedStoreHandlers.putAll(e.getExtraIncludedStoreHandlers()));
     }
 
     public List<CompilerExtension> getExtensions()
@@ -467,5 +472,17 @@ public class CompilerExtensions
     public IncludedMappingHandler getExtraIncludedMappingHandlers(String classType)
     {
         return this.extraIncludedMappingHandlers.get(classType);
+    }
+
+    public Function2<IncludedStore, CompileContext, RichIterable<? extends Store>> getExtraIncludedStoreHandlers(IncludedStore includedStore)
+    {
+        if (this.extraIncludedStoreHandlers.get(includedStore.getClass().getName()) == null)
+        {
+            throw new EngineException("Compilation handler for the included store type does not exist.", includedStore.sourceInformation, EngineErrorType.COMPILATION);
+        }
+        else
+        {
+            return this.extraIncludedStoreHandlers.get(includedStore.getClass().getName());
+        }
     }
 }

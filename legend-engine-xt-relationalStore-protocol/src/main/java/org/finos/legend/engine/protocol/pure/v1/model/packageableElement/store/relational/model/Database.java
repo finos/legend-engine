@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model;
 
+import com.fasterxml.jackson.annotation.JsonSetter;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
 
@@ -25,6 +27,23 @@ public class Database extends Store
     public List<Schema> schemas = Collections.emptyList();
     public List<Join> joins = Collections.emptyList();
     public List<Filter> filters = Collections.emptyList();
+
+    @Deprecated
+    @JsonSetter("includedStores")
+    public void setIncludedStores(List<String> includedStores)
+    {
+        this.setIncludedStoreList(
+                ListIterate.collect(
+                        includedStores, include ->
+                        {
+                            IncludedStoreDatabase includedStoreDatabase = new IncludedStoreDatabase();
+                            includedStoreDatabase.name = include;
+                            includedStoreDatabase.sourceInformation = this.sourceInformation;
+                            return includedStoreDatabase;
+                        }
+                )
+        );
+    }
 
     @Override
     public <T> T accept(PackageableElementVisitor<T> visitor)

@@ -1,0 +1,523 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "relational",
+      "filters": [
+        {
+          "_type": "filter",
+          "name": "filter1",
+          "operation": {
+            "_type": "dynaFunc",
+            "funcName": "isNotNull",
+            "parameters": [
+              {
+                "_type": "column",
+                "column": "col1",
+                "sourceInformation": {
+                  "endColumn": 38,
+                  "endLine": 34,
+                  "sourceId": "",
+                  "startColumn": 18,
+                  "startLine": 34
+                },
+                "table": {
+                  "_type": "Table",
+                  "database": "test::db",
+                  "mainTableDb": "test::db",
+                  "schema": "default",
+                  "sourceInformation": {
+                    "endColumn": 21,
+                    "endLine": 34,
+                    "sourceId": "",
+                    "startColumn": 18,
+                    "startLine": 34
+                  },
+                  "table": "TAB2"
+                },
+                "tableAlias": "TAB2"
+              }
+            ],
+            "sourceInformation": {
+              "endColumn": 38,
+              "endLine": 34,
+              "sourceId": "",
+              "startColumn": 28,
+              "startLine": 34
+            }
+          },
+          "sourceInformation": {
+            "endColumn": 39,
+            "endLine": 34,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 34
+          }
+        },
+        {
+          "_type": "multigrain",
+          "name": "filter2",
+          "operation": {
+            "_type": "dynaFunc",
+            "funcName": "isNull",
+            "parameters": [
+              {
+                "_type": "column",
+                "column": "col2",
+                "sourceInformation": {
+                  "endColumn": 44,
+                  "endLine": 35,
+                  "sourceId": "",
+                  "startColumn": 28,
+                  "startLine": 35
+                },
+                "table": {
+                  "_type": "Table",
+                  "database": "test::db",
+                  "mainTableDb": "test::db",
+                  "schema": "default",
+                  "sourceInformation": {
+                    "endColumn": 31,
+                    "endLine": 35,
+                    "sourceId": "",
+                    "startColumn": 28,
+                    "startLine": 35
+                  },
+                  "table": "TAB1"
+                },
+                "tableAlias": "TAB1"
+              }
+            ],
+            "sourceInformation": {
+              "endColumn": 44,
+              "endLine": 35,
+              "sourceId": "",
+              "startColumn": 38,
+              "startLine": 35
+            }
+          },
+          "sourceInformation": {
+            "endColumn": 45,
+            "endLine": 35,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 35
+          }
+        }
+      ],
+      "includedStores": [
+        "Store1",
+        "test::Store2"
+      ],
+      "joins": [
+        {
+          "name": "join1",
+          "operation": {
+            "_type": "dynaFunc",
+            "funcName": "equal",
+            "parameters": [
+              {
+                "_type": "column",
+                "column": "col1",
+                "sourceInformation": {
+                  "endColumn": 37,
+                  "endLine": 31,
+                  "sourceId": "",
+                  "startColumn": 14,
+                  "startLine": 31
+                },
+                "table": {
+                  "_type": "Table",
+                  "database": "test::db",
+                  "mainTableDb": "test::db",
+                  "schema": "default",
+                  "sourceInformation": {
+                    "endColumn": 16,
+                    "endLine": 31,
+                    "sourceId": "",
+                    "startColumn": 14,
+                    "startLine": 31
+                  },
+                  "table": "TAB"
+                },
+                "tableAlias": "TAB"
+              },
+              {
+                "_type": "column",
+                "column": "col2",
+                "sourceInformation": {
+                  "endColumn": 37,
+                  "endLine": 31,
+                  "sourceId": "",
+                  "startColumn": 25,
+                  "startLine": 31
+                },
+                "table": {
+                  "_type": "Table",
+                  "database": "test::db",
+                  "mainTableDb": "test::db",
+                  "schema": "default",
+                  "sourceInformation": {
+                    "endColumn": 32,
+                    "endLine": 31,
+                    "sourceId": "",
+                    "startColumn": 25,
+                    "startLine": 31
+                  },
+                  "table": "{target}"
+                },
+                "tableAlias": "{target}"
+              }
+            ],
+            "sourceInformation": {
+              "endColumn": 37,
+              "endLine": 31,
+              "sourceId": "",
+              "startColumn": 23,
+              "startLine": 31
+            }
+          },
+          "sourceInformation": {
+            "endColumn": 38,
+            "endLine": 31,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 31
+          }
+        },
+        {
+          "name": "join2",
+          "operation": {
+            "_type": "dynaFunc",
+            "funcName": "equal",
+            "parameters": [
+              {
+                "_type": "column",
+                "column": "col3",
+                "sourceInformation": {
+                  "endColumn": 34,
+                  "endLine": 32,
+                  "sourceId": "",
+                  "startColumn": 14,
+                  "startLine": 32
+                },
+                "table": {
+                  "_type": "Table",
+                  "database": "test::db",
+                  "mainTableDb": "test::db",
+                  "schema": "default",
+                  "sourceInformation": {
+                    "endColumn": 17,
+                    "endLine": 32,
+                    "sourceId": "",
+                    "startColumn": 14,
+                    "startLine": 32
+                  },
+                  "table": "TAB2"
+                },
+                "tableAlias": "TAB2"
+              },
+              {
+                "_type": "column",
+                "column": "col2",
+                "sourceInformation": {
+                  "endColumn": 34,
+                  "endLine": 32,
+                  "sourceId": "",
+                  "startColumn": 26,
+                  "startLine": 32
+                },
+                "table": {
+                  "_type": "Table",
+                  "database": "test::db",
+                  "mainTableDb": "test::db",
+                  "schema": "default",
+                  "sourceInformation": {
+                    "endColumn": 29,
+                    "endLine": 32,
+                    "sourceId": "",
+                    "startColumn": 26,
+                    "startLine": 32
+                  },
+                  "table": "TAB3"
+                },
+                "tableAlias": "TAB3"
+              }
+            ],
+            "sourceInformation": {
+              "endColumn": 34,
+              "endLine": 32,
+              "sourceId": "",
+              "startColumn": 24,
+              "startLine": 32
+            }
+          },
+          "sourceInformation": {
+            "endColumn": 35,
+            "endLine": 32,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 32
+          }
+        }
+      ],
+      "name": "db",
+      "package": "test",
+      "schemas": [
+        {
+          "name": "mySchema",
+          "sourceInformation": {
+            "endColumn": 3,
+            "endLine": 9,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 7
+          },
+          "tables": [],
+          "views": []
+        },
+        {
+          "name": "default",
+          "sourceInformation": {
+            "endColumn": 1,
+            "endLine": 36,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 2
+          },
+          "tables": [
+            {
+              "columns": [
+                {
+                  "name": "col1",
+                  "nullable": true,
+                  "sourceInformation": {
+                    "endColumn": 17,
+                    "endLine": 13,
+                    "sourceId": "",
+                    "startColumn": 5,
+                    "startLine": 13
+                  },
+                  "type": {
+                    "_type": "Char",
+                    "size": 32
+                  }
+                }
+              ],
+              "milestoning": [],
+              "name": "table1",
+              "primaryKey": [],
+              "sourceInformation": {
+                "endColumn": 3,
+                "endLine": 14,
+                "sourceId": "",
+                "startColumn": 3,
+                "startLine": 11
+              }
+            },
+            {
+              "columns": [
+                {
+                  "name": "col1",
+                  "nullable": true,
+                  "sourceInformation": {
+                    "endColumn": 17,
+                    "endLine": 17,
+                    "sourceId": "",
+                    "startColumn": 5,
+                    "startLine": 17
+                  },
+                  "type": {
+                    "_type": "Char",
+                    "size": 32
+                  }
+                }
+              ],
+              "milestoning": [],
+              "name": "table2",
+              "primaryKey": [],
+              "sourceInformation": {
+                "endColumn": 3,
+                "endLine": 18,
+                "sourceId": "",
+                "startColumn": 3,
+                "startLine": 15
+              }
+            }
+          ],
+          "views": [
+            {
+              "columnMappings": [
+                {
+                  "name": "col1",
+                  "operation": {
+                    "_type": "column",
+                    "column": "col1",
+                    "sourceInformation": {
+                      "endColumn": 19,
+                      "endLine": 23,
+                      "sourceId": "",
+                      "startColumn": 11,
+                      "startLine": 23
+                    },
+                    "table": {
+                      "_type": "Table",
+                      "database": "test::db",
+                      "mainTableDb": "test::db",
+                      "schema": "default",
+                      "sourceInformation": {
+                        "endColumn": 14,
+                        "endLine": 23,
+                        "sourceId": "",
+                        "startColumn": 11,
+                        "startLine": 23
+                      },
+                      "table": "test"
+                    },
+                    "tableAlias": "test"
+                  },
+                  "sourceInformation": {
+                    "endColumn": 19,
+                    "endLine": 23,
+                    "sourceId": "",
+                    "startColumn": 5,
+                    "startLine": 23
+                  }
+                }
+              ],
+              "distinct": false,
+              "filter": {
+                "filter": {
+                  "name": "filter1"
+                },
+                "joins": [],
+                "sourceInformation": {
+                  "endColumn": 19,
+                  "endLine": 22,
+                  "sourceId": "",
+                  "startColumn": 5,
+                  "startLine": 22
+                }
+              },
+              "groupBy": [],
+              "name": "view1",
+              "primaryKey": [],
+              "sourceInformation": {
+                "endColumn": 3,
+                "endLine": 24,
+                "sourceId": "",
+                "startColumn": 3,
+                "startLine": 20
+              }
+            },
+            {
+              "columnMappings": [
+                {
+                  "name": "col2",
+                  "operation": {
+                    "_type": "column",
+                    "column": "col2",
+                    "sourceInformation": {
+                      "endColumn": 19,
+                      "endLine": 28,
+                      "sourceId": "",
+                      "startColumn": 11,
+                      "startLine": 28
+                    },
+                    "table": {
+                      "_type": "Table",
+                      "database": "test::db",
+                      "mainTableDb": "test::db",
+                      "schema": "default",
+                      "sourceInformation": {
+                        "endColumn": 14,
+                        "endLine": 28,
+                        "sourceId": "",
+                        "startColumn": 11,
+                        "startLine": 28
+                      },
+                      "table": "test"
+                    },
+                    "tableAlias": "test"
+                  },
+                  "sourceInformation": {
+                    "endColumn": 19,
+                    "endLine": 28,
+                    "sourceId": "",
+                    "startColumn": 5,
+                    "startLine": 28
+                  }
+                }
+              ],
+              "distinct": false,
+              "filter": {
+                "filter": {
+                  "name": "filter2"
+                },
+                "joins": [],
+                "sourceInformation": {
+                  "endColumn": 19,
+                  "endLine": 27,
+                  "sourceId": "",
+                  "startColumn": 5,
+                  "startLine": 27
+                }
+              },
+              "groupBy": [],
+              "name": "view2",
+              "primaryKey": [],
+              "sourceInformation": {
+                "endColumn": 3,
+                "endLine": 29,
+                "sourceId": "",
+                "startColumn": 3,
+                "startLine": 25
+              }
+            }
+          ]
+        }
+      ],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 36,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 2
+      }
+    },
+    {
+      "_type": "sectionIndex",
+      "name": "SectionIndex",
+      "package": "__internal__",
+      "sections": [
+        {
+          "_type": "importAware",
+          "elements": [],
+          "imports": [],
+          "parserName": "Pure",
+          "sourceInformation": {
+            "endColumn": 8,
+            "endLine": 1,
+            "sourceId": "",
+            "startColumn": 1,
+            "startLine": 1
+          }
+        },
+        {
+          "_type": "default",
+          "elements": [
+            "test::db"
+          ],
+          "parserName": "Relational",
+          "sourceInformation": {
+            "endColumn": 2,
+            "endLine": 38,
+            "sourceId": "",
+            "startColumn": 8,
+            "startLine": 2
+          }
+        }
+      ]
+    }
+  ]
+}

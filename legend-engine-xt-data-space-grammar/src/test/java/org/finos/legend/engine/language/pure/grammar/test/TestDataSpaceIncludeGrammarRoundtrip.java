@@ -27,6 +27,7 @@ public class TestDataSpaceIncludeGrammarRoundtrip extends TestGrammarRoundtrip.T
                 "  include mapping meta::pure::mapping::includedMapping\n" +
                 "  include mapping meta::pure::mapping::DispatchMapping\n" +
                 "  include dataspace meta::pure::dataspace::IncludedDataSpace\n" +
+                "  include dataspace meta::pure::dataspace::IncludedDataSpace2[meta::pure::dataspace::IncludedDataSpace2 -> meta::test::simpleModelStore]\n" +
                 "\n" +
                 "  *meta::pure::mapping::modelToModel::test::shared::dest::Person[meta_pure_mapping_modelToModel_test_shared_dest_Person]: Pure\n" +
                 "  {\n" +

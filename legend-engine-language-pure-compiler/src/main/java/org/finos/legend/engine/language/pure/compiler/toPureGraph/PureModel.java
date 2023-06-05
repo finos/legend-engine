@@ -279,6 +279,8 @@ public class PureModel implements IPureModel
             LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_OTHER_ELEMENTS_BUILT_POST_CONNECTIONS_AND_RUNTIMES, (double) loadOtherElementsPostConnectionsAndRuntimesFinished - loadConnectionsAndRuntimesFinished).toString());
             scope.span().log(LoggingEventType.GRAPH_OTHER_ELEMENTS_BUILT_POST_CONNECTIONS_AND_RUNTIMES.toString());
 
+            this.loadSixthPass(pureModelContextDataIndex);
+
             long processingFinished = System.currentTimeMillis();
 
             // Post Validation
@@ -330,7 +332,23 @@ public class PureModel implements IPureModel
 
     public void addWarnings(Iterable<Warning> warnings)
     {
-        this.warnings.addAllIterable(warnings);
+        for (Warning newWarning : warnings)
+        {
+            List<Warning> duplicateWarnings = this.warnings.select(warning -> warning.message.equals(newWarning.message) && isSourceInformationEqual(warning.sourceInformation, newWarning.sourceInformation));
+            if (duplicateWarnings.isEmpty())
+            {
+                this.warnings.add(newWarning);
+            }
+        }
+    }
+
+    public boolean isSourceInformationEqual(SourceInformation sourceInformation, SourceInformation otherSourceInformation)
+    {
+        return sourceInformation.sourceId.equals(otherSourceInformation.sourceId)
+                && sourceInformation.startLine == otherSourceInformation.startLine
+                && sourceInformation.endLine == otherSourceInformation.endLine
+                && sourceInformation.startColumn == otherSourceInformation.startColumn
+                && sourceInformation.endColumn == otherSourceInformation.endColumn;
     }
 
     public MutableList<Warning> getWarnings()
@@ -519,6 +537,16 @@ public class PureModel implements IPureModel
         });
     }
 
+    public void loadSixthPass(PureModelContextDataIndex pure)
+    {
+        this.extensions.sortExtraProcessors(pure.stores.keysView()).forEach(p ->
+        {
+            MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store> stores = pure.stores.get(p);
+            stores.forEach(this::processSixthPass);
+        });
+        pure.mappings.forEach(this::processSixthPass);
+    }
+
     private org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement processFirstPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
     {
         return visitWithErrorHandling(element, new PackageableElementFirstPassBuilder(getContext(element)));
@@ -542,6 +570,11 @@ public class PureModel implements IPureModel
     private void processFifthPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
     {
         visitWithErrorHandling(element, new PackageableElementFifthPassBuilder(getContext(element)));
+    }
+
+    private void processSixthPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element)
+    {
+        visitWithErrorHandling(element, new PackageableElementSixthPassBuilder(getContext(element)));
     }
 
     private <T> T visitWithErrorHandling(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement element, PackageableElementVisitor<T> visitor)

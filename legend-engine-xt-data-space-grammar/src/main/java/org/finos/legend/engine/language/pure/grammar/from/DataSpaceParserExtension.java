@@ -25,15 +25,19 @@ import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarP
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingIncludeParser;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.IncludeStoreDataSpace;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.MappingIncludeDataSpace;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.IncludedStore;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
-public class DataSpaceParserExtension implements PureGrammarParserExtension
+public class DataSpaceParserExtension implements IRelationalGrammarParserExtension
 {
     public static final String NAME = "DataSpace";
 
@@ -82,7 +86,38 @@ public class DataSpaceParserExtension implements PureGrammarParserExtension
         mappingIncludeDataSpace.includedDataSpace =
                 PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
         mappingIncludeDataSpace.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        List<MappingParserGrammar.StoreSubPathContext> storeSubPathContextList = ctx.storeSubPath();
+        if (storeSubPathContextList.size() == 1)
+        {
+            MappingParserGrammar.StoreSubPathContext storeSubPathContext = storeSubPathContextList.get(0);
+            mappingIncludeDataSpace.sourceDatabasePath =
+                    PureGrammarParserUtility.fromQualifiedName(storeSubPathContext.sourceStore().qualifiedName().packagePath() == null ? Collections.emptyList() : storeSubPathContext.sourceStore().qualifiedName().packagePath().identifier(), storeSubPathContext.sourceStore().qualifiedName().identifier());
+            mappingIncludeDataSpace.targetDatabasePath =
+                    PureGrammarParserUtility.fromQualifiedName(storeSubPathContext.targetStore().qualifiedName().packagePath() == null ? Collections.emptyList() : storeSubPathContext.targetStore().qualifiedName().packagePath().identifier(), storeSubPathContext.targetStore().qualifiedName().identifier());
+        }
+        else
+        {
+            mappingIncludeDataSpace.targetDatabasePath = null;
+        }
 
         return mappingIncludeDataSpace;
+    }
+
+    @Override
+    public List<Function<String, IncludedStore>> getExtraIncludedStoreParsers()
+    {
+        return Lists.mutable.of(this::parseIncludedStore);
+    }
+
+    private IncludedStore parseIncludedStore(String type)
+    {
+        if (type.equals("dataspace"))
+        {
+            return new IncludeStoreDataSpace();
+        }
+        else
+        {
+            return null;
+        }
     }
 }

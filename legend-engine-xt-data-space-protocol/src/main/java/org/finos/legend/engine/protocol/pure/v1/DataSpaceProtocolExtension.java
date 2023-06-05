@@ -21,8 +21,10 @@ import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.IncludeStoreDataSpace;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.MappingIncludeDataSpace;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.IncludedStore;
 
 import java.util.List;
 import java.util.Map;
@@ -38,6 +40,9 @@ public class DataSpaceProtocolExtension implements PureProtocolExtension
                         .build(),
                 ProtocolSubTypeInfo.newBuilder(MappingInclude.class)
                         .withSubtype(MappingIncludeDataSpace.class, "mappingIncludeDataSpace")
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(IncludedStore.class)
+                        .withSubtype(IncludeStoreDataSpace.class, "includeStoreDataSpace")
                         .build()
         ));
     }

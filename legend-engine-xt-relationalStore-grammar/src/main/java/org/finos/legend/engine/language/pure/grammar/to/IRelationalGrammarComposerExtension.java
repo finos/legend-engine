@@ -14,16 +14,20 @@
 
 package org.finos.legend.engine.language.pure.grammar.to;
 
+import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.IncludedStore;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.PostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.IncludedStoreDatabase;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.Milestoning;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
@@ -93,5 +97,18 @@ public interface IRelationalGrammarComposerExtension extends PureGrammarComposer
     default List<Function3<Milestoning, Integer, PureGrammarComposerContext, String>> getExtraMilestoningComposers()
     {
         return FastList.newList();
+    }
+
+    @Override
+    default Function<IncludedStore, String> getExtraIncludedStoreComposers()
+    {
+        return (IncludedStore includedStore) ->
+                {
+                    if (includedStore instanceof IncludedStoreDatabase)
+                    {
+                        return "database";
+                    }
+                    return null;
+                };
     }
 }

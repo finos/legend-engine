@@ -228,9 +228,19 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
         StringBuilder builder = new StringBuilder();
         builder.append("Database ").append(PureGrammarComposerUtility.convertPath(database.getPath())).append("\n(\n");
         boolean nonEmpty = false;
-        if (!database.includedStores.isEmpty())
+        if (!database.getIncludedStoreList().isEmpty())
         {
-            builder.append(LazyIterate.collect(database.includedStores, include -> getTabString(1) + "include " + PureGrammarComposerUtility.convertPath(include)).makeString("\n"));
+            builder.append(
+                    LazyIterate.collect(
+                            database.getIncludedStoreList(), include ->
+                                    getTabString(1) + "include " +
+                                PureGrammarComposerExtension.composeIncludedStore(
+                                        include,
+                                        ListIterate.collect(IRelationalGrammarComposerExtension.getExtensions(context.toPureGrammarComposerContext()), PureGrammarComposerExtension::getExtraIncludedStoreComposers)
+                                )
+                                + " " + PureGrammarComposerUtility.convertPath(include.name)
+                    ).makeString("\n")
+            );
             builder.append("\n");
             nonEmpty = true;
         }

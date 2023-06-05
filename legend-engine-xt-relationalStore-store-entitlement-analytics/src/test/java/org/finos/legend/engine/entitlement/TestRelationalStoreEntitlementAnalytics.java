@@ -70,9 +70,9 @@ public class TestRelationalStoreEntitlementAnalytics
         Root_meta_pure_runtime_Runtime runtime = pureModel.getRuntime(runtimePath);
         RelationalDatabaseEntitlementServiceExtension extension = new RelationalDatabaseEntitlementServiceExtension();
         List<DatasetSpecification> datasets = extension.generateDatasetSpecifications(null, runtimePath, runtime, mappingPath, mapping, pureModelContextData, pureModel);
-        Assert.assertEquals(entitlementObjectMapper.writeValueAsString(datasets), expectedDatasetResult);
+        Assert.assertEquals(expectedDatasetResult, entitlementObjectMapper.writeValueAsString(datasets));
         List<DatasetEntitlementReport> reports = extension.generateDatasetEntitlementReports(datasets, null, runtimePath, runtime, mappingPath, mapping, pureModelContextData, pureModel, null);
-        Assert.assertEquals(entitlementObjectMapper.writeValueAsString(reports), expectedReportResult);
+        Assert.assertEquals(expectedReportResult, entitlementObjectMapper.writeValueAsString(reports));
     }
 
     @Test
@@ -121,7 +121,7 @@ public class TestRelationalStoreEntitlementAnalytics
         List<DatasetSpecification> datasets = new ArrayList<>(Arrays.asList(new DatasetSpecification("DummyTable", "DummyH2"), new RelationalDatabaseTableSpecification("default.DEMOGRAPHICS", "H2", "CovidDataStore", "default","DEMOGRAPHICS")));
         RelationalDatabaseEntitlementServiceExtension extension = new RelationalDatabaseEntitlementServiceExtension();
         List<DatasetEntitlementReport> reports = extension.generateDatasetEntitlementReports(datasets, null, "", null, "", null, null, null, null);
-        Assert.assertEquals(reports.size(), 1);
+        Assert.assertEquals(1, reports.size());
     }
 
     @Test
@@ -131,6 +131,6 @@ public class TestRelationalStoreEntitlementAnalytics
         PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModelString, false);
         PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, null);
         Store store = pureModel.getStore("store::CovidDataStoreA");
-        Assert.assertEquals(core_relational_store_entitlement_utility_relationalTableAnalyzer.Root_meta_analytics_store_entitlements_getTablesFromDatabase_Database_1__Table_MANY_((Database) store, pureModel.getExecutionSupport()).size(), 2);
+        Assert.assertEquals(2, core_relational_store_entitlement_utility_relationalTableAnalyzer.Root_meta_analytics_store_entitlements_getTablesFromDatabase_Database_1__Table_MANY_((Database) store, pureModel.getExecutionSupport()).size());
     }
 }

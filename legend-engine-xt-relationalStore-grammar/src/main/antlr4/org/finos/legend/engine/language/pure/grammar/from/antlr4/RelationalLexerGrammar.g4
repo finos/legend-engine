@@ -8,6 +8,7 @@ import CoreLexerGrammar;
 DATABASE:                                   'Database';
 
 INCLUDE:                                    'include';
+INCLUDETYPE:                                'include '[a-z]([a-z])*' ';
 
 TABLE:                                      'Table';
 SCHEMA:                                     'Schema';

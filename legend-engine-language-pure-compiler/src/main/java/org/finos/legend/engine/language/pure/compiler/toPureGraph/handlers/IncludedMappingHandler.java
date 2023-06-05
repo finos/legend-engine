@@ -38,4 +38,9 @@ public interface IncludedMappingHandler
     }
 
     org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.MappingInclude processMappingInclude(MappingInclude mappingInclude, CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping parentMapping, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping includedMapping);
+
+    default org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.MappingInclude processMappingIncludeSixthPass(MappingInclude mappingInclude, CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping parentMapping, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping includedMapping)
+    {
+        return parentMapping._includes().select(i -> i._included().equals(includedMapping)).getOnly();
+    }
 }

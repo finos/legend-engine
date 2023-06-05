@@ -19,8 +19,10 @@ import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
@@ -29,12 +31,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingIncludeMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.IncludedStore;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public interface PureGrammarComposerExtension
 {
@@ -104,5 +105,18 @@ public interface PureGrammarComposerExtension
     default List<Function<MappingInclude, String>> getExtraMappingIncludeComposers()
     {
         return Collections.emptyList();
+    }
+
+    default Function<IncludedStore, String> getExtraIncludedStoreComposers()
+    {
+        return (IncludedStore includedStore) -> null;
+    }
+
+    static String composeIncludedStore(IncludedStore includedStore, List<Function<IncludedStore, String>> processors)
+    {
+        return ListIterate.collect(processors, func -> func.apply(includedStore))
+                .select(Objects::nonNull)
+                .getFirstOptional()
+                .orElseThrow(() -> new EngineException("Unsupported included store type: " + includedStore.getClass().toString(), includedStore.sourceInformation, EngineErrorType.COMPOSER));
     }
 }

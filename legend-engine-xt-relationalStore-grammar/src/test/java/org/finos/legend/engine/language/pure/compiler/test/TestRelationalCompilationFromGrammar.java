@@ -430,7 +430,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                         "    include model::relational::tests::dbInc\n" +
                         "    Table personTable (ID INT PRIMARY KEY, MANAGERID INT)\n" +
                         ")",
-                "COMPILATION error at [2:1-6:1]: Can't find database 'model::relational::tests::dbInc'"
+                "COMPILATION error at [4:5-43]: Can't find database 'model::relational::tests::dbInc'"
         );
 
         test("###Relational\n" +

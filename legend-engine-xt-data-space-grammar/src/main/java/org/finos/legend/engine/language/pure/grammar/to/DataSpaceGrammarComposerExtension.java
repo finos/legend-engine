@@ -24,6 +24,8 @@ import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarCom
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.IncludedStore;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.IncludedStoreDatabase;
 
 import java.util.Collections;
 import java.util.List;
@@ -160,8 +162,25 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
         if (mappingInclude.getClass() == MappingIncludeDataSpace.class)
         {
             MappingIncludeDataSpace mappingIncludeDataSpace = (MappingIncludeDataSpace) mappingInclude;
-            return "include dataspace " + mappingIncludeDataSpace.includedDataSpace;
+            return "include dataspace " + mappingIncludeDataSpace.includedDataSpace
+                    + (mappingIncludeDataSpace.targetDatabasePath != null
+                    ? "[" + mappingIncludeDataSpace.sourceDatabasePath + " -> " + mappingIncludeDataSpace.targetDatabasePath + "]"
+                    : ""
+            );
         }
         return null;
+    }
+
+    @Override
+    public Function<IncludedStore, String> getExtraIncludedStoreComposers()
+    {
+        return (IncludedStore includedStore) ->
+        {
+            if (includedStore instanceof IncludeStoreDataSpace)
+            {
+                return "dataspace";
+            }
+            return null;
+        };
     }
 }

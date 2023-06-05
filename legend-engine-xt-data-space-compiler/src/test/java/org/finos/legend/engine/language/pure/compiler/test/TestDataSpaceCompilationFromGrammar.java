@@ -76,6 +76,154 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
     }
 
     @Test
+    public void testIncludeDataSpaceInStore()
+    {
+        test("###Pure\n" +
+                "Class meta::Firm\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "  id: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Relational\n" +
+                "Database meta::producer::FirmDb\n" +
+                "(\n" +
+                "  Table FirmTable\n" +
+                "  (\n" +
+                "    Id INTEGER PRIMARY KEY,\n" +
+                "    FirmName VARCHAR(200)\n" +
+                "  )\n" +
+                ")\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping meta::producer::FirmMapping\n" +
+                "(\n" +
+                "  *meta::Firm: Relational\n" +
+                "  {\n" +
+                "    ~primaryKey\n" +
+                "    (\n" +
+                "      [meta::producer::FirmDb]FirmTable.Id\n" +
+                "    )\n" +
+                "    ~mainTable [meta::producer::FirmDb]FirmTable\n" +
+                "    name: [meta::producer::FirmDb]FirmTable.FirmName,\n" +
+                "    id: [meta::producer::FirmDb]FirmTable.Id\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "###Connection\n" +
+                "RelationalDatabaseConnection meta::producer::FirmConnection\n" +
+                "{\n" +
+                "  store: meta::producer::FirmDb;\n" +
+                "  type: H2;\n" +
+                "  specification: LocalH2\n" +
+                "  {\n" +
+                "    testDataSetupSqls: [\n" +
+                "      'Drop table if exists firmTable;\\nCreate Table firmTable(FirmCode INT, FirmName VARCHAR(200));\\nInsert into firmTable (FirmCode, FirmName) values (101,\\'finos\\');\\nInsert into firmTable (FirmCode, FirmName) values (200,\\'goldman_Sachs\\');'\n" +
+                "      ];\n" +
+                "  };\n" +
+                "  auth: DefaultH2;\n" +
+                "}\n" +
+                "###Runtime\n" +
+                "Runtime meta::producer::FirmRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    meta::producer::FirmMapping\n" +
+                "  ];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    meta::producer::FirmDb:\n" +
+                "    [\n" +
+                "      connection_2: meta::producer::FirmConnection\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "###DataSpace\n" +
+                "DataSpace meta::producer::FirmDataSpace" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: meta::producer::FirmMapping;\n" +
+                "      defaultRuntime: meta::producer::FirmRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "}\n" +
+                "\n" +
+                "###Pure\n" +
+                "Class meta::Employee\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "  id: Integer[1];\n" +
+                "  firmId: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Relational\n" +
+                "Database meta::producer::EmployeeDb\n" +
+                "(\n" +
+                "  include dataspace meta::producer::FirmDataSpace" +
+                "  Table employeeTable\n" +
+                "  (\n" +
+                "    FirmId INTEGER,\n" +
+                "    Id INTEGER PRIMARY KEY,\n" +
+                "    EmployeeName VARCHAR(200)\n" +
+                "  )\n" +
+                ")\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping meta::producer::EmployeeMapping\n" +
+                "(\n" +
+                "  include dataspace meta::producer::FirmDataSpace[meta::producer::FirmDataSpace -> meta::producer::EmployeeDb]" +
+                "  *meta::Employee: Relational\n" +
+                "  {\n" +
+                "    ~primaryKey\n" +
+                "    (\n" +
+                "      [meta::producer::EmployeeDb]employeeTable.Id\n" +
+                "    )\n" +
+                "    ~mainTable [meta::producer::EmployeeDb]employeeTable\n" +
+                "    name: [meta::producer::EmployeeDb]employeeTable.EmployeeName,\n" +
+                "    id: [meta::producer::EmployeeDb]employeeTable.Id,\n" +
+                "    firmId: [meta::producer::EmployeeDb]employeeTable.FirmId\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "###Connection\n" +
+                "RelationalDatabaseConnection meta::producer::EmployeeConnection\n" +
+                "{\n" +
+                "  store: meta::producer::EmployeeDb;\n" +
+                "  type: H2;\n" +
+                "  specification: LocalH2\n" +
+                "  {\n" +
+                "    testDataSetupSqls: [\n" +
+                "      'Drop table if exists firmTable;\\nCreate Table firmTable(FirmCode INT, FirmName VARCHAR(200));\\nInsert into firmTable (FirmCode, FirmName) values (101,\\'finos\\');\\nInsert into firmTable (FirmCode, FirmName) values (200,\\'goldman_Sachs\\');'\n" +
+                "      ];\n" +
+                "  };\n" +
+                "  auth: DefaultH2;\n" +
+                "}\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime meta::producer::EmployeeRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    meta::producer::EmployeeMapping\n" +
+                "  ];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    meta::producer::EmployeeDb:\n" +
+                "    [\n" +
+                "      connection_2: meta::producer::EmployeeConnection\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n"
+        );
+    }
+
+    @Test
     public void testDuplicateMappingIncludeDataspaceWithImport()
     {
         String models = "Class test::A extends test::B {\n" +
@@ -113,7 +261,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "{\n" +
                 "  mappings:\n" +
                 "  [\n" +
-                "    model::dummyMapping\n" +
+                "    model::mapping::dummyMapping\n" +
                 "  ];\n" +
                 "}\n" +
                 "\n" +
@@ -131,8 +279,9 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "    }\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
-                "}\n", "COMPILATION error at [20:1-26:1]: Duplicated mapping include " +
-                "'model::mapping::dummyMapping' in mapping 'test::M1'");
+                "}\n",
+                "COMPILATION error at [20:1-26:1]: Duplicated mapping include " + "'model::mapping::dummyMapping' in mapping 'test::M1'"
+        );
     }
 
     @Override

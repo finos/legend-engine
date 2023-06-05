@@ -15,10 +15,34 @@
 package org.finos.legend.engine.language.pure.grammar.test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.finos.legend.engine.language.pure.grammar.test.to.TestMappingGrammarTo;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.junit.Assert;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.util.Objects;
+
+import static org.finos.legend.engine.language.pure.modelManager.ModelManager.objectMapper;
 
 public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
+    private static void testTo(String protocolResource, String expectedCode)
+    {
+        try
+        {
+            PureModelContextData modelData = objectMapper.readValue(Objects.requireNonNull(TestMappingGrammarTo.class.getClassLoader().getResourceAsStream(protocolResource)), PureModelContextData.class);
+            String modelCode = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build()).renderPureModelContextData(modelData);
+            Assert.assertEquals(expectedCode, modelCode);
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Test
     public void testDataSpace()
     {
@@ -364,5 +388,48 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
                 "    }\n" +
                 "  ];\n" +
                 "}\n");
+    }
+
+    @Test
+    public void testLegacyIncludeStoreComposer()
+    {
+        testTo("./legacyStoreInclude.json",
+                "###Relational\n" +
+                        "Database test::db\n" +
+                        "(\n" +
+                        "  include database Store1\n" +
+                        "  include database test::Store2\n" +
+                        "\n" +
+                        "  Schema mySchema\n" +
+                        "  (\n" +
+                        "  )\n" +
+                        "\n" +
+                        "  Table table1\n" +
+                        "  (\n" +
+                        "    col1 CHAR(32)\n" +
+                        "  )\n" +
+                        "  Table table2\n" +
+                        "  (\n" +
+                        "    col1 CHAR(32)\n" +
+                        "  )\n" +
+                        "\n" +
+                        "  View view1\n" +
+                        "  (\n" +
+                        "    ~filter filter1\n" +
+                        "    col1: test.col1\n" +
+                        "  )\n" +
+                        "  View view2\n" +
+                        "  (\n" +
+                        "    ~filter filter2\n" +
+                        "    col2: test.col2\n" +
+                        "  )\n" +
+                        "\n" +
+                        "  Join join1(TAB.col1 = {target}.col2)\n" +
+                        "  Join join2(TAB2.col3 = TAB3.col2)\n" +
+                        "\n" +
+                        "  Filter filter1(TAB2.col1 is not null)\n" +
+                        "  MultiGrainFilter filter2(TAB1.col2 is null)\n" +
+                        ")\n"
+        );
     }
 }

@@ -41,7 +41,7 @@ database:                                   DATABASE qualifiedName
                                                     )*
                                                 PAREN_CLOSE
 ;
-include:                                    INCLUDE qualifiedName
+include:                                    (INCLUDETYPE|INCLUDE) qualifiedName
 ;
 
 

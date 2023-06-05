@@ -36,6 +36,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.IncludedStore;
 import org.finos.legend.engine.protocol.pure.v1.model.test.Test;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
@@ -48,6 +49,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplem
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 
 import java.util.Collections;
 import java.util.List;
@@ -195,6 +197,11 @@ public interface CompilerExtension
     }
 
     default Map<String, IncludedMappingHandler> getExtraIncludedMappingHandlers()
+    {
+        return Maps.mutable.empty();
+    }
+
+    default Map<String, Function2<IncludedStore, CompileContext, RichIterable<? extends Store>>> getExtraIncludedStoreHandlers()
     {
         return Maps.mutable.empty();
     }

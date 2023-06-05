@@ -23,7 +23,9 @@ import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.RelationalParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.milestoning.MilestoningSpecificationSourceCode;
+import org.finos.legend.engine.language.pure.grammar.from.store.StoreParserHelper;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
@@ -33,6 +35,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.IncludedStore;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.EmbeddedRelationalPropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.FilterMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.FilterPointer;
@@ -116,7 +119,7 @@ public class RelationalParseTreeWalker
         database._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
         database.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         ScopeInfo scopeInfo = ScopeInfo.Builder.newInstance().withDatabase(PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier())).build();
-        database.includedStores = ListIterate.collect(ctx.include(), includeContext -> PureGrammarParserUtility.fromQualifiedName(includeContext.qualifiedName().packagePath() == null ? Collections.emptyList() : includeContext.qualifiedName().packagePath().identifier(), includeContext.qualifiedName().identifier()));
+        database.setIncludedStoreList(ListIterate.collect(ctx.include(), this::visitIncludedStores));
         database.schemas = ListIterate.collect(ctx.schema(), schemaCtx -> this.visitSchema(schemaCtx, scopeInfo));
         // NOTE: if tables and views are defined without a schema, create a default schema to hold these
         List<Table> tables = ListIterate.collect(ctx.table(), this::visitTable);
@@ -140,6 +143,14 @@ public class RelationalParseTreeWalker
         return database;
     }
 
+    private IncludedStore visitIncludedStores(RelationalParserGrammar.IncludeContext includeContext)
+    {
+        String type = includeContext.INCLUDETYPE() == null ? "database" : includeContext.INCLUDETYPE().getText().split(" ")[1];
+        IncludedStore includedStore = StoreParserHelper.parseIncludedStore(type, ListIterate.flatCollect(IRelationalGrammarParserExtension.getExtensions(), PureGrammarParserExtension::getExtraIncludedStoreParsers));
+        includedStore.name = PureGrammarParserUtility.fromQualifiedName(includeContext.qualifiedName().packagePath() == null ? Collections.emptyList() : includeContext.qualifiedName().packagePath().identifier(), includeContext.qualifiedName().identifier());
+        includedStore.sourceInformation = this.walkerSourceInformation.getSourceInformation(includeContext);
+        return includedStore;
+    }
 
     // ----------------------------------------------- SCHEMA -----------------------------------------------
 

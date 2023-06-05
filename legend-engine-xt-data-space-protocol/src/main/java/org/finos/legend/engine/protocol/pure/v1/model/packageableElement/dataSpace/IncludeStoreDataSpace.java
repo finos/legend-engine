@@ -14,18 +14,9 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.IncludedStore;
 
-public class MappingIncludeDataSpace extends MappingInclude
+public class IncludeStoreDataSpace extends IncludedStore
 {
-    public String includedDataSpace;
-    public String sourceDatabasePath;
-    public String targetDatabasePath;
 
-    @JsonIgnore
-    public String getFullName()
-    {
-        return includedDataSpace;
-    }
 }

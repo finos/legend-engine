@@ -46,6 +46,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.IncludedStore;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.ApiTokenAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
@@ -76,6 +77,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.RootRelationalClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.mappingTest.RelationalInputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.IncludedStoreDatabase;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.BusinessMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.BusinessSnapshotMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.Milestoning;
@@ -192,6 +194,11 @@ public class RelationalProtocolExtension implements PureProtocolExtension
                         .withSubtype(BusinessMilestoning.class, "businessMilestoning")
                         .withSubtype(BusinessSnapshotMilestoning.class, "businessSnapshotMilestoning")
                         .withSubtype(ProcessingMilestoning.class, "processingMilestoning")
+                        .build(),
+
+                //Included Store type
+                ProtocolSubTypeInfo.newBuilder(IncludedStore.class)
+                        .withSubtype(IncludedStoreDatabase.class, "includeStoreDatabase")
                         .build()
         ));
     }

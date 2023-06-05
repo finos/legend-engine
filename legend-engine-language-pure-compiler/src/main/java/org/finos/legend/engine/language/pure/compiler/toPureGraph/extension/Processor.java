@@ -56,6 +56,11 @@ public abstract class Processor<T extends PackageableElement>
         processElementFifthPass(castElement(element), context);
     }
 
+    public final void processSixthPass(PackageableElement element, CompileContext context)
+    {
+        processElementSixthPass(castElement(element), context);
+    }
+
     @Override
     public final boolean equals(Object other)
     {
@@ -92,6 +97,11 @@ public abstract class Processor<T extends PackageableElement>
     }
 
     protected void processElementFifthPass(T element, CompileContext context)
+    {
+        // nothing by default
+    }
+
+    protected void processElementSixthPass(T element, CompileContext context)
     {
         // nothing by default
     }
@@ -200,6 +210,29 @@ public abstract class Processor<T extends PackageableElement>
                                                                            BiConsumer<? super T, CompileContext> fourthPass,
                                                                            BiConsumer<? super T, CompileContext> fifthPass)
     {
+        return newProcessor(elementClass, prerequisiteClasses, firstPass, secondPass, thirdPass, fourthPass, fifthPass, null);
+    }
+
+    public static <T extends PackageableElement> Processor<T> newProcessor(Class<T> elementClass,
+                                                                           BiFunction<? super T, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> firstPass,
+                                                                           BiConsumer<? super T, CompileContext> secondPass,
+                                                                           BiConsumer<? super T, CompileContext> thirdPass,
+                                                                           BiConsumer<? super T, CompileContext> fourthPass,
+                                                                           BiConsumer<? super T, CompileContext> fifthPass,
+                                                                           BiConsumer<? super T, CompileContext> sixthPass)
+    {
+        return newProcessor(elementClass, null, firstPass, secondPass, thirdPass, fourthPass, fifthPass, sixthPass);
+    }
+
+    public static <T extends PackageableElement> Processor<T> newProcessor(Class<T> elementClass,
+                                                                           Collection<? extends Class<? extends PackageableElement>> prerequisiteClasses,
+                                                                           BiFunction<? super T, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement> firstPass,
+                                                                           BiConsumer<? super T, CompileContext> secondPass,
+                                                                           BiConsumer<? super T, CompileContext> thirdPass,
+                                                                           BiConsumer<? super T, CompileContext> fourthPass,
+                                                                           BiConsumer<? super T, CompileContext> fifthPass,
+                                                                           BiConsumer<? super T, CompileContext> sixthPass)
+    {
         Collection<? extends Class<? extends PackageableElement>> resolvedPrerequisiteClasses = (prerequisiteClasses == null) ? Collections.emptyList() : prerequisiteClasses;
         return new Processor<T>()
         {
@@ -254,6 +287,15 @@ public abstract class Processor<T extends PackageableElement>
                 if (fifthPass != null)
                 {
                     fifthPass.accept(element, context);
+                }
+            }
+
+            @Override
+            protected void processElementSixthPass(T element, CompileContext context)
+            {
+                if (sixthPass != null)
+                {
+                    sixthPass.accept(element, context);
                 }
             }
         };

@@ -159,11 +159,11 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
     @Test
     public void testRelationalDatabase()
     {
-        test("###Relational\n" +
+        testFormat("###Relational\n" +
                 "Database test::db\n" +
                 "(\n" +
-                "  include Store1\n" +
-                "  include test::Store2\n" +
+                "  include database Store1\n" +
+                "  include database test::Store2\n" +
                 "\n" +
                 "  Schema mySchema\n" +
                 "  (\n" +
@@ -194,7 +194,43 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
                 "\n" +
                 "  Filter filter1(TAB2.col1 is not null)\n" +
                 "  MultiGrainFilter filter2(TAB1.col2 is null)\n" +
-                ")\n");
+                ")\n",
+                "###Relational\n" +
+                        "Database test::db\n" +
+                        "(\n" +
+                        "  include Store1\n" +
+                        "  include test::Store2\n" +
+                        "\n" +
+                        "  Schema mySchema\n" +
+                        "  (\n" +
+                        "  )\n" +
+                        "\n" +
+                        "  Table table1\n" +
+                        "  (\n" +
+                        "    col1 CHAR(32)\n" +
+                        "  )\n" +
+                        "  Table table2\n" +
+                        "  (\n" +
+                        "    col1 CHAR(32)\n" +
+                        "  )\n" +
+                        "\n" +
+                        "  View view1\n" +
+                        "  (\n" +
+                        "    ~filter filter1\n" +
+                        "    col1: test.col1\n" +
+                        "  )\n" +
+                        "  View view2\n" +
+                        "  (\n" +
+                        "    ~filter filter2\n" +
+                        "    col2: test.col2\n" +
+                        "  )\n" +
+                        "\n" +
+                        "  Join join1(TAB.col1 = {target}.col2)\n" +
+                        "  Join join2(TAB2.col3 = TAB3.col2)\n" +
+                        "\n" +
+                        "  Filter filter1(TAB2.col1 is not null)\n" +
+                        "  MultiGrainFilter filter2(TAB1.col2 is null)\n" +
+                        ")\n");
     }
 
     @Test

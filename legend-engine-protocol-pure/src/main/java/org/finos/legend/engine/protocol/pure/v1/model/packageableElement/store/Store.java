@@ -14,12 +14,26 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 
-import java.util.Collections;
 import java.util.List;
 
 public abstract class Store extends PackageableElement
 {
-    public List<String> includedStores = Collections.emptyList();
+    private List<IncludedStore> includedStoreList = Lists.mutable.empty();
+
+    @JsonGetter("includedStoreList")
+    public List<IncludedStore> getIncludedStoreList()
+    {
+        return includedStoreList;
+    }
+
+    @JsonSetter("includedStoreList")
+    public void setIncludedStoreList(List<IncludedStore> includedStores)
+    {
+        this.includedStoreList = includedStores;
+    }
 }

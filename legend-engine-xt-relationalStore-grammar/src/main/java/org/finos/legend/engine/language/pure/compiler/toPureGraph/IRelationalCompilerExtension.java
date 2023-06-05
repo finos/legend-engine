@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
@@ -26,6 +27,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Proc
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.IncludedStore;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.PostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
@@ -34,13 +36,22 @@ import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_PostProc
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_AuthenticationStrategy;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_DatasourceSpecification;
 import org.finos.legend.pure.generated.Root_meta_relational_runtime_PostProcessorWithParameter;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Column;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.ServiceLoader;
 
 public interface IRelationalCompilerExtension extends CompilerExtension
 {
+    List<IRelationalCompilerExtension> extensions = Lists.mutable.withAll(ServiceLoader.load(IRelationalCompilerExtension.class));
+
+    static List<IRelationalCompilerExtension> getRelationalCompilerExtensions()
+    {
+        return extensions;
+    }
+
     static List<IRelationalCompilerExtension> getExtensions(CompileContext context)
     {
         return ListIterate.selectInstancesOf(context.getCompilerExtensions().getExtensions(), IRelationalCompilerExtension.class);
@@ -122,6 +133,21 @@ public interface IRelationalCompilerExtension extends CompilerExtension
     default List<Function3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.Milestoning, CompileContext, Multimap<String, Column>, org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Milestoning>> getExtraMilestoningProcessors()
     {
         return FastList.newList();
+    }
+
+    static RichIterable<? extends Store> getIncludedStoresFromExtraProcessors(CompileContext context, IncludedStore includedStore)
+    {
+        return ListIterate.collect(getRelationalCompilerExtensions(), e ->
+                {
+                    if (e.getExtraIncludedStoreHandlers().containsKey(includedStore.getClass().getName()))
+                    {
+                        return e.getExtraIncludedStoreHandlers().get(includedStore.getClass().getName()).apply(includedStore, context);
+                    }
+                    return null;
+                })
+                .select(Objects::nonNull)
+                .getFirstOptional()
+                .orElseThrow(() -> new EngineException("Unsupported included store type: [" + includedStore.getClass().getName() + "]", includedStore.sourceInformation, EngineErrorType.COMPILATION));
     }
 
 }
