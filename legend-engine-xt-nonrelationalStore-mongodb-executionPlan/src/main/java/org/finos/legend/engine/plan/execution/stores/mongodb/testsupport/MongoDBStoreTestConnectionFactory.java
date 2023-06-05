@@ -23,7 +23,6 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDatab
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.runtime.MongoDBDatasourceSpecification;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.runtime.MongoDBURL;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
@@ -36,6 +35,7 @@ import java.util.Optional;
 
 public class MongoDBStoreTestConnectionFactory implements ConnectionFactoryExtension
 {
+    @Override
     public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnection(Connection sourceConnection, EmbeddedData data)
     {
         if (sourceConnection instanceof MongoDBConnection && data instanceof MongoDBStoreEmbeddedData)
@@ -70,7 +70,8 @@ public class MongoDBStoreTestConnectionFactory implements ConnectionFactoryExten
         return Optional.empty();
     }
 
-    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStore(PureModelContextData pureModelContextData, Store testStore, EmbeddedData data)
+    @Override
+    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStore(List<DataElement> dataElements, Store testStore, EmbeddedData data)
     {
         if (testStore instanceof MongoDatabase)
         {

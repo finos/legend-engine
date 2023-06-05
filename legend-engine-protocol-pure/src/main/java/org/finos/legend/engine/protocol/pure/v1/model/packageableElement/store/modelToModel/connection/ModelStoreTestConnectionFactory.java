@@ -43,7 +43,7 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
     private static String APPLICATION_JSON = "application/json";
     private static String APPLICATION_XML = "application/xml";
 
-    public Connection resolveExternalFormatData(ExternalFormatData externalFormatData, String _class, boolean useDefaultExecutor)
+    private Connection resolveExternalFormatData(ExternalFormatData externalFormatData, String _class, boolean useDefaultExecutor)
     {
         if (APPLICATION_JSON.equals(externalFormatData.contentType))
         {
@@ -81,7 +81,7 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
         }
     }
 
-    private Optional<Pair<Connection, List<Closeable>>> buildModelStoreConnectionsForStore(PureModelContextData pureModelContextData, ModelStoreData modelStoreData, boolean useDefaultExecutor)
+    private Optional<Pair<Connection, List<Closeable>>> buildModelStoreConnectionsForStore(List<DataElement> dataElements, ModelStoreData modelStoreData, boolean useDefaultExecutor)
     {
         List<ModelTestData> modelTestData = modelStoreData.modelData;
         for (ModelTestData data : modelTestData)
@@ -90,7 +90,7 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
             if (data instanceof ModelEmbeddedTestData)
             {
                 ModelEmbeddedTestData modelEmbeddedData = (ModelEmbeddedTestData) data;
-                EmbeddedData resolvedEmbeddedData = EmbeddedDataHelper.resolveEmbeddedData(pureModelContextData, modelEmbeddedData.data);
+                EmbeddedData resolvedEmbeddedData = EmbeddedDataHelper.resolveDataElementWithList(dataElements, modelEmbeddedData.data);
                 if (resolvedEmbeddedData instanceof ExternalFormatData)
                 {
                     Connection connection = resolveExternalFormatData((ExternalFormatData) resolvedEmbeddedData, _class, useDefaultExecutor);
@@ -107,7 +107,7 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
                 ValueSpecification vs = modelInstanceData.instances;
                 if (vs instanceof PackageableElementPtr)
                 {
-                    EmbeddedData testDataElement = EmbeddedDataHelper.resolveDataElement(pureModelContextData, ((PackageableElementPtr) vs).fullPath).data;
+                    EmbeddedData testDataElement = EmbeddedDataHelper.findDataElement(dataElements, ((PackageableElementPtr) vs).fullPath).data;
                     if (testDataElement instanceof ExternalFormatData)
                     {
                         Connection connection = resolveExternalFormatData((ExternalFormatData) testDataElement, _class, useDefaultExecutor);
@@ -130,22 +130,22 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
 
 
     @Override
-    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStore(PureModelContextData pureModelContextData, Store store, EmbeddedData testData)
+    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStore(List<DataElement> dataElements, Store store, EmbeddedData testData)
     {
         if (store instanceof ModelStore && testData instanceof ModelStoreData)
         {
-            return buildModelStoreConnectionsForStore(pureModelContextData, (ModelStoreData) testData, false);
+            return buildModelStoreConnectionsForStore(dataElements, (ModelStoreData) testData, false);
         }
         return Optional.empty();
     }
 
 
     @Override
-    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStoreWithMultiInputs(PureModelContextData pureModelContextData, Store store, EmbeddedData testData)
+    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStoreWithMultiInputs(List<DataElement> dataElements, Store store, EmbeddedData testData)
     {
         if (store instanceof ModelStore && testData instanceof ModelStoreData)
         {
-            return buildModelStoreConnectionsForStore(pureModelContextData, (ModelStoreData) testData, true);
+            return buildModelStoreConnectionsForStore(dataElements, (ModelStoreData) testData, true);
         }
         return Optional.empty();
     }
