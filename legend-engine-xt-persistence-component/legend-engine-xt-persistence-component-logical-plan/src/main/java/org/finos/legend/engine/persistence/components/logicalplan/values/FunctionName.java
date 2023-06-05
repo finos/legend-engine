@@ -34,5 +34,6 @@ public enum FunctionName
     DATETIME_TRUNC,
     TIMESTAMP_TRUNC,
     RANGE_BUCKET,
-    GENERATE_ARRAY;
+    GENERATE_ARRAY,
+    PARSE_DATETIME;
 }

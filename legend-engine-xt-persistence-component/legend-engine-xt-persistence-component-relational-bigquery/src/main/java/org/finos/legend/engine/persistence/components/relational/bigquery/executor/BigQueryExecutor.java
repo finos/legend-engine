@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
 
 package org.finos.legend.engine.persistence.components.relational.bigquery.executor;
 
-import com.google.cloud.bigquery.*;
-import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
@@ -27,7 +25,6 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.schemaop
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.regex.Pattern;
 
 public class BigQueryExecutor implements Executor<SqlGen, TabularData, SqlPlan>
@@ -46,8 +43,10 @@ public class BigQueryExecutor implements Executor<SqlGen, TabularData, SqlPlan>
     {
         boolean containsDDLStatements = physicalPlan.ops().stream().anyMatch(DDLStatement.class::isInstance);
         List<String> sqlList = physicalPlan.getSqlList();
-        if(containsDDLStatements) {
-            for (String sql : sqlList) {
+        if (containsDDLStatements)
+        {
+            for (String sql : sqlList)
+            {
                 bigQueryHelper.executeQuery(sql);
             }
         }

@@ -47,7 +47,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-public class JdbcHelper implements RelationalExecutionHelper {
+public class JdbcHelper implements RelationalExecutionHelper
+{
     private static final Logger LOGGER = LoggerFactory.getLogger(JdbcHelper.class);
 
     private final Connection connection;

@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -1004,7 +1004,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         String expectedStageToTemp = "INSERT INTO `mydb`.`temp` " +
                 "(`id`, `name`, `amount`, `digest`, `validity_from_target`, `validity_through_target`, `batch_id_in`, `batch_id_out`, `batch_time_in`, `batch_time_out`) " +
                 "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`digest`,legend_persistence_x.`validity_from_reference` as `legend_persistence_start_date`," +
-                "legend_persistence_y.`legend_persistence_end_date`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999,'2000-01-01 00:00:00','9999-12-31 23:59:59' " +
+                "legend_persistence_y.`legend_persistence_end_date`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999,PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'),'9999-12-31 23:59:59' " +
                 "FROM " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`validity_from_reference`,stage.`digest` FROM `mydb`.`staging` as stage) as legend_persistence_x " +
                 "LEFT OUTER JOIN " +
@@ -1026,7 +1026,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         String expectedMainToTemp = "INSERT INTO `mydb`.`temp` " +
                 "(`id`, `name`, `amount`, `digest`, `validity_from_target`, `validity_through_target`, `batch_id_in`, `batch_id_out`, `batch_time_in`, `batch_time_out`) " +
                 "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`digest`,legend_persistence_x.`validity_from_target` as `legend_persistence_start_date`,legend_persistence_y.`legend_persistence_end_date`," +
-                "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999,'2000-01-01 00:00:00','9999-12-31 23:59:59' " +
+                "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999,PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'),'9999-12-31 23:59:59' " +
                 "FROM " +
                 "(SELECT sink.`id`,sink.`name`,sink.`amount`,sink.`digest`,sink.`batch_id_in`,sink.`batch_id_out`,sink.`batch_time_in`," +
                 "sink.`batch_time_out`,sink.`validity_from_target`,sink.`validity_through_target` FROM `mydb`.`main` as sink " +
@@ -1050,7 +1050,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
 
         String expectedUpdateMain = "UPDATE `mydb`.`main` as sink SET " +
                 "sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1," +
-                "sink.`batch_time_out` = '2000-01-01 00:00:00' " +
+                "sink.`batch_time_out` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00') " +
                 "WHERE (EXISTS " +
                 "(SELECT * FROM `mydb`.`temp` as temp WHERE ((sink.`id` = temp.`id`) AND (sink.`name` = temp.`name`)) " +
                 "AND (sink.`validity_from_target` = temp.`validity_from_target`))) AND (sink.`batch_id_out` = 999999999)";
@@ -1085,7 +1085,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         String expectedStageToTemp = "INSERT INTO `mydb`.`temp` " +
                 "(`id`, `name`, `amount`, `digest`, `validity_from_target`, `validity_through_target`, `batch_time_in`, `batch_time_out`) " +
                 "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`digest`,legend_persistence_x.`validity_from_reference` as `legend_persistence_start_date`," +
-                "legend_persistence_y.`legend_persistence_end_date`,'2000-01-01 00:00:00','9999-12-31 23:59:59' " +
+                "legend_persistence_y.`legend_persistence_end_date`,PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'),'9999-12-31 23:59:59' " +
                 "FROM " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`validity_from_reference`,stage.`digest` FROM `mydb`.`staging` as stage) as legend_persistence_x " +
                 "LEFT OUTER JOIN " +
@@ -1108,7 +1108,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "(`id`, `name`, `amount`, `digest`, `validity_from_target`, `validity_through_target`, `batch_time_in`, `batch_time_out`) " +
                 "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`digest`," +
                 "legend_persistence_x.`validity_from_target` as `legend_persistence_start_date`,legend_persistence_y.`legend_persistence_end_date`," +
-                "'2000-01-01 00:00:00','9999-12-31 23:59:59' FROM (SELECT sink.`id`,sink.`name`,sink.`amount`,sink.`digest`,sink.`batch_time_in`," +
+                "PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'),'9999-12-31 23:59:59' FROM (SELECT sink.`id`,sink.`name`,sink.`amount`,sink.`digest`,sink.`batch_time_in`," +
                 "sink.`batch_time_out`,sink.`validity_from_target`,sink.`validity_through_target` " +
                 "FROM `mydb`.`main` as sink WHERE sink.`batch_time_out` = '9999-12-31 23:59:59') as legend_persistence_x " +
                 "INNER JOIN " +
@@ -1131,7 +1131,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "AND (legend_persistence_x.`validity_from_target` = legend_persistence_y.`legend_persistence_start_date`))";
 
         String expectedUpdateMain = "UPDATE `mydb`.`main` as sink SET " +
-                "sink.`batch_time_out` = '2000-01-01 00:00:00' " +
+                "sink.`batch_time_out` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00') " +
                 "WHERE (EXISTS (SELECT * FROM `mydb`.`temp` as temp WHERE " +
                 "((sink.`id` = temp.`id`) AND (sink.`name` = temp.`name`)) AND " +
                 "(sink.`validity_from_target` = temp.`validity_from_target`))) AND (sink.`batch_time_out` = '9999-12-31 23:59:59')";
@@ -1153,8 +1153,8 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
 
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
         String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage";
-        String rowsUpdated = "SELECT COUNT(*) as `rowsUpdated` FROM `mydb`.`main` as sink WHERE sink.`batch_time_out` = '2000-01-01 00:00:00'";
-        String rowsInserted = "SELECT (SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_time_in` = '2000-01-01 00:00:00')-(SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_time_out` = '2000-01-01 00:00:00') as `rowsInserted`";
+        String rowsUpdated = "SELECT COUNT(*) as `rowsUpdated` FROM `mydb`.`main` as sink WHERE sink.`batch_time_out` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00')";
+        String rowsInserted = "SELECT (SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_time_in` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'))-(SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_time_out` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00')) as `rowsInserted`";
 
         verifyStats(operations, incomingRecordCount, rowsUpdated, rowsDeleted, rowsInserted, rowsTerminated);
     }

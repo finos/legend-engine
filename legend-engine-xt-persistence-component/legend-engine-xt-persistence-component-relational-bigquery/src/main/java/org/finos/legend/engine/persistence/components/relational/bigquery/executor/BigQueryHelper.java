@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,69 +30,95 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-public class BigQueryHelper implements RelationalExecutionHelper {
+public class BigQueryHelper implements RelationalExecutionHelper
+{
     private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryHelper.class);
 
     private final BigQuery bigQuery;
     private BigQueryTransactionManager transactionManager;
 
-    public static BigQueryHelper of(BigQuery bigQuery) {
+    public static BigQueryHelper of(BigQuery bigQuery)
+    {
         return new BigQueryHelper(bigQuery);
     }
 
-    private BigQueryHelper(BigQuery bigQuery) {
+    private BigQueryHelper(BigQuery bigQuery)
+    {
         this.bigQuery = bigQuery;
     }
 
-    public void beginTransaction() {
-        try {
+    public void beginTransaction()
+    {
+        try
+        {
             this.transactionManager = new BigQueryTransactionManager(bigQuery);
             this.transactionManager.beginTransaction();
-        } catch (InterruptedException e) {
+        }
+        catch (InterruptedException e)
+        {
             throw new RuntimeException(e);
         }
     }
 
-    public void commitTransaction() {
-        if (this.transactionManager != null) {
-            try {
+    public void commitTransaction()
+    {
+        if (this.transactionManager != null)
+        {
+            try
+            {
                 this.transactionManager.commitTransaction();
-            } catch (InterruptedException e) {
+            }
+            catch (InterruptedException e)
+            {
                 throw new RuntimeException(e);
             }
         }
     }
 
-    public void revertTransaction() {
-        if (this.transactionManager != null) {
-            try {
+    public void revertTransaction()
+    {
+        if (this.transactionManager != null)
+        {
+            try
+            {
                 this.transactionManager.revertTransaction();
-            } catch (InterruptedException e) {
+            }
+            catch (InterruptedException e)
+            {
                 throw new RuntimeException(e);
             }
         }
     }
 
-    public void closeTransactionManager() {
-        if (this.transactionManager != null) {
-            try {
+    public void closeTransactionManager()
+    {
+        if (this.transactionManager != null)
+        {
+            try
+            {
                 this.transactionManager.close();
-            } catch (InterruptedException e) {
+            }
+            catch (InterruptedException e)
+            {
                 throw new RuntimeException(e);
-            } finally {
+            }
+            finally
+            {
                 this.transactionManager = null;
             }
         }
     }
 
-    public boolean doesTableExist(Dataset dataset) {
+    public boolean doesTableExist(Dataset dataset)
+    {
         String name = dataset.datasetReference().name().orElseThrow(IllegalStateException::new);
         String schema = dataset.datasetReference().group().orElse(null);
         Table table = this.bigQuery.getTable(TableId.of(schema, name));
         return table.exists();
     }
 
-    public void validateDatasetSchema(Dataset dataset, DataTypeMapping datatypeMapping) {
+    public void validateDatasetSchema(Dataset dataset, DataTypeMapping datatypeMapping)
+    {
         // TODO # 10: Fetch and validate primary keys, unique keys and indices
         String name = dataset.datasetReference().name().orElseThrow(IllegalStateException::new);
         String schema = dataset.datasetReference().group().orElse(null);
@@ -103,7 +129,8 @@ public class BigQueryHelper implements RelationalExecutionHelper {
         List<Column> userColumns = convertUserProvidedFieldsToColumns(userFields, datatypeMapping);
         List<Column> dbColumns = new ArrayList<>();
 
-        for (com.google.cloud.bigquery.Field dbField : dbFields) {
+        for (com.google.cloud.bigquery.Field dbField : dbFields)
+        {
             String columnName = dbField.getName();
 
             // Get the datatype
@@ -118,7 +145,8 @@ public class BigQueryHelper implements RelationalExecutionHelper {
 
             // Check the constraints
             List<ColumnConstraint> columnConstraints = new ArrayList<>();
-            if (com.google.cloud.bigquery.Field.Mode.REQUIRED.equals(dbField.getMode())) {
+            if (com.google.cloud.bigquery.Field.Mode.REQUIRED.equals(dbField.getMode()))
+            {
                 columnConstraints.add(new NotNullColumnConstraint());
             }
 
@@ -130,13 +158,15 @@ public class BigQueryHelper implements RelationalExecutionHelper {
         validateColumns(userColumns, dbColumns);
     }
 
-    public Dataset constructDatasetFromDatabase(String tableName, String schemaName, String databaseName, JdbcPropertiesToLogicalDataTypeMapping mapping) {
+    public Dataset constructDatasetFromDatabase(String tableName, String schemaName, String databaseName, JdbcPropertiesToLogicalDataTypeMapping mapping)
+    {
         // TODO # 9: Fetch and construct primary keys, unique keys and indices
         Table table = this.bigQuery.getTable(TableId.of(schemaName, tableName));
 
         // Get all columns
         List<Field> fields = new ArrayList<>();
-        for (com.google.cloud.bigquery.Field dbField : table.getDefinition().getSchema().getFields()) {
+        for (com.google.cloud.bigquery.Field dbField : table.getDefinition().getSchema().getFields())
+        {
             String columnName = dbField.getName();
             String typeName = dbField.getType().getStandardType().name();
             String dataType = dbField.getType().name();
@@ -164,26 +194,33 @@ public class BigQueryHelper implements RelationalExecutionHelper {
         return DatasetDefinition.builder().name(tableName).database(databaseName).group(schemaName).schema(schemaDefinition).build();
     }
 
-    public static void validateColumns(List<Column> userColumns, List<Column> dbColumns) {
-        if (userColumns.size() != dbColumns.size()) {
+    public static void validateColumns(List<Column> userColumns, List<Column> dbColumns)
+    {
+        if (userColumns.size() != dbColumns.size())
+        {
             throw new IllegalStateException("Number of columns in user-provided schema doesn't match with the schema in the database");
         }
-        for (Column userColumn : userColumns) {
+        for (Column userColumn : userColumns)
+        {
             Column matchedColumn = dbColumns.stream().filter(dbColumn -> dbColumn.getColumnName().equals(userColumn.getColumnName())).findFirst().orElseThrow(() -> new IllegalStateException("Column in user-provided schema doesn't match any column in the schema in the database"));
-            if (!userColumn.equals(matchedColumn)) {
+            if (!userColumn.equals(matchedColumn))
+            {
                 throw new IllegalStateException("Column in user-provided schema doesn't match the corresponding column in the schema in the database");
             }
         }
     }
 
-    public static List<Column> convertUserProvidedFieldsToColumns(List<Field> userFields, DataTypeMapping datatypeMapping) {
+    public static List<Column> convertUserProvidedFieldsToColumns(List<Field> userFields, DataTypeMapping datatypeMapping)
+    {
         // TODO # 11: Handle primary keys, unique keys and indices
         List<Column> columnList = new ArrayList<>();
 
-        for (Field f : userFields) {
+        for (Field f : userFields)
+        {
             DataType dataType = datatypeMapping.getDataType(f.type());
             List<ColumnConstraint> columnConstraints = new ArrayList<>();
-            if (!f.nullable() || f.primaryKey()) {
+            if (!f.nullable() || f.primaryKey())
+            {
                 columnConstraints.add(new NotNullColumnConstraint());
             }
             Column column = new Column(f.name(), dataType, columnConstraints, null);
@@ -194,44 +231,67 @@ public class BigQueryHelper implements RelationalExecutionHelper {
     }
 
 
-    public void executeStatement(String sql) {
+    public void executeStatement(String sql)
+    {
         List<String> sqls = Collections.singletonList(sql);
         executeStatements(sqls);
     }
 
-    public void executeStatements(List<String> sqls) {
-        if (this.transactionManager != null) {
-            try {
-                for (String sql : sqls) {
+    public void executeStatements(List<String> sqls)
+    {
+        if (this.transactionManager != null)
+        {
+            try
+            {
+                for (String sql : sqls)
+                {
                     this.transactionManager.executeInCurrentTransaction(sql);
                 }
-            } catch (InterruptedException e) {
+            }
+            catch (InterruptedException e)
+            {
                 throw new RuntimeException(e);
             }
-        } else {
+        }
+        else
+        {
             BigQueryTransactionManager txManager = null;
-            try {
+            try
+            {
                 txManager = new BigQueryTransactionManager(bigQuery);
                 txManager.beginTransaction();
-                for (String sql : sqls) {
+                for (String sql : sqls)
+                {
                     txManager.executeInCurrentTransaction(sql);
                 }
                 txManager.commitTransaction();
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
                 LOGGER.error("Error executing SQL statements: " + sqls, e);
-                if (txManager != null) {
-                    try {
+                if (txManager != null)
+                {
+                    try
+                    {
                         txManager.revertTransaction();
-                    } catch (InterruptedException e2) {
+                    }
+                    catch (InterruptedException e2)
+                    {
                         throw new RuntimeException(e2);
                     }
                 }
                 throw new RuntimeException(e);
-            } finally {
-                if (txManager != null) {
-                    try {
+            }
+            finally
+            {
+                if (txManager != null)
+                {
+                    try
+                    {
                         txManager.close();
-                    } catch (InterruptedException e) {
+                    }
+                    catch (InterruptedException e)
+                    {
                         LOGGER.error("Error closing transaction manager.", e);
                     }
                 }
@@ -239,7 +299,8 @@ public class BigQueryHelper implements RelationalExecutionHelper {
         }
     }
 
-    public List<Map<String, Object>> executeQuery(String sql) {
+    public List<Map<String, Object>> executeQuery(String sql)
+    {
         if (this.transactionManager != null)
         {
             return this.transactionManager.convertResultSetToList(sql);
