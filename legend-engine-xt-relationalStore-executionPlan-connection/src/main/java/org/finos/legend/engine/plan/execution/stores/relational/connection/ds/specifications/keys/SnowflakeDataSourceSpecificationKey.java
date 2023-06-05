@@ -133,7 +133,8 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
         return role;
     }
 
-    public Boolean getEnableQueryTags() {
+    public Boolean getEnableQueryTags()
+    {
         return enableQueryTags;
     }
 
