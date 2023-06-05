@@ -14,12 +14,12 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.auditing.Audit;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.auditing.Auditing;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.UpdatesHandling;
 
 public class Nontemporal extends Temporality
 {
-    public Audit auditing;
+    public Auditing auditing;
     public UpdatesHandling updatesHandling;
 
     @Override

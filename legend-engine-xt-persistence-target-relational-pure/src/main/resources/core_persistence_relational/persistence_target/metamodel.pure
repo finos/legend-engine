@@ -45,6 +45,8 @@ Class
 {doc.doc = ''}
 meta::pure::persistence::relational::metamodel::NoMilestoning extends Milestoning
 {
+  auditing: Auditing[1];
+  updatesHandling: UpdatesHandling[1];
 }
 
 Class
@@ -69,19 +71,25 @@ meta::pure::persistence::relational::metamodel::BitemporalMilestoning extends Mi
 Class
 <<typemodifiers.abstract>>
 {doc.doc = ''}
-meta::pure::persistence::relational::metamodel::Audit
+meta::pure::persistence::relational::metamodel::Auditing
 {
 }
 
 Class
 {doc.doc = ''}
-meta::pure::persistence::relational::metamodel::AuditDateTime extends Audit
+meta::pure::persistence::relational::metamodel::AuditingDateTime extends Auditing
 {
-  dateTimeName: meta::relational::metamodel::Column[1];
+  auditingDateTimeName: meta::relational::metamodel::Column[1];
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::NoAuditing extends Auditing
+{
 }
 
 /**********
- * auditing
+ * updates handling
  **********/
 
 Class

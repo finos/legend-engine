@@ -29,8 +29,8 @@ AUDIT_DATE_TIME_NAME:                       'dateTimeName';
 
 // UPDATES HANDLING
 UPDATES_HANDLING:                           'updatesHandling';
-UPDATES_HANDLING_APPEND_ONLY:               'appendOnly';
-UPDATES_HANDLING_OVERWRITE:                 'overwrite';
+UPDATES_HANDLING_APPEND_ONLY:               'AppendOnly';
+UPDATES_HANDLING_OVERWRITE:                 'Overwrite';
 
 // PROCESSING DIMENSION
 PROCESSING_BATCH_ID:                        'BatchId';

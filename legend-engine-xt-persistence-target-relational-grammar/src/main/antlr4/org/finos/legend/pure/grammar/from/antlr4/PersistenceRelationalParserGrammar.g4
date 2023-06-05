@@ -17,6 +17,7 @@ identifier:                                 VALID_STRING | STRING
                                             | BATCH_ID_IN | BATCH_ID_OUT | DATE_TIME_IN | DATE_TIME_OUT
                                             | DATE_TIME_START | DATE_TIME_END | SOURCE_DERIVED_SOURCE_FIELDS
                                             | SOURCE_FIELDS_START | SOURCE_FIELDS_START_AND_END | SOURCE_FIELD_START | SOURCE_FIELD_END
+                                            | AUDIT | AUDIT_DATE_TIME_NAME | UPDATES_HANDLING | UPDATES_HANDLING_APPEND_ONLY | UPDATES_HANDLING_OVERWRITE
 ;
 
 // -------------------------------------- RELATIONAL PERSISTENCE TARGET --------------------------------------
@@ -63,16 +64,21 @@ bitemporal:                                 TEMPORAL_BI
 auditing:                                   AUDIT COLON
                                                 (
                                                     auditingDateTime
+                                                    | auditingNone
                                                 )
 ;
 auditingDateTime:                           DATE_TIME
                                                 BRACE_OPEN
-                                                    (
-                                                        auditingDateTimeName
-                                                    )
+                                                    (auditingDateTimeName)*
                                                 BRACE_CLOSE
 ;
 auditingDateTimeName:                       AUDIT_DATE_TIME_NAME COLON identifier SEMI_COLON
+;
+auditingNone:                               NONE
+                                                (
+                                                    SEMI_COLON
+                                                    | (BRACE_OPEN BRACE_CLOSE)
+                                                )
 ;
 updatesHandling:                            UPDATES_HANDLING COLON
                                                 (

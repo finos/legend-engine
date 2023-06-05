@@ -17,9 +17,8 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.emptyhandling.NoOp;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type", defaultImpl = NoOp.class)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type", defaultImpl = AppendOnly.class)
 @JsonSubTypes({
     @JsonSubTypes.Type(value = AppendOnly.class, name = "appendOnly"),
     @JsonSubTypes.Type(value = Overwrite.class, name = "overwrite")

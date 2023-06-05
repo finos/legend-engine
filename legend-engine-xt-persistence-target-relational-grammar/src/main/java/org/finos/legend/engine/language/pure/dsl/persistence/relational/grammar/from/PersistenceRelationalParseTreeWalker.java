@@ -23,6 +23,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.Nontemporal;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.Temporality;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.Unitemporal;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.auditing.Auditing;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.auditing.AuditingDateTime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.auditing.NoAuditing;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.processing.BatchId;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.processing.BatchIdAndDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.processing.ProcessingDateTime;
@@ -32,6 +35,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.sourcederived.SourceTimeFields;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.sourcederived.SourceTimeStart;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.sourcederived.SourceTimeStartAndEnd;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.AppendOnly;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.Overwrite;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.UpdatesHandling;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.sink.PersistenceTarget;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.grammar.from.antlr4.PersistenceRelationalParserGrammar;
@@ -99,7 +105,76 @@ public class PersistenceRelationalParseTreeWalker
     {
         Nontemporal temporality = new Nontemporal();
         temporality.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // auditing (optional)
+        PersistenceRelationalParserGrammar.AuditingContext auditingContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.auditing(), "auditing", temporality.sourceInformation);
+        temporality.auditing = auditingContext == null ? null : visitAuditing(auditingContext);
+
+        // updatesHandling
+        PersistenceRelationalParserGrammar.UpdatesHandlingContext updatesHandlingContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.updatesHandling(), "updatesHandling", temporality.sourceInformation);
+        temporality.updatesHandling = visitUpdatesHandling(updatesHandlingContext);
+
         return temporality;
+    }
+
+    private Auditing visitAuditing(PersistenceRelationalParserGrammar.AuditingContext ctx)
+    {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        if (ctx.auditingDateTime() != null)
+        {
+            return visitAuditingDateTime(ctx.auditingDateTime());
+        }
+        if (ctx.auditingNone() != null)
+        {
+            return visitNoAuditing(ctx.auditingNone());
+        }
+        throw new EngineException("Unrecognized auditing type", sourceInformation, EngineErrorType.PARSER);
+    }
+
+    private AuditingDateTime visitAuditingDateTime(PersistenceRelationalParserGrammar.AuditingDateTimeContext ctx)
+    {
+        AuditingDateTime auditingDateTime = new AuditingDateTime();
+        auditingDateTime.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        PersistenceRelationalParserGrammar.AuditingDateTimeNameContext auditingDateTimeNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.auditingDateTimeName(), "auditingDateTimeName", auditingDateTime.sourceInformation);
+        auditingDateTime.auditingDateTimeName = PureGrammarParserUtility.fromIdentifier(auditingDateTimeNameContext.identifier());
+
+        return auditingDateTime;
+    }
+
+    private NoAuditing visitNoAuditing(PersistenceRelationalParserGrammar.AuditingNoneContext ctx)
+    {
+        NoAuditing noAuditing = new NoAuditing();
+        noAuditing.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        return noAuditing;
+    }
+
+    private UpdatesHandling visitUpdatesHandling(PersistenceRelationalParserGrammar.UpdatesHandlingContext ctx)
+    {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        if (ctx.updatesHandlingOverwrite() != null)
+        {
+            return visitOverwrite(ctx.updatesHandlingOverwrite());
+        }
+        if (ctx.updatesHandlingAppendOnly() != null)
+        {
+            return visitAppendOnly(ctx.updatesHandlingAppendOnly());
+        }
+        throw new EngineException("Unrecognized updates handling type", sourceInformation, EngineErrorType.PARSER);
+    }
+
+    private Overwrite visitOverwrite(PersistenceRelationalParserGrammar.UpdatesHandlingOverwriteContext ctx)
+    {
+        Overwrite overwrite = new Overwrite();
+        overwrite.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        return overwrite;
+    }
+
+    private AppendOnly visitAppendOnly(PersistenceRelationalParserGrammar.UpdatesHandlingAppendOnlyContext ctx)
+    {
+        AppendOnly appendOnly = new AppendOnly();
+        appendOnly.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        return appendOnly;
     }
 
     private Temporality visitUnitemporal(PersistenceRelationalParserGrammar.UnitemporalContext ctx)

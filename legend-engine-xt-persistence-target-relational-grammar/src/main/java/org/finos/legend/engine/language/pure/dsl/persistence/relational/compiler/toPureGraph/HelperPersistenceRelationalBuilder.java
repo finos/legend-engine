@@ -28,6 +28,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.Temporality;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.TemporalityVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.Unitemporal;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.auditing.AuditingDateTime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.auditing.AuditingVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.auditing.NoAuditing;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.processing.BatchId;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.processing.BatchIdAndDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.processing.ProcessingDateTime;
@@ -37,13 +40,22 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.sourcederived.SourceTimeFieldsVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.sourcederived.SourceTimeStart;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.sourcederived.SourceTimeStartAndEnd;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.AppendOnly;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.Overwrite;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.UpdatesHandlingVisitor;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_target_PersistenceTarget;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_AppendOnly_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_Auditing;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_AuditingDateTime_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_BatchIdAndTime_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_BatchId_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_BitemporalMilestoning_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_Milestoning;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_NoAuditing_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_NoMilestoning;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_NoMilestoning_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_Overwrite_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_ProcessingDimension;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_ProcessingTime_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_RelationalPersistenceTarget_Impl;
@@ -53,6 +65,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_met
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_SourceTimeStartAndEnd_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_SourceTimeStart_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_UnitemporalMilestoning_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_UpdatesHandling;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Column;
@@ -168,7 +181,15 @@ public class HelperPersistenceRelationalBuilder
         @Override
         public Root_meta_pure_persistence_relational_metamodel_Milestoning visitNontemporal(Nontemporal val)
         {
-            return new Root_meta_pure_persistence_relational_metamodel_NoMilestoning_Impl("", null, context.pureModel.getClass("meta::pure::persistence::relational::metamodel::NoMilestoning"));
+            Root_meta_pure_persistence_relational_metamodel_NoMilestoning noMilestoning = new Root_meta_pure_persistence_relational_metamodel_NoMilestoning_Impl("", null, context.pureModel.getClass("meta::pure::persistence::relational::metamodel::NoMilestoning"))
+                ._updatesHandling(val.updatesHandling.accept(new UpdatesHandlingBuilder(context)));
+
+            if (val.auditing != null)
+            {
+                noMilestoning._auditing(val.auditing.accept(new AuditingBuilder(context, table)));
+            }
+
+            return noMilestoning;
         }
 
         @Override
@@ -184,6 +205,53 @@ public class HelperPersistenceRelationalBuilder
             return new Root_meta_pure_persistence_relational_metamodel_BitemporalMilestoning_Impl("", null, context.pureModel.getClass("meta::pure::persistence::relational::metamodel::BitemporalMilestoning"))
                 ._processingDimension(val.processingDimension.accept(new ProcessingDimensionBuilder(context, table)))
                 ._sourceDerivedDimension(val.sourceDerivedDimension.accept(new SourceDerivedDimensionBuilder(context, table)));
+        }
+    }
+
+    private static class UpdatesHandlingBuilder implements UpdatesHandlingVisitor<Root_meta_pure_persistence_relational_metamodel_UpdatesHandling>
+    {
+        private final CompileContext context;
+
+        private UpdatesHandlingBuilder(CompileContext context)
+        {
+            this.context = context;
+        }
+
+        @Override
+        public Root_meta_pure_persistence_relational_metamodel_UpdatesHandling visitAppendOnly(AppendOnly val)
+        {
+            return new Root_meta_pure_persistence_relational_metamodel_AppendOnly_Impl("", null, context.pureModel.getClass("meta::pure::persistence::relational::metamodel::AppendOnly"));
+        }
+
+        @Override
+        public Root_meta_pure_persistence_relational_metamodel_UpdatesHandling visitOverwrite(Overwrite val)
+        {
+            return new Root_meta_pure_persistence_relational_metamodel_Overwrite_Impl("", null, context.pureModel.getClass("meta::pure::persistence::relational::metamodel::Overwrite"));
+        }
+    }
+
+    private static class AuditingBuilder implements AuditingVisitor<Root_meta_pure_persistence_relational_metamodel_Auditing>
+    {
+        private final CompileContext context;
+        private final Table table;
+
+        private AuditingBuilder(CompileContext context, Table table)
+        {
+            this.context = context;
+            this.table = table;
+        }
+
+        @Override
+        public Root_meta_pure_persistence_relational_metamodel_Auditing visitAuditingDateTime(AuditingDateTime val)
+        {
+            return new Root_meta_pure_persistence_relational_metamodel_AuditingDateTime_Impl("", null, context.pureModel.getClass("meta::pure::persistence::relational::metamodel::AuditingDateTime"))
+                ._auditingDateTimeName(buildColumn(val.auditingDateTimeName, val.sourceInformation, table));
+        }
+
+        @Override
+        public Root_meta_pure_persistence_relational_metamodel_Auditing visitNoAuditing(NoAuditing val)
+        {
+            return new Root_meta_pure_persistence_relational_metamodel_NoAuditing_Impl("", null, context.pureModel.getClass("meta::pure::persistence::relational::metamodel::NoAuditing"));
         }
     }
 

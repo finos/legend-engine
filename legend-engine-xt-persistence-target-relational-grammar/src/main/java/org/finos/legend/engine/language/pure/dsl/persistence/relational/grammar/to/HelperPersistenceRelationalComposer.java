@@ -21,6 +21,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.Temporality;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.TemporalityVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.Unitemporal;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.auditing.Auditing;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.auditing.AuditingDateTime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.auditing.AuditingVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.auditing.NoAuditing;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.processing.BatchId;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.processing.BatchIdAndDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.processing.ProcessingDateTime;
@@ -33,6 +37,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.sourcederived.SourceTimeFieldsVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.sourcederived.SourceTimeStart;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.sourcederived.SourceTimeStartAndEnd;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.AppendOnly;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.Overwrite;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.UpdatesHandling;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.UpdatesHandlingVisitor;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
 
@@ -79,7 +87,11 @@ public class HelperPersistenceRelationalComposer
         @Override
         public String visitNontemporal(Nontemporal val)
         {
-            return "None;\n";
+            return "None\n" +
+                getTabString(indentLevel) + "{\n" +
+                renderAuditing(val.auditing, indentLevel + 1) +
+                renderUpdatesHandling(val.updatesHandling, indentLevel + 1) +
+                getTabString(indentLevel) + "}\n";
         }
 
         @Override
@@ -101,6 +113,16 @@ public class HelperPersistenceRelationalComposer
                 getTabString(indentLevel) + "}\n";
         }
 
+        public static String renderAuditing(Auditing auditing, int indentLevel)
+        {
+            return auditing == null ? "" : getTabString(indentLevel) + "auditing: " + auditing.accept(new AuditingComposer(indentLevel));
+        }
+
+        public static String renderUpdatesHandling(UpdatesHandling updatesHandling, int indentLevel)
+        {
+            return getTabString(indentLevel) + "updatesHandling: " + updatesHandling.accept(new UpdatesHandlingComposer(indentLevel));
+        }
+
         public static String renderProcessingDimension(ProcessingDimension processingDimension, int indentLevel)
         {
             return getTabString(indentLevel) + "processingDimension: " + processingDimension.accept(new ProcessingDimensionComposer(indentLevel));
@@ -109,6 +131,53 @@ public class HelperPersistenceRelationalComposer
         public static String renderSourceDerivedDimension(SourceDerivedDimension sourceDerivedDimension, int indentLevel)
         {
             return getTabString(indentLevel) + "sourceDerivedDimension: " + sourceDerivedDimension.accept(new SourceDerivedDimensionComposer(indentLevel));
+        }
+    }
+
+    private static class AuditingComposer implements AuditingVisitor<String>
+    {
+        private final int indentLevel;
+
+        private AuditingComposer(int indentLevel)
+        {
+            this.indentLevel = indentLevel;
+        }
+
+        @Override
+        public String visitAuditingDateTime(AuditingDateTime val)
+        {
+            return "Datetime\n" +
+                getTabString(indentLevel) + "{\n" +
+                getTabString(indentLevel + 1) + "dateTimeName: " + val.auditingDateTimeName + ";\n" +
+                getTabString(indentLevel) + "}\n";
+        }
+
+        @Override
+        public String visitNoAuditing(NoAuditing val)
+        {
+            return "None;\n";
+        }
+    }
+
+    private static class UpdatesHandlingComposer implements UpdatesHandlingVisitor<String>
+    {
+        private final int indentLevel;
+
+        private UpdatesHandlingComposer(int indentLevel)
+        {
+            this.indentLevel = indentLevel;
+        }
+
+        @Override
+        public String visitAppendOnly(AppendOnly val)
+        {
+            return "AppendOnly;\n";
+        }
+
+        @Override
+        public String visitOverwrite(Overwrite val)
+        {
+            return "Overwrite;\n";
         }
     }
 

@@ -14,13 +14,9 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.auditing;
 
-public class AuditDateTime extends Audit
+public interface AuditingVisitor<T>
 {
-    public String auditDateTimeName;
+    T visitAuditingDateTime(AuditingDateTime val);
 
-    @Override
-    public <T> T accept(AuditVisitor<T> visitor)
-    {
-        return visitor.visitAuditDateTime(this);
-    }
+    T visitNoAuditing(NoAuditing val);
 }
