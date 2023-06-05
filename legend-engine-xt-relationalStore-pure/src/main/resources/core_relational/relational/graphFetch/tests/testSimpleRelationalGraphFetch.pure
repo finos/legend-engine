@@ -373,7 +373,6 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let runtime = meta::relational::tests::testRuntime();
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
-   println($result);
 
    assertJsonStringsEqual(
       '[{"defects":[],"value":{"firstName":"Peter","lastName":"Smith","firm":{"legalName":"Firm X"}}},' +
