@@ -22,7 +22,9 @@ import java.util.List;
 
 public class RelationalCrossRootQueryTempTableGraphFetchExecutionNode extends RelationalClassQueryTempTableGraphFetchExecutionNode
 {
+    public TempTableStrategy parentTempTableStrategy;
     public String parentTempTableName;
+    public String processedParentTempTableName;
     public List<SQLResultColumn> parentTempTableColumns;
 
     @Override

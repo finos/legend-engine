@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,23 +14,19 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.result.SQLResultColumn;
 
-import java.util.List;
-
-public class RelationalTempTableGraphFetchExecutionNode extends RelationalGraphFetchExecutionNode
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, defaultImpl = TempTableStrategy.class, property = "_type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = LoadFromSubQueryTempTableStrategy.class, name = "subQuery"),
+        @JsonSubTypes.Type(value = LoadFromResultSetAsValueTuplesTempTableStrategy.class, name = "resultSet"),
+        @JsonSubTypes.Type(value = LoadFromTempFileTempTableStrategy.class, name = "tempFile")
+})
+public class TempTableStrategy
 {
-    public String tempTableName;
-    public String processedTempTableName;
-    public List<SQLResultColumn> columns;
-    public TempTableStrategy tempTableStrategy;
-
-    @Override
-    public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)
-    {
-        return executionNodeVisitor.visit((ExecutionNode) this);
-    }
+    public ExecutionNode createTempTableNode;
+    public ExecutionNode loadTempTableNode;
+    public ExecutionNode dropTempTableNode;
 }
-

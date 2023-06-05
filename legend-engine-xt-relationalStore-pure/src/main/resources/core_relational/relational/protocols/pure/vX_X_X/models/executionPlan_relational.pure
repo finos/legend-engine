@@ -68,10 +68,12 @@ Class <<typemodifiers.abstract>> meta::protocols::pure::vX_X_X::metamodel::execu
 {
    tempTableName : String[1];
    columns       : SQLResultColumn[*];
+   processedTempTableName : String[0..1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalClassQueryTempTableGraphFetchExecutionNode extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalTempTableGraphFetchExecutionNode
 {
+   tempTableStrategy : TempTableStrategy[0..1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalPrimitiveQueryGraphFetchExecutionNode extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalGraphFetchExecutionNode
@@ -90,8 +92,31 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalRootLis
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalCrossRootQueryTempTableGraphFetchExecutionNode extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalClassQueryTempTableGraphFetchExecutionNode
 {
+   parentTempTableStrategy : TempTableStrategy[0..1];
    parentTempTableName    : String[1];
    parentTempTableColumns : SQLResultColumn[*];
+   processedParentTempTableName : String[0..1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::TempTableStrategy
+{
+   _type : String[1];
+   createTempTableNode : ExecutionNode[0..1];
+   loadTempTableNode : ExecutionNode[0..1];
+   dropTempTableNode : ExecutionNode[0..1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::LoadFromTempFileTempTableStrategy extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::TempTableStrategy
+{
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::LoadFromSubQueryTempTableStrategy extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::TempTableStrategy
+{
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::LoadFromResultSetAsValueTuplesTempTableStrategy extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::TempTableStrategy
+{
+   tupleBatchSize : Integer[0..1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::RelationalBlockExecutionNode extends SequenceExecutionNode
