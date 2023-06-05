@@ -23,6 +23,7 @@ import meta::pure::functions::meta::*;
 import meta::pure::mapping::*;
 import meta::pure::metamodel::serialization::grammar::*;
 
+
 //SELECT
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectStar():Boolean[1]
 {
@@ -405,7 +406,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
           [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
         )->groupBy(['Integer'], [
-          agg('sum', row | $row, y | sum(1)),
+          agg('sum', row | 1, y | $y->sum()),
           agg('count', row | $row, y | $y->count()),
           agg('exp', row | $row.getInteger('Integer') + $row.getFloat('Float'), y | $y->sum())
         ])
@@ -439,7 +440,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
         )->groupBy('String', [
           agg('count', row | $row.getInteger('Integer'), y | $y->count()),
-          agg('count(1)', row | $row, y | count(1))
+          agg('count(1)', row | 1, y | $y->count())
         ])->filter(row | ($row.getInteger('count') > 0) && ($row.getInteger('count(1)') > 0))
           ->restrict('count')
 
@@ -459,7 +460,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           col(row:TDSRow[1] | pi(), 'pi')
         ])
         ->groupBy(['abc', 'pi'], [
-          agg('count(1)', row | $row, y | count(1))
+          agg('count(1)', row | 1, y | $y->count())
         ])->filter(row | ($row.getInteger('count(1)') > 0) && ($row.getInteger('count(1)') < 1000))
           ->restrict(['abc', 'pi'])
 
