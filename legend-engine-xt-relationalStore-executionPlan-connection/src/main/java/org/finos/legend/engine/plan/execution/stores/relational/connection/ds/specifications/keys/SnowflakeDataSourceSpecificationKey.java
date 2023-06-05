@@ -26,6 +26,7 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
     private final String databaseName;
     private final String cloudType;
     private final Boolean quoteIdentifiers;
+    private Boolean enableQueryTags;
 
     private String proxyHost;
     private String proxyPort;
@@ -37,9 +38,9 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
     private String role;
 
 
-    public SnowflakeDataSourceSpecificationKey(String accountName, String region, String warehouseName, String databaseName, String cloudType, Boolean quoteIdentifiers, String proxyHost, String proxyPort, String nonProxyHosts, String accountType, String organisation, String role)
+    public SnowflakeDataSourceSpecificationKey(String accountName, String region, String warehouseName, String databaseName, String cloudType, Boolean quoteIdentifiers, Boolean enableQueryTags, String proxyHost, String proxyPort, String nonProxyHosts, String accountType, String organisation, String role)
     {
-        this(accountName, region, warehouseName, databaseName, cloudType, quoteIdentifiers);
+        this(accountName, region, warehouseName, databaseName, cloudType, quoteIdentifiers, enableQueryTags);
         this.proxyHost = proxyHost;
         this.proxyPort = proxyPort;
         this.nonProxyHosts = nonProxyHosts;
@@ -49,7 +50,7 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
         this.role = role;
     }
 
-    public SnowflakeDataSourceSpecificationKey(String accountName, String region, String warehouseName, String databaseName, String cloudType, Boolean quoteIdentifiers)
+    public SnowflakeDataSourceSpecificationKey(String accountName, String region, String warehouseName, String databaseName, String cloudType, Boolean quoteIdentifiers, Boolean enableQueryTags)
     {
         this.accountName = accountName;
         this.region = region;
@@ -57,9 +58,10 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
         this.databaseName = databaseName;
         this.cloudType = cloudType == null ? "privatelink" : cloudType;
         this.quoteIdentifiers = quoteIdentifiers == null ? false : quoteIdentifiers;
+        this.enableQueryTags = enableQueryTags == null || enableQueryTags;
     }
 
-    public SnowflakeDataSourceSpecificationKey(String accountName, String region, String warehouseName, String databaseName, String cloudType, Boolean quoteIdentifiers, String role)
+    public SnowflakeDataSourceSpecificationKey(String accountName, String region, String warehouseName, String databaseName, String cloudType, Boolean quoteIdentifiers, Boolean enableQueryTags, String role)
     {
         this.accountName = accountName;
         this.region = region;
@@ -67,6 +69,7 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
         this.databaseName = databaseName;
         this.cloudType = cloudType == null ? "privatelink" : cloudType;
         this.quoteIdentifiers = quoteIdentifiers == null ? false : quoteIdentifiers;
+        this.enableQueryTags = enableQueryTags == null || enableQueryTags;
         this.role = role;
     }
 
@@ -130,6 +133,10 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
         return role;
     }
 
+    public Boolean getEnableQueryTags() {
+        return enableQueryTags;
+    }
+
     @Override
     public String toString()
     {
@@ -146,6 +153,7 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
                 ", accountType='" + accountType + '\'' +
                 ", organisation='" + organisation + '\'' +
                 ", role='" + role + '\'' +
+                ", enableQueryTags='" + enableQueryTags + '\'' +
                 '}';
     }
 
@@ -164,7 +172,8 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
                 "accountType:" + accountType + "_" +
                 "organisation:" + organisation + "_" +
                 "quoteIdentifiers:" + quoteIdentifiers +
-                "role:" + role;
+                "role:" + role +
+                "enableQueryTags:" + enableQueryTags;
     }
 
     @Override
@@ -190,12 +199,13 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
                 Objects.equals(accountType, that.accountType) &&
                 Objects.equals(organisation, that.organisation) &&
                 Objects.equals(quoteIdentifiers, that.quoteIdentifiers) &&
-                Objects.equals(role, that.role);
+                Objects.equals(role, that.role) &&
+                Objects.equals(enableQueryTags, that.enableQueryTags);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(accountName, region, warehouseName, databaseName, cloudType, quoteIdentifiers, proxyHost, proxyPort, nonProxyHosts, accountType, organisation, role);
+        return Objects.hash(accountName, region, warehouseName, databaseName, cloudType, quoteIdentifiers, proxyHost, proxyPort, nonProxyHosts, accountType, organisation, role, enableQueryTags);
     }
 }

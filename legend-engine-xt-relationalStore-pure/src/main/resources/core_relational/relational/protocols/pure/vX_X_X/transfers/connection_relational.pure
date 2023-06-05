@@ -220,7 +220,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connectio
             accountType = if($s.accountType->isEmpty(),|[],|$s.accountType->toOne()->toString()),
             organization = $s.organization,
             role = $s.role,
-            queryTagging = $s.queryTagging
+            enableQueryTags = $s.enableQueryTags
         ),
      r:meta::pure::legend::connections::legend::specification::RedshiftDatasourceSpecification[1] |
                                                   ^meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::legend::specification::RedshiftDatasourceSpecification(

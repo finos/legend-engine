@@ -300,7 +300,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 
 function meta::relational::functions::sqlQueryToString::snowflake::preAndFinallyExecutionSQLQueryForSnowflake(dbConfig:DbConfig[1], ds: DatasourceSpecification[1]): meta::relational::mapping::PreAndFinallyExecutionSQLQuery[*]
 {
-  if($ds->instanceOf(SnowflakeDatasourceSpecification) && $ds->cast(@SnowflakeDatasourceSpecification).queryTagging->isNotEmpty() && $ds->cast(@SnowflakeDatasourceSpecification).queryTagging == true,
+  if($ds->instanceOf(SnowflakeDatasourceSpecification) && ($ds->cast(@SnowflakeDatasourceSpecification).enableQueryTags->isEmpty() || $ds->cast(@SnowflakeDatasourceSpecification).enableQueryTags == true),
     | let set = ^AlterSQL(object = ^Session(), operation = [^SetOperation(propertyName = 'QUERY_TAG', propertyValue = ^Literal(value = '{"executionTraceID" : "${execID}", "engineUser" : "${userId}", "referer" : "${referer}"}'))]);
       let setSQL =  $set.object->match([
                           s:Session[1] | 'ALTER SESSION SET ' + $set.operation->map(o | $o->cast(@SetOperation).propertyName + ' = ' + $o->cast(@SetOperation).propertyValue.value->processLiteralValue($dbConfig))->makeString('',', ', ';')

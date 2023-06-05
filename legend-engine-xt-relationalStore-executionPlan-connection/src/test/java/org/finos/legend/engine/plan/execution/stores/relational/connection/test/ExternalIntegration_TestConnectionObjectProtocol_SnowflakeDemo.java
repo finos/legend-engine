@@ -63,6 +63,7 @@ public class ExternalIntegration_TestConnectionObjectProtocol_SnowflakeDemo exte
                                 "demo_db1",
                                 "aws",
                                 null,
+                                null,
                                 "demo_role1"),
                         new SnowflakeManager(),
                         new SnowflakePublicAuthenticationStrategy(
@@ -102,6 +103,7 @@ public class ExternalIntegration_TestConnectionObjectProtocol_SnowflakeDemo exte
                                 "SUMMIT_DEV",
                                 "SUMMIT_DEV",
                                 "aws",
+                                null,
                                 null,
                                 "SUMMIT_DEV"),
                         new SnowflakeManager(),

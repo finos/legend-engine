@@ -30,7 +30,7 @@ public class SnowflakeDataSourceSpecificationTest extends SnowflakeDataSourceSpe
 {
     public SnowflakeDataSourceSpecificationTest()
     {
-        super(new SnowflakeDataSourceSpecificationKey("dummy", "dummy", "dummy", "dummy", "dummy", null),
+        super(new SnowflakeDataSourceSpecificationKey("dummy", "dummy", "dummy", "dummy", "dummy", null, null),
                 new SnowflakeManager(),
                 new SnowflakePublicAuthenticationStrategy("dummy", "dummy", "dummy"),
                 new Properties());
@@ -44,7 +44,7 @@ public class SnowflakeDataSourceSpecificationTest extends SnowflakeDataSourceSpe
     private SnowflakeDataSourceSpecification buildSnowflakeDataSource(String accountName, String region, String warehouse, String database, String cloudType, Boolean quoteIdentifiers, String proxyHost, String proxyProt, String nonProxyHosts, String accountType, String organisation, String role)
     {
         return new SnowflakeDataSourceSpecification(
-                new SnowflakeDataSourceSpecificationKey(accountName, region, warehouse, database, cloudType, quoteIdentifiers, proxyHost, proxyProt, nonProxyHosts, accountType, organisation, role),
+                new SnowflakeDataSourceSpecificationKey(accountName, region, warehouse, database, cloudType, quoteIdentifiers, null, proxyHost, proxyProt, nonProxyHosts, accountType, organisation, role),
                 new SnowflakeManager(),
                 new SnowflakePublicAuthenticationStrategy("SF_KEY", "SF_PASS", "LEGEND_RO_PIERRE"));
     }

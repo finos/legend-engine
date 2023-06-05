@@ -40,6 +40,7 @@ public class SnowflakeDataSourceSpecification extends DataSourceSpecification
     public static final String SNOWFLAKE_NON_PROXY_HOSTS = "nonProxyHosts";
     public static final String SNOWFLAKE_USE_PROXY = "useProxy";
     public static final String SNOWFLAKE_ROLE = "role";
+    public static final String SNOWFLAKE_ENABLE_QUERY_TAGS = "enableQueryTags";
 
     public SnowflakeDataSourceSpecification(SnowflakeDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties)
     {
@@ -56,6 +57,7 @@ public class SnowflakeDataSourceSpecification extends DataSourceSpecification
         this.extraDatasourceProperties.put(SNOWFLAKE_DATABASE_NAME, databaseName);
         this.extraDatasourceProperties.put(SNOWFLAKE_CLOUD_TYPE, key.getCloudType());
         this.extraDatasourceProperties.put(SNOWFLAKE_QUOTE_IDENTIFIERS, key.getQuoteIdentifiers());
+        this.extraDatasourceProperties.put(SNOWFLAKE_ENABLE_QUERY_TAGS, key.getEnableQueryTags());
 
         this.extraDatasourceProperties.put("account", key.getAccountName());
         this.extraDatasourceProperties.put("warehouse", warehouseName);
