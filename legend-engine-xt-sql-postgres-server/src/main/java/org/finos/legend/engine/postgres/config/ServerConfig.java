@@ -25,6 +25,13 @@ public class ServerConfig
     private IdentityType identityType;
     private GSSConfig gss;
 
+    public String getLogConfigFile()
+    {
+        return logConfigFile;
+    }
+
+    private String logConfigFile;
+
     public Integer getPort()
     {
         return port;

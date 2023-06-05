@@ -1,0 +1,10 @@
+DROP ALIAS IF EXISTS loadNorthwindData;
+
+CREATE ALIAS loadNorthwindData AS $$
+boolean createNorthwindData(java.sql.Connection con) throws Exception {
+    java.lang.StringBuilder sb = new java.lang.StringBuilder();
+    sb.append({$NORTHWIND_SQL});
+
+    return con.createStatement().execute(sb.toString());
+}
+$$

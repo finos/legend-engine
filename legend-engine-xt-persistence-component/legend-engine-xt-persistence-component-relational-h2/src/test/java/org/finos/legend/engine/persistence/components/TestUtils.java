@@ -15,7 +15,8 @@
 package org.finos.legend.engine.persistence.components;
 
 import com.opencsv.CSVReader;
-import org.finos.legend.engine.persistence.components.logicalplan.conditions.GreaterThanEqualTo;
+import org.finos.legend.engine.persistence.components.common.DatasetFilter;
+import org.finos.legend.engine.persistence.components.common.FilterType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.CsvExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
@@ -25,8 +26,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.JsonExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
-import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
-import org.finos.legend.engine.persistence.components.logicalplan.values.NumericalValue;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.junit.jupiter.api.Assertions;
@@ -374,10 +373,7 @@ public class TestUtils
             .name(stagingTableName)
             .schema(getStagingSchema())
             .alias(stagingTableName)
-            .filter(GreaterThanEqualTo.of(FieldValue.builder()
-                .fieldName(batchName)
-                .datasetRefAlias(stagingTableName)
-                .build(), NumericalValue.of(2L)))
+            .addDatasetFilters(DatasetFilter.of(batchName, FilterType.GREATER_THAN_EQUAL, 2L))
             .build();
     }
 
@@ -388,10 +384,7 @@ public class TestUtils
             .name(stagingTableName)
             .schema(getStagingSchema())
             .alias(stagingTableName)
-            .filter(GreaterThanEqualTo.of(FieldValue.builder()
-                .fieldName(batchName)
-                .datasetRefAlias(stagingTableName)
-                .build(), NumericalValue.of(3L)))
+            .addDatasetFilters(DatasetFilter.of(batchName, FilterType.GREATER_THAN_EQUAL, 3L))
             .build();
     }
 
@@ -402,10 +395,7 @@ public class TestUtils
             .name(stagingTableName)
             .schema(getStagingSchemaWithVersion())
             .alias(stagingTableName)
-            .filter(GreaterThanEqualTo.of(FieldValue.builder()
-                .fieldName(batchName)
-                .datasetRefAlias(stagingTableName)
-                .build(), NumericalValue.of(2L)))
+            .addDatasetFilters(DatasetFilter.of(batchName, FilterType.GREATER_THAN_EQUAL, 2L))
             .build();
     }
 
@@ -416,10 +406,7 @@ public class TestUtils
             .name(stagingTableName)
             .schema(getStagingSchemaWithVersion())
             .alias(stagingTableName)
-            .filter(GreaterThanEqualTo.of(FieldValue.builder()
-                .fieldName(batchName)
-                .datasetRefAlias(stagingTableName)
-                .build(), NumericalValue.of(3L)))
+            .addDatasetFilters(DatasetFilter.of(batchName, FilterType.GREATER_THAN_EQUAL, 3L))
             .build();
     }
 

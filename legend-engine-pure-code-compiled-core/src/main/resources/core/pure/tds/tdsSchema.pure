@@ -305,6 +305,7 @@ function <<access.private>> meta::pure::tds::schema::resolveSchemaImpl(fe : Func
       ));
 
    let handlerMatches = $handlers->filter(p|$p.first == $fe.func).second;
+
    assertNotEmpty($handlerMatches, 'Failed to find handler for function ' + $fe.func->elementToPath());
    assertEquals(1, $handlerMatches->size());
 

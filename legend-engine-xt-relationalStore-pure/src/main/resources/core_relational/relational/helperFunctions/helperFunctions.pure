@@ -267,12 +267,26 @@ function meta::relational::mapping::findPropertyMapping(property:AbstractPropert
 
 function meta::relational::mapping::dataTypePropertyMappings(impl:RelationalInstanceSetImplementation[1]):PropertyMapping[*]
 {
-   $impl->allPropertyMappings()->map(pm | $pm.property->genericType().typeArguments->at(1).rawType->toOne()->match([
-                                              d : meta::pure::metamodel::type::DataType[1] | $pm,
-                                              a : Any[1] | []
-                                             ]))
+  let propertyMappings = $impl->allPropertyMappings();
+  let allPropertyMappings = if($impl->instanceOf(InlineEmbeddedSetImplementation), | $propertyMappings->concatenate($impl->cast(@InlineEmbeddedSetImplementation)->inlineEmbeddedProperties()), | $propertyMappings);
+  $allPropertyMappings->map(pm | $pm.property->genericType().typeArguments->at(1).rawType->toOne()->match([
+                                                                                                            d : meta::pure::metamodel::type::DataType[1] | $pm,
+                                                                                                            a : Any[1] | []
+                                                                                                          ]));
 }
 
+function <<access.private>> meta::relational::mapping::inlineEmbeddedProperties(_this:InlineEmbeddedSetImplementation[1]):PropertyMapping[*]
+{
+  if($_this.owner->isEmpty(),
+      | [],
+      | let propertyMappings = $_this.owner->toOne()->propertyMappingsByPropertyName($_this.property.name->toOne())->filter(pm | !$pm->instanceOf(EmbeddedSetImplementation));
+        if($propertyMappings->isEmpty(),
+            | let cm = $_this.parent->_classMappingByIdRecursive($_this.inlineSetImplementationId);
+              let result = $cm->cast(@InstanceSetImplementation)->toOne()->allPropertyMappings();
+              $result->map(r | ^$r(owner = $_this.owner, sourceSetImplementationId = $_this.sourceSetImplementationId));,
+            | $propertyMappings);
+    )
+}
 
 function meta::relational::mapping::resolvePrimaryKey(rsi: RelationalInstanceSetImplementation[1]):RelationalOperationElement[*]
 {

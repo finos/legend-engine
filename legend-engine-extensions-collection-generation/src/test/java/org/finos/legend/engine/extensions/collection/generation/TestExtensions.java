@@ -369,6 +369,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.pure.dsl.authentication.compiler.toPureGraph.AuthenticationCompilerExtension.class)
                 .with(org.finos.legend.engine.language.stores.elasticsearch.v7.compiler.ElasticsearchCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.integration.MongoDBCompilerExtension.class)
+                .with(org.finos.legend.engine.external.format.json.compile.JsonSchemaCompiler.class)
                 ;
     }
 

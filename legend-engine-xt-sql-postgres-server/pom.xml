@@ -38,7 +38,41 @@
                                 </auth>
                             </to>
                             <container>
-                                <mainClass>org.finos.legend.engine.postgres.PostgresServer</mainClass>
+                                <mainClass>org.finos.legend.engine.postgres.PostgresServerLauncher</mainClass>
+                            </container>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>docker</id>
+            <build>
+
+                <plugins>
+                    <plugin>
+                        <groupId>com.google.cloud.tools</groupId>
+                        <artifactId>jib-maven-plugin</artifactId>
+                        <version>3.3.1</version>
+                        <executions>
+                            <execution>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <to>
+                                <tag>${project.version}</tag>
+                                <image>registry.hub.docker.com/${env.DOCKER_USERNAME}/${project.artifactId}</image>
+                                <auth>
+                                    <username>${env.DOCKER_USERNAME}</username>
+                                    <password>${env.DOCKER_PASSWORD}</password>
+                                </auth>
+                            </to>
+                            <container>
+                                <mainClass>org.finos.legend.engine.postgres.PostgresServerLauncher</mainClass>
                             </container>
                         </configuration>
                     </plugin>
@@ -67,7 +101,7 @@
                                 <image>legend-engine-xt-sql-postgres-server</image>
                             </to>
                             <container>
-                                <mainClass>org.finos.legend.engine.postgres.PostgresServer</mainClass>
+                                <mainClass>org.finos.legend.engine.postgres.PostgresServerLauncher</mainClass>
                             </container>
                         </configuration>
                     </plugin>
@@ -131,8 +165,23 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.5.4</version>
             <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-sql-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-sql-protocol</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-runtime</artifactId>
         </dependency>
 
         <!-- LOG -->
@@ -146,10 +195,16 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
         <dependency>
             <groupId>javax.ws.rs</groupId>
             <artifactId>javax.ws.rs-api</artifactId>
@@ -232,6 +287,11 @@
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
                 <version>42.5.4</version>
+            </dependency>
+            <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>2.1.214</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

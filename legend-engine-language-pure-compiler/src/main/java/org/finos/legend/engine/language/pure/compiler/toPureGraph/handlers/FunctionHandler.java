@@ -18,12 +18,14 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.Dispatch;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.ResolveTypeParameterInference;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.ReturnInference;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.TypeAndMultiplicity;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
@@ -38,6 +40,7 @@ public class FunctionHandler
     private final String functionSignature;
     private final String functionName;
     private final ReturnInference returnInference;
+    private final ResolveTypeParameterInference resolvedTypeParametersInference;
     private Dispatch dispatch;
     private final int parametersSize;
     private PureModel pureModel;
@@ -49,10 +52,15 @@ public class FunctionHandler
 
     FunctionHandler(PureModel pureModel, String name, boolean isNative, ReturnInference returnInference, Dispatch dispatch)
     {
-        this(pureModel, name, pureModel.getFunction(name, isNative), returnInference, dispatch);
+        this(pureModel, name, pureModel.getFunction(name, isNative), returnInference, null, dispatch);
     }
 
-    public FunctionHandler(PureModel pureModel, String name, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends java.lang.Object> func, ReturnInference returnInference, Dispatch dispatch)
+    FunctionHandler(PureModel pureModel, String name, boolean isNative, ReturnInference returnInference, ResolveTypeParameterInference resolvedTypeParametersInference, Dispatch dispatch)
+    {
+        this(pureModel, name, pureModel.getFunction(name, isNative), returnInference, resolvedTypeParametersInference, dispatch);
+    }
+
+    public FunctionHandler(PureModel pureModel, String name, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends java.lang.Object> func, ReturnInference returnInference, ResolveTypeParameterInference resolvedTypeParametersInference, Dispatch dispatch)
     {
         this.pureModel = pureModel;
         this.func = func;
@@ -62,18 +70,22 @@ public class FunctionHandler
         this.returnInference = returnInference;
         this.dispatch = dispatch;
         this.parametersSize = ((FunctionType) func._classifierGenericType()._typeArguments().getAny()._rawType())._parameters().size();
+        this.resolvedTypeParametersInference = resolvedTypeParametersInference;
     }
 
     public SimpleFunctionExpression process(List<ValueSpecification> vs)
     {
         TypeAndMultiplicity inferred = returnInference.infer(vs);
+        RichIterable<? extends GenericType> resolvedTypeParameters = resolvedTypeParametersInference == null ? Lists.mutable.empty() : resolvedTypeParametersInference.infer(vs);
+
         Assert.assertTrue(func != null, () -> "Func is null");
         return new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("", null, this.pureModel.getClass("meta::pure::metamodel::valuespecification::SimpleFunctionExpression"))
                 ._func(func)
                 ._functionName(func._functionName())
                 ._genericType(inferred.genericType)
                 ._multiplicity(inferred.multiplicity)
-                ._parametersValues(Lists.mutable.withAll(vs));
+                ._parametersValues(Lists.mutable.withAll(vs))
+                ._resolvedTypeParameters(resolvedTypeParameters);
     }
 
     // TO DELETE!

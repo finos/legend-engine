@@ -14,5 +14,6 @@
     "kerberosConfigFile": "/etc/krb5.conf",
     "kerberosUserPrincipal": "user@DOMAIN.COM",
     "kerberosKeytabFile": "/secrets/cred.kt"
-  }
+  },
+  "logConfigFile": "legend-engine-xt-sql-postgres-server/src/test/resources/logback-test.xml"
 }

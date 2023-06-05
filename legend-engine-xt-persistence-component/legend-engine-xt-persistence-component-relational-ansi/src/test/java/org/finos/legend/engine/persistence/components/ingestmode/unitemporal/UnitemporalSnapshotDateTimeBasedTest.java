@@ -55,7 +55,7 @@ public class UnitemporalSnapshotDateTimeBasedTest extends UnitmemporalSnapshotDa
                 "WHERE NOT (stage.\"digest\" IN (SELECT sink.\"digest\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_time_out\" = '9999-12-31 23:59:59')))";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableTimeBasedCreateQuery, preActionsSql.get(0));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
@@ -75,7 +75,7 @@ public class UnitemporalSnapshotDateTimeBasedTest extends UnitmemporalSnapshotDa
                 "WHERE sink.\"batch_time_out\" = '9999-12-31 23:59:59'";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableTimeBasedCreateQuery, preActionsSql.get(0));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
@@ -102,7 +102,7 @@ public class UnitemporalSnapshotDateTimeBasedTest extends UnitmemporalSnapshotDa
                 "WHERE sink.\"BATCH_TIME_OUT\" = '9999-12-31 23:59:59')))";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableTimeBasedCreateQueryWithUpperCase, preActionsSql.get(0));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedMetadataTableCreateQueryWithUpperCase, preActionsSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQueryWithUpperCase(), preActionsSql.get(1));
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
@@ -131,7 +131,7 @@ public class UnitemporalSnapshotDateTimeBasedTest extends UnitmemporalSnapshotDa
                 "WHERE NOT (stage.\"digest\" IN (SELECT sink.\"digest\" FROM \"mydb\".\"main\" as sink WHERE (sink.\"batch_time_out\" = '9999-12-31 23:59:59') AND (sink.\"biz_date\" = stage.\"biz_date\"))))";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableTimeBasedCreateQuery, preActionsSql.get(0));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
@@ -162,7 +162,7 @@ public class UnitemporalSnapshotDateTimeBasedTest extends UnitmemporalSnapshotDa
                 "(sink.\"biz_date\" IN ('2000-01-01 00:00:00','2000-01-02 00:00:00')))))";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableTimeBasedCreateQuery, preActionsSql.get(0));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
@@ -191,5 +191,15 @@ public class UnitemporalSnapshotDateTimeBasedTest extends UnitmemporalSnapshotDa
     protected String getExpectedMetadataTableIngestQueryWithUpperCase()
     {
         return AnsiTestArtifacts.expectedMetadataTableIngestQueryWithUpperCase;
+    }
+
+    protected String getExpectedMetadataTableCreateQuery()
+    {
+        return AnsiTestArtifacts.expectedMetadataTableCreateQuery;
+    }
+
+    protected String getExpectedMetadataTableCreateQueryWithUpperCase()
+    {
+        return AnsiTestArtifacts.expectedMetadataTableCreateQueryWithUpperCase;
     }
 }

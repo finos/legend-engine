@@ -49,6 +49,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.DiffBin
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataUtils;
+import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -107,7 +108,8 @@ abstract class UnitemporalPlanner extends Planner
     @Override
     public LogicalPlan buildLogicalPlanForMetadataIngest(Resources resources)
     {
-        return LogicalPlan.of(Arrays.asList(metadataUtils.insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp)));
+        List<DatasetFilter> stagingFilters = LogicalPlanUtils.getDatasetFilters(stagingDataset());
+        return LogicalPlan.of(Arrays.asList(metadataUtils.insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, stagingFilters)));
     }
 
     protected void validatePrimaryKey(List<Field> fields, String targetFieldName)

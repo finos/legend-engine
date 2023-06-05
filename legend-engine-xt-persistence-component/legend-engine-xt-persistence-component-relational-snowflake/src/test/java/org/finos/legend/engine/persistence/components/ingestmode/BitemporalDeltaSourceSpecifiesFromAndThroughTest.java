@@ -39,4 +39,14 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends org.finos.
         return SnowflakeTestArtifacts.expectedMetadataTableIngestQueryWithUpperCase;
     }
 
+    protected String getExpectedMetadataTableCreateQuery()
+    {
+        return SnowflakeTestArtifacts.expectedMetadataTableCreateQuery;
+    }
+
+    protected String getExpectedMetadataTableCreateQueryWithUpperCase()
+    {
+        return SnowflakeTestArtifacts.expectedMetadataTableCreateQueryWithUpperCase;
+    }
+
 }

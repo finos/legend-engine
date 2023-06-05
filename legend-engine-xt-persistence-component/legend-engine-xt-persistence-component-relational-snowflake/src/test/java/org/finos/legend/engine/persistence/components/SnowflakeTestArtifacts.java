@@ -21,4 +21,20 @@ public class SnowflakeTestArtifacts
 
     public static String expectedMetadataTableIngestQueryWithUpperCase = "INSERT INTO BATCH_METADATA (\"TABLE_NAME\", \"TABLE_BATCH_ID\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\")" +
             " (SELECT 'MAIN',(SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.\"TABLE_NAME\") = 'MAIN'),'2000-01-01 00:00:00',SYSDATE(),'DONE')";
+
+    public static String expectedMetadataTableCreateQuery = "CREATE TABLE IF NOT EXISTS batch_metadata" +
+            "(\"table_name\" VARCHAR(255)," +
+            "\"batch_start_ts_utc\" DATETIME," +
+            "\"batch_end_ts_utc\" DATETIME," +
+            "\"batch_status\" VARCHAR(32)," +
+            "\"table_batch_id\" INTEGER," +
+            "\"staging_filters\" VARIANT)";
+
+    public static String expectedMetadataTableCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS BATCH_METADATA" +
+            "(\"TABLE_NAME\" VARCHAR(255)," +
+            "\"BATCH_START_TS_UTC\" DATETIME," +
+            "\"BATCH_END_TS_UTC\" DATETIME," +
+            "\"BATCH_STATUS\" VARCHAR(32)," +
+            "\"TABLE_BATCH_ID\" INTEGER," +
+            "\"STAGING_FILTERS\" VARIANT)";
 }

@@ -18,9 +18,9 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
@@ -96,7 +96,7 @@ public class RelationalConnectionFactory implements ConnectionFactoryExtension
     }
 
     @Override
-    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStore(Store testStore, EmbeddedData data, List<DataElement> dataElementList)
+    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStore(PureModelContextData pureModelContextData, Store testStore, EmbeddedData data)
     {
         if (testStore instanceof Database)
         {

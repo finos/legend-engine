@@ -51,7 +51,7 @@ public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTime
                 "AND (sink.\"digest\" = stage.\"digest\") AND ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")))))";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableTimeBasedCreateQuery, preActionsSql.get(0));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
@@ -88,7 +88,7 @@ public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTime
                 "AND (sink.\"digest\" = stage.\"digest\") AND ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\"))))))";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableTimeBasedCreateQuery, operations.get(0).preActionsSql().get(0));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedMetadataTableCreateQuery, operations.get(0).preActionsSql().get(1));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), operations.get(0).preActionsSql().get(1));
 
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedMilestoneQuery, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(0));
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedUpsertQuery, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(1));
@@ -133,7 +133,7 @@ public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTime
                 "(stage.\"delete_indicator\" NOT IN ('yes','1','true')))";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableTimeBasedCreateQuery, preActionsSql.get(0));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
@@ -171,7 +171,7 @@ public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTime
                 "(stage.\"delete_indicator\" NOT IN ('yes','1','true')))";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableTimeBasedCreateQuery, operations.get(0).preActionsSql().get(0));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedMetadataTableCreateQuery, operations.get(0).preActionsSql().get(1));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), operations.get(0).preActionsSql().get(1));
 
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedMilestoneQuery, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(0));
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedUpsertQuery, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(1));
@@ -202,7 +202,7 @@ public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTime
         String expectedUpsertQuery = "INSERT INTO \"MYDB\".\"MAIN\" (\"ID\", \"NAME\", \"AMOUNT\", \"BIZ_DATE\", \"DIGEST\", \"BATCH_TIME_IN\", \"BATCH_TIME_OUT\") (SELECT stage.\"ID\",stage.\"NAME\",stage.\"AMOUNT\",stage.\"BIZ_DATE\",stage.\"DIGEST\",'2000-01-01 00:00:00','9999-12-31 23:59:59' FROM \"MYDB\".\"STAGING\" as stage WHERE NOT (EXISTS (SELECT * FROM \"MYDB\".\"MAIN\" as sink WHERE (sink.\"BATCH_TIME_OUT\" = '9999-12-31 23:59:59') AND (sink.\"DIGEST\" = stage.\"DIGEST\") AND ((sink.\"ID\" = stage.\"ID\") AND (sink.\"NAME\" = stage.\"NAME\")))))";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableTimeBasedCreateQueryWithUpperCase, preActionsSql.get(0));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedMetadataTableCreateQueryWithUpperCase, preActionsSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQueryWithUpperCase(), preActionsSql.get(1));
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
@@ -230,5 +230,15 @@ public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTime
     protected String getExpectedMetadataTableIngestQueryWithUpperCase()
     {
         return AnsiTestArtifacts.expectedMetadataTableIngestQueryWithUpperCase;
+    }
+
+    protected String getExpectedMetadataTableCreateQuery()
+    {
+        return AnsiTestArtifacts.expectedMetadataTableCreateQuery;
+    }
+
+    protected String getExpectedMetadataTableCreateQueryWithUpperCase()
+    {
+        return AnsiTestArtifacts.expectedMetadataTableCreateQueryWithUpperCase;
     }
 }

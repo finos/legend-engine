@@ -27,6 +27,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.Da
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceStatistics;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -434,6 +435,7 @@ public class ConnectionStateManager implements Closeable
         {
             LOGGER.info("Closing {} has active connections ? {}", ds.getPoolName(), ds.hasActiveConnections());
             ds.close();
+            MetricsHandler.resetActiveConnections(ds.getPoolName());
         }
         return true;
     }

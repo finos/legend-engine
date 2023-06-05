@@ -18,9 +18,7 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_data_ExternalFormatData;
-import org.finos.legend.pure.generated.Root_meta_pure_data_DataElement;
-import org.finos.legend.pure.generated.Root_meta_pure_data_ModelStoreData;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
@@ -108,73 +106,79 @@ public class TestDataCompilationFromGrammar extends TestCompilationFromGrammar.T
     @Test
     public void testModelStoreDataCompilation()
     {
-        Pair<PureModelContextData, PureModel> result = test("###Pure\n" +
-                "Enum enums::Gender\n" +
-                "{\n" +
-                "  MALE, FEMALE, OTHER\n" +
-                "}\n" +
-                "Class my::Address\n" +
-                "{\n" +
-                "  street : String[1];\n" +
-                "}\n" +
-                "Class my::Person\n" +
-                "{\n" +
-                "  givenNames  : String[*];\n" +
-                "  lastName    : String[1];\n" +
-                "  dateOfBirth : StrictDate[1];\n" +
-                "  timeOfBirth : StrictTime[1];\n" +
-                "  timeOfDeath : DateTime[0..1];\n" +
-                "  isAlive     : Boolean[1];\n" +
-                "  height      : Float[1];\n" +
-                "  girth       : Decimal[1];\n" +
-                "  shoeSize    : Integer[1];\n" +
-                "  score1      : Integer[1];\n" +
-                "  score2      : Float[1];\n" +
-                "  score3      : Decimal[1];\n" +
-                "  gender      : enums::Gender[1];\n" +
-                "  address     : my::Address[1];\n" +
-                "}\n" +
-                "\n" +
-                "###Data\n" +
-                "Data meta::data::MyData\n" +
-                "{\n" +
-                "  ModelStore #{\n" +
-                "    my::Person: [\n" +
-                "      ^my::Person(\n" +
-                "        givenNames  = ['Fred', 'William'],\n" +
-                "        lastName    = 'Bloggs',\n" +
-                "        dateOfBirth = %2001-03-12,\n" +
-                "        timeOfBirth = %12:23,\n" +
-                "        timeOfDeath = %2020-09-11T12:56:24.487,\n" +
-                "        isAlive     = false,\n" +
-                "        height      = 1.76,\n" +
-                "        girth       = 0.98D,\n" +
-                "        shoeSize    = 10,\n" +
-                "        score1      = -1,\n" +
-                "        score2      = -1.3,\n" +
-                "        score3      = -1.8D,\n" +
-                "        gender      = enums::Gender.MALE,\n" +
-                "        address     = ^my::Address(street = 'A Road')\n" +
-                "      ),\n" +
-                "      ^my::Person(\n" +
-                "        givenNames  = 'Jane',\n" +
-                "        lastName    = 'Doe',\n" +
-                "        dateOfBirth = %1984-04-22,\n" +
-                "        timeOfBirth = %19:41:21,\n" +
-                "        isAlive     = true,\n" +
-                "        height      = 1.61,\n" +
-                "        girth       = 0.81D,\n" +
-                "        shoeSize    = 4,\n" +
-                "        score1      = -1,\n" +
-                "        score2      = -1.3,\n" +
-                "        score3      = -1.8D,\n" +
-                "        gender      = enums::Gender.FEMALE,\n" +
-                "        address     = ^my::Address(street = 'B Road')\n" +
-                "      )\n" +
-                "    ]\n" +
-                "  }#\n" +
-                "}\n"
-        );
+        Pair<PureModelContextData, PureModel> result =
+                test("###Pure\n" +
+                        "Enum enums::Gender\n" +
+                        "{\n" +
+                        "  MALE, FEMALE, OTHER\n" +
+                        "}\n" +
+                        "Class my::Address\n" +
+                        "{\n" +
+                        "  street : String[1];\n" +
+                        "}\n" +
+                        "Class my::Person\n" +
+                        "{\n" +
+                        "  givenNames  : String[*];\n" +
+                        "  lastName    : String[1];\n" +
+                        "  dateOfBirth : StrictDate[1];\n" +
+                        "  timeOfBirth : StrictTime[1];\n" +
+                        "  timeOfDeath : DateTime[0..1];\n" +
+                        "  isAlive     : Boolean[1];\n" +
+                        "  height      : Float[1];\n" +
+                        "  girth       : Decimal[1];\n" +
+                        "  shoeSize    : Integer[1];\n" +
+                        "  score1      : Integer[1];\n" +
+                        "  score2      : Float[1];\n" +
+                        "  score3      : Decimal[1];\n" +
+                        "  gender      : enums::Gender[1];\n" +
+                        "  address     : my::Address[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "###Data\n" +
+                        "Data meta::data::MyData\n" +
+                        "{\n" +
+                        "  ModelStore #{\n" +
+                        "    my::Person: [\n" +
+                        "      ^my::Person(\n" +
+                        "        givenNames  = ['Fred', 'William'],\n" +
+                        "        lastName    = 'Bloggs',\n" +
+                        "        dateOfBirth = %2001-03-12,\n" +
+                        "        timeOfBirth = %12:23,\n" +
+                        "        timeOfDeath = %2020-09-11T12:56:24.487,\n" +
+                        "        isAlive     = false,\n" +
+                        "        height      = 1.76,\n" +
+                        "        girth       = 0.98D,\n" +
+                        "        shoeSize    = 10,\n" +
+                        "        score1      = -1,\n" +
+                        "        score2      = -1.3,\n" +
+                        "        score3      = -1.8D,\n" +
+                        "        gender      = enums::Gender.MALE,\n" +
+                        "        address     = ^my::Address(street = 'A Road')\n" +
+                        "      ),\n" +
+                        "      ^my::Person(\n" +
+                        "        givenNames  = 'Jane',\n" +
+                        "        lastName    = 'Doe',\n" +
+                        "        dateOfBirth = %1984-04-22,\n" +
+                        "        timeOfBirth = %19:41:21,\n" +
+                        "        isAlive     = true,\n" +
+                        "        height      = 1.61,\n" +
+                        "        girth       = 0.81D,\n" +
+                        "        shoeSize    = 4,\n" +
+                        "        score1      = -1,\n" +
+                        "        score2      = -1.3,\n" +
+                        "        score3      = -1.8D,\n" +
+                        "        gender      = enums::Gender.FEMALE,\n" +
+                        "        address     = ^my::Address(street = 'B Road')\n" +
+                        "      )\n" +
+                        "    ],\n" +
+                        "    my::Address:\n" +
+                        "      ExternalFormat \n" +
+                        "        #{\n" +
+                        "          contentType: 'application/json';\n" +
+                        "          data: '{}';\n" +
+                        "        }#\n" +
+                        "  }#\n" +
+                        "}\n");
         PackageableElement element = result.getTwo().getPackageableElement("meta::data::MyData");
         Assert.assertTrue(element instanceof Root_meta_pure_data_DataElement);
         Root_meta_pure_data_DataElement dataElement = (Root_meta_pure_data_DataElement) element;
@@ -183,9 +187,25 @@ public class TestDataCompilationFromGrammar extends TestCompilationFromGrammar.T
         Root_meta_pure_data_ModelStoreData modelStoreData = (Root_meta_pure_data_ModelStoreData) dataElement._data();
 
         PackageableElement cl = result.getTwo().getPackageableElement("my::Person");
-        InstanceValue collection = (InstanceValue) modelStoreData._instances().getMap().get(cl);
+        Assert.assertEquals(2, modelStoreData._modelTestData().size());
+
+        Root_meta_pure_data_ModelData modelData = modelStoreData._modelTestData()
+                .select(e -> e instanceof Root_meta_pure_data_ModelInstanceData).getOnly();
+        Assert.assertTrue(modelData instanceof Root_meta_pure_data_ModelInstanceData);
+        Root_meta_pure_data_ModelInstanceData modelInstanceData = (Root_meta_pure_data_ModelInstanceData) modelData;
+        Assert.assertEquals(cl, modelInstanceData._model());
+        InstanceValue collection = modelInstanceData._instances();
         Assert.assertEquals(2, collection._values().size());
         Assert.assertTrue(collection._values().allSatisfy(SimpleFunctionExpression.class::isInstance));
+
+        Root_meta_pure_data_ModelData _embeddedData = modelStoreData._modelTestData().select(e -> e instanceof Root_meta_pure_data_ModelEmbeddedData).getOnly();
+        Root_meta_pure_data_ModelEmbeddedData modelEmbeddedData = (Root_meta_pure_data_ModelEmbeddedData)_embeddedData;
+        PackageableElement address = result.getTwo().getPackageableElement("my::Address");
+        Assert.assertEquals(address, modelEmbeddedData._model());
+        Root_meta_pure_data_EmbeddedData addressData = (Root_meta_pure_data_EmbeddedData) modelEmbeddedData._data();
+        Root_meta_external_shared_format_metamodel_data_ExternalFormatData externalFormatAddress = (Root_meta_external_shared_format_metamodel_data_ExternalFormatData) addressData;
+        Assert.assertEquals("application/json", externalFormatAddress._contentType());
+
 
         Pair<PureModelContextData, PureModel> result1 = test("###Pure\n" +
                 "Enum enums::Gender\n" +
@@ -264,13 +284,19 @@ public class TestDataCompilationFromGrammar extends TestCompilationFromGrammar.T
         Assert.assertTrue(dataElement1._data() instanceof Root_meta_pure_data_ModelStoreData);
         Root_meta_pure_data_ModelStoreData modelStoreData1 = (Root_meta_pure_data_ModelStoreData) dataElement1._data();
 
+        Assert.assertEquals(2, modelStoreData1._modelTestData().size());
         PackageableElement cl1 = result1.getTwo().getPackageableElement("my::Person");
-        InstanceValue collection1 = (InstanceValue) modelStoreData1._instances().getMap().get(cl1);
+
+        Root_meta_pure_data_ModelInstanceData modelInstanceData1 = (Root_meta_pure_data_ModelInstanceData) modelStoreData1._modelTestData()
+            .select(e -> e instanceof Root_meta_pure_data_ModelInstanceData && e._model() == cl1).getOnly();
+        InstanceValue collection1 = modelInstanceData1._instances();
         Assert.assertEquals(2, collection1._values().size());
         Assert.assertTrue(collection1._values().allSatisfy(SimpleFunctionExpression.class::isInstance));
 
         PackageableElement cl2 = result1.getTwo().getPackageableElement("my::Address");
-        InstanceValue collection2 = (InstanceValue) modelStoreData1._instances().getMap().get(cl2);
+        Root_meta_pure_data_ModelInstanceData modelInstanceData2 = (Root_meta_pure_data_ModelInstanceData) modelStoreData1._modelTestData()
+            .select(e -> e instanceof Root_meta_pure_data_ModelInstanceData && e._model() == cl2).getOnly();
+        InstanceValue collection2 = modelInstanceData2._instances();
         Assert.assertEquals(1, collection2._values().size());
         Assert.assertTrue(collection2._values().allSatisfy(SimpleFunctionExpression.class::isInstance));
     }
@@ -332,7 +358,7 @@ public class TestDataCompilationFromGrammar extends TestCompilationFromGrammar.T
                         "    ]\n" +
                         "  }#\n" +
                         "}\n",
-                "COMPILATION error at [29:1-54:1]: Error in 'meta::data::MyData': Instance types does not align with associated type"
+                "COMPILATION error at [29:1-54:1]: Error in 'meta::data::MyData': Instance types does not align with associated type 'my::Person'"
         );
 
         test("###Pure\n" +
@@ -401,7 +427,23 @@ public class TestDataCompilationFromGrammar extends TestCompilationFromGrammar.T
                         "    ]\n" +
                         "  }#\n" +
                         "}\n",
-                "COMPILATION error at [29:1-66:1]: Error in 'meta::data::MyData': Instance types does not align with associated type"
+                "COMPILATION error at [29:1-66:1]: Error in 'meta::data::MyData': Instance types does not align with associated type 'my::Address'"
         );
+
+
+        test("###Data\n" +
+                "Data meta::data::MyData\n" +
+                "{\n" +
+                "  ModelStore #{\n" +
+                "    my::PersonMissing:\n" +
+                "      ExternalFormat\n" +
+                "        #{\n" +
+                "          contentType: 'application/json';\n" +
+                "          data: '{}';\n" +
+                "        }#\n" +
+                "  }#\n" +
+                "}\n", "COMPILATION error at [5:5-10:10]: Can't find class 'my::PersonMissing'");
+
+
     }
 }

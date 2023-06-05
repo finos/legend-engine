@@ -72,6 +72,11 @@ public class SDLCLoader implements ModelLoader
         this(metaDataServerConfiguration, subjectProvider, new PureServerLoader(metaDataServerConfiguration),null);
     }
 
+    public SDLCLoader(MetaDataServerConfiguration metaDataServerConfiguration, Supplier<Subject> subjectProvider, AlloySDLCLoader alloyLoader)
+    {
+        this(metaDataServerConfiguration, subjectProvider, new PureServerLoader(metaDataServerConfiguration),null, alloyLoader);
+    }
+
     public SDLCLoader(MetaDataServerConfiguration metaDataServerConfiguration, Supplier<Subject> subjectProvider, PureServerLoader pureLoader)
     {
          this(metaDataServerConfiguration,subjectProvider,pureLoader,null);
@@ -82,6 +87,14 @@ public class SDLCLoader implements ModelLoader
         this.subjectProvider = subjectProvider;
         this.pureLoader = pureLoader;
         this.alloyLoader = new AlloySDLCLoader(metaDataServerConfiguration);
+        this.httpClientProvider = httpClientProvider;
+    }
+
+    public SDLCLoader(MetaDataServerConfiguration metaDataServerConfiguration, Supplier<Subject> subjectProvider, PureServerLoader pureLoader, Function<MutableList<CommonProfile>, CloseableHttpClient> httpClientProvider, AlloySDLCLoader alloyLoader)
+    {
+        this.subjectProvider = subjectProvider;
+        this.pureLoader = pureLoader;
+        this.alloyLoader = alloyLoader;
         this.httpClientProvider = httpClientProvider;
     }
 

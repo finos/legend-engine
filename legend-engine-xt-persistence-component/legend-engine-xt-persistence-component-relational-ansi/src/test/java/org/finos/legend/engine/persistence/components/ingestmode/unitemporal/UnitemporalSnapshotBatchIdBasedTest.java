@@ -52,7 +52,7 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
                 "WHERE NOT (stage.\"digest\" IN (SELECT sink.\"digest\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999)))";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableBatchIdBasedCreateQuery, preActionsSql.get(0));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
@@ -72,7 +72,7 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
                 "WHERE sink.\"batch_id_out\" = 999999999";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableBatchIdBasedCreateQuery, preActionsSql.get(0));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
     }
@@ -87,7 +87,7 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
         String expectedMilestoneQuery = "UPDATE \"MYDB\".\"MAIN\" as sink SET sink.\"BATCH_ID_OUT\" = (SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.\"TABLE_NAME\") = 'MAIN')-1 WHERE (sink.\"BATCH_ID_OUT\" = 999999999) AND (NOT (EXISTS (SELECT * FROM \"MYDB\".\"STAGING\" as stage WHERE ((sink.\"ID\" = stage.\"ID\") AND (sink.\"NAME\" = stage.\"NAME\")) AND (sink.\"DIGEST\" = stage.\"DIGEST\"))))";
         String expectedUpsertQuery = "INSERT INTO \"MYDB\".\"MAIN\" (\"ID\", \"NAME\", \"AMOUNT\", \"BIZ_DATE\", \"DIGEST\", \"BATCH_ID_IN\", \"BATCH_ID_OUT\") (SELECT stage.\"ID\",stage.\"NAME\",stage.\"AMOUNT\",stage.\"BIZ_DATE\",stage.\"DIGEST\",(SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.\"TABLE_NAME\") = 'MAIN'),999999999 FROM \"MYDB\".\"STAGING\" as stage WHERE NOT (stage.\"DIGEST\" IN (SELECT sink.\"DIGEST\" FROM \"MYDB\".\"MAIN\" as sink WHERE sink.\"BATCH_ID_OUT\" = 999999999)))";
         Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableBatchIdBasedCreateQueryWithUpperCase, preActionsSql.get(0));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedMetadataTableCreateQueryWithUpperCase, preActionsSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQueryWithUpperCase(), preActionsSql.get(1));
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
         Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithUpperCase(), metadataIngestSql.get(0));
@@ -115,7 +115,7 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
                 "WHERE NOT (stage.\"digest\" IN (SELECT sink.\"digest\" FROM \"mydb\".\"main\" as sink WHERE (sink.\"batch_id_out\" = 999999999) AND (sink.\"biz_date\" = stage.\"biz_date\"))))";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableBatchIdBasedCreateQuery, preActionsSql.get(0));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
@@ -146,7 +146,7 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
                 "(sink.\"biz_date\" IN ('2000-01-01 00:00:00','2000-01-02 00:00:00')))))";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableBatchIdBasedCreateQuery, preActionsSql.get(0));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
@@ -174,5 +174,15 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
     protected String getExpectedMetadataTableIngestQueryWithUpperCase()
     {
         return AnsiTestArtifacts.expectedMetadataTableIngestQueryWithUpperCase;
+    }
+
+    protected String getExpectedMetadataTableCreateQuery()
+    {
+        return AnsiTestArtifacts.expectedMetadataTableCreateQuery;
+    }
+
+    protected String getExpectedMetadataTableCreateQueryWithUpperCase()
+    {
+        return AnsiTestArtifacts.expectedMetadataTableCreateQueryWithUpperCase;
     }
 }

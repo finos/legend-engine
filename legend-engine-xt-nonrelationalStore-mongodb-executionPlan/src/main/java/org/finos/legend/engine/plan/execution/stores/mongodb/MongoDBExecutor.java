@@ -14,8 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.mongodb;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
@@ -25,8 +23,6 @@ import org.finos.legend.engine.plan.execution.stores.mongodb.auth.MongoDBConnect
 import org.finos.legend.engine.plan.execution.stores.mongodb.auth.MongoDBStoreConnectionProvider;
 import org.finos.legend.engine.plan.execution.stores.mongodb.result.MongoDBResult;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
-import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionCategory;
@@ -57,8 +53,6 @@ public class MongoDBExecutor
             Document bsonCmd = Document.parse(dbCommand);
 
 
-            ObjectMapper mapper = new ObjectMapper();
-            ArrayNode arrayNode = mapper.createArrayNode();
             MongoDBResult mongoDBResult;
             try
             {

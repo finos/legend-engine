@@ -43,7 +43,7 @@ public class JsonExternalFormatExtension implements ExternalFormatSchemaGenerati
     @Override
     public Root_meta_external_format_json_metamodel_JsonSchema compileSchema(ExternalSchemaCompileContext context)
     {
-        return new JsonSchemaCompiler(context).compile();
+        return new JsonSchemaCompiler().compile(context);
     }
 
     @Override

@@ -169,7 +169,7 @@ public class HelperServiceBuilder
         return pureParameterValue;
     }
 
-    public static void validateServiceTestParameterValues(List<Root_meta_legend_service_metamodel_ParameterValue> parameterValues, RichIterable<? extends VariableExpression> parameters, SourceInformation sourceInformation)
+    public static void validateServiceTestParameterValues(CompileContext context, List<Root_meta_legend_service_metamodel_ParameterValue> parameterValues, RichIterable<? extends VariableExpression> parameters, SourceInformation sourceInformation)
     {
         for (VariableExpression param : parameters)
         {
@@ -178,17 +178,12 @@ public class HelperServiceBuilder
             if (parameterValue.isPresent())
             {
                 InstanceValue paramValue = (InstanceValue) parameterValue.get()._value().getOnly();
-
                 org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity paramMultiplicity = param._multiplicity();
-                String paramType = param._genericType()._rawType()._name();
-
                 org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity paramValueMultiplicity = paramValue._multiplicity();
-                String paramValueType = paramValue._genericType()._rawType()._name();
-
-                if (!("Nil".equals(paramValueType) || paramType.equals(paramValueType)) || !org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.subsumes(paramMultiplicity, paramValueMultiplicity))
-                {
-                    throw new EngineException("Parameter value type does not match with parameter type for parameter: '" + param._name() + "'", sourceInformation, EngineErrorType.COMPILATION);
-                }
+               if (!"Nil".equals(paramValue._genericType()._rawType()))
+               {
+                   HelperModelBuilder.checkCompatibility(context, paramValue._genericType()._rawType(), paramValueMultiplicity, param._genericType()._rawType(), paramMultiplicity, "Parameter value type does not match with parameter type for parameter: '" + param._name() + "'", sourceInformation);
+               }
             }
             else
             {

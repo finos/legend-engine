@@ -128,7 +128,9 @@ RelationalDatabaseConnection demo::H2DemoConnection
   type: H2;
   specification: LocalH2
   {
-    testDataSetupCSV: 'default\nEmployeeTable\nID,name\n101,Alice\n102,Bob\n103,Curtis\n104,Bob\n---';
+    testDataSetupSqls: [
+          'Drop table if exists EmployeeTable;\nCreate Table EmployeeTable(id INTEGER PRIMARY KEY,firm_id INTEGER,name VARCHAR(200),country_id INTEGER);\nInsert into EmployeeTable (id, firm_id, name, country_id) values (101,202, \'Alice\', 303);\nInsert into EmployeeTable (id, firm_id, name, country_id) values (102,203, \'Bob\', 304);\nInsert into EmployeeTable (id, firm_id, name, country_id) values (103,204, \'Curtis\', 305);\nInsert into EmployeeTable (id, firm_id, name, country_id) values (104,205, \'Danielle\', 306);\n'
+          ];
   };
   auth: DefaultH2;
 }

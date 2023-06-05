@@ -34,7 +34,8 @@ public enum FunctionName
     SYSDATE("SYSDATE"),
     UPPER("UPPER"),
     SUBSTRING("SUBSTRING"),
-    ROW_NUMBER("ROW_NUMBER");
+    ROW_NUMBER("ROW_NUMBER"),
+    PARSE_JSON("PARSE_JSON");
 
     private static final Map<String, FunctionName> BY_NAME = Arrays
         .stream(FunctionName.values())

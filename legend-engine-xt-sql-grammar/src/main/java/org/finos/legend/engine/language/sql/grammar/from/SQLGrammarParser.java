@@ -28,7 +28,6 @@ import org.antlr.v4.runtime.dfa.DFA;
 import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseLexer;
 import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.sql.metamodel.Node;
 import org.finos.legend.engine.protocol.sql.metamodel.Statement;
 
 import java.util.BitSet;
@@ -36,6 +35,7 @@ import java.util.BitSet;
 public class SQLGrammarParser
 {
     private static final SqlVisitor sqlVisitor = new SqlVisitor();
+    private static final ANTLRErrorListener errorListener = new SQLGrammerErrorListener();
 
     private SQLGrammarParser()
     {
@@ -53,85 +53,92 @@ public class SQLGrammarParser
 
     private Statement parse(String query, String name)
     {
-        ANTLRErrorListener errorListener = new BaseErrorListener()
-        {
-            @Override
-            public void syntaxError(Recognizer<?, ?> recognizer,
-                                    Object offendingSymbol,
-                                    int line,
-                                    int charPositionInLine,
-                                    String msg,
-                                    RecognitionException e)
-            {
-                if (e != null && e.getOffendingToken() != null && e instanceof InputMismatchException)
-                {
-                    msg = "Unexpected token";
-                }
-                else if (e == null || e.getOffendingToken() == null)
-                {
-                    if (e == null && offendingSymbol instanceof Token && (msg.startsWith("extraneous input") || msg.startsWith("missing ")))
-                    {
-                        // when ANTLR detects unwanted symbol, it will not result in an error, but throw
-                        // `null` with a message like "extraneous input ... expecting ..."
-                        // NOTE: this is caused by us having INVALID catch-all symbol in the lexer
-                        // so anytime, INVALID token is found, it should cause this error
-                        // but because it is a catch-all rule, it only produces a lexer token, which is a symbol
-                        // we have to construct the source information manually
-                        SourceInformation sourceInformation = new SourceInformation(
-                                "",
-                                line,
-                                charPositionInLine + 1,
-                                line,
-                                charPositionInLine + 1 + ((Token) offendingSymbol).getStopIndex() - ((Token) offendingSymbol).getStartIndex());
-                        // NOTE: for some reason sometimes ANTLR report the end index of the token to be smaller than the start index so we must reprocess it here
-                        sourceInformation.startColumn = Math.min(sourceInformation.endColumn, sourceInformation.startColumn);
-                        msg = "Unexpected token";
-                        throw new SQLParserException(msg, sourceInformation);
-                    }
-                    SourceInformation sourceInformation = new SourceInformation(
-                            "",
-                            line,
-                            charPositionInLine + 1,
-                            line,
-                            charPositionInLine + 1);
-                    throw new SQLParserException(msg, sourceInformation);
-                }
-                Token offendingToken = e.getOffendingToken();
-                SourceInformation sourceInformation = new SourceInformation(
-                        "",
-                        line,
-                        charPositionInLine + 1,
-                        offendingToken.getLine(),
-                        charPositionInLine + offendingToken.getText().length());
-                throw new SQLParserException(msg, sourceInformation);
-            }
+        SqlBaseParser parser = getSqlBaseParser(query, name);
+        return visitStatement(parser.singleStatement());
+    }
 
-            @Override
-            public void reportAmbiguity(Parser parser, DFA dfa, int i, int i1, boolean b, BitSet bitSet, ATNConfigSet atnConfigSet)
-            {
-            }
-
-            @Override
-            public void reportAttemptingFullContext(Parser parser, DFA dfa, int i, int i1, BitSet bitSet, ATNConfigSet atnConfigSet)
-            {
-            }
-
-            @Override
-            public void reportContextSensitivity(Parser parser, DFA dfa, int i, int i1, int i2, ATNConfigSet atnConfigSet)
-            {
-            }
-        };
+    public static SqlBaseParser getSqlBaseParser(String query, String name)
+    {
         SqlBaseLexer lexer = new SqlBaseLexer(CharStreams.fromString(query, name));
         lexer.removeErrorListeners();
         lexer.addErrorListener(errorListener);
         SqlBaseParser parser = new SqlBaseParser(new CommonTokenStream(lexer));
         parser.removeErrorListeners();
         parser.addErrorListener(errorListener);
-        return visitStatement(parser.singleStatement());
+        return parser;
     }
 
     private Statement visitStatement(SqlBaseParser.SingleStatementContext statement)
     {
         return (Statement) sqlVisitor.visitSingleStatement(statement);
+    }
+
+    private static class SQLGrammerErrorListener extends BaseErrorListener
+    {
+        @Override
+        public void syntaxError(Recognizer<?, ?> recognizer,
+                                Object offendingSymbol,
+                                int line,
+                                int charPositionInLine,
+                                String msg,
+                                RecognitionException e)
+        {
+            if (e != null && e.getOffendingToken() != null && e instanceof InputMismatchException)
+            {
+                msg = "Unexpected token";
+            }
+            else if (e == null || e.getOffendingToken() == null)
+            {
+                if (e == null && offendingSymbol instanceof Token && (msg.startsWith("extraneous input") || msg.startsWith("missing ")))
+                {
+                    // when ANTLR detects unwanted symbol, it will not result in an error, but throw
+                    // `null` with a message like "extraneous input ... expecting ..."
+                    // NOTE: this is caused by us having INVALID catch-all symbol in the lexer
+                    // so anytime, INVALID token is found, it should cause this error
+                    // but because it is a catch-all rule, it only produces a lexer token, which is a symbol
+                    // we have to construct the source information manually
+                    SourceInformation sourceInformation = new SourceInformation(
+                            "",
+                            line,
+                            charPositionInLine + 1,
+                            line,
+                            charPositionInLine + 1 + ((Token) offendingSymbol).getStopIndex() - ((Token) offendingSymbol).getStartIndex());
+                    // NOTE: for some reason sometimes ANTLR report the end index of the token to be smaller than the start index so we must reprocess it here
+                    sourceInformation.startColumn = Math.min(sourceInformation.endColumn, sourceInformation.startColumn);
+                    msg = "Unexpected token";
+                    throw new SQLParserException(msg, sourceInformation);
+                }
+                SourceInformation sourceInformation = new SourceInformation(
+                        "",
+                        line,
+                        charPositionInLine + 1,
+                        line,
+                        charPositionInLine + 1);
+                throw new SQLParserException(msg, sourceInformation);
+            }
+            Token offendingToken = e.getOffendingToken();
+            SourceInformation sourceInformation = new SourceInformation(
+                    "",
+                    line,
+                    charPositionInLine + 1,
+                    offendingToken.getLine(),
+                    charPositionInLine + offendingToken.getText().length());
+            throw new SQLParserException(msg, sourceInformation);
+        }
+
+        @Override
+        public void reportAmbiguity(Parser parser, DFA dfa, int i, int i1, boolean b, BitSet bitSet, ATNConfigSet atnConfigSet)
+        {
+        }
+
+        @Override
+        public void reportAttemptingFullContext(Parser parser, DFA dfa, int i, int i1, BitSet bitSet, ATNConfigSet atnConfigSet)
+        {
+        }
+
+        @Override
+        public void reportContextSensitivity(Parser parser, DFA dfa, int i, int i1, int i2, ATNConfigSet atnConfigSet)
+        {
+        }
     }
 }

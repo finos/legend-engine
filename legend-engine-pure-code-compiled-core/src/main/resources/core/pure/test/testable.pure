@@ -20,11 +20,20 @@ import meta::pure::test::result::*;
 
 Class <<typemodifiers.abstract>> meta::pure::test::TestSuite extends Test
 {
+  doc: String[0..1];
 }
 
 Class <<typemodifiers.abstract>> meta::pure::test::AtomicTest extends Test
 {
+    doc: String[0..1];
     assertions  : TestAssertion[1..*];
+}
+
+Class meta::pure::test::StoreTestData
+{
+    doc: String[0..1];
+    data: meta::pure::data::EmbeddedData[1];
+    store: meta::pure::store::Store[1];
 }
 
 Association meta::pure::test::TestSuiteAtomicTest

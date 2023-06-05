@@ -23,6 +23,6 @@ public class UserDefinedFunctionHandler extends FunctionHandler
 {
     public UserDefinedFunctionHandler(PureModel pureModel, String name, Function<?> func, ReturnInference returnInference, Dispatch dispatch)
     {
-        super(pureModel, name, func, returnInference, dispatch);
+        super(pureModel, name, func, returnInference, null, dispatch);
     }
 }

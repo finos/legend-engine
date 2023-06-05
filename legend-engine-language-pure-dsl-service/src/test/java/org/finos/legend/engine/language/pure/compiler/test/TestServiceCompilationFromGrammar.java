@@ -1634,6 +1634,87 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "}\n"
         );
 
+        //Test Single TestSuite with matched parameter type
+        test(resource + "###Service\n" +
+                "Service test::service::FirmService\n" +
+                "{\n" +
+                "  pattern: '/testFirmService';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'owner1',\n" +
+                "    'owner2'\n" +
+                "  ];\n" +
+                "  documentation: '';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: param: Date[1]|test::model::Firm.all()->graphFetch(\n" +
+                "      #{\n" +
+                "        test::model::Firm{\n" +
+                "          employees{\n" +
+                "            firstName,\n" +
+                "            lastName\n" +
+                "          },\n" +
+                "          legalName\n" +
+                "        }\n" +
+                "      }#\n" +
+                "    )->serialize(\n" +
+                "      #{\n" +
+                "        test::model::Firm{\n" +
+                "          employees{\n" +
+                "            firstName,\n" +
+                "            lastName\n" +
+                "          },\n" +
+                "          legalName\n" +
+                "        }\n" +
+                "      }#\n" +
+                "    );\n" +
+                "    mapping: test::mapping::FirmMapping;\n" +
+                "    runtime: test::runtime::SFirmRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        connections:\n" +
+                "        [\n" +
+                "          connection1:\n" +
+                "            ExternalFormat\n" +
+                "            #{\n" +
+                "              contentType: 'application/json';\n" +
+                "              data: '[{employees:[{\\firstName:\\firstName 36,lastName:lastName 77}],legalName:legalName 19}, {employees:[{\\firstName:\\firstName 37,lastName:lastName 78}],legalName:legalName 20}]';\n" +
+                "            }#\n" +
+                "        ]\n" +
+                "      ]\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          parameters:\n" +
+                "          [\n" +
+                "            param = %2020-08-08\n" +
+                "          ]\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{employees:[{\\firstName:\\firstName 36,lastName:lastName 77}],legalName:legalName 19}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}");
+
         //Test Single TestSuite with multiple asserts
         test(resource + "###Service\n" +
                 "Service test::service::FirmService\n" +
@@ -2454,7 +2535,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "    }\n" +
                         "  ]\n" +
                         "}\n",
-                "COMPILATION error at [122:9-140:9]: Parameter value type does not match with parameter type for parameter: 'param'"
+                "COMPILATION error at [122:9-140:9]: Parameter value type does not match with parameter type for parameter: 'param' - Type error: 'Integer' is not a subtype of 'String'"
         );
 
         test(resource + "###Service\n" +
@@ -2577,7 +2658,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "    }\n" +
                         "  ]\n" +
                         "}\n",
-                "COMPILATION error at [122:9-140:9]: Parameter value type does not match with parameter type for parameter: 'param'"
+                "COMPILATION error at [122:9-140:9]: Parameter value type does not match with parameter type for parameter: 'param' - Multiplicity error: [1] doesn't subsume [2]"
         );
 
         test(resource + "###Service\n" +
@@ -2639,7 +2720,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "    }\n" +
                         "  ]\n" +
                         "}\n",
-                "COMPILATION error at [122:9-140:9]: Parameter value type does not match with parameter type for parameter: 'param'"
+                "COMPILATION error at [122:9-140:9]: Parameter value type does not match with parameter type for parameter: 'param' - Multiplicity error: [0..1] doesn't subsume [2]"
         );
 
         test(resource + "###Service\n" +
@@ -2701,7 +2782,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "    }\n" +
                         "  ]\n" +
                         "}\n",
-                "COMPILATION error at [122:9-140:9]: Parameter value type does not match with parameter type for parameter: 'param'"
+                "COMPILATION error at [122:9-140:9]: Parameter value type does not match with parameter type for parameter: 'param' - Type error: 'Integer' is not a subtype of 'String'"
         );
 
         test(resource + "###Service\n" +
@@ -2763,7 +2844,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "    }\n" +
                         "  ]\n" +
                         "}\n",
-                "COMPILATION error at [122:9-140:9]: Parameter value type does not match with parameter type for parameter: 'param'"
+                "COMPILATION error at [122:9-140:9]: Parameter value type does not match with parameter type for parameter: 'param' - Type error: 'Integer' is not a subtype of 'String'"
         );
 
         //TODO: Test data with wrong connection id
@@ -3075,7 +3156,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "      ]\n" +
                 "    }\n" +
                 "  ]\n" +
-                "}\n", "COMPILATION error at [87:9-106:9]: Parameter value type does not match with parameter type for parameter: 'data'");
+                "}\n", "COMPILATION error at [87:9-106:9]: Parameter value type does not match with parameter type for parameter: 'data' - Type error: 'String' is not a subtype of 'Byte'");
     }
 
     @Test
