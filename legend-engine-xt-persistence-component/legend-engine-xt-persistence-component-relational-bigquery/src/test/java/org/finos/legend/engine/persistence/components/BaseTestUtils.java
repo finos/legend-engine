@@ -70,7 +70,7 @@ public class BaseTestUtils
 
     public static PartitionKey partitionKey1 = PartitionKey.of(FieldValue.builder().fieldName("col_date").build());
 
-    public static PartitionKey partitionKey2 = PartitionKey.of(ObjectValue.of(FunctionName._PARTITIONDATE));
+    public static PartitionKey partitionKey2 = PartitionKey.of(ObjectValue.of("_PARTITIONDATE"));
 
     public static SchemaDefinition schemaWithAllColumns = SchemaDefinition.builder()
             .addFields(colInt)
