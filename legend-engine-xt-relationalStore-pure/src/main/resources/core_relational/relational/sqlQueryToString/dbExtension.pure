@@ -97,6 +97,11 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
      if($this.dbExtension.tableNameToIdentifier->isEmpty(), |$s, |$this.dbExtension.tableNameToIdentifier->toOne()->eval($s, $this));
    }: String[1];
 
+   procesTempTableName(s:String[1])
+   {
+     if($this.dbExtension.processTempTableName->isEmpty(), |$s, |$this.dbExtension.processTempTableName->toOne()->eval($s));
+   }: String[1];
+
    columnNameToIdentifier(s:String[1])
    {
      if($this.dbExtension.columnNameToIdentifier->isEmpty(), |$s, |$this.dbExtension.columnNameToIdentifier->toOne()->eval($s, $this));
@@ -202,6 +207,7 @@ Class meta::relational::functions::sqlQueryToString::DbExtension
    dynaFuncDispatch: meta::pure::metamodel::function::Function<{DynaFunction[1], SqlGenerationContext[1] -> DynaFunctionToSql[1]}>[1];
    ddlCommandsTranslator : RelationalDDLCommandsTranslator[0..1];
    preAndFinallyExecutionSQLQuery: meta::pure::metamodel::function::Function<{DbConfig[1] -> PreAndFinallyExecutionSQLQuery[*]}>[0..1];
+   processTempTableName: meta::pure::metamodel::function::Function<{String[1] -> String[1]}>[0..1];
 }
 
 Class meta::relational::functions::sqlQueryToString::RelationalDDLCommandsTranslator
@@ -282,6 +288,13 @@ function meta::relational::functions::sqlQueryToString::getDbExtensionLoaders():
 function meta::relational::functions::sqlQueryToString::sqlQueryToString(sqlQuery:SQLQuery[1], dbType:DatabaseType[1], extensions:Extension[*]):String[1]
 {
    sqlQueryToString($sqlQuery, $dbType, [], [], $extensions);
+}
+
+function meta::relational::functions::sqlQueryToString::ddlSqlQueryToString(ddlSqlQuery:SQLQuery[1], dbConfig:DbConfig[1]):String[*]
+{
+   $ddlSqlQuery->match([ c:CreateTableSQL[1]| $dbConfig.translateCreateTable($c),
+                         l:LoadTableSQL[1]| $dbConfig.translateLoadTable($l);,
+                         d:DropTableSQL[1]| $dbConfig.translateDropTable($d)])
 }
 
 function meta::relational::functions::sqlQueryToString::sqlQueryToString(sqlQuery:SQLQuery[1], dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], extensions:Extension[*]):String[1]
