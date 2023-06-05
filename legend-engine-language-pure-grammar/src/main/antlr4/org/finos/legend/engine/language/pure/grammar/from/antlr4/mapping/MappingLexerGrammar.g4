@@ -16,17 +16,21 @@ IMPORT:                                 'import';
 INCLUDE:                                'include';
 TESTS:                                  'MappingTests';
 EXTENDS:                                'extends';
-INCLUDETYPE:                        'include '[a-z]([a-z])*' ';
+INCLUDETYPE:                            'include '[a-z]([a-z])*' ';
 
 //--------------------------------------- TEST ------------------------------------------
-TEST_QUERY:                             'query';
-TEST_INPUT_DATA:                        'data';
-TEST_ASSERT:                            'assert';
+MAPPING_TESTABLE_FUNCTION:              'function';
+
+MAPPING_TESTABLE_DATA:                  'data';
+MAPPING_TESTABLE_ASSERT:                'assert';
+MAPPING_TESTABLE_DOC:                   'doc';
+MAPPING_TESTABLE_TYPE:                  'type';
+MAPPING_TESTABLE_SUITES:                'testSuites';
 
 //-------------------------------------- LEGACY_TEST ------------------------------------
 MAPPING_TEST_ASSERTS:                   'asserts';
-MAPPING_TEST_SUITES:                    'testSuites';
 MAPPING_TESTS:                          'tests';
+MAPPING_TESTS_QUERY:                    'query';
 
 BRACE_OPEN:                             '{' {getVocabulary().getSymbolicName(this.lastTokenType).equals("COLON") || getVocabulary().getSymbolicName(this.lastTokenType).equals("BRACKET_OPEN")}?
                                         | '{' {pushMode (MAPPING_ISLAND_MODE);};

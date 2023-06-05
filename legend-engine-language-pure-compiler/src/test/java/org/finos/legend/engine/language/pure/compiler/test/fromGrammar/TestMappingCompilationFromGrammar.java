@@ -2105,4 +2105,127 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "  }\n" +
                 ")\n");
     }
+
+    @Test
+    public void testMappingTestSuite()
+    {
+        test("###Pure\n" +
+                "Class test::model\n" +
+                "{\n" +
+                "    name: String[1];\n" +
+                "    id: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::changedModel{    name: String[1];    id: Integer[1];}\n" +
+                "###Data\n" +
+                "Data test::data::MyData\n" +
+                "{\n" +
+                "  ExternalFormat\n" +
+                "  #{\n" +
+                "    contentType: 'application/json';\n" +
+                "    data: '{\"name\":\"john doe\",\"id\":\"77\"}';\n" +
+                "  }#\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::modelToModelMapping\n" +
+                "(\n" +
+                "    *test::changedModel: Pure\n" +
+                "{\n" +
+                "    ~src test::model\n" +
+                "    name: $src.name,\n" +
+                "    id: $src.id->parseInteger()\n" +
+                "}\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      data:\n" +
+                "      [\n" +
+                "       ModelStore: ModelStore\n" +
+                "        #{\n" +
+                "           test::model:\n" +
+                "            Reference \n" +
+                "            #{ \n" +
+                "              test::data::MyData\n" +
+                "            }#\n" +
+                "        }#\n" +
+                "      ];\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          function: |test::changedModel.all()->graphFetch(#{test::changedModel{id,name}}#)->serialize(#{test::changedModel{id,name}}#);\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ];\n" +
+                "        }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  ]\n" +
+                ")\n" +
+                "\n");
+
+        test("###Pure\n" +
+                "Class test::model\n" +
+                "{\n" +
+                "    name: String[1];\n" +
+                "    id: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::changedModel{    name: String[1];    id: Integer[1];}\n" +
+                "###Data\n" +
+                "Data test::data::MyData\n" +
+                "{\n" +
+                "  ExternalFormat\n" +
+                "  #{\n" +
+                "    contentType: 'application/json';\n" +
+                "    data: '{\"name\":\"john doe\",\"id\":\"77\"}';\n" +
+                "  }#\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::modelToModelMapping\n" +
+                "(\n" +
+                "    *test::changedModel: Pure\n" +
+                "{\n" +
+                "    ~src test::model\n" +
+                "    name: $src.name,\n" +
+                "    id: $src.id->parseInteger()\n" +
+                "}\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      data:\n" +
+                "      [\n" +
+                "       ModelStore: ModelStore\n" +
+                "        #{\n" +
+                "           test::model:\n" +
+                "            Reference\n" +
+                "            #{\n" +
+                "              test::data::MyData\n" +
+                "            }#\n" +
+                "        }#\n" +
+                "      ];\n" +
+                "      tests:\n" +
+                "      [];\n" +
+                "    }\n" +
+                "  ]\n" +
+                ")\n" +
+                "\n",
+                "COMPILATION error at [30:5-45:5]: Mapping TestSuites should have at least 1 test");
+
+    }
+
 }

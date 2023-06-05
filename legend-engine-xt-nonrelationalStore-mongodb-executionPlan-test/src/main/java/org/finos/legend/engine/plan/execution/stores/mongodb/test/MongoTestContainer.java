@@ -39,19 +39,22 @@ import static org.junit.Assume.assumeTrue;
 
 public class MongoTestContainer
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(MongoTestContainer.class);
-    private GenericContainer<MongoDBContainer> mongoDBContainer;
-
     public static final String DB_ROOT_USERNAME = "sa";
     public static final String DB_ROOT_PASSWORD = "sa";
     public static final String DB_AUTH_SOURCE = "admin"; // authentication DB, typically "admin" with mongo
-    // mongodb.com/docs/manual/reference/connection-string/#mongodb-urioption-urioption.authSource
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(MongoTestContainer.class);
     private static final int MONGO_PORT = 27017;
-
+    // mongodb.com/docs/manual/reference/connection-string/#mongodb-urioption-urioption.authSource
     private static final String DB_USER_DATABASE = "userDatabase";
     private static final String DB_USER_DB_PERSON_COLLECTION = "person";
+    private GenericContainer<MongoDBContainer> mongoDBContainer;
 
+    private static MongoClient mongoClientForRootAdminWithStaticUserNamePassword(String hostName, Integer port)
+    {
+        String connectionURL = "mongodb://" + DB_ROOT_USERNAME + ":" +
+                DB_ROOT_PASSWORD + "@" + hostName + ":" + port + "/admin";
+        return MongoClients.create(connectionURL);
+    }
 
     public int run()
     {
@@ -71,7 +74,9 @@ public class MongoTestContainer
 
     public void insertPersonData(String personCollectionInputDataFile)
     {
-        try (MongoClient client = this.mongoClientForRootAdminWithStaticUserNamePassword())
+        Integer runningPort = mongoDBContainer.getMappedPort(MONGO_PORT);
+        String host = mongoDBContainer.getHost();
+        try (MongoClient client = this.mongoClientForRootAdminWithStaticUserNamePassword(host, runningPort))
         {
             MongoDatabase userDatabase = client.getDatabase(DB_USER_DATABASE);
 
@@ -110,7 +115,9 @@ public class MongoTestContainer
             mongoDBContainer.withExposedPorts(MONGO_PORT);
             mongoDBContainer.start();
 
-            try (MongoClient client = this.mongoClientForRootAdminWithStaticUserNamePassword())
+            Integer runningPort = mongoDBContainer.getMappedPort(MONGO_PORT);
+            String host = mongoDBContainer.getHost();
+            try (MongoClient client = this.mongoClientForRootAdminWithStaticUserNamePassword(host, runningPort))
             {
                 MongoDatabase userDatabase = client.getDatabase(DB_USER_DATABASE);
                 userDatabase.createCollection(DB_USER_DB_PERSON_COLLECTION);
@@ -125,14 +132,6 @@ public class MongoTestContainer
             assumeTrue("Cannot start MongoDBContainer", false);
         }
         return this.mongoDBContainer.getMappedPort(MONGO_PORT);
-    }
-
-    private MongoClient mongoClientForRootAdminWithStaticUserNamePassword()
-    {
-        String connectionURL = "mongodb://" + DB_ROOT_USERNAME + ":" +
-                DB_ROOT_PASSWORD + "@localhost:" + this.getRunningPort() + "/admin";
-
-        return MongoClients.create(connectionURL);
     }
 
     private String loadFromFile(String resourceName)

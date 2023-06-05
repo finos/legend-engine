@@ -14,13 +14,11 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.data;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
-
-import java.util.Map;
+import java.util.List;
 
 public class ModelStoreData extends EmbeddedData
 {
-    @JsonProperty(required = true)
-    public Map<String, ValueSpecification> instances;
+
+    public List<ModelTestData> modelData;
+
 }

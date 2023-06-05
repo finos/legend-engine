@@ -4226,9 +4226,9 @@ function meta::relational::functions::pureToSqlQuery::processGroupBy(expression:
    $groupByColumns->map(gc| assert(!$gc.relationalElement->instanceOf(WindowColumn),'Group by columns cannot include window columns'););
    let aggVS = $expression.parametersValues->at(2)->reprocessVS()->reactivate($state.inScopeVars)->evaluateAndDeactivate()->cast(@meta::pure::tds::AggregateValue<Any,Any>);
    let newColumns= $aggVS->map(a|let aggFn = $a.aggregateFn->cast(@FunctionDefinition<Any>).expressionSequence->at(0);
-                                 let params = if($a.mapFn.expressionSequence->at(0)->instanceOf(FunctionExpression) ,
+                                 let params = if($a.mapFn.expressionSequence->at(0)->instanceOf(FunctionExpression) || $a.mapFn.expressionSequence->at(0)->instanceOf(InstanceValue),
                                                  |let inScopeVarsWithPlaceholdersState = $a.mapFn->addPlaceHoldersForLambdaOpenVariables($vars, $state);
-                                                  processTdsLambda($a.mapFn.expressionSequence->at(0)->cast(@FunctionExpression)->evaluateAndDeactivate(), $select.columns->filter(c|!$c->instanceOf(WindowColumn))->cast(@Alias),!$noSubSelect, $vars, $inScopeVarsWithPlaceholdersState, $currentPropertyMapping, $context);,
+                                                  processTdsLambda($a.mapFn.expressionSequence->at(0)->evaluateAndDeactivate(), $select.columns->filter(c|!$c->instanceOf(WindowColumn))->cast(@Alias),!$noSubSelect, $vars, $inScopeVarsWithPlaceholdersState, $currentPropertyMapping, $context);,
                                                  |[]
                                               );
                                  ^Alias(name='"'+$a.name+'"', relationalElement=$aggFn->processAggFn($params)->at(0));
