@@ -48,7 +48,7 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
         this.accountType = accountType == null ? null : SnowflakeAccountType.valueOf(accountType);
         this.organisation = organisation;
         this.role = role;
-        this.enableQueryTags = enableQueryTags;
+        this.enableQueryTags = enableQueryTags == null ? true : enableQueryTags;
     }
 
     public SnowflakeDataSourceSpecificationKey(String accountName, String region, String warehouseName, String databaseName, String cloudType, Boolean quoteIdentifiers)
