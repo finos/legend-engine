@@ -40,7 +40,7 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
 
     public SnowflakeDataSourceSpecificationKey(String accountName, String region, String warehouseName, String databaseName, String cloudType, Boolean quoteIdentifiers, Boolean enableQueryTags, String proxyHost, String proxyPort, String nonProxyHosts, String accountType, String organisation, String role)
     {
-        this(accountName, region, warehouseName, databaseName, cloudType, quoteIdentifiers, enableQueryTags);
+        this(accountName, region, warehouseName, databaseName, cloudType, quoteIdentifiers);
         this.proxyHost = proxyHost;
         this.proxyPort = proxyPort;
         this.nonProxyHosts = nonProxyHosts;
@@ -48,9 +48,10 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
         this.accountType = accountType == null ? null : SnowflakeAccountType.valueOf(accountType);
         this.organisation = organisation;
         this.role = role;
+        this.enableQueryTags = enableQueryTags;
     }
 
-    public SnowflakeDataSourceSpecificationKey(String accountName, String region, String warehouseName, String databaseName, String cloudType, Boolean quoteIdentifiers, Boolean enableQueryTags)
+    public SnowflakeDataSourceSpecificationKey(String accountName, String region, String warehouseName, String databaseName, String cloudType, Boolean quoteIdentifiers)
     {
         this.accountName = accountName;
         this.region = region;
@@ -58,10 +59,10 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
         this.databaseName = databaseName;
         this.cloudType = cloudType == null ? "privatelink" : cloudType;
         this.quoteIdentifiers = quoteIdentifiers == null ? false : quoteIdentifiers;
-        this.enableQueryTags = enableQueryTags == null || enableQueryTags;
+        this.enableQueryTags = true;
     }
 
-    public SnowflakeDataSourceSpecificationKey(String accountName, String region, String warehouseName, String databaseName, String cloudType, Boolean quoteIdentifiers, Boolean enableQueryTags, String role)
+    public SnowflakeDataSourceSpecificationKey(String accountName, String region, String warehouseName, String databaseName, String cloudType, Boolean quoteIdentifiers, String role)
     {
         this.accountName = accountName;
         this.region = region;
@@ -69,8 +70,8 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
         this.databaseName = databaseName;
         this.cloudType = cloudType == null ? "privatelink" : cloudType;
         this.quoteIdentifiers = quoteIdentifiers == null ? false : quoteIdentifiers;
-        this.enableQueryTags = enableQueryTags == null || enableQueryTags;
         this.role = role;
+        this.enableQueryTags = true;
     }
 
     public String getAccountName()

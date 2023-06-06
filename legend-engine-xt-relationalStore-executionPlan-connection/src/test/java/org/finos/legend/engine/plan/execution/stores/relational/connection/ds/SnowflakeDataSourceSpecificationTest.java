@@ -30,7 +30,7 @@ public class SnowflakeDataSourceSpecificationTest extends SnowflakeDataSourceSpe
 {
     public SnowflakeDataSourceSpecificationTest()
     {
-        super(new SnowflakeDataSourceSpecificationKey("dummy", "dummy", "dummy", "dummy", "dummy", null, null),
+        super(new SnowflakeDataSourceSpecificationKey("dummy", "dummy", "dummy", "dummy", "dummy", null),
                 new SnowflakeManager(),
                 new SnowflakePublicAuthenticationStrategy("dummy", "dummy", "dummy"),
                 new Properties());

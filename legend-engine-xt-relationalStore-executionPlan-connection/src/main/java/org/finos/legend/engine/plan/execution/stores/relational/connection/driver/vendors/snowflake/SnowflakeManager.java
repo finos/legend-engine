@@ -130,7 +130,7 @@ public class SnowflakeManager extends DatabaseManager
             String databaseName = this.lookupRequiredPropertyInVault(templateDataSource.databaseName);
             String cloudType = this.lookupRequiredPropertyInVault(templateDataSource.cloudType);
             String role = this.lookupRequiredPropertyInVault(templateDataSource.role);
-            SnowflakeDataSourceSpecificationKey key = new SnowflakeDataSourceSpecificationKey(accountName, region, warehouse, databaseName, cloudType, false, null, role);
+            SnowflakeDataSourceSpecificationKey key = new SnowflakeDataSourceSpecificationKey(accountName, region, warehouse, databaseName, cloudType, false, role);
 
             String userName = this.lookupRequiredPropertyInVault(templateAuthStrategy.publicUserName);
 

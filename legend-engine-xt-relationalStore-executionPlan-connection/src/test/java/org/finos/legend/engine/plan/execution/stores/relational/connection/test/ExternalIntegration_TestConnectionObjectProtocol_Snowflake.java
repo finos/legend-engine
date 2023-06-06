@@ -57,7 +57,6 @@ public class ExternalIntegration_TestConnectionObjectProtocol_Snowflake extends 
                         new SnowflakeDataSourceSpecificationKey("ki79827", "us-east-2",
                                 "INTEGRATION_WH1",
                                 "INTEGRATION_DB1", "aws", null,
-                                null,
                                 "INTEGRATION_ROLE1"),
                         new SnowflakeManager(),
                         new SnowflakePublicAuthenticationStrategy("SNOWFLAKE_INTEGRATION_USER1_PRIVATEKEY", "SNOWFLAKE_INTEGRATION_USER1_PASSWORD", "INTEGRATION_USER1"));
