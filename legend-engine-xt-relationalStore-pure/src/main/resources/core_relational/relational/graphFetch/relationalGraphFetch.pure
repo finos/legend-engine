@@ -661,7 +661,7 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::assertC
    assert($r->meta::relational::functions::pureToSqlQuery::getDistinct() != true,  | 'Store distinct not allowed in graph fetch flow');
    
    $simplePrimitiveProperties->forAll({prop |
-      assert($prop->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype() || $setImpl->propertyMappingsByPropertyName($prop.name->toOne())->isNotEmpty(),
+      assert($prop->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype() || $setImpl->_propertyMappingsByPropertyName($prop.name->toOne())->isNotEmpty(),
              | 'Property "' + $prop.name->toOne() + '" is not mapped in the set: "' + $setImpl.id + '"')
    });
 }
