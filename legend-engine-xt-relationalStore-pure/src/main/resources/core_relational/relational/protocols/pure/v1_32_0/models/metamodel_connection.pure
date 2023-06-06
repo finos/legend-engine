@@ -110,6 +110,7 @@ Class meta::protocols::pure::v1_32_0::metamodel::store::relational::connection::
     organization: String[0..1];
 
     quotedIdentifiersIgnoreCase : Boolean[0..1];
+    enableQueryTags: Boolean[0..1];
 
     proxyHost: String[0..1];
     proxyPort: String[0..1];
