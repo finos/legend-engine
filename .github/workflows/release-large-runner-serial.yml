@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: Release (Large Runner)
+name: Release (Large Runner - Serial Build)
 
 env:
   CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
@@ -20,7 +20,7 @@ env:
   CI_GPG_PASSPHRASE: ${{ secrets.CI_GPG_PASSPHRASE }}
   DOCKER_USERNAME: finos
   DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-  MAVEN_OPTS: -Xmx10g
+  MAVEN_OPTS: -Xmx30g
 
 on:
   workflow_dispatch:
@@ -67,4 +67,4 @@ jobs:
         run: mvn -B -e release:prepare -Darguments='-B -e' -DpreparationGoals=clean -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ env.DEVELOPMENT_VERSION }} -P release
 
       - name: Perform release
-        run: mvn -B -e release:perform -Darguments='-B -e -T 4 -DargLine="-Xmx12g"' -P release,docker
+        run: mvn -B -e release:perform -Darguments='-B -e -DargLine="-Xmx30g"' -P release,docker
