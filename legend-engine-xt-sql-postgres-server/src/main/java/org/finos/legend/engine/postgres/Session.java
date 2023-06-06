@@ -27,6 +27,7 @@ import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
 import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresStatement;
 import org.finos.legend.engine.postgres.handler.SessionHandler;
+import org.finos.legend.engine.postgres.handler.empty.EmptySessionHandler;
 import org.finos.legend.engine.protocol.sql.metamodel.QualifiedName;
 import org.slf4j.Logger;
 
@@ -41,6 +42,7 @@ public class Session implements AutoCloseable
 
     private static final TableNameExtractor EXTRACTOR = new TableNameExtractor();
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(Session.class);
+    private static final SessionHandler emptySessionHandler = new EmptySessionHandler();
 
 
     private final Map<String, Prepared> parsed = new HashMap<>();
@@ -103,16 +105,31 @@ public class Session implements AutoCloseable
     private SessionHandler getSessionHandler(String query)
     {
         SqlBaseParser parser = SQLGrammarParser.getSqlBaseParser(query, "query");
-        List<QualifiedName> qualifiedNames = EXTRACTOR.visitSingleStatement(parser.singleStatement());
+        try
+        {
+            List<QualifiedName> qualifiedNames = EXTRACTOR.visitSingleStatement(parser.singleStatement());
+            boolean isMetadataQuery = qualifiedNames.isEmpty() || qualifiedNames.stream().flatMap(i -> i.parts.stream()).anyMatch(SystemSchemas::contains);
 
-        boolean isMetadataQuery = qualifiedNames.stream().flatMap(i -> i.parts.stream()).anyMatch(SystemSchemas::contains);
-        if (isMetadataQuery)
-        {
-            return metaDataSessionHandler;
+            if (isMetadataQuery)
+            {
+                return metaDataSessionHandler;
+            }
+            else
+            {
+                return dataSessionHandler;
+            }
+
         }
-        else
+        catch (UnsupportedSqlOperationException e)
         {
-            return dataSessionHandler;
+            if (e.isSendErrorToClient())
+            {
+                throw new RuntimeException(e);
+            }
+            else
+            {
+                return emptySessionHandler;
+            }
         }
     }
 

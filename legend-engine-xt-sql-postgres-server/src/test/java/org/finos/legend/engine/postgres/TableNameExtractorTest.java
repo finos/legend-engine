@@ -24,6 +24,8 @@ import org.junit.Test;
 
 import java.util.List;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 
 public class TableNameExtractorTest
 {
@@ -42,7 +44,14 @@ public class TableNameExtractorTest
     @Test
     public void testSetQuery()
     {
-        List<QualifiedName> qualifiedNames = getQualifiedNames("SET A=B");
+        UnsupportedSqlOperationException unsupportedSqlOperationException = assertThrows(UnsupportedSqlOperationException.class, () -> getQualifiedNames("SET A=B"));
+        assertFalse(unsupportedSqlOperationException.isSendErrorToClient());
+    }
+
+    @Test
+    public void testSelectWithoutTable()
+    {
+        List<QualifiedName> qualifiedNames = getQualifiedNames("SELECT 1");
         assertEquals(0, qualifiedNames.size());
     }
 
