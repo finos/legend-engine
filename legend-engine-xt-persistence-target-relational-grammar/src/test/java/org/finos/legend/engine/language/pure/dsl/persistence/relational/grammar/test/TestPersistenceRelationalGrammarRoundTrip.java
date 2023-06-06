@@ -51,7 +51,14 @@ public class TestPersistenceRelationalGrammarRoundTrip extends TestGrammarRoundt
             "    #{\n" +
             "      table: TableA;\n" +
             "      database: test::Database;\n" +
-            "      temporality: None;\n" +
+            "      temporality: None\n" +
+            "      {\n" +
+            "        auditing: DateTime\n" +
+            "        {\n" +
+            "          dateTimeName: audit_timestamp;\n" +
+            "        }\n" +
+            "        updatesHandling: AppendOnly;\n" +
+            "      }\n" +
             "    }#,\n" +
             "    #/test::example::MyType/prop#\n" +
             "    {\n" +
@@ -76,7 +83,11 @@ public class TestPersistenceRelationalGrammarRoundTrip extends TestGrammarRoundt
             "    #{\n" +
             "      table: TableB;\n" +
             "      database: test::Database;\n" +
-            "      temporality: None;\n" +
+            "      temporality: None\n" +
+            "      {\n" +
+            "        auditing: None;\n" +
+            "        updatesHandling: Overwrite;\n" +
+            "      }\n" +
             "    }#\n" +
             "  ];\n" +
             "}\n");

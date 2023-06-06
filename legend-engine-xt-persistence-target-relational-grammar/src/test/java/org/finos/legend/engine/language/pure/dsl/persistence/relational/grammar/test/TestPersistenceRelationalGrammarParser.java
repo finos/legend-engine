@@ -106,7 +106,11 @@ public class TestPersistenceRelationalGrammarParser extends TestGrammarParser.Te
                 "    #{\n" +
                 "      table: TableB;\n" +
                 "      database: test::Database;\n" +
-                "      temporality: None;\n" +
+                "      temporality: None\n" +
+                "      {\n" +
+                "        updatesHandling: Overwrite;\n" +
+                "        auditing: None;\n" +
+                "      }\n" +
                 "    }#\n" +
                 "  ];\n" +
                 "  tests:\n" +

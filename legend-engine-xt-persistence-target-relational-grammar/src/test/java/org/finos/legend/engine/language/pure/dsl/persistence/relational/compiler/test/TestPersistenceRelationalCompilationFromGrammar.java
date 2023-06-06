@@ -44,6 +44,9 @@ import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_serv
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_target_PersistenceTarget;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_ManualTrigger;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_Trigger;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_AppendOnly;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_Auditing;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_AuditingDateTime;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_BatchId;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_BitemporalMilestoning;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_Milestoning;
@@ -56,6 +59,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_met
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_SourceTimeFields;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_SourceTimeStartAndEnd;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_UnitemporalMilestoning;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_UpdatesHandling;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.junit.Test;
 
@@ -104,7 +108,11 @@ public class TestPersistenceRelationalCompilationFromGrammar extends TestCompila
             "    #{\n" +
             "      table: TableA;\n" +
             "      database: test::Database;\n" +
-            "      temporality: None;\n" +
+            "      temporality: None\n" +
+            "      {\n" +
+            "        updatesHandling: Overwrite;\n" +
+            "        auditing: None;\n" +
+            "      }\n" +
             "    }#\n" +
             "  ];\n" +
             "}\n";
@@ -113,7 +121,7 @@ public class TestPersistenceRelationalCompilationFromGrammar extends TestCompila
     @Override
     protected String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [4:1-35:1]: Duplicated element 'test::MyPersistence'";
+        return "COMPILATION error at [4:1-39:1]: Duplicated element 'test::MyPersistence'";
     }
 
     @Test
@@ -183,7 +191,10 @@ public class TestPersistenceRelationalCompilationFromGrammar extends TestCompila
             "    #{\n" +
             "      table: personTable;\n" +
             "      database: test::Database;\n" +
-            "      temporality: None;\n" +
+            "      temporality: None\n" +
+            "      {\n" +
+            "        updatesHandling: Overwrite;\n" +
+            "      }\n" +
             "    }#\n" +
             "  ];\n" +
             "  tests:\n" +
@@ -223,7 +234,7 @@ public class TestPersistenceRelationalCompilationFromGrammar extends TestCompila
             "      isTestDataFromServiceOutput: false;\n" +
             "    }\n" +
             "  ]\n" +
-            "}\n", "COMPILATION error at [63:7-66:7]: Database 'test::Database' is not defined");
+            "}\n", "COMPILATION error at [63:7-69:7]: Database 'test::Database' is not defined");
     }
 
     @Test
@@ -298,7 +309,10 @@ public class TestPersistenceRelationalCompilationFromGrammar extends TestCompila
             "    #{\n" +
             "      table: personTable;\n" +
             "      database: test::Database;\n" +
-            "      temporality: None;\n" +
+            "      temporality: None\n" +
+            "      {\n" +
+            "        updatesHandling: Overwrite;\n" +
+            "      }\n" +
             "    }#\n" +
             "  ];\n" +
             "  tests:\n" +
@@ -338,7 +352,7 @@ public class TestPersistenceRelationalCompilationFromGrammar extends TestCompila
             "      isTestDataFromServiceOutput: false;\n" +
             "    }\n" +
             "  ]\n" +
-            "}\n", "COMPILATION error at [67:7-70:7]: Table 'personTable' is not defined");
+            "}\n", "COMPILATION error at [67:7-73:7]: Table 'personTable' is not defined");
     }
 
     @Test
@@ -509,7 +523,8 @@ public class TestPersistenceRelationalCompilationFromGrammar extends TestCompila
                 "  Table personTable\n" +
                 "  (\n" +
                 "    ID INTEGER PRIMARY KEY,\n" +
-                "    NAME VARCHAR(100)\n" +
+                "    NAME VARCHAR(100)," +
+                "    audit_timestamp TIMESTAMP\n" +
                 "  )\n" +
                 ")" +
                 "\n" +
@@ -547,7 +562,14 @@ public class TestPersistenceRelationalCompilationFromGrammar extends TestCompila
                 "    #{\n" +
                 "      table: personTable;\n" +
                 "      database: test::Database;\n" +
-                "      temporality: None;\n" +
+                "      temporality: None\n" +
+                "      {\n" +
+                "        auditing: DateTime\n" +
+                "        {\n" +
+                "          dateTimeName: audit_timestamp;\n" +
+                "        }\n" +
+                "        updatesHandling: AppendOnly;\n" +
+                "      }\n" +
                 "    }#\n" +
                 "  ];\n" +
                 "  tests:\n" +
@@ -638,6 +660,17 @@ public class TestPersistenceRelationalCompilationFromGrammar extends TestCompila
         // temporality
         Root_meta_pure_persistence_relational_metamodel_Milestoning milestoning = relationalPersistenceTarget._milestoning();
         assertTrue(milestoning instanceof Root_meta_pure_persistence_relational_metamodel_NoMilestoning);
+        Root_meta_pure_persistence_relational_metamodel_NoMilestoning noMilestoning = (Root_meta_pure_persistence_relational_metamodel_NoMilestoning) milestoning;
+
+        // auditing
+        Root_meta_pure_persistence_relational_metamodel_Auditing auditing = noMilestoning._auditing();
+        assertTrue(auditing instanceof Root_meta_pure_persistence_relational_metamodel_AuditingDateTime);
+        Root_meta_pure_persistence_relational_metamodel_AuditingDateTime auditingDateTime = (Root_meta_pure_persistence_relational_metamodel_AuditingDateTime) auditing;
+        assertEquals("audit_timestamp", auditingDateTime._auditingDateTimeName()._name());
+
+        // updates handling
+        Root_meta_pure_persistence_relational_metamodel_UpdatesHandling updatesHandling = noMilestoning._updatesHandling();
+        assertTrue(updatesHandling instanceof Root_meta_pure_persistence_relational_metamodel_AppendOnly);
 
         // datasetKeys
         assertArrayEquals(Lists.mutable.of("foo", "bar").toArray(), tdsServiceOutput._keys().toArray());

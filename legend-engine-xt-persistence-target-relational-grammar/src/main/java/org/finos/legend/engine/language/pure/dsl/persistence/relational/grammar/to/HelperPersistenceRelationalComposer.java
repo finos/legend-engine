@@ -146,7 +146,7 @@ public class HelperPersistenceRelationalComposer
         @Override
         public String visitAuditingDateTime(AuditingDateTime val)
         {
-            return "Datetime\n" +
+            return "DateTime\n" +
                 getTabString(indentLevel) + "{\n" +
                 getTabString(indentLevel + 1) + "dateTimeName: " + val.auditingDateTimeName + ";\n" +
                 getTabString(indentLevel) + "}\n";
