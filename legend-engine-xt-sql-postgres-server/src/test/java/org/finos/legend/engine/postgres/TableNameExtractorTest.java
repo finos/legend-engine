@@ -44,8 +44,8 @@ public class TableNameExtractorTest
     @Test
     public void testSetQuery()
     {
-        UnsupportedSqlOperationException unsupportedSqlOperationException = assertThrows(UnsupportedSqlOperationException.class, () -> getQualifiedNames("SET A=B"));
-        assertFalse(unsupportedSqlOperationException.isSendErrorToClient());
+        List<QualifiedName> qualifiedNames = getQualifiedNames("SET A=B");
+        assertEquals(0, qualifiedNames.size());
     }
 
     @Test

@@ -105,11 +105,14 @@ public class Session implements AutoCloseable
     private SessionHandler getSessionHandler(String query)
     {
         SqlBaseParser parser = SQLGrammarParser.getSqlBaseParser(query, "query");
-        try
-        {
-            List<QualifiedName> qualifiedNames = EXTRACTOR.visitSingleStatement(parser.singleStatement());
-            boolean isMetadataQuery = qualifiedNames.isEmpty() || qualifiedNames.stream().flatMap(i -> i.parts.stream()).anyMatch(SystemSchemas::contains);
+        SqlBaseParser.SingleStatementContext ctx = parser.singleStatement();
+        SqlBaseParser.StatementContext statement = ctx.statement();
 
+        if (statement instanceof SqlBaseParser.DefaultContext)
+        {
+            SqlBaseParser.DefaultContext defaultContext = (SqlBaseParser.DefaultContext) statement;
+            List<QualifiedName> qualifiedNames = EXTRACTOR.visitDefault(defaultContext);
+            boolean isMetadataQuery = qualifiedNames.isEmpty() || qualifiedNames.stream().flatMap(i -> i.parts.stream()).anyMatch(SystemSchemas::contains);
             if (isMetadataQuery)
             {
                 return metaDataSessionHandler;
@@ -118,18 +121,15 @@ public class Session implements AutoCloseable
             {
                 return dataSessionHandler;
             }
-
         }
-        catch (UnsupportedSqlOperationException e)
+        else if (statement instanceof SqlBaseParser.SetContext)
         {
-            if (e.isSendErrorToClient())
-            {
-                throw new RuntimeException(e);
-            }
-            else
-            {
-                return emptySessionHandler;
-            }
+            // TODO: Handle SET queries
+            return emptySessionHandler;
+        }
+        else
+        {
+            return metaDataSessionHandler;
         }
     }
 

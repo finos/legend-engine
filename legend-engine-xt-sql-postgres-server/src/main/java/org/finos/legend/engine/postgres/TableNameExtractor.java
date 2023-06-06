@@ -49,12 +49,6 @@ public class TableNameExtractor extends SqlBaseParserBaseVisitor<List<QualifiedN
         return result;
     }
 
-    @Override
-    public List<QualifiedName> visitSet(SqlBaseParser.SetContext ctx)
-    {
-        throw new UnsupportedSqlOperationException("SET queries are not supported", false);
-    }
-
     private List<String> visitIdentifier(ParseTree tree)
     {
         if (tree instanceof SqlBaseParser.UnquotedIdentifierContext)
