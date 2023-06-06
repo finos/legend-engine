@@ -2621,6 +2621,11 @@
                 <version>${prometheus.version}</version>
             </dependency>
             <dependency>
+                <groupId>io.prometheus.jmx</groupId>
+                <artifactId>jmx_prometheus_javaagent</artifactId>
+                <version>0.18.0</version>
+            </dependency>
+            <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
                 <version>${httpclient.version}</version>
