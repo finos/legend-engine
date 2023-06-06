@@ -21,6 +21,7 @@ env:
   DOCKER_USERNAME: finos
   DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
   MAVEN_OPTS: -Xmx4g
+
 on:
   workflow_dispatch:
     inputs:
