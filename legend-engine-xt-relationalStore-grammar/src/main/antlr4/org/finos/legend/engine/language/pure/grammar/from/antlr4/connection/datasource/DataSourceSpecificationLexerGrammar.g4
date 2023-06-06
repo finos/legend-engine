@@ -28,6 +28,7 @@ NONPROXYHOSTS:                              'nonProxyHosts';
 ACCOUNTTYPE:                                'accountType';
 ORGANIZATION:                               'organization';
 ROLE:                                       'role';
+ENABLE_QUERY_TAGS:                          'enableQueryTags';
 
 DATABRICKS:                                 'Databricks';
 PROTOCOL:                                   'protocol';

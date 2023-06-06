@@ -93,6 +93,7 @@ public class DataSourceSpecificationKeyGenerator implements DatasourceSpecificat
                     snowflakeDatasourceSpecification.databaseName,
                     snowflakeDatasourceSpecification.cloudType,
                     connection.quoteIdentifiers,
+                    snowflakeDatasourceSpecification.enableQueryTags,
                     snowflakeDatasourceSpecification.proxyHost,
                     snowflakeDatasourceSpecification.proxyPort,
                     snowflakeDatasourceSpecification.nonProxyHosts,

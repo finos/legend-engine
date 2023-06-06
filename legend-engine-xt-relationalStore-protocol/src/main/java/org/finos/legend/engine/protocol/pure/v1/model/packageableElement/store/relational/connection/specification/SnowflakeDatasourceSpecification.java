@@ -23,6 +23,7 @@ public class SnowflakeDatasourceSpecification extends DatasourceSpecification
     public String cloudType;
 
     public Boolean quotedIdentifiersIgnoreCase;
+    public Boolean enableQueryTags;
     public String proxyHost;
     public String proxyPort;
     public String nonProxyHosts;

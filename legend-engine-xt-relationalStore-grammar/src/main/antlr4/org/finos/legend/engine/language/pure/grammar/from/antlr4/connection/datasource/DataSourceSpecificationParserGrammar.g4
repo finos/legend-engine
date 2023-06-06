@@ -87,6 +87,7 @@ snowflakeDatasourceSpecification:           SNOWFLAKE
                                                         | dbAccountType
                                                         | dbOrganization
                                                         | dbRole
+                                                        | enableQueryTags
                                                     )*
                                                 BRACE_CLOSE
 ;
@@ -118,6 +119,8 @@ region:                                     REGION COLON STRING SEMI_COLON
 endpointURL:                                 ENDPOINT_URL COLON STRING SEMI_COLON
 ;
 clusterID:                                   CLUSTER_ID COLON STRING SEMI_COLON
+;
+enableQueryTags:                            ENABLE_QUERY_TAGS COLON BOOLEAN SEMI_COLON
 ;
 
 redshiftDatasourceSpecification:               REDSHIFT

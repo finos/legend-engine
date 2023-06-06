@@ -96,6 +96,7 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
             _snowflake._databaseName(snowflakeDatasourceSpecification.databaseName);
             _snowflake._cloudType(snowflakeDatasourceSpecification.cloudType);
             _snowflake._quotedIdentifiersIgnoreCase(snowflakeDatasourceSpecification.quotedIdentifiersIgnoreCase);
+            _snowflake._enableQueryTags(snowflakeDatasourceSpecification.enableQueryTags);
             _snowflake._proxyHost(snowflakeDatasourceSpecification.proxyHost);
             _snowflake._proxyPort(snowflakeDatasourceSpecification.proxyPort);
             _snowflake._nonProxyHosts(snowflakeDatasourceSpecification.nonProxyHosts);
