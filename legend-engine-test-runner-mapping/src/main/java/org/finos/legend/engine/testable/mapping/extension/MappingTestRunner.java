@@ -37,6 +37,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedDataHelper;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.ModelStore;
@@ -114,7 +115,7 @@ public class MappingTestRunner implements TestRunner
     {
         PureModel pureModel = context.getPureModel();
         List<org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult> results = Lists.mutable.empty();
-        List<Pair<Connection, List<Closeable>>> connections = buildTestConnections(context.getPureModelContextData(), mappingDataTestSuite.storeTestData);
+        List<Pair<Connection, List<Closeable>>> connections = buildTestConnections(mappingDataTestSuite.storeTestData, context);
         Root_meta_pure_runtime_Runtime_Impl runtime = new Root_meta_pure_runtime_Runtime_Impl("");
         connections.stream().forEach(conn -> runtime._connectionsAdd(conn.getOne().accept(context.connectionVisitor)));
         List<MappingFunctionTest> functionTests = this.validateMappingSuiteTests(mappingDataTestSuite, MappingFunctionTest.class);
@@ -181,7 +182,7 @@ public class MappingTestRunner implements TestRunner
             MappingDataTest mappingDataTest = dataTests.get(0);
             List<Pair<String, EmbeddedData>> connectionInfo = mappingDataTest.storeTestData.stream().map(testData -> Tuples.pair(testData.store, EmbeddedDataHelper.resolveEmbeddedData(context.getPureModelContextData(), testData.data))).collect(Collectors.toList());
             List<Pair<Connection, List<Closeable>>> connections = connectionInfo.stream()
-                    .map(pair -> this.factories.collect(f -> f.tryBuildTestConnectionsForStoreWithMultiInputs(context.getPureModelContextData(), resolveStore(context.getPureModelContextData(), pair.getOne()), pair.getTwo())).select(Objects::nonNull).select(Optional::isPresent)
+                    .map(pair -> this.factories.collect(f -> f.tryBuildTestConnectionsForStoreWithMultiInputs(context.dataElements, resolveStore(context.getPureModelContextData(), pair.getOne()), pair.getTwo())).select(Objects::nonNull).select(Optional::isPresent)
                     .collect(Optional::get).getFirstOptional().orElseThrow(() -> new UnsupportedOperationException("Unsupported store type for:'" + pair.getOne() + "' mentioned while running the mapping tests"))).collect(Collectors.toList());
             connections.stream().forEach(conn -> runtime._connectionsAdd(conn.getOne().accept(context.connectionVisitor)));
         }
@@ -243,10 +244,11 @@ public class MappingTestRunner implements TestRunner
         return tests;
     }
 
-    private List<Pair<Connection, List<Closeable>>> buildTestConnections(PureModelContextData pureModelContextData, List<StoreTestData> mappingStoreTestData)
+    private List<Pair<Connection, List<Closeable>>> buildTestConnections(List<StoreTestData> mappingStoreTestData, MappingTestRunnerContext context)
     {
+        PureModelContextData pureModelContextData = context.getPureModelContextData();
         List<Pair<String, EmbeddedData>> connectionInfo = mappingStoreTestData.stream().map(testData -> Tuples.pair(testData.store, EmbeddedDataHelper.resolveEmbeddedData(pureModelContextData, testData.data))).collect(Collectors.toList());
-        List<Pair<Connection, List<Closeable>>> connections = connectionInfo.stream().map(pair -> this.factories.collect(f -> f.tryBuildTestConnectionsForStore(pureModelContextData, resolveStore(pureModelContextData, pair.getOne()), pair.getTwo())).select(Objects::nonNull).select(Optional::isPresent)
+        List<Pair<Connection, List<Closeable>>> connections = connectionInfo.stream().map(pair -> this.factories.collect(f -> f.tryBuildTestConnectionsForStore(context.dataElements, resolveStore(pureModelContextData, pair.getOne()), pair.getTwo())).select(Objects::nonNull).select(Optional::isPresent)
                 .collect(Optional::get).getFirstOptional().orElseThrow(() -> new UnsupportedOperationException("Unsupported store type for:'" + pair.getOne() + "' mentioned while running the mapping tests"))).collect(Collectors.toList());
         return connections;
     }
