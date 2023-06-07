@@ -61,6 +61,16 @@ public class ExecutionDispatcherTest
     }
 
     @Test
+    public void testInformationSchemaJoins()
+    {
+        assertMetadataSessionHandler("SELECT n.nspname, c.relname, d.description " +
+                "FROM pg_catalog.pg_namespace n, pg_catalog.pg_class c " +
+                "LEFT JOIN pg_catalog.pg_description d ON(c.oid = d.objoid AND d.objsubid = 0) " +
+                "LEFT JOIN pg_catalog.pg_class dc ON(d.classoid = dc.oid AND dc.relname = 'pg_class') " +
+                "LEFT JOIN pg_catalog.pg_namespace dn ON (dn.oid = dc.relnamespace AND dn.nspname = 'pg_catalog')");
+    }
+
+    @Test
     public void testSelectTableName()
     {
         assertDataSessionHandler("SELECT * FROM service.\"/testService\"");

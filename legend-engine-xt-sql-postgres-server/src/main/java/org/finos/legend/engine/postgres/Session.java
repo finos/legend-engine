@@ -99,7 +99,12 @@ public class Session implements AutoCloseable
     {
         SqlBaseParser parser = SQLGrammarParser.getSqlBaseParser(query, "query");
         SqlBaseParser.SingleStatementContext singleStatementContext = parser.singleStatement();
-        return singleStatementContext.accept(dispatcher);
+        SessionHandler sessionHandler = singleStatementContext.accept(dispatcher);
+        if (sessionHandler == null)
+        {
+            throw new RuntimeException(String.format("Unable to determine session handler for query[%s]", query));
+        }
+        return sessionHandler;
     }
 
 
