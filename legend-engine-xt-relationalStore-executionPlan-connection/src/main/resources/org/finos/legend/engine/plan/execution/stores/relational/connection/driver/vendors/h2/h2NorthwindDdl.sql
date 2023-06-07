@@ -53,24 +53,9 @@ permitted under your local laws, the contributors exclude the implied warranties
 particular purpose and non-infringement.
 */
 
-drop schema if exists northwind;
+drop schema if exists northwind cascade;
 
 create schema northwind;
-
-drop table if exists northwind.customer_customer_demo;
-drop table if exists northwind.customer_demographics;
-drop table if exists northwind.employee_territories;
-drop table if exists northwind.order_details;
-drop table if exists northwind.orders;
-drop table if exists northwind.customers;
-drop table if exists northwind.products;
-drop table if exists northwind.shippers;
-drop table if exists northwind.suppliers;
-drop table if exists northwind.territories;
-drop table if exists northwind.us_states;
-drop table if exists northwind.categories;
-drop table if exists northwind.region;
-drop table if exists northwind.employees;
 
 create table northwind.categories (
   category_id smallint not null,
