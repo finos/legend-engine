@@ -138,14 +138,14 @@ public class BaseTest
         // Execute physical plans
         RelationalIngestor ingestor = RelationalIngestor.builder()
                 .ingestMode(ingestMode)
-                .relationalSink(H2Sink.get())
+                .relationalSink(H2Sink.get(h2Sink.connection()))
                 .executionTimestampClock(executionTimestampClock)
                 .cleanupStagingData(options.cleanupStagingData())
                 .collectStatistics(options.collectStatistics())
                 .enableSchemaEvolution(options.enableSchemaEvolution())
                 .schemaEvolutionCapabilitySet(userCapabilitySet)
                 .build();
-        IngestorResult result = ingestor.ingest(h2Sink.connection(), datasets);
+        IngestorResult result = ingestor.ingest(datasets);
 
         Map<StatisticName, Object> actualStats = result.statisticByName();
 
@@ -177,15 +177,15 @@ public class BaseTest
     protected List<IngestorResult> executePlansAndVerifyResultsWithDataSplits(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, List<Map<String, Object>> expectedStats, List<DataSplitRange> dataSplitRanges, Clock executionTimestampClock) throws Exception
     {
         RelationalIngestor ingestor = RelationalIngestor.builder()
-            .ingestMode(ingestMode)
-            .relationalSink(H2Sink.get())
+                .ingestMode(ingestMode)
+                .relationalSink(H2Sink.get(h2Sink.connection()))
             .executionTimestampClock(executionTimestampClock)
             .cleanupStagingData(options.cleanupStagingData())
             .collectStatistics(options.collectStatistics())
             .enableSchemaEvolution(options.enableSchemaEvolution())
             .build();
 
-        List<IngestorResult> results = ingestor.ingestWithDataSplits(h2Sink.connection(), datasets, dataSplitRanges);
+        List<IngestorResult> results = ingestor.ingestWithDataSplits(datasets, dataSplitRanges);
 
         List<Map<String, Object>> tableData = h2Sink.executeQuery("select * from \"TEST\".\"main\"");
         TestUtils.assertFileAndTableDataEquals(schema, expectedDataPath, tableData);
@@ -222,7 +222,7 @@ public class BaseTest
     {
         RelationalIngestor ingestor = RelationalIngestor.builder()
                 .ingestMode(ingestMode)
-                .relationalSink(H2Sink.get())
+                .relationalSink(H2Sink.get(h2Sink.connection()))
                 .executionTimestampClock(executionTimestampClock)
                 .cleanupStagingData(options.cleanupStagingData())
                 .collectStatistics(options.collectStatistics())
@@ -231,7 +231,7 @@ public class BaseTest
                 .caseConversion(CaseConversion.TO_UPPER)
                 .build();
 
-        IngestorResult result = ingestor.ingest(h2Sink.connection(), datasets);
+        IngestorResult result = ingestor.ingest(datasets);
 
         Map<StatisticName, Object> actualStats = result.statisticByName();
 

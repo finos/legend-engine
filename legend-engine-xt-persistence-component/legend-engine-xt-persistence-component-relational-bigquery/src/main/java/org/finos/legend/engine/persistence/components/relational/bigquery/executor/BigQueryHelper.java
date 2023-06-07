@@ -48,7 +48,11 @@ public class BigQueryHelper implements RelationalExecutionHelper
 
     public static BigQueryHelper of(BigQuery bigQuery)
     {
-        return new BigQueryHelper(bigQuery);
+        if (bigQuery != null)
+        {
+            return new BigQueryHelper(bigQuery);
+        }
+        throw new RuntimeException("Sink initialized without connection can only be used for SQL generation APIs, but used with ingestion API");
     }
 
     private BigQueryHelper(BigQuery bigQuery)

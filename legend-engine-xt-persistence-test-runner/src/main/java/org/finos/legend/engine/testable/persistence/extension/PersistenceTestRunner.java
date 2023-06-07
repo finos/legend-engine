@@ -107,7 +107,7 @@ public class PersistenceTestRunner implements TestRunner
                     {
                         // Retrieve testData
                         String testDataString = getConnectionTestData(testBatch.testData);
-                        invokePersistence(targetDataset, persistence, testDataString, connection);
+                        invokePersistence(targetDataset, persistence, testDataString);
                         List<Map<String, Object>> output = persistenceTestH2Connection.readTable(datasetDefinition);
 
                         batchAssertionStatus = testAssertion.accept(new PersistenceTestAssertionEvaluator(output, fieldsToIgnore));
@@ -138,8 +138,7 @@ public class PersistenceTestRunner implements TestRunner
         return result;
     }
 
-    private IngestorResult invokePersistence(Dataset targetDataset, Persistence persistence, String testData,
-                                             Connection connection) throws Exception
+    private IngestorResult invokePersistence(Dataset targetDataset, Persistence persistence, String testData) throws Exception
     {
         Datasets enrichedDatasets = DatasetMapper.enrichAndDeriveDatasets(persistence, targetDataset, testData);
         IngestMode ingestMode = IngestModeMapper.from(persistence);
@@ -152,7 +151,7 @@ public class PersistenceTestRunner implements TestRunner
                 .enableSchemaEvolution(SCHEMA_EVOLUTION_DEFAULT)
                 .build();
 
-        IngestorResult result = ingestor.ingest(connection, enrichedDatasets);
+        IngestorResult result = ingestor.ingest(enrichedDatasets);
         return result;
     }
 

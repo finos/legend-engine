@@ -67,7 +67,11 @@ public class JdbcHelper implements RelationalExecutionHelper
 
     public static JdbcHelper of(Connection connection)
     {
-        return new JdbcHelper(connection);
+        if (connection != null)
+        {
+            return new JdbcHelper(connection);
+        }
+        throw new RuntimeException("Sink initialized without connection can only be used for SQL generation APIs, but used with ingestion API");
     }
 
     private JdbcHelper(Connection connection)
@@ -151,7 +155,7 @@ public class JdbcHelper implements RelationalExecutionHelper
             String name = dataset.datasetReference().name().orElseThrow(IllegalStateException::new);
             String database = dataset.datasetReference().database().orElse(null);
             String schema = dataset.datasetReference().group().orElse(null);
-            ResultSet result = this.connection.getMetaData().getTables(database, schema, name, new String[]{Clause.TABLE.get()});
+            ResultSet result = this.connection.getMetaData().getTables(database, schema, name, new String[] {Clause.TABLE.get()});
             return result.isBeforeFirst(); // This method returns true if ResultSet is not empty
         }
         catch (SQLException e)

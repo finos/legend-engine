@@ -45,8 +45,6 @@ import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVis
 import org.finos.legend.engine.persistence.components.util.Capability;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -54,7 +52,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
 
 public class SnowflakeSink extends AnsiSqlSink
@@ -102,25 +99,52 @@ public class SnowflakeSink extends AnsiSqlSink
         return INSTANCE;
     }
 
+    public static RelationalSink get(Connection connection)
+    {
+        return new SnowflakeSink(connection);
+    }
+
+    public SnowflakeSink(Connection connection)
+    {
+        super(
+                CAPABILITIES,
+                IMPLICIT_DATA_TYPE_MAPPING,
+                EXPLICIT_DATA_TYPE_MAPPING,
+                SqlGenUtils.QUOTE_IDENTIFIER,
+                LOGICAL_PLAN_VISITOR_BY_CLASS,
+                (executor, sink, dataset) ->
+                {
+                    //TODO: pass transformer as an argument
+                    RelationalTransformer transformer = new RelationalTransformer(SnowflakeSink.get());
+                    LogicalPlan datasetExistLogicalPlan = LogicalPlanFactory.getLogicalPlanForDoesDatasetExist(dataset);
+                    SqlPlan physicalPlanForDoesDatasetExist = transformer.generatePhysicalPlan(datasetExistLogicalPlan);
+                    List<TabularData> results = executor.executePhysicalPlanAndGetResults(physicalPlanForDoesDatasetExist);
+                    return results.size() > 0;
+                },
+                (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new SnowflakeDataTypeMapping()),
+                (executor, sink, tableName, schemaName, databaseName) -> sink.constructDatasetFromDatabase(tableName, schemaName, databaseName, new SnowflakeJdbcPropertiesToLogicalDataTypeMapping()),
+                connection);
+    }
+
     private SnowflakeSink()
     {
         super(
-            CAPABILITIES,
-            IMPLICIT_DATA_TYPE_MAPPING,
-            EXPLICIT_DATA_TYPE_MAPPING,
-            SqlGenUtils.QUOTE_IDENTIFIER,
-            LOGICAL_PLAN_VISITOR_BY_CLASS,
-            (executor, sink, dataset) ->
-            {
-                //TODO: pass transformer as an argument
-                RelationalTransformer transformer = new RelationalTransformer(SnowflakeSink.get());
-                LogicalPlan datasetExistLogicalPlan = LogicalPlanFactory.getLogicalPlanForDoesDatasetExist(dataset);
-                SqlPlan physicalPlanForDoesDatasetExist = transformer.generatePhysicalPlan(datasetExistLogicalPlan);
-                List<TabularData> results = executor.executePhysicalPlanAndGetResults(physicalPlanForDoesDatasetExist);
-                return results.size() > 0;
-            },
-            (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new SnowflakeDataTypeMapping()),
-            (executor, sink, tableName, schemaName, databaseName) -> sink.constructDatasetFromDatabase(tableName, schemaName, databaseName, new SnowflakeJdbcPropertiesToLogicalDataTypeMapping()));
+                CAPABILITIES,
+                IMPLICIT_DATA_TYPE_MAPPING,
+                EXPLICIT_DATA_TYPE_MAPPING,
+                SqlGenUtils.QUOTE_IDENTIFIER,
+                LOGICAL_PLAN_VISITOR_BY_CLASS,
+                (executor, sink, dataset) ->
+                {
+                    //TODO: pass transformer as an argument
+                    RelationalTransformer transformer = new RelationalTransformer(SnowflakeSink.get());
+                    LogicalPlan datasetExistLogicalPlan = LogicalPlanFactory.getLogicalPlanForDoesDatasetExist(dataset);
+                    SqlPlan physicalPlanForDoesDatasetExist = transformer.generatePhysicalPlan(datasetExistLogicalPlan);
+                    List<TabularData> results = executor.executePhysicalPlanAndGetResults(physicalPlanForDoesDatasetExist);
+                    return results.size() > 0;
+                },
+                (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new SnowflakeDataTypeMapping()),
+                (executor, sink, tableName, schemaName, databaseName) -> sink.constructDatasetFromDatabase(tableName, schemaName, databaseName, new SnowflakeJdbcPropertiesToLogicalDataTypeMapping()));
     }
 
     @Override

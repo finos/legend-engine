@@ -37,10 +37,10 @@ import org.finos.legend.engine.persistence.components.relational.executor.Relati
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
 import org.finos.legend.engine.persistence.components.relational.memsql.sql.MemSqlDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.memsql.sql.visitor.AlterVisitor;
+import org.finos.legend.engine.persistence.components.relational.memsql.sql.visitor.SQLCreateVisitor;
 import org.finos.legend.engine.persistence.components.relational.memsql.sql.visitor.SQLUpdateVisitor;
 import org.finos.legend.engine.persistence.components.relational.memsql.sql.visitor.SchemaDefinitionVisitor;
 import org.finos.legend.engine.persistence.components.relational.memsql.sql.visitor.ShowVisitor;
-import org.finos.legend.engine.persistence.components.relational.memsql.sql.visitor.SQLCreateVisitor;
 import org.finos.legend.engine.persistence.components.relational.sql.DataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
@@ -54,6 +54,7 @@ import org.finos.legend.engine.persistence.components.relational.transformer.Rel
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.util.Capability;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -126,20 +127,41 @@ public class MemSqlSink extends AnsiSqlSink
         return INSTANCE;
     }
 
+    public static RelationalSink get(Connection connection)
+    {
+        return new MemSqlSink(connection);
+    }
+
     private MemSqlSink()
     {
         super(
-            CAPABILITIES,
-            IMPLICIT_DATA_TYPE_MAPPING,
-            EXPLICIT_DATA_TYPE_MAPPING,
-            SqlGenUtils.BACK_QUOTE_IDENTIFIER,
-            LOGICAL_PLAN_VISITOR_BY_CLASS,
-            (executor, sink, dataset) -> sink.doesTableExist(dataset),
-            VALIDATE_MAIN_DATASET_SCHEMA,
-            (v, w, x, y, z) ->
-            {
-                throw new UnsupportedOperationException();
-            });
+                CAPABILITIES,
+                IMPLICIT_DATA_TYPE_MAPPING,
+                EXPLICIT_DATA_TYPE_MAPPING,
+                SqlGenUtils.BACK_QUOTE_IDENTIFIER,
+                LOGICAL_PLAN_VISITOR_BY_CLASS,
+                (executor, sink, dataset) -> sink.doesTableExist(dataset),
+                VALIDATE_MAIN_DATASET_SCHEMA,
+                (v, w, x, y, z) ->
+                {
+                    throw new UnsupportedOperationException();
+                });
+    }
+
+    public MemSqlSink(Connection connection)
+    {
+        super(
+                CAPABILITIES,
+                IMPLICIT_DATA_TYPE_MAPPING,
+                EXPLICIT_DATA_TYPE_MAPPING,
+                SqlGenUtils.BACK_QUOTE_IDENTIFIER,
+                LOGICAL_PLAN_VISITOR_BY_CLASS,
+                (executor, sink, dataset) -> sink.doesTableExist(dataset),
+                VALIDATE_MAIN_DATASET_SCHEMA,
+                (v, w, x, y, z) ->
+                {
+                    throw new UnsupportedOperationException();
+                }, connection);
     }
 
 

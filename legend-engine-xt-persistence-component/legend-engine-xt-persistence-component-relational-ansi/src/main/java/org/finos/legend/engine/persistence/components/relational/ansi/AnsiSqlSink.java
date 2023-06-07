@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.relational.ansi;
 
+import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Exists;
@@ -30,9 +31,9 @@ import org.finos.legend.engine.persistence.components.logicalplan.conditions.Or;
 import org.finos.legend.engine.persistence.components.logicalplan.constraints.CascadeTableConstraint;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReferenceImpl;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Join;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.JsonExternalDatasetReference;
@@ -60,15 +61,15 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.BatchSt
 import org.finos.legend.engine.persistence.components.logicalplan.values.Case;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DiffBinaryValueOperator;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
-import org.finos.legend.engine.persistence.components.logicalplan.values.ModuloBinaryValueOperator;
-import org.finos.legend.engine.persistence.components.logicalplan.values.OrderedField;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.HashFunction;
-import org.finos.legend.engine.persistence.components.logicalplan.values.ParseJsonFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.InfiniteBatchIdValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.ModuloBinaryValueOperator;
 import org.finos.legend.engine.persistence.components.logicalplan.values.NumericalValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ObjectValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.OrderedField;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Pair;
+import org.finos.legend.engine.persistence.components.logicalplan.values.ParseJsonFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.SelectValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.SumBinaryValueOperator;
@@ -77,6 +78,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.WindowF
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
+import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.LowerCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.AllQuantifierVisitor;
@@ -89,35 +91,36 @@ import org.finos.legend.engine.persistence.components.relational.ansi.sql.visito
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.BatchStartTimestampVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.CaseVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.DatasetDefinitionVisitor;
-import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.DerivedDatasetVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.DatasetReferenceVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.DeleteVisitor;
+import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.DerivedDatasetVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.DiffBinaryValueOperatorVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.DistinctQuantifierVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.EqualsVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.ExistsConditionVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.FieldValueVisitor;
-import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.ModuloBinaryValueOperatorVisitor;
-import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.OrderedFieldVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.FieldVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.FunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.GreaterThanEqualToVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.GreaterThanVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.HashFunctionVisitor;
-import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.InfiniteBatchIdValueVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.InVisitor;
+import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.InfiniteBatchIdValueVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.InsertVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.IsNullVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.JoinOperationVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.LessThanEqualToVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.LessThanVisitor;
+import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.ModuloBinaryValueOperatorVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.NotEqualsVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.NotInVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.NotVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.NumericalValueVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.ObjectValueVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.OrVisitor;
+import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.OrderedFieldVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.PairVisitor;
+import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.ParseJsonFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.SQLCreateVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.SQLDropVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.SQLMergeVisitor;
@@ -129,16 +132,20 @@ import org.finos.legend.engine.persistence.components.relational.ansi.sql.visito
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.ShowVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.StringValueVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.SumBinaryValueOperatorVisitor;
+import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.TableConstraintVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.TableModifierVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.TabularValuesVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.TruncateVisitor;
-import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.TableConstraintVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.WindowFunctionVisitor;
-import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.ParseJsonFunctionVisitor;
+import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
+import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
+import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
+import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.util.Capability;
 
+import java.sql.Connection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -227,48 +234,103 @@ public class AnsiSqlSink extends RelationalSink
         return INSTANCE;
     }
 
+    public static RelationalSink get(Connection connection)
+    {
+        return new AnsiSqlSink(connection);
+    }
+
     private AnsiSqlSink()
     {
         super(
-            Collections.emptySet(),
-            Collections.emptyMap(),
-            Collections.emptyMap(),
-            SqlGenUtils.QUOTE_IDENTIFIER,
-            LOGICAL_PLAN_VISITOR_BY_CLASS,
-            (x, y, z) ->
+                Collections.emptySet(),
+                Collections.emptyMap(),
+                Collections.emptyMap(),
+                SqlGenUtils.QUOTE_IDENTIFIER,
+                LOGICAL_PLAN_VISITOR_BY_CLASS,
+                (x, y, z) ->
             {
                 throw new UnsupportedOperationException();
             },
-            (x, y, z) ->
-            {
-                throw new UnsupportedOperationException();
-            },
-            (v, w, x, y, z) ->
-            {
-                throw new UnsupportedOperationException();
-            });
+                (x, y, z) ->
+                {
+                    throw new UnsupportedOperationException();
+                },
+                (v, w, x, y, z) ->
+                {
+                    throw new UnsupportedOperationException();
+                });
+        this.connection = null;
+    }
+
+    private AnsiSqlSink(Connection connection)
+    {
+        super(
+                Collections.emptySet(),
+                Collections.emptyMap(),
+                Collections.emptyMap(),
+                SqlGenUtils.QUOTE_IDENTIFIER,
+                LOGICAL_PLAN_VISITOR_BY_CLASS,
+                (x, y, z) ->
+                {
+                    throw new UnsupportedOperationException();
+                },
+                (x, y, z) ->
+                {
+                    throw new UnsupportedOperationException();
+                },
+                (v, w, x, y, z) ->
+                {
+                    throw new UnsupportedOperationException();
+                });
+        this.connection = connection;
     }
 
     protected AnsiSqlSink(
-        Set<Capability> capabilities,
-        Map<DataType, Set<DataType>> implicitDataTypeMapping,
-        Map<DataType, Set<DataType>> nonBreakingDataTypeMapping,
-        String quoteIdentifier,
-        Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass,
-        DatasetExists datasetExists,
-        ValidateMainDatasetSchema validateMainDatasetSchema,
-        ConstructDatasetFromDatabase constructDatasetFromDatabase)
+            Set<Capability> capabilities,
+            Map<DataType, Set<DataType>> implicitDataTypeMapping,
+            Map<DataType, Set<DataType>> nonBreakingDataTypeMapping,
+            String quoteIdentifier,
+            Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass,
+            DatasetExists datasetExists,
+            ValidateMainDatasetSchema validateMainDatasetSchema,
+            ConstructDatasetFromDatabase constructDatasetFromDatabase)
     {
         super(
-            capabilities,
-            implicitDataTypeMapping,
-            nonBreakingDataTypeMapping,
-            quoteIdentifier,
-            rightBiasedUnion(LOGICAL_PLAN_VISITOR_BY_CLASS, logicalPlanVisitorByClass),
-            datasetExists,
-            validateMainDatasetSchema,
-            constructDatasetFromDatabase);
+                capabilities,
+                implicitDataTypeMapping,
+                nonBreakingDataTypeMapping,
+                quoteIdentifier,
+                rightBiasedUnion(LOGICAL_PLAN_VISITOR_BY_CLASS, logicalPlanVisitorByClass),
+                datasetExists,
+                validateMainDatasetSchema,
+                constructDatasetFromDatabase);
+        this.connection = null;
     }
+
+    protected AnsiSqlSink(
+            Set<Capability> capabilities,
+            Map<DataType, Set<DataType>> implicitDataTypeMapping,
+            Map<DataType, Set<DataType>> nonBreakingDataTypeMapping,
+            String quoteIdentifier,
+            Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass,
+            DatasetExists datasetExists,
+            ValidateMainDatasetSchema validateMainDatasetSchema,
+            ConstructDatasetFromDatabase constructDatasetFromDatabase,
+            Connection connection)
+    {
+        super(
+                capabilities,
+                implicitDataTypeMapping,
+                nonBreakingDataTypeMapping,
+                quoteIdentifier,
+                rightBiasedUnion(LOGICAL_PLAN_VISITOR_BY_CLASS, logicalPlanVisitorByClass),
+                datasetExists,
+                validateMainDatasetSchema,
+                constructDatasetFromDatabase);
+        this.connection = connection;
+    }
+
+    private final Connection connection;
 
     @Override
     public Optional<Optimizer> optimizerForCaseConversion(CaseConversion caseConversion)
@@ -294,5 +356,11 @@ public class AnsiSqlSink extends RelationalSink
         union.putAll(map1);
         union.putAll(map2);
         return union;
+    }
+
+    @Override
+    public Executor<SqlGen, TabularData, SqlPlan> getRelationalExecutor()
+    {
+        return new RelationalExecutor(this, JdbcHelper.of(this.connection));
     }
 }
