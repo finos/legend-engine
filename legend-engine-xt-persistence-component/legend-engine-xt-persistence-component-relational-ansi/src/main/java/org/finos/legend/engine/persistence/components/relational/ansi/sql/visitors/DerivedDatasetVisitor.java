@@ -14,16 +14,32 @@
 
 package org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors;
 
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
+import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
+import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 public class DerivedDatasetVisitor implements LogicalPlanVisitor<DerivedDataset>
 {
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, DerivedDataset current, VisitorContext context)
     {
-        return new DatasetReferenceVisitor().visit(prev, current.datasetReference(), context);
+        Optional<Condition> filterCondition = LogicalPlanUtils.getDatasetFilterCondition(current);
+        List<Value> allColumns = new ArrayList<>(current.schemaReference().fieldValues());
+        Selection selection = Selection.builder()
+                .source(current.datasetReference())
+                .addAllFields(allColumns)
+                .condition(filterCondition.get())
+                .alias(current.datasetReference().alias())
+                .build();
+        return new SelectionVisitor().visit(prev, selection, context);
     }
 }

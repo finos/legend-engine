@@ -17,18 +17,12 @@ package org.finos.legend.engine.persistence.components.e2e;
 import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 import org.finos.legend.engine.persistence.components.common.FilterType;
 import org.finos.legend.engine.persistence.components.ingestmode.AppendOnly;
-import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDelta;
+import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshot;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicates;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
-import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
-import org.finos.legend.engine.persistence.components.relational.api.GeneratorResult;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalGenerator;
 import org.finos.legend.engine.persistence.components.relational.bigquery.BigQuerySink;
-import org.finos.legend.engine.persistence.components.scenarios.AppendOnlyScenarios;
-import org.finos.legend.engine.persistence.components.scenarios.TestScenario;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -37,16 +31,15 @@ import java.util.List;
 import java.util.Map;
 
 @Disabled
-public class AppendOnlyTest extends BigQueryEndToEndTest
+public class NonTemporalSnapshotTest extends BigQueryEndToEndTest
 {
 
     @Test
     public void testMilestoning() throws IOException, InterruptedException
     {
-        AppendOnly ingestMode = AppendOnly.builder()
-                .digestField("digest")
-                .deduplicationStrategy(FilterDuplicates.builder().build())
-                .auditing(DateTimeAuditing.builder().dateTimeField("audit_ts").build())
+        NontemporalSnapshot ingestMode = NontemporalSnapshot
+                .builder()
+                .auditing(NoAuditing.builder().build())
                 .build();
 
         RelationalGenerator generator = RelationalGenerator.builder()
@@ -69,8 +62,8 @@ public class AppendOnlyTest extends BigQueryEndToEndTest
 
         // Verify
         List<Map<String, Object>> tableData = runQuery("select * from `demo`.`main` order by id asc");
-        String expectedPath = "src/test/resources/expected/append/data_pass1.csv";
-        String [] schema = new String[] {"id", "name", "amount", "biz_date", "digest", "insert_ts", "audit_ts"};
+        String expectedPath = "src/test/resources/expected/nontemporal_snapshot/data_pass1.csv";
+        String [] schema = new String[] {"id", "name", "amount", "biz_date", "digest", "insert_ts"};
         assertFileAndTableDataEquals(schema, expectedPath, tableData);
 
         // Pass 2
@@ -80,8 +73,8 @@ public class AppendOnlyTest extends BigQueryEndToEndTest
         ingest(generator, stagingFilter, pathPass2);
 
         // Verify
-        tableData = runQuery("select * from `demo`.`main` order by id asc, insert_ts");
-        expectedPath = "src/test/resources/expected/append/data_pass2.csv";
+        tableData = runQuery("select * from `demo`.`main` order by id asc");
+        expectedPath = "src/test/resources/expected/nontemporal_snapshot/data_pass2.csv";
         assertFileAndTableDataEquals(schema, expectedPath, tableData);
     }
 }
