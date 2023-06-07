@@ -19,7 +19,41 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static org.finos.legend.engine.persistence.components.BaseTestUtils.*;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colBigint;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colBinary;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colBool;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colBoolean;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colBytes;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colBytesWithLength;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colChar;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colCharacter;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colDate;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colDatetime;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colDecimal;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colDecimalWithPrecision;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colDecimalWithScale;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colDouble;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colFloat;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colFloat64;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colInt;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colInt64;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colInteger;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colJson;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colLongVarBinary;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colLongVarchar;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colLongtext;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colNumber;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colNumeric;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colReal;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colSmallint;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colString;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colStringWithLength;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colText;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colTime;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colTimestamp;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colTinyint;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colVarBinary;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.colVarchar;
 
 public class DataTypeMappingTest
 {

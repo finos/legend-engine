@@ -29,7 +29,11 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.tabletyp
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.*;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.CLOSING_PARENTHESIS;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.COMMA;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.EMPTY;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.OPEN_PARENTHESIS;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.WHITE_SPACE;
 
 public class CreateTable implements DDLStatement
 {
