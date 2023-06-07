@@ -26,7 +26,10 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.finos.legend.engine.persistence.components.BaseTestUtils.*;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.schemaWithAllColumns;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.schemaWithClusteringAndPartitionKey;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.schemaWithClusteringKey;
+import static org.finos.legend.engine.persistence.components.BaseTestUtils.schemaWithPartitionKey;
 
 public class CreateTableTest
 {
@@ -35,12 +38,12 @@ public class CreateTableTest
     public void testCreateTable()
     {
         DatasetDefinition dataset = DatasetDefinition.builder()
-            .database("my_db")
-            .group("my_schema")
-            .name("my_table")
-            .alias("my_alias")
-            .schema(schemaWithAllColumns)
-            .build();
+                .database("my_db")
+                .group("my_schema")
+                .name("my_table")
+                .alias("my_alias")
+                .schema(schemaWithAllColumns)
+                .build();
         Operation create = Create.of(true, dataset);
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(create).build();
         RelationalTransformer transformer = new RelationalTransformer(BigQuerySink.get());
@@ -90,12 +93,12 @@ public class CreateTableTest
     public void testCreateTableWithUpperCase()
     {
         DatasetDefinition dataset = DatasetDefinition.builder()
-            .database("my_db")
-            .group("my_schema")
-            .name("my_table")
-            .alias("my_alias")
-            .schema(schemaWithAllColumns)
-            .build();
+                .database("my_db")
+                .group("my_schema")
+                .name("my_table")
+                .alias("my_alias")
+                .schema(schemaWithAllColumns)
+                .build();
         Operation create = Create.of(true, dataset);
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(create).build();
         RelationalTransformer transformer = new RelationalTransformer(BigQuerySink.get(), TransformOptions.builder().addOptimizers(new UpperCaseOptimizer()).build());
@@ -146,12 +149,12 @@ public class CreateTableTest
     public void testCreateTableWithClusteringKey()
     {
         DatasetDefinition dataset = DatasetDefinition.builder()
-            .database("my_db")
-            .group("my_schema")
-            .name("my_table")
-            .alias("my_alias")
-            .schema(schemaWithClusteringKey)
-            .build();
+                .database("my_db")
+                .group("my_schema")
+                .name("my_table")
+                .alias("my_alias")
+                .schema(schemaWithClusteringKey)
+                .build();
         Operation create = Create.of(true, dataset);
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(create).build();
         RelationalTransformer transformer = new RelationalTransformer(BigQuerySink.get());
@@ -172,12 +175,12 @@ public class CreateTableTest
     public void testCreateTableWithClusteringKeyWithUpperCase()
     {
         DatasetDefinition dataset = DatasetDefinition.builder()
-            .database("my_db")
-            .group("my_schema")
-            .name("my_table")
-            .alias("my_alias")
-            .schema(schemaWithClusteringKey)
-            .build();
+                .database("my_db")
+                .group("my_schema")
+                .name("my_table")
+                .alias("my_alias")
+                .schema(schemaWithClusteringKey)
+                .build();
         Operation create = Create.of(true, dataset);
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(create).build();
         RelationalTransformer transformer = new RelationalTransformer(BigQuerySink.get(), TransformOptions.builder().addOptimizers(new UpperCaseOptimizer()).build());

@@ -14,8 +14,21 @@
 
 package org.finos.legend.engine.persistence.components.relational.bigquery.executor;
 
-import com.google.cloud.bigquery.*;
-import java.util.*;
+import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.ConnectionProperty;
+import com.google.cloud.bigquery.Field;
+import com.google.cloud.bigquery.FieldValueList;
+import com.google.cloud.bigquery.Job;
+import com.google.cloud.bigquery.JobId;
+import com.google.cloud.bigquery.JobInfo;
+import com.google.cloud.bigquery.QueryJobConfiguration;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class BigQueryTransactionManager
 {
@@ -57,7 +70,7 @@ public class BigQueryTransactionManager
     {
         if (this.sessionId != null)
         {
-                executeSql("COMMIT TRANSACTION");
+            executeSql("COMMIT TRANSACTION");
         }
     }
 

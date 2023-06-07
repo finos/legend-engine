@@ -14,10 +14,15 @@
 
 package org.finos.legend.engine.persistence.components.relational.bigquery.executor;
 
-import com.google.cloud.bigquery.*;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.*;
+import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.FieldList;
+import com.google.cloud.bigquery.Table;
+import com.google.cloud.bigquery.TableId;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutionHelper;
 import org.finos.legend.engine.persistence.components.relational.sql.DataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.sql.JdbcPropertiesToLogicalDataTypeMapping;
@@ -28,7 +33,11 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.schemaop
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class BigQueryHelper implements RelationalExecutionHelper
 {
