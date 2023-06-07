@@ -59,7 +59,9 @@ public class TableNameExtractorTest
     public void testFunctionCall()
     {
         List<QualifiedName> qualifiedNames = getQualifiedNames("SELECT * FROM service('/my/service')");
-        assertEquals(0, qualifiedNames.size());
+        assertEquals(1, qualifiedNames.size());
+        QualifiedName qualifiedName = Iterables.getOnlyElement(qualifiedNames);
+        assertEquals(Lists.mutable.of("service"), qualifiedName.parts);
     }
 
     private static List<QualifiedName> getQualifiedNames(String query)

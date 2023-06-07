@@ -112,6 +112,24 @@ public class PostgresServerTest
     }
 
     @Test
+    public void testTableFunctionSyntax() throws SQLException
+    {
+        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                "dummy", "dummy");
+             PreparedStatement statement = connection.prepareStatement("SELECT * FROM service('/personService')");
+             ResultSet resultSet = statement.executeQuery()
+        )
+        {
+            int rows = 0;
+            while (resultSet.next())
+            {
+                rows++;
+            }
+            Assert.assertEquals(4, rows);
+        }
+    }
+
+    @Test
     public void testSelectWithoutTable() throws SQLException
     {
         try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",

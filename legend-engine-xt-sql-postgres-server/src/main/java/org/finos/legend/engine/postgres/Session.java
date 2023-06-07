@@ -40,21 +40,14 @@ import java.util.concurrent.CompletableFuture;
 public class Session implements AutoCloseable
 {
 
-    private static final TableNameExtractor EXTRACTOR = new TableNameExtractor();
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(Session.class);
-    private static final SessionHandler emptySessionHandler = new EmptySessionHandler();
-
-
     private final Map<String, Prepared> parsed = new HashMap<>();
     private final Map<String, Portal> portals = new HashMap<>();
-
-    private final SessionHandler dataSessionHandler;
-    private final SessionHandler metaDataSessionHandler;
+    private final ExecutionDispatcher dispatcher;
 
     public Session(SessionHandler dataSessionHandler, SessionHandler metaDataSessionHandler)
     {
-        this.dataSessionHandler = dataSessionHandler;
-        this.metaDataSessionHandler = metaDataSessionHandler;
+        this.dispatcher = new ExecutionDispatcher(dataSessionHandler, metaDataSessionHandler);
     }
 
     public CompletableFuture<?> sync()
@@ -105,32 +98,8 @@ public class Session implements AutoCloseable
     private SessionHandler getSessionHandler(String query)
     {
         SqlBaseParser parser = SQLGrammarParser.getSqlBaseParser(query, "query");
-        SqlBaseParser.SingleStatementContext ctx = parser.singleStatement();
-        SqlBaseParser.StatementContext statement = ctx.statement();
-
-        if (statement instanceof SqlBaseParser.DefaultContext)
-        {
-            SqlBaseParser.DefaultContext defaultContext = (SqlBaseParser.DefaultContext) statement;
-            List<QualifiedName> qualifiedNames = EXTRACTOR.visitDefault(defaultContext);
-            boolean isMetadataQuery = qualifiedNames.isEmpty() || qualifiedNames.stream().flatMap(i -> i.parts.stream()).anyMatch(SystemSchemas::contains);
-            if (isMetadataQuery)
-            {
-                return metaDataSessionHandler;
-            }
-            else
-            {
-                return dataSessionHandler;
-            }
-        }
-        else if (statement instanceof SqlBaseParser.SetContext)
-        {
-            // TODO: Handle SET queries
-            return emptySessionHandler;
-        }
-        else
-        {
-            return metaDataSessionHandler;
-        }
+        SqlBaseParser.SingleStatementContext singleStatementContext = parser.singleStatement();
+        return dispatcher.visitSingleStatement(singleStatementContext);
     }
 
 
@@ -358,7 +327,7 @@ public class Session implements AutoCloseable
         }
         try
         {
-            PostgresStatement statement = dataSessionHandler.createStatement();
+            PostgresStatement statement = getSessionHandler(query).createStatement();
             boolean results = statement.execute(query);
             if (!results)
             {
