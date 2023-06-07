@@ -39,9 +39,17 @@ public class ExecutionDispatcher extends SqlBaseParserBaseVisitor<SessionHandler
     @Override
     public SessionHandler visitSet(SqlBaseParser.SetContext ctx)
     {
+        // TODO: Handle set queries instead of returning empty result set
         return EMPTY_SESSION_HANDLER;
     }
 
+    /**
+     * Visit the <code>SELECT</code> query context.
+     * Select query gets the name default from the antlr definition
+     *
+     * @param ctx the parse tree
+     * @return the session handler responsible for handling given query
+     */
     @Override
     public SessionHandler visitDefault(SqlBaseParser.DefaultContext ctx)
     {
