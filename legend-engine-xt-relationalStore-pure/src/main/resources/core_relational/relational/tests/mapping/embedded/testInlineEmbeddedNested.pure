@@ -117,40 +117,42 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inl
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::relational::tests::mapping::embedded::advanced::inline::nested::testInlineInEmbeddedGraphFetch():Boolean[1]
 {
-   let tree = #{
-                  BondDetail {
-                                type,
-                                issuer { address { name } },
-                                holder { address { name } }
-                             }
+  let tree = #{
+                BondDetail {
+                              type,
+                              issuer { address { name } },
+                              holder { address { name } }
+                           }
               }#;
-   let result = execute(|BondDetail.all()->filter(b | $b.holder.address.name == 'addressh1')->graphFetch($tree)->serialize($tree)
-                                    , testInlineInEmbeddedPropertyMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+  let result = execute(|BondDetail.all()->filter(b | $b.holder.address.name == 'addressh1')->graphFetch($tree)->serialize($tree), testInlineInEmbeddedPropertyMapping, testRuntime(), meta::relational::extension::relationalExtensions());
   assertJsonStringsEqual('[{"holder":{"address":{"name":"addressh1"}},"type":"5 years","issuer":{"address":{"name":"addressi1"}}},{"holder":{"address":{"name":"addressh1"}},"type":"5 years","issuer":{"address":{"name":"addressi2"}}}]' , $result.values);
 }
 
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::relational::tests::mapping::embedded::advanced::inline::nested::testInlineInEmbeddedGraphFetchMilestoned():Boolean[1]
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::relational::tests::mapping::embedded::advanced::inline::nested::testMilestonedEmbeddedGraphFetch():Boolean[1]
 {
    let tree = #{
-                  BondDetail {
-                                type,
-                                risk(%2022-10-20T23:59:59) { creditRating }
-                             }
+                  Person {
+                            address(%2022-10-20T23:59:59) {
+                                                            state
+                                                          }
+                         }
               }#;
-   let result = execute(|BondDetail.all() ->graphFetch($tree)->serialize($tree)
-                                    ,testMappingEmbedded, testRuntime(), meta::relational::extension::relationalExtensions());
-  assertJsonStringsEqual('[{"risk(2022-10-20T23:59:59+0000)":{"creditRating":7},"type":"5 years"},{"risk(2022-10-20T23:59:59+0000)":null,"type":"5 years"},{"risk(2022-10-20T23:59:59+0000)":{"creditRating":9},"type":"7 weeks"}]' , $result.values);
+   let result = execute(|Person.all()->graphFetch($tree)->serialize($tree), testMilestonedEmbeddedInlineMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   assertJsonStringsEqual('[{"address(2022-10-20T23:59:59+0000)":null},{"address(2022-10-20T23:59:59+0000)":{"state":"TX"}},{"address(2022-10-20T23:59:59+0000)":{"state":"NY"}}]' , $result.values);
 }
 
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::relational::tests::mapping::embedded::advanced::inline::nested::testEmbeddedGraphFetchMilestoned():Boolean[1]
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::relational::tests::mapping::embedded::advanced::inline::nested::testMilestonedEmbeddedInlineGraphFetch():Boolean[1]
 {
    let tree = #{
-                  BondDetail {
-                                type,
-                                risk(%2022-10-20T23:59:59) { creditRating }
-                             }
+                  Person {
+                            address(%2022-10-20T23:59:59) {
+                                                            state,
+                                                            unit (%2022-10-20T23:59:59) {
+                                                                                          number
+                                                                                        }
+                                                          }
+                         }
               }#;
-   let result = execute(|BondDetail.all() ->graphFetch($tree)->serialize($tree)
-                                    ,testEmbeddedMappingMilestoned, testRuntime(), meta::relational::extension::relationalExtensions());
-   assertJsonStringsEqual('[{"risk(2022-10-20T23:59:59+0000)":{"creditRating":7},"type":"5 years"},{"risk(2022-10-20T23:59:59+0000)":null,"type":"5 years"},{"risk(2022-10-20T23:59:59+0000)":{"creditRating":9},"type":"7 weeks"}]' , $result.values);
+   let result = execute(|Person.all()->graphFetch($tree)->serialize($tree), testMilestonedEmbeddedInlineMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   assertJsonStringsEqual('[{"address(2022-10-20T23:59:59+0000)":null},{"address(2022-10-20T23:59:59+0000)":{"state":"TX","unit(2022-10-20T23:59:59+0000)":{"number":8}}},{"address(2022-10-20T23:59:59+0000)":{"state":"NY","unit(2022-10-20T23:59:59+0000)":{"number":9}}}]' , $result.values);
 }

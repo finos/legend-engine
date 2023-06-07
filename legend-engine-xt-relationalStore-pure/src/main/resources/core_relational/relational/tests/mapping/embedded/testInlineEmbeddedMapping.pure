@@ -137,13 +137,14 @@ function meta::relational::tests::mapping::embedded::advanced::store::createTabl
   meta::relational::functions::toDDL::dropAndCreateTableInDb(eDB, 'BOND_DETAIL', $connection);
   meta::relational::functions::toDDL::dropAndCreateTableInDb(eDB, 'Party', $connection);
   meta::relational::functions::toDDL::dropAndCreateTableInDb(eDB, 'BondClassificationTable', $connection);
+  meta::relational::functions::toDDL::dropAndCreateTableInDb(eDB, 'Person', $connection);
 
-  let s = 'insert into PRODUCT_DENORM (PRODUCT_ID, PRODUCT_NAME, MARKET_NAME, BOND_DETAILS, BOND_TYPE,BOND_STATUS,ISSUER,HOLDER,ISSUER_ADDRESS_NAME,HOLDER_ADDRESS_NAME,SUBPRODUCT_ID,SUBPRODUCT_NAME, CREDIT_RATING, in_z, out_z ) values ';
+  let s = 'insert into PRODUCT_DENORM (PRODUCT_ID, PRODUCT_NAME, MARKET_NAME, BOND_DETAILS, BOND_TYPE,BOND_STATUS,ISSUER,HOLDER,ISSUER_ADDRESS_NAME,HOLDER_ADDRESS_NAME,SUBPRODUCT_ID,SUBPRODUCT_NAME ) values ';
 
 
-  executeInDb($s + '(1, \'Product 1\', \'LSE\', \'Bond 1\', \'5 years\',\'Open\',\'issuer1\',\'holder1\',\'addressi1\',\'addressh1\',2,\'Product 2\', 7, \'2022-10-20 23:59:59\', \'9999-12-31 00:00:00\' );', $connection);
-  executeInDb($s + '(2, \'Product 2\', \'LSE\',   \'Bond 2\', \'5 years\',\'Open\',\'issuer2\',\'holder1\',\'addressi2\',\'addressh1\', 5, \'Product 3\', 8, \'2022-10-21 23:59:59\', \'9999-12-31 00:00:00\' );',  $connection);
-  executeInDb($s + '(5, \'Product 3\', \'MILAN\', \'SuperBond 3 super\', \'7 weeks\',\'Closed\',\'issuer3\',\'holder3\' ,\'addressi3\',\'addressh3\',2,\'Product 2\', 9, \'2022-10-20 23:59:59\', \'9999-12-31 00:00:00\' );', $connection);
+  executeInDb($s + '(1, \'Product 1\', \'LSE\', \'Bond 1\', \'5 years\',\'Open\',\'issuer1\',\'holder1\',\'addressi1\',\'addressh1\',2,\'Product 2\' );', $connection);
+  executeInDb($s + '(2, \'Product 2\', \'LSE\',   \'Bond 2\', \'5 years\',\'Open\',\'issuer2\',\'holder1\',\'addressi2\',\'addressh1\', 5, \'Product 3\' );',  $connection);
+  executeInDb($s + '(5, \'Product 3\', \'MILAN\', \'SuperBond 3 super\', \'7 weeks\',\'Closed\',\'issuer3\',\'holder3\' ,\'addressi3\',\'addressh3\',2,\'Product 2\' );', $connection);
 
   let b = 'insert into BOND_DETAIL (BOND_ID, NOT_SO_GOOD_DETAIL, TYPE, STATUS, HOLDERID ) values ';
 
@@ -161,6 +162,11 @@ function meta::relational::tests::mapping::embedded::advanced::store::createTabl
   let d = 'insert into BondClassificationTable(PRODUCT_ID, TYPE) values ';
    
   executeInDb($d + '(1, \'Corporate\');', $connection);
+
+  let e = 'insert into Person (id, state, unitNumber, in_z, out_z ) values ';
+  executeInDb($e + '(1, \'CA\', 7, \'2022-10-21 23:59:59\', \'9999-12-31 00:00:00\' );', $connection);
+  executeInDb($e + '(2, \'TX\', 8, \'2022-10-20 23:59:59\', \'9999-12-31 00:00:00\' );', $connection);
+  executeInDb($e + '(3, \'NY\', 9, \'2022-10-20 23:59:59\', \'9999-12-31 00:00:00\' );', $connection);
 
   true;
 }
@@ -192,10 +198,6 @@ Class meta::relational::tests::mapping::embedded::advanced::model::Party
    
 }
 
-Class <<temporal.processingtemporal>> meta::relational::tests::mapping::embedded::advanced::model::RiskInfo
-{
-  creditRating : Integer[1];
-}
 
 Class meta::relational::tests::mapping::embedded::advanced::model::BondDetail
 {
@@ -204,7 +206,6 @@ Class meta::relational::tests::mapping::embedded::advanced::model::BondDetail
   status: Status[1];
   issuer:Party[1];
   holder:Party[1];
-  risk : RiskInfo[0..1];
 
   isBond(){true}:Boolean[1];
   duration(){if($this.type->startsWith('5'),|5,|0)}:Integer[1];
@@ -233,6 +234,22 @@ Association meta::relational::tests::mapping::embedded::advanced::model::BondDet
     bondClassification : meta::relational::tests::mapping::embedded::advanced::model::BondClassification[*];
 }
 
+Class meta::relational::tests::mapping::embedded::advanced::model::Person
+{
+  id : Integer[1];
+  address : meta::relational::tests::mapping::embedded::advanced::model::AddressInfo[1];
+}
+
+Class <<temporal.processingtemporal>> meta::relational::tests::mapping::embedded::advanced::model::AddressInfo
+{
+  state : String[1];
+  unit : meta::relational::tests::mapping::embedded::advanced::model::Unit[1];
+}
+
+Class <<temporal.processingtemporal>> meta::relational::tests::mapping::embedded::advanced::model::Unit
+{
+  number : Integer[1];
+}
 
 ###Relational
 
@@ -241,10 +258,6 @@ Database meta::relational::tests::mapping::embedded::advanced::store::eDB
 
   Table PRODUCT_DENORM
   (
-      milestoning
-      (
-        processing(PROCESSING_IN=in_z, PROCESSING_OUT=out_z)
-      )
       PRODUCT_ID INT PRIMARY KEY,
       PRODUCT_NAME VARCHAR(200),
       MARKET_NAME VARCHAR(200),
@@ -260,10 +273,7 @@ Database meta::relational::tests::mapping::embedded::advanced::store::eDB
       HOLDER_ADDRESS_NAME VARCHAR(200),
       HOLDER_ADDRESS_STREET VARCHAR(200),
       SUBPRODUCT_ID INT,
-      SUBPRODUCT_NAME VARCHAR(200),
-      CREDIT_RATING INT,
-      in_z TIMESTAMP,
-      out_z TIMESTAMP
+      SUBPRODUCT_NAME VARCHAR(200)
   )
 
    Join productSelfJoin(PRODUCT_DENORM.PRODUCT_ID = {target}.PRODUCT_ID)
@@ -297,6 +307,18 @@ Database meta::relational::tests::mapping::embedded::advanced::store::eDB
   Filter productFilter1(PRODUCT_DENORM.BOND_STATUS = 'Open' )
   Filter productFilter2(PRODUCT_DENORM.BOND_STATUS != 'Open' )
 
+  Table Person
+  (
+    milestoning
+    (
+      processing(PROCESSING_IN=in_z, PROCESSING_OUT=out_z)
+    )
+    id INT PRIMARY KEY,
+    state VARCHAR(25),
+    unitNumber INT,
+    in_z TIMESTAMP,
+    out_z TIMESTAMP
+  )
 )
 
 ###Mapping
@@ -327,16 +349,7 @@ Mapping meta::relational::tests::mapping::embedded::advanced::mapping::testMappi
       scope([eDB]PRODUCT_DENORM)
       (
          description:BOND_DETAILS,
-         type: BOND_TYPE,
-         risk () Inline[RiskInfoMapping]
-      )
-   }
-
-   RiskInfo[RiskInfoMapping] : Relational
-   {
-      scope([eDB]PRODUCT_DENORM)
-      (
-         creditRating : CREDIT_RATING
+         type: BOND_TYPE
       )
    }
      
@@ -361,17 +374,22 @@ Mapping meta::relational::tests::mapping::embedded::advanced::mapping::testMappi
    }
 )
 
-Mapping meta::relational::tests::mapping::embedded::advanced::mapping::testEmbeddedMappingMilestoned
+Mapping meta::relational::tests::mapping::embedded::advanced::model::testMilestonedEmbeddedInlineMapping
 (
-   BondDetail[myBondMapping]: Relational
+   meta::relational::tests::mapping::embedded::advanced::model::Person[personMapping] : Relational
    {
-      scope([eDB]PRODUCT_DENORM)
+      id : [eDB]Person.id,
+      address
       (
-         type: BOND_TYPE,
-         risk
-         (
-          creditRating : CREDIT_RATING
-         )
+        state : [eDB]Person.state,
+        unit () Inline[UnitInfoMapping]
+      )
+   }
+   meta::relational::tests::mapping::embedded::advanced::model::Unit[UnitInfoMapping] : Relational
+   {
+      scope([eDB]Person)
+      (
+        number : unitNumber
       )
    }
 )
