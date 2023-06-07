@@ -109,6 +109,12 @@ public class DataSourceSpecificationParseTreeWalker
         {
             dsSpec.quotedIdentifiersIgnoreCase = Boolean.parseBoolean(snowflakeQuotedIdentifiersIgnoreCaseCtx.BOOLEAN().getText());
         }
+        // enableQueryTags
+        DataSourceSpecificationParserGrammar.EnableQueryTagsContext snowflakeQueryTagsCtx = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.enableQueryTags(), "enableQueryTags", dsSpec.sourceInformation);
+        if (snowflakeQueryTagsCtx != null)
+        {
+            dsSpec.enableQueryTags = Boolean.parseBoolean(snowflakeQueryTagsCtx.BOOLEAN().getText());
+        }
         // proxyHost
         DataSourceSpecificationParserGrammar.DbProxyHostContext proxyHostContext = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.dbProxyHost(), "proxyHost", dsSpec.sourceInformation);
         Optional.ofNullable(proxyHostContext).ifPresent(hostCtx -> dsSpec.proxyHost = PureGrammarParserUtility.fromGrammarString(hostCtx.STRING().getText(), true));

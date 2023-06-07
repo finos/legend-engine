@@ -675,7 +675,7 @@ public class HelperRelationalGrammarComposer
                     context.getIndentationString() + getTabString(baseIndentation + 1) + "region: " + convertString(spec.region, true) + ";\n" +
                     (spec.cloudType != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "cloudType: " + convertString(spec.cloudType, true) + ";\n" : "") +
                     (spec.quotedIdentifiersIgnoreCase != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "quotedIdentifiersIgnoreCase: " + spec.quotedIdentifiersIgnoreCase + ";\n" : "") +
-
+                    (spec.enableQueryTags != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "enableQueryTags: " + spec.enableQueryTags + ";\n" : "") +
                     (spec.proxyHost != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "proxyHost: " + convertString(spec.proxyHost, true) + ";\n" : "") +
                     (spec.proxyPort != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "proxyPort: " + convertString(spec.proxyPort, true) + ";\n" : "") +
                     (spec.nonProxyHosts != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "nonProxyHosts: " + convertString(spec.nonProxyHosts, true) + ";\n" : "") +

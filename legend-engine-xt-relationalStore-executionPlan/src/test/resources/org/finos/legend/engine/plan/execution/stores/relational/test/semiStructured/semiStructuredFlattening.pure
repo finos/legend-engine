@@ -120,7 +120,13 @@ Runtime flatten::runtime::SnowflakeRuntime
                 RelationalDatabaseConnection {
                     store: flatten::store::SnowflakeDB;
                     type: Snowflake;
-                    specification: LocalH2{};
+                    specification: Snowflake
+                    {
+                        name: 'dbName';
+                        account: 'account';
+                        warehouse: 'warehouse';
+                        region: 'region';
+                    };
                     auth: Test;
                 }
             }#

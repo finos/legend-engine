@@ -285,15 +285,15 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
               let mapping            = $routingStrategy.mapping;
               let permSetsHavingRootClassImpl  = $routingStrategy.sets->filter(x | $x.sets->exists(setImpl | $setImpl.class == $rootGraphFetchTree.class));
               let permSetsNotHavingRootClassImpl =  $routingStrategy.sets->filter(x | !$x->in($permSetsHavingRootClassImpl));
-              let subTypeSetImplementations = $rootGraphFetchTree.subTypeTrees->map(x | let setImpl = $mapping->rootClassMappingByClass($x.subTypeClass)->resolveOperation($mapping);
-                                                                                        assert($setImpl->isNotEmpty(),'Mapping for subtype ' + $x.subTypeClass.name->toOne() + ' not found.');
-                                                                                        $setImpl;
-                                                                                   );
-              let resolvedPermSetsHavingRootClassImpl = $permSetsHavingRootClassImpl->map(pSet | ^$pSet(sets = $pSet.sets->map(s | if($s->instanceOf(OperationSetImplementation) && $s->cast(@OperationSetImplementation).operation.name == 'inheritance_OperationSetImplementation_1__SetImplementation_MANY_',
+
+
+              let resolvedPermSetsHavingRootClassImpl = $permSetsHavingRootClassImpl->map(pSet | ^$pSet(sets = $pSet.sets->map(s |  let setImplToBeProcessed = [inheritance_OperationSetImplementation_1__SetImplementation_MANY_,union_OperationSetImplementation_1__SetImplementation_MANY_];
+                                                                                                                                    assert(!($rootGraphFetchTree.subTypeTrees->size() > 0 && !($s->instanceOf(OperationSetImplementation) && $s->cast(@OperationSetImplementation).operation->in($setImplToBeProcessed))), 'union or inheritance mapping should be used with subTypeGraphFetchTree');
+                                                                                                                                    if($s->instanceOf(OperationSetImplementation) && $s->cast(@OperationSetImplementation).operation->in($setImplToBeProcessed),
                                                                                                                                       | $s->resolveOperation($mapping),
                                                                                                                                       | $s
-                                                                                                                                     );
-                                                                                                                              )->concatenate($subTypeSetImplementations)->removeDuplicates()
+                                                                                                                                    );
+                                                                                                                              )
                                                                                                        );
                                                                                           );
               ^$processedFunction(routingStrategy = ^$routingStrategy(sets = $resolvedPermSetsHavingRootClassImpl->concatenate($permSetsNotHavingRootClassImpl)));,

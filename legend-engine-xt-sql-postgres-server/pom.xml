@@ -3,7 +3,7 @@
     <parent>
         <artifactId>legend-engine</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.15.3-SNAPSHOT</version>
+        <version>4.15.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -64,7 +64,7 @@
                         </executions>
                         <configuration>
                             <to>
-                                <tag>${project.version}</tag>
+                                <tags>${project.version}</tags>
                                 <image>registry.hub.docker.com/${env.DOCKER_USERNAME}/${project.artifactId}</image>
                                 <auth>
                                     <username>${env.DOCKER_USERNAME}</username>
@@ -202,6 +202,11 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.prometheus.jmx</groupId>
+            <artifactId>jmx_prometheus_javaagent</artifactId>
             <scope>runtime</scope>
         </dependency>
 
