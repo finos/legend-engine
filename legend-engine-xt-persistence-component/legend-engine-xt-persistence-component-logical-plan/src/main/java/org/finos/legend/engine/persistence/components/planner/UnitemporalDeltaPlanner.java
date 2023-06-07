@@ -18,7 +18,7 @@ import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDelta;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DatasetFilterAndDeduplicator;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DatasetDeduplicator;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningConditionVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyVisitors;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
@@ -84,7 +84,7 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
         this.dataSplitInRangeCondition = ingestMode.dataSplitField().map(field -> LogicalPlanUtils.getDataSplitInRangeCondition(stagingDataset(), field));
         // Perform Deduplication & Filtering of Staging Dataset
         this.enrichedStagingDataset = ingestMode().versioningStrategy()
-            .accept(new DatasetFilterAndDeduplicator(stagingDataset(), primaryKeys));
+            .accept(new DatasetDeduplicator(stagingDataset(), primaryKeys));
         this.versioningCondition = ingestMode().versioningStrategy()
             .accept(new VersioningConditionVisitor(mainDataset(), stagingDataset(), false, ingestMode().digestField()));
         this.inverseVersioningCondition = ingestMode.versioningStrategy()

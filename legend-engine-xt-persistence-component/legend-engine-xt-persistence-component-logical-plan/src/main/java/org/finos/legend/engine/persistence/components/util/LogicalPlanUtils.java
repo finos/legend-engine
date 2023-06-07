@@ -320,7 +320,7 @@ public class LogicalPlanUtils
     public static Selection getRecordCount(Dataset dataset, String alias, Optional<Condition> condition)
     {
         return Selection.builder()
-                .source(dataset.datasetReference())
+                .source(dataset)
                 .addFields(FunctionImpl.builder().functionName(FunctionName.COUNT).alias(alias).addValue(All.INSTANCE).build())
                 .condition(condition)
                 .build();

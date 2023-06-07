@@ -20,7 +20,7 @@ import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalDelta;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitors;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DatasetFilterAndDeduplicator;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DatasetDeduplicator;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningConditionVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyVisitors;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
@@ -93,7 +93,7 @@ class NontemporalDeltaPlanner extends Planner
 
         // Perform Deduplication & Filtering of Staging Dataset
         this.enrichedStagingDataset = ingestMode().versioningStrategy()
-            .accept(new DatasetFilterAndDeduplicator(stagingDataset(), primaryKeys));
+            .accept(new DatasetDeduplicator(stagingDataset(), primaryKeys));
     }
 
     @Override

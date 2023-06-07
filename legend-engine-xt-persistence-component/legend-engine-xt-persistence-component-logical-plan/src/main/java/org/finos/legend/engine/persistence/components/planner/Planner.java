@@ -210,7 +210,7 @@ public abstract class Planner
 
     protected void addPostRunStatsForIncomingRecords(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
     {
-        Optional<Condition> filterCondition = LogicalPlanUtils.getDatasetFilterCondition(stagingDataset());
+        Optional<Condition> filterCondition = Optional.empty();
         if (dataSplitExecutionSupported())
         {
             Optional<Condition> dataSplitInRangeCondition = getDataSplitInRangeConditionForStatistics();

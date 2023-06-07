@@ -15,15 +15,20 @@
 package org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors;
 
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNode;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.statements.SelectStatement;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
+import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class SelectionVisitor implements LogicalPlanVisitor<Selection>
 {
@@ -36,7 +41,30 @@ public class SelectionVisitor implements LogicalPlanVisitor<Selection>
         prev.push(selectStatement);
 
         List<LogicalPlanNode> logicalPlanNodeList = new ArrayList<>();
-        current.source().ifPresent(logicalPlanNodeList::add);
+        List<Condition> conditions = new ArrayList<>();
+        current.condition().ifPresent(conditions::add);
+
+        if (current.source().isPresent())
+        {
+            Dataset dataset = current.source().get();
+            /* Optimize Scenarios where using Derived Dataset:
+                Convert unnecessary inner queries like this
+                select id from (select * from table where condition)
+                    to
+                select id from table where condition
+            */
+            if (dataset instanceof DerivedDataset)
+            {
+                DerivedDataset derivedDataset = (DerivedDataset) dataset;
+                Optional<Condition> filterCondition = LogicalPlanUtils.getDatasetFilterCondition(derivedDataset);
+                filterCondition.ifPresent(conditions::add);
+                logicalPlanNodeList.add(derivedDataset.datasetReference());
+            }
+            else
+            {
+                logicalPlanNodeList.add(dataset);
+            }
+        }
 
         if (current.fields().isEmpty())
         {
@@ -54,7 +82,11 @@ public class SelectionVisitor implements LogicalPlanVisitor<Selection>
             selectStatement.setLimit(current.limit().get());
         }
 
-        current.condition().ifPresent(logicalPlanNodeList::add);
+        if (!conditions.isEmpty())
+        {
+            logicalPlanNodeList.add(And.of(conditions));
+        }
+
         current.groupByFields().ifPresent(logicalPlanNodeList::addAll);
         current.quantifier().ifPresent(logicalPlanNodeList::add);
 

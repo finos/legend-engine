@@ -269,9 +269,11 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
             "ON ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` <> stage.`digest`) " +
             "SET sink.`id` = stage.`id`,sink.`name` = stage.`name`,sink.`amount` = stage.`amount`,sink.`biz_date` = stage.`biz_date`,sink.`digest` = stage.`digest`";
 
-        String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `biz_date`, `digest`) " +
-            "(SELECT * FROM (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest` FROM `mydb`.`staging` as stage WHERE (stage.`biz_date` > '2020-01-01') AND (stage.`biz_date` < '2020-01-03')) as stage " +
-            "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink WHERE (sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`))))";
+        String insertSql = "INSERT INTO `mydb`.`main` " +
+                "(`id`, `name`, `amount`, `biz_date`, `digest`) " +
+                "(SELECT * FROM `mydb`.`staging` as stage WHERE (NOT (EXISTS " +
+                "(SELECT * FROM `mydb`.`main` as sink WHERE (sink.`id` = stage.`id`) AND " +
+                "(sink.`name` = stage.`name`)))) AND ((stage.`biz_date` > '2020-01-01') AND (stage.`biz_date` < '2020-01-03')))";
 
         Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
@@ -327,9 +329,11 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
             "ON ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (stage.`version` > sink.`version`) " +
             "SET sink.`id` = stage.`id`,sink.`name` = stage.`name`,sink.`amount` = stage.`amount`,sink.`biz_date` = stage.`biz_date`,sink.`digest` = stage.`digest`,sink.`version` = stage.`version`";
 
-        String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `biz_date`, `digest`, `version`) " +
-            "(SELECT * FROM (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`version` FROM `mydb`.`staging` as stage WHERE stage.`snapshot_id` > 18972) as stage " +
-            "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink WHERE (sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`))))";
+        String insertSql = "INSERT INTO `mydb`.`main` " +
+                "(`id`, `name`, `amount`, `biz_date`, `digest`, `version`) " +
+                "(SELECT * FROM `mydb`.`staging` as stage WHERE (NOT (EXISTS " +
+                "(SELECT * FROM `mydb`.`main` as sink WHERE (sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)))) " +
+                "AND (stage.`snapshot_id` > 18972))";
 
         Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTablePlusDigestPlusVersionCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(updateSql, milestoningSqlList.get(0));

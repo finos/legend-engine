@@ -17,7 +17,7 @@ package org.finos.legend.engine.persistence.components.util;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.persistence.components.IngestModeTest;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DatasetFilterAndDeduplicator;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DatasetDeduplicator;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.MaxVersionStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
@@ -58,7 +58,7 @@ public class LogicalPlanUtilsTest extends IngestModeTest
 
         List<String> primaryKeys = Arrays.asList("id", "name");
         VersioningStrategy versioningStrategy = MaxVersionStrategy.builder().versioningField("version").performDeduplication(true).versioningComparator(GREATER_THAN).build();
-        Selection selection = (Selection) versioningStrategy.accept(new DatasetFilterAndDeduplicator(dataset, primaryKeys));
+        Selection selection = (Selection) versioningStrategy.accept(new DatasetDeduplicator(dataset, primaryKeys));
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(selection).build();
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
@@ -88,7 +88,7 @@ public class LogicalPlanUtilsTest extends IngestModeTest
                 .build();
 
         VersioningStrategy versioningStrategy = MaxVersionStrategy.builder().versioningField("version").performDeduplication(true).versioningComparator(GREATER_THAN).build();
-        Selection selection = (Selection) versioningStrategy.accept(new DatasetFilterAndDeduplicator(dataset, primaryKeys));
+        Selection selection = (Selection) versioningStrategy.accept(new DatasetDeduplicator(dataset, primaryKeys));
 
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(selection).build();
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);

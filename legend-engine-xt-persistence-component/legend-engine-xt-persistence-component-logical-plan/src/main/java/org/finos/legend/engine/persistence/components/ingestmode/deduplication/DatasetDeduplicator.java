@@ -19,38 +19,29 @@ import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equ
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.values.*;
-import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class DatasetFilterAndDeduplicator implements VersioningStrategyVisitor<Dataset>
+public class DatasetDeduplicator implements VersioningStrategyVisitor<Dataset>
 {
 
     Dataset stagingDataset;
     List<String> primaryKeys;
-    Optional<Condition> stagingDatasetFilter;
 
     private static final String ROW_NUMBER = "legend_persistence_row_num";
 
-    public DatasetFilterAndDeduplicator(Dataset stagingDataset, List<String> primaryKeys)
+    public DatasetDeduplicator(Dataset stagingDataset, List<String> primaryKeys)
     {
         this.stagingDataset = stagingDataset;
         this.primaryKeys = primaryKeys;
-        this.stagingDatasetFilter = LogicalPlanUtils.getDatasetFilterCondition(stagingDataset);
     }
 
     @Override
     public Dataset visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy)
     {
-        Dataset enrichedStagingDataset = this.stagingDataset;
-        if (this.stagingDatasetFilter.isPresent())
-        {
-            enrichedStagingDataset = filterDataset();
-        }
-        return enrichedStagingDataset;
+        return this.stagingDataset;
     }
 
     @Override
@@ -78,7 +69,6 @@ public class DatasetFilterAndDeduplicator implements VersioningStrategyVisitor<D
             Selection selectionWithRowNumber = Selection.builder()
                     .source(stagingDataset)
                     .addAllFields(allColumnsWithRowNumber)
-                    .condition(stagingDatasetFilter)
                     .alias(stagingDataset.datasetReference().alias())
                     .build();
 
@@ -91,22 +81,6 @@ public class DatasetFilterAndDeduplicator implements VersioningStrategyVisitor<D
                     .alias(stagingDataset.datasetReference().alias())
                     .build();
         }
-        else if (this.stagingDatasetFilter.isPresent())
-        {
-            enrichedStagingDataset = filterDataset();
-        }
         return enrichedStagingDataset;
-    }
-
-    private Dataset filterDataset()
-    {
-        List<Value> allColumns = new ArrayList<>(stagingDataset.schemaReference().fieldValues());
-        Selection selection = Selection.builder()
-                .source(this.stagingDataset)
-                .addAllFields(allColumns)
-                .condition(this.stagingDatasetFilter.get())
-                .alias(stagingDataset.datasetReference().alias())
-                .build();
-        return selection;
     }
 }

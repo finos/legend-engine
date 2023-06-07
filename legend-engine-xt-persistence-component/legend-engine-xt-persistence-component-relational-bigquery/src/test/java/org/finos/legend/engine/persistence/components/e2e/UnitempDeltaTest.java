@@ -14,58 +14,68 @@
 
 package org.finos.legend.engine.persistence.components.e2e;
 
-import org.finos.legend.engine.persistence.components.common.Datasets;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
-import org.finos.legend.engine.persistence.components.relational.api.GeneratorResult;
+import org.finos.legend.engine.persistence.components.common.DatasetFilter;
+import org.finos.legend.engine.persistence.components.common.FilterType;
+import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDelta;
+import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalGenerator;
 import org.finos.legend.engine.persistence.components.relational.bigquery.BigQuerySink;
-import org.finos.legend.engine.persistence.components.scenarios.TestScenario;
-import org.finos.legend.engine.persistence.components.scenarios.UnitemporalDeltaBatchIdBasedScenarios;
-import org.finos.legend.engine.persistence.components.util.MetadataDataset;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
+@Disabled
 public class UnitempDeltaTest extends BigQueryEndToEndTest
 {
 
-    //@Test
-    public void testAppend() throws IOException, InterruptedException
+    @Test
+    public void testMilestoning() throws IOException, InterruptedException
     {
-        TestScenario scenario = new UnitemporalDeltaBatchIdBasedScenarios().BATCH_ID_BASED__NO_DEL_IND__NO_DATA_SPLITS();
-        RelationalGenerator generator = RelationalGenerator.builder()
-                .ingestMode(scenario.getIngestMode())
-                .relationalSink(BigQuerySink.get())
-                .collectStatistics(true)
-                .cleanupStagingData(true)
+        UnitemporalDelta ingestMode = UnitemporalDelta.builder()
+                .digestField("digest")
+                .transactionMilestoning(BatchId.builder()
+                        .batchIdInName("batch_id_in")
+                        .batchIdOutName("batch_id_out")
+                        .build())
                 .build();
 
-        DatasetDefinition stagingDataset = (DatasetDefinition) scenario.getDatasets().stagingDataset();
-        DatasetDefinition mainDataset = (DatasetDefinition) scenario.getDatasets().mainDataset();
-        MetadataDataset metadataDataset = MetadataDataset.builder().metadataDatasetGroupName("mydb").metadataDatasetName("batch_metadata").build();
-        Datasets datasets = Datasets.builder().mainDataset(mainDataset).stagingDataset(stagingDataset).metadataDataset(metadataDataset).build();
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(ingestMode)
+                .relationalSink(BigQuerySink.get())
+                .collectStatistics(true)
+                .cleanupStagingData(false)
+                .build();
 
-        GeneratorResult operations = generator.generateOperations(datasets);
-        List<String> preActionsSqlList = operations.preActionsSql();
-        List<String> milestoningSqlList = operations.ingestSql();
-        List<String> metadataIngestSql = operations.metadataIngestSql();
-        List<String> postActionsSql = operations.postActionsSql();
-
-        // Drop tables if exists
-        delete(mainDataset);
-        delete(stagingDataset);
-
-        // Create Staging table
-        createTable(stagingDataset);
+        // Clean up
+        delete("demo", "main");
+        delete("demo", "staging");
+        delete("demo", "batch_metadata");
 
         // Pass 1
-        loadData("src/test/resources/append/input/data_pass1.csv", stagingDataset, 1);
-        ingest(preActionsSqlList, milestoningSqlList, metadataIngestSql, postActionsSql);
+        System.out.println("--------- Batch 1 started ------------");
+        String pathPass1 = "src/test/resources/input/data_pass1.csv";
+        DatasetFilter stagingFilter = DatasetFilter.of("insert_ts", FilterType.EQUAL_TO, "2023-01-01 00:00:00");
+        ingest(generator, stagingFilter, pathPass1);
+
+        // Verify
+        List<Map<String, Object>> tableData = runQuery("select * from `demo`.`main` order by id asc");
+        String expectedPath = "src/test/resources/expected/unitemp_delta/data_pass1.csv";
+        String [] schema = new String[] {"id", "name", "amount", "biz_date", "digest", "insert_ts", "batch_id_in", "batch_id_out"};
+        assertFileAndTableDataEquals(schema, expectedPath, tableData);
 
         // Pass 2
-        loadData("src/test/resources/append/input/data_pass2.csv", stagingDataset, 1);
-        ingest(preActionsSqlList, milestoningSqlList, metadataIngestSql, postActionsSql);
+        System.out.println("--------- Batch 2 started ------------");
+        String pathPass2 = "src/test/resources/input/data_pass2.csv";
+        stagingFilter = DatasetFilter.of("insert_ts", FilterType.EQUAL_TO, "2023-01-02 00:00:00");
+        ingest(generator, stagingFilter, pathPass2);
+
+        // Verify
+        tableData = runQuery("select * from `demo`.`main` order by id asc, insert_ts");
+        expectedPath = "src/test/resources/expected/unitemp_delta/data_pass2.csv";
+        assertFileAndTableDataEquals(schema, expectedPath, tableData);
     }
 
 }

@@ -15,9 +15,7 @@
 package org.finos.legend.engine.persistence.components.relational.bigquery.executor;
 
 import com.google.cloud.bigquery.*;
-
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class BigQueryTransactionManager
 {
@@ -83,14 +81,19 @@ public class BigQueryTransactionManager
         {
             List<Map<String, Object>> resultList = new ArrayList<>();
             Job job = this.executeSql(sql);
-            List<String> fieldNames = job.getQueryResults().getSchema().getFields().stream().map(Field::getName).collect(Collectors.toList());
-            int columnCount = fieldNames.size();
             for (FieldValueList fieldValues : job.getQueryResults().getValues())
             {
                 Map<String, Object> row = new HashMap<>();
-                for (int i = 0; i < columnCount; i++)
+                for (Field field: job.getQueryResults().getSchema().getFields())
                 {
-                    row.put(fieldNames.get(i), fieldValues.get(i));
+                    FieldValue value = fieldValues.get(field.getName());
+                    Object objectValue = value.getValue();
+                    if (field.getType().equals(LegacySQLTypeName.TIMESTAMP))
+                    {
+                        objectValue = value.getTimestampInstant();
+                    }
+                    String key = field.getName();
+                    row.put(key, objectValue);
                 }
                 resultList.add(row);
             }
