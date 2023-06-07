@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.persistence.components.relational.h2;
 
-import java.util.Optional;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.CsvExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
@@ -32,8 +31,8 @@ import org.finos.legend.engine.persistence.components.relational.h2.sql.H2JdbcPr
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.CsvExternalDatasetReferenceVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.HashFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.LoadCsvVisitor;
-import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.SchemaDefinitionVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.ParseJsonFunctionVisitor;
+import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.SchemaDefinitionVisitor;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.util.Capability;
@@ -46,6 +45,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public class H2Sink extends AnsiSqlSink
@@ -106,6 +106,11 @@ public class H2Sink extends AnsiSqlSink
         return INSTANCE;
     }
 
+    public static RelationalSink get(Connection connection)
+    {
+        return new H2Sink(connection);
+    }
+
     public static Connection createConnection(String user, String pwd, String jdbcUrl)
     {
         try
@@ -121,14 +126,29 @@ public class H2Sink extends AnsiSqlSink
     private H2Sink()
     {
         super(
-            CAPABILITIES,
-            IMPLICIT_DATA_TYPE_MAPPING,
-            EXPLICIT_DATA_TYPE_MAPPING,
-            SqlGenUtils.QUOTE_IDENTIFIER,
-            LOGICAL_PLAN_VISITOR_BY_CLASS,
-            (executor, sink, dataset) -> sink.doesTableExist(dataset),
-            (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new H2DataTypeMapping()),
-            (executor, sink, tableName, schemaName, databaseName) -> sink.constructDatasetFromDatabase(tableName, schemaName, databaseName, new H2JdbcPropertiesToLogicalDataTypeMapping()));
+                CAPABILITIES,
+                IMPLICIT_DATA_TYPE_MAPPING,
+                EXPLICIT_DATA_TYPE_MAPPING,
+                SqlGenUtils.QUOTE_IDENTIFIER,
+                LOGICAL_PLAN_VISITOR_BY_CLASS,
+                (executor, sink, dataset) -> sink.doesTableExist(dataset),
+                (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new H2DataTypeMapping()),
+                (executor, sink, tableName, schemaName, databaseName) -> sink.constructDatasetFromDatabase(tableName, schemaName, databaseName, new H2JdbcPropertiesToLogicalDataTypeMapping()));
+    }
+
+
+    private H2Sink(Connection connection)
+    {
+        super(
+                CAPABILITIES,
+                IMPLICIT_DATA_TYPE_MAPPING,
+                EXPLICIT_DATA_TYPE_MAPPING,
+                SqlGenUtils.QUOTE_IDENTIFIER,
+                LOGICAL_PLAN_VISITOR_BY_CLASS,
+                (executor, sink, dataset) -> sink.doesTableExist(dataset),
+                (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new H2DataTypeMapping()),
+                (executor, sink, tableName, schemaName, databaseName) -> sink.constructDatasetFromDatabase(tableName, schemaName, databaseName, new H2JdbcPropertiesToLogicalDataTypeMapping()),
+                connection);
     }
 
     @Override

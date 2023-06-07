@@ -114,6 +114,8 @@ public abstract class RelationalSink implements Sink
 
     public abstract Optional<Optimizer> optimizerForCaseConversion(CaseConversion caseConversion);
 
+    public abstract Executor<SqlGen, TabularData, SqlPlan> getRelationalExecutor();
+
     public interface DatasetExists
     {
         boolean apply(Executor<SqlGen, TabularData, SqlPlan> executor, RelationalExecutionHelper sink, Dataset dataset);

@@ -40,8 +40,6 @@ import org.finos.legend.engine.persistence.components.planner.Planners;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
-import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
-import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
@@ -54,17 +52,16 @@ import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
 import org.immutables.value.Value.Style;
 
-import java.sql.Connection;
 import java.sql.Date;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -158,30 +155,30 @@ public abstract class RelationalIngestorAbstract
 
     // ---------- API ----------
 
-    public IngestorResult ingest(Connection connection, Datasets datasets)
+    public IngestorResult ingest(Datasets datasets)
     {
-        return ingest(connection, datasets, null).stream().findFirst().orElseThrow(IllegalStateException::new);
+        return ingest(datasets, null).stream().findFirst().orElseThrow(IllegalStateException::new);
     }
 
-    public List<IngestorResult> ingestWithDataSplits(Connection connection, Datasets datasets, List<DataSplitRange> dataSplitRanges)
+    public List<IngestorResult> ingestWithDataSplits(Datasets datasets, List<DataSplitRange> dataSplitRanges)
     {
         // Provide the default dataSplit ranges if missing
         if (dataSplitRanges == null || dataSplitRanges.isEmpty())
         {
-            dataSplitRanges = Arrays.asList(DataSplitRange.of(1,1));
+            dataSplitRanges = Arrays.asList(DataSplitRange.of(1, 1));
         }
-        return ingest(connection, datasets, dataSplitRanges);
+        return ingest(datasets, dataSplitRanges);
     }
 
     // ---------- UTILITY METHODS ----------
 
-    private List<IngestorResult> ingest(Connection connection, Datasets datasets, List<DataSplitRange> dataSplitRanges)
+    private List<IngestorResult> ingest(Datasets datasets, List<DataSplitRange> dataSplitRanges)
     {
         IngestMode enrichedIngestMode = ApiUtils.applyCase(ingestMode(), caseConversion());
         Datasets enrichedDatasets = ApiUtils.applyCase(datasets, caseConversion());
 
         Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(relationalSink(), transformOptions());
-        Executor<SqlGen, TabularData, SqlPlan> executor = new RelationalExecutor(relationalSink(), JdbcHelper.of(connection));
+        Executor<SqlGen, TabularData, SqlPlan> executor = relationalSink().getRelationalExecutor();
 
         Resources.Builder resourcesBuilder = Resources.builder();
         Datasets updatedDatasets = enrichedDatasets;

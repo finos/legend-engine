@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.persistence.components.relational.bigquery;
 
+import com.google.cloud.bigquery.BigQuery;
+import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.ClusterKey;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.PartitionKey;
@@ -27,7 +29,9 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.BatchSt
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
-import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
+import org.finos.legend.engine.persistence.components.relational.SqlPlan;
+import org.finos.legend.engine.persistence.components.relational.bigquery.executor.BigQueryExecutor;
+import org.finos.legend.engine.persistence.components.relational.bigquery.executor.BigQueryHelper;
 import org.finos.legend.engine.persistence.components.relational.bigquery.optmizer.LowerCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.bigquery.optmizer.UpperCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.BigQueryDataTypeMapping;
@@ -36,11 +40,13 @@ import org.finos.legend.engine.persistence.components.relational.bigquery.sql.vi
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.BatchEndTimestampVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.BatchStartTimestampVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.ClusterKeyVisitor;
+import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.DeleteVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.PartitionKeyVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.SQLCreateVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.SchemaDefinitionVisitor;
-import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.DeleteVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.TruncateVisitor;
+import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
+import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.util.Capability;
@@ -53,7 +59,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-public class BigQuerySink extends AnsiSqlSink
+public class BigQuerySink extends RelationalSink
 {
     private static final RelationalSink INSTANCE;
 
@@ -104,22 +110,47 @@ public class BigQuerySink extends AnsiSqlSink
         return INSTANCE;
     }
 
+    public static RelationalSink get(BigQuery bigQuery)
+    {
+        return new BigQuerySink(bigQuery);
+    }
+
     // TODO #5: Another entry point for API invocation via authentication ?
     private BigQuerySink()
     {
         super(
-            CAPABILITIES,
-            IMPLICIT_DATA_TYPE_MAPPING,
-            EXPLICIT_DATA_TYPE_MAPPING,
-            SqlGenUtils.BACK_QUOTE_IDENTIFIER,
-            LOGICAL_PLAN_VISITOR_BY_CLASS,
-            // TODO  # 6: Verify implementation of DatasetExists datasetExists,
-            (executor, sink, dataset) -> sink.doesTableExist(dataset),
-            // TODO # 7: Verify implementation of ValidateMainDatasetSchema validateMainDatasetSchema,
-            (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new BigQueryDataTypeMapping()),
-            //  TODO # 8: Verify implementation of ConstructDatasetFromDatabase constructDatasetFromDatabase)
-            (executor, sink, tableName, schemaName, databaseName) -> sink.constructDatasetFromDatabase(tableName, schemaName, databaseName, new BigQueryDataTypeToLogicalDataTypeMapping()));
+                CAPABILITIES,
+                IMPLICIT_DATA_TYPE_MAPPING,
+                EXPLICIT_DATA_TYPE_MAPPING,
+                SqlGenUtils.BACK_QUOTE_IDENTIFIER,
+                LOGICAL_PLAN_VISITOR_BY_CLASS,
+                // TODO  # 6: Verify implementation of DatasetExists datasetExists,
+                (executor, sink, dataset) -> sink.doesTableExist(dataset),
+                // TODO # 7: Verify implementation of ValidateMainDatasetSchema validateMainDatasetSchema,
+                (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new BigQueryDataTypeMapping()),
+                //  TODO # 8: Verify implementation of ConstructDatasetFromDatabase constructDatasetFromDatabase)
+                (executor, sink, tableName, schemaName, databaseName) -> sink.constructDatasetFromDatabase(tableName, schemaName, databaseName, new BigQueryDataTypeToLogicalDataTypeMapping()));
+        this.bigQuery = null;
     }
+
+    public BigQuerySink(BigQuery bigQuery)
+    {
+        super(
+                CAPABILITIES,
+                IMPLICIT_DATA_TYPE_MAPPING,
+                EXPLICIT_DATA_TYPE_MAPPING,
+                SqlGenUtils.BACK_QUOTE_IDENTIFIER,
+                LOGICAL_PLAN_VISITOR_BY_CLASS,
+                // TODO  # 6: Verify implementation of DatasetExists datasetExists,
+                (executor, sink, dataset) -> sink.doesTableExist(dataset),
+                // TODO # 7: Verify implementation of ValidateMainDatasetSchema validateMainDatasetSchema,
+                (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new BigQueryDataTypeMapping()),
+                //  TODO # 8: Verify implementation of ConstructDatasetFromDatabase constructDatasetFromDatabase)
+                (executor, sink, tableName, schemaName, databaseName) -> sink.constructDatasetFromDatabase(tableName, schemaName, databaseName, new BigQueryDataTypeToLogicalDataTypeMapping()));
+        this.bigQuery = bigQuery;
+    }
+
+    private final BigQuery bigQuery;
 
     @Override
     public Optional<Optimizer> optimizerForCaseConversion(CaseConversion caseConversion)
@@ -135,5 +166,11 @@ public class BigQuerySink extends AnsiSqlSink
             default:
                 throw new IllegalArgumentException("Unrecognized case conversion: " + caseConversion);
         }
+    }
+
+    @Override
+    public Executor<SqlGen, TabularData, SqlPlan> getRelationalExecutor()
+    {
+        return new BigQueryExecutor(this, BigQueryHelper.of(this.bigQuery));
     }
 }
