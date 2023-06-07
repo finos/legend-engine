@@ -55,7 +55,7 @@ Class meta::pure::data::ModelInstanceData extends meta::pure::data::ModelData
   instances: InstanceValue[1];
 }
 
-Class meta::pure::test::StoreTestData
+Class meta::pure::data::StoreTestData
 {
     doc: String[0..1];
     data: meta::pure::data::EmbeddedData[1];
