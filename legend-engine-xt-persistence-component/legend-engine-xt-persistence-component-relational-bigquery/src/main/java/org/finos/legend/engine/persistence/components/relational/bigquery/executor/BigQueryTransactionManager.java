@@ -17,10 +17,12 @@ package org.finos.legend.engine.persistence.components.relational.bigquery.execu
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.ConnectionProperty;
 import com.google.cloud.bigquery.Field;
+import com.google.cloud.bigquery.FieldValue;
 import com.google.cloud.bigquery.FieldValueList;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobId;
 import com.google.cloud.bigquery.JobInfo;
+import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 
 import java.util.ArrayList;

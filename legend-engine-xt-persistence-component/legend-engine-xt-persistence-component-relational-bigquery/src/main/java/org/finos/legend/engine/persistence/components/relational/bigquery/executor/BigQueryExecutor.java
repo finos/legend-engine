@@ -50,16 +50,32 @@ public class BigQueryExecutor implements Executor<SqlGen, TabularData, SqlPlan>
                 bigQueryHelper.executeQuery(sql);
             }
         }
+        else
+        {
+            bigQueryHelper.executeStatements(sqlList);
+        }
     }
 
     @Override
     public void executePhysicalPlan(SqlPlan physicalPlan, Map<String, String> placeholderKeyValues)
     {
+        boolean containsDDLStatements = physicalPlan.ops().stream().anyMatch(DDLStatement.class::isInstance);
         List<String> sqlList = physicalPlan.getSqlList();
-        for (String sql : sqlList)
+        if (containsDDLStatements)
         {
-            String enrichedSql = getEnrichedSql(placeholderKeyValues, sql);
-            bigQueryHelper.executeStatement(enrichedSql);
+            for (String sql : sqlList)
+            {
+                String enrichedSql = getEnrichedSql(placeholderKeyValues, sql);
+                bigQueryHelper.executeStatement(enrichedSql);
+            }
+        }
+        else
+        {
+            for (String sql : sqlList)
+            {
+                String enrichedSql = getEnrichedSql(placeholderKeyValues, sql);
+                bigQueryHelper.executeQuery(enrichedSql);
+            }
         }
     }
 
