@@ -33,36 +33,37 @@ public class ExecutionDispatcherTest
     @Test
     public void testSetQuery()
     {
-        String query = "SET A=B";
-        assertEmptySessionHandler(query);
+        assertEmptySessionHandler("SET A=B");
     }
 
     @Test
     public void testSelectInformationSchema()
     {
-        String query = "SELECT * FROM information_schema.TABLES";
-        assertMetadataSessionHandler(query);
+        assertMetadataSessionHandler("SELECT * FROM information_schema.TABLES");
     }
 
     @Test
     public void testSelectPgCatalog()
     {
-        String query = "SELECT * FROM pg_catalog.schemata";
-        assertMetadataSessionHandler(query);
+        assertMetadataSessionHandler("SELECT * FROM pg_catalog.schemata");
     }
 
     @Test
     public void testSelectConstant()
     {
-        String query = "SELECT 1";
-        assertMetadataSessionHandler(query);
+        assertMetadataSessionHandler("SELECT 1");
     }
 
     @Test
     public void testSelectTableFunction()
     {
-        String query = "SELECT * FROM service('/testService')";
-        assertDataSessionHandler(query);
+        assertDataSessionHandler("SELECT * FROM service('/testService')");
+    }
+
+    @Test
+    public void testSelectTableName()
+    {
+        assertDataSessionHandler("SELECT * FROM service.\"/testService\"");
     }
 
     private static void assertEmptySessionHandler(String query)
@@ -86,7 +87,7 @@ public class ExecutionDispatcherTest
     private static SessionHandler getSessionHandler(String query)
     {
         SqlBaseParser parser = SQLGrammarParser.getSqlBaseParser(query, "query");
-        return dispatcher.visitSingleStatement(parser.singleStatement());
+        return parser.singleStatement().accept(dispatcher);
     }
 
     private static class TestSessionHandler implements SessionHandler

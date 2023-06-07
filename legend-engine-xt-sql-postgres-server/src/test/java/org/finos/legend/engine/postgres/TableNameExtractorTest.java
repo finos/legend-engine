@@ -24,8 +24,6 @@ import org.junit.Test;
 
 import java.util.List;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
 
 public class TableNameExtractorTest
 {
@@ -67,6 +65,6 @@ public class TableNameExtractorTest
     private static List<QualifiedName> getQualifiedNames(String query)
     {
         SqlBaseParser parser = SQLGrammarParser.getSqlBaseParser(query, "query");
-        return extractor.visitSingleStatement(parser.singleStatement());
+        return parser.singleStatement().accept(extractor);
     }
 }

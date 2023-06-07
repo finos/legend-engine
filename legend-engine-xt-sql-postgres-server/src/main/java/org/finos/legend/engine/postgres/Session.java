@@ -99,7 +99,7 @@ public class Session implements AutoCloseable
     {
         SqlBaseParser parser = SQLGrammarParser.getSqlBaseParser(query, "query");
         SqlBaseParser.SingleStatementContext singleStatementContext = parser.singleStatement();
-        return dispatcher.visitSingleStatement(singleStatementContext);
+        return singleStatementContext.accept(dispatcher);
     }
 
 
