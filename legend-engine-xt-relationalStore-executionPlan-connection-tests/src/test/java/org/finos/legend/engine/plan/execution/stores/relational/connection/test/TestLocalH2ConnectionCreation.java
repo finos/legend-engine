@@ -106,7 +106,7 @@ public class TestLocalH2ConnectionCreation extends DbSpecificTests
     @Test
     public void testNorthwindLoader_WithRepeatedLoading() throws Exception
     {
-        Identity identity1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity1");
+        Identity identity1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity2");
         RelationalDatabaseConnection db1Conn1 = this.buildLocalH2DatasourceSpec(Lists.mutable.with(
                 "call loadNorthwindData();", "call loadNorthwindData();"));
 
