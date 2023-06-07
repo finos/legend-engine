@@ -1,0 +1,208 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::metamodel::datatype::*;
+import meta::pure::mapping::serialization::grammar::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::metamodel::*;
+import meta::relational::transform::toPure::*;
+import meta::pure::mapping::*;
+import meta::relational::mapping::*;
+
+function meta::relational::transform::toPure::schemaToModelToString(schema:Schema[1], packageStr:String[1]):String[1]
+{
+   schemaToModelToString($schema, pathToPackage($packageStr, true));
+}
+
+function meta::relational::transform::toPure::schemaToModelToString(schema:Schema[1], package:Package[1]):String[1]
+{
+   $schema.tables->map(t | $t->tableToClass($package))->map(c | $c->meta::pure::metamodel::serialization::grammar::printClass())->joinStrings('\n\n')
+}
+
+function meta::relational::transform::toPure::schemaToModel(schema:Schema[1], package:Package[1]):Class<Any>[*]
+{
+   $schema.tables->map(t | $t->tableToClass($package))
+}
+
+function meta::relational::transform::toPure::tableToClass(table:Table[1], package:Package[1]):Class<Any>[1]
+{
+   let clazz = createClass($table.name, $package);
+   let properties = $table.columns->cast(@Column)
+         ->filter(c|!$c->isLakeColumn()) //Don't include lake columns in the model by default
+         ->map(c | $c->columnToProperty($clazz));
+   $clazz->mutateAdd('properties',$properties);
+   $clazz;
+}
+
+function  <<access.private>> meta::relational::transform::toPure::columnToProperty(column:Column[1], owningClass:Class<Any>[1]):Property<Nil,Any|*>[1]
+{
+   let nameWithoutSpecialChars = $column->sqlSafeColumnName()->replace('"','');
+   let name = $nameWithoutSpecialChars->makeCamelCase(false);
+
+   let genericType = ^GenericType(rawType=meta::relational::metamodel::datatype::dataTypeToCompatiblePureType($column.type));
+
+   let multiplicity = if($column.nullable == false, | PureOne, | ZeroOne);
+
+   newProperty($name, ^GenericType(rawType=$owningClass), $genericType, $multiplicity);
+}
+
+
+
+
+function <<access.private>> meta::relational::transform::toPure::createClass(tableName:String[1], package:Package[1]):Class<Any>[1]
+{
+   let cn = $tableName->replace(' ','')->replace('/','')->makeCamelCase(true);
+   let clazzName = if ((!$cn->endsWith('s')) || $cn->endsWith('ss'), |$cn, |$cn->substring(0, $cn->length() -1)); //Convert it back to singular form of the name
+   let c = newClass($clazzName);
+   ^$c(package = $package);
+}
+
+function <<access.private>> meta::relational::transform::toPure::sqlSafeColumnName(column:Column[1]):String[1]
+{
+   $column.name->replace(' ','')->replace('/','')->replace('@','At')->replace('~','Tilde')->replace('<','Lt')->replace('>','Gt')->replace('.','_');
+}
+
+function meta::relational::transform::toPure::schemaToModelAndMapping(schema:Schema[1], database:Database[1], packageStr:String[1]):Mapping[1]
+{
+   schemaToModelAndMapping($schema, $database, $packageStr, []);
+}
+
+function meta::relational::transform::toPure::schemaToModelAndMapping(schema:Schema[1], database:Database[1], mappingPackageStr:String[1], classPackageStr:String[1]):Mapping[1]
+{
+   schemaToModelAndMapping($schema, $database, $mappingPackageStr, $classPackageStr, []);
+}
+
+function meta::relational::transform::toPure::schemaToModelAndMapping(schema:Schema[1], database:Database[1], packageStr:String[1], joinStrategyFunctions:Function<Any>[*]):Mapping[1]
+{
+   meta::relational::transform::toPure::schemaToModelAndMapping($schema, $database, $packageStr, $packageStr, $joinStrategyFunctions);
+}
+
+function meta::relational::transform::toPure::schemaToModelAndMapping(schema:Schema[1], database:Database[1], mappingPackageStr:String[1], classPackageStr:String[1], joinStrategyFunctions:Function<Any>[*]):Mapping[1]
+{
+   let mappingPackage = pathToPackage($mappingPackageStr);
+   let classPackage = pathToPackage($classPackageStr);
+
+   schemaToModelAndMapping($schema, $database, $mappingPackage, $classPackage, $joinStrategyFunctions);
+}
+
+function meta::relational::transform::toPure::schemaToModelAndMapping(schema:Schema[1], database:Database[1], mappingPackage:Package[1], classPackage:Package[1], joinStrategyFunctions:Function<Any>[*]):Mapping[1]
+{
+   let mapping=^Mapping(package=$mappingPackage, name=$database.name->toOne() + 'Mapping');
+   let classMappings = $schema.tables->map(t | $t->tableToClassAndClassMapping($classPackage, $mapping, $database));
+   $mapping->mutateAdd('classMappings',$classMappings);
+}
+
+function <<access.private>> meta::relational::transform::toPure::isLakeColumn(column : Column[1]):Boolean[1]
+{
+   $column.name->in(['lake_in_id', 'lake_out_id', 'lake_digest'])
+}
+
+function <<access.private>> meta::relational::transform::toPure::tableToClassAndClassMapping(table:Table[1], package:Package[1], mapping:Mapping[1], database:Database[1]):RootRelationalInstanceSetImplementation[1]
+{
+   let clazz = createClass($table.name, $package);
+   let tableAlias = ^TableAlias(name=$table.name, relationalElement=$table, database=$database, schema=$table.schema.name);
+
+   let propertyMappings = $table.columns->cast(@Column)->filter(c|!$c->isLakeColumn())
+                                                       ->map(c | let p = $c->columnToProperty($clazz);
+                                                                 $clazz->mutateAdd('properties',$p);
+
+                                                                 let tableAliasColumn = ^TableAliasColumn(columnName=$c->sqlSafeColumnName(), alias=$tableAlias, column=$c);
+
+                                                                 let element = if($p->functionReturnType().rawType == Boolean && $c.type->instanceOf(Bit),
+                                                                    {|
+                                                                       let e = ^DynaFunction(name='case', parameters = [
+                                                                          ^DynaFunction(name = 'equal', parameters = [$tableAliasColumn, ^Literal(value=1)]),
+                                                                          ^DynaFunction(name = 'sqlTrue'),
+                                                                          ^DynaFunction(name = 'sqlFalse')
+                                                                          ]);
+
+                                                                       if($c.nullable == false,
+                                                                         | $e,
+                                                                         | ^DynaFunction(name='case', parameters = [
+                                                                             ^DynaFunction(name = 'isNull', parameters = [$tableAliasColumn]),
+                                                                             ^DynaFunction(name = 'sqlNull'),
+                                                                             $e
+                                                                             ]
+                                                                            );
+                                                                         );
+                                                                     },
+                                                                    | $tableAliasColumn
+                                                                    );
+
+                                                                 ^RelationalPropertyMapping(
+                                                                    property=$p,
+                                                                    sourceSetImplementationId=$clazz->elementToPath()->replace('::', '_'),
+                                                                    targetSetImplementationId=$p->functionReturnType().rawType->match([
+                                                                       c:Class<Any>[1] | $c->elementToPath()->replace('::', '_'),
+                                                                       t:Type[0..1] | ''
+                                                                    ]),
+                                                                    relationalOperationElement=$element
+                                                                 );
+                                                          );
+
+   let userDefinedPrimaryKey = $table.primaryKey->isEmpty();
+   let primaryKey = if ($userDefinedPrimaryKey,
+                        |
+                           let notNullColumns = $table.columns->filter(c | $c->cast(@Column).nullable == false);
+                           if($notNullColumns->isEmpty(),
+                              | $table.columns->cast(@Column),
+                              | $notNullColumns->cast(@Column)); ,
+                        | $table.primaryKey);
+
+   ^RootRelationalInstanceSetImplementation(class=$clazz,
+                                            id=$clazz->elementToPath()->replace('::', '_'),
+                                            propertyMappings=$propertyMappings,
+                                            mainTableAlias=$tableAlias,
+                                            distinct = false,
+                                            parent=$mapping,
+                                            root=true,
+                                            userDefinedPrimaryKey=$userDefinedPrimaryKey,
+                                            primaryKey=$primaryKey->map(c | ^TableAliasColumn(columnName=$c->sqlSafeColumnName(), alias=$tableAlias, column=$c))
+                                         );
+}
+
+function meta::relational::transform::toPure::classesAndMappingFromSchema(schema:Schema[1], targetPackage:String[1]):String[1]
+{
+   meta::relational::transform::toPure::classesAndMappingFromSchema($schema, $targetPackage, $targetPackage);
+}
+
+function meta::relational::transform::toPure::classesAndMappingFromSchema(schema:Schema[1], classesPackage:String[1], mappingPackage:String[1]):String[1]
+{
+   [
+      '###Pure',
+      meta::relational::transform::toPure::schemaToModelToString($schema->toOne(), $classesPackage),
+      '',
+      '###Mapping',
+      meta::relational::transform::toPure::schemaToModelAndMapping($schema->toOne(), $schema.database->toOne(), $mappingPackage, $classesPackage)->printMapping()
+   ]->joinStrings('\n');
+}
+
+
+function meta::relational::transform::toPure::generateModelAndMappingFromRelationalStore(schema:Schema[1], classesPackage:String[1], mappingPackage:String[1]):String[1]
+{
+   [
+      '###Pure',
+      meta::relational::transform::toPure::schemaToModelToString($schema->toOne(), $classesPackage),
+      '',
+      '###Mapping',
+      meta::relational::transform::toPure::schemaToModelAndMapping($schema->toOne(), $schema.database->toOne(), $mappingPackage, $classesPackage)->printMapping()
+   ]->joinStrings('\n');
+}
+
+Class meta::relational::transform::toPure::RelationalMappingBuilderResult 
+{
+  classes: Class<Any>[*];
+  mappings: Mapping[*];
+}

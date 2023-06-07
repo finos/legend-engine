@@ -301,6 +301,7 @@
         <module>legend-engine-server-integration-tests</module>
         <module>legend-engine-extensions-collection-execution</module>
         <module>legend-engine-extensions-collection-generation</module>
+        <module>legend-engine-xt-relationalStore-model-generation-api</module>
         <!-- NOTE: Do not change the ordering of this block, we want to build these modules last -->
     </modules>
 
@@ -1658,6 +1659,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-artifact-generation-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-model-generation-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

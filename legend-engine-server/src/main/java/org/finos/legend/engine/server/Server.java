@@ -60,6 +60,7 @@ import org.finos.legend.engine.external.shared.format.imports.loaders.SchemaImpo
 import org.finos.legend.engine.external.shared.format.model.api.ExternalFormats;
 import org.finos.legend.engine.functionActivator.api.FunctionActivatorAPI;
 import org.finos.legend.engine.generation.artifact.api.ArtifactGenerationExtensionApi;
+import org.finos.legend.engine.generation.relational.api.RelationalStoreModelGenerationApi;
 import org.finos.legend.engine.language.pure.compiler.api.Compile;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.GrammarToJson;
@@ -293,6 +294,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
 
         // Relational
         environment.jersey().register(new SchemaExplorationApi(modelManager, relationalStoreExecutor));
+        environment.jersey().register(new RelationalStoreModelGenerationApi(modelManager));
 
         // Compilation
         environment.jersey().register((DynamicFeature) (resourceInfo, context) -> context.register(new InflateInterceptor()));

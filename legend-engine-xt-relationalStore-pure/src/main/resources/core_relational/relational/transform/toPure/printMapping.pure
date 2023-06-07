@@ -1,0 +1,170 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::modelToModel::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::metamodel::relation::*;
+import meta::pure::mapping::*;
+import meta::relational::mapping::*;
+import meta::relational::metamodel::*;
+import meta::relational::mapping::serialization::*;
+
+
+Class meta::relational::mapping::serialization::RelationalPrintConfig
+{
+   printMainTable: Boolean[1];
+}
+
+function meta::relational::mapping::serialization::printRelational(r:RootRelationalInstanceSetImplementation[1]):String[1]
+{
+   $r->meta::relational::mapping::serialization::printRelational(^RelationalPrintConfig(printMainTable=false));
+} 
+
+function meta::relational::mapping::serialization::printRelational(r:RootRelationalInstanceSetImplementation[1], relationalPrintConfig: RelationalPrintConfig[1]):String[1]
+{
+   'Relational\n' + 
+   '   {\n' +
+         meta::relational::mapping::serialization::printRelationalMappingElements($r, $relationalPrintConfig.printMainTable) +
+         $r.propertyMappings->map(m|$m->meta::pure::mapping::serialization::grammar::printPropertyMapping())->filter(m | $m->length()>0)->joinStrings(',\n') + '\n' +
+   '   }';
+}
+
+function meta::relational::mapping::serialization::printRelationalAssociation(associationImplementation:RelationalAssociationImplementation[1]):String[1]
+{
+   'Relational\n' + 
+   '   {\n' +
+   '      AssociationMapping\n' + 
+   '      (\n' + 
+            $associationImplementation.propertyMappings->filter(f| $f->instanceOf(RelationalPropertyMapping))->cast(@RelationalPropertyMapping)->map(m| $m->meta::pure::mapping::serialization::grammar::printPropertyMapping())->joinStrings('   ', ',\n   ', '') + '\n' +
+   '      )\n' + 
+   '   }'
+}
+
+function meta::relational::mapping::serialization::printRelationalProperty(r:meta::relational::mapping::RelationalPropertyMapping[1]):String[1]
+{
+   $r.relationalOperationElement->meta::relational::mapping::serialization::relationalOperationElementToString();
+}
+
+function meta::relational::mapping::serialization::printRelationalMappingElements(spec:RootRelationalInstanceSetImplementation[1], printMainTable: Boolean[1]):String[1]
+{
+
+   $spec->cast(@RelationalMappingSpecification)->printRelationalMappingSpecification() + 
+   if($spec.userDefinedPrimaryKey->equal(true) && ($spec.primaryKey->size() > 0), | $spec.primaryKey->printPrimaryKeys(), | '') +
+   if($spec.mainTableAlias->isEmpty() || $printMainTable->equal(false), | '', | $spec.mainTableAlias->toOne()->printMainTableAlias(true););
+}
+
+function meta::relational::mapping::serialization::printRelationalMappingSpecification(spec:RelationalMappingSpecification[1]):String[1]
+{
+   if ($spec.filter->isEmpty(), | '', | $spec.filter->toOne()->printMappingFilter()) + 
+   if ($spec.groupBy->isEmpty(), | '', | $spec.groupBy->toOne()->printMappingGroupBy()) + 
+   if ($spec.distinct == true,|'     ~distinct\n',|'');
+}
+
+
+function meta::relational::mapping::serialization::printMainTableAlias(alias:TableAlias[1], printDbNameInTableAlias: Boolean[1]):String[1]
+{
+   let schema = $alias.relationalElement->match([t:Table[1]|$t.schema, v:View[1]|$v.schema]);
+   let databaseName = if($alias.database->isEmpty(), | $schema.database->toOne()->elementToPath(), | $alias.database->toOne()->elementToPath());
+   let schemaName =  $schema.name;
+   let tableName = $alias.relationalElement->match([t:Table[1]|$t.name, v:View[1]|$v.name]);
+   '     ~mainTable ' + if ($printDbNameInTableAlias,
+        |'[' + $databaseName + ']',
+        |'') + if ($schemaName->isEmpty() || $schemaName == 'default', |'', |$schemaName->toOne() + '.') + $tableName + '\n';
+}
+
+function meta::relational::mapping::serialization::printPrimaryKeys(keys:RelationalOperationElement[*]):String[1]
+{
+   '     ~primaryKey\n     (\n       ' + $keys->map(element | $element->relationalOperationElementToString(true))->makeString(',\n       ') + '\n     )\n';
+}
+
+function meta::relational::mapping::serialization::relationalOperationElementToString(element:RelationalOperationElement[1]):String[1]
+{
+   $element->relationalOperationElementToString(true);
+}
+
+function <<access.private>> meta::relational::mapping::serialization::printMappingGroupBy(groupBy:GroupByMapping[1]):String[1]
+{
+   '     ~groupBy (' + $groupBy.columns->map(c | $c->relationalOperationElementToString())->joinStrings(', ') + ')\n'
+} 
+
+function <<access.private>> meta::relational::mapping::serialization::printMappingFilter(filter:FilterMapping[1]):String[1]
+{
+   '     ~filter [' + $filter.database->elementToPath() + '] ' + $filter.filter.name + '\n'
+}
+
+function <<access.private>> meta::relational::mapping::serialization::enumerationMappingToString(enumerationMapping:EnumerationMapping<Any>[1]):String[1]
+{
+   '   ' +$enumerationMapping.enumeration->elementToPath()+' : EnumerationMapping ' +$enumerationMapping.name+' \n' +
+   '   {\n'+
+         $enumerationMapping.enumValueMappings->map(e|'      ' + $e.enum->id()+': ['+$e.sourceValues->makeString(',')+']')->joinStrings(',\n')+'\n'+
+   '   }\n';
+}
+
+
+function <<access.private>> meta::relational::mapping::serialization::tableAliasColumnToString(tableAliasColumn:TableAliasColumn[1]):String[1]
+{
+   $tableAliasColumn->tableAliasColumnToString(true);
+}
+
+function <<access.private>> meta::relational::mapping::serialization::tableAliasColumnToString(tableAliasColumn:TableAliasColumn[1], printDbNameInTableAliasColumn:Boolean[1]):String[1]
+{
+   //TODO special handling for EnumerationMapping
+   let alias = $tableAliasColumn.alias;
+   let schema = $alias.relationalElement->match([t:Table[1]|$t.schema, v:View[1]|$v.schema]);
+   let databaseName = if($alias.database->isEmpty(), | $schema.database->toOne()->elementToPath(), | $alias.database->toOne()->elementToPath());
+   let schemaName =  $schema.name;
+   let tableName = $alias.relationalElement->match([t:Table[1]|$t.name, v:View[1]|$v.name]);
+   let columnName = $tableAliasColumn.column.name;
+   if ($printDbNameInTableAliasColumn,
+        |'[' + $databaseName + ']',
+        |'') + if ($schemaName->isEmpty() || $schemaName == 'default', |'', |$schemaName->toOne() + '.') + $tableName + '.' + $columnName;
+}
+
+function <<access.private>> meta::relational::mapping::serialization::relationalOperationElementWithJoinToString(join:RelationalOperationElementWithJoin[1]):String[1]
+{
+   let joinTreeNode = $join.joinTreeNode->toOne();
+   let relationalOperationElement = $join.relationalOperationElement;
+   '[' + $joinTreeNode.database->toOne()->elementToPath() + ']' + $joinTreeNode->joinTreeNodeToString() +
+      if($relationalOperationElement->isEmpty(),
+         |'',
+         |' | ' + $relationalOperationElement->toOne()->relationalOperationElementToString(false));
+}
+
+function <<access.private>> meta::relational::mapping::serialization::joinTreeNodeToString(joinTreeNode:JoinTreeNode[1]): String[1]
+{
+   let child = $joinTreeNode->children()->head();
+   let childStr = if($child->isNotEmpty(),
+      |let joinType = $child->toOne().joinType;
+       let joinTypeStr = if($joinType->isEmpty(), |'', |if($joinType == JoinType.INNER, |'(INNER) ', |'(OUTER) '));                              
+       ' > ' + $joinTypeStr + $child->toOne()->joinTreeNodeToString();, |'');
+   '@' + $joinTreeNode.joinName + $childStr;
+}
+
+function <<access.private>> meta::relational::mapping::serialization::dynaFunctionToString(dynaFunction:DynaFunction[1]):String[1]
+{
+   let funcName = $dynaFunction.name;
+   let parameters = $dynaFunction.parameters;
+   $funcName + '(' + $parameters->map(m| $m->relationalOperationElementToString())->joinStrings(',') + ')';
+}
+
+function <<access.private>> meta::relational::mapping::serialization::relationalOperationElementToString(element:RelationalOperationElement[1], printDbNameInTableAliasColumn:Boolean[1]):String[1]
+{
+   $element->match([
+      tableAliasColumn:TableAliasColumn[1]| $tableAliasColumn->tableAliasColumnToString($printDbNameInTableAliasColumn),
+      join:RelationalOperationElementWithJoin[1] | $join->relationalOperationElementWithJoinToString(),
+      dynaFunction:DynaFunction[1] | $dynaFunction->dynaFunctionToString(),
+      literal:Literal[1]| if($literal.value->instanceOf(String), | '\'' + $literal.value->toString() + '\'', | $literal.value->toString()),
+      default:RelationalOperationElement[1]| $default->toString()
+   ]);
+}

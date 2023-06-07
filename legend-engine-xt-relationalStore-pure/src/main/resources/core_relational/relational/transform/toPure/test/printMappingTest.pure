@@ -1,0 +1,173 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::profiles::*;
+import meta::pure::mapping::serialization::grammar::*;
+import meta::relational::mapping::serialization::*;
+
+function <<meta::pure::profiles::test.Test>> meta::relational::mapping::serialization::tests::testPrintMapping():Boolean[1]
+{
+   let testMapping = meta::relational::tests::simpleMapping;
+   let result = printMapping($testMapping);
+   assertEquals('Mapping meta::relational::tests::simpleMapping\n'+
+                '(\n'+
+                '   *meta::relational::tests::model::simple::Firm : Relational\n'+
+                '   {\n'+
+                '     ~filter [meta::relational::tests::dbInc] FirmXFilter\n' +
+                '     legalName : [meta::relational::tests::dbInc]firmTable.LEGALNAME,\n'+
+                '     address[meta_relational_tests_model_simple_Address] : [meta::relational::tests::dbInc]@Address_Firm,\n'+
+                '     ceo\n' + 
+                '     (\n' + 
+                '        firstName : \'Bob\'\n' +
+                '     )\n' +                 
+                '   }\n'+
+                '\n'+
+                '   *meta::relational::tests::model::simple::Order : Relational\n'+
+                '   {\n'+
+                '     ~distinct\n' + 
+                '     id : [meta::relational::tests::db]orderTable.ID,\n'+
+                '     quantity : [meta::relational::tests::db]orderTable.quantity,\n'+
+                '     date : [meta::relational::tests::db]orderTable.orderDate,\n'+
+                '     settlementDateTime : [meta::relational::tests::db]orderTable.settlementDateTime,\n'+
+                '     pnl : [meta::relational::tests::db]@OrderPnlView_Order | orderPnlView.pnl,\n'+
+                '     pnlContact[meta_relational_tests_model_simple_Person] : [meta::relational::tests::db]@OrderPnlView_Order > @OrderPnlView_Person,\n'+
+                '     zeroPnl : case(equal([meta::relational::tests::db]@OrderPnlView_Order | orderPnlView.pnl,0),\'true\',\'false\')\n'+
+                '   }\n'+
+                '\n' + 
+                '   *meta::relational::tests::model::simple::Person : Relational\n' +
+                '   {\n' + 
+                '     lastName : [meta::relational::tests::dbInc]personTable.LASTNAME\n' + 
+                '   }\n' +
+                '\n'+
+                '   meta::relational::tests::model::simple::Employment : Relational\n' +
+                '   {\n' +
+                '      AssociationMapping\n' +
+                '      (\n' +
+                '        employees[meta_relational_tests_model_simple_Firm,meta_relational_tests_model_simple_Person] : [meta::relational::tests::dbInc]@Firm_Person,\n' +
+                '        firm[meta_relational_tests_model_simple_Person,meta_relational_tests_model_simple_Firm] : [meta::relational::tests::dbInc]@Firm_Person\n' +
+                '      )\n' + 
+                '   }\n' +
+                ')\n', $result);
+}
+
+
+function <<meta::pure::profiles::test.Test>> meta::relational::mapping::serialization::tests::testPureInstancePrintMapping():Boolean[1]
+{
+
+   let map = meta::relational::tests::simpleModelMapping -> printMapping();
+   assertEquals(
+      'Mapping meta::relational::tests::simpleModelMapping\n'+
+         '(\n'+
+        '   *meta::pure::mapping::modelToModel::test::shared::dest::Person : Pure\n'+
+        '   {\n'+
+        '     ~src meta::pure::mapping::modelToModel::test::shared::src::_S_Person\n'+
+        '     firstName : $src.fullName\n'+
+        '   }\n'+
+        '\n'+
+        '   *meta::pure::mapping::modelToModel::test::shared::dest::Product2Simple : Pure\n'+
+        '   {\n'+
+        '     ~src meta::pure::mapping::modelToModel::test::shared::src::_Product2\n'+
+        '     name : $src.name,\n'+
+        '     region : $src.region\n'+
+       '   }\n'+
+       ')\n', $map);
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::mapping::serialization::tests::testMappingInclude():Boolean[1]
+{
+
+   let map = meta::relational::tests::simpleMappingRoot -> printMapping();
+   assertEquals(
+      'Mapping meta::relational::tests::simpleMappingRoot\n'+
+      '(\n'+
+        '   include meta::relational::tests::simpleMapping[meta::relational::tests::dbInc -> meta::relational::tests::db]\n' +
+      ')\n', $map);
+}
+
+###Mapping
+import meta::relational::tests::*;
+import meta::relational::tests::model::simple::*;
+
+Mapping meta::relational::tests::simpleMapping
+(
+   Firm : Relational
+   {
+      ~filter [dbInc]FirmXFilter
+      legalName : [dbInc]firmTable.LEGALNAME,
+      address : [dbInc]@Address_Firm,
+      ceo (
+         firstName: 'Bob'
+      )
+   }
+
+   Order : Relational
+   {
+      ~distinct
+      id : [db]orderTable.ID,
+      quantity : [db]orderTable.quantity,
+      date : [db]orderTable.orderDate,
+      settlementDateTime : [db]orderTable.settlementDateTime,
+      pnl : [db]@OrderPnlView_Order | orderPnlView.pnl,
+      pnlContact : [db]@OrderPnlView_Order > [db]@OrderPnlView_Person,
+      zeroPnl:case(equal([db]@OrderPnlView_Order|orderPnlView.pnl,0),'true','false')
+   }
+
+    Person : Relational
+            {
+               scope([dbInc] personTable)
+               (
+                    lastName : LASTNAME
+               )
+            }
+
+   Employment : Relational
+   {
+      AssociationMapping
+      (
+         employees : [dbInc]@Firm_Person,
+         firm : [dbInc]@Firm_Person
+      )
+   }   
+
+)
+
+###Mapping
+import meta::relational::tests::*;
+import meta::relational::tests::model::simple::*;
+
+Mapping meta::relational::tests::simpleMappingRoot
+(
+   include meta::relational::tests::simpleMapping[dbInc->db]
+)
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::shared::src::*;
+import meta::pure::mapping::modelToModel::test::shared::dest::*;
+import meta::pure::mapping::modelToModel::test::*;
+
+Mapping meta::relational::tests::simpleModelMapping
+(
+   Person : Pure
+            {
+               ~src _S_Person
+               firstName : $src.fullName
+            }
+
+   Product2Simple : Pure
+            {
+               ~src _Product2
+               name: $src.name,
+               region: $src.region
+            }
+)
