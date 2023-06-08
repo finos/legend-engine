@@ -30,6 +30,7 @@ import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
+import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
 import org.finos.legend.engine.persistence.components.relational.bigquery.executor.BigQueryExecutor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.executor.BigQueryHelper;
 import org.finos.legend.engine.persistence.components.relational.bigquery.optmizer.LowerCaseOptimizer;
@@ -59,7 +60,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-public class BigQuerySink extends RelationalSink
+public class BigQuerySink extends AnsiSqlSink
 {
     private static final RelationalSink INSTANCE;
 
