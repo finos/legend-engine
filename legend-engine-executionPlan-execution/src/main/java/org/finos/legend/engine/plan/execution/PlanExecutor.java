@@ -71,9 +71,9 @@ public class PlanExecutor
     private long graphFetchBatchMemoryLimit;
     private BiFunction<MutableList<CommonProfile>, ExecutionState, ExecutionNodeExecutor> executionNodeExecutorBuilder;
     private final CredentialProviderProvider credentialProviderProvider;
-    private final Boolean disableLoggingSQLWithParamValues;
+    private final Boolean logSQLWithParamValues;
 
-    private PlanExecutor(boolean isJavaCompilationAllowed, ImmutableList<StoreExecutor> extraExecutors, long graphFetchBatchMemoryLimit, CredentialProviderProvider credentialProviderProvider, Boolean disableLoggingSQLWithParamValues)
+    private PlanExecutor(boolean isJavaCompilationAllowed, ImmutableList<StoreExecutor> extraExecutors, long graphFetchBatchMemoryLimit, CredentialProviderProvider credentialProviderProvider, Boolean logSQLWithParamValues)
     {
         EngineUrlStreamHandlerFactory.initialize();
         this.isJavaCompilationAllowed = isJavaCompilationAllowed;
@@ -81,7 +81,7 @@ public class PlanExecutor
         this.planExecutorInfo = PlanExecutorInfo.fromStoreExecutors(this.extraExecutors);
         this.graphFetchBatchMemoryLimit = graphFetchBatchMemoryLimit;
         this.credentialProviderProvider = credentialProviderProvider;
-        this.disableLoggingSQLWithParamValues = disableLoggingSQLWithParamValues;
+        this.logSQLWithParamValues = logSQLWithParamValues;
     }
 
     public PlanExecutorInfo getPlanExecutorInfo()
@@ -355,7 +355,7 @@ public class PlanExecutor
 
     private ExecutionState buildDefaultExecutionState(SingleExecutionPlan executionPlan, Map<String, Result> vars, PlanExecutionContext planExecutionContext)
     {
-        ExecutionState executionState = new ExecutionState(vars, executionPlan.templateFunctions, this.extraExecutors.collect(StoreExecutor::buildStoreExecutionState), this.isJavaCompilationAllowed, this.graphFetchBatchMemoryLimit, null, this.credentialProviderProvider, this.disableLoggingSQLWithParamValues);
+        ExecutionState executionState = new ExecutionState(vars, executionPlan.templateFunctions, this.extraExecutors.collect(StoreExecutor::buildStoreExecutionState), this.isJavaCompilationAllowed, this.graphFetchBatchMemoryLimit, null, this.credentialProviderProvider, this.logSQLWithParamValues);
 
         if (planExecutionContext != null)
         {
