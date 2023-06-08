@@ -264,8 +264,8 @@ meta::pure::executionPlan::platformBinding::legendJava::library::tests::JavaGene
   let fnsToExclude = getFunctionsToExclude();
 
   let suite = javaPureTests(engineConventions([]), [])
-   ->addTestsWithin($root)
-   ->excludeTestsWithin($pkgsToExclude)
-   ->excludeTests($fnsToExclude)
-   ->runTests();
+    ->addTestsWithin($root)
+    ->excludeTestsWithin($pkgsToExclude)
+    ->excludeTests($fnsToExclude)
+    ->runTests();
 }
