@@ -72,8 +72,8 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_relationship_Gen
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
-import org.finos.legend.pure.generated.Root_meta_pure_test_StoreTestData;
-import org.finos.legend.pure.generated.Root_meta_pure_test_StoreTestData_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_data_StoreTestData;
+import org.finos.legend.pure.generated.Root_meta_pure_data_StoreTestData_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.InstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
@@ -581,9 +581,9 @@ public class HelperMappingBuilder
         }
     }
 
-    static Root_meta_pure_test_StoreTestData processMappingElementTestData(StoreTestData testData, CompileContext context, ProcessingContext processingContext)
+    static Root_meta_pure_data_StoreTestData processMappingElementTestData(StoreTestData testData, CompileContext context, ProcessingContext processingContext)
     {
-        Root_meta_pure_test_StoreTestData mappingStoreTestData = new Root_meta_pure_test_StoreTestData_Impl("", null, context.pureModel.getClass("meta::pure::test::StoreTestData"));
+        Root_meta_pure_data_StoreTestData mappingStoreTestData = new Root_meta_pure_data_StoreTestData_Impl("", null, context.pureModel.getClass("meta::pure::data::StoreTestData"));
         mappingStoreTestData._data(context.getCompilerExtensions().getExtraEmbeddedDataProcessors().stream().map(processor -> processor.value(testData.data, context, processingContext))
                 .filter(Objects::nonNull)
                 .findFirst()

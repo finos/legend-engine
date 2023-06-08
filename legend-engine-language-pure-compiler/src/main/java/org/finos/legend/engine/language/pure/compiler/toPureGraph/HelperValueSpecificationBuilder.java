@@ -319,28 +319,24 @@ public class HelperValueSpecificationBuilder
     private static GraphFetchTree buildRootGraphFetchTree(RootGraphFetchTree rootGraphFetchTree, CompileContext context, Class<?> parentClass, MutableList<String> openVariables, ProcessingContext processingContext)
     {
         HashSet<String> subTypeClasses = new HashSet<String>();
-        HashSet<String> propertiesAtRootLevelSubTypes = new HashSet<String>();
+        HashSet<String> propertieIdentifiersAtRootLevel = new HashSet<String>();
+        for (org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.GraphFetchTree propertyGraphFetchTree : rootGraphFetchTree.subTrees)
+        {
+            propertieIdentifiersAtRootLevel.add(getPropertyIdentifier((PropertyGraphFetchTree) propertyGraphFetchTree));
+        }
         for (SubTypeGraphFetchTree subTypeGraphFetchTree : rootGraphFetchTree.subTypeTrees)
         {
             if (!subTypeClasses.add(subTypeGraphFetchTree.subTypeClass))
             {
                 throw new EngineException("There are multiple subTypeTrees having subType " + subTypeGraphFetchTree.subTypeClass + ", Only one is allowed", subTypeGraphFetchTree.sourceInformation, EngineErrorType.COMPILATION);
             }
-            for (org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.GraphFetchTree propertyGraphFetchTree: subTypeGraphFetchTree.subTrees)
+            for (org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.GraphFetchTree propertyGraphFetchTree : subTypeGraphFetchTree.subTrees)
             {
-                PropertyGraphFetchTree t = (PropertyGraphFetchTree)propertyGraphFetchTree;
-                if (t.alias != null)
+                String propertyIdentifier = getPropertyIdentifier((PropertyGraphFetchTree) propertyGraphFetchTree);
+                if (propertieIdentifiersAtRootLevel.contains(propertyIdentifier))
                 {
-                    if (!propertiesAtRootLevelSubTypes.add(t.alias))
-                    {
-                        throw new EngineException("There are multiple properties in subTypeTrees of " + rootGraphFetchTree._class + " having '" + t.alias + "' as common name or alias, Property names should be unique", propertyGraphFetchTree.sourceInformation, EngineErrorType.COMPILATION);
-                    }
+                    throw new EngineException("Property \"" + propertyIdentifier + "\" is present at root level hence should not be specified at subType level", subTypeGraphFetchTree.sourceInformation, EngineErrorType.COMPILATION);
                 }
-                else if (!propertiesAtRootLevelSubTypes.add(t.property))
-                {
-                    throw new EngineException("There are multiple properties in subTypeTrees of " + rootGraphFetchTree._class + " having '" + t.property + "' as common name or alias, Property names should be unique", propertyGraphFetchTree.sourceInformation, EngineErrorType.COMPILATION);
-                }
-
             }
         }
         Class<?> _class = context.resolveClass(rootGraphFetchTree._class, rootGraphFetchTree.sourceInformation);
@@ -369,5 +365,10 @@ public class HelperValueSpecificationBuilder
         return new Root_meta_pure_graphFetch_SubTypeGraphFetchTree_Impl("", null, context.pureModel.getClass("meta::pure::graphFetch::SubTypeGraphFetchTree"))
                 ._subTypeClass(subTypeClass)
                 ._subTrees(children);
+    }
+
+    private static String getPropertyIdentifier(PropertyGraphFetchTree propertyGraphFetchTree)
+    {
+        return propertyGraphFetchTree.alias != null ? propertyGraphFetchTree.alias : propertyGraphFetchTree.property;
     }
 }

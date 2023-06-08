@@ -25,6 +25,8 @@ import java.util.Properties;
 public class H2Manager extends DatabaseManager
 {
     public static final String DATABASE_TO_UPPER = "DATABASE_TO_UPPER";
+    private static final String DEFAULT_H2_PROPERTIES = System.getProperty("legend.test.h2.properties",
+            ";NON_KEYWORDS=ANY,ASYMMETRIC,AUTHORIZATION,CAST,CURRENT_PATH,CURRENT_ROLE,DAY,DEFAULT,ELSE,END,HOUR,KEY,MINUTE,MONTH,SECOND,SESSION_USER,SET,SOME,SYMMETRIC,SYSTEM_USER,TO,UESCAPE,USER,VALUE,WHEN,YEAR;MODE=LEGACY");
 
     @Override
     public MutableList<String> getIds()
@@ -45,7 +47,7 @@ public class H2Manager extends DatabaseManager
         {
             databaseName += String.format(";%s=%s", DATABASE_TO_UPPER, extraUserDataSourceProperties.getProperty(DATABASE_TO_UPPER));
         }
-        return "jdbc:h2:tcp://" + host + ":" + port + "/mem:" + databaseName;
+        return "jdbc:h2:tcp://" + host + ":" + port + "/mem:" + databaseName + DEFAULT_H2_PROPERTIES;
     }
 
     @Override

@@ -219,7 +219,8 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connectio
             nonProxyHosts = $s.nonProxyHosts,
             accountType = if($s.accountType->isEmpty(),|[],|$s.accountType->toOne()->toString()),
             organization = $s.organization,
-            role = $s.role
+            role = $s.role,
+            enableQueryTags = $s.enableQueryTags
         ),
      r:meta::pure::legend::connections::legend::specification::RedshiftDatasourceSpecification[1] |
                                                   ^meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::legend::specification::RedshiftDatasourceSpecification(

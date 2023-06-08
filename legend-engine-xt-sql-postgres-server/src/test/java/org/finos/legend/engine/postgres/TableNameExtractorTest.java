@@ -47,15 +47,24 @@ public class TableNameExtractorTest
     }
 
     @Test
+    public void testSelectWithoutTable()
+    {
+        List<QualifiedName> qualifiedNames = getQualifiedNames("SELECT 1");
+        assertEquals(0, qualifiedNames.size());
+    }
+
+    @Test
     public void testFunctionCall()
     {
         List<QualifiedName> qualifiedNames = getQualifiedNames("SELECT * FROM service('/my/service')");
-        assertEquals(0, qualifiedNames.size());
+        assertEquals(1, qualifiedNames.size());
+        QualifiedName qualifiedName = Iterables.getOnlyElement(qualifiedNames);
+        assertEquals(Lists.mutable.of("service"), qualifiedName.parts);
     }
 
     private static List<QualifiedName> getQualifiedNames(String query)
     {
         SqlBaseParser parser = SQLGrammarParser.getSqlBaseParser(query, "query");
-        return extractor.visitSingleStatement(parser.singleStatement());
+        return parser.singleStatement().accept(extractor);
     }
 }

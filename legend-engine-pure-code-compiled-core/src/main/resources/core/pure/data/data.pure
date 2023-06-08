@@ -55,6 +55,13 @@ Class meta::pure::data::ModelInstanceData extends meta::pure::data::ModelData
   instances: InstanceValue[1];
 }
 
+Class meta::pure::data::StoreTestData
+{
+    doc: String[0..1];
+    data: meta::pure::data::EmbeddedData[1];
+    store: meta::pure::store::Store[1];
+}
+
 Class meta::external::shared::format::metamodel::data::ExternalFormatData extends EmbeddedData
 {
   contentType : String[1];

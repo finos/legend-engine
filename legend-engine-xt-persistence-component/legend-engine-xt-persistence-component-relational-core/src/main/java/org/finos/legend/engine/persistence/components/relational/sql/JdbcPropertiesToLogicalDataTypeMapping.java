@@ -18,30 +18,31 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 
 public interface JdbcPropertiesToLogicalDataTypeMapping
 {
-    public static String NUMBER = "NUMBER";
-    public static String TINYINT = "TINYINT";
-    public static String SMALLINT = "SMALLINT";
-    public static String INTEGER = "INTEGER";
-    public static String BIGINT = "BIGINT";
-    public static String DECIMAL = "DECIMAL";
-    public static String DOUBLE = "DOUBLE";
-    public static String REAL = "REAL";
-    public static String CHAR = "CHAR";
-    public static String VARCHAR = "VARCHAR";
-    public static String CLOB = "CLOB";
-    public static String BINARY = "BINARY";
-    public static String VARBINARY = "VARBINARY";
-    public static String BOOLEAN = "BOOLEAN";
-    public static String DATE = "DATE";
-    public static String TIME = "TIME";
-    public static String TIMESTAMP = "TIMESTAMP";
-    public static String TIMESTAMPNTZ = "TIMESTAMPNTZ";
-    public static String TIMESTAMPLTZ = "TIMESTAMPLTZ";
-    public static String TIMESTAMPTZ = "TIMESTAMPTZ";
-    public static String TIMESTAMP_WITH_TIME_ZONE = "TIMESTAMP WITH TIME ZONE";
-    public static String VARIANT = "VARIANT";
-    public static String OBJECT = "OBJECT";
-    public static String ARRAY = "ARRAY";
+    String NUMBER = "NUMBER";
+    String TINYINT = "TINYINT";
+    String SMALLINT = "SMALLINT";
+    String INTEGER = "INTEGER";
+    String BIGINT = "BIGINT";
+    String DECIMAL = "DECIMAL";
+    String DOUBLE = "DOUBLE";
+    String REAL = "REAL";
+    String CHAR = "CHAR";
+    String VARCHAR = "VARCHAR";
+    String CLOB = "CLOB";
+    String BINARY = "BINARY";
+    String VARBINARY = "VARBINARY";
+    String BOOLEAN = "BOOLEAN";
+    String DATE = "DATE";
+    String TIME = "TIME";
+    String TIMESTAMP = "TIMESTAMP";
+    String TIMESTAMPNTZ = "TIMESTAMPNTZ";
+    String TIMESTAMPLTZ = "TIMESTAMPLTZ";
+    String TIMESTAMPTZ = "TIMESTAMPTZ";
+    String TIMESTAMP_WITH_TIME_ZONE = "TIMESTAMP WITH TIME ZONE";
+    String VARIANT = "VARIANT";
+    String OBJECT = "OBJECT";
+    String ARRAY = "ARRAY";
+    String CHARACTER_VARYING = "CHARACTER VARYING";
 
     FieldType getDataType(String typeName, String dataType, int columnSize, int decimalDigits);
 }

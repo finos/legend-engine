@@ -64,7 +64,7 @@ public class TestRelationalGraphFetchExecutionDataTypes extends AlloyTestServer
             "        int INTEGER,\n" +
             "        bi BIGINT,\n" +
             "        vc VARCHAR(200),\n" +
-            "        c CHAR(2),\n" +
+            "        c CHAR(1),\n" +
             "        date DATE,\n" +
             "        ts TIMESTAMP,\n" +
             "        f FLOAT,\n" +
@@ -87,7 +87,7 @@ public class TestRelationalGraphFetchExecutionDataTypes extends AlloyTestServer
             "        int INTEGER PRIMARY KEY,\n" +
             "        bi BIGINT PRIMARY KEY,\n" +
             "        vc VARCHAR(200) PRIMARY KEY,\n" +
-            "        c CHAR(2) PRIMARY KEY,\n" +
+            "        c CHAR(1) PRIMARY KEY,\n" +
             "        date DATE PRIMARY KEY,\n" +
             "        ts TIMESTAMP PRIMARY KEY,\n" +
             "        f FLOAT PRIMARY KEY,\n" +
@@ -250,7 +250,7 @@ public class TestRelationalGraphFetchExecutionDataTypes extends AlloyTestServer
     protected void insertTestData(Statement s) throws SQLException
     {
         s.execute("Drop table if exists dataTable;");
-        s.execute("Create Table dataTable(pk INT NOT NULL,ti TINYINT NULL,si SMALLINT NULL,int INT NULL,bi BIGINT NULL,vc VARCHAR(200) NULL,c CHAR(2) NULL,date DATE NULL,ts TIMESTAMP NULL,f FLOAT NULL,d DOUBLE NULL,bit BIT NULL,dec DECIMAL(38,15) NULL, r REAL NULL, n NUMERIC(38,15) NULL, PRIMARY KEY(pk));");
+        s.execute("Create Table dataTable(pk INT NOT NULL,ti TINYINT NULL,si SMALLINT NULL,int INT NULL,bi BIGINT NULL,vc VARCHAR(200) NULL,c CHAR(1) NULL,date DATE NULL,ts TIMESTAMP NULL,f FLOAT NULL,d DOUBLE NULL,bit BIT NULL,dec DECIMAL(38,15) NULL, r REAL NULL, n NUMERIC(38,15) NULL, PRIMARY KEY(pk));");
         s.execute("insert into dataTable (pk, ti, si, int, bi, vc, c, date, ts, f, d, bit, dec, r, n) values (0, 1, 2, 3, 1000, 'Something', 'c', '2003-07-19', '2003-07-19 00:00:00', 1.1, 2.2, 1, 123456789.123456789012345, 987654321.098765432154321, 987654321.098765432154321)");
         s.execute("insert into dataTable (pk, ti, si, int, bi, vc, c, date, ts, f, d, bit, dec, r, n) values (1, null, null, null, null, null, null, null, null, null, null, null, null, null, null)");
     }

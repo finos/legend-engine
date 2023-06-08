@@ -80,7 +80,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::projection::q
    let result = execute(|Person.all()->project([p|$p.parameterizedName($personNameParameter)],['a']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7 );
    assertEquals('Prefix_ Allen, Anthony,Prefix_ Harris, David,Prefix_ Hill, John,Prefix_ Hill, Oliver,Prefix_ Johnson, John,Prefix_ Roberts, Fabrice,Prefix_ Smith, Peter', $result.values.rows->map(r|$r.values)->sort()->makeString(','));
-   assertEquals('select case when \'true\' then concat(\'Prefix_\', \' \', "root".LASTNAME, \', \', "root".FIRSTNAME) else concat("root".FIRSTNAME, \' \', "root".LASTNAME) end as "a" from personTable as "root"', $result->sqlRemoveFormatting());
+   assertEquals('select case when true then concat(\'Prefix_\', \' \', "root".LASTNAME, \', \', "root".FIRSTNAME) else concat("root".FIRSTNAME, \' \', "root".LASTNAME) end as "a" from personTable as "root"', $result->sqlRemoveFormatting());
 }
 
 

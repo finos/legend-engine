@@ -398,6 +398,11 @@ function meta::relational::functions::sqlQueryToString::default::getDDLCommandsT
               );
 }
 
+function meta::relational::functions::sqlQueryToString::default::processTempTableNameDefault(tempTableName:String[1]) : String[1]
+{
+   $tempTableName;
+}
+
 function meta::relational::functions::sqlQueryToString::default::translateCreateSchemaStatementDefault(createSchemaSQL:CreateSchemaSQL[1], dbConfig:DbConfig[1]) : String[1]
 {
    'Create Schema ' + $createSchemaSQL.schema.name + ';';
@@ -449,6 +454,7 @@ function meta::relational::functions::sqlQueryToString::default::loadValuesToDbT
 
 function meta::relational::functions::sqlQueryToString::default::mapToDBUnitType(unit:String[1]):String[1]
 {
+   let unitWithoutQuotes = $unit->removeQuotesIfExist();
    [
       pair(DurationUnit.YEARS->toString(), 'YEAR'),
       pair(DurationUnit.MONTHS->toString(), 'MONTH'),
@@ -459,7 +465,7 @@ function meta::relational::functions::sqlQueryToString::default::mapToDBUnitType
       pair(DurationUnit.SECONDS->toString(), 'SECOND'),
       pair(DurationUnit.MILLISECONDS->toString(), 'MILLISECOND'),
       pair(DurationUnit.MICROSECONDS->toString(), 'MICROSECOND')
-   ]->filter(p | $p.first == $unit).second->toOne('Unit not found: ' + $unit);
+   ]->filter(p | $p.first == $unitWithoutQuotes).second->toOne('Unit not found: ' + $unitWithoutQuotes);
 }
 
 function meta::relational::functions::sqlQueryToString::default::regexpPattern(query: String[1]):String[1]
@@ -595,6 +601,11 @@ function meta::relational::functions::sqlQueryToString::default::removeQuotes(s:
 {
    let firstQuote = $s->indexOf('\'') +1;
    $s->substring($firstQuote, $s->length()-1);
+}
+
+function meta::relational::functions::sqlQueryToString::default::removeQuotesIfExist(s:String[1]):String[1]
+{
+   if($s->startsWith('\'') && $s->endsWith('\''), | $s->removeQuotes(), | $s)
 }
 
 function meta::relational::functions::sqlQueryToString::default::dateTimeFormats():Map<String,Integer>[1]

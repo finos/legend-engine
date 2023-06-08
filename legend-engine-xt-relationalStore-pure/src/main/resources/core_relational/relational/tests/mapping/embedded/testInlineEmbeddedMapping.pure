@@ -137,6 +137,7 @@ function meta::relational::tests::mapping::embedded::advanced::store::createTabl
   meta::relational::functions::toDDL::dropAndCreateTableInDb(eDB, 'BOND_DETAIL', $connection);
   meta::relational::functions::toDDL::dropAndCreateTableInDb(eDB, 'Party', $connection);
   meta::relational::functions::toDDL::dropAndCreateTableInDb(eDB, 'BondClassificationTable', $connection);
+  meta::relational::functions::toDDL::dropAndCreateTableInDb(eDB, 'Person', $connection);
 
   let s = 'insert into PRODUCT_DENORM (PRODUCT_ID, PRODUCT_NAME, MARKET_NAME, BOND_DETAILS, BOND_TYPE,BOND_STATUS,ISSUER,HOLDER,ISSUER_ADDRESS_NAME,HOLDER_ADDRESS_NAME,SUBPRODUCT_ID,SUBPRODUCT_NAME ) values ';
 
@@ -161,6 +162,11 @@ function meta::relational::tests::mapping::embedded::advanced::store::createTabl
   let d = 'insert into BondClassificationTable(PRODUCT_ID, TYPE) values ';
    
   executeInDb($d + '(1, \'Corporate\');', $connection);
+
+  let e = 'insert into Person (id, state, unitNumber, in_z, out_z ) values ';
+  executeInDb($e + '(1, \'CA\', 7, \'2022-10-21 23:59:59\', \'9999-12-31 00:00:00\' );', $connection);
+  executeInDb($e + '(2, \'TX\', 8, \'2022-10-20 23:59:59\', \'9999-12-31 00:00:00\' );', $connection);
+  executeInDb($e + '(3, \'NY\', 9, \'2022-10-20 23:59:59\', \'9999-12-31 00:00:00\' );', $connection);
 
   true;
 }
@@ -199,8 +205,8 @@ Class meta::relational::tests::mapping::embedded::advanced::model::BondDetail
   type : String[1];
   status: Status[1];
   issuer:Party[1];
-  holder:Party[1]; 
-   
+  holder:Party[1];
+
   isBond(){true}:Boolean[1];
   duration(){if($this.type->startsWith('5'),|5,|0)}:Integer[1];
   durationStartsWith(start:String[1]){ $this.type->startsWith($start)}:Boolean[1];
@@ -228,6 +234,22 @@ Association meta::relational::tests::mapping::embedded::advanced::model::BondDet
     bondClassification : meta::relational::tests::mapping::embedded::advanced::model::BondClassification[*];
 }
 
+Class meta::relational::tests::mapping::embedded::advanced::model::Person
+{
+  id : Integer[1];
+  address : meta::relational::tests::mapping::embedded::advanced::model::AddressInfo[1];
+}
+
+Class <<temporal.processingtemporal>> meta::relational::tests::mapping::embedded::advanced::model::AddressInfo
+{
+  state : String[1];
+  unit : meta::relational::tests::mapping::embedded::advanced::model::Unit[1];
+}
+
+Class <<temporal.processingtemporal>> meta::relational::tests::mapping::embedded::advanced::model::Unit
+{
+  number : Integer[1];
+}
 
 ###Relational
 
@@ -285,6 +307,18 @@ Database meta::relational::tests::mapping::embedded::advanced::store::eDB
   Filter productFilter1(PRODUCT_DENORM.BOND_STATUS = 'Open' )
   Filter productFilter2(PRODUCT_DENORM.BOND_STATUS != 'Open' )
 
+  Table Person
+  (
+    milestoning
+    (
+      processing(PROCESSING_IN=in_z, PROCESSING_OUT=out_z)
+    )
+    id INT PRIMARY KEY,
+    state VARCHAR(25),
+    unitNumber INT,
+    in_z TIMESTAMP,
+    out_z TIMESTAMP
+  )
 )
 
 ###Mapping
@@ -340,5 +374,22 @@ Mapping meta::relational::tests::mapping::embedded::advanced::mapping::testMappi
    }
 )
 
-
-
+Mapping meta::relational::tests::mapping::embedded::advanced::model::testMilestonedEmbeddedInlineMapping
+(
+   meta::relational::tests::mapping::embedded::advanced::model::Person[personMapping] : Relational
+   {
+      id : [eDB]Person.id,
+      address
+      (
+        state : [eDB]Person.state,
+        unit () Inline[UnitInfoMapping]
+      )
+   }
+   meta::relational::tests::mapping::embedded::advanced::model::Unit[UnitInfoMapping] : Relational
+   {
+      scope([eDB]Person)
+      (
+        number : unitNumber
+      )
+   }
+)

@@ -29,13 +29,6 @@ Class <<typemodifiers.abstract>> meta::pure::test::AtomicTest extends Test
     assertions  : TestAssertion[1..*];
 }
 
-Class meta::pure::test::StoreTestData
-{
-    doc: String[0..1];
-    data: meta::pure::data::EmbeddedData[1];
-    store: meta::pure::store::Store[1];
-}
-
 Association meta::pure::test::TestSuiteAtomicTest
 {
     suite       : TestSuite[0..1];   

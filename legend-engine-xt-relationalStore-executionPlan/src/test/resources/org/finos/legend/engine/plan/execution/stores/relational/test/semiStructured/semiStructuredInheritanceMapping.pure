@@ -179,7 +179,13 @@ Runtime inheritance::runtime::SnowflakeRuntime
                 RelationalDatabaseConnection {
                     store: inheritance::store::SnowflakeDB;
                     type: Snowflake;
-                    specification: LocalH2{};
+                    specification: Snowflake
+                    {
+                        name: 'dbName';
+                        account: 'account';
+                        warehouse: 'warehouse';
+                        region: 'region';
+                    };
                     auth: Test;
                 }
             }#

@@ -75,18 +75,22 @@ import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
 import org.finos.legend.engine.shared.javaCompiler.StringJavaSource;
 import org.finos.legend.engine.test.runner.shared.TestResult;
-import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_SingleExecutionTest;
+import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
+import org.finos.legend.pure.generated.Root_meta_pure_mapping_Result;
+import org.finos.legend.pure.generated.core_relational_relational_helperFunctions_helperFunctions;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.ServiceLoader;
 
@@ -101,11 +105,11 @@ public class ServiceTestRunner
     private final ObjectMapper objectMapper;
     private final PlanExecutor executor;
     private final RichIterable<? extends Root_meta_pure_extension_Extension> extensions;
-    private final MutableList<PlanTransformer> transformers;
+    private final Iterable<? extends PlanTransformer> transformers;
     private final String pureVersion;
     private final String metricsContext;
 
-    public ServiceTestRunner(Service service, Root_meta_legend_service_metamodel_Service pureService, PureModelContextData pureModelContextData, PureModel pureModel, ObjectMapper objectMapper, PlanExecutor executor, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, MutableList<PlanTransformer> transformers, String pureVersion, String metricsContext)
+    public ServiceTestRunner(Service service, Root_meta_legend_service_metamodel_Service pureService, PureModelContextData pureModelContextData, PureModel pureModel, ObjectMapper objectMapper, PlanExecutor executor, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers, String pureVersion, String metricsContext)
     {
         this.service = service;
         this.pureService = (pureService == null) ? findPureService(service, pureModel) : pureService;
@@ -120,19 +124,19 @@ public class ServiceTestRunner
         this.metricsContext = metricsContext;
     }
 
-    public ServiceTestRunner(Service service, Root_meta_legend_service_metamodel_Service pureService, PureModelContextData pureModelContextData, PureModel pureModel, ObjectMapper objectMapper, PlanExecutor executor, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, MutableList<PlanTransformer> transformers, String pureVersion)
+    public ServiceTestRunner(Service service, Root_meta_legend_service_metamodel_Service pureService, PureModelContextData pureModelContextData, PureModel pureModel, ObjectMapper objectMapper, PlanExecutor executor, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers, String pureVersion)
     {
         this(service, pureService, pureModelContextData, pureModel, objectMapper, executor, extensions, transformers, pureVersion, null);
     }
 
     @Deprecated
-    public ServiceTestRunner(Pair<Service, Root_meta_legend_service_metamodel_Service> pureServicePairs, Pair<PureModelContextData, PureModel> pureModelPairs, ObjectMapper objectMapper, PlanExecutor executor, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, MutableList<PlanTransformer> transformers, String pureVersion)
+    public ServiceTestRunner(Pair<Service, Root_meta_legend_service_metamodel_Service> pureServicePairs, Pair<PureModelContextData, PureModel> pureModelPairs, ObjectMapper objectMapper, PlanExecutor executor, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers, String pureVersion)
     {
         this(pureServicePairs.getOne(), pureServicePairs.getTwo(), pureModelPairs.getOne(), pureModelPairs.getTwo(), objectMapper, executor, extensions, transformers, pureVersion);
     }
 
     @Deprecated
-    public ServiceTestRunner(Service service, Pair<PureModelContextData, PureModel> pureModelPairs, PlanExecutor executor, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, MutableList<PlanTransformer> transformers, String pureVersion)
+    public ServiceTestRunner(Service service, Pair<PureModelContextData, PureModel> pureModelPairs, PlanExecutor executor, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers, String pureVersion)
     {
         this(service, null, pureModelPairs.getOne(), pureModelPairs.getTwo(), null, executor, extensions, transformers, pureVersion);
     }
@@ -188,7 +192,6 @@ public class ServiceTestRunner
                     testData = test.data;
                     asserts = test.asserts;
                     noAssertMessage = "No test assert found !!";
-
                 }
                 return Collections.singletonList(executeSingleExecutionTest((PureSingleExecution) service.execution, testData, asserts, noAssertMessage, pureModelContextData, pureModel, scope));
             }
@@ -248,26 +251,32 @@ public class ServiceTestRunner
         MetricsHandler.observe("service test compile plan", start, System.currentTimeMillis());
     }
 
-    private Pair<ExecutionPlan, RichIterable<? extends String>> getExtraServiceExecutionPlan(MutableList<ServiceExecutionExtension> extensions, Execution execution, String testData)
+    private Pair<ExecutionPlan, RichIterable<? extends String>> getExtraServiceExecutionPlan(Iterable<? extends ServiceExecutionExtension> extensions, Execution execution, String testData)
     {
-        return extensions
-                .collect(f -> f.tryToBuildTestExecutorContext(execution, testData, this.objectMapper, this.pureModel, this.extensions, this.transformers, this.pureVersion))
-                .select(Objects::nonNull)
-                .select(Optional::isPresent)
-                .collect(Optional::get)
-                .getFirstOptional()
-                .orElseThrow(() -> new UnsupportedOperationException("Service execution class '" + execution.getClass().getName() + "' not supported yet"));
+        // TODO what if multiple extensions work?
+        for (ServiceExecutionExtension extension : extensions)
+        {
+            Optional<Pair<ExecutionPlan, RichIterable<? extends String>>> optionalPlan = extension.tryToBuildTestExecutorContext(execution, testData, this.objectMapper, this.pureModel, this.extensions, this.transformers, this.pureVersion);
+            if ((optionalPlan != null) && optionalPlan.isPresent())
+            {
+                return optionalPlan.get();
+            }
+        }
+        throw new UnsupportedOperationException("Service execution class '" + execution.getClass().getName() + "' not supported yet");
     }
 
-    private List<TestContainer> getExtraServiceTestContainers(MutableList<ServiceExecutionExtension> extensions, ServiceTest_Legacy test)
+    private List<TestContainer> getExtraServiceTestContainers(Iterable<? extends ServiceExecutionExtension> extensions, ServiceTest_Legacy test)
     {
-        return extensions
-                .collect(f -> f.tryToBuildTestAsserts(test, this.objectMapper, this.pureModel))
-                .select(Objects::nonNull)
-                .select(Optional::isPresent)
-                .collect(Optional::get)
-                .getFirstOptional()
-                .orElseThrow(() -> new UnsupportedOperationException("Service test class '" + test.getClass().getName() + "' not supported yet"));
+        // TODO what if multiple extensions work?
+        for (ServiceExecutionExtension extension : extensions)
+        {
+            Optional<List<TestContainer>> optionalContainers = extension.tryToBuildTestAsserts(test, this.objectMapper, this.pureModel);
+            if ((optionalContainers != null) && optionalContainers.isPresent())
+            {
+                return optionalContainers.get();
+            }
+        }
+        throw new UnsupportedOperationException("Service test class '" + test.getClass().getName() + "' not supported yet");
     }
 
     private static PureSingleExecution shallowCopySingleExecution(PureSingleExecution pureSingleExecution)

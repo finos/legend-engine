@@ -36,7 +36,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
       columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
       identifierProcessor = processIdentifierWithBackTicks_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
-      ddlCommandsTranslator = getDDLCommandsTranslator()
+      ddlCommandsTranslator = getDDLCommandsTranslator(),
+      processTempTableName = processTempTableNameDefault_String_1__String_1_
    );
 }
 
@@ -299,15 +300,18 @@ function meta::relational::functions::sqlQueryToString::memsql::translateDropTab
 
 function meta::relational::functions::sqlQueryToString::memsql::translateCreateTableStatementMemSQL(createTableSQL:CreateTableSQL[1], dbConfig:DbConfig[1]) : String[1]
 {
-  let t= $createTableSQL.table;
-  let applyConstraints = $createTableSQL.applyConstraints;
-  'Create Table '+ if($t.schema.name == 'default', |'', |$dbConfig.identifierProcessor($t.schema.name) + '.') + $dbConfig.identifierProcessor($t.name) +
-      + '('
-      + $t.columns->cast(@meta::relational::metamodel::Column)
-         ->map(c | $c.name->processColumnName($dbConfig) + ' ' +  getColumnTypeSqlTextMemSQL($c.type) + if($c.nullable->isEmpty() || $applyConstraints == false, | '', | if($c.nullable == true , | ' NULL', | ' NOT NULL' )))
-        ->joinStrings(',')
-      + if ($t.primaryKey->isEmpty() || $applyConstraints == false, | '', | ', PRIMARY KEY(' + $t.primaryKey->map(c | $c.name->processColumnName($dbConfig))->joinStrings(',') + ')')
-      +');';
+  if($createTableSQL.isTempTable->isTrue(),|
+   'CREATE TEMPORARY TABLE ' + $createTableSQL.table->tableToString($dbConfig) + '('+ $createTableSQL.table.columns->map(r|$r->match([c:Column[1]| $c.name->toOne() + ' ' + if($c.type->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText() == 'TIMESTAMP',|'DATETIME(6)',|$c.type->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText()),
+                                                                                                    r:RelationalOperationElement[1]| fail('Only \'Column\' types are supported when creating temporary tables, found: '+$r->type()->toOne()->elementToPath());'';]))->joinStrings(',') + ');'
+  ,|let t= $createTableSQL.table;
+    let applyConstraints = $createTableSQL.applyConstraints;
+    'Create Table '+ if($t.schema.name == 'default', |'', |$dbConfig.identifierProcessor($t.schema.name) + '.') + $dbConfig.identifierProcessor($t.name)+
+        + '('
+        + $t.columns->cast(@meta::relational::metamodel::Column)
+          ->map(c | $c.name->processColumnName($dbConfig) + ' ' +  getColumnTypeSqlTextMemSQL($c.type) + if($c.nullable->isEmpty() || $applyConstraints == false, | '', | if($c.nullable == true , | ' NULL', | ' NOT NULL' )))
+          ->joinStrings(',')
+        + if ($t.primaryKey->isEmpty() || $applyConstraints == false, | '', | ', PRIMARY KEY(' + $t.primaryKey->map(c | $c.name->processColumnName($dbConfig))->joinStrings(',') + ')')
+        +');';);
 }
 
 function meta::relational::functions::sqlQueryToString::memsql::getColumnTypeSqlTextMemSQL(columnType:meta::relational::metamodel::datatype::DataType[1]):String[1]
@@ -320,11 +324,14 @@ function meta::relational::functions::sqlQueryToString::memsql::getColumnTypeSql
 
 function meta::relational::functions::sqlQueryToString::memsql::loadValuesToDbTableMemSQL(loadTableSQL:LoadTableSQL[1] , dbConfig: DbConfig[1]) : String[*]
 {
-    $loadTableSQL.parsedData.values->map(row |  let sql = 'insert into ' + if($loadTableSQL.table.schema.name == 'default', |'', |$dbConfig.identifierProcessor($loadTableSQL.table.schema.name) + '.') + $dbConfig.identifierProcessor($loadTableSQL.table.name) + ' ('
+  if($loadTableSQL.absolutePathToFile->isNotEmpty(),|
+  'LOAD DATA LOCAL INFILE \'' + $loadTableSQL.absolutePathToFile->toOne()->processOperation($dbConfig.dbType, []) + '\' \nINTO TABLE `' + $loadTableSQL.table->tableToString($dbConfig) + '` \nIGNORE 1 LINES;';
+   ,|$loadTableSQL.parsedData.values->map(row |  let sql = 'insert into ' + if($loadTableSQL.table.schema.name == 'default', |'', |$dbConfig.identifierProcessor($loadTableSQL.table.schema.name) + '.') + $dbConfig.identifierProcessor($loadTableSQL.table.name) + ' ('
             + $loadTableSQL.columnsToLoad.name->map(colName | $colName->processColumnName($dbConfig))->joinStrings(',')
             +') '
             + 'values ('
             + $row.values->meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($loadTableSQL.columnsToLoad.type)
             + ');';
-   );
+    );
+  );
 }

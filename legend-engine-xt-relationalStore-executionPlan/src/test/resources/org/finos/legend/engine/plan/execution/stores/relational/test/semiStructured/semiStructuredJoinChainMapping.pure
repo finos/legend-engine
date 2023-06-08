@@ -129,7 +129,13 @@ Runtime joinChain::runtime::SnowflakeRuntime
                 RelationalDatabaseConnection {
                     store: joinChain::store::SnowflakeDB;
                     type: Snowflake;
-                    specification: LocalH2{};
+                    specification: Snowflake
+                    {
+                        name: 'dbName';
+                        account: 'account';
+                        warehouse: 'warehouse';
+                        region: 'region';
+                    };
                     auth: Test;
                 }
             }#
