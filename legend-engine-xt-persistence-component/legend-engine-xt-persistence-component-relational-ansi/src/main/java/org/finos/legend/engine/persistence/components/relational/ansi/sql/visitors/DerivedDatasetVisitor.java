@@ -32,12 +32,12 @@ public class DerivedDatasetVisitor implements LogicalPlanVisitor<DerivedDataset>
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, DerivedDataset current, VisitorContext context)
     {
-        Optional<Condition> filterCondition = LogicalPlanUtils.getDatasetFilterCondition(current);
+        Condition filterCondition = LogicalPlanUtils.getDatasetFilterCondition(current);
         List<Value> allColumns = new ArrayList<>(current.schemaReference().fieldValues());
         Selection selection = Selection.builder()
                 .source(current.datasetReference())
                 .addAllFields(allColumns)
-                .condition(filterCondition.get())
+                .condition(filterCondition)
                 .alias(current.datasetReference().alias())
                 .build();
         return new SelectionVisitor().visit(prev, selection, context);

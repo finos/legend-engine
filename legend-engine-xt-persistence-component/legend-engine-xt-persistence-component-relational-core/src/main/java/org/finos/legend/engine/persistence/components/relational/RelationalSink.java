@@ -19,6 +19,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNod
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
+import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
 import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutionHelper;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
@@ -114,7 +115,7 @@ public abstract class RelationalSink implements Sink
 
     public abstract Optional<Optimizer> optimizerForCaseConversion(CaseConversion caseConversion);
 
-    public abstract Executor<SqlGen, TabularData, SqlPlan> getRelationalExecutor();
+    public abstract Executor<SqlGen, TabularData, SqlPlan> getRelationalExecutor(RelationalConnection connection);
 
     public interface DatasetExists
     {

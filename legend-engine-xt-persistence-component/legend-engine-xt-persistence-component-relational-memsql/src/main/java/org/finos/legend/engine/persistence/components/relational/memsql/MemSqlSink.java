@@ -33,15 +33,17 @@ import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.LowerCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer;
+import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
 import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutionHelper;
 import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
+import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
 import org.finos.legend.engine.persistence.components.relational.memsql.sql.MemSqlDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.memsql.sql.visitor.AlterVisitor;
-import org.finos.legend.engine.persistence.components.relational.memsql.sql.visitor.SQLCreateVisitor;
 import org.finos.legend.engine.persistence.components.relational.memsql.sql.visitor.SQLUpdateVisitor;
 import org.finos.legend.engine.persistence.components.relational.memsql.sql.visitor.SchemaDefinitionVisitor;
 import org.finos.legend.engine.persistence.components.relational.memsql.sql.visitor.ShowVisitor;
+import org.finos.legend.engine.persistence.components.relational.memsql.sql.visitor.SQLCreateVisitor;
 import org.finos.legend.engine.persistence.components.relational.sql.DataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
@@ -56,6 +58,8 @@ import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVis
 import org.finos.legend.engine.persistence.components.util.Capability;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -123,16 +127,21 @@ public class MemSqlSink extends AnsiSqlSink
         INSTANCE = new MemSqlSink();
     }
 
-    private final Connection connection;
-
     public static RelationalSink get()
     {
         return INSTANCE;
     }
 
-    public static RelationalSink get(Connection connection)
+    public static Connection createConnection(String user, String pwd, String jdbcUrl)
     {
-        return new MemSqlSink(connection);
+        try
+        {
+            return DriverManager.getConnection(jdbcUrl, user, pwd);
+        }
+        catch (SQLException e)
+        {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     private MemSqlSink()
@@ -149,24 +158,20 @@ public class MemSqlSink extends AnsiSqlSink
                 {
                     throw new UnsupportedOperationException();
                 });
-        this.connection = null;
     }
 
-    public MemSqlSink(Connection connection)
+    @Override
+    public Executor<SqlGen, TabularData, SqlPlan> getRelationalExecutor(RelationalConnection relationalConnection)
     {
-        super(
-                CAPABILITIES,
-                IMPLICIT_DATA_TYPE_MAPPING,
-                EXPLICIT_DATA_TYPE_MAPPING,
-                SqlGenUtils.BACK_QUOTE_IDENTIFIER,
-                LOGICAL_PLAN_VISITOR_BY_CLASS,
-                (executor, sink, dataset) -> sink.doesTableExist(dataset),
-                VALIDATE_MAIN_DATASET_SCHEMA,
-                (v, w, x, y, z) ->
-                {
-                    throw new UnsupportedOperationException();
-                });
-        this.connection = connection;
+        if (relationalConnection instanceof JdbcConnection)
+        {
+            JdbcConnection jdbcConnection = (JdbcConnection) relationalConnection;
+            return new RelationalExecutor(this, JdbcHelper.of(jdbcConnection.connection()));
+        }
+        else
+        {
+            throw new UnsupportedOperationException("Only JdbcConnection is supported for MemSql Sink");
+        }
     }
 
 
@@ -273,10 +278,4 @@ public class MemSqlSink extends AnsiSqlSink
             return dataTypeMapping.getDataType(fieldType);
         }
     };
-
-    @Override
-    public Executor<SqlGen, TabularData, SqlPlan> getRelationalExecutor()
-    {
-        return new RelationalExecutor(this, JdbcHelper.of(this.connection));
-    }
 }

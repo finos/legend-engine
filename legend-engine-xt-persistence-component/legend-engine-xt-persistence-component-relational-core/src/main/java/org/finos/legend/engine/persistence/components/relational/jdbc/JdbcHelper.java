@@ -67,11 +67,7 @@ public class JdbcHelper implements RelationalExecutionHelper
 
     public static JdbcHelper of(Connection connection)
     {
-        if (connection != null)
-        {
-            return new JdbcHelper(connection);
-        }
-        throw new RuntimeException("Sink initialized without connection can only be used for SQL generation APIs, but used with ingestion API");
+        return new JdbcHelper(connection);
     }
 
     private JdbcHelper(Connection connection)

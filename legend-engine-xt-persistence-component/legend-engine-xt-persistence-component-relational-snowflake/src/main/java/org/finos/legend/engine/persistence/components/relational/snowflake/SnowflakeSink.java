@@ -29,7 +29,9 @@ import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
+import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
 import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
+import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
 import org.finos.legend.engine.persistence.components.relational.snowflake.optmizer.LowerCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.snowflake.optmizer.UpperCaseOptimizer;
@@ -49,6 +51,8 @@ import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVis
 import org.finos.legend.engine.persistence.components.util.Capability;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -56,6 +60,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
 
 public class SnowflakeSink extends AnsiSqlSink
@@ -98,38 +103,33 @@ public class SnowflakeSink extends AnsiSqlSink
         INSTANCE = new SnowflakeSink();
     }
 
-    private final Connection connection;
-
     public static RelationalSink get()
     {
         return INSTANCE;
     }
 
-    public static RelationalSink get(Connection connection)
+    public static Connection createConnection(String user,
+                                              String pwd,
+                                              String jdbcUrl,
+                                              String account,
+                                              String db,
+                                              String schema)
     {
-        return new SnowflakeSink(connection);
-    }
+        Properties properties = new Properties();
+        properties.put("user", user);
+        properties.put("password", pwd);
+        properties.put("account", account);
+        properties.put("db", db);
+        properties.put("schema", schema);
 
-    public SnowflakeSink(Connection connection)
-    {
-        super(
-                CAPABILITIES,
-                IMPLICIT_DATA_TYPE_MAPPING,
-                EXPLICIT_DATA_TYPE_MAPPING,
-                SqlGenUtils.QUOTE_IDENTIFIER,
-                LOGICAL_PLAN_VISITOR_BY_CLASS,
-                (executor, sink, dataset) ->
-                {
-                    //TODO: pass transformer as an argument
-                    RelationalTransformer transformer = new RelationalTransformer(SnowflakeSink.get());
-                    LogicalPlan datasetExistLogicalPlan = LogicalPlanFactory.getLogicalPlanForDoesDatasetExist(dataset);
-                    SqlPlan physicalPlanForDoesDatasetExist = transformer.generatePhysicalPlan(datasetExistLogicalPlan);
-                    List<TabularData> results = executor.executePhysicalPlanAndGetResults(physicalPlanForDoesDatasetExist);
-                    return results.size() > 0;
-                },
-                (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new SnowflakeDataTypeMapping()),
-                (executor, sink, tableName, schemaName, databaseName) -> sink.constructDatasetFromDatabase(tableName, schemaName, databaseName, new SnowflakeJdbcPropertiesToLogicalDataTypeMapping()));
-        this.connection = connection;
+        try
+        {
+            return DriverManager.getConnection(jdbcUrl, properties);
+        }
+        catch (SQLException e)
+        {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     private SnowflakeSink()
@@ -151,7 +151,20 @@ public class SnowflakeSink extends AnsiSqlSink
                 },
                 (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new SnowflakeDataTypeMapping()),
                 (executor, sink, tableName, schemaName, databaseName) -> sink.constructDatasetFromDatabase(tableName, schemaName, databaseName, new SnowflakeJdbcPropertiesToLogicalDataTypeMapping()));
-        this.connection = null;
+    }
+
+    @Override
+    public Executor<SqlGen, TabularData, SqlPlan> getRelationalExecutor(RelationalConnection relationalConnection)
+    {
+        if (relationalConnection instanceof JdbcConnection)
+        {
+            JdbcConnection jdbcConnection = (JdbcConnection) relationalConnection;
+            return new RelationalExecutor(this, JdbcHelper.of(jdbcConnection.connection()));
+        }
+        else
+        {
+            throw new UnsupportedOperationException("Only JdbcConnection is supported for Snowflake Sink");
+        }
     }
 
     @Override
@@ -168,11 +181,5 @@ public class SnowflakeSink extends AnsiSqlSink
             default:
                 throw new IllegalArgumentException("Unrecognized case conversion: " + caseConversion);
         }
-    }
-
-    @Override
-    public Executor<SqlGen, TabularData, SqlPlan> getRelationalExecutor()
-    {
-        return new RelationalExecutor(this, JdbcHelper.of(this.connection));
     }
 }

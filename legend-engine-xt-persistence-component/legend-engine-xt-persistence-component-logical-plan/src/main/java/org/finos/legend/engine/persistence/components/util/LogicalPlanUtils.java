@@ -244,21 +244,15 @@ public class LogicalPlanUtils
         });
     }
 
-    public static Optional<Condition> getDatasetFilterCondition(Dataset dataSet)
+    public static Condition getDatasetFilterCondition(DerivedDataset derivedDataset)
     {
-        Optional<Condition> filter = Optional.empty();
-        if (dataSet instanceof DerivedDataset)
+        List<DatasetFilter> datasetFilters = derivedDataset.datasetFilters();
+        List<Condition> conditions = new ArrayList<>();
+        for (DatasetFilter datasetFilter: datasetFilters)
         {
-            DerivedDataset derivedDataset = (DerivedDataset) dataSet;
-            List<DatasetFilter> datasetFilters = derivedDataset.datasetFilters();
-            List<Condition> conditions = new ArrayList<>();
-            for (DatasetFilter datasetFilter: datasetFilters)
-            {
-                conditions.add(datasetFilter.mapFilterToCondition(dataSet.datasetReference()));
-            }
-            filter = Optional.of(And.of(conditions));
+            conditions.add(datasetFilter.mapFilterToCondition(derivedDataset.datasetReference()));
         }
-        return filter;
+        return And.of(conditions);
     }
 
     public static List<DatasetFilter> getDatasetFilters(Dataset dataSet)

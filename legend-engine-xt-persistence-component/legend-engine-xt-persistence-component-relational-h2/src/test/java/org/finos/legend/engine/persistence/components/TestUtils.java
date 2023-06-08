@@ -26,9 +26,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.JsonExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
-import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
-import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
-import org.finos.legend.engine.persistence.components.logicalplan.values.NumericalValue;
 import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutionHelper;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.junit.jupiter.api.Assertions;

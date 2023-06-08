@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.persistence.components.relational.h2;
 
+import java.util.Optional;
+
 import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.CsvExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
@@ -28,14 +30,16 @@ import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.LowerCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer;
+import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
 import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.H2DataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.H2JdbcPropertiesToLogicalDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.CsvExternalDatasetReferenceVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.HashFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.LoadCsvVisitor;
-import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.ParseJsonFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.SchemaDefinitionVisitor;
+import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.ParseJsonFunctionVisitor;
+import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
@@ -51,7 +55,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 public class H2Sink extends AnsiSqlSink
@@ -107,16 +110,9 @@ public class H2Sink extends AnsiSqlSink
         INSTANCE = new H2Sink();
     }
 
-    private final Connection connection;
-
     public static RelationalSink get()
     {
         return INSTANCE;
-    }
-
-    public static RelationalSink get(Connection connection)
-    {
-        return new H2Sink(connection);
     }
 
     public static Connection createConnection(String user, String pwd, String jdbcUrl)
@@ -142,22 +138,20 @@ public class H2Sink extends AnsiSqlSink
                 (executor, sink, dataset) -> sink.doesTableExist(dataset),
                 (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new H2DataTypeMapping()),
                 (executor, sink, tableName, schemaName, databaseName) -> sink.constructDatasetFromDatabase(tableName, schemaName, databaseName, new H2JdbcPropertiesToLogicalDataTypeMapping()));
-        this.connection = null;
     }
 
-
-    private H2Sink(Connection connection)
+    @Override
+    public Executor<SqlGen, TabularData, SqlPlan> getRelationalExecutor(RelationalConnection relationalConnection)
     {
-        super(
-                CAPABILITIES,
-                IMPLICIT_DATA_TYPE_MAPPING,
-                EXPLICIT_DATA_TYPE_MAPPING,
-                SqlGenUtils.QUOTE_IDENTIFIER,
-                LOGICAL_PLAN_VISITOR_BY_CLASS,
-                (executor, sink, dataset) -> sink.doesTableExist(dataset),
-                (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new H2DataTypeMapping()),
-                (executor, sink, tableName, schemaName, databaseName) -> sink.constructDatasetFromDatabase(tableName, schemaName, databaseName, new H2JdbcPropertiesToLogicalDataTypeMapping()));
-        this.connection = connection;
+        if (relationalConnection instanceof JdbcConnection)
+        {
+            JdbcConnection jdbcConnection = (JdbcConnection) relationalConnection;
+            return new RelationalExecutor(this, JdbcHelper.of(jdbcConnection.connection()));
+        }
+        else
+        {
+            throw new UnsupportedOperationException("Only JdbcConnection is supported for H2 Sink");
+        }
     }
 
     @Override
@@ -174,11 +168,5 @@ public class H2Sink extends AnsiSqlSink
             default:
                 throw new IllegalArgumentException("Unrecognized case conversion: " + caseConversion);
         }
-    }
-
-    @Override
-    public Executor<SqlGen, TabularData, SqlPlan> getRelationalExecutor()
-    {
-        return new RelationalExecutor(this, JdbcHelper.of(this.connection));
     }
 }

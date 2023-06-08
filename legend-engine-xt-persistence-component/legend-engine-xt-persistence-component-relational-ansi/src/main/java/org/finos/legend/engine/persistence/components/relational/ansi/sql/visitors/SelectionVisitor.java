@@ -56,8 +56,8 @@ public class SelectionVisitor implements LogicalPlanVisitor<Selection>
             if (dataset instanceof DerivedDataset)
             {
                 DerivedDataset derivedDataset = (DerivedDataset) dataset;
-                Optional<Condition> filterCondition = LogicalPlanUtils.getDatasetFilterCondition(derivedDataset);
-                filterCondition.ifPresent(conditions::add);
+                Condition filterCondition = LogicalPlanUtils.getDatasetFilterCondition(derivedDataset);
+                conditions.add(filterCondition);
                 logicalPlanNodeList.add(derivedDataset.datasetReference());
             }
             else
