@@ -30,7 +30,6 @@ import org.finos.legend.engine.persistence.components.relational.api.RelationalI
 import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
 import org.finos.legend.engine.persistence.components.relational.h2.H2Sink;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
-import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnectionAbstract;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapability;
@@ -55,7 +54,7 @@ public class BaseTest
     public static final String TEST_SCHEMA = "TEST";
     public static final String TEST_DATABASE = "TEST_DB";
     private static final String H2_JDBC_URL = "jdbc:h2:mem:" + TEST_DATABASE +
-            ";DATABASE_TO_UPPER=false;mode=mysql;LOCK_TIMEOUT=10000;BUILTIN_ALIAS_OVERRIDE=TRUE";
+        ";DATABASE_TO_UPPER=false;mode=mysql;LOCK_TIMEOUT=10000;BUILTIN_ALIAS_OVERRIDE=TRUE";
     private static final String H2_USER_NAME = "sa";
     private static final String H2_PASSWORD = "";
     public static JdbcHelper h2Sink;
@@ -90,8 +89,8 @@ public class BaseTest
     public void setUp() throws Exception
     {
         String createSchemaSql = "CREATE SCHEMA IF NOT EXISTS {TEST_SCHEMA_NAME} AUTHORIZATION {USER_NAME}"
-                .replace("{TEST_SCHEMA_NAME}", TEST_SCHEMA)
-                .replace("{USER_NAME}", H2_USER_NAME);
+            .replace("{TEST_SCHEMA_NAME}", TEST_SCHEMA)
+            .replace("{USER_NAME}", H2_USER_NAME);
         h2Sink.executeStatement(createSchemaSql);
     }
 
@@ -179,13 +178,13 @@ public class BaseTest
     protected List<IngestorResult> executePlansAndVerifyResultsWithDataSplits(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, List<Map<String, Object>> expectedStats, List<DataSplitRange> dataSplitRanges, Clock executionTimestampClock) throws Exception
     {
         RelationalIngestor ingestor = RelationalIngestor.builder()
-                .ingestMode(ingestMode)
-                .relationalSink(H2Sink.get())
-                .executionTimestampClock(executionTimestampClock)
-                .cleanupStagingData(options.cleanupStagingData())
-                .collectStatistics(options.collectStatistics())
-                .enableSchemaEvolution(options.enableSchemaEvolution())
-                .build();
+            .ingestMode(ingestMode)
+            .relationalSink(H2Sink.get())
+            .executionTimestampClock(executionTimestampClock)
+            .cleanupStagingData(options.cleanupStagingData())
+            .collectStatistics(options.collectStatistics())
+            .enableSchemaEvolution(options.enableSchemaEvolution())
+            .build();
 
         List<IngestorResult> results = ingestor.ingestWithDataSplits(JdbcConnection.of(h2Sink.connection()), datasets, dataSplitRanges);
 
@@ -257,9 +256,9 @@ public class BaseTest
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-                "INSERT INTO \"TEST\".\"staging\"(id, name, income, start_time ,expiry_date, digest) " +
-                "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", BIGINT), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE), digest" +
-                " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, digest', NULL )";
+            "INSERT INTO \"TEST\".\"staging\"(id, name, income, start_time ,expiry_date, digest) " +
+            "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", BIGINT), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE), digest" +
+            " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, digest', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 
@@ -277,9 +276,9 @@ public class BaseTest
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-                "INSERT INTO \"TEST\".\"staging\"(date, entity, price, volume, digest) " +
-                "SELECT CONVERT( \"date\",DATE ), \"entity\", CONVERT( \"price\", DECIMAL(20,2)), CONVERT( \"volume\", BIGINT), \"digest\"" +
-                " FROM CSVREAD( '" + path + "', 'date, entity, price, volume, digest', NULL )";
+            "INSERT INTO \"TEST\".\"staging\"(date, entity, price, volume, digest) " +
+            "SELECT CONVERT( \"date\",DATE ), \"entity\", CONVERT( \"price\", DECIMAL(20,2)), CONVERT( \"volume\", BIGINT), \"digest\"" +
+            " FROM CSVREAD( '" + path + "', 'date, entity, price, volume, digest', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 
@@ -287,9 +286,9 @@ public class BaseTest
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-                "INSERT INTO \"TEST\".\"staging\"(id, name, income, start_time ,expiry_date, digest, delete_indicator) " +
-                "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", BIGINT), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE) ,  \"digest\", \"delete_indicator\"" +
-                " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, digest, delete_indicator', NULL )";
+            "INSERT INTO \"TEST\".\"staging\"(id, name, income, start_time ,expiry_date, digest, delete_indicator) " +
+            "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", BIGINT), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE) ,  \"digest\", \"delete_indicator\"" +
+            " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, digest, delete_indicator', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 
@@ -297,9 +296,9 @@ public class BaseTest
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-                "INSERT INTO \"TEST\".\"staging\"(id, name, income, start_time ,expiry_date, digest, version) " +
-                "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", BIGINT), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE), digest, CONVERT( \"version\",INT)" +
-                " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, digest, version', NULL )";
+            "INSERT INTO \"TEST\".\"staging\"(id, name, income, start_time ,expiry_date, digest, version) " +
+            "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", BIGINT), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE), digest, CONVERT( \"version\",INT)" +
+            " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, digest, version', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 
@@ -307,9 +306,9 @@ public class BaseTest
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-                "INSERT INTO \"TEST\".\"staging\"(id, name, income, start_time ,expiry_date, digest, batch) " +
-                "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", BIGINT), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE), digest, CONVERT( \"batch\",INT)" +
-                " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, digest, batch', NULL )";
+            "INSERT INTO \"TEST\".\"staging\"(id, name, income, start_time ,expiry_date, digest, batch) " +
+            "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", BIGINT), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE), digest, CONVERT( \"batch\",INT)" +
+            " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, digest, batch', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 
@@ -317,9 +316,9 @@ public class BaseTest
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-                "INSERT INTO \"TEST\".\"staging\"(id, name, income, start_time ,expiry_date, digest, version, batch) " +
-                "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", BIGINT), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE), digest, CONVERT( \"version\",INT), CONVERT( \"batch\",INT)" +
-                " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, digest, version, batch', NULL )";
+            "INSERT INTO \"TEST\".\"staging\"(id, name, income, start_time ,expiry_date, digest, version, batch) " +
+            "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", BIGINT), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE), digest, CONVERT( \"version\",INT), CONVERT( \"batch\",INT)" +
+            " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, digest, version, batch', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 
@@ -327,9 +326,9 @@ public class BaseTest
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"STAGING\";" +
-                "INSERT INTO \"TEST\".\"STAGING\"(ID, NAME, INCOME, START_TIME ,EXPIRY_DATE, DIGEST, VERSION, BATCH) " +
-                "SELECT CONVERT( \"ID\",INT ), \"NAME\", CONVERT( \"INCOME\", BIGINT), CONVERT( \"START_TIME\", DATETIME), CONVERT( \"EXPIRY_DATE\", DATE), DIGEST, CONVERT( \"VERSION\",INT), CONVERT( \"BATCH\",INT)" +
-                " FROM CSVREAD( '" + path + "', 'ID, NAME, INCOME, START_TIME, EXPIRY_DATE, DIGEST, VERSION, BATCH', NULL )";
+            "INSERT INTO \"TEST\".\"STAGING\"(ID, NAME, INCOME, START_TIME ,EXPIRY_DATE, DIGEST, VERSION, BATCH) " +
+            "SELECT CONVERT( \"ID\",INT ), \"NAME\", CONVERT( \"INCOME\", BIGINT), CONVERT( \"START_TIME\", DATETIME), CONVERT( \"EXPIRY_DATE\", DATE), DIGEST, CONVERT( \"VERSION\",INT), CONVERT( \"BATCH\",INT)" +
+            " FROM CSVREAD( '" + path + "', 'ID, NAME, INCOME, START_TIME, EXPIRY_DATE, DIGEST, VERSION, BATCH', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 
@@ -337,9 +336,9 @@ public class BaseTest
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-                "INSERT INTO \"TEST\".\"staging\"(key1, key2, value1, date_in, date_out, digest) " +
-                "SELECT \"key1\", \"key2\", CONVERT( \"value1\", INT), CONVERT( \"date_in\", DATETIME), CONVERT( \"date_out\", DATETIME) ,  \"digest\"" +
-                " FROM CSVREAD( '" + path + "', 'key1, key2, value1, date_in, date_out, digest', NULL )";
+            "INSERT INTO \"TEST\".\"staging\"(key1, key2, value1, date_in, date_out, digest) " +
+            "SELECT \"key1\", \"key2\", CONVERT( \"value1\", INT), CONVERT( \"date_in\", DATETIME), CONVERT( \"date_out\", DATETIME) ,  \"digest\"" +
+            " FROM CSVREAD( '" + path + "', 'key1, key2, value1, date_in, date_out, digest', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 
@@ -347,9 +346,9 @@ public class BaseTest
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-                "INSERT INTO \"TEST\".\"staging\"(key1, key2, value1, date_in, digest) " +
-                "SELECT \"key1\", \"key2\", CONVERT( \"value1\", INT), CONVERT( \"date_in\", DATETIME),  \"digest\"" +
-                " FROM CSVREAD( '" + path + "', 'key1, key2, value1, date_in, digest', NULL )";
+            "INSERT INTO \"TEST\".\"staging\"(key1, key2, value1, date_in, digest) " +
+            "SELECT \"key1\", \"key2\", CONVERT( \"value1\", INT), CONVERT( \"date_in\", DATETIME),  \"digest\"" +
+            " FROM CSVREAD( '" + path + "', 'key1, key2, value1, date_in, digest', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 
@@ -357,9 +356,9 @@ public class BaseTest
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-                "INSERT INTO \"TEST\".\"staging\"(key1, key2, value1, date_in, date_out, digest, delete_indicator) " +
-                "SELECT \"key1\", \"key2\", CONVERT( \"value1\", INT), CONVERT( \"date_in\", DATETIME), CONVERT( \"date_out\", DATETIME) ,  \"digest\", CONVERT( \"delete_indicator\", INT)" +
-                " FROM CSVREAD( '" + path + "', 'key1, key2, value1, date_in, date_out, digest, delete_indicator', NULL )";
+            "INSERT INTO \"TEST\".\"staging\"(key1, key2, value1, date_in, date_out, digest, delete_indicator) " +
+            "SELECT \"key1\", \"key2\", CONVERT( \"value1\", INT), CONVERT( \"date_in\", DATETIME), CONVERT( \"date_out\", DATETIME) ,  \"digest\", CONVERT( \"delete_indicator\", INT)" +
+            " FROM CSVREAD( '" + path + "', 'key1, key2, value1, date_in, date_out, digest, delete_indicator', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 
@@ -367,9 +366,9 @@ public class BaseTest
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-                "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest) " +
-                "SELECT CONVERT( \"index\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\"" +
-                " FROM CSVREAD( '" + path + "', 'index, datetime, balance, digest', NULL )";
+            "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest) " +
+            "SELECT CONVERT( \"index\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\"" +
+            " FROM CSVREAD( '" + path + "', 'index, datetime, balance, digest', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 
@@ -387,9 +386,9 @@ public class BaseTest
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-                "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest, delete_indicator) " +
-                "SELECT CONVERT( \"index\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\", \"delete_indicator\"" +
-                " FROM CSVREAD( '" + path + "', 'index, datetime, balance, digest, delete_indicator', NULL )";
+            "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest, delete_indicator) " +
+            "SELECT CONVERT( \"index\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\", \"delete_indicator\"" +
+            " FROM CSVREAD( '" + path + "', 'index, datetime, balance, digest, delete_indicator', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 
@@ -397,9 +396,9 @@ public class BaseTest
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-                "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest, data_split) " +
-                "SELECT CONVERT( \"index\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\", CONVERT( \"data_split\", BIGINT)" +
-                " FROM CSVREAD( '" + path + "', 'index, datetime, balance, digest, data_split', NULL )";
+            "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest, data_split) " +
+            "SELECT CONVERT( \"index\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\", CONVERT( \"data_split\", BIGINT)" +
+            " FROM CSVREAD( '" + path + "', 'index, datetime, balance, digest, data_split', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 
@@ -407,9 +406,9 @@ public class BaseTest
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-                "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest, delete_indicator, data_split) " +
-                "SELECT CONVERT( \"index\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\", \"delete_indicator\", CONVERT( \"data_split\", BIGINT)" +
-                " FROM CSVREAD( '" + path + "', 'index, datetime, balance, digest, delete_indicator, data_split', NULL )";
+            "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest, delete_indicator, data_split) " +
+            "SELECT CONVERT( \"index\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\", \"delete_indicator\", CONVERT( \"data_split\", BIGINT)" +
+            " FROM CSVREAD( '" + path + "', 'index, datetime, balance, digest, delete_indicator, data_split', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 
@@ -417,9 +416,9 @@ public class BaseTest
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-                "INSERT INTO \"TEST\".\"staging\"(id, name, income, start_time ,expiry_date, digest) " +
-                "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", INT), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE), digest" +
-                " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, digest', NULL )";
+            "INSERT INTO \"TEST\".\"staging\"(id, name, income, start_time ,expiry_date, digest) " +
+            "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", INT), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE), digest" +
+            " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, digest', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 
@@ -427,9 +426,9 @@ public class BaseTest
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-                "INSERT INTO \"TEST\".\"staging\"(id, name, income, start_time ,expiry_date, digest) " +
-                "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", DECIMAL), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE), digest" +
-                " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, digest', NULL )";
+            "INSERT INTO \"TEST\".\"staging\"(id, name, income, start_time ,expiry_date, digest) " +
+            "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", DECIMAL), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE), digest" +
+            " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, digest', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 
@@ -437,9 +436,9 @@ public class BaseTest
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-                "INSERT INTO \"TEST\".\"staging\"(id, income, start_time ,expiry_date, digest) " +
-                "SELECT CONVERT( \"id\",INT ), CONVERT( \"income\", BIGINT), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE), digest" +
-                " FROM CSVREAD( '" + path + "', 'id, income, start_time, expiry_date, digest', NULL )";
+            "INSERT INTO \"TEST\".\"staging\"(id, income, start_time ,expiry_date, digest) " +
+            "SELECT CONVERT( \"id\",INT ), CONVERT( \"income\", BIGINT), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE), digest" +
+            " FROM CSVREAD( '" + path + "', 'id, income, start_time, expiry_date, digest', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 
