@@ -125,7 +125,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::db2::
 {
    let startDate = $p->at(0);
    let number = $p->at(1)->parseInteger();
-   let unit = $p->at(2);
+   let unit = $p->at(2)->removeQuotesIfExist();
 
    'date(%s) %s %s %s'->format([
       $startDate,
