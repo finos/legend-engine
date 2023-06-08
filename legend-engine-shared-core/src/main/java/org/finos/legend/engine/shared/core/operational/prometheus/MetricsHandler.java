@@ -67,8 +67,6 @@ public class MetricsHandler
     private static final Counter DATASTORE_SPEC_COUNT = Counter.build("legend_engine_datastore_spec_count", "Count datastore specifications").register(getMetricsRegistry());
     private static final Counter JAVA_COMPILATION_COUNT = Counter.build("legend_engine_java_compilation_count", "Count java compilations").register(getMetricsRegistry());
     private static final Gauge TEMP_FILE_COUNT = Gauge.build("legend_engine_temp_file_count", "Measure how many temporary files are being currently created").register(getMetricsRegistry());
-    private static final Gauge ACTIVE_CONNECTIONS =  Gauge.build("active_connections", "Active Connections in Pool").labelNames("poolName").register();
-    private static final Gauge BUILT_CONNECTIONS = Gauge.build("built_connections", "Built Connections in Pool").labelNames("poolName").register();
 
     public static CollectorRegistry getMetricsRegistry()
     {
@@ -102,26 +100,6 @@ public class MetricsHandler
         {
             OPERATION_LATENCY.labels(operation, returnLabelOrUnknown(context)).observe((end - start) / 1000F);
         }
-    }
-
-    public static void setActiveConnections(String poolName, double value)
-    {
-        ACTIVE_CONNECTIONS.labels(poolName).set(value);
-    }
-
-    public static void setBuiltConnections(String poolName, double value)
-    {
-        BUILT_CONNECTIONS.labels(poolName).set(value);
-    }
-
-    public static void resetActiveConnections(String poolName)
-    {
-        ACTIVE_CONNECTIONS.labels(poolName).set(0.0);
-    }
-
-    public static void resetBuiltConnections(String poolName)
-    {
-        BUILT_CONNECTIONS.labels(poolName).set(0.0);
     }
 
     public static void incrementExecutionCount()
