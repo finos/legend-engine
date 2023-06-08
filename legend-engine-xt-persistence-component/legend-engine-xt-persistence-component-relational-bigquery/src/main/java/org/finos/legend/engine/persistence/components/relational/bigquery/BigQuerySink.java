@@ -31,6 +31,8 @@ import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
+import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
+import org.finos.legend.engine.persistence.components.relational.bigquery.executor.BigQueryConnection;
 import org.finos.legend.engine.persistence.components.relational.bigquery.executor.BigQueryExecutor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.executor.BigQueryHelper;
 import org.finos.legend.engine.persistence.components.relational.bigquery.optmizer.LowerCaseOptimizer;
@@ -46,6 +48,9 @@ import org.finos.legend.engine.persistence.components.relational.bigquery.sql.vi
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.SQLCreateVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.SchemaDefinitionVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.TruncateVisitor;
+import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
+import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
+import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
@@ -64,6 +69,8 @@ public class BigQuerySink extends AnsiSqlSink
 {
     private static final RelationalSink INSTANCE;
 
+    private BigQuery bigQuery;
+
     private static final Set<Capability> CAPABILITIES;
     private static final Map<Class<?>, LogicalPlanVisitor<?>> LOGICAL_PLAN_VISITOR_BY_CLASS;
     private static final Map<DataType, Set<DataType>> IMPLICIT_DATA_TYPE_MAPPING;
@@ -72,14 +79,13 @@ public class BigQuerySink extends AnsiSqlSink
     static
     {
         Set<Capability> capabilities = new HashSet<>();
-        // TODO #1: To review the capabilities
+        // TODO: To review the capabilities for Schema Evolution
         capabilities.add(Capability.MERGE);
         capabilities.add(Capability.ADD_COLUMN);
         capabilities.add(Capability.IMPLICIT_DATA_TYPE_CONVERSION);
         capabilities.add(Capability.DATA_TYPE_LENGTH_CHANGE);
         CAPABILITIES = Collections.unmodifiableSet(capabilities);
 
-        // TODO #2: To review the visitors - Support for Clustering,Partition BY, table creation , Schema Definition, Alter table
         Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass = new HashMap<>();
         logicalPlanVisitorByClass.put(SchemaDefinition.class, new SchemaDefinitionVisitor());
         logicalPlanVisitorByClass.put(Create.class, new SQLCreateVisitor());
@@ -92,7 +98,7 @@ public class BigQuerySink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(BatchStartTimestamp.class, new BatchStartTimestampVisitor());
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);
 
-        // TODO #3: To review the Schema Evolution Support - Implicit & Explicit Types
+        // TODO: To review the capabilities for Schema Evolution
         Map<DataType, Set<DataType>> implicitDataTypeMapping = new HashMap<>();
         implicitDataTypeMapping.put(DataType.DECIMAL, new HashSet<>(Arrays.asList(DataType.TINYINT, DataType.SMALLINT, DataType.INTEGER, DataType.INT, DataType.BIGINT, DataType.FLOAT, DataType.DOUBLE, DataType.REAL, DataType.NUMERIC, DataType.NUMBER)));
         implicitDataTypeMapping.put(DataType.DOUBLE, new HashSet<>(Arrays.asList(DataType.TINYINT, DataType.SMALLINT, DataType.INTEGER, DataType.INT, DataType.FLOAT, DataType.REAL)));
@@ -111,12 +117,6 @@ public class BigQuerySink extends AnsiSqlSink
         return INSTANCE;
     }
 
-    public static RelationalSink get(BigQuery bigQuery)
-    {
-        return new BigQuerySink(bigQuery);
-    }
-
-    // TODO #5: Another entry point for API invocation via authentication ?
     private BigQuerySink()
     {
         super(
@@ -125,33 +125,11 @@ public class BigQuerySink extends AnsiSqlSink
                 EXPLICIT_DATA_TYPE_MAPPING,
                 SqlGenUtils.BACK_QUOTE_IDENTIFIER,
                 LOGICAL_PLAN_VISITOR_BY_CLASS,
-                // TODO  # 6: Verify implementation of DatasetExists datasetExists,
                 (executor, sink, dataset) -> sink.doesTableExist(dataset),
-                // TODO # 7: Verify implementation of ValidateMainDatasetSchema validateMainDatasetSchema,
                 (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new BigQueryDataTypeMapping()),
-                //  TODO # 8: Verify implementation of ConstructDatasetFromDatabase constructDatasetFromDatabase)
                 (executor, sink, tableName, schemaName, databaseName) -> sink.constructDatasetFromDatabase(tableName, schemaName, databaseName, new BigQueryDataTypeToLogicalDataTypeMapping()));
         this.bigQuery = null;
     }
-
-    public BigQuerySink(BigQuery bigQuery)
-    {
-        super(
-                CAPABILITIES,
-                IMPLICIT_DATA_TYPE_MAPPING,
-                EXPLICIT_DATA_TYPE_MAPPING,
-                SqlGenUtils.BACK_QUOTE_IDENTIFIER,
-                LOGICAL_PLAN_VISITOR_BY_CLASS,
-                // TODO  # 6: Verify implementation of DatasetExists datasetExists,
-                (executor, sink, dataset) -> sink.doesTableExist(dataset),
-                // TODO # 7: Verify implementation of ValidateMainDatasetSchema validateMainDatasetSchema,
-                (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new BigQueryDataTypeMapping()),
-                //  TODO # 8: Verify implementation of ConstructDatasetFromDatabase constructDatasetFromDatabase)
-                (executor, sink, tableName, schemaName, databaseName) -> sink.constructDatasetFromDatabase(tableName, schemaName, databaseName, new BigQueryDataTypeToLogicalDataTypeMapping()));
-        this.bigQuery = bigQuery;
-    }
-
-    private final BigQuery bigQuery;
 
     @Override
     public Optional<Optimizer> optimizerForCaseConversion(CaseConversion caseConversion)
@@ -170,8 +148,16 @@ public class BigQuerySink extends AnsiSqlSink
     }
 
     @Override
-    public Executor<SqlGen, TabularData, SqlPlan> getRelationalExecutor()
+    public Executor<SqlGen, TabularData, SqlPlan> getRelationalExecutor(RelationalConnection relationalConnection)
     {
-        return new BigQueryExecutor(this, BigQueryHelper.of(this.bigQuery));
+        if (relationalConnection instanceof BigQueryConnection)
+        {
+            BigQueryConnection bigQueryConnection = (BigQueryConnection) relationalConnection;
+            return new BigQueryExecutor(this, BigQueryHelper.of(bigQueryConnection.bigQuery()));
+        }
+        else
+        {
+            throw new UnsupportedOperationException("Only BigQueryConnection is supported for BigQuery Sink");
+        }
     }
 }
