@@ -557,8 +557,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   ]));
 
    let func = $join.criteria->match([
-    o:JoinOn[1] | join_TabularDataSet_1__TabularDataSet_1__JoinType_1__String_$1_MANY$__TabularDataSet_1_,
-    u:JoinUsing[1] | join_TabularDataSet_1__TabularDataSet_1__JoinType_1__Function_1__TabularDataSet_1_
+    o:JoinOn[1] | join_TabularDataSet_1__TabularDataSet_1__JoinType_1__Function_1__TabularDataSet_1_,
+    u:JoinUsing[1] | join_TabularDataSet_1__TabularDataSet_1__JoinType_1__String_$1_MANY$__TabularDataSet_1_
   ]);
 
   let parameters = $join.criteria->match([
