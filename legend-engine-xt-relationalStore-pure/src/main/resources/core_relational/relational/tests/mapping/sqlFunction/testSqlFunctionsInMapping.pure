@@ -1067,6 +1067,25 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::testDayOfW
     assertEquals('select datename(WEEKDAY,"root".dateTime) as "WeekDay Name" from dataTable as "root"',$fn);
 }
 
+function <<test.Test>> meta::relational::tests::mapping::sqlFunction::testAdjustDateTranslationInMappingAndQuery():Boolean[1]
+{
+   let toAssertDbTypes = [DatabaseType.DB2, DatabaseType.Sybase, DatabaseType.SybaseIQ, DatabaseType.Presto];
+
+   $toAssertDbTypes->map({db |
+      let s1 = toSQLString(|SqlFunctionDemo.all()->project([p | $p.adjustDate], ['Dt']), testMapping, $db, meta::relational::extension::relationalExtensions());
+      let s2 = toSQLString(|SqlFunctionDemo.all()->project([p | $p.dateTime->adjust(-7, DurationUnit.DAYS)], ['Dt']), testMapping, $db, meta::relational::extension::relationalExtensions());
+      assert($s1 == $s2);
+   });
+
+   let result = execute(
+      |SqlFunctionDemo.all()->project([s | $s.adjustDate], ['Dt']),
+      testMapping,
+      testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
+   
+   assertEquals([%2003-07-12T00:00:00.000000000+0000, %2003-07-13T00:00:00.000000000+0000], $result.values->at(0).rows.values);
+   meta::relational::functions::asserts::assertSameSQL('select dateadd(DAY, -7, "root".dateTime) as "Dt" from dataTable as "root"', $result);
+}
+
 Class meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo
 {
    concatResult :String[1];
@@ -1132,6 +1151,8 @@ Class meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionD
    decodeBase64Result: String[1];
    encodeBase64Result: String[1];
    dayOfWeek: String[1];
+   dateTime: DateTime[1];
+   adjustDate: DateTime[1];
 }
 
 Class meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemoForPresto
@@ -1237,7 +1258,10 @@ Mapping meta::relational::tests::mapping::sqlFunction::model::mapping::testMappi
           dayOfWeek: dayOfWeek(dateTime),
 
           encodeBase64Result : encodeBase64(alphaNumericString),
-          decodeBase64Result : decodeBase64(encodeBase64(alphaNumericString))
+          decodeBase64Result : decodeBase64(encodeBase64(alphaNumericString)),
+
+          dateTime: dateTime,
+          adjustDate: adjust(dateTime, -7, 'DAYS')
        )
 
     }
