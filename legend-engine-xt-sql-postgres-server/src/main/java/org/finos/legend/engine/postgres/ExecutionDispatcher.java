@@ -91,4 +91,10 @@ public class ExecutionDispatcher extends SqlBaseParserBaseVisitor<SessionHandler
             return nextResult;
         }
     }
+
+    public static SessionHandler getEmptySessionHandler()
+    {
+        return EMPTY_SESSION_HANDLER;
+    }
+
 }
