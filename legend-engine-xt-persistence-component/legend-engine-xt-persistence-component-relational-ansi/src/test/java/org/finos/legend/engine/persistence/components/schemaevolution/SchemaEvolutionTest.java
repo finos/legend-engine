@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.schemaevolution;
 
 import org.finos.legend.engine.persistence.components.IngestModeTest;
+import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshot;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
@@ -24,6 +25,10 @@ import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer;
+import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
+import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
+import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
+import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.finos.legend.engine.persistence.components.transformer.TransformOptions;
@@ -32,6 +37,7 @@ import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapabi
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.sql.Connection;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -45,6 +51,8 @@ public class SchemaEvolutionTest extends IngestModeTest
 {
     static class TestSink extends AnsiSqlSink
     {
+        private final Connection connection;
+
         TestSink()
         {
             super(
@@ -70,6 +78,17 @@ public class SchemaEvolutionTest extends IngestModeTest
                     {
                         throw new UnsupportedOperationException();
                     });
+        }
+
+        public static RelationalSink get(Connection connection)
+        {
+            return new AnsiSqlSink(connection);
+        }
+
+        @Override
+        public Executor<SqlGen, TabularData, SqlPlan> getRelationalExecutor()
+        {
+            return new RelationalExecutor(this, JdbcHelper.of(this.connection));
         }
     }
 

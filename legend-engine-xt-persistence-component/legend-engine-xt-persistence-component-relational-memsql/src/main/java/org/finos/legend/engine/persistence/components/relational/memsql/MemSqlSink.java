@@ -34,6 +34,7 @@ import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSin
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.LowerCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutionHelper;
+import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
 import org.finos.legend.engine.persistence.components.relational.memsql.sql.MemSqlDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.memsql.sql.visitor.AlterVisitor;
@@ -122,6 +123,8 @@ public class MemSqlSink extends AnsiSqlSink
         INSTANCE = new MemSqlSink();
     }
 
+    private final Connection connection;
+
     public static RelationalSink get()
     {
         return INSTANCE;
@@ -146,6 +149,7 @@ public class MemSqlSink extends AnsiSqlSink
                 {
                     throw new UnsupportedOperationException();
                 });
+        this.connection = null;
     }
 
     public MemSqlSink(Connection connection)
@@ -161,7 +165,8 @@ public class MemSqlSink extends AnsiSqlSink
                 (v, w, x, y, z) ->
                 {
                     throw new UnsupportedOperationException();
-                }, connection);
+                });
+        this.connection = connection;
     }
 
 
@@ -268,4 +273,10 @@ public class MemSqlSink extends AnsiSqlSink
             return dataTypeMapping.getDataType(fieldType);
         }
     };
+
+    @Override
+    public Executor<SqlGen, TabularData, SqlPlan> getRelationalExecutor()
+    {
+        return new RelationalExecutor(this, JdbcHelper.of(this.connection));
+    }
 }

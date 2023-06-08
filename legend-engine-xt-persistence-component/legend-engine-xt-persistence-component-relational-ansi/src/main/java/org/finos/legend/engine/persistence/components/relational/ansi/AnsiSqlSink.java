@@ -137,15 +137,12 @@ import org.finos.legend.engine.persistence.components.relational.ansi.sql.visito
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.TabularValuesVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.TruncateVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.WindowFunctionVisitor;
-import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
-import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.util.Capability;
 
-import java.sql.Connection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -234,11 +231,6 @@ public class AnsiSqlSink extends RelationalSink
         return INSTANCE;
     }
 
-    public static RelationalSink get(Connection connection)
-    {
-        return new AnsiSqlSink(connection);
-    }
-
     private AnsiSqlSink()
     {
         super(
@@ -259,30 +251,6 @@ public class AnsiSqlSink extends RelationalSink
                 {
                     throw new UnsupportedOperationException();
                 });
-        this.connection = null;
-    }
-
-    private AnsiSqlSink(Connection connection)
-    {
-        super(
-                Collections.emptySet(),
-                Collections.emptyMap(),
-                Collections.emptyMap(),
-                SqlGenUtils.QUOTE_IDENTIFIER,
-                LOGICAL_PLAN_VISITOR_BY_CLASS,
-                (x, y, z) ->
-                {
-                    throw new UnsupportedOperationException();
-                },
-                (x, y, z) ->
-                {
-                    throw new UnsupportedOperationException();
-                },
-                (v, w, x, y, z) ->
-                {
-                    throw new UnsupportedOperationException();
-                });
-        this.connection = connection;
     }
 
     protected AnsiSqlSink(
@@ -304,33 +272,7 @@ public class AnsiSqlSink extends RelationalSink
                 datasetExists,
                 validateMainDatasetSchema,
                 constructDatasetFromDatabase);
-        this.connection = null;
     }
-
-    protected AnsiSqlSink(
-            Set<Capability> capabilities,
-            Map<DataType, Set<DataType>> implicitDataTypeMapping,
-            Map<DataType, Set<DataType>> nonBreakingDataTypeMapping,
-            String quoteIdentifier,
-            Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass,
-            DatasetExists datasetExists,
-            ValidateMainDatasetSchema validateMainDatasetSchema,
-            ConstructDatasetFromDatabase constructDatasetFromDatabase,
-            Connection connection)
-    {
-        super(
-                capabilities,
-                implicitDataTypeMapping,
-                nonBreakingDataTypeMapping,
-                quoteIdentifier,
-                rightBiasedUnion(LOGICAL_PLAN_VISITOR_BY_CLASS, logicalPlanVisitorByClass),
-                datasetExists,
-                validateMainDatasetSchema,
-                constructDatasetFromDatabase);
-        this.connection = connection;
-    }
-
-    private final Connection connection;
 
     @Override
     public Optional<Optimizer> optimizerForCaseConversion(CaseConversion caseConversion)
@@ -361,6 +303,6 @@ public class AnsiSqlSink extends RelationalSink
     @Override
     public Executor<SqlGen, TabularData, SqlPlan> getRelationalExecutor()
     {
-        return new RelationalExecutor(this, JdbcHelper.of(this.connection));
+        throw new UnsupportedOperationException("Ansi sql sink can not contain connection");
     }
 }
