@@ -21,15 +21,15 @@ import meta::pure::metamodel::tds::*;
 function <<test.Test>> meta::relational::tests::tds::slice::testSimpleSlice():Boolean[1]
 {
    let result = execute(|Person.all()->project([#/Person/firstName!name#])->slice(1,3), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" limit 1,2', $result->sqlRemoveFormatting());
+   assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" offset 1 rows fetch next 2 rows only', $result->sqlRemoveFormatting());
    assertSize($result.values.rows, 2 );
 
    let result2 = execute(|Person.all()->project([#/Person/firstName!name#])->slice(3,6), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" limit 3,3', $result2->sqlRemoveFormatting());
+   assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" offset 3 rows fetch next 3 rows only', $result2->sqlRemoveFormatting());
    assertSize($result2.values->at(0).rows, 3 );
 
    let result3 = execute(|Person.all()->project([#/Person/firstName!name#])->slice(2,2), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" limit 2,0', $result3->sqlRemoveFormatting());
+   assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" offset 2 rows fetch next 0 rows only', $result3->sqlRemoveFormatting());
    assertSize($result3.values->at(0).rows, 0 );
 }
 
@@ -66,25 +66,25 @@ function <<test.Test>> meta::relational::tests::projection::take::testSimpleTake
 function <<test.Test>> meta::relational::tests::projection::drop::testSimpleDrop():Boolean[1]
 {
    let result = execute(|Person.all()->project([#/Person/firstName!name#])->drop(0), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" limit 0,-1', $result->sqlRemoveFormatting());
+   assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" offset 0 rows', $result->sqlRemoveFormatting());
    assertSize($result.values.rows, 7 );
 
    let result2 = execute(|Person.all()->project([#/Person/firstName!name#])->drop(1), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" limit 1,-1', $result2->sqlRemoveFormatting());
+   assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" offset 1 rows', $result2->sqlRemoveFormatting());
    assertSize($result2.values->at(0).rows, 6 );
 }
 
 function <<test.Test>> meta::relational::tests::projection::drop::testSimpleNestedDrop():Boolean[1]
 {
    let result = execute(|Person.all()->project([#/Person/firstName!name#])->drop(5)->sort(asc('name')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
-   assertEquals('select "name" as "name" from (select "root".FIRSTNAME as "name" from personTable as "root" limit 5,-1) as "subselect" order by "name"', $result->sqlRemoveFormatting());
+   assertEquals('select "name" as "name" from (select "root".FIRSTNAME as "name" from personTable as "root" offset 5 rows) as "subselect" order by "name"', $result->sqlRemoveFormatting());
    assertSize($result.values.rows, 2 );
 }
 
 function <<test.Test>> meta::relational::tests::projection::drop::testSimpleNestedDropAfterConcatenate():Boolean[1]
 {
    let result = execute(|Person.all()->project([#/Person/firstName!name#])->concatenate(Person.all()->project([#/Person/firstName!name#]))->drop(5)->sort(asc('name')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
-   assertEquals('select "name" as "name" from (select "unionalias_1"."name" as "name" from (select "root".FIRSTNAME as "name" from personTable as "root" UNION ALL select "root".FIRSTNAME as "name" from personTable as "root") as "unionalias_1" limit 5,-1) as "subselect" order by "name"', $result->sqlRemoveFormatting());
+   assertEquals('select "name" as "name" from (select "unionalias_1"."name" as "name" from (select "root".FIRSTNAME as "name" from personTable as "root" UNION ALL select "root".FIRSTNAME as "name" from personTable as "root") as "unionalias_1" offset 5 rows) as "subselect" order by "name"', $result->sqlRemoveFormatting());
    assertSize($result.values.rows, 9 );
 }
 
@@ -105,13 +105,13 @@ function <<test.Test>> meta::relational::tests::projection::drop::testSimpleNest
 function <<test.Test>> meta::relational::tests::projection::drop::testSimpleNestedSlice():Boolean[1]
 {
    let result = execute(|Person.all()->project([#/Person/firstName!name#])->slice(1,5)->sort(asc('name')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
-   assertEquals('select "name" as "name" from (select "root".FIRSTNAME as "name" from personTable as "root" limit 1,4) as "subselect" order by "name"', $result->sqlRemoveFormatting());
+   assertEquals('select "name" as "name" from (select "root".FIRSTNAME as "name" from personTable as "root" offset 1 rows fetch next 4 rows only) as "subselect" order by "name"', $result->sqlRemoveFormatting());
    assertSize($result.values.rows, 4 );
 }
 
 function <<test.Test>> meta::relational::tests::projection::drop::testSimpleNestedSliceAfterConcatenate():Boolean[1]
 {
    let result = execute(|Person.all()->project([#/Person/firstName!name#])->concatenate(Person.all()->project([#/Person/firstName!name#]))->slice(1,5)->sort(asc('name')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
-   assertEquals('select "name" as "name" from (select "unionalias_1"."name" as "name" from (select "root".FIRSTNAME as "name" from personTable as "root" UNION ALL select "root".FIRSTNAME as "name" from personTable as "root") as "unionalias_1" limit 1,4) as "subselect" order by "name"', $result->sqlRemoveFormatting());
+   assertEquals('select "name" as "name" from (select "unionalias_1"."name" as "name" from (select "root".FIRSTNAME as "name" from personTable as "root" UNION ALL select "root".FIRSTNAME as "name" from personTable as "root") as "unionalias_1" offset 1 rows fetch next 4 rows only) as "subselect" order by "name"', $result->sqlRemoveFormatting());
    assertSize($result.values.rows, 4 );
 }
