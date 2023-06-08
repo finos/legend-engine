@@ -135,22 +135,22 @@ public class SnowflakeSink extends AnsiSqlSink
     private SnowflakeSink()
     {
         super(
-                CAPABILITIES,
-                IMPLICIT_DATA_TYPE_MAPPING,
-                EXPLICIT_DATA_TYPE_MAPPING,
-                SqlGenUtils.QUOTE_IDENTIFIER,
-                LOGICAL_PLAN_VISITOR_BY_CLASS,
-                (executor, sink, dataset) ->
-                {
-                    //TODO: pass transformer as an argument
-                    RelationalTransformer transformer = new RelationalTransformer(SnowflakeSink.get());
-                    LogicalPlan datasetExistLogicalPlan = LogicalPlanFactory.getLogicalPlanForDoesDatasetExist(dataset);
-                    SqlPlan physicalPlanForDoesDatasetExist = transformer.generatePhysicalPlan(datasetExistLogicalPlan);
-                    List<TabularData> results = executor.executePhysicalPlanAndGetResults(physicalPlanForDoesDatasetExist);
-                    return results.size() > 0;
-                },
-                (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new SnowflakeDataTypeMapping()),
-                (executor, sink, tableName, schemaName, databaseName) -> sink.constructDatasetFromDatabase(tableName, schemaName, databaseName, new SnowflakeJdbcPropertiesToLogicalDataTypeMapping()));
+            CAPABILITIES,
+            IMPLICIT_DATA_TYPE_MAPPING,
+            EXPLICIT_DATA_TYPE_MAPPING,
+            SqlGenUtils.QUOTE_IDENTIFIER,
+            LOGICAL_PLAN_VISITOR_BY_CLASS,
+            (executor, sink, dataset) ->
+            {
+                //TODO: pass transformer as an argument
+                RelationalTransformer transformer = new RelationalTransformer(SnowflakeSink.get());
+                LogicalPlan datasetExistLogicalPlan = LogicalPlanFactory.getLogicalPlanForDoesDatasetExist(dataset);
+                SqlPlan physicalPlanForDoesDatasetExist = transformer.generatePhysicalPlan(datasetExistLogicalPlan);
+                List<TabularData> results = executor.executePhysicalPlanAndGetResults(physicalPlanForDoesDatasetExist);
+                return results.size() > 0;
+            },
+            (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new SnowflakeDataTypeMapping()),
+            (executor, sink, tableName, schemaName, databaseName) -> sink.constructDatasetFromDatabase(tableName, schemaName, databaseName, new SnowflakeJdbcPropertiesToLogicalDataTypeMapping()));
     }
 
     @Override

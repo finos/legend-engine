@@ -30,8 +30,6 @@ import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.LowerCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer;
-import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
-import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.H2DataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.H2JdbcPropertiesToLogicalDataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.CsvExternalDatasetReferenceVisitor;
@@ -39,13 +37,15 @@ import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.LoadCsvVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.SchemaDefinitionVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.ParseJsonFunctionVisitor;
+import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
+import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
+import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
-import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
-import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
-import org.finos.legend.engine.persistence.components.util.Capability;
+import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
+import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -130,14 +130,14 @@ public class H2Sink extends AnsiSqlSink
     private H2Sink()
     {
         super(
-                CAPABILITIES,
-                IMPLICIT_DATA_TYPE_MAPPING,
-                EXPLICIT_DATA_TYPE_MAPPING,
-                SqlGenUtils.QUOTE_IDENTIFIER,
-                LOGICAL_PLAN_VISITOR_BY_CLASS,
-                (executor, sink, dataset) -> sink.doesTableExist(dataset),
-                (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new H2DataTypeMapping()),
-                (executor, sink, tableName, schemaName, databaseName) -> sink.constructDatasetFromDatabase(tableName, schemaName, databaseName, new H2JdbcPropertiesToLogicalDataTypeMapping()));
+            CAPABILITIES,
+            IMPLICIT_DATA_TYPE_MAPPING,
+            EXPLICIT_DATA_TYPE_MAPPING,
+            SqlGenUtils.QUOTE_IDENTIFIER,
+            LOGICAL_PLAN_VISITOR_BY_CLASS,
+            (executor, sink, dataset) -> sink.doesTableExist(dataset),
+            (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new H2DataTypeMapping()),
+            (executor, sink, tableName, schemaName, databaseName) -> sink.constructDatasetFromDatabase(tableName, schemaName, databaseName, new H2JdbcPropertiesToLogicalDataTypeMapping()));
     }
 
     @Override

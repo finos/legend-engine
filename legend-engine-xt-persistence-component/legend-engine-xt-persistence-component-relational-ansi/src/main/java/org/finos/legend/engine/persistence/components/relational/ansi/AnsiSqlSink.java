@@ -235,44 +235,44 @@ public class AnsiSqlSink extends RelationalSink
     private AnsiSqlSink()
     {
         super(
-                Collections.emptySet(),
-                Collections.emptyMap(),
-                Collections.emptyMap(),
-                SqlGenUtils.QUOTE_IDENTIFIER,
-                LOGICAL_PLAN_VISITOR_BY_CLASS,
-                (x, y, z) ->
-                {
-                    throw new UnsupportedOperationException();
-                },
-                (x, y, z) ->
-                {
-                    throw new UnsupportedOperationException();
-                },
-                (v, w, x, y, z) ->
-                {
-                    throw new UnsupportedOperationException();
-                });
+            Collections.emptySet(),
+            Collections.emptyMap(),
+            Collections.emptyMap(),
+            SqlGenUtils.QUOTE_IDENTIFIER,
+            LOGICAL_PLAN_VISITOR_BY_CLASS,
+            (x, y, z) ->
+            {
+                throw new UnsupportedOperationException();
+            },
+            (x, y, z) ->
+            {
+                throw new UnsupportedOperationException();
+            },
+            (v, w, x, y, z) ->
+            {
+                throw new UnsupportedOperationException();
+            });
     }
 
     protected AnsiSqlSink(
-            Set<Capability> capabilities,
-            Map<DataType, Set<DataType>> implicitDataTypeMapping,
-            Map<DataType, Set<DataType>> nonBreakingDataTypeMapping,
-            String quoteIdentifier,
-            Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass,
-            DatasetExists datasetExists,
-            ValidateMainDatasetSchema validateMainDatasetSchema,
-            ConstructDatasetFromDatabase constructDatasetFromDatabase)
+        Set<Capability> capabilities,
+        Map<DataType, Set<DataType>> implicitDataTypeMapping,
+        Map<DataType, Set<DataType>> nonBreakingDataTypeMapping,
+        String quoteIdentifier,
+        Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass,
+        DatasetExists datasetExists,
+        ValidateMainDatasetSchema validateMainDatasetSchema,
+        ConstructDatasetFromDatabase constructDatasetFromDatabase)
     {
         super(
-                capabilities,
-                implicitDataTypeMapping,
-                nonBreakingDataTypeMapping,
-                quoteIdentifier,
-                rightBiasedUnion(LOGICAL_PLAN_VISITOR_BY_CLASS, logicalPlanVisitorByClass),
-                datasetExists,
-                validateMainDatasetSchema,
-                constructDatasetFromDatabase);
+            capabilities,
+            implicitDataTypeMapping,
+            nonBreakingDataTypeMapping,
+            quoteIdentifier,
+            rightBiasedUnion(LOGICAL_PLAN_VISITOR_BY_CLASS, logicalPlanVisitorByClass),
+            datasetExists,
+            validateMainDatasetSchema,
+            constructDatasetFromDatabase);
     }
 
     @Override
