@@ -27,6 +27,7 @@ import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
 import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresStatement;
 import org.finos.legend.engine.postgres.handler.SessionHandler;
+import org.finos.legend.engine.postgres.handler.empty.EmptySessionHandler;
 import org.finos.legend.engine.protocol.sql.metamodel.QualifiedName;
 import org.slf4j.Logger;
 
@@ -39,20 +40,14 @@ import java.util.concurrent.CompletableFuture;
 public class Session implements AutoCloseable
 {
 
-    private static final TableNameExtractor EXTRACTOR = new TableNameExtractor();
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(Session.class);
-
-
     private final Map<String, Prepared> parsed = new HashMap<>();
     private final Map<String, Portal> portals = new HashMap<>();
-
-    private final SessionHandler dataSessionHandler;
-    private final SessionHandler metaDataSessionHandler;
+    private final ExecutionDispatcher dispatcher;
 
     public Session(SessionHandler dataSessionHandler, SessionHandler metaDataSessionHandler)
     {
-        this.dataSessionHandler = dataSessionHandler;
-        this.metaDataSessionHandler = metaDataSessionHandler;
+        this.dispatcher = new ExecutionDispatcher(dataSessionHandler, metaDataSessionHandler);
     }
 
     public CompletableFuture<?> sync()
@@ -103,17 +98,13 @@ public class Session implements AutoCloseable
     private SessionHandler getSessionHandler(String query)
     {
         SqlBaseParser parser = SQLGrammarParser.getSqlBaseParser(query, "query");
-        List<QualifiedName> qualifiedNames = EXTRACTOR.visitSingleStatement(parser.singleStatement());
-
-        boolean isMetadataQuery = qualifiedNames.stream().flatMap(i -> i.parts.stream()).anyMatch(SystemSchemas::contains);
-        if (isMetadataQuery)
+        SqlBaseParser.SingleStatementContext singleStatementContext = parser.singleStatement();
+        SessionHandler sessionHandler = singleStatementContext.accept(dispatcher);
+        if (sessionHandler == null)
         {
-            return metaDataSessionHandler;
+            throw new RuntimeException(String.format("Unable to determine session handler for query[%s]", query));
         }
-        else
-        {
-            return dataSessionHandler;
-        }
+        return sessionHandler;
     }
 
 
@@ -341,7 +332,7 @@ public class Session implements AutoCloseable
         }
         try
         {
-            PostgresStatement statement = dataSessionHandler.createStatement();
+            PostgresStatement statement = getSessionHandler(query).createStatement();
             boolean results = statement.execute(query);
             if (!results)
             {

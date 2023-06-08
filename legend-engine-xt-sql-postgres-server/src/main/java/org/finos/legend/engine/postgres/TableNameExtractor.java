@@ -35,6 +35,13 @@ public class TableNameExtractor extends SqlBaseParserBaseVisitor<List<QualifiedN
     }
 
     @Override
+    public List<QualifiedName> visitTableFunction(SqlBaseParser.TableFunctionContext ctx)
+    {
+        QualifiedName qualifiedName = getQualifiedName(ctx.qname());
+        return Lists.fixedSize.with(qualifiedName);
+    }
+
+    @Override
     protected List<QualifiedName> aggregateResult(List<QualifiedName> aggregate, List<QualifiedName> nextResult)
     {
         MutableList<QualifiedName> result = Lists.fixedSize.empty();

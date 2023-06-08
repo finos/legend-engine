@@ -32,9 +32,8 @@ public class PostgresServerLauncher
     {
         //TODO ADD CLI
         String configPath = args[0];
-        InputStream configStream = new FileInputStream(new File(configPath));
         ObjectMapper objectMapper = new ObjectMapper();
-        ServerConfig serverConfig = objectMapper.readValue(configStream, ServerConfig.class);
+        ServerConfig serverConfig = objectMapper.readValue(new File(configPath), ServerConfig.class);
         /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           System property must be set before any logger instance is created.
           Do NOT create static logger in this class.

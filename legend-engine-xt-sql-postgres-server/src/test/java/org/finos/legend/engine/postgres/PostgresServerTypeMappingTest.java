@@ -57,9 +57,7 @@ public class PostgresServerTypeMappingTest
     @BeforeClass
     public static void setUpClass() throws Exception
     {
-        CookieStore cookieStore = new BasicCookieStore();
-        CloseableHttpClient httpClient = (CloseableHttpClient) HttpClientBuilder.getHttpClient(cookieStore);
-        LegendTdsClient client = new LegendTdsClient("http", "localhost", "" + wireMockRule.port(), new BasicCookieStore());
+        LegendTdsClient client = new LegendTdsClient("http", "localhost", String.valueOf(wireMockRule.port()), new BasicCookieStore());
         LegendSessionFactory legendSessionFactory = new LegendSessionFactory(client);
         ServerConfig serverConfig = new ServerConfig();
         serverConfig.setPort(0);
@@ -84,7 +82,7 @@ public class PostgresServerTypeMappingTest
     public void testDateTime() throws Exception
     {
         String timeStamp = "2020-06-07T04:15:27.000000000+0000";
-        Instant temporalAccessor = (Instant) TIMESTAMP_FORMATTER.parse(timeStamp, Instant::from);
+        Instant temporalAccessor = TIMESTAMP_FORMATTER.parse(timeStamp, Instant::from);
         Timestamp expected = new Timestamp(temporalAccessor.toEpochMilli());
 
         validate("DateTime", "\"" + timeStamp + "\"", "timestamp", expected);
