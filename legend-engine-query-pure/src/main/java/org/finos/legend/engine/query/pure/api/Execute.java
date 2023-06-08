@@ -22,9 +22,9 @@ import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function0;
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
-import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRuntimeBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -70,6 +70,7 @@ import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
 
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -81,7 +82,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.util.Map;
 
 import static org.finos.legend.engine.plan.execution.api.result.ResultManager.manageResult;
 import static org.finos.legend.engine.plan.execution.authorization.PlanExecutionAuthorizerInput.ExecutionMode.INTERACTIVE_EXECUTION;
@@ -96,18 +96,17 @@ public class Execute
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
     private final ModelManager modelManager;
     private final PlanExecutor planExecutor;
-    private Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions;
-    private MutableList<PlanTransformer> transformers;
-    private PlanExecutionAuthorizer planExecutionAuthorizer;
-    private IdentityFactory identityFactory;
+    private final Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions;
+    private final Iterable<? extends PlanTransformer> transformers;
+    private final PlanExecutionAuthorizer planExecutionAuthorizer;
+    private final IdentityFactory identityFactory;
 
-    public Execute(ModelManager modelManager, PlanExecutor planExecutor, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions, MutableList<PlanTransformer> transformers)
+    public Execute(ModelManager modelManager, PlanExecutor planExecutor, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions, Iterable<? extends PlanTransformer> transformers)
     {
         this(modelManager, planExecutor, extensions, transformers, null, new DefaultIdentityFactory());
     }
 
-    public Execute(ModelManager modelManager, PlanExecutor planExecutor, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions, MutableList<PlanTransformer> transformers,
-                   PlanExecutionAuthorizer planExecutionAuthorizer, IdentityFactory identityFactory)
+    public Execute(ModelManager modelManager, PlanExecutor planExecutor, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions, Iterable<? extends PlanTransformer> transformers, PlanExecutionAuthorizer planExecutionAuthorizer, IdentityFactory identityFactory)
     {
         this.modelManager = modelManager;
         this.planExecutor = planExecutor;
