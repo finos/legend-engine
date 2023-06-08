@@ -26,6 +26,8 @@ import meta::pure::executionPlan::platformBinding::legendJava::shared::*;
 import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
 import meta::pure::executionPlan::platformBinding::legendJava::shared::units::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
+import meta::pure::functions::collection::*;
+import meta::pure::functions::meta::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::graphFetch::executionPlan::*;
 import meta::pure::graphFetch::routing::*;
@@ -201,6 +203,74 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::createA
 {
    print(if($debug.debug,|$debug.space+'createAlloyStoreObjectReferenceMethodsForClass: \''+$class->typeToString()+'\'\n',|''));
    let newProject = newProject()->addClass($class->addAlloyStoreObjectReferenceMethodsForClass($context));
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::shared::generateEqualsMethod(equalityKeys: AbstractProperty<Any>[1..*], conventions: Conventions[1], class:meta::external::language::java::metamodel::Class[1], interface:meta::external::language::java::metamodel::Type[1]): meta::external::language::java::metamodel::Method[1]
+{
+  let jThis = j_this($class);
+  let jThat = j_parameter($conventions->pureTypeToJavaType(Any, PureOne), 'that');    
+
+  // each node generates its own class, so getClass() comparison will fail. 
+  let jThatRef = j_variable($interface, 'o');        
+  let block = j_if($jThis->j_eq($jThat), j_true()->j_return())
+    ->concatenate([
+      j_if($jThat->j_eq(j_null())->j_or($jThat->j_instanceof($interface)->j_and($jThis->j_instanceof($interface))->j_not()), j_false()->j_return()),
+      j_declare($jThatRef, $jThat->j_cast($interface))
+    ]);        
+
+  let body = $equalityKeys
+    ->fold({p,c|
+              let jThisGetProp = $jThis->j_invoke($conventions->getterName($p), [], $conventions->pureTypeToJavaType($p));
+              let jThatGetProp = $jThatRef->j_invoke($conventions->getterName($p), [], $conventions->pureTypeToJavaType($p));
+              let test = $conventions->className(Library)->j_invoke('equal', [$jThisGetProp, $jThatGetProp], javaBoolean())->j_not();
+              $c->concatenate(j_if($test, j_false()->j_return()));
+            }, $block)
+    ->concatenate([j_true()->j_return()]);
+
+  javaMethod(
+    ['public'], 
+    $conventions->pureTypeToJavaType(Boolean, PureOne), 
+    'equals', 
+    javaParam($conventions->pureTypeToJavaType(Any, PureOne), 'that'), 
+    $body  
+  )->addAnnotation(^meta::external::language::java::metamodel::annotations::override::Override());
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::shared::generateHashCodeMethod(equalityKeys: AbstractProperty<Any>[1..*], conventions: Conventions[1], class:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Method[1]
+{
+  let jThis = j_this($class);
+  let result = j_variable(javaInt(), 'result');
+
+  let jThisGetProp = $jThis->j_invoke($conventions->getterName($equalityKeys->at(0)), [], $conventions->pureTypeToJavaType($equalityKeys->at(0)));
+  let first = j_declare($result, javaObjects()->j_invoke('hashCode', [$jThisGetProp], javaInt()));
+
+  let body = $equalityKeys->slice(1, $equalityKeys->size())
+    ->fold({p,c|
+              let jThisGetProp = $jThis->j_invoke($conventions->getterName($p), [], $conventions->pureTypeToJavaType($p));
+              let newResult = j_assign($result, j_int(31)->j_multiply($result)->j_plus(javaObjects()->j_invoke('hashCode', [$jThisGetProp], javaInt())));
+              $c->concatenate($newResult);
+            }, $first)
+    ->concatenate([$result->j_return()]);
+
+  javaMethod(
+    ['public'], 
+    javaInt(), 
+    'hashCode', 
+    [],
+    $body  
+  )->addAnnotation(^meta::external::language::java::metamodel::annotations::override::Override());
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::shared::maybeAddEqualsHashCodeForClass(jClass:meta::external::language::java::metamodel::Class[1], class:meta::pure::metamodel::type::Class<Any>[1], conventions:Conventions[1]) : meta::external::language::java::metamodel::Class[1]
+{    
+  let allEqualityKeys = $class->meta::pure::graphFetch::equalityKeyRequirementsForClass();  
+
+  if($allEqualityKeys->size() == 0, 
+  | $jClass, 
+  | 
+      let withEquals = $jClass->addMethod($allEqualityKeys->toOneMany()->generateEqualsMethod($conventions, $jClass, $conventions->className($class)));
+      let withEqualsAndHashcode = $withEquals->addMethod($allEqualityKeys->toOneMany()->generateHashCodeMethod($conventions, $jClass));
+  );
 }
 
 function meta::pure::executionPlan::platformBinding::legendJava::shared::addAlloyStoreObjectReferenceMethodsForClass(class:meta::external::language::java::metamodel::Class[1], context:GenerationContext[1]) : meta::external::language::java::metamodel::Class[1]

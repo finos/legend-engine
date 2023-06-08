@@ -2070,3 +2070,164 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withFlatteningInTransform
   }
 )
 
+###Pure
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::tests::sourceTreeCalc::withEqualityKeys::*;
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testClassEqualityKey():Boolean[1]
+{
+  let tree =   #{
+    testClass{
+      c
+    }
+  }#;
+  let sourceTree = calculateSourceTree($tree, mpg, meta::pure::extension::defaultExtensions())->ensureEqualityKeyRequirements()->sortTree();
+  let expectedString = '_test\n' +
+                '(\n' +
+                '  a\n' +
+                '  (\n' +
+                '    eq\n' +
+                '  )\n' +
+                '  b\n' +
+                '  (\n' +
+                '    eq\n' +
+                '  )\n' +
+                ')';
+  assertEquals($expectedString, $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString());
+}
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testClassEqualityKeyPartialQuery():Boolean[1]
+{
+  let tree =   #{
+    testClass{
+      a {
+        neq
+      },
+      b {
+        eq
+      },
+      c
+    }
+  }#;
+  let sourceTree = calculateSourceTree($tree, mpg, meta::pure::extension::defaultExtensions())->ensureEqualityKeyRequirements()->sortTree();
+  let expectedString = '_test\n' +
+                '(\n' +
+                '  a\n' +
+                '  (\n' +
+                '    eq\n' +
+                '    neq\n' +
+                '  )\n' +
+                '  b\n' +
+                '  (\n' +
+                '    eq\n' +
+                '  )\n' +
+                ')';
+  assertEquals($expectedString, $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString());
+}
+
+function <<test.Test>>  meta::pure::graphFetch::tests::sourceTreeCalc::testClassEqualityAtMultipleTargetTreeLevels():Boolean[1]
+{
+  let tree = #{
+    testClassWithBooleanWrapped{
+      a {
+        neq
+      },
+      b {
+        eq
+      },
+      c
+    }
+  }#;
+
+  let sourceTree = calculateSourceTree($tree, mpgWithBooleanWrapped, meta::pure::extension::defaultExtensions())->ensureEqualityKeyRequirements()->sortTree();
+  let expectedString = '_test\n' +
+                '(\n' +
+                '  a\n' +
+                '  (\n' +
+                '    eq\n' +
+                '    neq\n' +
+                '  )\n' +
+                '  b\n' +
+                '  (\n' +
+                '    eq\n' +
+                '  )\n' +
+                ')';
+  assertEquals($expectedString, $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString());
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withEqualityKeys::base
+{
+  eq: String[1];
+  neq: String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withEqualityKeys::testClass
+{
+  a: meta::pure::graphFetch::tests::sourceTreeCalc::withEqualityKeys::base[1];
+  b: meta::pure::graphFetch::tests::sourceTreeCalc::withEqualityKeys::base[1];
+  c: Boolean[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withEqualityKeys::_base
+{
+  <<equality.Key>> eq: String[1];
+  neq: String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withEqualityKeys::_test
+{
+  a: meta::pure::graphFetch::tests::sourceTreeCalc::withEqualityKeys::_base[1];
+  b: meta::pure::graphFetch::tests::sourceTreeCalc::withEqualityKeys::_base[1];
+}
+
+Class  meta::pure::graphFetch::tests::sourceTreeCalc::withEqualityKeys::BooleanWrapped
+{
+  c: Boolean[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withEqualityKeys::testClassWithBooleanWrapped
+{
+  a: meta::pure::graphFetch::tests::sourceTreeCalc::withEqualityKeys::base[1];
+  b: meta::pure::graphFetch::tests::sourceTreeCalc::withEqualityKeys::base[1];
+  c: meta::pure::graphFetch::tests::sourceTreeCalc::withEqualityKeys::BooleanWrapped[1];
+}
+
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withEqualityKeys::mpg
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::withEqualityKeys::testClass: Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::withEqualityKeys::_test
+    a: $src.a,
+    b: $src.b,
+    c: $src.a == $src.b
+  }
+  *meta::pure::graphFetch::tests::sourceTreeCalc::withEqualityKeys::base: Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::withEqualityKeys::_base
+    eq: $src.eq,
+    neq: $src.neq
+  }
+)
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withEqualityKeys::mpgWithBooleanWrapped
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::withEqualityKeys::testClassWithBooleanWrapped: Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::withEqualityKeys::_test
+    a: $src.a,
+    b: $src.b,
+    c: $src
+  }
+  *meta::pure::graphFetch::tests::sourceTreeCalc::withEqualityKeys::base: Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::withEqualityKeys::_base
+    eq: $src.eq,
+    neq: $src.neq
+  }
+  *meta::pure::graphFetch::tests::sourceTreeCalc::withEqualityKeys::BooleanWrapped: Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::withEqualityKeys::_test
+    c: $src.a == $src.b
+  }
+)

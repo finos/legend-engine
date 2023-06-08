@@ -119,7 +119,7 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
    let conventions = $context.conventions;
    let interface = $conventions->className($resultClass);
 
-   let implPkgAndName = $conventions->baseImplementationName($sets, $resultClass, $path)->implements($interface);
+   let implPkgAndName = $conventions->baseImplementationName($sets, $resultClass, $path)->implements($interface)->maybeAddEqualsHashCodeForClass($resultClass, $conventions);
    let implementationClass = ^$implPkgAndName(
       modifiers = javaModifiers(['public'])
    )

@@ -14,10 +14,13 @@
 
 package org.finos.legend.engine.plan.dependencies.util;
 
+import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class TestLibrary
@@ -92,5 +95,33 @@ public class TestLibrary
         Assert.assertEquals(expected, Library.indexOf(null, "b"));
         Assert.assertEquals(expected, Library.indexOf("a", "b"));
         Assert.assertEquals(expected, Library.indexOf(Arrays.asList("a", "b"), "c"));
+    }
+
+    @Test
+    public void testEqual()
+    {
+        BigDecimal bd = new BigDecimal("1.2");
+        Double d = 1.2;
+
+        Assert.assertTrue(Library.equal(bd, bd));
+        Assert.assertTrue(Library.equal(null, Collections.emptyList()));
+        Assert.assertTrue(Library.equal(Arrays.asList(1), 1));
+
+        Assert.assertTrue(Library.equal(Arrays.asList(1, "1"), Arrays.asList(1, "1")));
+        Assert.assertFalse(Library.equal(Arrays.asList(1, "1"), Arrays.asList("1", 1)));
+        Assert.assertFalse(Library.equal(Arrays.asList(1), Arrays.asList("1", 1)));
+
+        Assert.assertFalse(Library.equal(bd, d));
+        Assert.assertTrue(Library.equal(0.0, -0.0));
+    }
+
+    @Test
+    public void testEq()
+    {
+        Assert.assertTrue(Library.eq(6, 3 + 3));
+        Assert.assertTrue(Library.eq(6.3, 6.3 + 0.0));
+        Assert.assertTrue(Library.eq("helloworld", "hello" + "world"));
+        Assert.assertTrue(Library.eq(PureDate.newPureDate(2014), PureDate.newPureDate(2014)));
+        Assert.assertFalse(Library.eq(PureDate.newPureDate(2014), PureDate.newPureDate(2013)));
     }
 }

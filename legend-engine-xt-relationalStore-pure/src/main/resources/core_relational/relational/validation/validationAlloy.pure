@@ -79,7 +79,7 @@ function meta::relational::validation::alloy::alloyClassValidationFunction<T, U>
 
    let constraint = $classToValidate.constraints->filter(c|$c.name == $constraintName)->toOne();
    let f = {c:Class<Any>[1]|$constraint.functionDefinition->concatenate($constraint.messageFunction)};
-   let sourceGraphTree =^RootGraphFetchTree<T>(class=$classToValidate, subTrees=$eventDataGraphFetchTree.subTrees)->meta::pure::graphFetch::ensureFunctionRequirements($classToValidate, $f, [], false)->cast(@RootGraphFetchTree<Any>);
+   let sourceGraphTree =^RootGraphFetchTree<T>(class=$classToValidate, subTrees=$eventDataGraphFetchTree.subTrees)->meta::pure::graphFetch::ensureFunctionRequirements($classToValidate, $f, [], false)->cast(@RootGraphFetchTree<Any>)->ensureEqualityKeyRequirements();
 
    let violationsQuery = buildViolationsQuery($classToValidate, $constraint, $sourceMapping, $sourceGraphTree, $sourceRuntime);
    let violationsToExceptions = buildViolationsToExceptionsTransformation($classToValidate, $constraint, $exceptionMapping, $execptionTree, $eventDataProperty);

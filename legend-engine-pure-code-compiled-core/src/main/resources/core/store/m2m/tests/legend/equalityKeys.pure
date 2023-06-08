@@ -1,0 +1,357 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::runtime::*;
+import meta::pure::graphFetch::*;
+import meta::pure::executionPlan::engine::java::roadmap::*;
+import meta::json::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::modelToModel::test::alloy::simple::equality::srcClassEquality::*;
+import meta::pure::mapping::modelToModel::test::alloy::utils::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>> 
+{  serverVersion.start='v1_19_0',
+   doc.doc = 'Given: a model which uses equals with equality Key defined on source class properties',
+   doc.doc = 'check equality is evaluated using custom equals method like PURE'
+} 
+meta::pure::mapping::modelToModel::test::alloy::simple::equality::testEqualityKeyOnSrcClass(): Boolean[1]
+{
+  let tree = #{
+    testClass
+    {
+      c
+    }
+  }#;
+
+  let testData = '[{"a":{"eq":"eq 83","neq":"neq 32"},"b":{"eq":"eq 12","neq":"neq 87"}},{"a":{"eq":"eq 83","neq":"neq 32"},"b":{"eq":"eq 83","neq":"neq 87"}}]';
+  let result = execute(
+    |testClass.all()->graphFetch($tree)->serialize($tree),
+    testEqualsOnSrcClass,
+    testJsonRuntime(_test, $testData),
+    meta::pure::extension::defaultExtensions()
+  );
+  let json = $result.values->toOne();
+
+  let expected= '[{"c":false},{"c":true}]';
+  assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>> 
+{  serverVersion.start='v1_19_0',
+   doc.doc = 'Given: a model which uses equals with equality Key defined on source class properties',
+   doc.doc = 'check equality is evaluated using custom equals method like PURE'
+} 
+meta::pure::mapping::modelToModel::test::alloy::simple::equality::testEqualityKeyOnSrcClassPropAlreadyInFetchTree(): Boolean[1]
+{
+  let tree = #{
+    testClass
+    {
+      c,
+      a {
+        eq,
+        neq
+      },
+      b {
+        eq,
+        neq
+      }      
+    }
+  }#;
+
+  let testData = '[{"a":{"eq":"eq 83","neq":"neq 32"},"b":{"eq":"eq 12","neq":"neq 87"}},{"a":{"eq":"eq 83","neq":"neq 32"},"b":{"eq":"eq 83","neq":"neq 87"}}]';
+  let result = execute(
+    |testClass.all()->graphFetch($tree)->serialize($tree),
+    testEqualsOnSrcClass,
+    testJsonRuntime(_test, $testData),
+    meta::pure::extension::defaultExtensions()
+  );
+  let json = $result.values->toOne();
+
+  let expected= '[{"a":{"neq":"neq 32","eq":"eq 83"},"b":{"neq":"neq 87","eq":"eq 12"},"c":false},{"a":{"neq":"neq 32","eq":"eq 83"},"b":{"neq":"neq 87","eq":"eq 83"},"c":true}]';
+  assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::equality::srcClassEquality::base
+{
+  eq: String[1];
+  neq: String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::equality::srcClassEquality::testClass
+{
+  a: meta::pure::mapping::modelToModel::test::alloy::simple::equality::srcClassEquality::base[1];
+  b: meta::pure::mapping::modelToModel::test::alloy::simple::equality::srcClassEquality::base[1];
+  c: Boolean[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::equality::srcClassEquality::_base
+{
+  <<equality.Key>> eq: String[1];
+  neq: String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::equality::srcClassEquality::_test
+{
+  a: meta::pure::mapping::modelToModel::test::alloy::simple::equality::srcClassEquality::_base[1];
+  b: meta::pure::mapping::modelToModel::test::alloy::simple::equality::srcClassEquality::_base[1];
+}
+
+###Mapping
+Mapping meta::pure::mapping::modelToModel::test::alloy::simple::equality::srcClassEquality::testEqualsOnSrcClass
+(
+  *meta::pure::mapping::modelToModel::test::alloy::simple::equality::srcClassEquality::testClass: Pure
+  {
+    ~src meta::pure::mapping::modelToModel::test::alloy::simple::equality::srcClassEquality::_test
+    a: $src.a,
+    b: $src.b,
+    c: $src.a == $src.b
+  }
+  *meta::pure::mapping::modelToModel::test::alloy::simple::equality::srcClassEquality::base: Pure
+  {
+    ~src meta::pure::mapping::modelToModel::test::alloy::simple::equality::srcClassEquality::_base
+    eq: $src.eq,
+    neq: $src.neq
+  }
+)
+
+###Pure
+import meta::json::*;
+import meta::pure::mapping::modelToModel::test::alloy::utils::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::executionPlan::engine::java::roadmap::*;
+import meta::pure::mapping::modelToModel::test::alloy::simple::equality::targetClassConstraint::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>> 
+{  serverVersion.start='v1_19_0',
+   doc.doc = 'Given: a model which uses equals with equality Key defined on target class properties in constraints',
+   doc.doc = 'check equality is evaluated using custom equals method like PURE'
+}
+meta::pure::mapping::modelToModel::test::alloy::simple::equality::testTargetClassConstraint(): Boolean[1]
+{
+  let tree = #{
+    testClass
+    {
+      c
+    }
+  }#;
+
+  let testData = '[{"a":{"eq":"eq 83","neq":"neq 32"},"b":{"eq":"eq 12","neq":"neq 87"}},{"a":{"eq":"eq 83","neq":"neq 32"},"b":{"eq":"eq 83","neq":"neq 87"}}]';
+  let result = execute(
+    |testClass.all()->graphFetchChecked($tree)->serialize($tree),
+    withTargetClassConstraint,
+    testJsonRuntime(_test, $testData),
+    meta::pure::extension::defaultExtensions()
+  );
+  let json = $result.values->toOne();
+
+  let expected= '[{"defects":[{"path":[],"enforcementLevel":"Error","ruleType":"ClassConstraint","externalId":null,"id":"0","ruleDefinerPath":"meta::pure::mapping::modelToModel::test::alloy::simple::equality::targetClassConstraint::testClass","message":"Constraint :[0] violated in the Class testClass"}],"source":{"defects":[],"source":{"number":1,"record":"{\\"a\\":{\\"eq\\":\\"eq 83\\",\\"neq\\":\\"neq 32\\"},\\"b\\":{\\"eq\\":\\"eq 12\\",\\"neq\\":\\"neq 87\\"}}"},"value":{"a":{"eq":"eq 83"},"b":{"eq":"eq 12"}}},"value":{"c":true}},{"defects":[],"source":{"defects":[],"source":{"number":2,"record":"{\\"a\\":{\\"eq\\":\\"eq 83\\",\\"neq\\":\\"neq 32\\"},\\"b\\":{\\"eq\\":\\"eq 83\\",\\"neq\\":\\"neq 87\\"}}"},"value":{"a":{"eq":"eq 83"},"b":{"eq":"eq 83"}}},"value":{"c":true}}]';
+  assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>> 
+{  serverVersion.start='v1_19_0',
+   doc.doc = 'Given: a model which uses equals with equality Key defined on target class properties in constraints',
+   doc.doc = 'check equality is evaluated using custom equals method like PURE'
+}
+meta::pure::mapping::modelToModel::test::alloy::simple::equality::testTargetClassConstraintAlreadyExistInTree(): Boolean[1]
+{
+  let tree = #{
+    testClass
+    {
+      c,
+      a {
+        eq,
+        neq
+      },
+      b {
+        eq,
+        neq
+      }      
+    }
+  }#;
+
+  let testData = '[{"a":{"eq":"eq 83","neq":"neq 32"},"b":{"eq":"eq 12","neq":"neq 87"}},{"a":{"eq":"eq 83","neq":"neq 32"},"b":{"eq":"eq 83","neq":"neq 87"}}]';
+  let result = execute(
+    |testClass.all()->graphFetchChecked($tree)->serialize($tree),
+    withTargetClassConstraint,
+    testJsonRuntime(_test, $testData),
+    meta::pure::extension::defaultExtensions()
+  );
+  let json = $result.values->toOne();
+
+  let expected= '[{"defects":[{"path":[],"enforcementLevel":"Error","ruleType":"ClassConstraint","externalId":null,"id":"0","ruleDefinerPath":"meta::pure::mapping::modelToModel::test::alloy::simple::equality::targetClassConstraint::testClass","message":"Constraint :[0] violated in the Class testClass"}],"source":{"defects":[],"source":{"number":1,"record":"{\\"a\\":{\\"eq\\":\\"eq 83\\",\\"neq\\":\\"neq 32\\"},\\"b\\":{\\"eq\\":\\"eq 12\\",\\"neq\\":\\"neq 87\\"}}"},"value":{"a":{"neq":"neq 32","eq":"eq 83"},"b":{"neq":"neq 87","eq":"eq 12"}}},"value":{"a":{"neq":"neq 32","eq":"eq 83"},"b":{"neq":"neq 87","eq":"eq 12"},"c":true}},{"defects":[],"source":{"defects":[],"source":{"number":2,"record":"{\\"a\\":{\\"eq\\":\\"eq 83\\",\\"neq\\":\\"neq 32\\"},\\"b\\":{\\"eq\\":\\"eq 83\\",\\"neq\\":\\"neq 87\\"}}"},"value":{"a":{"neq":"neq 32","eq":"eq 83"},"b":{"neq":"neq 87","eq":"eq 83"}}},"value":{"a":{"neq":"neq 32","eq":"eq 83"},"b":{"neq":"neq 87","eq":"eq 83"},"c":true}}]';
+  assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::equality::targetClassConstraint::base
+{
+  <<equality.Key>> eq: String[1];
+  neq: String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::equality::targetClassConstraint::testClass
+[
+  $this.a == $this.b
+]
+{
+  a: meta::pure::mapping::modelToModel::test::alloy::simple::equality::targetClassConstraint::base[1];
+  b: meta::pure::mapping::modelToModel::test::alloy::simple::equality::targetClassConstraint::base[1];
+  c: Boolean[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::equality::targetClassConstraint::_base
+{
+  eq: String[1];
+  neq: String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::equality::targetClassConstraint::_test
+{
+  a: meta::pure::mapping::modelToModel::test::alloy::simple::equality::targetClassConstraint::_base[1];
+  b: meta::pure::mapping::modelToModel::test::alloy::simple::equality::targetClassConstraint::_base[1];
+}
+
+###Mapping
+Mapping meta::pure::mapping::modelToModel::test::alloy::simple::equality::targetClassConstraint::withTargetClassConstraint
+(
+  *meta::pure::mapping::modelToModel::test::alloy::simple::equality::targetClassConstraint::testClass: Pure
+  {
+    ~src meta::pure::mapping::modelToModel::test::alloy::simple::equality::targetClassConstraint::_test
+    a: $src.a,
+    b: $src.b,
+    c: true
+  }
+  *meta::pure::mapping::modelToModel::test::alloy::simple::equality::targetClassConstraint::base: Pure
+  {
+    ~src meta::pure::mapping::modelToModel::test::alloy::simple::equality::targetClassConstraint::_base
+    eq: $src.eq,
+    neq: $src.neq
+  }
+)
+
+###Pure
+import meta::json::*;
+import meta::pure::mapping::modelToModel::test::alloy::utils::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::executionPlan::engine::java::roadmap::*;
+import meta::pure::mapping::modelToModel::test::alloy::simple::equality::qualifiedProp::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>> 
+{  serverVersion.start='v1_19_0',
+   doc.doc = 'Given: a model which uses equals with equality Key defined on target class properties',
+   doc.doc = 'check equality is evaluated using custom equals method like PURE'
+}
+meta::pure::mapping::modelToModel::test::alloy::simple::equality::testEqualityInQualifiedPropPropsAlreadyInFetchTree(): Boolean[1]
+{
+  let tree = #{
+    testClass
+    {
+      c,
+      a {
+        eq,
+        neq
+      },
+      b {
+        eq,
+        neq
+      }
+    }
+  }#;
+
+  let testData = '[{"a":{"eq":"eq 83","neq":"neq 32"},"b":{"eq":"eq 12","neq":"neq 87"}},{"a":{"eq":"eq 83","neq":"neq 32"},"b":{"eq":"eq 83","neq":"neq 87"}}]';
+  let result = execute(
+    |testClass.all()->graphFetch($tree)->serialize($tree),
+    withEqualityInQualifiedProp,
+    testJsonRuntime(_test, $testData),
+    meta::pure::extension::defaultExtensions()
+  );
+  let json = $result.values->toOne();
+
+  let expected = '[{"a":{"neq":"neq 32","eq":"eq 83"},"b":{"neq":"neq 87","eq":"eq 12"},"c()":false},{"a":{"neq":"neq 32","eq":"eq 83"},"b":{"neq":"neq 87","eq":"eq 83"},"c()":true}]';
+  assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.ToFix, feature.M2MBasics>> 
+{  serverVersion.start='v1_19_0',
+   doc.doc = 'Given: a model which uses equals with equality Key defined on target class properties',
+   doc.doc = 'check equality is evaluated using custom equals method like PURE'
+}
+meta::pure::mapping::modelToModel::test::alloy::simple::equality::testEqualityInQualifiedProp(): Boolean[1]
+{
+  let tree = #{
+    testClass
+    {
+      c
+    }
+  }#;
+
+  let testData = '[{"a":{"eq":"eq 83","neq":"neq 32"},"b":{"eq":"eq 12","neq":"neq 87"}},{"a":{"eq":"eq 83","neq":"neq 32"},"b":{"eq":"eq 83","neq":"neq 87"}}]';
+  let result = execute(
+    |testClass.all()->graphFetch($tree)->serialize($tree),
+    withEqualityInQualifiedProp,
+    testJsonRuntime(_test, $testData),
+    meta::pure::extension::defaultExtensions()
+  );
+  let json = $result.values->toOne();
+
+  let expected= '[{"c":false},{"c":true}]';
+  assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::equality::qualifiedProp::base
+{
+  <<equality.Key>> eq: String[1];
+  neq: String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::equality::qualifiedProp::testClass
+{
+  a: meta::pure::mapping::modelToModel::test::alloy::simple::equality::qualifiedProp::base[1];
+  b: meta::pure::mapping::modelToModel::test::alloy::simple::equality::qualifiedProp::base[1];  
+  c(){$this.a == $this.b}:Boolean[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::equality::qualifiedProp::_base
+{
+  eq: String[1];
+  neq: String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::simple::equality::qualifiedProp::_test
+{
+  a: meta::pure::mapping::modelToModel::test::alloy::simple::equality::qualifiedProp::_base[1];
+  b: meta::pure::mapping::modelToModel::test::alloy::simple::equality::qualifiedProp::_base[1];
+}
+
+###Mapping
+Mapping meta::pure::mapping::modelToModel::test::alloy::simple::equality::qualifiedProp::withEqualityInQualifiedProp
+(
+  *meta::pure::mapping::modelToModel::test::alloy::simple::equality::qualifiedProp::testClass: Pure
+  {
+    ~src meta::pure::mapping::modelToModel::test::alloy::simple::equality::qualifiedProp::_test
+    a: $src.a,
+    b: $src.b
+  }
+  *meta::pure::mapping::modelToModel::test::alloy::simple::equality::qualifiedProp::base: Pure
+  {
+    ~src meta::pure::mapping::modelToModel::test::alloy::simple::equality::qualifiedProp::_base
+    eq: $src.eq,
+    neq: $src.neq
+  }
+)

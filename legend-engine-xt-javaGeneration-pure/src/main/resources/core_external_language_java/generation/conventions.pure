@@ -375,11 +375,6 @@ function meta::external::language::java::transform::implClassName(conventions: C
    $conventions->generateClassName($pe->cast(@PackageableElement), 'internal', '_Impl');
 }
 
-function meta::external::language::java::transform::implClassName(conventions: Conventions[1], pe:PackageableElement[1]): meta::external::language::java::metamodel::Class[1]
-{
-   $conventions->generateClassName($pe, 'internal', '_Impl');
-}
-
 function <<access.private>> meta::external::language::java::transform::generateClassName(conventions:Conventions[1], pe:PackageableElement[1], zone:String[1], suffix:String[1]): meta::external::language::java::metamodel::Class[1]
 {
    assert(!$pe->instanceOf(meta::pure::metamodel::type::Type) || !$conventions->isProvidedType($pe->cast(@meta::pure::metamodel::type::Type)), 'Cannot provide implemention for provided types');

@@ -152,6 +152,7 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
       ->imports($conventions->standardImports())
       ->imports(if($constraintContext->isNotEmpty(), | $conventions->constrainedImports(), | []))
       ->implements($conventions->className($class))
+      ->maybeAddEqualsHashCodeForClass($class, $conventions)
       ->addConstructor(javaConstructor([], [], ''))
       ->map({dc | 
          $context.typeInfos->allProperties($class)->fold({p, c|

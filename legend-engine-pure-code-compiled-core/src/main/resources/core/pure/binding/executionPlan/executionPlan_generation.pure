@@ -64,13 +64,13 @@ function <<access.private>> meta::external::shared::format::executionPlan::check
 function <<access.private>> meta::external::shared::format::executionPlan::graphFetchFunctionProcessor(fe:FunctionExpression[1], state:ExternalFormatPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[1]
 {
    let updatedState = if($fe.func == meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_,   
-                          | ^$state(checked = false, graphContext = ^GraphFetchContext(graphFetchTree = getFunctionParameterValue($fe, $state.inScopeVars, 1)->cast(@meta::pure::graphFetch::RootGraphFetchTree<Any>)->toOne()->meta::pure::graphFetch::ensureConstraintsRequirements())),
+                          | ^$state(checked = false, graphContext = ^GraphFetchContext(graphFetchTree = getFunctionParameterValue($fe, $state.inScopeVars, 1)->cast(@meta::pure::graphFetch::RootGraphFetchTree<Any>)->toOne()->meta::pure::graphFetch::ensureConstraintsRequirements()->ensureEqualityKeyRequirements())),
                           | 
                       if($fe.func == meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__Integer_1__T_MANY_,
-                          | ^$state(checked = false, graphContext = ^GraphFetchContext(graphFetchTree = getFunctionParameterValue($fe, $state.inScopeVars, 1)->cast(@meta::pure::graphFetch::RootGraphFetchTree<Any>)->toOne()->meta::pure::graphFetch::ensureConstraintsRequirements(), batchSize = getFunctionParameterValue($fe, $state.inScopeVars, 2)->cast(@Integer)->toOne())),
+                          | ^$state(checked = false, graphContext = ^GraphFetchContext(graphFetchTree = getFunctionParameterValue($fe, $state.inScopeVars, 1)->cast(@meta::pure::graphFetch::RootGraphFetchTree<Any>)->toOne()->meta::pure::graphFetch::ensureConstraintsRequirements()->ensureEqualityKeyRequirements(), batchSize = getFunctionParameterValue($fe, $state.inScopeVars, 2)->cast(@Integer)->toOne())),
                           | 
                       if($fe.func == meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Checked_MANY_,
-                          |^$state(checked = true, graphContext = ^GraphFetchContext(graphFetchTree = getFunctionParameterValue($fe, $state.inScopeVars, 1)->cast(@meta::pure::graphFetch::RootGraphFetchTree<Any>)->toOne()->meta::pure::graphFetch::ensureConstraintsRequirements())),
+                          |^$state(checked = true, graphContext = ^GraphFetchContext(graphFetchTree = getFunctionParameterValue($fe, $state.inScopeVars, 1)->cast(@meta::pure::graphFetch::RootGraphFetchTree<Any>)->toOne()->meta::pure::graphFetch::ensureConstraintsRequirements()->ensureEqualityKeyRequirements())),
                           | 
                       if($fe.func == meta::pure::graphFetch::execution::graphFetchUnexpanded_T_MANY__RootGraphFetchTree_1__T_MANY_,
                           | ^$state(checked = false, graphContext = ^GraphFetchContext(graphFetchTree = getFunctionParameterValue($fe, $state.inScopeVars, 1)->cast(@meta::pure::graphFetch::RootGraphFetchTree<Any>)->toOne())),

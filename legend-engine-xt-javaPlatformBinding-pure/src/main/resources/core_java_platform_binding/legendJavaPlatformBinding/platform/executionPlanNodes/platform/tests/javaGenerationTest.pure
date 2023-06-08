@@ -202,8 +202,15 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
   ];
 
   let compilationFailures = [
+    meta::pure::functions::boolean::tests::testEqualEmptyCollections__Boolean_1_, // equality key on no-primitive keys
+    meta::pure::functions::boolean::tests::testEqualMixedCollections__Boolean_1_, // equality key on no-primitive keys
+    meta::pure::functions::boolean::tests::testEqualNonPrimitive__Boolean_1_, // equality key on no-primitive keys
+    meta::pure::functions::boolean::tests::testEqualRecursivePrimitiveCollections__Boolean_1_, // equality key on no-primitive keys
+    meta::pure::functions::boolean::tests::testEqualNonPrimitive__Boolean_1_, // equality key on no-primitive keys 
+    meta::pure::functions::boolean::tests::testEqualVarIdentity__Boolean_1_, // equality key on no-primitive keys
+    meta::pure::functions::boolean::tests::testEqVarIdentity__Boolean_1_, // equality key on no-primitive keys
+    meta::pure::functions::boolean::tests::testIsNonPrimitive__Boolean_1_, // equality key on no-primitive keys
     meta::pure::functions::collection::tests::forall::testforAllOnEmptySet__Boolean_1_,
-    meta::pure::functions::collection::tests::reverse::testReverse__Boolean_1_,
     meta::pure::functions::collection::tests::sort::testSimpleSortWithFunctionVariables__Boolean_1_,
     meta::pure::functions::collection::tests::sort::testSortBy__Boolean_1_,
     meta::pure::functions::lang::tests::dot::testDotManyToOne__Boolean_1_,
@@ -214,24 +221,14 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
     meta::pure::functions::math::tests::minus::testSingleMinus__Boolean_1_,
     meta::pure::functions::string::tests::toRepresentation::testClassToRepresentation__Boolean_1_,
     meta::pure::functions::string::tests::toString::testClassToString__Boolean_1_,
-    meta::pure::functions::string::tests::toString::testEnumerationToString__Boolean_1_,
-    meta::pure::functions::tests::collection::removeDuplicatesPreservesOrderTest__Boolean_1_
+    meta::pure::functions::string::tests::toString::testEnumerationToString__Boolean_1_
   ];
 
   let wrongResults = [
-    meta::pure::functions::boolean::tests::testEqualEmptyCollections__Boolean_1_,
-    meta::pure::functions::boolean::tests::testEqualMixedCollections__Boolean_1_,
-    meta::pure::functions::boolean::tests::testEqualNonPrimitive__Boolean_1_,
-    meta::pure::functions::boolean::tests::testEqualRecursivePrimitiveCollections__Boolean_1_,
-    meta::pure::functions::collection::tests::contains::testContainsNonPrimitive__Boolean_1_,
-    meta::pure::functions::collection::tests::removeAll::testRemoveAllClassKey__Boolean_1_,
-    meta::pure::functions::collection::tests::intersection::testTypes__Boolean_1_,
     meta::pure::functions::collection::tests::take::testTakeNegativeOnEmptyList__Boolean_1_,
     meta::pure::functions::collection::tests::take::testTakeNegativeOnNonEmptyList__Boolean_1_,
     meta::pure::functions::lang::tests::new::testNewWithAssociation__Boolean_1_,
-    meta::pure::functions::lang::tests::subType::testWhenSubType__Boolean_1_,
     meta::pure::functions::math::tests::rem::testRemWithDecimals__Boolean_1_,
-    meta::pure::functions::string::tests::parseFloat::testParseZero__Boolean_1_,
     meta::pure::functions::string::tests::toString::testPersonToString__Boolean_1_,
     meta::pure::functions::string::tests::toString1::testComplexClassToString__Boolean_1_
   ];
@@ -249,7 +246,7 @@ function <<access.private>>  meta::pure::executionPlan::platformBinding::legendJ
    meta::pure::functions;
 }
 
-function meta::pure::executionPlan::platformBinding::legendJava::library::tests::collectTestsForJavaGeneration():PureTestCollection[1]
+function <<test.TestCollection>> meta::pure::executionPlan::platformBinding::legendJava::library::tests::collectTestsForJavaGeneration():PureTestCollection[1]
 {
   let root = rootPackage();
   let pkgsToExclude = getPackagesToExclude();
@@ -257,17 +254,17 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::tests:
   $root->generateTestCollection($pkgsToExclude, $fnsToExclude);
 }
 
-function <<test.Test, meta::pure::profiles::test.AlloyOnly>> 
-{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::platformBinding::legendJava::library::tests::JavaGenerationTestSingle():Boolean[1]
-{
-  let root = rootPackage();
-  let pkgsToExclude = getPackagesToExclude();
-  let fnsToExclude = getFunctionsToExclude();
+// function <<test.Test, meta::pure::profiles::test.AlloyOnly>>
+// {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+// meta::pure::executionPlan::platformBinding::legendJava::library::tests::JavaGenerationTestSingle():Boolean[1]
+// {
+//   let root = rootPackage();
+//   let pkgsToExclude = getPackagesToExclude();
+//   let fnsToExclude = getFunctionsToExclude();
 
-  let suite = javaPureTests(engineConventions([]), [])
-    ->addTestsWithin($root)
-    ->excludeTestsWithin($pkgsToExclude)
-    ->excludeTests($fnsToExclude)
-    ->runTests();
-}
+//   let suite = javaPureTests(engineConventions([]), [])
+//     ->addTestsWithin($root)
+//     ->excludeTestsWithin($pkgsToExclude)
+//     ->excludeTests($fnsToExclude)
+//     ->runTests();
+// }

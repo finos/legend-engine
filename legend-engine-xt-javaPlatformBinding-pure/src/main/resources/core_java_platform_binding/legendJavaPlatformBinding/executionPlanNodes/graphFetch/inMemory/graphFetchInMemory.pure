@@ -308,7 +308,8 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
    let parentPath       = $path->substring(0, $path->lastIndexOf('.'));
    let parentNodeInfo   = $context->nodeInfosForPath($parentPath)->toOne();
    let parentIFace      = $parentNodeInfo.returnType->match([c:CheckedJavaType[1]|$c.checkedOf, s:SimpleJavaType[1]|$s])->cast(@SimpleJavaType).javaType->cast(@meta::external::language::java::metamodel::Class);
-   let parentGraphImpl  = graphImplClass($node.parentIndex->toOne(), $parentIFace, $parentPath, $context);
+   let parentPureType   = $parentNodeInfo.returnType->match([c:CheckedJavaType[1]|$c.checkedOf, s:SimpleJavaType[1]|$s])->cast(@SimpleJavaType).pureType->cast(@meta::pure::metamodel::type::Class<Any>);
+   let parentGraphImpl  = graphImplClass($node.parentIndex->toOne(), $parentIFace, $parentPath, $parentPureType, $context);
    
    let executeClassWithImports = 
       $context.conventions->planNodeClass('public', $path, 'Execute')
@@ -472,7 +473,8 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
    let parentPath              = $path->substring(0, $path->substring(0, $path->lastIndexOf('.'))->lastIndexOf('.')) + localGraphFetchNodePathPrefix();
    let parentNodeInfo          = $context->nodeInfosForPath($parentPath)->toOne();
    let parentIFace             = $parentNodeInfo.returnType->match([c:CheckedJavaType[1]|$c.checkedOf, s:SimpleJavaType[1]|$s])->cast(@SimpleJavaType).javaType->cast(@meta::external::language::java::metamodel::Class);
-   let parentGraphImpl         = graphImplClass($node.parentIndex->toOne(), $parentIFace, $parentPath, $context);
+   let parentPureType          = $parentNodeInfo.returnType->match([c:CheckedJavaType[1]|$c.checkedOf, s:SimpleJavaType[1]|$s])->cast(@SimpleJavaType).pureType->cast(@meta::pure::metamodel::type::Class<Any>);
+   let parentGraphImpl         = graphImplClass($node.parentIndex->toOne(), $parentIFace, $parentPath, $parentPureType, $context);      
 
    let executeClass            = $baseProject->getClass($context.conventions->planNodeClass('public', $path, 'Execute'))->toOne();
    let executeClassWithImports = $executeClass->imports($parentGraphImpl)

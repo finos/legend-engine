@@ -66,7 +66,7 @@ function meta::external::store::service::executionPlan::generation::planRootGrap
    let connection  = $runtime->connectionByElement($store);
    
    let sourceTree         = calculateSourceTree($rootTree, $mapping, $extensions);
-   let sourceTreeExtended = if($enableConstraints, | $sourceTree->ensureConstraintsRequirements(), | $sourceTree);
+   let sourceTreeExtended = if($enableConstraints, | $sourceTree->ensureConstraintsRequirements(), | $sourceTree)->ensureEqualityKeyRequirements();
    
    let serviceSetImpl  =  $rootTree.sets->toOne()->cast(@RootServiceInstanceSetImplementation);
    
@@ -132,7 +132,7 @@ function meta::external::store::service::executionPlan::generation::planCrossSto
    let connection            = $runtime->connectionByElement($store);
 
    let sourceTree            = calculateSourceTree($updatedRootTree, $mapping, $extensions);
-   let sourceTreeExtended    = if($enableConstraints, | $sourceTree->ensureConstraintsRequirements(), | $sourceTree);
+   let sourceTreeExtended    = if($enableConstraints, | $sourceTree->ensureConstraintsRequirements(), | $sourceTree)->ensureEqualityKeyRequirements();
 
    let xStorePropInScope     = $xStorePropertyMapping->getPopulatedXStorePropertiesInScope($rootTree->typeFromGraphFetchTree()->cast(@Class<Any>));
    assert($xStorePropInScope->forAll(prop | $prop.multiplicity->hasToOneUpperBound()), 'All properties in XStore relationship should have 1 as multiplicty upper bound for service store.');

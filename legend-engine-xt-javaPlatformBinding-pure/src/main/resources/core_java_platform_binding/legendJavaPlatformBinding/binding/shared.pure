@@ -187,6 +187,7 @@ function meta::external::shared::format::executionPlan::platformBinding::legendJ
 
    let baseClass = $conventions->dataClass($class, $path)->addModifiers('public')
                                ->implements($conventions->className($class))
+                               ->maybeAddEqualsHashCodeForClass($class, $conventions)
                                ->addIExternalData($class, $context);
    
    let properties = $context.typeInfos->allProperties($class)->map(p|

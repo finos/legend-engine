@@ -302,8 +302,7 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planRootG
    let sourceTreeExtended  = if($includeFilter,
                                     | meta::pure::graphFetch::ensureFunctionRequirementsFromLambda($sourceTreeWithConstraint->cast(@GraphFetchTree), $sourceTreeWithConstraint.class, $possibleFilter.parametersValues->at(1)->cast(@FunctionRoutedValueSpecification).originalFunction,[], true),
                                     |$sourceTreeWithConstraint
-                                  )->cast(@RootGraphFetchTree<Any>);  
-
+                                  )->cast(@RootGraphFetchTree<Any>)->ensureEqualityKeyRequirements();                                  
   
    let chainConnectionNodeGeneration = {mcc: ModelChainConnection[1] |
       $fe->planModelChainConnectionGraphFetchExecution($mcc, $sourceTreeExtended, $mapping, $runtime, $exeCtx, $ext, $sq.inScopeVars, [], $enableConstraints, $checked, $extensions, $debug)
@@ -403,7 +402,7 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planCross
    let updatedConnection = $connection->concatenate($chainConnection)->first()->toOne();
 
    let sourceTree         = calculateSourceTree($updatedRootTree, $mapping, $extensions);
-   let sourceTreeExtended = if($enableConstraints, | $sourceTree->ensureConstraintsRequirements(), | $sourceTree);
+   let sourceTreeExtended = if($enableConstraints, | $sourceTree->ensureConstraintsRequirements(), | $sourceTree)->ensureEqualityKeyRequirements();
 
    let modelQueryConnectionNodeGeneration = {mc: ModelQueryConnection[1] | 
       planModelQueryConnectionGraphFetchExecution($mc, $store, $sourceTreeExtended, $exeCtx, $inScopeVars, $enableConstraints, $checked, $extensions, $debug)

@@ -221,7 +221,9 @@ function meta::pure::graphFetch::routing::routeRootGraphFetchTree(root: RootGrap
    let extended = if($exeCtx.enableConstraints->isEmpty() || $exeCtx.enableConstraints->toOne(),
                      | $root->ensureConstraintsRequirementsForMappedProperties($mapping, $extensions),
                      | $root
-                  );
+                  )->ensureEqualityKeyRequirements();
+
+                     
 
    let routedTree = ^RoutedRootGraphFetchTree<Any>
                      (
