@@ -49,6 +49,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_met
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_AuditingDateTime;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_BatchId;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_BitemporalMilestoning;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_FailOnDuplicates;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_Milestoning;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_NoMilestoning;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_ProcessingDimension;
@@ -568,7 +569,10 @@ public class TestPersistenceRelationalCompilationFromGrammar extends TestCompila
                 "        {\n" +
                 "          dateTimeName: audit_timestamp;\n" +
                 "        }\n" +
-                "        updatesHandling: AppendOnly;\n" +
+                "        updatesHandling: AppendOnly\n" +
+                "        {\n" +
+                "          appendStrategy: FailOnDuplicates;\n" +
+                "        }\n" +
                 "      }\n" +
                 "    }#\n" +
                 "  ];\n" +
@@ -671,6 +675,8 @@ public class TestPersistenceRelationalCompilationFromGrammar extends TestCompila
         // updates handling
         Root_meta_pure_persistence_relational_metamodel_UpdatesHandling updatesHandling = noMilestoning._updatesHandling();
         assertTrue(updatesHandling instanceof Root_meta_pure_persistence_relational_metamodel_AppendOnly);
+        Root_meta_pure_persistence_relational_metamodel_AppendOnly appendOnly = (Root_meta_pure_persistence_relational_metamodel_AppendOnly) updatesHandling;
+        assertTrue(appendOnly._appendStrategy() instanceof Root_meta_pure_persistence_relational_metamodel_FailOnDuplicates);
 
         // datasetKeys
         assertArrayEquals(Lists.mutable.of("foo", "bar").toArray(), tdsServiceOutput._keys().toArray());

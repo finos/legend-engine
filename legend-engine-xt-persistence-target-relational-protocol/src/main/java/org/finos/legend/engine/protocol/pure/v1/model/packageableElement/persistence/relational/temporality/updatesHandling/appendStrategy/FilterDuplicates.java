@@ -12,17 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.appendStrategy;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.appendStrategy.AppendStrategy;
-
-public class AppendOnly extends UpdatesHandling
+public class FilterDuplicates extends AppendStrategy
 {
-    public AppendStrategy appendStrategy;
-
     @Override
-    public <T> T accept(UpdatesHandlingVisitor<T> visitor)
+    public <T> T accept(AppendStrategyVisitor<T> visitor)
     {
-        return visitor.visitAppendOnly(this);
+        return visitor.visitFilterDuplicates(this);
     }
 }

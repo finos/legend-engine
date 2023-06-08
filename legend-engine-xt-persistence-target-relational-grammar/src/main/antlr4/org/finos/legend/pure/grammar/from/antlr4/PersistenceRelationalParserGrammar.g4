@@ -18,6 +18,7 @@ identifier:                                 VALID_STRING | STRING
                                             | DATE_TIME_START | DATE_TIME_END | SOURCE_DERIVED_SOURCE_FIELDS
                                             | SOURCE_FIELDS_START | SOURCE_FIELDS_START_AND_END | SOURCE_FIELD_START | SOURCE_FIELD_END
                                             | AUDIT | AUDIT_DATE_TIME_NAME | UPDATES_HANDLING | UPDATES_HANDLING_APPEND_ONLY | UPDATES_HANDLING_OVERWRITE
+                                            | APPEND_STRATEGY | APPEND_STRATEGY_ALLOW_DUPLICATES | APPEND_STRATEGY_FAIL_ON_DUPLICATES | APPEND_STRATEGY_FILTER_DUPLICATES
 ;
 
 // -------------------------------------- RELATIONAL PERSISTENCE TARGET --------------------------------------
@@ -87,12 +88,36 @@ updatesHandling:                            UPDATES_HANDLING COLON
                                                 )
 ;
 updatesHandlingAppendOnly:                  UPDATES_HANDLING_APPEND_ONLY
+                                                BRACE_OPEN
+                                                    (appendStrategy)*
+                                                BRACE_CLOSE
+;
+updatesHandlingOverwrite:                   UPDATES_HANDLING_OVERWRITE
                                                 (
                                                     SEMI_COLON
                                                     | (BRACE_OPEN BRACE_CLOSE)
                                                 )
 ;
-updatesHandlingOverwrite:                   UPDATES_HANDLING_OVERWRITE
+appendStrategy:                             APPEND_STRATEGY COLON
+                                                (
+                                                    appendStrategyAllowDuplicates
+                                                    | appendStrategyFailOnDuplicates
+                                                    | appendStrategyFilterDuplicates
+                                                )
+;
+appendStrategyAllowDuplicates:              APPEND_STRATEGY_ALLOW_DUPLICATES
+                                                (
+                                                    SEMI_COLON
+                                                    | (BRACE_OPEN BRACE_CLOSE)
+                                                )
+;
+appendStrategyFailOnDuplicates:             APPEND_STRATEGY_FAIL_ON_DUPLICATES
+                                                (
+                                                    SEMI_COLON
+                                                    | (BRACE_OPEN BRACE_CLOSE)
+                                                )
+;
+appendStrategyFilterDuplicates:             APPEND_STRATEGY_FILTER_DUPLICATES
                                                 (
                                                     SEMI_COLON
                                                     | (BRACE_OPEN BRACE_CLOSE)

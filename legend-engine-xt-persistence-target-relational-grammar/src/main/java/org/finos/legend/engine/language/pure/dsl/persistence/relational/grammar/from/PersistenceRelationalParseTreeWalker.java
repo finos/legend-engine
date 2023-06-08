@@ -38,6 +38,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.AppendOnly;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.Overwrite;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.UpdatesHandling;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.appendStrategy.AllowDuplicates;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.appendStrategy.AppendStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.appendStrategy.FailOnDuplicates;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.appendStrategy.FilterDuplicates;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.sink.PersistenceTarget;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.grammar.from.antlr4.PersistenceRelationalParserGrammar;
@@ -174,7 +178,51 @@ public class PersistenceRelationalParseTreeWalker
     {
         AppendOnly appendOnly = new AppendOnly();
         appendOnly.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // append strategy
+        PersistenceRelationalParserGrammar.AppendStrategyContext appendStrategyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.appendStrategy(), "appendStrategy", appendOnly.sourceInformation);
+        appendOnly.appendStrategy = visitAppendStrategy(appendStrategyContext);
+
         return appendOnly;
+    }
+
+    private AppendStrategy visitAppendStrategy(PersistenceRelationalParserGrammar.AppendStrategyContext ctx)
+    {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        if (ctx.appendStrategyAllowDuplicates() != null)
+        {
+            return visitAllowDuplicates(ctx.appendStrategyAllowDuplicates());
+        }
+        if (ctx.appendStrategyFailOnDuplicates() != null)
+        {
+            return visitFailOnDuplicates(ctx.appendStrategyFailOnDuplicates());
+        }
+        if (ctx.appendStrategyFilterDuplicates() != null)
+        {
+            return visitFilterDuplicates(ctx.appendStrategyFilterDuplicates());
+        }
+        throw new EngineException("Unrecognized append strategy", sourceInformation, EngineErrorType.PARSER);
+    }
+
+    private AllowDuplicates visitAllowDuplicates(PersistenceRelationalParserGrammar.AppendStrategyAllowDuplicatesContext ctx)
+    {
+        AllowDuplicates allowDuplicates = new AllowDuplicates();
+        allowDuplicates.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        return allowDuplicates;
+    }
+
+    private FailOnDuplicates visitFailOnDuplicates(PersistenceRelationalParserGrammar.AppendStrategyFailOnDuplicatesContext ctx)
+    {
+        FailOnDuplicates failOnDuplicates = new FailOnDuplicates();
+        failOnDuplicates.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        return failOnDuplicates;
+    }
+
+    private FilterDuplicates visitFilterDuplicates(PersistenceRelationalParserGrammar.AppendStrategyFilterDuplicatesContext ctx)
+    {
+        FilterDuplicates filterDuplicates = new FilterDuplicates();
+        filterDuplicates.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        return filterDuplicates;
     }
 
     private Temporality visitUnitemporal(PersistenceRelationalParserGrammar.UnitemporalContext ctx)

@@ -507,7 +507,7 @@ public class HelperPersistenceComposer
         @Override
         public String visitDeleteTargetDataset(DeleteTargetDataset val)
         {
-            return getTabString(indentLevel) + "emptyDatasetHandling: DeleteTargetData;";
+            return getTabString(indentLevel) + "emptyDatasetHandling: DeleteTargetData;\n";
         }
     }
 

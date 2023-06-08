@@ -41,6 +41,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.Overwrite;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.UpdatesHandling;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.UpdatesHandlingVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.appendStrategy.AllowDuplicates;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.appendStrategy.AppendStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.appendStrategy.AppendStrategyVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.appendStrategy.FailOnDuplicates;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.appendStrategy.FilterDuplicates;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
 
@@ -171,13 +176,49 @@ public class HelperPersistenceRelationalComposer
         @Override
         public String visitAppendOnly(AppendOnly val)
         {
-            return "AppendOnly;\n";
+            return "AppendOnly\n" +
+                getTabString(indentLevel) + "{\n" +
+                renderAppendStrategy(val.appendStrategy, indentLevel + 1) +
+                getTabString(indentLevel) + "}\n";
         }
 
         @Override
         public String visitOverwrite(Overwrite val)
         {
             return "Overwrite;\n";
+        }
+
+        public static String renderAppendStrategy(AppendStrategy appendStrategy, int indentLevel)
+        {
+            return getTabString(indentLevel) + "appendStrategy: " + appendStrategy.accept(new AppendStrategyComposer(indentLevel));
+        }
+    }
+
+    private static class AppendStrategyComposer implements AppendStrategyVisitor<String>
+    {
+        private final int indentLevel;
+
+        private AppendStrategyComposer(int indentLevel)
+        {
+            this.indentLevel = indentLevel;
+        }
+
+        @Override
+        public String visitAllowDuplicates(AllowDuplicates val)
+        {
+            return "AllowDuplicates;\n";
+        }
+
+        @Override
+        public String visitFailOnDuplicates(FailOnDuplicates val)
+        {
+            return "FailOnDuplicates;\n";
+        }
+
+        @Override
+        public String visitFilterDuplicates(FilterDuplicates val)
+        {
+            return "FilterDuplicates;\n";
         }
     }
 

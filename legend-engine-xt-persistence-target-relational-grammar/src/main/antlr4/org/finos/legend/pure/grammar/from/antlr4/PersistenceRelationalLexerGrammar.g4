@@ -32,6 +32,12 @@ UPDATES_HANDLING:                           'updatesHandling';
 UPDATES_HANDLING_APPEND_ONLY:               'AppendOnly';
 UPDATES_HANDLING_OVERWRITE:                 'Overwrite';
 
+// APPEND STRATEGY
+APPEND_STRATEGY:                            'appendStrategy';
+APPEND_STRATEGY_ALLOW_DUPLICATES:           'AllowDuplicates';
+APPEND_STRATEGY_FAIL_ON_DUPLICATES:         'FailOnDuplicates';
+APPEND_STRATEGY_FILTER_DUPLICATES:          'FilterDuplicates';
+
 // PROCESSING DIMENSION
 PROCESSING_BATCH_ID:                        'BatchId';
 PROCESSING_BATCH_ID_AND_DATE_TIME:          'BatchIdAndDateTime';

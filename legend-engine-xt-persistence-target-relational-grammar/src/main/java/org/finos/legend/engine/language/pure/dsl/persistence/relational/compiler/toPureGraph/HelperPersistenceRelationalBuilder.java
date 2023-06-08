@@ -43,14 +43,22 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.AppendOnly;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.Overwrite;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.UpdatesHandlingVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.appendStrategy.AllowDuplicates;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.appendStrategy.AppendStrategyVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.appendStrategy.FailOnDuplicates;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.appendStrategy.FilterDuplicates;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_target_PersistenceTarget;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_AllowDuplicates_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_AppendOnly_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_AppendStrategy;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_Auditing;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_AuditingDateTime_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_BatchIdAndTime_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_BatchId_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_BitemporalMilestoning_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_FailOnDuplicates_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_FilterDuplicates_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_Milestoning;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_NoAuditing_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_relational_metamodel_NoMilestoning;
@@ -220,13 +228,42 @@ public class HelperPersistenceRelationalBuilder
         @Override
         public Root_meta_pure_persistence_relational_metamodel_UpdatesHandling visitAppendOnly(AppendOnly val)
         {
-            return new Root_meta_pure_persistence_relational_metamodel_AppendOnly_Impl("", null, context.pureModel.getClass("meta::pure::persistence::relational::metamodel::AppendOnly"));
+            return new Root_meta_pure_persistence_relational_metamodel_AppendOnly_Impl("", null, context.pureModel.getClass("meta::pure::persistence::relational::metamodel::AppendOnly"))
+                ._appendStrategy(val.appendStrategy.accept(new AppendStrategyBuilder(context)));
         }
 
         @Override
         public Root_meta_pure_persistence_relational_metamodel_UpdatesHandling visitOverwrite(Overwrite val)
         {
             return new Root_meta_pure_persistence_relational_metamodel_Overwrite_Impl("", null, context.pureModel.getClass("meta::pure::persistence::relational::metamodel::Overwrite"));
+        }
+    }
+
+    private static class AppendStrategyBuilder implements AppendStrategyVisitor<Root_meta_pure_persistence_relational_metamodel_AppendStrategy>
+    {
+        private final CompileContext context;
+
+        private AppendStrategyBuilder(CompileContext context)
+        {
+            this.context = context;
+        }
+
+        @Override
+        public Root_meta_pure_persistence_relational_metamodel_AppendStrategy visitAllowDuplicates(AllowDuplicates val)
+        {
+            return new Root_meta_pure_persistence_relational_metamodel_AllowDuplicates_Impl("", null, context.pureModel.getClass("meta::pure::persistence::relational::metamodel::AllowDuplicates"));
+        }
+
+        @Override
+        public Root_meta_pure_persistence_relational_metamodel_AppendStrategy visitFailOnDuplicates(FailOnDuplicates val)
+        {
+            return new Root_meta_pure_persistence_relational_metamodel_FailOnDuplicates_Impl("", null, context.pureModel.getClass("meta::pure::persistence::relational::metamodel::FailOnDuplicates"));
+        }
+
+        @Override
+        public Root_meta_pure_persistence_relational_metamodel_AppendStrategy visitFilterDuplicates(FilterDuplicates val)
+        {
+            return new Root_meta_pure_persistence_relational_metamodel_FilterDuplicates_Impl("", null, context.pureModel.getClass("meta::pure::persistence::relational::metamodel::FilterDuplicates"));
         }
     }
 

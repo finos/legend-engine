@@ -57,7 +57,10 @@ public class TestPersistenceRelationalGrammarRoundTrip extends TestGrammarRoundt
             "        {\n" +
             "          dateTimeName: audit_timestamp;\n" +
             "        }\n" +
-            "        updatesHandling: AppendOnly;\n" +
+            "        updatesHandling: AppendOnly\n" +
+            "        {\n" +
+            "          appendStrategy: AllowDuplicates;\n" +
+            "        }\n" +
             "      }\n" +
             "    }#,\n" +
             "    #/test::example::MyType/prop#\n" +

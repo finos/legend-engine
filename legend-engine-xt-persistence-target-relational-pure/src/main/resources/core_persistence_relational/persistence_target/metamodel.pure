@@ -103,11 +103,44 @@ Class
 {doc.doc = ''}
 meta::pure::persistence::relational::metamodel::AppendOnly extends UpdatesHandling
 {
+  appendStrategy: AppendStrategy[1];
 }
 
 Class
 {doc.doc = ''}
 meta::pure::persistence::relational::metamodel::Overwrite extends UpdatesHandling
+{
+}
+
+/**********
+ * append strategy
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::AppendStrategy
+{
+}
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::AllowDuplicates extends AppendStrategy
+{
+}
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::FailOnDuplicates extends AppendStrategy
+{
+}
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::FilterDuplicates extends AppendStrategy
 {
 }
 
