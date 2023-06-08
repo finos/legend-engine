@@ -27,9 +27,8 @@ import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
 import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresStatement;
 import org.finos.legend.engine.postgres.handler.SessionHandler;
-import org.finos.legend.engine.postgres.handler.empty.EmptySessionHandler;
-import org.finos.legend.engine.protocol.sql.metamodel.QualifiedName;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,7 +39,7 @@ import java.util.concurrent.CompletableFuture;
 public class Session implements AutoCloseable
 {
 
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(Session.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Session.class);
     private final Map<String, Prepared> parsed = new HashMap<>();
     private final Map<String, Portal> portals = new HashMap<>();
     private final ExecutionDispatcher dispatcher;
@@ -73,11 +72,21 @@ public class Session implements AutoCloseable
         p.sql = query;
         p.paramType = paramTypes.toArray(new Integer[]{});
 
-        if (query != null && query.length() > 0)
+        if (query != null)
         {
             try
             {
-                SessionHandler sessionHandler = getSessionHandler(query);
+                SessionHandler sessionHandler;
+                if (query.isEmpty())
+                {
+                    // Parser can't handle empty string, but postgres requires support for it
+                    // Using an empty session handler for empty queries
+                    sessionHandler = ExecutionDispatcher.getEmptySessionHandler();
+                }
+                else
+                {
+                    sessionHandler = getSessionHandler(query);
+                }
                 p.prep = sessionHandler.prepareStatement(query);
             }
             catch (Exception e)
