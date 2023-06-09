@@ -74,7 +74,6 @@ public class LegendResultSet implements PostgresResultSet
             case "StrictDate":
                 LocalDate localDate = ISO_LOCAL_DATE.parse(value, LocalDate::from);
                 long toEpochMilli = localDate.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli();
-                System.out.println("actual : " + toEpochMilli);
                 return toEpochMilli;
             case "Date":
             case "DateTime":

@@ -185,6 +185,33 @@ public class PostgresServerTest
         }
     }
 
+    @Test
+    public void testConnectionIsValid() throws SQLException
+    {
+        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                "dummy", "dummy")
+        )
+        {
+            // This triggers an empty query and expects an empty response
+            boolean isValid = connection.isValid(1);
+            Assert.assertTrue(isValid);
+        }
+    }
+
+    @Test
+    public void testEmptyQuery() throws SQLException
+    {
+        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                "dummy", "dummy");
+             PreparedStatement statement = connection.prepareStatement("")
+        )
+        {
+            int rowCount = statement.executeUpdate();
+            Assert.assertEquals(0, rowCount);
+        }
+    }
+
+
     @AfterClass
     public static void tearDown()
     {
