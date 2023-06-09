@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.postgres;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import java.sql.Connection;
 import java.sql.Date;
@@ -25,27 +27,18 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import java.util.TimeZone;
-import org.apache.http.client.CookieStore;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.finos.legend.engine.postgres.auth.AnonymousIdentityProvider;
 import org.finos.legend.engine.postgres.auth.NoPasswordAuthenticationMethod;
 import org.finos.legend.engine.postgres.config.ServerConfig;
+import static org.finos.legend.engine.postgres.handler.legend.LegendResultSet.TIMESTAMP_FORMATTER;
 import org.finos.legend.engine.postgres.handler.legend.LegendSessionFactory;
 import org.finos.legend.engine.postgres.handler.legend.LegendTdsClient;
-import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
-import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
-import static org.finos.legend.engine.postgres.handler.legend.LegendResultSet.TIMESTAMP_FORMATTER;
 
 public class PostgresServerTypeMappingTest
 {
@@ -57,8 +50,6 @@ public class PostgresServerTypeMappingTest
     @BeforeClass
     public static void setUpClass() throws Exception
     {
-        CookieStore cookieStore = new BasicCookieStore();
-        CloseableHttpClient httpClient = (CloseableHttpClient) HttpClientBuilder.getHttpClient(cookieStore);
         LegendTdsClient client = new LegendTdsClient("http", "localhost", "" + wireMockRule.port());
         LegendSessionFactory legendSessionFactory = new LegendSessionFactory(client);
         ServerConfig serverConfig = new ServerConfig();
@@ -74,10 +65,30 @@ public class PostgresServerTypeMappingTest
 
 
     @Test
+    public void testString() throws Exception
+    {
+        validate("String", "\"foo\"", "varchar", "foo");
+        validate("String", "\"foo\"", "varchar", "foo");
+        validate("String", "null", "varchar", null);
+        validate("String", "\"\"", "varchar", "");
+    }
+
+    @Test
+    public void testEnum() throws Exception
+    {
+        validate("demo::employeeType", "\"foo\"", "varchar", "foo");
+        validate("demo::employeeType", "\"foo\"", "varchar", "foo");
+        validate("demo::employeeType", "null", "varchar", null);
+        validate("demo::employeeType", "\"\"", "varchar", null);
+    }
+
+    @Test
     public void testBoolean() throws Exception
     {
         validate("Boolean", "true", "bool", Boolean.TRUE);
         validate("Boolean", "false", "bool", Boolean.FALSE);
+        validate("Boolean", "null", "bool", null);
+        validate("Boolean", "\"\"", "bool", null);
     }
 
     @Test
@@ -88,6 +99,8 @@ public class PostgresServerTypeMappingTest
         Timestamp expected = new Timestamp(temporalAccessor.toEpochMilli());
 
         validate("DateTime", "\"" + timeStamp + "\"", "timestamp", expected);
+        validate("DateTime", "null", "timestamp", null);
+        validate("DateTime", "\"\"", "timestamp", null);
     }
 
     @Test
@@ -120,6 +133,8 @@ public class PostgresServerTypeMappingTest
         Date expected = new Date(toEpochDay);
 
         validate("StrictDate", "\"" + date + "\"", "date", expected);
+        validate("StrictDate", "null", "date", null);
+        validate("StrictDate", "\"\"", "date", null);
     }
 
 
@@ -127,18 +142,22 @@ public class PostgresServerTypeMappingTest
     public void testFloat() throws Exception
     {
         validate("Float", "5.5", "float4", 5.5F);
+        validate("Float", "null", "float4", null);
+        validate("Float", "\"\"", "float4", null);
     }
 
     @Test
     public void testInteger() throws Exception
     {
         validate("Integer", "5", "int4", 5);
+        validate("Integer", "null", "int4", null);
+        validate("Integer", "\"\"", "int4", null);
     }
 
     @Test
     public void testNumberAsInteger() throws Exception
     {
-        validate("Number", "5", "float8", 5.0D);
+        validate("Integer", "5", "int4", 5);
     }
 
     @Test
