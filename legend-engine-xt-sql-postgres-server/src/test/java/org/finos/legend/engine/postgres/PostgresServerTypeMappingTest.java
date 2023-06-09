@@ -50,7 +50,7 @@ public class PostgresServerTypeMappingTest
     @BeforeClass
     public static void setUpClass() throws Exception
     {
-        LegendTdsClient client = new LegendTdsClient("http", "localhost", "" + wireMockRule.port());
+        LegendTdsClient client = new LegendTdsClient("http", "localhost", String.valueOf(wireMockRule.port()));
         LegendSessionFactory legendSessionFactory = new LegendSessionFactory(client);
         ServerConfig serverConfig = new ServerConfig();
         serverConfig.setPort(0);
@@ -157,7 +157,7 @@ public class PostgresServerTypeMappingTest
     @Test
     public void testNumberAsInteger() throws Exception
     {
-        validate("Integer", "5", "int4", 5);
+        validate("Number", "5", "float8", 5.0D);
     }
 
     @Test
