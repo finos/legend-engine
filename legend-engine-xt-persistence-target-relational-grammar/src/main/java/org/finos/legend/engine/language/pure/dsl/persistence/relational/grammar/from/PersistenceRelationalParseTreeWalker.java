@@ -74,7 +74,7 @@ public class PersistenceRelationalParseTreeWalker
         PersistenceRelationalParserGrammar.DatabaseContext databaseContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.database(), "database", persistenceTarget.sourceInformation);
         persistenceTarget.database = visitDatabasePointer(databaseContext, persistenceTarget.sourceInformation);
 
-        // temporality
+        // temporality (optional)
         PersistenceRelationalParserGrammar.TemporalityContext temporalityContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.temporality(), "temporality", persistenceTarget.sourceInformation);
         persistenceTarget.temporality = temporalityContext == null ? new Nontemporal() : visitTemporality(temporalityContext);
 

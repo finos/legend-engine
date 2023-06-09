@@ -197,16 +197,16 @@ public class PersistenceParseTreeWalker
         persistence.serviceOutputTargets = serviceOutputTargetsContext == null ? Collections.emptyList() : ListIterate.collect(serviceOutputTargetsContext.serviceOutputTarget(), this::visitServiceOutputTarget);
 
         //TODO: ledav -- remove once v2 is rolled out | START
-        // persister
+        // persister (optional)
         PersistenceParserGrammar.PersisterContext persisterContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.persister(), "persister", persistence.sourceInformation);
         persistence.persister = persisterContext == null ? null : visitPersister(persisterContext);
         //TODO: ledav -- remove once v2 is rolled out | END
 
-        // notifier
+        // notifier (optional)
         PersistenceParserGrammar.NotifierContext notifierContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.notifier(), "notifier", persistence.sourceInformation);
         persistence.notifier = notifierContext == null ? new Notifier() : visitNotifier(notifierContext);
 
-        // test
+        // test (optional)
         PersistenceParserGrammar.TestsContext persistenceTestsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.tests(), "tests", persistence.sourceInformation);
         persistence.tests = persistenceTestsContext == null ? null : ListIterate.collect(persistenceTestsContext.test(), this::visitPersistenceTest);
 
@@ -515,7 +515,7 @@ public class PersistenceParseTreeWalker
         Snapshot snapshot = new Snapshot();
         snapshot.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
-        // partitioning
+        // partitioning (optional)
         PersistenceParserGrammar.PartitioningContext partitioningContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.partitioning(), "partitioning", snapshot.sourceInformation);
         snapshot.partitioning = partitioningContext == null ? null : visitPartitioning(datasetType, partitioningContext);
 

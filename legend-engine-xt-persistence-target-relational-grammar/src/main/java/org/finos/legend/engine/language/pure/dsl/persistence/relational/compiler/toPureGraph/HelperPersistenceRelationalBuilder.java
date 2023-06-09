@@ -111,7 +111,6 @@ public class HelperPersistenceRelationalBuilder
         throw new EngineException(String.format("Database '%s' is not defined", database), sourceInformation, EngineErrorType.COMPILATION);
     }
 
-    // todo: ??
     public static Column buildColumn(String columnName, SourceInformation sourceInformation, Table table)
     {
         Column column = (Column) table._columns().detect(col -> columnName.equals(col.getName()));
@@ -123,7 +122,6 @@ public class HelperPersistenceRelationalBuilder
         throw new EngineException(String.format("Column '%s' is not defined", columnName), sourceInformation, EngineErrorType.COMPILATION);
     }
 
-    // todo: ??
     public static Table buildTable(String tableName, SourceInformation sourceInformation, Database database)
     {
         SetIterable<Table> tables = getAllTables(database);

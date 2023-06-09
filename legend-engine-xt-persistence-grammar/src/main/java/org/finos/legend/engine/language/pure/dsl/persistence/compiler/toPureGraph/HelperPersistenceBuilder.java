@@ -134,7 +134,9 @@ import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Pers
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_TestData;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_TestData_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_dataset_DatasetType;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_dataset_Delta;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_dataset_Delta_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_dataset_Snapshot;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_dataset_Snapshot_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_dataset_actionindicator_ActionIndicatorFields;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_dataset_actionindicator_DeleteIndicator;
@@ -153,6 +155,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_data
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_dataset_partitioning_FieldBased;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_dataset_partitioning_FieldBasedForGraphFetch_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_dataset_partitioning_FieldBasedForTds_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_dataset_partitioning_NoPartitioning;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_dataset_partitioning_NoPartitioning_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_dataset_partitioning_Partitioning;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_notifier_EmailNotifyee_Impl;
@@ -202,10 +205,12 @@ import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_pers
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_SourceSpecifiesValidFromAndThruDate_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_SourceSpecifiesValidFromDate_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_ValidityDerivation;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_service_GraphFetchServiceOutput;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_service_GraphFetchServiceOutput_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_service_ServiceOutput;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_service_ServiceOutputTarget;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_service_ServiceOutputTarget_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_service_TdsServiceOutput;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_service_TdsServiceOutput_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_target_PersistenceTarget;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_Trigger;
@@ -298,20 +303,32 @@ public class HelperPersistenceBuilder
         @Override
         public Root_meta_pure_persistence_metamodel_service_ServiceOutput visitTdsServiceOutput(TdsServiceOutput val)
         {
-            return new Root_meta_pure_persistence_metamodel_service_TdsServiceOutput_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::service::TdsServiceOutput"))
+            Root_meta_pure_persistence_metamodel_service_TdsServiceOutput tdsServiceOutput = new Root_meta_pure_persistence_metamodel_service_TdsServiceOutput_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::service::TdsServiceOutput"))
                 ._keys(Lists.immutable.ofAll(val.keys))
-                ._datasetType(val.datasetType.accept(new DatasetTypeBuilder(context)))
-                ._deduplication(val.deduplication.accept(new DeduplicationBuilder(context)));
+                ._datasetType(val.datasetType.accept(new DatasetTypeBuilder(context)));
+
+            if (val.deduplication != null)
+            {
+                tdsServiceOutput._deduplication(val.deduplication.accept(new DeduplicationBuilder(context)));
+            }
+
+            return tdsServiceOutput;
         }
 
         @Override
         public Root_meta_pure_persistence_metamodel_service_ServiceOutput visitGraphFetchServiceOutput(GraphFetchServiceOutput val)
         {
-            return new Root_meta_pure_persistence_metamodel_service_GraphFetchServiceOutput_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::service::GraphFetchServiceOutput"))
+            Root_meta_pure_persistence_metamodel_service_GraphFetchServiceOutput graphFetchServiceOutput = new Root_meta_pure_persistence_metamodel_service_GraphFetchServiceOutput_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::service::GraphFetchServiceOutput"))
                 ._path(buildPath(val.path, context))
                 ._keys(ListIterate.collect(val.keys, k -> buildPath(k, context)))
-                ._datasetType(val.datasetType.accept(new DatasetTypeBuilder(context)))
-                ._deduplication(val.deduplication.accept(new DeduplicationBuilder(context)));
+                ._datasetType(val.datasetType.accept(new DatasetTypeBuilder(context)));
+
+            if (val.deduplication != null)
+            {
+                graphFetchServiceOutput._deduplication(val.deduplication.accept(new DeduplicationBuilder(context)));
+            }
+
+            return graphFetchServiceOutput;
         }
     }
 
@@ -327,15 +344,27 @@ public class HelperPersistenceBuilder
         @Override
         public Root_meta_pure_persistence_metamodel_dataset_DatasetType visitSnapshot(Snapshot val)
         {
-            return new Root_meta_pure_persistence_metamodel_dataset_Snapshot_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::dataset::Snapshot"))
-                ._partitioning(val.partitioning.accept(new PartitioningBuilder(context)));
+            Root_meta_pure_persistence_metamodel_dataset_Snapshot snapshot = new Root_meta_pure_persistence_metamodel_dataset_Snapshot_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::dataset::Snapshot"));
+
+            if (val.partitioning != null)
+            {
+                snapshot._partitioning(val.partitioning.accept(new PartitioningBuilder(context)));
+            }
+
+            return snapshot;
         }
 
         @Override
         public Root_meta_pure_persistence_metamodel_dataset_DatasetType visitDelta(Delta val)
         {
-            return new Root_meta_pure_persistence_metamodel_dataset_Delta_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::dataset::Delta"))
-                ._actionIndicator(val.actionIndicator.accept(new ActionIndicatorBuilder(context)));
+            Root_meta_pure_persistence_metamodel_dataset_Delta delta = new Root_meta_pure_persistence_metamodel_dataset_Delta_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::dataset::Delta"));
+
+            if (val.actionIndicator != null)
+            {
+                delta._actionIndicator(val.actionIndicator.accept(new ActionIndicatorBuilder(context)));
+            }
+
+            return delta;
         }
     }
 
@@ -379,8 +408,14 @@ public class HelperPersistenceBuilder
         @Override
         public Root_meta_pure_persistence_metamodel_dataset_partitioning_Partitioning visitNoPartitioning(NoPartitioning val)
         {
-            return new Root_meta_pure_persistence_metamodel_dataset_partitioning_NoPartitioning_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::dataset::partitioning::NoPartitioning"))
-                ._emptyDatasetHandling(val.emptyDatasetHandling.accept(new EmptyDatasetHandlingBuilder(context)));
+            Root_meta_pure_persistence_metamodel_dataset_partitioning_NoPartitioning noPartitioning = new Root_meta_pure_persistence_metamodel_dataset_partitioning_NoPartitioning_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::dataset::partitioning::NoPartitioning"));
+
+            if (val.emptyDatasetHandling != null)
+            {
+                noPartitioning._emptyDatasetHandling(val.emptyDatasetHandling.accept(new EmptyDatasetHandlingBuilder(context)));
+            }
+
+            return noPartitioning;
         }
 
         @Override
