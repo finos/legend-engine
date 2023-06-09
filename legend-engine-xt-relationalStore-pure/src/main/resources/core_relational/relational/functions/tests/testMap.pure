@@ -136,7 +136,7 @@ function <<test.Test>> meta::relational::tests::map::testAdvancedDerivedProperty
    let result = execute(|Person.all()->map(p|$p.fullName(true) + '_ok'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 7);
    assertSameElements(['Allen, Anthony_ok', 'Hill, Oliver_ok', 'Smith, Peter_ok', 'Johnson, John_ok', 'Harris, David_ok', 'Roberts, Fabrice_ok', 'Hill, John_ok'], $result.values);
-   assertEquals('select concat(case when \'true\' then concat("root".LASTNAME, \', \', "root".FIRSTNAME) else concat("root".FIRSTNAME, \' \', "root".LASTNAME) end, \'_ok\') from personTable as "root"', $result->sqlRemoveFormatting());
+   assertEquals('select concat(case when true then concat("root".LASTNAME, \', \', "root".FIRSTNAME) else concat("root".FIRSTNAME, \' \', "root".LASTNAME) end, \'_ok\') from personTable as "root"', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::map::testAdvancedDerivedPropertyThroughAssociation():Boolean[1]
@@ -144,7 +144,7 @@ function <<test.Test>> meta::relational::tests::map::testAdvancedDerivedProperty
    let result = execute(|Firm.all()->map(f|$f.employees->map(e|$e.fullName(true) + '_ok')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 7);
    assertSameElements(['Allen, Anthony_ok', 'Hill, Oliver_ok', 'Smith, Peter_ok', 'Johnson, John_ok', 'Harris, David_ok', 'Roberts, Fabrice_ok', 'Hill, John_ok'], $result.values);
-   assertEquals('select concat(case when \'true\' then concat("persontable_0".LASTNAME, \', \', "persontable_0".FIRSTNAME) else concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) end, \'_ok\') from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)', $result->sqlRemoveFormatting());
+   assertEquals('select concat(case when true then concat("persontable_0".LASTNAME, \', \', "persontable_0".FIRSTNAME) else concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) end, \'_ok\') from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::map::testFilter():Boolean[1]
@@ -229,7 +229,7 @@ function <<test.Test>> meta::relational::tests::map::testSubAggregationMultiLeve
 
    let result2 = execute(|Firm.all().employees.age->average(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result2.values, 1);
-   assertEqWithinTolerance(25.71428571428571, $result2.values->cast(@Float), 0.00000000000001);
+   assertEqWithinTolerance(25.71428571428571, $result2.values->cast(@Float), 0.00000000001);
    assertEquals('select avg(1.0 * "persontable_0".AGE) from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)', $result2->sqlRemoveFormatting());
 
    let result3 = execute(|Firm.all()->map(f|$f.employees.age->average()), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());

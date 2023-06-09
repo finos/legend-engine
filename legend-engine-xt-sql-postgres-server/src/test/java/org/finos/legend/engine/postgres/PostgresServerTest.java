@@ -112,6 +112,42 @@ public class PostgresServerTest
     }
 
     @Test
+    public void testTableFunctionSyntax() throws SQLException
+    {
+        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                "dummy", "dummy");
+             PreparedStatement statement = connection.prepareStatement("SELECT * FROM service('/personService')");
+             ResultSet resultSet = statement.executeQuery()
+        )
+        {
+            int rows = 0;
+            while (resultSet.next())
+            {
+                rows++;
+            }
+            Assert.assertEquals(4, rows);
+        }
+    }
+
+    @Test
+    public void testSelectWithoutTable() throws SQLException
+    {
+        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                "dummy", "dummy");
+             PreparedStatement statement = connection.prepareStatement("SELECT 1");
+             ResultSet resultSet = statement.executeQuery()
+        )
+        {
+            int rows = 0;
+            while (resultSet.next())
+            {
+                rows++;
+            }
+            Assert.assertEquals(1, rows);
+        }
+    }
+
+    @Test
     public void testInformationSchema() throws SQLException
     {
         try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
@@ -146,6 +182,33 @@ public class PostgresServerTest
             Assert.assertEquals(1, rows);
         }
     }
+
+    @Test
+    public void testConnectionIsValid() throws SQLException
+    {
+        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                "dummy", "dummy")
+        )
+        {
+            // This triggers an empty query and expects an empty response
+            boolean isValid = connection.isValid(1);
+            Assert.assertTrue(isValid);
+        }
+    }
+
+    @Test
+    public void testEmptyQuery() throws SQLException
+    {
+        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                "dummy", "dummy");
+             PreparedStatement statement = connection.prepareStatement("")
+        )
+        {
+            int rowCount = statement.executeUpdate();
+            Assert.assertEquals(0, rowCount);
+        }
+    }
+
 
     @AfterClass
     public static void tearDown()

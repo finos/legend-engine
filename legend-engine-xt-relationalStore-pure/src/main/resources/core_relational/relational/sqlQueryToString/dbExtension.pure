@@ -594,7 +594,7 @@ function meta::relational::functions::sqlQueryToString::maybeWrapAsBooleanOperat
 
 function meta::relational::functions::sqlQueryToString::wrapAsBooleanOperation(e:RelationalOperationElement[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-   if ($e->isBooleanOperation($extensions), | $e, | ^DynaFunction(name ='equal', parameters=[$e, ^Literal(value=true)]));
+   if ($e->isBooleanOperation($extensions), | $e, | ^DynaFunction(name ='equal', parameters=[$e, ^Literal(value=true)]););
 }
 
 function meta::relational::functions::sqlQueryToString::isBooleanOperation(relationalElement:RelationalOperationElement[1], extensions:Extension[*]):Boolean[1]
@@ -882,6 +882,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   average,
   averageRank,
   case,
+  castBoolean,
   ceiling,
   coalesce,
   concat,

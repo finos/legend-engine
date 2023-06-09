@@ -17,10 +17,11 @@
 package org.finos.legend.engine.service.post.validation.runner;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
@@ -42,26 +43,25 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.pac4j.core.profile.CommonProfile;
 
-import javax.ws.rs.core.Response;
 import java.security.PrivilegedActionException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.List;
+import javax.ws.rs.core.Response;
 
 import static org.finos.legend.pure.generated.core_legend_service_validation.Root_meta_legend_service_validation_extractAssertMessage_FunctionDefinition_1__String_1_;
 import static org.finos.legend.pure.generated.core_legend_service_validation.Root_meta_legend_service_validation_generateValidationQuery_FunctionDefinition_1__FunctionDefinition_1__FunctionDefinition_1_;
 
 public class LegendServicePostValidationRunner extends ServicePostValidationRunner
 {
-    public LegendServicePostValidationRunner(PureModel pureModel, Root_meta_legend_service_metamodel_Service pureService, List<Variable> rawParams, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, MutableList<PlanTransformer> transformers, String pureVersion, MutableList<CommonProfile> profiles, SerializationFormat format, PlanExecutor planExecutor)
+    public LegendServicePostValidationRunner(PureModel pureModel, Root_meta_legend_service_metamodel_Service pureService, List<Variable> rawParams, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers, String pureVersion, MutableList<CommonProfile> profiles, SerializationFormat format, PlanExecutor planExecutor)
     {
         super(pureModel, pureService, rawParams, extensions, transformers, pureVersion, profiles, format,planExecutor);
     }
 
     protected MutableMap<String, Result> evaluateParameters(RichIterable<?> parameters)
     {
-        List<Result> evaluatedParams = FastList.newList();
+        List<Result> evaluatedParams = Lists.mutable.empty();
 
         for (Object parameter : parameters)
         {
@@ -75,7 +75,7 @@ public class LegendServicePostValidationRunner extends ServicePostValidationRunn
 
                     try
                     {
-                        Result paramResult = executePlan(sep, new HashMap<>());
+                        Result paramResult = executePlan(sep, Maps.mutable.empty());
 
                         if (paramResult instanceof RelationalResult)
                         {
@@ -117,7 +117,7 @@ public class LegendServicePostValidationRunner extends ServicePostValidationRunn
 
         MutableMap<String, Result> evaluatedParams = evaluateParameters(params);
 
-        SingleExecutionPlan sep = PlanGenerator.generateExecutionPlan((LambdaFunction<?>) assertQuery, this.mapping, this.runtime,  null, this.pureModel, this.pureVersion, PlanPlatform.JAVA, null, this.extensions, this.transformers);
+        SingleExecutionPlan sep = PlanGenerator.generateExecutionPlan(assertQuery, this.mapping, this.runtime,  null, this.pureModel, this.pureVersion, PlanPlatform.JAVA, null, this.extensions, this.transformers);
 
         try
         {

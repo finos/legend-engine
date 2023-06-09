@@ -17,10 +17,10 @@
 package org.finos.legend.engine.service.post.validation.runner;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
@@ -31,14 +31,21 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecut
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
-import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_KeyedExecutionParameter;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PostValidation;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PostValidationAssertion;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureMultiExecution;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureMultiExecution_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureSingleExecution;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureSingleExecution_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
+import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.pac4j.core.profile.CommonProfile;
 
-import javax.security.auth.Subject;
-import javax.ws.rs.core.Response;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.List;
@@ -46,6 +53,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.security.auth.Subject;
+import javax.ws.rs.core.Response;
 
 abstract class ServicePostValidationRunner
 {
@@ -56,14 +65,14 @@ abstract class ServicePostValidationRunner
     protected final Root_meta_legend_service_metamodel_Service pureService;
     protected final List<Variable> rawParams;
     protected final RichIterable<? extends Root_meta_pure_extension_Extension> extensions;
-    protected final MutableList<PlanTransformer> transformers;
+    protected final Iterable<? extends PlanTransformer> transformers;
     protected final String pureVersion;
     protected final SerializationFormat format;
     protected LambdaFunction<?> queryFunc;
     protected Mapping mapping;
     protected Root_meta_pure_runtime_Runtime runtime;
 
-    public ServicePostValidationRunner(PureModel pureModel, Root_meta_legend_service_metamodel_Service pureService, List<Variable> rawParams, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, MutableList<PlanTransformer> transformers, String pureVersion, MutableList<CommonProfile> profiles, SerializationFormat format,PlanExecutor planExecutor)
+    public ServicePostValidationRunner(PureModel pureModel, Root_meta_legend_service_metamodel_Service pureService, List<Variable> rawParams, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers, String pureVersion, MutableList<CommonProfile> profiles, SerializationFormat format,PlanExecutor planExecutor)
     {
         this.pureModel = pureModel;
         this.pureService = pureService;
@@ -131,8 +140,8 @@ abstract class ServicePostValidationRunner
     private int findExecutionKeyIndex(Root_meta_legend_service_metamodel_PureMultiExecution multiExecution)
     {
         String servicePattern = this.pureService._pattern();
-        Matcher m = Pattern.compile("\\{(\\w*)\\}").matcher(servicePattern);
-        List<String> paramGroups = FastList.newList();
+        Matcher m = Pattern.compile("\\{(\\w*)}").matcher(servicePattern);
+        List<String> paramGroups = Lists.mutable.empty();
         while (m.find())
         {
             paramGroups.add(m.group(1));
@@ -148,18 +157,16 @@ abstract class ServicePostValidationRunner
 
     private Pair<RichIterable<?>, LambdaFunction<?>> findParamsWithAssertion(String assertionId)
     {
-        List<String> locatedAssertionIds = FastList.newList();
-
+        List<String> locatedAssertionIds = Lists.mutable.empty();
         for (Root_meta_legend_service_metamodel_PostValidation<?> postValidation : pureService._postValidations())
         {
             for (Root_meta_legend_service_metamodel_PostValidationAssertion<?> assertion : postValidation._assertions())
             {
-                locatedAssertionIds.add(assertion._id());
-
-                if (assertion._id().equals(assertionId))
+                if (assertionId.equals(assertion._id()))
                 {
                     return Tuples.pair(postValidation._parameters(), (LambdaFunction<?>) assertion._assertion());
                 }
+                locatedAssertionIds.add(assertion._id());
             }
         }
 
@@ -168,7 +175,7 @@ abstract class ServicePostValidationRunner
 
     protected Result executePlan(SingleExecutionPlan plan, Map<String, Result> params) throws PrivilegedActionException
     {
-        return Subject.doAs(ProfileManagerHelper.extractSubject(profiles), (PrivilegedExceptionAction<Result>) () -> planExecutor.execute(plan, params, null, profiles));
+        return Subject.doAs(ProfileManagerHelper.extractSubject(this.profiles), (PrivilegedExceptionAction<Result>) () -> this.planExecutor.execute(plan, params, null, this.profiles));
     }
 
     protected abstract MutableMap<String, Result> evaluateParameters(RichIterable<?> parameters);

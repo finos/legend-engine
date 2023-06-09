@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.dsl.service.generation.extension;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -31,15 +32,21 @@ import java.util.Optional;
 
 public interface ServiceExecutionExtension
 {
-
+    @Deprecated
     default Optional<Pair<ExecutionPlan, RichIterable<? extends String>>> tryToBuildTestExecutorContext(Execution execution, String testData, ObjectMapper objectMapper, PureModel pureModel, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, MutableList<PlanTransformer> transformers, String pureVersion)
     {
         return Optional.empty();
+    }
+
+    @SuppressWarnings("unchecked")
+    default Optional<Pair<ExecutionPlan, RichIterable<? extends String>>> tryToBuildTestExecutorContext(Execution execution, String testData, ObjectMapper objectMapper, PureModel pureModel, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers, String pureVersion)
+    {
+        // For backward compatibility
+        return tryToBuildTestExecutorContext(execution, testData, objectMapper, pureModel, extensions, (transformers instanceof MutableList) ? (MutableList<PlanTransformer>) transformers : Lists.mutable.withAll(transformers), pureVersion);
     }
 
     default Optional<List<TestContainer>> tryToBuildTestAsserts(ServiceTest_Legacy test, ObjectMapper objectMapper, PureModel pureModel)
     {
         return Optional.empty();
     }
-
 }

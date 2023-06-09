@@ -451,7 +451,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testSliceAfterL
    assertEquals('',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "age" as "age" from (select top 2 "root".AGE as "age" from personTable as "root" order by "age") as "subselect" limit 2,98', 
+   assertEquals('select "age" as "age" from (select top 2 "root".AGE as "age" from personTable as "root" order by "age") as "subselect" offset 2 rows fetch next 98 rows only', 
       $result->sqlRemoveFormatting());   
 }
 
@@ -472,7 +472,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testLimitAfterS
    assertEquals('22,22',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select top 100 "age" as "age" from (select "root".AGE as "age" from personTable as "root" order by "age" limit 1,2) as "subselect"', 
+   assertEquals('select top 100 "age" as "age" from (select "root".AGE as "age" from personTable as "root" order by "age" offset 1 rows fetch next 2 rows only) as "subselect"', 
       $result->sqlRemoveFormatting());   
 }
 
@@ -493,7 +493,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testDropAfterLi
    assertEquals('22,23,32',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "age" as "age" from (select top 5 "root".AGE as "age" from personTable as "root" order by "age") as "subselect" limit 2,-1', 
+   assertEquals('select "age" as "age" from (select top 5 "root".AGE as "age" from personTable as "root" order by "age") as "subselect" offset 2 rows', 
       $result->sqlRemoveFormatting());   
 }
 
@@ -514,7 +514,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testLimitAfterD
    assertEquals('22,23,32,34,35',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select top 5 "age" as "age" from (select "root".AGE as "age" from personTable as "root" order by "age" limit 2,-1) as "subselect"', 
+   assertEquals('select top 5 "age" as "age" from (select "root".AGE as "age" from personTable as "root" order by "age" offset 2 rows) as "subselect"', 
       $result->sqlRemoveFormatting());   
 }
 
