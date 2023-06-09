@@ -844,7 +844,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   let sqlString = 'SELECT abs(Integer) AS "ABS", acos(Integer) AS "ACOS", asin(Integer) AS "ASIN", atan(Integer) AS "ATAN", atan2(Integer, 1) AS "ATAN2", ' +
                   'ceil(Integer) AS "CEIL", ceiling(Integer) AS "CEILING", cos(Integer) AS "COS", degrees(Integer) AS "DEGREES", div(Integer, 1) AS "DIV", exp(Integer) AS "EXP", floor(Float) AS "FLOOR", ln(Integer) AS "LOG", ' +
                   'mod(Integer, 1) AS "MOD", pi() AS "PI", power(Integer, 2) AS "POWER", radians(Integer) AS "RADIANS", round(Integer) AS "ROUND", round(Decimal, 1) AS "ROUND_DEC", ' +
-                  'sin(Integer) AS "SIN", sqrt(Integer) AS "SQRT", tan(Integer) AS "TAN" FROM service."/service/service1"';
+                  'sin(Integer) AS "SIN", sqrt(Integer) AS "SQRT", tan(Integer) AS "TAN", trunc(Integer) AS "TRUNC" FROM service."/service/service1"';
 
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {|
@@ -874,7 +874,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 col(row:TDSRow[1] | round($row.getDecimal('Decimal'), 1), 'ROUND_DEC'),
                 col(row:TDSRow[1] | sin($row.getInteger('Integer')), 'SIN'),
                 col(row:TDSRow[1] | sqrt($row.getInteger('Integer')), 'SQRT'),
-                col(row:TDSRow[1] | tan($row.getInteger('Integer')), 'TAN')
+                col(row:TDSRow[1] | tan($row.getInteger('Integer')), 'TAN'),
+                col(row:TDSRow[1] | if ($row.getInteger('Integer') > 0, | floor($row.getInteger('Integer')), | ceiling($row.getInteger('Integer'))), 'TRUNC')
               ])
       };
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
