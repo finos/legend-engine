@@ -65,42 +65,20 @@ public class PostgresServerTypeMappingTest
 
 
     @Test
-    public void testString() throws Exception
-    {
-        validate("String", "\"foo\"", "varchar", "foo");
-        validate("String", "\"foo\"", "varchar", "foo");
-        validate("String", "null", "varchar", null);
-        validate("String", "\"\"", "varchar", "");
-    }
-
-    @Test
-    public void testEnum() throws Exception
-    {
-        validate("demo::employeeType", "\"foo\"", "varchar", "foo");
-        validate("demo::employeeType", "\"foo\"", "varchar", "foo");
-        validate("demo::employeeType", "null", "varchar", null);
-        validate("demo::employeeType", "\"\"", "varchar", null);
-    }
-
-    @Test
     public void testBoolean() throws Exception
     {
         validate("Boolean", "true", "bool", Boolean.TRUE);
         validate("Boolean", "false", "bool", Boolean.FALSE);
-        validate("Boolean", "null", "bool", null);
-        validate("Boolean", "\"\"", "bool", null);
     }
 
     @Test
     public void testDateTime() throws Exception
     {
         String timeStamp = "2020-06-07T04:15:27.000000000+0000";
-        Instant temporalAccessor = (Instant) TIMESTAMP_FORMATTER.parse(timeStamp, Instant::from);
+        Instant temporalAccessor = TIMESTAMP_FORMATTER.parse(timeStamp, Instant::from);
         Timestamp expected = new Timestamp(temporalAccessor.toEpochMilli());
 
         validate("DateTime", "\"" + timeStamp + "\"", "timestamp", expected);
-        validate("DateTime", "null", "timestamp", null);
-        validate("DateTime", "\"\"", "timestamp", null);
     }
 
     @Test
@@ -133,8 +111,6 @@ public class PostgresServerTypeMappingTest
         Date expected = new Date(toEpochDay);
 
         validate("StrictDate", "\"" + date + "\"", "date", expected);
-        validate("StrictDate", "null", "date", null);
-        validate("StrictDate", "\"\"", "date", null);
     }
 
 
@@ -142,16 +118,12 @@ public class PostgresServerTypeMappingTest
     public void testFloat() throws Exception
     {
         validate("Float", "5.5", "float4", 5.5F);
-        validate("Float", "null", "float4", null);
-        validate("Float", "\"\"", "float4", null);
     }
 
     @Test
     public void testInteger() throws Exception
     {
         validate("Integer", "5", "int4", 5);
-        validate("Integer", "null", "int4", null);
-        validate("Integer", "\"\"", "int4", null);
     }
 
     @Test

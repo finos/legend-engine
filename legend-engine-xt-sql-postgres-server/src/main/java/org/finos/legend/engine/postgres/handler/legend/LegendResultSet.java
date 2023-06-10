@@ -61,14 +61,6 @@ public class LegendResultSet implements PostgresResultSet
     {
         LegendColumn legendColumn = columns.get(i - 1);
         String value = currentRow.get(i - 1);
-        if (value.equals("null"))
-        {
-            return null;
-        }
-        if (value.equals("") && !legendColumn.getType().equals("String"))
-        {
-            return null;
-        }
         switch (legendColumn.getType())
         {
             case "StrictDate":
