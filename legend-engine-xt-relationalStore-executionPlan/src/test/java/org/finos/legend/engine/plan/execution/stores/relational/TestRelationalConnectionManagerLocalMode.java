@@ -35,19 +35,19 @@ public class TestRelationalConnectionManagerLocalMode
 {
     // Test deliberately ignored - Test to be deleted when reverting the local mode feature
     @Ignore
-    public void testLocalModeCodePathWithRealConnection() throws Exception
+    public void testLocalModeConnectionCreation() throws Exception
     {
         Properties vaultProperties = new Properties();
-        vaultProperties.setProperty("legend-local-snowflake-accountName", "ki79827");
-        vaultProperties.setProperty("legend-local-snowflake-region", "us-east-2");
-        vaultProperties.setProperty("legend-local-snowflake-warehouseName", "SUMMIT_DEV");
-        vaultProperties.setProperty("legend-local-snowflake-databaseName", "SUMMIT_DEV");
+        vaultProperties.setProperty("legend-local-snowflake-accountName", "XXXX");
+        vaultProperties.setProperty("legend-local-snowflake-region", "prod3.us-west-2");
+        vaultProperties.setProperty("legend-local-snowflake-warehouseName", "demo_wh1");
+        vaultProperties.setProperty("legend-local-snowflake-databaseName", "demo_db1");
         vaultProperties.setProperty("legend-local-snowflake-cloudType", "aws");
-        vaultProperties.setProperty("legend-local-snowflake-role", "SUMMIT_DEV");
+        vaultProperties.setProperty("legend-local-snowflake-role", "demo_role1");
 
-        vaultProperties.setProperty("legend-local-snowflake-privateKeyVaultReference", "XXXXX");
-        vaultProperties.setProperty("legend-local-snowflake-passphraseVaultReference", "YYYYY");
-        vaultProperties.setProperty("legend-local-snowflake-publicuserName", "SUMMIT_DEV1");
+        vaultProperties.setProperty("legend-local-snowflake-privateKeyVaultReference", "XXXX");
+        vaultProperties.setProperty("legend-local-snowflake-passphraseVaultReference", "XXXX");
+        vaultProperties.setProperty("legend-local-snowflake-publicuserName", "demo_user1");
 
         Vault.INSTANCE.registerImplementation(new PropertiesVaultImplementation(vaultProperties));
 
