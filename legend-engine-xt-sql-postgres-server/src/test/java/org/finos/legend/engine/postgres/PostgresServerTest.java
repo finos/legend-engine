@@ -22,6 +22,8 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
+import com.gs.tablasco.TableVerifier;
+import com.gs.tablasco.verify.ResultSetTable;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.dropwizard.testing.junit.ResourceTestRule;
@@ -37,6 +39,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 
 public class PostgresServerTest
@@ -44,6 +47,9 @@ public class PostgresServerTest
     @ClassRule
     public static final ResourceTestRule resources;
     private static TestPostgresServer testPostgresServer;
+    @Rule
+    public TableVerifier verifier = new TableVerifier()
+            .withMavenDirectoryStrategy();
 
     static
     {
@@ -106,12 +112,7 @@ public class PostgresServerTest
              ResultSet resultSet = statement.executeQuery()
         )
         {
-            int rows = 0;
-            while (resultSet.next())
-            {
-                rows++;
-            }
-            Assert.assertEquals(4, rows);
+            verifier.verify("personService", ResultSetTable.create(resultSet));
         }
     }
 
@@ -124,12 +125,7 @@ public class PostgresServerTest
              ResultSet resultSet = statement.executeQuery()
         )
         {
-            int rows = 0;
-            while (resultSet.next())
-            {
-                rows++;
-            }
-            Assert.assertEquals(4, rows);
+            verifier.verify("personService", ResultSetTable.create(resultSet));
         }
     }
 
@@ -142,12 +138,7 @@ public class PostgresServerTest
              ResultSet resultSet = statement.executeQuery()
         )
         {
-            int rows = 0;
-            while (resultSet.next())
-            {
-                rows++;
-            }
-            Assert.assertEquals(1, rows);
+            verifier.verify("one", ResultSetTable.create(resultSet));
         }
     }
 
@@ -199,12 +190,7 @@ public class PostgresServerTest
              ResultSet resultSet = statement.executeQuery()
         )
         {
-            int rows = 0;
-            while (resultSet.next())
-            {
-                rows++;
-            }
-            Assert.assertEquals(3, rows);
+            verifier.verify("schemata", ResultSetTable.create(resultSet));
         }
     }
 
@@ -217,12 +203,7 @@ public class PostgresServerTest
              ResultSet resultSet = statement.executeQuery()
         )
         {
-            int rows = 0;
-            while (resultSet.next())
-            {
-                rows++;
-            }
-            Assert.assertEquals(1, rows);
+            verifier.verify("pg_tablespace", ResultSetTable.create(resultSet));
         }
     }
 

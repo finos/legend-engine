@@ -1,0 +1,6 @@
+Metadata "Recorded At" "2023-06-11 14:13:14"
+
+Section "testSelectWithoutTable" "one"
+"?column?"
+1
+

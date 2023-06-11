@@ -1,0 +1,9 @@
+Metadata "Recorded At" "2023-06-11 14:13:14"
+
+Section "testTableFunctionSyntax" "personService"
+"Id","Name"
+101,"Alice"
+102,"Bob"
+103,"Curtis"
+104,"Danielle"
+

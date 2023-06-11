@@ -2895,6 +2895,13 @@
                 </exclusions>
             </dependency>
 
+            <!-- Tablasco -->
+            <dependency>
+                <groupId>com.goldmansachs.tablasco</groupId>
+                <artifactId>tablasco-junit</artifactId>
+                <version>2.5.0</version>
+            </dependency>
+            <!-- Tablasco -->
         </dependencies>
 
     </dependencyManagement>
