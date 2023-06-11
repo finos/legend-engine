@@ -1,0 +1,9 @@
+Metadata "Recorded At" "2023-06-12 07:58:59"
+
+Section "queryTest[1]" "SELECT * FROM service.\"/personService\""
+"Id","Name","Employee Type"
+101,"Alice","Type1"
+102,"Bob","Type2"
+103,"Curtis","Type2"
+104,"Danielle","Typ1"
+

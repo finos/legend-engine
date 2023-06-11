@@ -27,6 +27,7 @@ import com.gs.tablasco.verify.ResultSetTable;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.dropwizard.testing.junit.ResourceTestRule;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.postgres.auth.AnonymousIdentityProvider;
@@ -41,15 +42,16 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.runners.Enclosed;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+@RunWith(Enclosed.class)
 public class PostgresServerTest
 {
     @ClassRule
     public static final ResourceTestRule resources;
     private static TestPostgresServer testPostgresServer;
-    @Rule
-    public TableVerifier verifier = new TableVerifier()
-            .withMavenDirectoryStrategy();
 
     static
     {
@@ -70,169 +72,130 @@ public class PostgresServerTest
         testPostgresServer.startUp();
     }
 
-    @Test
-    public void testMetadata() throws SQLException
+    @RunWith(Parameterized.class)
+    public static class PostgresServerVerifyResultSetTest
     {
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
-                "dummy", "dummy");
-             PreparedStatement statement = connection.prepareStatement("SELECT * FROM service.\"/personService\"");
-             ResultSet resultSet = statement.executeQuery()
-        )
-        {
-            ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-            Assert.assertEquals(3, resultSetMetaData.getColumnCount());
-            Assert.assertEquals("Id", resultSetMetaData.getColumnName(1));
-            Assert.assertEquals("Name", resultSetMetaData.getColumnName(2));
-            Assert.assertEquals("Employee Type", resultSetMetaData.getColumnName(3));
-            Assert.assertEquals("int4", resultSetMetaData.getColumnTypeName(1));
-            Assert.assertEquals("varchar", resultSetMetaData.getColumnTypeName(2));
-            Assert.assertEquals("varchar", resultSetMetaData.getColumnTypeName(3));
-        }
-    }
+        @Rule
+        public TableVerifier verifier = new TableVerifier()
+                .withMavenDirectoryStrategy()
+//                uncomment line below when adding new tests, to create the 'expected' files
+//                .withRebase()
+                ;
 
-    @Test
-    public void testParameterMetadata() throws SQLException
-    {
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
-                "dummy", "dummy");
-             PreparedStatement statement = connection.prepareStatement("SELECT * FROM service.\"/personService\"")
-        )
-        {
-            ParameterMetaData parameterMetaData = statement.getParameterMetaData();
-            Assert.assertEquals(0, parameterMetaData.getParameterCount());
-        }
-    }
+        @Parameterized.Parameter
+        public String query;
 
-    @Test
-    public void testNumberOfRows() throws SQLException
-    {
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
-                "dummy", "dummy");
-             PreparedStatement statement = connection.prepareStatement("SELECT * FROM service.\"/personService\"");
-             ResultSet resultSet = statement.executeQuery()
-        )
+        @Parameterized.Parameters
+        public static Iterable<String> queries()
         {
-            verifier.verify("personService", ResultSetTable.create(resultSet));
+            return Lists.immutable.of(
+                    "SELECT 1",
+                    "SELECT * FROM service.\"/personService\"",
+                    "SELECT * FROM service('/personService')",
+                    "SELECT * FROM information_schema.schemata",
+                    "SELECT * FROM pg_catalog.pg_tablespace",
+                    "SHOW TRANSACTION ISOLATION LEVEL"
+            );
         }
-    }
 
-    @Test
-    public void testTableFunctionSyntax() throws SQLException
-    {
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
-                "dummy", "dummy");
-             PreparedStatement statement = connection.prepareStatement("SELECT * FROM service('/personService')");
-             ResultSet resultSet = statement.executeQuery()
-        )
+        @Test
+        public void queryTest() throws SQLException
         {
-            verifier.verify("personService", ResultSetTable.create(resultSet));
-        }
-    }
-
-    @Test
-    public void testSelectWithoutTable() throws SQLException
-    {
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
-                "dummy", "dummy");
-             PreparedStatement statement = connection.prepareStatement("SELECT 1");
-             ResultSet resultSet = statement.executeQuery()
-        )
-        {
-            verifier.verify("one", ResultSetTable.create(resultSet));
-        }
-    }
-
-    @Test
-    public void testShowTxn() throws SQLException
-    {
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
-                "dummy", "dummy");
-             PreparedStatement statement = connection.prepareStatement("SHOW TRANSACTION ISOLATION LEVEL");
-             ResultSet resultSet = statement.executeQuery()
-        )
-        {
-            int rows = 0;
-            while (resultSet.next())
+            try (Connection connection = getConnection();
+                 PreparedStatement statement = connection.prepareStatement(query);
+                 ResultSet resultSet = statement.executeQuery()
+            )
             {
-                rows++;
+                verifier.verify(query, ResultSetTable.create(resultSet));
             }
-            Assert.assertEquals(1, rows);
         }
     }
 
-    @Test
-    public void testHikariConnection() throws SQLException
+    public static class PostgresServerOtherFeaturesTest
     {
-        HikariConfig jdbcConfig = new HikariConfig();
-        jdbcConfig.setJdbcUrl("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres");
-        jdbcConfig.setUsername("dummy");
-        try (HikariDataSource dataSource = new HikariDataSource(jdbcConfig);
-             Connection connection = dataSource.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement("SELECT 1");
-             ResultSet resultSet = preparedStatement.executeQuery()
-        )
+
+        @Test
+        public void testMetadata() throws SQLException
         {
-            int rows = 0;
-            while (resultSet.next())
+            try (Connection connection = getConnection();
+                 PreparedStatement statement = connection.prepareStatement("SELECT * FROM service.\"/personService\"");
+                 ResultSet resultSet = statement.executeQuery()
+            )
             {
-                rows++;
+                ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+                Assert.assertEquals(3, resultSetMetaData.getColumnCount());
+                Assert.assertEquals("Id", resultSetMetaData.getColumnName(1));
+                Assert.assertEquals("Name", resultSetMetaData.getColumnName(2));
+                Assert.assertEquals("Employee Type", resultSetMetaData.getColumnName(3));
+                Assert.assertEquals("int4", resultSetMetaData.getColumnTypeName(1));
+                Assert.assertEquals("varchar", resultSetMetaData.getColumnTypeName(2));
+                Assert.assertEquals("varchar", resultSetMetaData.getColumnTypeName(3));
             }
-            Assert.assertEquals(1, rows);
+        }
+
+        @Test
+        public void testParameterMetadata() throws SQLException
+        {
+            try (Connection connection = getConnection();
+                 PreparedStatement statement = connection.prepareStatement("SELECT * FROM service.\"/personService\"")
+            )
+            {
+                ParameterMetaData parameterMetaData = statement.getParameterMetaData();
+                Assert.assertEquals(0, parameterMetaData.getParameterCount());
+            }
+        }
+
+        @Test
+        public void testConnectionIsValid() throws SQLException
+        {
+            try (Connection connection = getConnection()
+            )
+            {
+                // This triggers an empty query and expects an empty response
+                boolean isValid = connection.isValid(1);
+                Assert.assertTrue(isValid);
+            }
+        }
+
+        @Test
+        public void testEmptyQuery() throws SQLException
+        {
+            try (Connection connection = getConnection();
+                 PreparedStatement statement = connection.prepareStatement("")
+            )
+            {
+                int rowCount = statement.executeUpdate();
+                Assert.assertEquals(0, rowCount);
+            }
+        }
+
+        @Test
+        public void testHikariConnection() throws SQLException
+        {
+            HikariConfig jdbcConfig = new HikariConfig();
+            jdbcConfig.setJdbcUrl("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres");
+            jdbcConfig.setUsername("dummy");
+            try (HikariDataSource dataSource = new HikariDataSource(jdbcConfig);
+                 Connection connection = dataSource.getConnection();
+                 PreparedStatement preparedStatement = connection.prepareStatement("SELECT 1");
+                 ResultSet resultSet = preparedStatement.executeQuery()
+            )
+            {
+                int rows = 0;
+                while (resultSet.next())
+                {
+                    rows++;
+                }
+                Assert.assertEquals(1, rows);
+            }
         }
     }
 
-    @Test
-    public void testInformationSchema() throws SQLException
+    private static Connection getConnection() throws SQLException
     {
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+        return DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
                 "dummy", "dummy");
-             PreparedStatement statement = connection.prepareStatement("SELECT * FROM information_schema.schemata");
-             ResultSet resultSet = statement.executeQuery()
-        )
-        {
-            verifier.verify("schemata", ResultSetTable.create(resultSet));
-        }
     }
-
-    @Test
-    public void testPgCatalog() throws SQLException
-    {
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
-                "dummy", "dummy");
-             PreparedStatement statement = connection.prepareStatement("SELECT * FROM pg_catalog.pg_tablespace");
-             ResultSet resultSet = statement.executeQuery()
-        )
-        {
-            verifier.verify("pg_tablespace", ResultSetTable.create(resultSet));
-        }
-    }
-
-    @Test
-    public void testConnectionIsValid() throws SQLException
-    {
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
-                "dummy", "dummy")
-        )
-        {
-            // This triggers an empty query and expects an empty response
-            boolean isValid = connection.isValid(1);
-            Assert.assertTrue(isValid);
-        }
-    }
-
-    @Test
-    public void testEmptyQuery() throws SQLException
-    {
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
-                "dummy", "dummy");
-             PreparedStatement statement = connection.prepareStatement("")
-        )
-        {
-            int rowCount = statement.executeUpdate();
-            Assert.assertEquals(0, rowCount);
-        }
-    }
-
 
     @AfterClass
     public static void tearDown()

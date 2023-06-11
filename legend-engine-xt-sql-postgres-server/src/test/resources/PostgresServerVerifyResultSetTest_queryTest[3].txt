@@ -1,6 +1,6 @@
-Metadata "Recorded At" "2023-06-11 14:13:07"
+Metadata "Recorded At" "2023-06-11 16:06:33"
 
-Section "testInformationSchema" "schemata"
+Section "queryTest[3]" "SELECT * FROM information_schema.schemata"
 "catalog_name","schema_name","schema_owner","default_character_set_catalog","default_character_set_schema","default_character_set_name","sql_path","default_collation_name","remarks"
 "legendsqlmetadata","public","sa","legendsqlmetadata","public","Unicode","","OFF",""
 "legendsqlmetadata","information_schema","sa","legendsqlmetadata","public","Unicode","","OFF",""

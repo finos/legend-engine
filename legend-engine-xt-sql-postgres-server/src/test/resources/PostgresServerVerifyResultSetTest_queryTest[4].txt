@@ -1,0 +1,6 @@
+Metadata "Recorded At" "2023-06-11 16:06:33"
+
+Section "queryTest[4]" "SELECT * FROM pg_catalog.pg_tablespace"
+"oid","spcname","spclocation","spcowner","spcacl"
+0,"main","?",0,""
+

@@ -1,0 +1,6 @@
+Metadata "Recorded At" "2023-06-11 16:06:33"
+
+Section "queryTest[0]" "SELECT 1"
+"?column?"
+1
+
