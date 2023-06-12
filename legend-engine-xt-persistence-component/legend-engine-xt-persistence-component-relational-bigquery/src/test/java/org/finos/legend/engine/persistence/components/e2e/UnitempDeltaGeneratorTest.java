@@ -16,12 +16,8 @@ package org.finos.legend.engine.persistence.components.e2e;
 
 import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 import org.finos.legend.engine.persistence.components.common.FilterType;
-import org.finos.legend.engine.persistence.components.ingestmode.NontemporalDelta;
-import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshot;
-import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
-import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
-import org.finos.legend.engine.persistence.components.relational.api.RelationalGenerator;
-import org.finos.legend.engine.persistence.components.relational.bigquery.BigQuerySink;
+import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDelta;
+import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -30,50 +26,47 @@ import java.util.List;
 import java.util.Map;
 
 @Disabled
-public class NonTemporalDeltaTest extends BigQueryEndToEndTest
+public class UnitempDeltaGeneratorTest extends BigQueryEndToEndTest
 {
 
     @Test
     public void testMilestoning() throws IOException, InterruptedException
     {
-        NontemporalDelta ingestMode = NontemporalDelta.builder()
+        UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField("digest")
-                .auditing(DateTimeAuditing.builder().dateTimeField("audit_ts").build())
-                .build();
-
-        RelationalGenerator generator = RelationalGenerator.builder()
-                .ingestMode(ingestMode)
-                .relationalSink(BigQuerySink.get())
-                .collectStatistics(true)
-                .cleanupStagingData(false)
-                .executionTimestampClock(fixedClock_2000_01_01)
+                .transactionMilestoning(BatchId.builder()
+                        .batchIdInName("batch_id_in")
+                        .batchIdOutName("batch_id_out")
+                        .build())
                 .build();
 
         // Clean up
         delete("demo", "main");
         delete("demo", "staging");
+        delete("demo", "batch_metadata");
 
         // Pass 1
         System.out.println("--------- Batch 1 started ------------");
         String pathPass1 = "src/test/resources/input/data_pass1.csv";
         DatasetFilter stagingFilter = DatasetFilter.of("insert_ts", FilterType.EQUAL_TO, "2023-01-01 00:00:00");
-        ingest(generator, stagingFilter, pathPass1);
+        ingestViaGenerator(ingestMode, stagingFilter, pathPass1, fixedClock_2000_01_01);
 
         // Verify
         List<Map<String, Object>> tableData = runQuery("select * from `demo`.`main` order by id asc");
-        String expectedPath = "src/test/resources/expected/nontemporal_delta/data_pass1.csv";
-        String [] schema = new String[] {"id", "name", "amount", "biz_date", "digest", "insert_ts", "audit_ts"};
+        String expectedPath = "src/test/resources/expected/unitemp_delta/data_pass1.csv";
+        String [] schema = new String[] {"id", "name", "amount", "biz_date", "digest", "insert_ts", "batch_id_in", "batch_id_out"};
         assertFileAndTableDataEquals(schema, expectedPath, tableData);
 
         // Pass 2
         System.out.println("--------- Batch 2 started ------------");
         String pathPass2 = "src/test/resources/input/data_pass2.csv";
         stagingFilter = DatasetFilter.of("insert_ts", FilterType.EQUAL_TO, "2023-01-02 00:00:00");
-        ingest(generator, stagingFilter, pathPass2);
+        ingestViaGenerator(ingestMode, stagingFilter, pathPass2, fixedClock_2000_01_02);
 
         // Verify
-        tableData = runQuery("select * from `demo`.`main` order by id asc");
-        expectedPath = "src/test/resources/expected/nontemporal_delta/data_pass2.csv";
+        tableData = runQuery("select * from `demo`.`main` order by id asc, insert_ts");
+        expectedPath = "src/test/resources/expected/unitemp_delta/data_pass2.csv";
         assertFileAndTableDataEquals(schema, expectedPath, tableData);
     }
+
 }

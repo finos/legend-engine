@@ -127,7 +127,8 @@ public class BigQueryHelper implements RelationalExecutionHelper
         String name = dataset.datasetReference().name().orElseThrow(IllegalStateException::new);
         String schema = dataset.datasetReference().group().orElse(null);
         Table table = this.bigQuery.getTable(TableId.of(schema, name));
-        return table.exists();
+        boolean tableExists = table != null && table.exists();
+        return tableExists;
     }
 
     public void validateDatasetSchema(Dataset dataset, DataTypeMapping datatypeMapping)

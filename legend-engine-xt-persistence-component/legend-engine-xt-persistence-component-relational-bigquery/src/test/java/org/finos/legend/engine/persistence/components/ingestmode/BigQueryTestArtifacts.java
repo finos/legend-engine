@@ -108,12 +108,12 @@ public class BigQueryTestArtifacts
             "`batch_update_time` DATETIME NOT NULL," +
             "PRIMARY KEY (`id`, `name`, `batch_update_time`) NOT ENFORCED)";
 
-    public static String expectedStagingCleanupQuery = "TRUNCATE TABLE `mydb`.`staging`";
+    public static String expectedStagingCleanupQuery = "DELETE FROM `mydb`.`staging` as stage WHERE 1 = 1";
 
     public static String expectedDropTableQuery = "DROP TABLE IF EXISTS `mydb`.`staging` CASCADE";
 
-    public static String cleanUpMainTableSql = "TRUNCATE TABLE `mydb`.`main`";
-    public static String cleanupMainTableSqlUpperCase = "TRUNCATE TABLE `MYDB`.`MAIN`";
+    public static String cleanUpMainTableSql = "DELETE FROM `mydb`.`main` as sink WHERE 1 = 1";
+    public static String cleanupMainTableSqlUpperCase = "DELETE FROM `MYDB`.`MAIN` as sink WHERE 1 = 1";
 
     public static String expectedMainTableBatchIdBasedCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
             "`id` INT64 NOT NULL,`name` STRING NOT NULL,`amount` FLOAT64,`biz_date` DATE,`digest` STRING," +

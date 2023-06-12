@@ -16,13 +16,14 @@ package org.finos.legend.engine.persistence.components.e2e;
 
 import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 import org.finos.legend.engine.persistence.components.common.FilterType;
+import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.AppendOnly;
-import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshot;
+import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDelta;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
-import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
-import org.finos.legend.engine.persistence.components.relational.api.RelationalGenerator;
-import org.finos.legend.engine.persistence.components.relational.bigquery.BigQuerySink;
+import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
+import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -30,51 +31,60 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import static org.finos.legend.engine.persistence.components.common.StatisticName.*;
+
 @Disabled
-public class NonTemporalSnapshotTest extends BigQueryEndToEndTest
+public class UnitempDeltaExecutorTest extends BigQueryEndToEndTest
 {
 
     @Test
     public void testMilestoning() throws IOException, InterruptedException
     {
-        NontemporalSnapshot ingestMode = NontemporalSnapshot
-                .builder()
-                .auditing(NoAuditing.builder().build())
-                .build();
-
-        RelationalGenerator generator = RelationalGenerator.builder()
-                .ingestMode(ingestMode)
-                .relationalSink(BigQuerySink.get())
-                .collectStatistics(true)
-                .cleanupStagingData(false)
-                .executionTimestampClock(fixedClock_2000_01_01)
+        UnitemporalDelta ingestMode = UnitemporalDelta.builder()
+                .digestField("digest")
+                .transactionMilestoning(BatchId.builder()
+                        .batchIdInName("batch_id_in")
+                        .batchIdOutName("batch_id_out")
+                        .build())
                 .build();
 
         // Clean up
         delete("demo", "main");
         delete("demo", "staging");
+        delete("demo", "batch_metadata");
 
         // Pass 1
         System.out.println("--------- Batch 1 started ------------");
         String pathPass1 = "src/test/resources/input/data_pass1.csv";
         DatasetFilter stagingFilter = DatasetFilter.of("insert_ts", FilterType.EQUAL_TO, "2023-01-01 00:00:00");
-        ingest(generator, stagingFilter, pathPass1);
+        IngestorResult result = ingestViaExecutor(ingestMode, stagingFilter, pathPass1, fixedClock_2000_01_01);
 
         // Verify
         List<Map<String, Object>> tableData = runQuery("select * from `demo`.`main` order by id asc");
-        String expectedPath = "src/test/resources/expected/nontemporal_snapshot/data_pass1.csv";
-        String [] schema = new String[] {"id", "name", "amount", "biz_date", "digest", "insert_ts"};
+        String expectedPath = "src/test/resources/expected/unitemp_delta/data_pass1.csv";
+        String [] schema = new String[] {"id", "name", "amount", "biz_date", "digest", "insert_ts", "batch_id_in", "batch_id_out"};
         assertFileAndTableDataEquals(schema, expectedPath, tableData);
+
+        long incomingRecords = (long) result.statisticByName().get(INCOMING_RECORD_COUNT);
+        long rowsInserted = (long) result.statisticByName().get(ROWS_INSERTED);
+        Assertions.assertEquals(3, incomingRecords);
+        Assertions.assertEquals(3, rowsInserted);
 
         // Pass 2
         System.out.println("--------- Batch 2 started ------------");
         String pathPass2 = "src/test/resources/input/data_pass2.csv";
         stagingFilter = DatasetFilter.of("insert_ts", FilterType.EQUAL_TO, "2023-01-02 00:00:00");
-        ingest(generator, stagingFilter, pathPass2);
+        result = ingestViaExecutor(ingestMode, stagingFilter, pathPass2, fixedClock_2000_01_02);
 
         // Verify
-        tableData = runQuery("select * from `demo`.`main` order by id asc");
-        expectedPath = "src/test/resources/expected/nontemporal_snapshot/data_pass2.csv";
+        tableData = runQuery("select * from `demo`.`main` order by id asc, insert_ts");
+        expectedPath = "src/test/resources/expected/unitemp_delta/data_pass2.csv";
         assertFileAndTableDataEquals(schema, expectedPath, tableData);
+        incomingRecords = (long) result.statisticByName().get(INCOMING_RECORD_COUNT);
+        rowsInserted = (long) result.statisticByName().get(ROWS_INSERTED);
+        long rowsUpdated = (long) result.statisticByName().get(ROWS_UPDATED);
+        Assertions.assertEquals(3, incomingRecords);
+        Assertions.assertEquals(1, rowsInserted);
+        Assertions.assertEquals(1, rowsUpdated);
     }
 }

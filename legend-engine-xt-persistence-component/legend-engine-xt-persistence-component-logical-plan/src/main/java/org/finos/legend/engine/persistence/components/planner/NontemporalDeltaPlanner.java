@@ -194,6 +194,12 @@ class NontemporalDeltaPlanner extends Planner
             versioningCondition = this.versioningCondition;
         }
 
+        if (ingestMode().auditing().accept(AUDIT_ENABLED))
+        {
+            String auditField = ingestMode().auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
+            keyValuePairs.add(Pair.of(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(auditField).build(), batchStartTimestamp));
+        }
+
         Merge merge = Merge.builder()
             .dataset(mainDataset())
             .usingDataset(stagingDataset)
@@ -202,13 +208,6 @@ class NontemporalDeltaPlanner extends Planner
             .onCondition(this.pkMatchCondition)
             .matchedCondition(versioningCondition)
             .build();
-
-        if (ingestMode().auditing().accept(AUDIT_ENABLED))
-        {
-            String auditField = ingestMode().auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
-            keyValuePairs.add(Pair.of(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(auditField).build(), batchStartTimestamp));
-            merge = merge.withUnmatchedKeyValuePairs(keyValuePairs);
-        }
 
         return merge;
     }

@@ -100,7 +100,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         Assertions.assertEquals(expectedMainToTemp, milestoningSql.get(1));
         Assertions.assertEquals(expectedUpdateMain, milestoningSql.get(2));
         Assertions.assertEquals(expectedTempToMain, milestoningSql.get(3));
-        Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`temp`"), milestoningSql.get(4));
+        Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`temp`", "temp"), milestoningSql.get(4));
 
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
         verifyStats(operations, incomingRecordCount, rowsUpdated, rowsDeleted, rowsInserted, rowsTerminated);
@@ -170,13 +170,13 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedMainToTemp, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(1));
         Assertions.assertEquals(expectedUpdateMain, operations.get(0).ingestSql().get(2));
         Assertions.assertEquals(expectedTempToMain, operations.get(0).ingestSql().get(3));
-        Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`temp`"), operations.get(0).ingestSql().get(4));
+        Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`temp`", "temp"), operations.get(0).ingestSql().get(4));
 
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedStageToTemp, dataSplitRanges.get(1)), operations.get(1).ingestSql().get(0));
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedMainToTemp, dataSplitRanges.get(1)), operations.get(1).ingestSql().get(1));
         Assertions.assertEquals(expectedUpdateMain, operations.get(1).ingestSql().get(2));
         Assertions.assertEquals(expectedTempToMain, operations.get(1).ingestSql().get(3));
-        Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`temp`"), operations.get(1).ingestSql().get(4));
+        Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`temp`", "temp"), operations.get(1).ingestSql().get(4));
 
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), operations.get(0).metadataIngestSql().get(0));
         Assertions.assertEquals(2, operations.size());
@@ -292,8 +292,8 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         Assertions.assertEquals(expectedMainToTempForDeletion, milestoningSql.get(4));
         Assertions.assertEquals(expectedUpdateMainForDeletion, milestoningSql.get(5));
         Assertions.assertEquals(expectedTempToMainForDeletion, milestoningSql.get(6));
-        Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`temp`"), milestoningSql.get(7));
-        Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`tempWithDeleteIndicator`"), milestoningSql.get(8));
+        Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`temp`", "temp"), milestoningSql.get(7));
+        Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`tempWithDeleteIndicator`", "tempWithDeleteIndicator"), milestoningSql.get(8));
 
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
         String rowsUpdated = "SELECT COUNT(*) as `rowsUpdated` FROM `mydb`.`main` as sink WHERE (sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1) AND (EXISTS (SELECT * FROM `mydb`.`main` as sink2 WHERE ((sink2.`id` = sink.`id`) AND (sink2.`name` = sink.`name`) AND (sink2.`validity_from_target` = sink.`validity_from_target`)) AND (sink2.`batch_id_in` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'))))";
@@ -430,8 +430,8 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedMainToTempForDeletion, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(4));
         Assertions.assertEquals(expectedUpdateMainForDeletion, operations.get(0).ingestSql().get(5));
         Assertions.assertEquals(expectedTempToMainForDeletion, operations.get(0).ingestSql().get(6));
-        Assertions.assertEquals(getExpectedCleanupSql(tempName), operations.get(0).ingestSql().get(7));
-        Assertions.assertEquals(getExpectedCleanupSql(tempWithDeleteIndicatorName), operations.get(0).ingestSql().get(8));
+        Assertions.assertEquals(getExpectedCleanupSql(tempName, "legend_persistence_temp"), operations.get(0).ingestSql().get(7));
+        Assertions.assertEquals(getExpectedCleanupSql(tempWithDeleteIndicatorName, "legend_persistence_tempWithDeleteIndicator"), operations.get(0).ingestSql().get(8));
 
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedStageToTemp, dataSplitRanges.get(1)), operations.get(1).ingestSql().get(0));
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedMainToTemp, dataSplitRanges.get(1)), operations.get(1).ingestSql().get(1));
@@ -440,8 +440,8 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedMainToTempForDeletion, dataSplitRanges.get(1)), operations.get(1).ingestSql().get(4));
         Assertions.assertEquals(expectedUpdateMainForDeletion, operations.get(1).ingestSql().get(5));
         Assertions.assertEquals(expectedTempToMainForDeletion, operations.get(1).ingestSql().get(6));
-        Assertions.assertEquals(getExpectedCleanupSql(tempName), operations.get(1).ingestSql().get(7));
-        Assertions.assertEquals(getExpectedCleanupSql(tempWithDeleteIndicatorName), operations.get(1).ingestSql().get(8));
+        Assertions.assertEquals(getExpectedCleanupSql(tempName, "legend_persistence_temp"), operations.get(1).ingestSql().get(7));
+        Assertions.assertEquals(getExpectedCleanupSql(tempWithDeleteIndicatorName, "legend_persistence_tempWithDeleteIndicator"), operations.get(1).ingestSql().get(8));
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), operations.get(0).metadataIngestSql().get(0));
         Assertions.assertEquals(2, operations.size());
 
@@ -528,8 +528,8 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         Assertions.assertEquals(expectedMainToTemp, milestoningSql.get(2));
         Assertions.assertEquals(expectedUpdateMain, milestoningSql.get(3));
         Assertions.assertEquals(expectedTempToMain, milestoningSql.get(4));
-        Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`temp`"), milestoningSql.get(5));
-        Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`stagingWithoutDuplicates`"), milestoningSql.get(6));
+        Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`temp`", "temp"), milestoningSql.get(5));
+        Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`stagingWithoutDuplicates`", "stage"), milestoningSql.get(6));
 
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
         verifyStats(operations, incomingRecordCount, rowsUpdated, rowsDeleted, rowsInserted, rowsTerminated);
@@ -606,16 +606,16 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedMainToTemp, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(2));
         Assertions.assertEquals(expectedUpdateMain, operations.get(0).ingestSql().get(3));
         Assertions.assertEquals(expectedTempToMain, operations.get(0).ingestSql().get(4));
-        Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`temp`"), operations.get(0).ingestSql().get(5));
-        Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`stagingWithoutDuplicates`"), operations.get(0).ingestSql().get(6));
+        Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`temp`", "temp"), operations.get(0).ingestSql().get(5));
+        Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`stagingWithoutDuplicates`", "stage"), operations.get(0).ingestSql().get(6));
 
         Assertions.assertEquals(expectedStageToStageWithoutDuplicates, operations.get(1).ingestSql().get(0));
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedStageToTemp, dataSplitRanges.get(1)), operations.get(1).ingestSql().get(1));
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedMainToTemp, dataSplitRanges.get(1)), operations.get(1).ingestSql().get(2));
         Assertions.assertEquals(expectedUpdateMain, operations.get(1).ingestSql().get(3));
         Assertions.assertEquals(expectedTempToMain, operations.get(1).ingestSql().get(4));
-        Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`temp`"), operations.get(1).ingestSql().get(5));
-        Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`stagingWithoutDuplicates`"), operations.get(1).ingestSql().get(6));
+        Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`temp`", "temp"), operations.get(1).ingestSql().get(5));
+        Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`stagingWithoutDuplicates`", "stage"), operations.get(1).ingestSql().get(6));
 
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), operations.get(0).metadataIngestSql().get(0));
 
@@ -739,9 +739,9 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         Assertions.assertEquals(expectedMainToTempForDeletion, milestoningSql.get(5));
         Assertions.assertEquals(expectedUpdateMainForDeletion, milestoningSql.get(6));
         Assertions.assertEquals(expectedTempToMainForDeletion, milestoningSql.get(7));
-        Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`temp`"), milestoningSql.get(8));
-        Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`tempWithDeleteIndicator`"), milestoningSql.get(9));
-        Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`stagingWithoutDuplicates`"), milestoningSql.get(10));
+        Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`temp`", "temp"), milestoningSql.get(8));
+        Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`tempWithDeleteIndicator`", "tempWithDeleteIndicator"), milestoningSql.get(9));
+        Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`stagingWithoutDuplicates`", "stage"), milestoningSql.get(10));
 
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
         String rowsUpdated = "SELECT COUNT(*) as `rowsUpdated` FROM `mydb`.`main` as sink WHERE (sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1) AND (EXISTS (SELECT * FROM `mydb`.`main` as sink2 WHERE ((sink2.`id` = sink.`id`) AND (sink2.`name` = sink.`name`) AND (sink2.`validity_from_target` = sink.`validity_from_target`)) AND (sink2.`batch_id_in` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'))))";
@@ -896,9 +896,9 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedMainToTempForDeletion, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(5));
         Assertions.assertEquals(expectedUpdateMainForDeletion, operations.get(0).ingestSql().get(6));
         Assertions.assertEquals(expectedTempToMainForDeletion, operations.get(0).ingestSql().get(7));
-        Assertions.assertEquals(getExpectedCleanupSql(tempName), operations.get(0).ingestSql().get(8));
-        Assertions.assertEquals(getExpectedCleanupSql(tempWithDeleteIndicatorName), operations.get(0).ingestSql().get(9));
-        Assertions.assertEquals(getExpectedCleanupSql(stageWithoutDuplicatesName), operations.get(0).ingestSql().get(10));
+        Assertions.assertEquals(getExpectedCleanupSql(tempName, "legend_persistence_temp"), operations.get(0).ingestSql().get(8));
+        Assertions.assertEquals(getExpectedCleanupSql(tempWithDeleteIndicatorName, "legend_persistence_tempWithDeleteIndicator"), operations.get(0).ingestSql().get(9));
+        Assertions.assertEquals(getExpectedCleanupSql(stageWithoutDuplicatesName, "legend_persistence_stageWithoutDuplicates"), operations.get(0).ingestSql().get(10));
 
         Assertions.assertEquals(expectedStageToStageWithoutDuplicates, operations.get(1).ingestSql().get(0));
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedStageToTemp, dataSplitRanges.get(1)), operations.get(1).ingestSql().get(1));
@@ -908,9 +908,9 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedMainToTempForDeletion, dataSplitRanges.get(1)), operations.get(1).ingestSql().get(5));
         Assertions.assertEquals(expectedUpdateMainForDeletion, operations.get(1).ingestSql().get(6));
         Assertions.assertEquals(expectedTempToMainForDeletion, operations.get(1).ingestSql().get(7));
-        Assertions.assertEquals(getExpectedCleanupSql(tempName), operations.get(1).ingestSql().get(8));
-        Assertions.assertEquals(getExpectedCleanupSql(tempWithDeleteIndicatorName), operations.get(1).ingestSql().get(9));
-        Assertions.assertEquals(getExpectedCleanupSql(stageWithoutDuplicatesName), operations.get(1).ingestSql().get(10));
+        Assertions.assertEquals(getExpectedCleanupSql(tempName, "legend_persistence_temp"), operations.get(1).ingestSql().get(8));
+        Assertions.assertEquals(getExpectedCleanupSql(tempWithDeleteIndicatorName, "legend_persistence_tempWithDeleteIndicator"), operations.get(1).ingestSql().get(9));
+        Assertions.assertEquals(getExpectedCleanupSql(stageWithoutDuplicatesName, "legend_persistence_stageWithoutDuplicates"), operations.get(1).ingestSql().get(10));
 
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), operations.get(0).metadataIngestSql().get(0));
 
@@ -1069,7 +1069,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         Assertions.assertEquals(expectedMainToTemp, milestoningSql.get(1));
         Assertions.assertEquals(expectedUpdateMain, milestoningSql.get(2));
         Assertions.assertEquals(expectedTempToMain, milestoningSql.get(3));
-        Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`temp`"), milestoningSql.get(4));
+        Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`temp`", "temp"), milestoningSql.get(4));
 
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
         verifyStats(operations, incomingRecordCount, rowsUpdated, rowsDeleted, rowsInserted, rowsTerminated);
@@ -1149,7 +1149,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         Assertions.assertEquals(expectedMainToTemp, milestoningSql.get(1));
         Assertions.assertEquals(expectedUpdateMain, milestoningSql.get(2));
         Assertions.assertEquals(expectedTempToMain, milestoningSql.get(3));
-        Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`temp`"), milestoningSql.get(4));
+        Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`temp`", "temp"), milestoningSql.get(4));
 
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
         String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage";
@@ -1170,8 +1170,8 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         return BigQueryTestArtifacts.expectedMetadataTableIngestQuery;
     }
 
-    protected String getExpectedCleanupSql(String fullName)
+    protected String getExpectedCleanupSql(String fullName, String alias)
     {
-        return String.format("TRUNCATE TABLE %s", fullName);
+        return String.format("DELETE FROM %s as %s WHERE 1 = 1", fullName, alias);
     }
 }

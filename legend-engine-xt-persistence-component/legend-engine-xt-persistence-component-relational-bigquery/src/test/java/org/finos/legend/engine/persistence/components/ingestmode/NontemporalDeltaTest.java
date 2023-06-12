@@ -86,7 +86,8 @@ public class NontemporalDeltaTest extends org.finos.legend.engine.persistence.co
                 "sink.`name` = stage.`name`," +
                 "sink.`amount` = stage.`amount`," +
                 "sink.`biz_date` = stage.`biz_date`," +
-                "sink.`digest` = stage.`digest` " +
+                "sink.`digest` = stage.`digest`," +
+                "sink.`batch_update_time` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00') " +
                 "WHEN NOT MATCHED THEN INSERT " +
                 "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`) " +
                 "VALUES (stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'))";
@@ -132,7 +133,7 @@ public class NontemporalDeltaTest extends org.finos.legend.engine.persistence.co
                 "WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) " +
                 "as stage ON (sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`) " +
                 "WHEN MATCHED AND sink.`digest` <> stage.`digest` " +
-                "THEN UPDATE SET sink.`id` = stage.`id`,sink.`name` = stage.`name`,sink.`amount` = stage.`amount`,sink.`biz_date` = stage.`biz_date`,sink.`digest` = stage.`digest` " +
+                "THEN UPDATE SET sink.`id` = stage.`id`,sink.`name` = stage.`name`,sink.`amount` = stage.`amount`,sink.`biz_date` = stage.`biz_date`,sink.`digest` = stage.`digest`,sink.`batch_update_time` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00') " +
                 "WHEN NOT MATCHED " +
                 "THEN INSERT (`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`) " +
                 "VALUES (stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'))";
