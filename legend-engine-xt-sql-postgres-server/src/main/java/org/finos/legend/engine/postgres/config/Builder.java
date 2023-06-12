@@ -42,8 +42,7 @@ public class Builder
         else if (serverConfig.getHandler().getType() == HandlerType.LEGEND)
         {
             LegendHandlerConfig config = (LegendHandlerConfig) serverConfig.getHandler();
-            CookieStore cookieStore = new BasicCookieStore();
-            LegendTdsClient client = new LegendTdsClient(config.getProtocol(), config.getHost(), config.getPort(), cookieStore);
+            LegendTdsClient client = new LegendTdsClient(config.getProtocol(), config.getHost(), config.getPort());
             return new LegendSessionFactory(client);
         }
         else

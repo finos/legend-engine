@@ -76,6 +76,12 @@ public class ExecutionDispatcherTest
         assertDataSessionHandler("SELECT * FROM service.\"/testService\"");
     }
 
+    @Test
+    public void testShowTxnLevel()
+    {
+        assertMetadataSessionHandler("SHOW TRANSACTION ISOLATION LEVEL");
+    }
+
     private static void assertEmptySessionHandler(String query)
     {
         SessionHandler sessionHandler = getSessionHandler(query);

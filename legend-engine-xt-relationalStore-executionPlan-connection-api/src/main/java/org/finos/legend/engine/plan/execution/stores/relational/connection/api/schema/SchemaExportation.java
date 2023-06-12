@@ -32,7 +32,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.api.s
 import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.model.DatabaseBuilderInput;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.model.DatabasePattern;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Column;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Schema;
@@ -365,11 +364,14 @@ public class SchemaExportation
 
     private void preProcessInput(DatabaseBuilderInput storeInput)
     {
+        /*
+        // TODO - is this a feature flag to allow this feature only for Snowflake ??
         if (storeInput.connection.datasourceSpecification instanceof SnowflakeDatasourceSpecification)
         {
             SnowflakeDatasourceSpecification snowflakeDatasourceSpecification = (SnowflakeDatasourceSpecification) storeInput.connection.datasourceSpecification;
             storeInput.config.setPatterns(ListIterate.collect(storeInput.config.getPatterns(), p -> p.withNewCatalog(snowflakeDatasourceSpecification.databaseName)));
         }
+         */
     }
 
     public static String escapeString(String s)

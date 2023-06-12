@@ -193,6 +193,16 @@ function test::graphFetchWithBatchMemoryLimitAndBatchSize():String[1]
     test::Person.all()->graphFetch(#{test::Person{firstName,lastName,employmentDateTime}}#, 1)->serialize(#{test::Person{firstName,lastName,employmentDateTime}}#)
 }
 
+function test::graphFetchCheckedWithBatchMemoryLimit():String[1]
+{
+    test::Person.all()->graphFetchChecked(#{test::Person{firstName,lastName,employmentDateTime}}#)->serialize(#{test::Person{firstName,lastName,employmentDateTime}}#)
+}
+
+function test::graphFetchCheckedWithBatchMemoryLimitAndBatchSize():String[1]
+{
+    test::Person.all()->graphFetchChecked(#{test::Person{firstName,lastName,employmentDateTime}}#, 1)->serialize(#{test::Person{firstName,lastName,employmentDateTime}}#)
+}
+
 ###Mapping
 Mapping test::Map
 (
