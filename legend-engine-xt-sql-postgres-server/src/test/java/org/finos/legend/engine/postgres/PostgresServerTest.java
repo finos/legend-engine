@@ -22,6 +22,8 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import io.dropwizard.testing.junit.ResourceTestRule;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -138,6 +140,45 @@ public class PostgresServerTest
                 "dummy", "dummy");
              PreparedStatement statement = connection.prepareStatement("SELECT 1");
              ResultSet resultSet = statement.executeQuery()
+        )
+        {
+            int rows = 0;
+            while (resultSet.next())
+            {
+                rows++;
+            }
+            Assert.assertEquals(1, rows);
+        }
+    }
+
+    @Test
+    public void testShowTxn() throws SQLException
+    {
+        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                "dummy", "dummy");
+             PreparedStatement statement = connection.prepareStatement("SHOW TRANSACTION ISOLATION LEVEL");
+             ResultSet resultSet = statement.executeQuery()
+        )
+        {
+            int rows = 0;
+            while (resultSet.next())
+            {
+                rows++;
+            }
+            Assert.assertEquals(1, rows);
+        }
+    }
+
+    @Test
+    public void testHikariConnection() throws SQLException
+    {
+        HikariConfig jdbcConfig = new HikariConfig();
+        jdbcConfig.setJdbcUrl("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres");
+        jdbcConfig.setUsername("dummy");
+        try (HikariDataSource dataSource = new HikariDataSource(jdbcConfig);
+             Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement("SELECT 1");
+             ResultSet resultSet = preparedStatement.executeQuery()
         )
         {
             int rows = 0;

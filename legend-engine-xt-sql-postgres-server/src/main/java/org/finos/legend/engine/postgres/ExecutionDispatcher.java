@@ -43,6 +43,13 @@ public class ExecutionDispatcher extends SqlBaseParserBaseVisitor<SessionHandler
         return EMPTY_SESSION_HANDLER;
     }
 
+    @Override
+    public SessionHandler visitShowTransaction(SqlBaseParser.ShowTransactionContext ctx)
+    {
+        // TODO: Handle show transaction instead of routing to metadata session handler
+        return metaDataSessionHandler;
+    }
+
     /**
      * Visit the <code>SELECT</code> query context.
      * Select query gets the name default from the antlr definition
