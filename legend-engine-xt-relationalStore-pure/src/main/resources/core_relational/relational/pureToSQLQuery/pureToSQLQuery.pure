@@ -53,8 +53,6 @@ Class meta::relational::functions::RelationalDebugContext extends DebugContext
 
 Class meta::relational::functions::pureToSqlQuery::OldAliasToNewAlias extends Pair<String, TableAlias>{}
 
-Class meta::relational::functions::pureToSqlQuery::StringFunctionPair extends Pair<meta::pure::metamodel::function::Function<Any>, meta::pure::metamodel::function::Function<{->RelationalOperationElement[1]}>>{}
-
 Class meta::relational::functions::pureToSqlQuery::SelectWithCursor extends RelationalOperationElement
 {
    parent : SelectWithCursor[0..1];
@@ -669,10 +667,6 @@ function  meta::relational::functions::pureToSqlQuery::processObjectGroupBy(f:Fu
    let merge = $toMerge->mergeSQLQueryData($nodeId, $state, $context, $extensions);
 
    // Nest potential filter --------
-   let requiredColumns = $merge.columns->extractTableAliasColumns()
-                                       ->concatenate($merge.data->map(x|$x->children())->map(j | $j.join.operation->extractTableAliasColumns()))
-                                       ->filter(t|$t.alias == $mainSelect.data.alias)
-                                       ->removeDuplicates({u,v|$u.alias.name == $v.alias.name && $u.column.name == $v.column.name});
 
    //Functions
    let funcPathInformation = $functions->map(f|let index = $functions->indexOf($f);
@@ -685,7 +679,6 @@ function  meta::relational::functions::pureToSqlQuery::processObjectGroupBy(f:Fu
    let aggPathInformation = $aggs.aggregateFn->map(a | let pureType = $a->functionReturnType().rawType->toOne();
                                                        ^PathInformation(type=$pureType, relationalType = meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($pureType)););
    let paths = $funcPathInformation->concatenate($aggPathInformation)->cast(@PathInformation);
-   let funcAndAgg = $functions->concatenate($aggs.aggregateFn);
 
    ^$operation(
       select = ^TdsSelectSqlQuery(
@@ -1029,8 +1022,6 @@ function meta::relational::functions::pureToSqlQuery::buildCorrelatedSubQuery(se
 
    let targetAlias = if($child.alias.relationalElement->instanceOf(SelectSQLQuery),|$child.alias, |^TableAlias(name=$child.alias.name, relationalElement=$nestedSelect));
 
-   let oldTarget = $child.alias;
-
    // Find the columns that are in the filter but refer to nodes outside of the correlated subQuery
    let foundNodeSubNodes = $child->getAllNodes()->cast(@JoinTreeNode).alias;
    let filters = if($select.savedFilteringOperation->isEmpty(),|[],|$select.savedFilteringOperation.second->map(f|pair($f->buildUniqueName(true, $extensions), $f))->removeDuplicates({a,b|$a.first == $b.first}).second);
@@ -1135,9 +1126,6 @@ function meta::relational::functions::pureToSqlQuery::buildCorrelatedSubQuery(se
                                                                 let sourceCol = $source.column;
                                                                 pair($source, ^$source(alias=$newTargetAlias, column=^$sourceCol(name=$p.second.name)));
                                                           );
-
-   // Reprocess the column names of the filter so that they point to the potentially renamed columns
-   let reprocessedColumnsOrFilteringOperation = $state.inFilter->if(|$select.filteringOperation, |$select.columns)->reprocessTableAliasColumns($tableAliasColumnRemap);
 
    // Make sure that wrapped table aliases are now pointing to the top alias (referring to the nested select)
    let nestedJoinAliases = $child->collectTableNames()->map(t|^OldAliasToNewAlias(first=$t, second=$newTargetAlias));
@@ -1465,8 +1453,6 @@ function meta::relational::functions::pureToSqlQuery::doJoinToClass(joinTree: Jo
                                                                   ->concatenate($base.select.filteringOperation)->andFilters($extensions)
                                             )
                              );
-
-       let baseCurrentTreeNode = findNode($base.currentTreeNode->toOne(),$base.select.data->toOne(),$queryWithJoin.select.data->toOne());
 
        if (!$setImplementation->resolveDistinct() == true && $setImplementation->resolveGroupBy()->isEmpty(),
           | $queryAllFilters,
@@ -1932,7 +1918,6 @@ function meta::relational::functions::pureToSqlQuery::replaceJoinTableWithSelect
    let select = $s.select;
 
    let finalNode = $currentTreeNode->findLastJoinTreeNode()->cast(@JoinTreeNode);
-   let join = $finalNode.join;
 
    //Remove column aliases
    let reprocessedColumns = $baseSelect.columns->cast(@Alias)->map(c | $c.relationalElement->match([t:TableAliasColumn[1] | $t;,
@@ -3059,8 +3044,6 @@ function meta::relational::functions::pureToSqlQuery::moveExtraFilterToFilter(s:
 
 function meta::relational::functions::pureToSqlQuery::processDynaFunction(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-   let funcName = $f.func.functionName->toOne();
-
    let isIfTrueFalseStmt = $f.func == if_Boolean_1__Function_1__Function_1__T_m_ || $state.inIf == true;
    let paramIsIfTrueFalseStmt = {paramIndex:Integer[1]|$state.inIf == true && $paramIndex->in([1,2])};
 
@@ -4201,11 +4184,6 @@ function meta::relational::functions::pureToSqlQuery::collectTableNames(n:JoinTr
    $n.alias.name->concatenate($n.childrenData->map(j|$j->cast(@JoinTreeNode)->collectTableNames()));
 }
 
-function <<access.private>> meta::relational::functions::pureToSqlQuery::reprocessLambda(f:LambdaFunction<Any>[1]):LambdaFunction<Any>[1]
-{
-   ^$f(expressionSequence = $f.expressionSequence->map(e|$e->reprocessVS()));
-}
-
 function <<access.private>> meta::relational::functions::pureToSqlQuery::reprocessVS(v:ValueSpecification[1]):ValueSpecification[1]
 {
    $v->match([
@@ -4760,10 +4738,6 @@ function meta::relational::functions::pureToSqlQuery::processTdsContainsWithLamb
 
    let tdsSelect_PreFilter = processValueSpecification($f.parametersValues->at(3), [], ^SelectWithCursor(select=^SelectSQLQuery()), $vars, defaultState($state.mapping, $state.inScopeVars), $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
    let tdsSelect = $tdsSelect_PreFilter.select->pushExtraFilteringOperation($extensions);
-   let tdsColumns = $tdsSelect.data.alias.relationalElement->toOne()->match([
-      v: VarSetPlaceHolder[1] | $v.columns,
-      r: RelationalOperationElement[1] | $tdsSelect.columns;
-   ]);
    let rightTableAlias = ^TableAlias(name='"tdsContains_TDS_"'+$nodeId, relationalElement=$tdsSelect);
    let rightSelect = ^SelectSQLQuery(data = ^RootJoinTreeNode(alias = $rightTableAlias));
 
@@ -4817,8 +4791,6 @@ function meta::relational::functions::pureToSqlQuery::processColumnProjectionsFr
    let colNameGenerationFunction = {c:Column[1] | 'gen_col_projection_' + $c.name->removeQuotes()->replace(' ', '_')};
 
    let queryWithAddedColumns = $query1->recursiveAddColumnsToRoot($toProjectColumns, $colNameGenerationFunction);
-   let newAlias = $queryWithAddedColumns.data.alias->toOne();
-   let columnAliases = $toProjectColumns->map(x | ^Alias(name=$colNameGenerationFunction->eval($x), relationalElement=^TableAliasColumn(alias=$newAlias, column=$x)));
 
    let innerAlias = ^TableAlias(name = 'root', relationalElement = $queryWithAddedColumns);
 
@@ -4894,7 +4866,6 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::switchA
 
 function meta::relational::functions::pureToSqlQuery::findColumnInTdsFromGetter(f:FunctionExpression[1], tdsAliases:Alias[*],returnColumnName:Boolean[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1]):RelationalOperationElement[*]
 {
-    let names = $tdsAliases->map(a|$a->match([a:Alias[1]|$a.name ,w:WindowColumn[1]| $w.columnName, t:TableAliasColumn[1]| $t.column.name]));
     let propertyName =  $f.parametersValues->at(1)->match([ iv:InstanceValue[1]|$iv.values,
                                                             ve:VariableExpression[1]|let res = $ve->resolve($vars, $state.inScopeVars);
                                                                                      $res->cast(@InstanceValue).values;
@@ -5201,7 +5172,6 @@ function meta::relational::functions::pureToSqlQuery::processWindowColumns(cols:
                            $newMergeWithWindow;
                            );
 
-   let allWindowCols= $queries.columns;
    let finalMerge=^$mainSelect(columns=[])->concatenate($queries)->mergeSQLQueryData($nodeId, $state, $context, $extensions);
    $finalMerge;
 
@@ -5845,9 +5815,6 @@ function meta::relational::functions::pureToSqlQuery::moveSelectQueryToSubSelect
                                           pair($e, $res);
                                    );
 
-    let aliasesMap = if ($select.data->map(x|$x->children())->isEmpty(), | [], | let existingAlias = $select.data->map(x|$x->children()).join.aliases->at(1).first->cast(@TableAlias);
-                                                                   ^OldAliasToNewAlias(first=$existingAlias.name, second=^$existingAlias(name=$currentAlias.name)););
-
     let newData = ^RootJoinTreeNode(alias=^$currentAlias(name=$targetAlias), childrenData=$child);
 
     let newLeftSideOfFilter = $select.leftSideOfFilter->isNotEmpty()->if(|$select.leftSideOfFilter->toOne()->findOneNode($select.data->toOne(), $newData),|[]);
@@ -6308,8 +6275,6 @@ function meta::relational::functions::pureToSqlQuery::extractValue(src:Relationa
 
 function meta::relational::functions::pureToSqlQuery::reprocessJoinTreeNode(source:RelationalTreeNode[1], target:JoinTreeNode[1], list:OldAliasToNewAlias[*], nodeId:String[1]):Pair<JoinTreeNode, List<OldAliasToNewAlias>>[1]
 {
-
-   let sourceAlias = $source.alias;
    let oldTargetAlias = $target.alias;
    let newTargetAlias = ^TableAlias(name = $oldTargetAlias.name+$nodeId, relationalElement = $oldTargetAlias.relation->match([s:SemiStructuredArrayFlatten[1] | ^$s(navigation = $s.navigation->reprocessAliases($list)), r:RelationalOperationElement[1]|$r]));
    let newAliasMapping = ^OldAliasToNewAlias(first=$oldTargetAlias.name, second=$newTargetAlias);
@@ -6646,13 +6611,6 @@ function meta::relational::functions::pureToSqlQuery::mergeSQLQueryData(preQuery
 
    $filtered;
 }
-
-function meta::relational::functions::pureToSqlQuery::shouldIsolateGroupBy(query:SelectSQLQuery[1], other:SelectSQLQuery[1]):Boolean[1]
-{
-   //If the query has a group by, and it is not the same group by as the other query, then we should isolate
-   !$query.groupBy->isEmpty() && (!($query.groupBy->size() == $other.groupBy->size()) && (!($other.groupBy->containsAll($query.groupBy))));
-}
-
 
 function meta::relational::functions::pureToSqlQuery::addExtraJoinColumns(tableAlias: TableAlias[1], j:Join[1]):TableAlias[1]
 {
