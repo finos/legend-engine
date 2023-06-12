@@ -270,7 +270,9 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planRootG
    let store       = $sq.store;
    let fe          = $sq.fe->evaluateAndDeactivate();
    let rootTree    = $clusteredTree->byPassClusteringInfo()->cast(@RoutedRootGraphFetchTree<Any>);
-   let batchSize   = if($fe.func == graphFetch_T_MANY__RootGraphFetchTree_1__Integer_1__T_MANY_, | $fe->instanceValuesAtParameter(2, $sq.inScopeVars)->toOne()->cast(@Integer), | 1);
+   let batchSize   = if($fe.func == graphFetch_T_MANY__RootGraphFetchTree_1__Integer_1__T_MANY_ || $fe.func == graphFetchChecked_T_MANY__RootGraphFetchTree_1__Integer_1__Checked_MANY_,
+                      | $fe->instanceValuesAtParameter(2, $sq.inScopeVars)->toOne()->cast(@Integer), 
+                      | 1);
 
    let connection = if ($sq.store->instanceOf(ModelStore),
                         | let sourceClass = $rootTree.sets->toOne()->cast(@PureInstanceSetImplementation).srcClass->toOne();

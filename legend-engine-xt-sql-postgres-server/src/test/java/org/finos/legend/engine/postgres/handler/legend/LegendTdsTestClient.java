@@ -19,6 +19,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import io.dropwizard.testing.junit.ResourceTestRule;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.LazyIterate;
@@ -32,20 +33,25 @@ import javax.ws.rs.core.Response;
 import java.util.Collections;
 import java.util.List;
 
-public class LegendTdsTestClient implements LegendExecutionClient
+public class LegendTdsTestClient extends LegendTdsClient
 {
-    private final Invocation.Builder invocationBuilder;
+    private final ResourceTestRule resourceTestRule;
     private static final ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(LegendTdsTestClient.class);
 
-    public LegendTdsTestClient(Invocation.Builder invocationBuilder)
+
+    public LegendTdsTestClient(ResourceTestRule resourceTestRule)
     {
-        this.invocationBuilder = invocationBuilder;
+        super(null, null, null);
+        this.resourceTestRule = resourceTestRule;
     }
 
-    private JsonNode exequteQuery(String query)
+
+    @Override
+    protected JsonNode executeQueryApi(String query)
     {
-        Response response = invocationBuilder.post(Entity.text(query));
+        Invocation.Builder builder = resourceTestRule.target("sql/v1/execution/executeQueryString").request();
+        Response response = builder.post(Entity.text(query));
         String responseString = response.readEntity(String.class);
 
         if (response.getStatus() != 200)
@@ -63,50 +69,23 @@ public class LegendTdsTestClient implements LegendExecutionClient
     }
 
     @Override
-    public List<LegendColumn> getSchema(String query)
+    protected JsonNode executeSchemaApi(String query)
     {
-        JsonNode response = exequteQuery(query);
+        Invocation.Builder builder = resourceTestRule.target("sql/v1/execution/getSchemaFromQueryString").request();
+        Response response = builder.post(Entity.text(query));
+        String responseString = response.readEntity(String.class);
 
-        return getSchemaFromExecutionResponse(response);
-    }
-
-    @Override
-    public Iterable<TDSRow> executeQuery(String query)
-    {
-        JsonNode response = exequteQuery(query);
-
-        return getRowsFromExecutionResponse(response);
-
-    }
-
-    @Override
-    public Pair<List<LegendColumn>, Iterable<TDSRow>> getSchemaAndExecuteQuery(String query)
-    {
-        JsonNode response = exequteQuery(query);
-
-        List<LegendColumn> schema = getSchemaFromExecutionResponse(response);
-        Iterable<TDSRow> rows = getRowsFromExecutionResponse(response);
-        return Tuples.pair(schema, rows);
-    }
-
-    private List<LegendColumn> getSchemaFromExecutionResponse(JsonNode jsonNode)
-    {
-        if (jsonNode.get("builder") != null)
+        if (response.getStatus() != 200)
         {
-            ArrayNode columns = (ArrayNode) jsonNode.get("builder").get("columns");
-            return IterableIterate.collect(columns, c -> new LegendColumn(c.get("name").asText(), c.get("type").asText()));
+            LOGGER.error(String.format("Status: [%s], Response: [%s]", response.getStatusInfo(), responseString));
         }
-        return Collections.emptyList();
-    }
-
-
-    private static Iterable<TDSRow> getRowsFromExecutionResponse(JsonNode jsonNode)
-    {
-        if (jsonNode.get("result") != null)
+        try
         {
-            ArrayNode result = (ArrayNode) jsonNode.get("result").get("rows");
-            return LazyIterate.collect(result, a -> columIndex -> a.get("values").get(columIndex).asText());
+            return mapper.readValue(responseString, JsonNode.class);
         }
-        return Collections.emptyList();
+        catch (JsonProcessingException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 }
