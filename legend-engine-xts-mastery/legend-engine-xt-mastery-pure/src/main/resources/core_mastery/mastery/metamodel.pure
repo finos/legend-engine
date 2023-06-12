@@ -26,6 +26,9 @@ meta::pure::mastery::metamodel::MasterRecordDefinition extends PackageableElemen
   
   {doc.doc = 'The sources of records to be loaded into the master.'}
   sources: meta::pure::mastery::metamodel::RecordSource[0..*];
+
+  {doc.doc = 'The rules which determine if changes should be blocked or accepted'}
+  precedenceRules: meta::pure::mastery::metamodel::precedence::PrecedenceRule[0..*];
 }
 
 
@@ -145,3 +148,93 @@ meta::pure::mastery::metamodel::identity::CollectionEquality
 }
 
 
+/*************************
+ * Precedence Rules
+ *************************/
+
+ Class <<typemodifiers.abstract>> meta::pure::mastery::metamodel::precedence::PrecedenceRule
+{
+  paths: meta::pure::mastery::metamodel::precedence::PropertyPath[1..*];
+  scope: meta::pure::mastery::metamodel::precedence::RuleScope[*];
+  
+}
+
+Class meta::pure::mastery::metamodel::precedence::PropertyPath
+{
+  property: Property<Nil, Any|*>[1];
+  filter: meta::pure::metamodel::function::LambdaFunction<{Class<Any>[1]->Any[*]}>[1];
+}
+
+
+Class meta::pure::mastery::metamodel::precedence::UpdateRule extends meta::pure::mastery::metamodel::precedence::PrecedenceRule
+{
+  
+}
+
+
+Class meta::pure::mastery::metamodel::precedence::SourcePrecedenceRule extends meta::pure::mastery::metamodel::precedence::UpdateRule
+[
+   noRuleScope( ~function: $this.scope->isEmpty()
+                          ~enforcementLevel: Error
+                          ~message: 'Source Precedence Rule must be scoped to at least one of the following: datasourceId, dataproviderId or dataProviderType')
+]
+{
+  precedence: Integer[1];
+  action: meta::pure::mastery::metamodel::precedence::RuleAction[1];
+
+}
+
+Class meta::pure::mastery::metamodel::precedence::ConditionalRule extends meta::pure::mastery::metamodel::precedence::UpdateRule
+{
+  predicate: meta::pure::metamodel::function::LambdaFunction<{Any[*],Any[*]->Boolean[1]}>[1];
+}
+
+
+Class meta::pure::mastery::metamodel::precedence::CreateRule extends meta::pure::mastery::metamodel::precedence::PrecedenceRule
+[
+   noRuleScope( ~function: $this.scope->isEmpty()
+                          ~enforcementLevel: Error
+                          ~message: 'Create Rule must be scoped to at least one of the following: datasourceId, dataproviderId or dataProviderType')
+]
+{
+}
+
+
+
+Class meta::pure::mastery::metamodel::precedence::DeleteRule extends meta::pure::mastery::metamodel::precedence::PrecedenceRule
+[
+   noRuleScope( ~function: $this.scope->isEmpty()
+                          ~enforcementLevel: Error
+                          ~message: 'Delete Rule must be scoped to at least one of the following: datasourceId, dataproviderId or dataProviderType')
+]
+{
+}
+
+Class <<typemodifiers.abstract>> meta::pure::mastery::metamodel::precedence::RuleScope {
+  
+}
+
+Class meta::pure::mastery::metamodel::precedence::RecordSourceScope extends meta::pure::mastery::metamodel::precedence::RuleScope {
+  recordSourceId: String[1];
+}
+
+Class meta::pure::mastery::metamodel::precedence::DataProviderTypeScope extends meta::pure::mastery::metamodel::precedence::RuleScope {
+  dataProviderType: meta::pure::mastery::metamodel::precedence::DataProviderType[1];
+}
+
+Class meta::pure::mastery::metamodel::precedence::DataProviderIdScope extends meta::pure::mastery::metamodel::precedence::RuleScope {
+  dataProviderId: String[1];
+}
+
+
+Enum meta::pure::mastery::metamodel::precedence::RuleAction
+{
+  Overwrite,
+  Block
+}
+
+Enum meta::pure::mastery::metamodel::precedence::DataProviderType
+{
+  Aggregate,
+  Exchange
+}
