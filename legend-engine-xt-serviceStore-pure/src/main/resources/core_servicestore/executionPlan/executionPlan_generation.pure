@@ -61,7 +61,9 @@ function meta::external::store::service::executionPlan::generation::planRootGrap
    let fe          = $sq.fe->evaluateAndDeactivate();
    
    let rootTree    = $clusteredTree->byPassClusteringInfo()->cast(@RoutedRootGraphFetchTree<Any>);
-   let batchSize   = if($fe.func == graphFetch_T_MANY__RootGraphFetchTree_1__Integer_1__T_MANY_, | $fe->instanceValuesAtParameter(2, $sq.inScopeVars)->toOne()->cast(@Integer), | 1);
+   let batchSize   = if($fe.func == graphFetch_T_MANY__RootGraphFetchTree_1__Integer_1__T_MANY_ || $fe.func == meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Integer_1__Checked_MANY_, 
+                      | $fe->instanceValuesAtParameter(2, $sq.inScopeVars)->toOne()->cast(@Integer), 
+                      | 1);
 
    let connection  = $runtime->connectionByElement($store);
    
