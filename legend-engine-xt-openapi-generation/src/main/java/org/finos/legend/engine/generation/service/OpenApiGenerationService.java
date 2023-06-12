@@ -1,3 +1,17 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package org.finos.legend.engine.generation.service;
 
 import io.opentracing.Scope;
@@ -15,7 +29,6 @@ import org.finos.legend.engine.plan.execution.service.ServiceModeling;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
-import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.http.InflateInterceptor;
@@ -40,11 +53,13 @@ import javax.ws.rs.core.Response;
 @Api(tags = "Generation - Code")
 @Path("pure/v1/codeGeneration")
 @Produces(MediaType.APPLICATION_JSON)
-public class OpenApiGenerationService {
+public class OpenApiGenerationService
+{
     private static final Logger LOGGER = LoggerFactory.getLogger("Alloy Execution Server");
     private final ModelManager modelManager;
 
-    public OpenApiGenerationService(ModelManager modelManager) {
+    public OpenApiGenerationService(ModelManager modelManager)
+    {
         this.modelManager = modelManager;
     }
 
@@ -64,7 +79,8 @@ public class OpenApiGenerationService {
                     interactive,
                     profiles
             );
-        } catch (Exception ex)
+        }
+        catch (Exception ex)
         {
             return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_INTERACTIVE_ERROR : LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_ERROR, profiles);
         }
@@ -75,23 +91,25 @@ public class OpenApiGenerationService {
         try
         {
             long start = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(profiles, interactive ? LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_INTERACTIVE_ERROR: LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_ERROR).toString());
+            LOGGER.info(new LogInfo(profiles, interactive ? LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_INTERACTIVE_ERROR : LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_ERROR).toString());
             PureModel pureModel = pureModelFunc.value();
             PureModelContextData data = this.modelManager.loadData(context, null, profiles);
             org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service service = findService(data);
             Root_meta_legend_service_metamodel_Service pureService = new ServiceModeling(modelManager, pureModel.getDeploymentMode(),null).compileService(service, pureModel.getContext(service));
-            String result = core_external_format_openapi_generation.Root_meta_external_format_openapi_generation_serviceToOpenApi_Service_1__Server_1__String_1_(pureService, new Root_meta_external_format_openapi_metamodel_Server_Impl("${HOST}"), pureModel.getExecutionSupport();
+            String result = core_external_format_openapi_generation.Root_meta_external_format_openapi_generation_serviceToOpenApi_Service_1__Server_1__String_1_(pureService, new Root_meta_external_format_openapi_metamodel_Server_Impl("${HOST}"), pureModel.getExecutionSupport());
             long end = System.currentTimeMillis();
-            LOGGER.debug("OpenAPI generation from pureModelContext completed in {} ms", end-start);
+            LOGGER.debug("OpenAPI generation from pureModelContext completed in {} ms", end - start);
             return Response.accepted(result).build();
-        } catch (Exception ex)
+        }
+        catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, interactive? LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_INTERACTIVE_ERROR: LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_ERROR,profiles);
+            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_INTERACTIVE_ERROR : LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_ERROR, profiles);
         }
         
     }
 
-    private Service findService(PureModelContextData data) {
+    private Service findService(PureModelContextData data)
+    {
         return (Service) Iterate.detect(data.getElements(), e -> e instanceof Service);
     }
 }
