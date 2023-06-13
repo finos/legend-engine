@@ -60,16 +60,20 @@ public class LegendResultSet implements PostgresResultSet
     public Object getObject(int i) throws Exception
     {
         LegendColumn legendColumn = columns.get(i - 1);
-        String value = currentRow.get(i - 1);
+        Object value = currentRow.get(i - 1);
+        if (value == null)
+        {
+            return null;
+        }
         switch (legendColumn.getType())
         {
             case "StrictDate":
-                LocalDate localDate = ISO_LOCAL_DATE.parse(value, LocalDate::from);
+                LocalDate localDate = ISO_LOCAL_DATE.parse((String) value, LocalDate::from);
                 long toEpochMilli = localDate.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli();
                 return toEpochMilli;
             case "Date":
             case "DateTime":
-                TemporalAccessor temporalAccessor = TIMESTAMP_FORMATTER.parseBest(value, Instant::from, LocalDate::from);
+                TemporalAccessor temporalAccessor = TIMESTAMP_FORMATTER.parseBest((String) value, Instant::from, LocalDate::from);
                 if (temporalAccessor instanceof Instant)
                 {                    //if date is a valid time stamp
                     return ((Instant) temporalAccessor).toEpochMilli();
@@ -80,13 +84,13 @@ public class LegendResultSet implements PostgresResultSet
                     return ((LocalDate) temporalAccessor).atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli();
                 }
             case "Integer":
-                return Integer.parseInt(value);
+                return ((Number) value).intValue();
             case "Float":
-                return Float.parseFloat(value);
+                return ((Number) value).floatValue();
             case "Number":
-                return Double.parseDouble(value);
+                return ((Number) value).doubleValue();
             case "Boolean":
-                return Boolean.parseBoolean(value);
+                return (Boolean) value;
             default:
                 return value;
         }
