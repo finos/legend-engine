@@ -71,9 +71,9 @@ public class PlanExecutor
     private long graphFetchBatchMemoryLimit;
     private BiFunction<MutableList<CommonProfile>, ExecutionState, ExecutionNodeExecutor> executionNodeExecutorBuilder;
     private final CredentialProviderProvider credentialProviderProvider;
-    private final Boolean logSQLWithParamValues;
+    private final boolean logSQLWithParamValues;
 
-    private PlanExecutor(boolean isJavaCompilationAllowed, ImmutableList<StoreExecutor> extraExecutors, long graphFetchBatchMemoryLimit, CredentialProviderProvider credentialProviderProvider, Boolean logSQLWithParamValues)
+    private PlanExecutor(boolean isJavaCompilationAllowed, ImmutableList<StoreExecutor> extraExecutors, long graphFetchBatchMemoryLimit, CredentialProviderProvider credentialProviderProvider, boolean logSQLWithParamValues)
     {
         EngineUrlStreamHandlerFactory.initialize();
         this.isJavaCompilationAllowed = isJavaCompilationAllowed;
@@ -413,7 +413,7 @@ public class PlanExecutor
         private final MutableList<StoreExecutor> storeExecutors = Lists.mutable.empty();
         private long graphFetchBatchMemoryLimit = DEFAULT_GRAPH_FETCH_BATCH_MEMORY_LIMIT;
         private CredentialProviderProvider credentialProviderProvider = CredentialProviderProvider.defaultProviderProvider();
-        private Boolean logSQLWithParamValues = true;
+        private boolean logSQLWithParamValues = true;
 
         private Builder()
         {
@@ -450,7 +450,7 @@ public class PlanExecutor
             return this;
         }
 
-        public Builder logSQLWithParamValues(Boolean value)
+        public Builder logSQLWithParamValues(boolean value)
         {
             this.logSQLWithParamValues = value;
             return this;

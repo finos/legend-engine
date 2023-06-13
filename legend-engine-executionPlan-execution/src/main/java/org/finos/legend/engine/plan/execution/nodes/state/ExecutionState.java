@@ -66,7 +66,7 @@ public class ExecutionState
     private final List<? extends String> templateFunctions;
     private final boolean isJavaCompilationAllowed;
     private final Map<StoreType, StoreExecutionState> states = new EnumMap<>(StoreType.class);
-    private final Boolean logSQLWithParamValues;
+    private final boolean logSQLWithParamValues;
 
     public final List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> extraNodeExecutors;
     public final List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> extraSequenceNodeExecutors;
@@ -103,7 +103,7 @@ public class ExecutionState
 
     public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed, long graphFetchBatchMemoryLimit)
     {
-        this(res, templateFunctions, extraStates, isJavaCompilationAllowed, graphFetchBatchMemoryLimit, new RequestContext(), null, true);
+        this(res, templateFunctions, extraStates, isJavaCompilationAllowed, graphFetchBatchMemoryLimit, new RequestContext(), null);
     }
 
     public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed, long graphFetchBatchMemoryLimit, RequestContext requestContext,  CredentialProviderProvider credentialProviderProvider)
@@ -111,7 +111,7 @@ public class ExecutionState
         this(res, templateFunctions, extraStates, isJavaCompilationAllowed, graphFetchBatchMemoryLimit, requestContext, credentialProviderProvider, true);
     }
 
-    public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed, long graphFetchBatchMemoryLimit, RequestContext requestContext, CredentialProviderProvider credentialProviderProvider, Boolean logSQLWithParamValues)
+    public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed, long graphFetchBatchMemoryLimit, RequestContext requestContext, CredentialProviderProvider credentialProviderProvider, boolean logSQLWithParamValues)
     {
         this.inAllocation = false;
         this.inLake = false;
@@ -314,6 +314,6 @@ public class ExecutionState
 
     public boolean logSQLWithParamValues()
     {
-        return this.logSQLWithParamValues != null && this.logSQLWithParamValues;
+        return this.logSQLWithParamValues;
     }
 }
