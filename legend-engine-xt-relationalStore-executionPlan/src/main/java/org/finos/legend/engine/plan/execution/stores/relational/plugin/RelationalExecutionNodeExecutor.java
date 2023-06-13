@@ -292,7 +292,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                 scope.span().setTag("databaseType", relationalExecutionNode.getDatabaseTypeName());
                 scope.span().setTag("sql", relationalExecutionNode.sqlQuery());
                 Result result = ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().execute(relationalExecutionNode, this.profiles, this.executionState);
-                if (result instanceof RelationalResult)
+                if (result instanceof RelationalResult && executionState.logSQLWithParamValues())
                 {
                     scope.span().setTag("executedSql", ((RelationalResult) result).executedSQl);
                 }
@@ -313,7 +313,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                 scope.span().setTag("executionTraceID", this.executionState.execID);
                 scope.span().setTag("sql", SQLExecutionNode.sqlQuery());
                 Result result = ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().execute(SQLExecutionNode, profiles, executionState);
-                if (result instanceof SQLExecutionResult)
+                if (result instanceof SQLExecutionResult && executionState.logSQLWithParamValues())
                 {
                     scope.span().setTag("executedSql", ((SQLExecutionResult) result).getExecutedSql());
                 }
