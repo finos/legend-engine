@@ -78,12 +78,12 @@ public class SQLExecutionResult extends SQLResult
             long start = System.currentTimeMillis();
             RelationalExecutionActivity activity = ((RelationalExecutionActivity) activities.get(activities.size() - 1));
             String sql = activity.comment != null ? activity.comment.concat("\n").concat(activity.sql) : activity.sql;
+            String logMessage = logSQLWithParamValues ? sql : SQLExecutionNode.sqlQuery();
+            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, logMessage).toString());
             if (this.getRequestContext() != null)
             {
                 StoreExecutableManager.INSTANCE.addExecutable(this.getRequestContext(), this);
             }
-            String logMessage = logSQLWithParamValues ? sql : SQLExecutionNode.sqlQuery();
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, logMessage).toString());
             this.resultSet = this.getStatement().executeQuery(sql);
             LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_STOP, (double) System.currentTimeMillis() - start).toString());
             this.executedSql = sql;
