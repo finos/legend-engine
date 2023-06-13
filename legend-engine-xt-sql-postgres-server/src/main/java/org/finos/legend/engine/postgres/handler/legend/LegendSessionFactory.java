@@ -44,7 +44,8 @@ public class LegendSessionFactory implements SessionsFactory
             String h2ServerTempDirPath = h2ServerTempDir.getAbsolutePath();
             Server h2PgServer = Server.createPgServer("-baseDir", h2ServerTempDirPath, "-ifNotExists");
             h2PgServer.start();
-            String url = "jdbc:postgresql://localhost:" + h2PgServer.getPort() + "/legendSQLMetadata";
+            String url = "jdbc:postgresql://localhost:" + h2PgServer.getPort() + "/legendSQLMetadata;" +
+                    "INIT=CREATE SCHEMA service\\;CREATE TABLE service.emptytable(id varchar(10));";
             this.metadataSessionHandler = new JDBCSessionFactory.JDBCSessionHandler(url, "sa", "");
         }
         catch (IOException | SQLException e)
