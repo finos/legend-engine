@@ -62,7 +62,7 @@ public class TestRelationStoreExecutableManager
         Mockito.when(mockResultSet.getMetaData()).thenReturn(mockMetadata);
         Mockito.when(mockDatabaseConnection.accept(any())).thenReturn(false);
         StoreExecutableManager.INSTANCE.registerManager();
-        RelationalResult result = new RelationalResult(FastList.newListWith(new RelationalExecutionActivity("TEST", "comment")), mockExecutionNode, FastList.newListWith(new SQLResultColumn("test", "INTEGER")), null, null, mockConnection, null, null, null, new RequestContext(session, "ref"), true);
+        RelationalResult result = new RelationalResult(FastList.newListWith(new RelationalExecutionActivity("TEST", "comment")), mockExecutionNode, FastList.newListWith(new SQLResultColumn("test", "INTEGER")), null, null, mockConnection, null, null, null, new RequestContext(session, "ref"));
         Assert.assertEquals(1, StoreExecutableManager.INSTANCE.getExecutables(session).size());
         result.close();
         Assert.assertTrue(StoreExecutableManager.INSTANCE.getExecutables(session).isEmpty());
@@ -85,7 +85,7 @@ public class TestRelationStoreExecutableManager
         Mockito.when(mockResultSet.getMetaData()).thenReturn(mockMetadata);
         Mockito.when(mockDatabaseConnection.accept(any())).thenReturn(false);
         StoreExecutableManager.INSTANCE.registerManager();
-        RelationalResult result = new RelationalResult(FastList.newListWith(new RelationalExecutionActivity("TEST", "comment")), mockExecutionNode, FastList.newListWith(new SQLResultColumn("test", "INTEGER")), null, null, mockConnection, null, null, null, true);
+        RelationalResult result = new RelationalResult(FastList.newListWith(new RelationalExecutionActivity("TEST", "comment")), mockExecutionNode, FastList.newListWith(new SQLResultColumn("test", "INTEGER")), null, null, mockConnection, null, null, null);
         assert (StoreExecutableManager.INSTANCE.getActiveSessionCount() == 0);
         result.close();
 
@@ -108,7 +108,7 @@ public class TestRelationStoreExecutableManager
         Mockito.when(mockResultSet.getMetaData()).thenReturn(mockMetadata);
         StoreExecutableManager.INSTANCE.registerManager();
 
-        new SQLExecutionResult(FastList.newListWith(new RelationalExecutionActivity("TEST", "comment")), mockExecutionNode, "Test", "GMT", mockConnection, null, null, null, new RequestContext(session, "ref"), true);
+        new SQLExecutionResult(FastList.newListWith(new RelationalExecutionActivity("TEST", "comment")), mockExecutionNode, "Test", "GMT", mockConnection, null, null, null, new RequestContext(session, "ref"));
         Assert.assertEquals(0, StoreExecutableManager.INSTANCE.getExecutables(session).size());
         Assert.assertTrue(StoreExecutableManager.INSTANCE.getExecutables(session).isEmpty());
         StoreExecutableManager.INSTANCE.reset();

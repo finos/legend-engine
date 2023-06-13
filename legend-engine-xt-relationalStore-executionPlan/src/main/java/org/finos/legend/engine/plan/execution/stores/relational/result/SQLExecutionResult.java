@@ -58,7 +58,12 @@ public class SQLExecutionResult extends SQLResult
 
     public SQLExecutionResult(List<ExecutionActivity> activities, SQLExecutionNode SQLExecutionNode, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan)
     {
-        this(activities, SQLExecutionNode, databaseType, databaseTimeZone, connection, profiles, temporaryTables, topSpan, new RequestContext(), false);
+        this(activities, SQLExecutionNode, databaseType, databaseTimeZone, connection, profiles, temporaryTables, topSpan, new RequestContext());
+    }
+
+    public SQLExecutionResult(List<ExecutionActivity> activities, SQLExecutionNode SQLExecutionNode, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan, RequestContext requestContext)
+    {
+        this(activities, SQLExecutionNode, databaseType, databaseTimeZone, connection, profiles, temporaryTables, topSpan, requestContext, true);
     }
 
     public SQLExecutionResult(List<ExecutionActivity> activities, SQLExecutionNode SQLExecutionNode, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan, RequestContext requestContext, boolean logSQLWithParamValues)

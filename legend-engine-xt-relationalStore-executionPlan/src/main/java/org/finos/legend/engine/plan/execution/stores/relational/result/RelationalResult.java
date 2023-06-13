@@ -114,9 +114,14 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
 
     public Builder builder;
 
-    public RelationalResult(MutableList<ExecutionActivity> activities, RelationalExecutionNode node, List<SQLResultColumn> sqlResultColumns, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan, boolean logSQLWithParamValues)
+    public RelationalResult(MutableList<ExecutionActivity> activities, RelationalExecutionNode node, List<SQLResultColumn> sqlResultColumns, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan)
     {
-        this(activities, node, sqlResultColumns, databaseType, databaseTimeZone, connection, profiles, temporaryTables, topSpan, new RequestContext(), logSQLWithParamValues);
+        this(activities, node, sqlResultColumns, databaseType, databaseTimeZone, connection, profiles, temporaryTables, topSpan, new RequestContext());
+    }
+
+    public RelationalResult(MutableList<ExecutionActivity> activities, RelationalExecutionNode node, List<SQLResultColumn> sqlResultColumns, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan, RequestContext requestContext)
+    {
+        this(activities, node, sqlResultColumns, databaseType, databaseTimeZone, connection, profiles, temporaryTables, topSpan, requestContext, true);
     }
 
     public RelationalResult(MutableList<ExecutionActivity> activities, RelationalExecutionNode node, List<SQLResultColumn> sqlResultColumns, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan, RequestContext requestContext, boolean logSQLWithParamValues)
