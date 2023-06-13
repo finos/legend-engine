@@ -73,6 +73,12 @@ public class BloombergDataReadDriver<T> extends AbstractBloombergReadDriver<T>
     }
 
     @Override
+    public void stop()
+    {
+        this.objectFactory.finished();
+    }
+
+    @Override
     public Collection<IChecked<T>> readCheckedObjects()
     {
         LineReader.Line line = nextLine();

@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.external.format.flatdata.driver.bloomberg;
 
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.external.format.flatdata.driver.core.connection.CharCursor;
 import org.finos.legend.engine.external.format.flatdata.driver.core.connection.InputStreamConnection;
 import org.finos.legend.engine.external.format.flatdata.driver.core.util.SectionProcessingContext;
@@ -27,7 +29,9 @@ import org.finos.legend.engine.external.format.flatdata.driver.spi.ParsedFlatDat
 import org.finos.legend.engine.external.format.flatdata.metamodel.FlatData;
 import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataRecordType;
 import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataSection;
+import org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicChecked;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
+import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IDefect;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,16 +50,20 @@ public class BloombergProcessor<T> implements FlatDataProcessor<T>
 
     private final FlatData flatData;
     private final String definingPath;
+    private final T schemaObject;
     private final Map<String, Function<FlatDataRecordType, ParsedFlatDataToObject<?>>> toObjectFactoryFactories;
     private final Map<String, Function<FlatDataRecordType, ObjectToParsedFlatData<?>>> fromObjectFactoryFactories;
+    private final ArrayList<IChecked<T>> defectiveObjects = new ArrayList<>();
 
     private BloombergProcessor(FlatData flatData,
                                String definingPath,
+                                T schemaObject,
                                Map<String, Function<FlatDataRecordType, ParsedFlatDataToObject<?>>> toObjectFactoryFactories,
                                Map<String, Function<FlatDataRecordType, ObjectToParsedFlatData<?>>> fromObjectFactoryFactories)
     {
         this.flatData = flatData;
         this.definingPath = definingPath;
+        this.schemaObject = schemaObject;
         this.toObjectFactoryFactories = toObjectFactoryFactories;
         this.fromObjectFactoryFactories = fromObjectFactoryFactories;
     }
@@ -66,6 +74,12 @@ public class BloombergProcessor<T> implements FlatDataProcessor<T>
         {
             InputStreamConnection connection = new InputStreamConnection(inputStream);
             connection.open();
+
+            Consumer<IChecked<T>> sectionConsumer = consumer;
+            if (this.schemaObject != null)
+            {
+                sectionConsumer = this::enqueueDefectiveObjects;
+            }
 
             ProcessingVariables variables = new ProcessingVariables(flatData);
             List<BloombergSection> bloombergSections = new ArrayList<>();
@@ -111,11 +125,22 @@ public class BloombergProcessor<T> implements FlatDataProcessor<T>
                 }
                 else
                 {
-                    bloombergSection.process(consumer);
+                    bloombergSection.process(sectionConsumer);
                 }
             }
 
             bloombergSections.forEach(BloombergSection::checkProcessed);
+
+            if (this.schemaObject != null)
+            {
+                if (!this.defectiveObjects.isEmpty())
+                {
+                    MutableList<String> defectMessages = ListIterate.flatCollect(this.defectiveObjects, IChecked::getDefects).collect(IDefect::getMessage);
+                    // it is safe to throw error as we don't allow checked queries on schema
+                    throw new IllegalStateException(String.format("Defects found: %s", defectMessages.makeString()));
+                }
+                consumer.accept(BasicChecked.newChecked(this.schemaObject, null));
+            }
         }
         catch (IOException e)
         {
@@ -127,6 +152,11 @@ public class BloombergProcessor<T> implements FlatDataProcessor<T>
     public void writeData(Stream<T> inputStream, OutputStream outputStream)
     {
         throw new UnsupportedOperationException("Write not supported for Bloomberg");
+    }
+
+    private void enqueueDefectiveObjects(IChecked<T> object)
+    {
+        this.defectiveObjects.add(object);
     }
 
     private FlatDataDriverDescription descriptionFor(FlatDataSection section)
@@ -278,6 +308,7 @@ public class BloombergProcessor<T> implements FlatDataProcessor<T>
     {
         private final FlatData flatData;
         private String definingPath = "unknown";
+        private T schemaObject;
         private Map<String, Function<FlatDataRecordType, ParsedFlatDataToObject<?>>> toObjectFactoryFactories = new HashMap<>();
         private Map<String, Function<FlatDataRecordType, ObjectToParsedFlatData<?>>> fromObjectFactoryFactories = new HashMap<>();
 
@@ -290,6 +321,13 @@ public class BloombergProcessor<T> implements FlatDataProcessor<T>
         public FlatDataProcessor.Builder<T> withDefiningPath(String definingPath)
         {
             this.definingPath = definingPath;
+            return this;
+        }
+
+        @Override
+        public FlatDataProcessor.Builder<T> withSchemaObject(T schemaObject)
+        {
+            this.schemaObject = schemaObject;
             return this;
         }
 
@@ -310,7 +348,7 @@ public class BloombergProcessor<T> implements FlatDataProcessor<T>
         @Override
         public FlatDataProcessor<T> build()
         {
-            return new BloombergProcessor<>(flatData, definingPath, toObjectFactoryFactories, fromObjectFactoryFactories);
+            return new BloombergProcessor<>(flatData, definingPath, schemaObject, toObjectFactoryFactories, fromObjectFactoryFactories);
         }
     }
 
