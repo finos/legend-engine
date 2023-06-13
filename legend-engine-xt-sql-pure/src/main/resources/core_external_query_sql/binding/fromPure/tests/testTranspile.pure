@@ -33,7 +33,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 
@@ -46,7 +46,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
       ->restrict(['Boolean', 'Integer'])
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectWithAliases():Boolean[1]
@@ -59,7 +59,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       ->renameColumns(pair('Integer', 'int'))
       ->restrict(['Boolean', 'int'])
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectQualified():Boolean[1]
@@ -71,7 +71,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
       ->restrict(['Boolean', 'Integer'])
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectQualifiedWithAlias():Boolean[1]
@@ -83,7 +83,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
       ->restrict(['Boolean', 'Integer'])
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testTableFunc():Boolean[1]
@@ -95,7 +95,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
       ->restrict(['Boolean', 'Integer'])
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectQuotedSingleColumn():Boolean[1]
@@ -107,7 +107,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
       ->restrict(['Boolean', 'Integer'])
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectUnquotedSingleColumn():Boolean[1]
@@ -119,7 +119,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
       ->restrict(['Boolean', 'Integer'])
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 //DISTINCT
@@ -132,7 +132,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
       ->distinct()
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDistinctSingleColumn():Boolean[1]
@@ -145,7 +145,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       ->restrict(['Boolean'])
       ->distinct()
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 //LIMIT
@@ -158,7 +158,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
       ->limit(2)
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLimitAll():Boolean[1]
@@ -169,7 +169,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 //ORDER BY
@@ -182,7 +182,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
       ->sort([desc('Integer'), asc('Boolean')])
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByAlias():Boolean[1]
@@ -194,7 +194,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
       ->sort([desc('Integer'), asc('Boolean')])
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByQualified():Boolean[1]
@@ -206,7 +206,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
       ->sort([desc('Integer'), asc('Boolean')])
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByIndex():Boolean[1]
@@ -219,7 +219,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       ->restrict(['Integer', 'String'])
       ->sort([desc('Integer'), asc('String')])
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 //WHERE
@@ -324,7 +324,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
         )->restrict('String')->distinct()
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByIndex():Boolean[1]
@@ -491,7 +491,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           col(row:TDSRow[1] | cast($row.getInteger('Integer'), @Integer), 'expression')
         ])
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testNullCasts():Boolean[1]
@@ -513,7 +513,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           col(row:TDSRow[1] | cast([], @DateTime), 'timestamp')
         ])
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 
@@ -531,7 +531,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           ]
         )
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testCaseWhen():Boolean[1]
@@ -547,7 +547,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           ]
         )
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 
@@ -588,7 +588,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               )->restrict(['Integer']), meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('Integer') == $row2.getInteger('Integer')}
         )->restrict('Integer')
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLeftJoinSubqueryUsing():Boolean[1]
@@ -607,7 +608,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           pair('String', 'Str')
         ])->restrict(['Int', 'Str'])
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLeftJoinRelationOn():Boolean[1]
@@ -622,7 +623,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             ['ID', 'Integer', 'String']
         ), meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('Integer') == $row2.getInteger('Integer')})->restrict(['Integer', 'String'])
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 
@@ -646,7 +647,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             ->restrict('Integer')
         )
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 //CURRENT TIME
@@ -669,7 +670,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 col(row:TDSRow[1] | today(), 'date')
               ])
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 //DATE_TRUNC
@@ -690,7 +691,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 col(row:TDSRow[1] | firstDayOfWeek($row.getStrictDate('StrictDate')), 'WEEK')
               ])
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 //DATE_ADD
@@ -720,7 +721,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 col(row:TDSRow[1] | adjust($row.getStrictDate('StrictDate'), 1, DurationUnit.NANOSECONDS), 'NANOSECOND')
               ])
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 //DATE_PART
@@ -747,7 +748,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 col(row:TDSRow[1] | second($row.getStrictDate('StrictDate')), 'SECOND')
               ])
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 //EXTRACT
@@ -774,7 +775,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 col(row:TDSRow[1] | second($row.getStrictDate('StrictDate')), 'SECOND')
               ])
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 //INTERVAL
@@ -804,7 +805,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 col(row:TDSRow[1] | []->cast(@Date), 'INTERVAL_ADD_NULL')
               ])
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 //STRING FUNCTIONS
@@ -834,7 +835,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 col(row:TDSRow[1] | trim($row.getString('String')), 'TRIM2')
               ])
       };
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 //MATH FUNCTIONS
@@ -843,7 +844,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   let sqlString = 'SELECT abs(Integer) AS "ABS", acos(Integer) AS "ACOS", asin(Integer) AS "ASIN", atan(Integer) AS "ATAN", atan2(Integer, 1) AS "ATAN2", ' +
                   'ceil(Integer) AS "CEIL", ceiling(Integer) AS "CEILING", cos(Integer) AS "COS", degrees(Integer) AS "DEGREES", div(Integer, 1) AS "DIV", exp(Integer) AS "EXP", floor(Float) AS "FLOOR", ln(Integer) AS "LOG", ' +
                   'mod(Integer, 1) AS "MOD", pi() AS "PI", power(Integer, 2) AS "POWER", radians(Integer) AS "RADIANS", round(Integer) AS "ROUND", round(Decimal, 1) AS "ROUND_DEC", ' +
-                  'sin(Integer) AS "SIN", sqrt(Integer) AS "SQRT", tan(Integer) AS "TAN" FROM service."/service/service1"';
+                  'sin(Integer) AS "SIN", sqrt(Integer) AS "SQRT", tan(Integer) AS "TAN", trunc(Integer) AS "TRUNC" FROM service."/service/service1"';
 
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {|
@@ -873,7 +874,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 col(row:TDSRow[1] | round($row.getDecimal('Decimal'), 1), 'ROUND_DEC'),
                 col(row:TDSRow[1] | sin($row.getInteger('Integer')), 'SIN'),
                 col(row:TDSRow[1] | sqrt($row.getInteger('Integer')), 'SQRT'),
-                col(row:TDSRow[1] | tan($row.getInteger('Integer')), 'TAN')
+                col(row:TDSRow[1] | tan($row.getInteger('Integer')), 'TAN'),
+                col(row:TDSRow[1] | if ($row.getInteger('Integer') > 0, | floor($row.getInteger('Integer')), | ceiling($row.getInteger('Integer'))), 'TRUNC')
               ])
       };
   assertLambdaEquals($expected, $sqlTransformContext.lambda());
@@ -949,7 +951,7 @@ function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure:
             ->groupBy(['String', 'Integer'], agg('SUM', row | $row.getInteger('Integer'), y | $y->sum()))
       };
 
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testFromScopingSimple():Boolean[1]
@@ -1029,7 +1031,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           'ID', 'Integer', 'Enum'
         ]
       )}->eval('abc', [1,2, 3], %2023-01-01)->limit(1)};
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testParameterizedNotSupplied():Boolean[1]
@@ -1044,7 +1046,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           'ID', 'Integer', 'Enum'
         ]
       )}->eval('abc', [], [])->limit(1)};
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testMultiLineQuery():Boolean[1]
@@ -1061,7 +1063,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           'ID', 'Integer', 'The Enum Value', 'The Type', 'Const'
         ]
       );};
-  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testPlanGenerationAndTransform():Boolean[1]

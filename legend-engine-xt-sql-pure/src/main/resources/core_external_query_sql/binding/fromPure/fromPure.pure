@@ -557,8 +557,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   ]));
 
    let func = $join.criteria->match([
-    o:JoinOn[1] | join_TabularDataSet_1__TabularDataSet_1__JoinType_1__String_$1_MANY$__TabularDataSet_1_,
-    u:JoinUsing[1] | join_TabularDataSet_1__TabularDataSet_1__JoinType_1__Function_1__TabularDataSet_1_
+    o:JoinOn[1] | join_TabularDataSet_1__TabularDataSet_1__JoinType_1__Function_1__TabularDataSet_1_,
+    u:JoinUsing[1] | join_TabularDataSet_1__TabularDataSet_1__JoinType_1__String_$1_MANY$__TabularDataSet_1_
   ]);
 
   let parameters = $join.criteria->match([
@@ -1092,6 +1092,11 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let condition = $s.operand->processExpression($expContext, $context);
   let truth = $s.result->processExpression($expContext, $context);
 
+  createIfStatement($condition, $truth, $else);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::createIfStatement(condition:ValueSpecification[1], truth:ValueSpecification[1], else:ValueSpecification[1]):SimpleFunctionExpression[1]
+{
   let functionReturnType = ^FunctionType(returnMultiplicity = PureOne, returnType = $truth.genericType);
 
   let truthLambda = lambda($functionReturnType, $truth);
@@ -1274,7 +1279,16 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       processor('sum', sum_Number_MANY__Number_1_, true),
       processor('sqrt', sqrt_Number_1__Float_1_, false),
       processor('tan', tan_Number_1__Float_1_, false),
+      processor('trunc', false, {args |
+        //TODO replace with pure trunc function when implemented;
+        assert($args->size() == 1, | 'trunc with defined decimal places is not currently supported');
 
+        let condition = sfe(greaterThan_Number_$0_1$__Number_$0_1$__Boolean_1_, [$args->at(0), iv(0)])->evaluateAndDeactivate();
+        let truth = sfe(floor_Number_1__Integer_1_, $args->at(0))->evaluateAndDeactivate();
+        let else = sfe(ceiling_Number_1__Integer_1_, $args->at(0))->evaluateAndDeactivate();
+
+        createIfStatement($condition, $truth, $else);
+      }),
 
       //STRING
       processor('string_agg', true, {args |
