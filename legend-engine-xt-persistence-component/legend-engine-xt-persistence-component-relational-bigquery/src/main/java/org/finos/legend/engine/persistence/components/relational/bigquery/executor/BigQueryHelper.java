@@ -124,9 +124,15 @@ public class BigQueryHelper implements RelationalExecutionHelper
 
     public boolean doesTableExist(Dataset dataset)
     {
-        String name = dataset.datasetReference().name().orElseThrow(IllegalStateException::new);
-        String schema = dataset.datasetReference().group().orElse(null);
-        Table table = this.bigQuery.getTable(TableId.of(schema, name));
+        String projectName = dataset.datasetReference().database().orElse(null);
+        String datasetName = dataset.datasetReference().group().orElseThrow(IllegalStateException::new);
+        String tableName = dataset.datasetReference().name().orElseThrow(IllegalStateException::new);
+
+        TableId tableId = projectName == null ?
+                TableId.of(datasetName, tableName) :
+                TableId.of(projectName, datasetName, tableName);
+
+        Table table = this.bigQuery.getTable(tableId);
         boolean tableExists = table != null && table.exists();
         return tableExists;
     }
@@ -251,6 +257,7 @@ public class BigQueryHelper implements RelationalExecutionHelper
         executeStatements(sqls);
     }
 
+    // Execute statements in a transaction - either use an existing one or use a new one
     public void executeStatements(List<String> sqls)
     {
         if (this.transactionManager != null)
@@ -330,20 +337,6 @@ public class BigQueryHelper implements RelationalExecutionHelper
             catch (Exception e)
             {
                 throw new RuntimeException("Error executing SQL query: " + sql, e);
-            }
-            finally
-            {
-                if (txManager != null)
-                {
-                    try
-                    {
-                        txManager.close();
-                    }
-                    catch (InterruptedException e)
-                    {
-                        LOGGER.error("Error closing transaction manager.", e);
-                    }
-                }
             }
         }
     }

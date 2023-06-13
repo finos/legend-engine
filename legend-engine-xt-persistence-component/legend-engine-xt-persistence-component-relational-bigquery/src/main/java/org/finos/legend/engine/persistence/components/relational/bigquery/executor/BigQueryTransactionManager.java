@@ -74,6 +74,10 @@ public class BigQueryTransactionManager
         {
             executeSql("COMMIT TRANSACTION");
         }
+        else
+        {
+            throw new IllegalStateException("No Transaction started, nothing to commit");
+        }
     }
 
     public void revertTransaction() throws InterruptedException
@@ -81,6 +85,10 @@ public class BigQueryTransactionManager
         if (this.sessionId != null)
         {
             executeSql("ROLLBACK TRANSACTION");
+        }
+        else
+        {
+            throw new IllegalStateException("No Transaction started, nothing to revert");
         }
     }
 
