@@ -151,19 +151,19 @@ public class TestMappingTestRunner
                 "  [\n" +
                 "    testSuite1:\n" +
                 "    {\n" +
-                "      data:\n" +
-                "      [\n" +
-                "        testServiceStoreTestSuites::ServiceStore:\n" +
-                "            Reference \n" +
-                "            #{ \n" +
-                "              testServiceStoreTestSuites::TestData \n" +
-                "            }#\n" +
-                "      ];\n" +
+                "      function: |testServiceStoreTestSuites::Employee.all()->graphFetch(#{testServiceStoreTestSuites::Employee{kerberos,employeeID,title,firstName,lastName,countryCode}}#)->serialize(#{testServiceStoreTestSuites::Employee{kerberos,employeeID,title,firstName,lastName,countryCode}}#);\n" +
                 "      tests:\n" +
                 "      [\n" +
                 "        test1:\n" +
                 "        {\n" +
-                "          function: |testServiceStoreTestSuites::Employee.all()->graphFetch(#{testServiceStoreTestSuites::Employee{kerberos,employeeID,title,firstName,lastName,countryCode}}#)->serialize(#{testServiceStoreTestSuites::Employee{kerberos,employeeID,title,firstName,lastName,countryCode}}#);\n" +
+                "          data:\n" +
+                "          [\n" +
+                "          testServiceStoreTestSuites::ServiceStore:\n" +
+                "            Reference \n" +
+                "            #{ \n" +
+                "              testServiceStoreTestSuites::TestData \n" +
+                "              }#\n" +
+                "           ];\n" +
                 "          asserts:\n" +
                 "          [\n" +
                 "            assert1:\n" +
