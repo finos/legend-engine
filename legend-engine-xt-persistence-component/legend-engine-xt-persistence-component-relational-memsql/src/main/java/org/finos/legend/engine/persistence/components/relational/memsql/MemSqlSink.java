@@ -44,6 +44,7 @@ import org.finos.legend.engine.persistence.components.relational.memsql.sql.visi
 import org.finos.legend.engine.persistence.components.relational.memsql.sql.visitor.SchemaDefinitionVisitor;
 import org.finos.legend.engine.persistence.components.relational.memsql.sql.visitor.ShowVisitor;
 import org.finos.legend.engine.persistence.components.relational.memsql.sql.visitor.SQLCreateVisitor;
+import org.finos.legend.engine.persistence.components.relational.memsql.sql.visitor.FieldVisitor;
 import org.finos.legend.engine.persistence.components.relational.sql.DataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
@@ -95,6 +96,7 @@ public class MemSqlSink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(Create.class, new SQLCreateVisitor());
         logicalPlanVisitorByClass.put(Show.class, new ShowVisitor());
         logicalPlanVisitorByClass.put(Update.class, new SQLUpdateVisitor());
+        logicalPlanVisitorByClass.put(Field.class, new FieldVisitor());
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);
 
         Map<DataType, Set<DataType>> implicitDataTypeMapping = new HashMap<>();

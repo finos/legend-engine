@@ -12,23 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.relational.bigquery.optmizer;
+package org.finos.legend.engine.persistence.components.relational.memsql.sql.visitor;
 
-import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
+import org.finos.legend.engine.persistence.components.relational.memsql.sql.MemSqlDataTypeMapping;
+import org.finos.legend.engine.persistence.components.relational.sql.DataTypeMapping;
 
-import java.util.function.Function;
-
-public abstract class StringCaseOptimizer extends org.finos.legend.engine.persistence.components.relational.ansi.optimizer.StringCaseOptimizer
+public class FieldVisitor extends org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.FieldVisitor
 {
-    public StringCaseOptimizer(Function<String, String> strategy)
+    public DataTypeMapping getDataTypeMapping()
     {
-        super(strategy);
-    }
-
-    @Override
-    public PhysicalPlanNode optimize(PhysicalPlanNode component)
-    {
-        component = super.optimize(component);
-        return component;
+        return new MemSqlDataTypeMapping();
     }
 }

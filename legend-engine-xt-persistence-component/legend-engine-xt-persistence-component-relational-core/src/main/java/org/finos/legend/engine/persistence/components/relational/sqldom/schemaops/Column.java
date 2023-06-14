@@ -82,6 +82,12 @@ public class Column implements SqlGen
         dataType.genSql(builder);
     }
 
+    public void genSqlWithTypeOnly(StringBuilder builder) throws SqlDomException
+    {
+        validate();
+        dataType.genSql(builder);
+    }
+
     @Override
     public void push(Object node)
     {

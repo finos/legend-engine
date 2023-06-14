@@ -18,6 +18,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.AnsiDatatypeMapping;
+import org.finos.legend.engine.persistence.components.relational.sql.DataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.column.ColumnConstraint;
 import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.column.NotNullColumnConstraint;
 import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.column.PKColumnConstraint;
@@ -36,7 +37,7 @@ public class FieldVisitor implements LogicalPlanVisitor<Field>
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, Field current, VisitorContext context)
     {
-        DataType dataType = new AnsiDatatypeMapping().getDataType(current.type());
+        DataType dataType = getDataTypeMapping().getDataType(current.type());
         List<ColumnConstraint> columnConstraints = new ArrayList<>();
         if (!current.nullable())
         {
@@ -61,4 +62,10 @@ public class FieldVisitor implements LogicalPlanVisitor<Field>
 
         return new VisitorResult(null);
     }
+
+    public DataTypeMapping getDataTypeMapping()
+    {
+        return new AnsiDatatypeMapping();
+    }
+
 }

@@ -45,7 +45,7 @@ public class AlterTest
             .alias("my_alias")
             .schema(schemaWithAllColumns)
             .build();
-        Field column = Field.builder().name("column").type(FieldType.of(DataType.VARCHAR, 64, null)).nullable(false).build();
+        Field column = Field.builder().name("column").type(FieldType.of(DataType.STRING, 64, null)).nullable(true).build();
 
         Operation add = Alter.of(dataset, Alter.AlterOperation.ADD, column, Optional.empty());
         Operation changeDatatype = Alter.of(dataset, Alter.AlterOperation.CHANGE_DATATYPE, column, Optional.empty());
@@ -56,7 +56,13 @@ public class AlterTest
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
 
-        // TODO Asserts to be added
+        String expectedAdd = "ALTER TABLE `my_db`.`my_schema`.`my_table` ADD COLUMN `column` STRING(64)";
+        String expectedChangeDataType = "ALTER TABLE `my_db`.`my_schema`.`my_table` ALTER COLUMN `column` SET DATA TYPE STRING(64)";
+        String expectedNullableColumn = "ALTER TABLE `my_db`.`my_schema`.`my_table` ALTER COLUMN `column` DROP NOT NULL";
+
+        Assertions.assertEquals(expectedAdd, list.get(0));
+        Assertions.assertEquals(expectedChangeDataType, list.get(1));
+        Assertions.assertEquals(expectedNullableColumn, list.get(2));
     }
 
     @Test
@@ -69,7 +75,7 @@ public class AlterTest
             .alias("my_alias")
             .schema(schemaWithAllColumns)
             .build();
-        Field column = Field.builder().name("column").type(FieldType.of(DataType.VARCHAR, 64, null)).nullable(false).build();
+        Field column = Field.builder().name("column").type(FieldType.of(DataType.STRING, 64, null)).nullable(true).build();
 
         Operation add = Alter.of(dataset, Alter.AlterOperation.ADD, column, Optional.empty());
         Operation changeDatatype = Alter.of(dataset, Alter.AlterOperation.CHANGE_DATATYPE, column, Optional.empty());
@@ -80,6 +86,12 @@ public class AlterTest
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
 
-        // TODO Asserts to be added
+        String expectedAdd = "ALTER TABLE `MY_DB`.`MY_SCHEMA`.`MY_TABLE` ADD COLUMN `COLUMN` STRING(64)";
+        String expectedChangeDataType = "ALTER TABLE `MY_DB`.`MY_SCHEMA`.`MY_TABLE` ALTER COLUMN `COLUMN` SET DATA TYPE STRING(64)";
+        String expectedNullableColumn = "ALTER TABLE `MY_DB`.`MY_SCHEMA`.`MY_TABLE` ALTER COLUMN `COLUMN` DROP NOT NULL";
+
+        Assertions.assertEquals(expectedAdd, list.get(0));
+        Assertions.assertEquals(expectedChangeDataType, list.get(1));
+        Assertions.assertEquals(expectedNullableColumn, list.get(2));
     }
 }
