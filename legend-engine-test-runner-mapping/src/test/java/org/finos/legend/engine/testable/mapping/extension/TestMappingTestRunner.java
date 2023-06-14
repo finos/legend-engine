@@ -68,22 +68,22 @@ public class TestMappingTestRunner
             "  [\n" +
             "    testSuite1:\n" +
             "    {\n" +
-            "      data:\n" +
-            "      [\n" +
-            "       ModelStore: ModelStore\n" +
-            "        #{\n" +
-            "           test::model:\n" +
-            "            Reference\n" +
-            "            #{\n" +
-            "              test::data::MyData\n" +
-            "            }#\n" +
-            "        }#\n" +
-            "      ];\n" +
+            "      function: |test::changedModel.all()->graphFetch(#{test::changedModel{id,name}}#)->serialize(#{test::changedModel{id,name}}#);\n" +
             "      tests:\n" +
             "      [\n" +
             "        test1:\n" +
             "        {\n" +
-            "          function: |test::changedModel.all()->graphFetch(#{test::changedModel{id,name}}#)->serialize(#{test::changedModel{id,name}}#);\n" +
+            "         data:\n" +
+            "         [\n" +
+            "           ModelStore: ModelStore\n" +
+            "             #{\n" +
+            "               test::model:\n" +
+            "                Reference\n" +
+            "                #{\n" +
+            "                  test::data::MyData\n" +
+            "                }#\n" +
+            "             }#\n" +
+            "           ];\n" +
             "          asserts:\n" +
             "          [\n" +
             "            assert1:\n" +
@@ -160,7 +160,7 @@ public class TestMappingTestRunner
             "                  ExternalFormat\n" +
             "                  #{\n" +
             "                    contentType: 'application/json';\n" +
-            "                    data: '{\"id\" : 77, \"name\" : \"john doe2\"}';\n" +
+            "                    data: '{\"id\" : 77, \"name\" : \"john doe2x\"}';\n" +
             "                  }#;\n" +
             "              }#\n" +
             "          ];\n" +
@@ -241,22 +241,22 @@ public class TestMappingTestRunner
             "  [\n" +
             "    testSuite1:\n" +
             "    {\n" +
-            "      data:\n" +
-            "      [\n" +
-            "       ModelStore: ModelStore\n" +
-            "        #{\n" +
-            "           test::changedTestModel:\n" +
-            "            Reference \n" +
-            "            #{ \n" +
-            "              test::data::MyTestData\n" +
-            "            }#\n" +
-            "        }#\n" +
-            "      ];\n" +
+            "      function: |test::PersonModel.all()->graphFetch(#{test::PersonModel{id,address{streetName,stateInfo{pinCode,stateName}}}}#)->serialize(#{test::PersonModel{id,address{streetName,stateInfo{pinCode,stateName}}}}#);\n" +
             "      tests:\n" +
             "      [\n" +
             "        test1:\n" +
             "        {\n" +
-            "          function: |test::PersonModel.all()->graphFetch(#{test::PersonModel{id,address{streetName,stateInfo{pinCode,stateName}}}}#)->serialize(#{test::PersonModel{id,address{streetName,stateInfo{pinCode,stateName}}}}#);\n" +
+            "          data:\n" +
+            "          [\n" +
+            "            ModelStore: ModelStore\n" +
+            "            #{\n" +
+            "             test::changedTestModel:\n" +
+            "              Reference \n" +
+            "              #{ \n" +
+            "                test::data::MyTestData\n" +
+            "              }#\n" +
+            "            }#\n" +
+            "          ];\n" +
             "          asserts:\n" +
             "          [\n" +
             "            assert1:\n" +
@@ -362,12 +362,14 @@ public class TestMappingTestRunner
         Assert.assertEquals("testSuite1", test1.testSuiteId);
         Assert.assertEquals("test1", test1.atomicTestId);
         Assert.assertEquals(1, test1.assertStatuses.size());
+        Assert.assertEquals(TestExecutionStatus.PASS, test1.testExecutionStatus);
 
         TestExecuted test2 = (TestExecuted) mappingTestResults.get(1);
         Assert.assertEquals("test::modelToModelMapping", test2.testable);
         Assert.assertEquals("testSuite1", test2.testSuiteId);
         Assert.assertEquals("test2", test2.atomicTestId);
         Assert.assertEquals(1, test2.assertStatuses.size());
+        Assert.assertEquals(TestExecutionStatus.FAIL, test2.testExecutionStatus);
 
     }
 

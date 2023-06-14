@@ -18,7 +18,7 @@ import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 
-import java.util.List;
+import java.util.Map;
 
 public class EmbeddedDataHelper
 {
@@ -33,9 +33,9 @@ public class EmbeddedDataHelper
         return dataElement;
     }
 
-    public static DataElement findDataElement(List<DataElement> dataElementList, String fullPath)
+    public static DataElement findDataElement(Map<String, DataElement> dataElementList, String fullPath)
     {
-        DataElement dataElement = Iterate.detect(dataElementList, e -> (fullPath.equals(e.getPath())));
+        DataElement dataElement = dataElementList.get(fullPath);
         if (dataElement == null)
         {
             throw new RuntimeException("Data Element '" + fullPath + "' not found.");
@@ -53,7 +53,7 @@ public class EmbeddedDataHelper
         return embeddedData;
     }
 
-    public static EmbeddedData resolveDataElementWithList(List<DataElement> dataElementList, EmbeddedData embeddedData)
+    public static EmbeddedData resolveDataElementWithList(Map<String, DataElement> dataElementList, EmbeddedData embeddedData)
     {
         if (embeddedData instanceof DataElementReference)
         {

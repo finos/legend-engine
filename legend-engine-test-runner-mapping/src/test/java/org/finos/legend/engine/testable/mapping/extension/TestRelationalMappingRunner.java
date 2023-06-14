@@ -114,19 +114,19 @@ public class TestRelationalMappingRunner
             "    [\n" +
             "      testSuite1:\n" +
             "      {\n" +
-            "        data:\n" +
-            "        [\n" +
-            "          store::TestDB:\n" +
-            "              Reference\n" +
-            "              #{\n" +
-            "                data::RelationalData\n" +
-            "              }#\n" +
-            "        ];\n" +
+            "        function: |model::Firm.all()->project([x|$x.employees.firstName, x|$x.employees.lastName, x|$x.legalName], ['Employees/First Name', 'Employees/Last Name', 'Legal Name']);\n" +
             "        tests:\n" +
             "        [\n" +
             "          test1:\n" +
             "          {\n" +
-            "            function: |model::Firm.all()->project([x|$x.employees.firstName, x|$x.employees.lastName, x|$x.legalName], ['Employees/First Name', 'Employees/Last Name', 'Legal Name']);\n" +
+            "            data:\n" +
+            "            [\n" +
+            "              store::TestDB:\n" +
+            "                Reference\n" +
+            "                #{\n" +
+            "                  data::RelationalData\n" +
+            "                }#\n" +
+            "            ];\n" +
             "            asserts:\n" +
             "            [\n" +
             "              shouldPass:\n" +
@@ -145,27 +145,6 @@ public class TestRelationalMappingRunner
             "      }\n" +
             "    ]\n" +
             ")\n";
-
-
-    String expected = "{\n" +
-            "  \"columns\" : [ {\n" +
-            "    \"name\" : \"Employees/First Name\",\n" +
-            "    \"type\" : \"String\"\n" +
-            "  }, {\n" +
-            "    \"name\" : \"Employees/Last Name\",\n" +
-            "    \"type\" : \"String\"\n" +
-            "  }, {\n" +
-            "    \"name\" : \"Legal Name\",\n" +
-            "    \"type\" : \"String\"\n" +
-            "  } ],\n" +
-            "  \"rows\" : [ {\n" +
-            "    \"values\" : [ \"John\", \"Doe\", \"Finos\" ]\n" +
-            "  }, {\n" +
-            "    \"values\" : [ \"Nicole\", \"Smith\", \"Finos\" ]\n" +
-            "  }, {\n" +
-            "    \"values\" : [ \"Time\", \"Smith\", \"Apple\" ]\n" +
-            "  } ]\n" +
-            "}";
 
     String model2 = "###Data\n" +
             "Data data::RelationalData\n" +
@@ -265,19 +244,19 @@ public class TestRelationalMappingRunner
             "  [\n" +
             "    testSuite1:\n" +
             "    {\n" +
-            "      data:\n" +
+            "      function: |model::Firm.all()->project([x|$x.employees.firstName, x|$x.employees.lastName, x|$x.legalName], ['Employees/First Name', 'Employees/Last Name', 'Legal Name']);\n" +
+            "      tests:\n" +
             "      [\n" +
+            "        test1:\n" +
+            "        {\n" +
+            "        data:\n" +
+            "        [\n" +
             "           store::TestDB: \n" +
             "                Reference\n" +
             "                #{\n" +
             "                  data::RelationalData\n" +
             "                }#\n" +
-            "      ];\n" +
-            "      tests:\n" +
-            "      [\n" +
-            "        test1:\n" +
-            "        {\n" +
-            "          function: |model::Firm.all()->project([x|$x.employees.firstName, x|$x.employees.lastName, x|$x.legalName], ['Employees/First Name', 'Employees/Last Name', 'Legal Name']);\n" +
+            "        ];\n" +
             "          asserts:\n" +
             "          [\n" +
             "            assert1:\n" +
@@ -294,7 +273,14 @@ public class TestRelationalMappingRunner
             "        },\n" +
             "        test2:\n" +
             "        {\n" +
-            "          function: |model::Firm.all()->project([x|$x.employees.firstName, x|$x.employees.lastName, x|$x.legalName], ['Employees/First Name', 'Employees/Last Name', 'Legal Name']);\n" +
+            "      data:\n" +
+            "      [\n" +
+            "           store::TestDB: \n" +
+            "                Reference\n" +
+            "                #{\n" +
+            "                  data::RelationalData\n" +
+            "                }#\n" +
+            "      ];\n" +
             "          asserts:\n" +
             "          [\n" +
             "            assert1:\n" +
@@ -356,7 +342,7 @@ public class TestRelationalMappingRunner
         Mapping mappingToTest = (Mapping) pureModelWithReferenceData.getPackageableElement("execution::RelationalMapping");
         List<TestResult> mappingTestResults = mappingTestableRunnerExtension.executeAllTest(mappingToTest, pureModelWithReferenceData, modelDataWithReferenceData);
 
-        Assert.assertEquals(1, mappingTestResults.size());
+         Assert.assertEquals(1, mappingTestResults.size());
         Assert.assertTrue(mappingTestResults.get(0) instanceof TestExecuted);
         Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) mappingTestResults.get(0)).testExecutionStatus);
         Assert.assertEquals("execution::RelationalMapping", mappingTestResults.get(0).testable);
