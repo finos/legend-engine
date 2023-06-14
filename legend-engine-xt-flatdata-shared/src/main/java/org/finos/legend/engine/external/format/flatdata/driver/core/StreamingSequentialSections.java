@@ -22,6 +22,7 @@ import org.finos.legend.engine.external.format.flatdata.driver.spi.Connection;
 import org.finos.legend.engine.external.format.flatdata.driver.spi.FlatDataDriver;
 import org.finos.legend.engine.external.format.flatdata.driver.spi.FlatDataDriverDescription;
 import org.finos.legend.engine.external.format.flatdata.driver.spi.FlatDataProcessor;
+import org.finos.legend.engine.external.format.flatdata.driver.spi.FlatDataProcessor.Builder;
 import org.finos.legend.engine.external.format.flatdata.driver.spi.FlatDataReadDriver;
 import org.finos.legend.engine.external.format.flatdata.driver.spi.FlatDataWriteDriver;
 import org.finos.legend.engine.external.format.flatdata.driver.spi.ObjectToParsedFlatData;
@@ -162,6 +163,12 @@ public class StreamingSequentialSections<T> implements FlatDataProcessor<T>
         {
             this.definingPath = definingPath;
             return this;
+        }
+
+        @Override
+        public FlatDataProcessor.Builder<T> withSchemaObject(T schemaObject)
+        {
+           throw new RuntimeException("Schema Object based serialization not supported with StreamingSequentialSections Processor");
         }
 
         @Override

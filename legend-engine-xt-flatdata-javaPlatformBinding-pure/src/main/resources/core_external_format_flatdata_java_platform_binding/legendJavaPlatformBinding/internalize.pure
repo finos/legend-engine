@@ -90,6 +90,9 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::pla
    let schemaClass      = $bindingDetail->cast(@FlatDataBindingDetail).schemaBindingDetail.class;
    let dependentClass   = $context.typeInfos->classDependenciesViaPropertiesWithSubTypes($pureClass)->filter(c | $c != $schemaClass);
 
+   // it is safe to throw error as we don't allow checked queries on schema
+   assert(!($schemaClass == $pureClass && $node.checked), |'Querying on schema class with checked functionality is not supported !!');
+
    let baseProject      = if($schemaClass == $pureClass,
                             | let mainClassProject = $pureClass->createSchemaDataClass($path, $context, ^ConstraintCheckingGenerationContext(enableConstraints=$node.enableConstraints, topLevelOnly=$node.tree->isEmpty(), graphFetchTree=$node.tree), $debug->indent());
                               let dependentProjects = $dependentClass->map(dc | $dc->createDataClassesProject($bindingDetail->cast(@FlatDataBindingDetail), $path, $context, ^ConstraintCheckingGenerationContext(enableConstraints=false, topLevelOnly=true), $debug->indent()));
@@ -357,13 +360,13 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::pla
             {|
                let schemaObjectClass = $conventions->dataClass($bindingDetail.schemaBindingDetail.class->toOne(), $path);
                let schemaObject      = j_variable($schemaObjectClass, 'schemaObject');
-
+               let contextWithSchemaObject =  if($bindingDetail.schemaBindingDetail.class == $rootClass, |$newContext->j_invoke('withSchemaObject', [$schemaObject], $contextType), |$newContext);
                let contextWithFactories = $sectionsToProcess->fold(
                   {section, code| 
                      let factoryRef = j_this($cls)->j_invoke($section->sectionFactoryMethodName(), $schemaObject);
                      $code->j_invoke('withSectionToObjectFactory', [j_string($section.name), $factoryRef], $contextType);
                   }, 
-                  $newContext
+                  $contextWithSchemaObject
                );
                
                [
@@ -563,7 +566,7 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::pla
    let schemaClass = $withPropertyMethods->addAlloyStoreObjectReferenceMethodsForClass($context);
    mergeProjects([
       newProject()->addClass($schemaClass),
-      $schemaClass->createConstraintCheckingForClass($class, [], $context, $constraintContext, $debug)
+      $schemaClass->createConstraintCheckingForClass($class, $path, $context, $constraintContext, $debug)
    ]);
 }
 
