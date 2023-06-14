@@ -17,6 +17,7 @@ package org.finos.legend.engine.postgres.handler.legend;
 import java.sql.Types;
 import java.util.List;
 import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
+import static org.finos.legend.engine.postgres.handler.legend.LegendDataType.*;
 
 public class LegendResultSetMetaData implements PostgresResultSetMetaData
 {
@@ -51,18 +52,18 @@ public class LegendResultSetMetaData implements PostgresResultSetMetaData
         String legendType = getColumnPrivate(i).getType();
         switch (legendType)
         {
-            case "StrictDate":
+            case STRICT_DATE:
                 return Types.DATE;
-            case "Date":
-            case "DateTime":
+            case DATE:
+            case DATE_TIME:
                 return Types.TIMESTAMP;
-            case "Integer":
+            case INTEGER:
                 return Types.INTEGER;
-            case "Float":
+            case FLOAT:
                 return Types.FLOAT;
-            case "Number":
+            case NUMBER:
                 return Types.DOUBLE;
-            case "Boolean":
+            case BOOLEAN:
                 return Types.BOOLEAN;
             default:
                 return Types.VARCHAR;

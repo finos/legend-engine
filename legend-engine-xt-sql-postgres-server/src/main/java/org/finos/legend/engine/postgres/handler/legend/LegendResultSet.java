@@ -25,6 +25,7 @@ import java.util.List;
 import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
+import static org.finos.legend.engine.postgres.handler.legend.LegendDataType.*;
 
 public class LegendResultSet implements PostgresResultSet
 {
@@ -67,12 +68,12 @@ public class LegendResultSet implements PostgresResultSet
         }
         switch (legendColumn.getType())
         {
-            case "StrictDate":
+            case STRICT_DATE:
                 LocalDate localDate = ISO_LOCAL_DATE.parse((String) value, LocalDate::from);
                 long toEpochMilli = localDate.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli();
                 return toEpochMilli;
-            case "Date":
-            case "DateTime":
+            case DATE:
+            case DATE_TIME:
                 TemporalAccessor temporalAccessor = TIMESTAMP_FORMATTER.parseBest((String) value, Instant::from, LocalDate::from);
                 if (temporalAccessor instanceof Instant)
                 {                    //if date is a valid time stamp
@@ -83,13 +84,13 @@ public class LegendResultSet implements PostgresResultSet
                     //if date is a date parse as date and convert to time tamp
                     return ((LocalDate) temporalAccessor).atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli();
                 }
-            case "Integer":
+            case INTEGER:
                 return ((Number) value).intValue();
-            case "Float":
+            case FLOAT:
                 return ((Number) value).floatValue();
-            case "Number":
+            case NUMBER:
                 return ((Number) value).doubleValue();
-            case "Boolean":
+            case BOOLEAN:
                 return (Boolean) value;
             default:
                 return value;
