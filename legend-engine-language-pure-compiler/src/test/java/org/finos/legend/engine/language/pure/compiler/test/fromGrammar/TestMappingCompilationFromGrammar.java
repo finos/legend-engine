@@ -2294,4 +2294,128 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
 
     }
 
+    @Test
+    public void testMappingSuiteDataReference()
+    {
+        test("###Data\n" +
+                "Data model::PersonData\n" +
+                "{\n" +
+                "  ExternalFormat\n" +
+                "  #{\n" +
+                "    contentType: 'application/json';\n" +
+                "    data: '';\n" +
+                "  }#\n" +
+                "}\n" +
+                "\n" +
+                "Data model::ModelStoreRef\n" +
+                "{\n" +
+                "  ModelStore\n" +
+                "  #{\n" +
+                "    model::Person:\n" +
+                "      Reference\n" +
+                "      #{\n" +
+                "        model::PersonData\n" +
+                "      }#\n" +
+                "  }#\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Pure\n" +
+                "Class model::Person\n" +
+                "{\n" +
+                "  firstName: String[1];\n" +
+                "  lastName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class model::TargetPerson\n" +
+                "{\n" +
+                "  fullName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping model::M2MSimpleMapping\n" +
+                "(\n" +
+                "  *model::TargetPerson: Pure\n" +
+                "  {\n" +
+                "    ~src model::Person\n" +
+                "    fullName: $src.firstName + ' ' + $src.lastName\n" +
+                "  }\n" +
+                "\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    graphFetchSuite:\n" +
+                "    {\n" +
+                "      function: |model::TargetPerson.all()->graphFetch(\n" +
+                "  #{\n" +
+                "    model::TargetPerson{\n" +
+                "      fullName\n" +
+                "    }\n" +
+                "  }#\n" +
+                ")->serialize(\n" +
+                "  #{\n" +
+                "    model::TargetPerson{\n" +
+                "      fullName\n" +
+                "    }\n" +
+                "  }#\n" +
+                ");\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        dataReferenceOnPerson:\n" +
+                "        {\n" +
+                "          data:\n" +
+                "          [\n" +
+                "            ModelStore:\n" +
+                "              ModelStore\n" +
+                "              #{\n" +
+                "                model::Person:\n" +
+                "                  Reference\n" +
+                "                  #{\n" +
+                "                    model::PersonData\n" +
+                "                  }#\n" +
+                "              }#\n" +
+                "          ];\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            expectedAssertion:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected:\n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ];\n" +
+                "        },\n" +
+                "        dataReference:\n" +
+                "        {\n" +
+                "          data:\n" +
+                "          [\n" +
+                "            ModelStore:\n" +
+                "              Reference\n" +
+                "              #{\n" +
+                "                model::ModelStoreRef\n" +
+                "              }#\n" +
+                "          ];\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            expectedAssertion:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected:\n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ];\n" +
+                "        }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  ]\n" +
+                ")\n");
+    }
 }

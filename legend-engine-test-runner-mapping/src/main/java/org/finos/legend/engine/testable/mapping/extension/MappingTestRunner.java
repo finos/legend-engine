@@ -42,6 +42,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.StoreTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.ModelStore;
+import org.finos.legend.engine.protocol.pure.v1.model.test.Test;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestError;
@@ -49,8 +50,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
+import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.testable.assertion.TestAssertionEvaluator;
 import org.finos.legend.engine.testable.extension.TestRunner;
+import org.finos.legend.pure.generated.Root_meta_pure_mapping_metamodel_MappingTestSuite;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
@@ -93,67 +96,88 @@ public class MappingTestRunner implements TestRunner
     @Override
     public List<TestResult> executeTestSuite(Root_meta_pure_test_TestSuite testSuite, List<String> atomicTestIds, PureModel pureModel, PureModelContextData pureModelContextData)
     {
-        org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping mapping = ListIterate.detect(
-            pureModelContextData.getElementsOfType(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping.class),
-            ele -> ele.getPath().equals(getElementFullPath(this.pureMapping, pureModel.getExecutionSupport())));
-        MappingTestSuite suite = ListIterate.detect(mapping.testSuites, ts -> ts.id.equals(testSuite._id()));
-        MappingTestRunnerContext context = new MappingTestRunnerContext(testSuite, mapping, pureModel, pureModelContextData, extensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers), new ConnectionFirstPassBuilder(pureModel.getContext()), extensions.flatCollect(e -> e.getExtraExtensions(pureModel)));
-        return executeMappingTestSuite(suite, atomicTestIds, context);
-    }
-
-    public List<TestResult> executeMappingTestSuite(MappingTestSuite mappingTestSuite, List<String> atomicTestIds, MappingTestRunnerContext context)
-    {
         List<org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult> results = Lists.mutable.empty();
+        String testablePath = getElementFullPath(this.pureMapping, pureModel.getExecutionSupport());
+        Assert.assertTrue(testSuite instanceof Root_meta_pure_mapping_metamodel_MappingTestSuite, () -> "Test Suite in Mapping expected to be of type Mapping Test Suite");
+        Root_meta_pure_mapping_metamodel_MappingTestSuite compiledMappingTestSuite = (Root_meta_pure_mapping_metamodel_MappingTestSuite) testSuite;
         try
         {
-            PureModel pureModel = context.getPureModel();
+            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping mapping = ListIterate.detect(pureModelContextData.getElementsOfType(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping.class), ele -> ele.getPath().equals(testablePath));
+            MappingTestSuite mappingTestSuite = ListIterate.detect(mapping.testSuites, ts -> ts.id.equals(testSuite._id()));
+            MappingTestRunnerContext context = new MappingTestRunnerContext(compiledMappingTestSuite, mapping, pureModel, pureModelContextData, extensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers), new ConnectionFirstPassBuilder(pureModel.getContext()), extensions.flatCollect(e -> e.getExtraExtensions(pureModel)));
             // build plan, executor args
-            LambdaFunction<?> pureLambda = HelperValueSpecificationBuilder.buildLambda(mappingTestSuite.func, new CompileContext.Builder(pureModel).build());
-            List<MappingTest> dataTests = this.validateMappingSuiteTests(mappingTestSuite, MappingTest.class);
-            for (MappingTest dataTest : dataTests)
+            List<MappingTest> mappingTests = this.validateMappingSuiteTests(mappingTestSuite, MappingTest.class);
+            // running of each test is catchable and put under a test error
+            for (MappingTest mappingTest : mappingTests)
             {
-                if (atomicTestIds.contains(dataTest.id))
+                if (atomicTestIds.contains(mappingTest.id))
                 {
-                    org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult testResult = executeMappingTest(dataTest, pureLambda, context);
-                    testResult.testable = getElementFullPath(pureMapping, pureModel.getExecutionSupport());
-                    testResult.testSuiteId = mappingTestSuite.id;
+                    org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult testResult = executeMappingTest(mappingTest, context);
+                    testResult.testable = testablePath;
+                    testResult.testSuiteId = compiledMappingTestSuite._id();
                     results.add(testResult);
                 }
             }
+
         }
         catch (Exception e)
         {
-            throw new RuntimeException("Exception occurred executing service test suites.\n" + e);
+            // this is to catch any error for the setup of the test suite. we return test error for each test run
+            for (Root_meta_pure_test_AtomicTest testedError: compiledMappingTestSuite._tests())
+            {
+                if (atomicTestIds.contains(testedError._id()) && results.stream().noneMatch(t -> t.atomicTestId.equals(testedError._id())))
+                {
+                    TestError testError = new TestError();
+                    testError.atomicTestId = testedError._id();
+                    testError.error = e.toString();
+                    results.add(testError);
+                }
+            }
         }
         return results;
     }
 
-
-    private TestResult executeMappingTest(MappingTest dataTest, LambdaFunction<?> pureLambda,  MappingTestRunnerContext context)
+    private TestResult executeMappingTest(MappingTest mappingTest,  MappingTestRunnerContext context)
     {
         List<Pair<Connection, List<Closeable>>> connections = Lists.mutable.empty();
         try
         {
+            Assert.assertTrue(mappingTest.assertions.size() == 1, () -> "Mapping Test expected to have one assertion");
             Root_meta_pure_runtime_Runtime_Impl runtime = new Root_meta_pure_runtime_Runtime_Impl("");
-            List<Pair<String, EmbeddedData>> connectionInfo = dataTest.storeTestData.stream().map(testData -> Tuples.pair(testData.store, EmbeddedDataHelper.resolveEmbeddedData(context.getPureModelContextData(), testData.data))).collect(Collectors.toList());
+            List<Pair<String, EmbeddedData>> connectionInfo = mappingTest.storeTestData.stream().map(testData -> Tuples.pair(testData.store, EmbeddedDataHelper.resolveEmbeddedDataInPMCD(context.getPureModelContextData(), testData.data))).collect(Collectors.toList());
             connections = connectionInfo.stream()
                     .map(pair -> this.factories.collect(f -> f.tryBuildTestConnectionsForStoreWithMultiInputs(context.getDataElementIndex(), resolveStore(context.getPureModelContextData(), pair.getOne()), pair.getTwo())).select(Objects::nonNull).select(Optional::isPresent)
                             .collect(Optional::get).getFirstOptional().orElseThrow(() -> new UnsupportedOperationException("Unsupported store type for:'" + pair.getOne() + "' mentioned while running the mapping tests"))).collect(Collectors.toList());
-            connections.stream().forEach(conn -> runtime._connectionsAdd(conn.getOne().accept(context.getConnectionVisitor())));
-            Optional<String> executeInput = resolveInputStringFromDataElement(dataTest, context);
+            connections.forEach(conn -> runtime._connectionsAdd(conn.getOne().accept(context.getConnectionVisitor())));
+
+            Optional<String> executeInput = resolveInputStringFromDataElement(mappingTest, context);
             SingleExecutionPlan executionPlan = context.getPlan();
             if (executionPlan == null || !executeInput.isPresent())
             {
-                executionPlan = PlanGenerator.generateExecutionPlan(pureLambda, pureMapping, runtime, null, context.getPureModel(), this.pureVersion, PlanPlatform.JAVA, null, context.getRouterExtensions(), context.getExecutionPlanTransformers());
+                executionPlan = PlanGenerator.generateExecutionPlan(context.getMetamodelTestSuite()._query(), pureMapping, runtime, null, context.getPureModel(), this.pureVersion, PlanPlatform.JAVA, null, context.getRouterExtensions(), context.getExecutionPlanTransformers());
                 context.setPlan(executionPlan);
             }
             executeInput.ifPresent(stream ->  context.getExecuteBuilder().withInputAsString(stream));
-            return executeTestAssertions(dataTest,context.getExecuteBuilder());
+
+            // execute assertion
+            TestAssertion assertion = mappingTest.assertions.get(0);
+            PlanExecutor.ExecuteArgs executeArgs = context.getExecuteBuilder().build();
+            Result result = this.executor.executeWithArgs(executeArgs);
+            if (result instanceof StreamingResult)
+            {
+                // We want to read streaming results only once
+                StreamingResult streamingResult = (StreamingResult) result;
+                result = new ConstantResult((streamingResult.flush(streamingResult.getSerializer(SerializationFormat.RAW))));
+            }
+            AssertionStatus assertionResult = assertion.accept(new TestAssertionEvaluator(result, SerializationFormat.RAW));
+            TestExecuted testResult = new TestExecuted(Collections.singletonList(assertionResult));
+            testResult.atomicTestId = mappingTest.id;
+            return testResult;
         }
         catch (Exception e)
         {
             TestError testError = new TestError();
-            testError.atomicTestId = dataTest.id;
+            testError.atomicTestId = mappingTest.id;
             testError.error = e.toString();
             return testError;
         }
@@ -169,7 +193,7 @@ public class MappingTestRunner implements TestRunner
         {
             StoreTestData storeTestData = mappingTest.storeTestData.get(0);
             Store store = resolveStore(context.getPureModelContextData(), storeTestData.store);
-            EmbeddedData embeddedData = storeTestData.data;
+            EmbeddedData embeddedData = EmbeddedDataHelper.resolveDataElement(context.getDataElementIndex(), storeTestData.data);
             if (store instanceof ModelStore && embeddedData instanceof ModelStoreData)
             {
                 ModelStoreData modelStoreData = (ModelStoreData) embeddedData;
@@ -177,7 +201,7 @@ public class MappingTestRunner implements TestRunner
                 {
                     if (_data instanceof ModelEmbeddedTestData)
                     {
-                        EmbeddedData _embeddedData = EmbeddedDataHelper.resolveEmbeddedData(context.getPureModelContextData(), ((ModelEmbeddedTestData) _data).data);
+                        EmbeddedData _embeddedData = EmbeddedDataHelper.resolveEmbeddedDataInPMCD(context.getPureModelContextData(), ((ModelEmbeddedTestData) _data).data);
                         if (_embeddedData instanceof ExternalFormatData)
                         {
                             return Optional.of(((ExternalFormatData) _embeddedData).data);
@@ -189,7 +213,7 @@ public class MappingTestRunner implements TestRunner
                         if (valueSpecification instanceof PackageableElementPtr)
                         {
                             PackageableElementPtr packageableElementPtr = (PackageableElementPtr) valueSpecification;
-                            DataElement dElement = EmbeddedDataHelper.resolveDataElement(context.getPureModelContextData(), packageableElementPtr.fullPath);
+                            DataElement dElement = EmbeddedDataHelper.findDataElement(context.getDataElementIndex(), packageableElementPtr.fullPath);
                             EmbeddedData testDataElement = dElement.data;
                             if (testDataElement instanceof ExternalFormatData)
                             {
@@ -236,36 +260,6 @@ public class MappingTestRunner implements TestRunner
                     LOGGER.warn("Exception occurred closing closeable resource" + e);
                 }
             });
-        }
-    }
-
-    private TestResult executeTestAssertions(MappingTest mappingTest,PlanExecutor.ExecuteArgsBuilder executeArgsBuilder)
-    {
-        try
-        {
-            PlanExecutor.ExecuteArgs executeArgs = executeArgsBuilder.build();
-            List<AssertionStatus> assertionStatusList = Lists.mutable.empty();
-            Result result = this.executor.executeWithArgs(executeArgs);
-            if (result instanceof StreamingResult)
-            {
-                // We want to read streaming results only once
-                StreamingResult streamingResult = (StreamingResult) result;
-                result = new ConstantResult((streamingResult.flush(streamingResult.getSerializer(SerializationFormat.RAW))));
-            }
-            for (TestAssertion assertion : mappingTest.assertions)
-            {
-                assertionStatusList.add(assertion.accept(new TestAssertionEvaluator(result, SerializationFormat.RAW)));
-            }
-            TestExecuted testResult = new TestExecuted(assertionStatusList);
-            testResult.atomicTestId = mappingTest.id;
-            return testResult;
-        }
-        catch (Exception e)
-        {
-            TestError testError = new TestError();
-            testError.atomicTestId = mappingTest.id;
-            testError.error = e.toString();
-            return testError;
         }
     }
 

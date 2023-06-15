@@ -23,7 +23,7 @@ import java.util.Map;
 public class EmbeddedDataHelper
 {
 
-    public static DataElement resolveDataElement(PureModelContextData pureModelContextData, String fullPath)
+    public static DataElement resolveDataElementInPMCDWithPath(PureModelContextData pureModelContextData, String fullPath)
     {
         DataElement dataElement = Iterate.detect(pureModelContextData.getElementsOfType(DataElement.class), e -> (fullPath.equals(e.getPath())));
         if (dataElement == null)
@@ -31,6 +31,16 @@ public class EmbeddedDataHelper
             throw new RuntimeException("Data Element '" + fullPath + "' not found.");
         }
         return dataElement;
+    }
+
+    public static EmbeddedData resolveEmbeddedDataInPMCD(PureModelContextData pureModelContextData, EmbeddedData embeddedData)
+    {
+        if (embeddedData instanceof DataElementReference)
+        {
+            DataElement dataElement = resolveDataElementInPMCDWithPath(pureModelContextData, ((DataElementReference)embeddedData).dataElement);
+            return dataElement.data;
+        }
+        return embeddedData;
     }
 
     public static DataElement findDataElement(Map<String, DataElement> dataElementList, String fullPath)
@@ -43,17 +53,7 @@ public class EmbeddedDataHelper
         return dataElement;
     }
 
-    public static EmbeddedData resolveEmbeddedData(PureModelContextData pureModelContextData, EmbeddedData embeddedData)
-    {
-        if (embeddedData instanceof DataElementReference)
-        {
-            DataElement dataElement = resolveDataElement(pureModelContextData, ((DataElementReference)embeddedData).dataElement);
-            return dataElement.data;
-        }
-        return embeddedData;
-    }
-
-    public static EmbeddedData resolveDataElementWithList(Map<String, DataElement> dataElementList, EmbeddedData embeddedData)
+    public static EmbeddedData resolveDataElement(Map<String, DataElement> dataElementList, EmbeddedData embeddedData)
     {
         if (embeddedData instanceof DataElementReference)
         {

@@ -30,7 +30,6 @@ import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarP
 import org.finos.legend.engine.language.pure.grammar.from.test.assertion.HelperTestAssertionGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.data.ModelStoreData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
@@ -185,9 +184,7 @@ public class MappingParseTreeWalker
     {
         StoreTestData testData = new StoreTestData();
         testData.data = HelperEmbeddedDataGrammarParser.parseEmbeddedData(ctx.embeddedData(), this.walkerSourceInformation, this.parserContext.getPureGrammarParserExtensions());
-        testData.store = ctx.qualifiedName().packagePath() == null && testData.data instanceof ModelStoreData ?
-                "ModelStore" :
-                PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());     //build store
+        testData.store = ctx.qualifiedName().packagePath() == null ? ctx.qualifiedName().getText() : PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());     //build store
         return testData;
     }
 

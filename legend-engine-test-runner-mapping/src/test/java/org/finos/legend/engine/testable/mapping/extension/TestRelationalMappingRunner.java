@@ -27,7 +27,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecutionS
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
-import org.finos.legend.pure.runtime.java.interpreted.natives.grammar._boolean.equality.Eq;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -292,7 +291,7 @@ public class TestRelationalMappingRunner
             "                  ExternalFormat\n" +
             "                  #{\n" +
             "                    contentType: 'application/json';\n" +
-            "                    data: '';\n" +
+            "                    data: '{}';\n" +
             "                  }#;\n" +
             "              }#\n" +
             "          ];\n" +
@@ -344,7 +343,7 @@ public class TestRelationalMappingRunner
         Mapping mappingToTest = (Mapping) pureModelWithReferenceData.getPackageableElement("execution::RelationalMapping");
         List<TestResult> mappingTestResults = mappingTestableRunnerExtension.executeAllTest(mappingToTest, pureModelWithReferenceData, modelDataWithReferenceData);
 
-         Assert.assertEquals(1, mappingTestResults.size());
+        Assert.assertEquals(1, mappingTestResults.size());
         Assert.assertTrue(mappingTestResults.get(0) instanceof TestExecuted);
         Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) mappingTestResults.get(0)).testExecutionStatus);
         Assert.assertEquals("execution::RelationalMapping", mappingTestResults.get(0).testable);
@@ -372,29 +371,25 @@ public class TestRelationalMappingRunner
         Assert.assertEquals("testSuite1", testExecuted.testSuiteId);
         Assert.assertEquals(1, testExecuted.assertStatuses.size());
         Assert.assertEquals(TestExecutionStatus.PASS, testExecuted.testExecutionStatus);
-        AssertionStatus status1 = testExecuted.assertStatuses.get(0);
-        Assert.assertTrue(status1 instanceof EqualToJsonAssertFail);
-        EqualToJsonAssertFail equalToJsonAssertFail = (EqualToJsonAssertFail) status1;
-        Assert.assertEquals("Actual result does not match Expected result", equalToJsonAssertFail.message);
-        Assert.assertEquals("assert1", equalToJsonAssertFail.id);
         // test 2
         TestResult _test2 = mappingTestResults.stream().filter(e -> e.atomicTestId.equals("test2")).findFirst().get();
         Assert.assertTrue(_test2 instanceof  TestExecuted);
-        TestExecuted testExecuted2 = (TestExecuted)_test1;
+        TestExecuted testExecuted2 = (TestExecuted)_test2;
         Assert.assertEquals("testSuite1", testExecuted2.testSuiteId);
         Assert.assertEquals(1, testExecuted2.assertStatuses.size());
         AssertionStatus assertionStatus = testExecuted2.assertStatuses.get(0);
         Assert.assertTrue(assertionStatus instanceof EqualToJsonAssertFail);
         EqualToJsonAssertFail equalToJsonAssertFail1 = (EqualToJsonAssertFail)assertionStatus;
-        Assert.assertEquals("",equalToJsonAssertFail1.expected);
+        JsonAssert.assertJsonEquals("{}",equalToJsonAssertFail1.expected);
         String expected = "[ {\n" +
                 "  \"Employees/First Name\" : \"John\"\n" +
                 "}, {\n" +
                 "  \"Employees/First Name\" : \"Nicole\"\n" +
+
                 "}, {\n" +
                 "  \"Employees/First Name\" : \"Time\"\n" +
                 "} ]";
-        JsonAssert.assertJsonEquals(expected, equalToJsonAssertFail.actual);
+        JsonAssert.assertJsonEquals(expected, equalToJsonAssertFail1.actual);
 
     }
 

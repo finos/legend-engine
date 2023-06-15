@@ -85,7 +85,7 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
             if (data instanceof ModelEmbeddedTestData)
             {
                 ModelEmbeddedTestData modelEmbeddedData = (ModelEmbeddedTestData) data;
-                EmbeddedData resolvedEmbeddedData = EmbeddedDataHelper.resolveDataElementWithList(dataElements, modelEmbeddedData.data);
+                EmbeddedData resolvedEmbeddedData = EmbeddedDataHelper.resolveDataElement(dataElements, modelEmbeddedData.data);
                 if (resolvedEmbeddedData instanceof ExternalFormatData)
                 {
                     Connection connection = resolveExternalFormatData((ExternalFormatData) resolvedEmbeddedData, _class, useDefaultExecutor);

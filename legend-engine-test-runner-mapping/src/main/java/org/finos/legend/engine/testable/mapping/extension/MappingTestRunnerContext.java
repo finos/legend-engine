@@ -26,6 +26,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
+import org.finos.legend.pure.generated.Root_meta_pure_mapping_metamodel_MappingTestSuite;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_Connection;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
 
@@ -37,14 +38,14 @@ class MappingTestRunnerContext
     private final PureModelContextData pureModelContextData;
     private final MutableList<PlanTransformer> executionPlanTransformers;
     private final ConnectionVisitor<Root_meta_pure_runtime_Connection> connectionVisitor;
-    private final Root_meta_pure_test_TestSuite metamodelTestSuite;
+    private final Root_meta_pure_mapping_metamodel_MappingTestSuite metamodelTestSuite;
     private final RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions;
     private final org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping mapping;
     private final PlanExecutor.ExecuteArgsBuilder executeBuilder;
     private final Map<String, DataElement> dataElementIndex;
     private SingleExecutionPlan plan;
 
-    public MappingTestRunnerContext(Root_meta_pure_test_TestSuite metamodelTestSuite, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping mapping, PureModel pureModel, PureModelContextData pureModelContextData, MutableList<PlanTransformer> executionPlanTransformers,
+    public MappingTestRunnerContext(Root_meta_pure_mapping_metamodel_MappingTestSuite metamodelTestSuite, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping mapping, PureModel pureModel, PureModelContextData pureModelContextData, MutableList<PlanTransformer> executionPlanTransformers,
                                     ConnectionVisitor<Root_meta_pure_runtime_Connection> connectionVisitor, RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions)
     {
         this.pureModel = pureModel;
@@ -114,5 +115,10 @@ class MappingTestRunnerContext
     public MutableList<PlanTransformer> getExecutionPlanTransformers()
     {
         return executionPlanTransformers;
+    }
+
+    public Root_meta_pure_mapping_metamodel_MappingTestSuite getMetamodelTestSuite()
+    {
+        return metamodelTestSuite;
     }
 }
