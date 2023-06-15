@@ -129,14 +129,14 @@ function meta::pure::graphFetch::tests::XStore::milestoning::runtime():Runtime[1
                                             )]);
 }
 
-function <<test.Test, test.AlloyOnly>> meta::pure::graphFetch::tests::XStore::milestoning::CrossStoreGraphFetchWithRelationalMilestoned():Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pure::graphFetch::tests::XStore::milestoning::CrossStoreGraphFetchWithRelationalMilestoned():Boolean[1]
 {
    let query   = {processingDate: StrictDate[1], businessDate: StrictDate[1]|Trade.all()->graphFetch(#{Trade{customer($processingDate, $businessDate){id}}}#)->serialize(#{Trade{customer($processingDate, $businessDate){id}}}#)->meta::pure::mapping::from(TradeLinkageMapping, runtime())};
    let result = meta::legend::executeLegendQuery($query,  [pair('processingDate', '2023-10-15'), pair('businessDate', '2023-10-15')], ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions());
    assertJsonStringsEqual('{"builder":{"_type":"json"},"values":[{"customer($processingDate, $businessDate)":{"id":12}},{"customer($processingDate, $businessDate)":null},{"customer($processingDate, $businessDate)":{"id":56}}]}', $result);
 }
 
-function <<test.Test, test.AlloyOnly>> meta::pure::graphFetch::tests::XStore::milestoning::CrossStoreGraphFetchWithRelationalMilestonedFlowDown():Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pure::graphFetch::tests::XStore::milestoning::CrossStoreGraphFetchWithRelationalMilestonedFlowDown():Boolean[1]
 {
    let query   = {processingDate: StrictDate[1], businessDate: StrictDate[1]|Trade.all()->graphFetch(#{Trade{customer($processingDate, $businessDate){id, address($businessDate){country}}}}#)->serialize(#{Trade{customer($processingDate, $businessDate){id, address($businessDate){country}}}}#)->meta::pure::mapping::from(TradeLinkageMapping, runtime())};
    let result = meta::legend::executeLegendQuery($query,  [pair('processingDate', '2023-10-15'), pair('businessDate', '2023-10-15')], ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions());
