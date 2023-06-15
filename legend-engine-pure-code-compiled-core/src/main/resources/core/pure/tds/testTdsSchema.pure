@@ -156,7 +156,7 @@ function  <<test.Test>> meta::pure::tds::schema::tests::resolveSchemaTest() : Bo
          Address.all()
             ->project([a|$a.name, a|$a.type],['name', 'type'])
             ->extend(^BasicColumnSpecification<TDSRow>(name='typeduplicated', func={row:TDSRow[1]|DurationUnit.DAYS}))
-            ->restrict('typeduplicated')
+            ->restrict(['typeduplicated', 'name'])
       });
    
    assertSchemaRoundTripEquality({|

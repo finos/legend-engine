@@ -23,7 +23,6 @@ import meta::pure::functions::meta::*;
 import meta::pure::mapping::*;
 import meta::pure::metamodel::serialization::grammar::*;
 
-
 //SELECT
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectStar():Boolean[1]
 {
@@ -46,6 +45,26 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
       ->restrict(['Boolean', 'Integer'])
       };
+  assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectWithExtendAndEnumColumns():Boolean[1]
+{
+  let sqlString = 'SELECT 1 AS one, "The Enum Value" AS enum FROM service."/service/service3"';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {|
+        let const = 123;
+        FlatInput.all()->project(
+        [
+          x | $x.idIn, x | $x.integerIn, x | $x.enumVal, x | $x.type, x | $const
+        ],
+        [
+          'ID', 'Integer', 'The Enum Value', 'The Type', 'Const'
+        ]
+      )->project([
+        col(row:TDSRow[1] | 1, 'one'),
+        col(row:TDSRow[1] | $row.getEnum('The Enum Value')->cast(@MyEnum), 'enum')
+      ]);};
   assertLambdaAndJSONEquals($expected, $sqlTransformContext.lambda());
 }
 
